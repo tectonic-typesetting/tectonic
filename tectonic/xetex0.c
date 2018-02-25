@@ -72,7 +72,7 @@ show_token_list(int32_t p, int32_t q, int32_t l)
     n = '0' ;
     tally = 0;
 
-    while (p != MIN_HALFWORD && tally < l) {
+    while (p != TEX_NULL && tally < l) {
         /*332:*/
         if (p == q) {
             first_count = tally;
@@ -143,7 +143,7 @@ show_token_list(int32_t p, int32_t q, int32_t l)
         p = mem[p].b32.s1;
     }
 
-    if (p != MIN_HALFWORD)
+    if (p != TEX_NULL)
         print_esc_cstr("ETC.");
 }
 
@@ -152,7 +152,7 @@ void
 runaway(void)
 {
     memory_word *mem = zmem;
-    int32_t p = MIN_HALFWORD;
+    int32_t p = TEX_NULL;
 
     if (scanner_status > SKIPPING) {
         switch (scanner_status) {
@@ -176,7 +176,7 @@ runaway(void)
 
         print_char('?');
         print_ln();
-        show_token_list(mem[p].b32.s1, MIN_HALFWORD, error_line - 10);
+        show_token_list(mem[p].b32.s1, TEX_NULL, error_line - 10);
     }
 }
 
@@ -185,7 +185,7 @@ int32_t get_avail(void)
 {
     memory_word *mem = zmem; int32_t p;
     p = avail;
-    if (p != MIN_HALFWORD)
+    if (p != TEX_NULL)
         avail = mem[avail].b32.s1;
     else if (mem_end < MEM_TOP) {
         mem_end++;
@@ -199,19 +199,19 @@ int32_t get_avail(void)
             overflow("main memory size", MEM_TOP + 1);
         }
     }
-    mem[p].b32.s1 = MIN_HALFWORD;
+    mem[p].b32.s1 = TEX_NULL;
     return p;
 }
 
 void flush_list(int32_t p)
 {
     memory_word *mem = zmem; int32_t q, r;
-    if (p != MIN_HALFWORD) {
+    if (p != TEX_NULL) {
         r = p;
         do {
             q = r;
             r = mem[r].b32.s1;
-        } while (!(r == MIN_HALFWORD));
+        } while (!(r == TEX_NULL));
         mem[q].b32.s1 = avail;
         avail = p;
     }
@@ -278,8 +278,8 @@ restart:
             mem[q].b32.s1 = MAX_HALFWORD;
             mem[q].b32.s0 = t - lo_mem_max;
             lo_mem_max = t;
-            mem[lo_mem_max].b32.s1 = MIN_HALFWORD;
-            mem[lo_mem_max].b32.s0 = MIN_HALFWORD;
+            mem[lo_mem_max].b32.s1 = TEX_NULL;
+            mem[lo_mem_max].b32.s0 = TEX_NULL;
             rover = q;
             goto restart;
         }
@@ -287,7 +287,7 @@ restart:
     overflow("main memory size", MEM_TOP + 1);
 
 found:
-    mem[r].b32.s1 = MIN_HALFWORD;
+    mem[r].b32.s1 = TEX_NULL;
     if (s >= MEDIUM_NODE_SIZE) {
         mem[r + s - 1].b32.s0 = cur_input.synctex_tag;
         mem[r + s - 1].b32.s1 = line;
@@ -317,7 +317,7 @@ int32_t new_null_box(void)
     mem[p + 2].b32.s1 = 0;
     mem[p + 3].b32.s1 = 0;
     mem[p + 4].b32.s1 = 0;
-    mem[p + 5].b32.s1 = MIN_HALFWORD;
+    mem[p + 5].b32.s1 = TEX_NULL;
     mem[p + 5].b16.s1 = NORMAL;
     mem[p + 5].b16.s0 = NORMAL;
     mem[p + 6].gr = 0.0;
@@ -353,7 +353,7 @@ int32_t new_lig_item(uint16_t c)
     memory_word *mem = zmem; int32_t p;
     p = get_node(SMALL_NODE_SIZE);
     mem[p].b16.s0 = c;
-    mem[p + 1].b32.s1 = MIN_HALFWORD;
+    mem[p + 1].b32.s1 = TEX_NULL;
     return p;
 }
 
@@ -363,8 +363,8 @@ int32_t new_disc(void)
     p = get_node(SMALL_NODE_SIZE);
     NODE_type(p) = DISC_NODE;
     mem[p].b16.s0 = 0;
-    mem[p + 1].b32.s0 = MIN_HALFWORD;
-    mem[p + 1].b32.s1 = MIN_HALFWORD;
+    mem[p + 1].b32.s0 = TEX_NULL;
+    mem[p + 1].b32.s1 = TEX_NULL;
     return p;
 }
 
@@ -394,7 +394,7 @@ int32_t new_spec(int32_t p)
     memory_word *mem = zmem; int32_t q;
     q = get_node(GLUE_SPEC_SIZE);
     mem[q] = mem[p];
-    mem[q].b32.s1 = MIN_HALFWORD;
+    mem[q].b32.s1 = TEX_NULL;
     mem[q + 1].b32.s1 = mem[p + 1].b32.s1;
     mem[q + 2].b32.s1 = mem[p + 2].b32.s1;
     mem[q + 3].b32.s1 = mem[p + 3].b32.s1;
@@ -410,7 +410,7 @@ int32_t new_param_glue(small_number n)
     p = get_node(MEDIUM_NODE_SIZE);
     NODE_type(p) = GLUE_NODE;
     mem[p].b16.s0 = n + 1;
-    mem[p + 1].b32.s1 = MIN_HALFWORD;
+    mem[p + 1].b32.s1 = TEX_NULL;
     q = /*232: */ eqtb[GLUE_BASE + n].b32.s1 /*:232 */ ;
     mem[p + 1].b32.s0 = q;
     mem[q].b32.s1++;
@@ -423,7 +423,7 @@ int32_t new_glue(int32_t q)
     p = get_node(MEDIUM_NODE_SIZE);
     NODE_type(p) = GLUE_NODE;
     GLUE_SPEC_shrink_order(p) = NORMAL;
-    mem[p + 1].b32.s1 = MIN_HALFWORD;
+    mem[p + 1].b32.s1 = TEX_NULL;
     mem[p + 1].b32.s0 = q;
     mem[q].b32.s1++;
     return p;
@@ -436,7 +436,7 @@ int32_t new_skip_param(small_number n)
 
     temp_ptr = new_spec( /*232: */ eqtb[GLUE_BASE + n].b32.s1 /*:232 */ );
     p = new_glue(temp_ptr);
-    mem[temp_ptr].b32.s1 = MIN_HALFWORD;
+    mem[temp_ptr].b32.s1 = TEX_NULL;
     mem[p].b16.s0 = n + 1;
     return p;
 }
@@ -467,13 +467,13 @@ int32_t prev_rightmost(int32_t s, int32_t e)
 {
     memory_word *mem = zmem; int32_t p;
     p = s;
-    if (p == MIN_HALFWORD)
-        return MIN_HALFWORD;
+    if (p == TEX_NULL)
+        return TEX_NULL;
     while (mem[p].b32.s1 != e) {
 
         p = mem[p].b32.s1;
-        if (p == MIN_HALFWORD)
-            return MIN_HALFWORD;
+        if (p == TEX_NULL)
+            return TEX_NULL;
     }
     return p;
 }
@@ -546,7 +546,7 @@ short_display(int32_t p)
                 n = mem[p].b16.s0;
 
                 while (n > 0) {
-                    if (mem[p].b32.s1 != MIN_HALFWORD)
+                    if (mem[p].b32.s1 != TEX_NULL)
                         p = mem[p].b32.s1;
                     n--;
                 }
@@ -582,7 +582,7 @@ void print_mark(int32_t p)
     if ((p < hi_mem_min) || (p > mem_end))
         print_esc_cstr("CLOBBERED.");
     else
-        show_token_list(mem[p].b32.s1, MIN_HALFWORD, max_print_line - 10);
+        show_token_list(mem[p].b32.s1, TEX_NULL, max_print_line - 10);
     print_char('}');
 }
 
@@ -679,7 +679,7 @@ print_subsidiary_data(int32_t p, UTF16_code c)
             show_info();
             break;
         case SUB_MLIST:
-            if (mem[p].b32.s0 == MIN_HALFWORD) {
+            if (mem[p].b32.s0 == TEX_NULL) {
                 print_ln();
                 print_current_string();
                 print_cstr("{}");
@@ -793,7 +793,7 @@ show_node_list(int32_t p)
     double g;
 
     if (pool_ptr - str_start[str_ptr - 65536L] > depth_threshold) {
-        if (p > MIN_HALFWORD)
+        if (p > TEX_NULL)
             print_cstr(" []");
         return;
     }
@@ -1284,7 +1284,7 @@ void short_display_n(int32_t p, int32_t m)
 
 void delete_token_ref(int32_t p)
 {
-    memory_word *mem = zmem; if (mem[p].b32.s0 == MIN_HALFWORD)
+    memory_word *mem = zmem; if (mem[p].b32.s0 == TEX_NULL)
         flush_list(p);
     else
         mem[p].b32.s0--;
@@ -1292,7 +1292,7 @@ void delete_token_ref(int32_t p)
 
 void delete_glue_ref(int32_t p)
 {
-    memory_word *mem = zmem; if (mem[p].b32.s1 == MIN_HALFWORD)
+    memory_word *mem = zmem; if (mem[p].b32.s1 == TEX_NULL)
         free_node(p, GLUE_SPEC_SIZE);
     else
         mem[p].b32.s1--;
@@ -1305,7 +1305,7 @@ flush_node_list(int32_t p)
     memory_word *mem = zmem;
     int32_t q;
 
-    while (p != MIN_HALFWORD) {
+    while (p != TEX_NULL) {
         q = mem[p].b32.s1;
 
         if (p >= hi_mem_min) {
@@ -1376,12 +1376,12 @@ flush_node_list(int32_t p)
                 break;
 
             case GLUE_NODE:
-                if (mem[mem[p + 1].b32.s0].b32.s1 == MIN_HALFWORD)
+                if (mem[mem[p + 1].b32.s0].b32.s1 == TEX_NULL)
                     free_node(mem[p + 1].b32.s0, GLUE_SPEC_SIZE);
                 else
                     mem[mem[p + 1].b32.s0].b32.s1--;
 
-                if (mem[p + 1].b32.s1 != MIN_HALFWORD)
+                if (mem[p + 1].b32.s1 != TEX_NULL)
                     flush_node_list(mem[p + 1].b32.s1);
                 free_node(p, MEDIUM_NODE_SIZE);
                 goto done;
@@ -1498,7 +1498,7 @@ copy_node_list(int32_t p)
     h = get_avail();
     q = h;
 
-    while (p != MIN_HALFWORD) {
+    while (p != TEX_NULL) {
         words = 1;
         if (p >= hi_mem_min) {
             r = get_avail();
@@ -1640,7 +1640,7 @@ copy_node_list(int32_t p)
         p = mem[p].b32.s1;
     }
 
-    mem[q].b32.s1 = MIN_HALFWORD;
+    mem[q].b32.s1 = TEX_NULL;
     q = mem[h].b32.s1;
     mem[h].b32.s1 = avail;
     avail = h;
@@ -1719,7 +1719,7 @@ void push_nest(void)
     cur_list.tail = cur_list.head;
     cur_list.prev_graf = 0;
     cur_list.mode_line = line;
-    cur_list.eTeX_aux = MIN_HALFWORD;
+    cur_list.eTeX_aux = TEX_NULL;
 }
 
 void pop_nest(void)
@@ -1811,7 +1811,7 @@ void show_activities(void)
                             }
                         }
                     }
-                    if (mem[CONTRIB_HEAD].b32.s1 != MIN_HALFWORD)
+                    if (mem[CONTRIB_HEAD].b32.s1 != TEX_NULL)
                         print_nl_cstr("### recent contributions:");
                 }
                 show_box(mem[nest[p].head].b32.s1);
@@ -1847,7 +1847,7 @@ void show_activities(void)
                     }
                     break;
                 case 2:
-                    if (a.b32.s1 != MIN_HALFWORD) {
+                    if (a.b32.s1 != TEX_NULL) {
                         print_cstr("this will be denominator of:");
                         show_box(a.b32.s1);
                     }
@@ -2655,7 +2655,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             cmd = (mem[chr_code].b16.s1 / 64);
         } else {
             cmd = chr_code;
-            chr_code = MIN_HALFWORD;
+            chr_code = TEX_NULL;
         }
 
         if (cmd == INT_VAL)
@@ -2667,7 +2667,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc_cstr("muskip");
 
-        if (chr_code != MIN_HALFWORD)
+        if (chr_code != TEX_NULL)
             print_sa_num(chr_code);
         break;
 
@@ -3934,7 +3934,7 @@ bool pseudo_input(void)
     int32_t r;
     last = first;
     p = mem[pseudo_files].b32.s0;
-    if (p == MIN_HALFWORD)
+    if (p == TEX_NULL)
         return false;
     else {
 
@@ -3980,7 +3980,7 @@ void pseudo_close(void)
         avail = pseudo_files;
     }
     pseudo_files = p;
-    while (q != MIN_HALFWORD) {
+    while (q != TEX_NULL) {
 
         p = q;
         q = mem[p].b32.s1;
@@ -4121,7 +4121,7 @@ void delete_sa_ref(int32_t q)
     small_number i;
     small_number s;
     mem[q + 1].b32.s0--;
-    if (mem[q + 1].b32.s0 != MIN_HALFWORD)
+    if (mem[q + 1].b32.s0 != TEX_NULL)
         return;
     if (mem[q].b16.s1 < DIMEN_VAL_LIMIT) {
 
@@ -4137,7 +4137,7 @@ void delete_sa_ref(int32_t q)
                 delete_glue_ref(0);
             else
                 return;
-        } else if (mem[q + 1].b32.s1 != MIN_HALFWORD)
+        } else if (mem[q + 1].b32.s1 != TEX_NULL)
             return;
         s = POINTER_NODE_SIZE;
     }
@@ -4146,15 +4146,15 @@ void delete_sa_ref(int32_t q)
         p = q;
         q = mem[p].b32.s1;
         free_node(p, s);
-        if (q == MIN_HALFWORD) {
-            sa_root[i] = MIN_HALFWORD;
+        if (q == TEX_NULL) {
+            sa_root[i] = TEX_NULL;
             return;
         }
         {
             if (odd(i))
-                mem[q + (i / 2) + 1].b32.s1 = MIN_HALFWORD;
+                mem[q + (i / 2) + 1].b32.s1 = TEX_NULL;
             else
-                mem[q + (i / 2) + 1].b32.s0 = MIN_HALFWORD;
+                mem[q + (i / 2) + 1].b32.s0 = TEX_NULL;
             mem[q].b16.s0--;
         }
         s = INDEX_NODE_SIZE;
@@ -4177,7 +4177,7 @@ void sa_save(int32_t p)
         save_stack[save_ptr].b16.s0 = sa_level;
         save_stack[save_ptr].b32.s1 = sa_chain;
         save_ptr++;
-        sa_chain = MIN_HALFWORD;
+        sa_chain = TEX_NULL;
         sa_level = cur_level;
     }
     i = mem[p].b16.s1;
@@ -4190,7 +4190,7 @@ void sa_save(int32_t p)
             q = get_node(WORD_NODE_SIZE);
             mem[q + 2].b32.s1 = mem[p + 2].b32.s1;
         }
-        mem[q + 1].b32.s1 = MIN_HALFWORD;
+        mem[q + 1].b32.s1 = TEX_NULL;
     } else {
 
         q = get_node(POINTER_NODE_SIZE);
@@ -4208,7 +4208,7 @@ void sa_destroy(int32_t p)
 {
     memory_word *mem = zmem; if (mem[p].b16.s1 < MU_VAL_LIMIT)
         delete_glue_ref(mem[p + 1].b32.s1);
-    else if (mem[p + 1].b32.s1 != MIN_HALFWORD) {
+    else if (mem[p + 1].b32.s1 != TEX_NULL) {
 
         if (mem[p].b16.s1 < BOX_VAL_LIMIT)
             flush_node_list(mem[p + 1].b32.s1);
@@ -4304,7 +4304,7 @@ void sa_restore(void)
             free_node(p, WORD_NODE_SIZE);
         else
             free_node(p, POINTER_NODE_SIZE);
-    } while (!(sa_chain == MIN_HALFWORD));
+    } while (!(sa_chain == TEX_NULL));
 }
 
 void new_save_level(group_code c)
@@ -4344,7 +4344,7 @@ void eq_destroy(memory_word w)
     case 120:
         {
             q = w.b32.s1;
-            if (q != MIN_HALFWORD)
+            if (q != TEX_NULL)
                 free_node(q, mem[q].b32.s0 + mem[q].b32.s0 + 1);
         }
         break;
@@ -4571,8 +4571,8 @@ void token_show(int32_t p)
 {
     memory_word *mem = zmem;
 
-    if (p != MIN_HALFWORD)
-        show_token_list(mem[p].b32.s1, MIN_HALFWORD, 10000000L);
+    if (p != TEX_NULL)
+        show_token_list(mem[p].b32.s1, TEX_NULL, 10000000L);
 }
 
 void print_meaning(void)
@@ -4622,7 +4622,7 @@ void show_cur_cmd_chr(void)
                     l = line;
                 }
                 p = cond_ptr;
-                while (p != MIN_HALFWORD) {
+                while (p != TEX_NULL) {
 
                     n++;
                     p = mem[p].b32.s1;
@@ -4671,7 +4671,7 @@ void show_context(void)
         }
         if ((base_ptr == input_ptr) || bottom_line || (nn < INTPAR(error_context_lines))) {   /*324: */
             if ((base_ptr == input_ptr) || (cur_input.state != TOKEN_LIST)
-                || (cur_input.index != BACKED_UP) || (cur_input.loc != MIN_HALFWORD)) {
+                || (cur_input.index != BACKED_UP) || (cur_input.loc != TEX_NULL)) {
                 tally = 0;
                 old_setting = selector;
                 if (cur_input.state != TOKEN_LIST) {
@@ -4739,7 +4739,7 @@ void show_context(void)
                         break;
                     case BACKED_UP:
                     case BACKED_UP_CHAR:
-                        if (cur_input.loc == MIN_HALFWORD)
+                        if (cur_input.loc == TEX_NULL)
                             print_nl_cstr("<recently read> ");
                         else
                             print_nl_cstr("<to be read again> ");
@@ -4957,7 +4957,7 @@ void end_token_list(void)
 void back_input(void)
 {
     memory_word *mem = zmem; int32_t p;
-    while ((cur_input.state == TOKEN_LIST) && (cur_input.loc == MIN_HALFWORD)
+    while ((cur_input.state == TOKEN_LIST) && (cur_input.loc == TEX_NULL)
            && (cur_input.index != V_TEMPLATE))
         end_token_list();
     p = get_avail();
@@ -5514,7 +5514,7 @@ restart:
                     if (cur_input.name <= 19) {
                         if (pseudo_input()) {
                             cur_input.limit = last;
-                        } else if (LOCAL(every_eof) != MIN_HALFWORD && !eof_seen[cur_input.index]) {
+                        } else if (LOCAL(every_eof) != TEX_NULL && !eof_seen[cur_input.index]) {
                             cur_input.limit = first - 1;
                             eof_seen[cur_input.index] = true;
                             begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
@@ -5525,7 +5525,7 @@ restart:
                     } else {
                         if (input_line(input_file[cur_input.index])) {
                             cur_input.limit = last;
-                        } else if (LOCAL(every_eof) != MIN_HALFWORD && !eof_seen[cur_input.index]) {
+                        } else if (LOCAL(every_eof) != TEX_NULL && !eof_seen[cur_input.index]) {
                             cur_input.limit = first - 1;
                             eof_seen[cur_input.index] = true;
                             begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
@@ -5578,7 +5578,7 @@ restart:
                  * \end or \dump has been seen. We just use a global state
                  * variable to make sure it only gets inserted once. */
 
-                if (!used_tectonic_coda_tokens && LOCAL(TectonicCodaTokens) != MIN_HALFWORD) {
+                if (!used_tectonic_coda_tokens && LOCAL(TectonicCodaTokens) != TEX_NULL) {
                     used_tectonic_coda_tokens = true;
                     begin_token_list(LOCAL(TectonicCodaTokens), TECTONIC_CODA_TEXT);
                     goto restart;
@@ -5591,7 +5591,7 @@ restart:
             }
             goto texswitch;
         }
-    } else if (cur_input.loc != MIN_HALFWORD) { /* if we're inputting from a non-null token list: */
+    } else if (cur_input.loc != TEX_NULL) { /* if we're inputting from a non-null token list: */
         t = mem[cur_input.loc].b32.s0;
         cur_input.loc = mem[cur_input.loc].b32.s1;
 
@@ -5603,7 +5603,7 @@ restart:
             if (cur_cmd >= OUTER_CALL) {
                 if (cur_cmd == DONT_EXPAND) { /*370:*/
                     cur_cs = mem[cur_input.loc].b32.s0 - CS_TOKEN_FLAG;
-                    cur_input.loc = MIN_HALFWORD;
+                    cur_input.loc = TEX_NULL;
                     cur_cmd = eqtb[cur_cs].b16.s1;
                     cur_chr = eqtb[cur_cs].b32.s1;
                     if (cur_cmd > MAX_COMMAND) {
@@ -5639,7 +5639,7 @@ restart:
     }
 
     if (cur_cmd <= CAR_RET && cur_cmd >= TAB_MARK && align_state == 0) { /*818:*/
-        if (scanner_status == ALIGNING || cur_align == MIN_HALFWORD)
+        if (scanner_status == ALIGNING || cur_align == TEX_NULL)
             fatal_error("(interwoven alignment preambles are not allowed)");
 
         cur_cmd = mem[cur_align + 5].b32.s0;
@@ -5672,12 +5672,12 @@ macro_call(void)
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
     int32_t r;
-    int32_t p = MIN_HALFWORD;
+    int32_t p = TEX_NULL;
     int32_t q;
     int32_t s;
     int32_t t;
     int32_t u, v;
-    int32_t rbrace_ptr = MIN_HALFWORD;
+    int32_t rbrace_ptr = TEX_NULL;
     small_number n;
     int32_t unbalance;
     int32_t m = 0;
@@ -5713,9 +5713,9 @@ macro_call(void)
             long_state = long_state - 2;
 
         do {
-            mem[TEMP_HEAD].b32.s1 = MIN_HALFWORD;
+            mem[TEMP_HEAD].b32.s1 = TEX_NULL;
             if (mem[r].b32.s0 >= END_MATCH_TOKEN || mem[r].b32.s0 < MATCH_TOKEN) {
-                s = MIN_HALFWORD;
+                s = TEX_NULL;
             } else {
                 match_chr = mem[r].b32.s0 - MATCH_TOKEN;
                 s = mem[r].b32.s1;
@@ -5739,7 +5739,7 @@ macro_call(void)
             }
 
             if (s != r) {
-                if (s == MIN_HALFWORD) { /*416:*/
+                if (s == TEX_NULL) { /*416:*/
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -5826,11 +5826,11 @@ macro_call(void)
 
                     while (true) {
                         q = avail;
-                        if (q == MIN_HALFWORD) {
+                        if (q == TEX_NULL) {
                             q = get_avail();
                         } else {
                             avail = mem[q].b32.s1;
-                            mem[q].b32.s1 = MIN_HALFWORD;
+                            mem[q].b32.s1 = TEX_NULL;
                         }
 
                         mem[p].b32.s1 = q;
@@ -5931,9 +5931,9 @@ macro_call(void)
                 goto continue_;
 
         found:
-            if (s != MIN_HALFWORD) { /*418:*/
+            if (s != TEX_NULL) { /*418:*/
                 if (m == 1 && mem[p].b32.s0 < RIGHT_BRACE_LIMIT && p != TEMP_HEAD) {
-                    mem[rbrace_ptr].b32.s1 = MIN_HALFWORD;
+                    mem[rbrace_ptr].b32.s1 = TEX_NULL;
                     mem[p].b32.s1 = avail;
                     avail = p;
                     p = mem[TEMP_HEAD].b32.s1;
@@ -5951,14 +5951,14 @@ macro_call(void)
                     print_nl(match_chr);
                     print_int(n);
                     print_cstr("<-");
-                    show_token_list(pstack[n - 1], MIN_HALFWORD, 1000);
+                    show_token_list(pstack[n - 1], TEX_NULL, 1000);
                     end_diagnostic(false);
                 }
             }
         } while (mem[r].b32.s0 != END_MATCH_TOKEN);
     }
 
-    while (cur_input.state == TOKEN_LIST && cur_input.loc == MIN_HALFWORD && cur_input.index != V_TEMPLATE)
+    while (cur_input.state == TOKEN_LIST && cur_input.loc == TEX_NULL && cur_input.index != V_TEMPLATE)
         end_token_list();
 
     begin_token_list(ref_count, MACRO);
@@ -6019,7 +6019,7 @@ void find_sa_element(small_number t, int32_t n, bool w)
     small_number i;
     cur_ptr = sa_root[t];
     {
-        if (cur_ptr == MIN_HALFWORD) {
+        if (cur_ptr == TEX_NULL) {
 
             if (w)
                 goto not_found;
@@ -6034,7 +6034,7 @@ void find_sa_element(small_number t, int32_t n, bool w)
     else
         cur_ptr = mem[q + (i / 2) + 1].b32.s0;
     {
-        if (cur_ptr == MIN_HALFWORD) {
+        if (cur_ptr == TEX_NULL) {
 
             if (w)
                 goto lab46;
@@ -6049,7 +6049,7 @@ void find_sa_element(small_number t, int32_t n, bool w)
     else
         cur_ptr = mem[q + (i / 2) + 1].b32.s0;
     {
-        if (cur_ptr == MIN_HALFWORD) {
+        if (cur_ptr == TEX_NULL) {
 
             if (w)
                 goto lab47;
@@ -6064,7 +6064,7 @@ void find_sa_element(small_number t, int32_t n, bool w)
     else
         cur_ptr = mem[q + (i / 2) + 1].b32.s0;
     {
-        if (cur_ptr == MIN_HALFWORD) {
+        if (cur_ptr == TEX_NULL) {
 
             if (w)
                 goto lab48;
@@ -6078,11 +6078,11 @@ void find_sa_element(small_number t, int32_t n, bool w)
         cur_ptr = mem[q + (i / 2) + 1].b32.s1;
     else
         cur_ptr = mem[q + (i / 2) + 1].b32.s0;
-    if ((cur_ptr == MIN_HALFWORD) && w)
+    if ((cur_ptr == TEX_NULL) && w)
         goto lab49;
     return;
  not_found:
-    new_index(t, MIN_HALFWORD);
+    new_index(t, TEX_NULL);
     sa_root[t] = cur_ptr;
     q = cur_ptr;
     i = n / 0x40000;
@@ -6134,9 +6134,9 @@ void find_sa_element(small_number t, int32_t n, bool w)
                 mem[cur_ptr + 1].b32.s1 = 0;
                 mem[0].b32.s1++;
             } else
-                mem[cur_ptr + 1].b32.s1 = MIN_HALFWORD;
+                mem[cur_ptr + 1].b32.s1 = TEX_NULL;
         }
-        mem[cur_ptr + 1].b32.s0 = MIN_HALFWORD;
+        mem[cur_ptr + 1].b32.s0 = TEX_NULL;
     }
     mem[cur_ptr].b16.s1 = 64 * t + i;
     mem[cur_ptr].b16.s0 = 1 /*level_one *//*:1608 */ ;
@@ -6193,7 +6193,7 @@ reswitch:
                 cur_ptr = cur_mark[t];
             } else { /*1612:*/
                 find_sa_element(MARK_VAL, cur_val, false);
-                if (cur_ptr != MIN_HALFWORD) {
+                if (cur_ptr != TEX_NULL) {
                     if (odd(t))
                         cur_ptr = mem[cur_ptr + (t / 2) + 1].b32.s1;
                     else
@@ -6201,7 +6201,7 @@ reswitch:
                 }
             }
 
-            if (cur_ptr != MIN_HALFWORD)
+            if (cur_ptr != TEX_NULL)
                 begin_token_list(cur_ptr, MARK_TEXT);
             break;
 
@@ -6319,7 +6319,7 @@ reswitch:
             j = first;
             p = mem[r].b32.s1;
 
-            while (p != MIN_HALFWORD) {
+            while (p != TEX_NULL) {
                 if (j >= max_buf_stack) {
                     max_buf_stack = j + 1;
                     if (max_buf_stack == buf_size)
@@ -6523,7 +6523,7 @@ bool scan_keyword(const char* s)
     memory_word *mem = zmem;
     int32_t p = BACKUP_HEAD;
     int32_t q;
-    mem[p].b32.s1 = MIN_HALFWORD;
+    mem[p].b32.s1 = TEX_NULL;
 
     if (strlen(s) == 1) {
         char c = s[0];
@@ -6974,9 +6974,9 @@ void find_font_dimen(bool writing)
         cur_val = fmem_ptr;
     else {
 
-        if (writing && (n <= SPACE_SHRINK_CODE) && (n >= SPACE_CODE) && (font_glue[f] != MIN_HALFWORD)) {
+        if (writing && (n <= SPACE_SHRINK_CODE) && (n >= SPACE_CODE) && (font_glue[f] != TEX_NULL)) {
             delete_glue_ref(font_glue[f]);
-            font_glue[f] = MIN_HALFWORD;
+            font_glue[f] = TEX_NULL;
         }
         if (n > font_params[f]) {
 
@@ -7150,8 +7150,8 @@ scan_something_internal(small_number level, bool negative)
                         cur_val = TOKS_REG(cur_val);
                     } else {
                         find_sa_element(TOK_VAL, cur_val, false);
-                        if (cur_ptr == MIN_HALFWORD)
-                            cur_val = MIN_HALFWORD;
+                        if (cur_ptr == TEX_NULL)
+                            cur_val = TEX_NULL;
                         else
                             cur_val = mem[cur_ptr + 1].b32.s1;
                     }
@@ -7163,8 +7163,8 @@ scan_something_internal(small_number level, bool negative)
                 cur_ptr = cur_val;
                 scan_char_class_not_ignored();
                 find_sa_element(INTER_CHAR_VAL, cur_ptr * CHAR_CLASS_LIMIT + cur_val, false);
-                if (cur_ptr == MIN_HALFWORD)
-                    cur_val = MIN_HALFWORD;
+                if (cur_ptr == TEX_NULL)
+                    cur_val = TEX_NULL;
                 else
                     cur_val = mem[cur_ptr + 1].b32.s1;
             } else {
@@ -7271,14 +7271,14 @@ scan_something_internal(small_number level, bool negative)
     case SET_SHAPE:
         if (m > LOCAL_BASE + LOCAL__par_shape) { /*1654:*/
             scan_int();
-            if (eqtb[m].b32.s1 == MIN_HALFWORD || cur_val < 0) {
+            if (eqtb[m].b32.s1 == TEX_NULL || cur_val < 0) {
                 cur_val = 0;
             } else {
                 if (cur_val > mem[eqtb[m].b32.s1 + 1].b32.s1)
                     cur_val = mem[eqtb[m].b32.s1 + 1].b32.s1;
                 cur_val = mem[eqtb[m].b32.s1 + cur_val + 1].b32.s1;
             }
-        } else if (LOCAL(par_shape) == MIN_HALFWORD) {
+        } else if (LOCAL(par_shape) == TEX_NULL) {
             cur_val = 0;
         } else {
             cur_val = mem[LOCAL(par_shape)].b32.s0;
@@ -7294,13 +7294,13 @@ scan_something_internal(small_number level, bool negative)
             q = BOX_REG(cur_val);
         } else {
             find_sa_element(4, cur_val, false);
-            if (cur_ptr == MIN_HALFWORD)
-                q = MIN_HALFWORD;
+            if (cur_ptr == TEX_NULL)
+                q = TEX_NULL;
             else
                 q = mem[cur_ptr + 1].b32.s1;
         }
 
-        if (q == MIN_HALFWORD)
+        if (q == TEX_NULL)
             cur_val = 0;
         else
             cur_val = mem[q + m].b32.s1;
@@ -7362,7 +7362,7 @@ scan_something_internal(small_number level, bool negative)
             cur_val_level = m;
             if (cur_val > 255) {
                 find_sa_element(cur_val_level, cur_val, false);
-                if (cur_ptr == MIN_HALFWORD)
+                if (cur_ptr == TEX_NULL)
                     cur_val = 0;
                 else if (cur_val_level < GLUE_VAL)
                     cur_val = mem[cur_ptr + 2].b32.s1;
@@ -7512,7 +7512,7 @@ scan_something_internal(small_number level, bool negative)
                 case PAR_SHAPE_DIMEN_CODE:
                     q = cur_chr - PAR_SHAPE_LENGTH_CODE;
                     scan_int();
-                    if (LOCAL(par_shape) == MIN_HALFWORD || cur_val <= 0) {
+                    if (LOCAL(par_shape) == TEX_NULL || cur_val <= 0) {
                         cur_val = 0;
                     } else {
                         if (q == 2) {
@@ -7805,14 +7805,14 @@ scan_something_internal(small_number level, bool negative)
                 case CURRENT_IF_LEVEL_CODE:
                     q = cond_ptr;
                     cur_val = 0;
-                    while (q != MIN_HALFWORD) {
+                    while (q != TEX_NULL) {
                         cur_val++;
                         q = mem[q].b32.s1;
                     }
                     break;
 
                 case CURRENT_IF_TYPE_CODE:
-                    if (cond_ptr == MIN_HALFWORD)
+                    if (cond_ptr == TEX_NULL)
                         cur_val = 0;
                     else if (cur_if < UNLESS_CODE)
                         cur_val = cur_if + 1;
@@ -8168,7 +8168,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
 
             if (radix == 10 && cur_tok == POINT_TOKEN) { /*471:*/
                 k = 0;
-                p = MIN_HALFWORD;
+                p = TEX_NULL;
                 get_token();
 
                 while (true) {
@@ -8631,7 +8631,7 @@ void scan_expr(void)
     l = cur_val_level;
     a = arith_error;
     b = false;
-    p = MIN_HALFWORD;
+    p = TEX_NULL;
 
 restart:
     r = EXPR_NONE;
@@ -8684,7 +8684,7 @@ found: /*1572:*//*424:*/
     else {
 
         o = EXPR_NONE;
-        if (p == MIN_HALFWORD) {
+        if (p == TEX_NULL) {
             if (cur_cmd != RELAX)
                 back_input();
         } else if (cur_tok != (OTHER_TOKEN + 41)) {
@@ -8809,7 +8809,7 @@ found: /*1572:*//*424:*/
     b = arith_error;
     if (o != EXPR_NONE)
         goto continue_;
-    if (p != MIN_HALFWORD) {     /*1577: */
+    if (p != TEX_NULL) {     /*1577: */
         f = e;
         q = p;
         e = mem[q + 1].b32.s1;
@@ -8902,7 +8902,7 @@ void scan_general_text(void)
     scanner_status = ABSORBING;
     warning_index = cur_cs;
     def_ref = get_avail();
-    mem[def_ref].b32.s0 = MIN_HALFWORD;
+    mem[def_ref].b32.s0 = TEX_NULL;
     p = def_ref;
     scan_left_brace();
     unbalance = 1;
@@ -8933,7 +8933,7 @@ void scan_general_text(void)
         mem[def_ref].b32.s1 = avail;
         avail = def_ref;
     }
-    if (q == MIN_HALFWORD)
+    if (q == TEX_NULL)
         cur_val = TEMP_HEAD;
     else
         cur_val = p;
@@ -9050,7 +9050,7 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
             overflow("pool size", pool_size - init_pool_ptr);
     }
     p = TEMP_HEAD;
-    mem[p].b32.s1 = MIN_HALFWORD;
+    mem[p].b32.s1 = TEX_NULL;
     k = b;
     while (k < pool_ptr) {
 
@@ -9072,12 +9072,12 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
         {
             {
                 q = avail;
-                if (q == MIN_HALFWORD)
+                if (q == TEX_NULL)
                     q = get_avail();
                 else {
 
                     avail = mem[q].b32.s1;
-                    mem[q].b32.s1 = MIN_HALFWORD;
+                    mem[q].b32.s1 = TEX_NULL;
                 }
             }
             mem[p].b32.s1 = q;
@@ -9123,25 +9123,25 @@ int32_t the_toks(void)
     scan_something_internal(TOK_VAL, false);
     if (cur_val_level >= IDENT_VAL) {   /*485: */
         p = TEMP_HEAD;
-        mem[p].b32.s1 = MIN_HALFWORD;
+        mem[p].b32.s1 = TEX_NULL;
         if (cur_val_level == IDENT_VAL) {
             q = get_avail();
             mem[p].b32.s1 = q;
             mem[q].b32.s0 = CS_TOKEN_FLAG + cur_val;
             p = q;
-        } else if (cur_val != MIN_HALFWORD) {
+        } else if (cur_val != TEX_NULL) {
             r = mem[cur_val].b32.s1;
-            while (r != MIN_HALFWORD) {
+            while (r != TEX_NULL) {
 
                 {
                     {
                         q = avail;
-                        if (q == MIN_HALFWORD)
+                        if (q == TEX_NULL)
                             q = get_avail();
                         else {
 
                             avail = mem[q].b32.s1;
-                            mem[q].b32.s1 = MIN_HALFWORD;
+                            mem[q].b32.s1 = TEX_NULL;
                         }
                     }
                     mem[p].b32.s1 = q;
@@ -9212,7 +9212,7 @@ conv_toks(void)
     UTF16_code quote_char;
     small_number cat;
     UnicodeScalar saved_chr;
-    int32_t p = MIN_HALFWORD, q;
+    int32_t p = TEX_NULL, q;
 
     cat = 0;
     c = cur_chr;
@@ -9300,7 +9300,7 @@ conv_toks(void)
 
         old_setting = selector;
         selector = SELECTOR_NEW_STRING ;
-        show_token_list(mem[def_ref].b32.s1, MIN_HALFWORD, pool_size - pool_ptr);
+        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
         selector = old_setting;
         s = make_string();
         delete_token_ref(def_ref);
@@ -9383,13 +9383,13 @@ conv_toks(void)
             p = BOX_REG(cur_val);
         } else {
             find_sa_element(4, cur_val, false);
-            if (cur_ptr == MIN_HALFWORD)
-                p = MIN_HALFWORD;
+            if (cur_ptr == TEX_NULL)
+                p = TEX_NULL;
             else
                 p = mem[cur_ptr + 1].b32.s1;
         }
 
-        if (p == MIN_HALFWORD || NODE_type(p) != HLIST_NODE)
+        if (p == TEX_NULL || NODE_type(p) != HLIST_NODE)
             pdf_error("marginkern", "a non-empty hbox expected");
         break;
 
@@ -9484,15 +9484,15 @@ conv_toks(void)
 
     case LEFT_MARGIN_KERN_CODE:
         p = mem[p + 5].b32.s1;
-        while (p != MIN_HALFWORD &&
+        while (p != TEX_NULL &&
                ((p < hi_mem_min
                  && (NODE_type(p) == INS_NODE ||
                      NODE_type(p) == MARK_NODE ||
                      NODE_type(p) == ADJUST_NODE ||
                      NODE_type(p) == PENALTY_NODE ||
                      (NODE_type(p) == DISC_NODE &&
-                      mem[p + 1].b32.s0 == MIN_HALFWORD &&
-                      mem[p + 1].b32.s1 == MIN_HALFWORD &&
+                      mem[p + 1].b32.s0 == TEX_NULL &&
+                      mem[p + 1].b32.s1 == TEX_NULL &&
                       mem[p].b16.s0 == 0) ||
                      (NODE_type(p) == MATH_NODE &&
                       mem[p + 1].b32.s1 == 0) ||
@@ -9504,12 +9504,12 @@ conv_toks(void)
                       mem[p + 1].b32.s1 == 0 &&
                       mem[p + 3].b32.s1 == 0 &&
                       mem[p + 2].b32.s1 == 0 &&
-                      mem[p + 5].b32.s1 == MIN_HALFWORD)
+                      mem[p + 5].b32.s1 == TEX_NULL)
                      )) ||
                 (p < hi_mem_min && NODE_type(p) == GLUE_NODE && mem[p].b16.s0 == (GLUE_PAR__left_skip + 1))))
             p = mem[p].b32.s1;
 
-        if (p != MIN_HALFWORD && p < hi_mem_min && NODE_type(p) == MARGIN_KERN_NODE && mem[p].b16.s0 == 0)
+        if (p != TEX_NULL && p < hi_mem_min && NODE_type(p) == MARGIN_KERN_NODE && mem[p].b16.s0 == 0)
             print_scaled(mem[p + 1].b32.s1);
         else
             print('0');
@@ -9518,16 +9518,16 @@ conv_toks(void)
 
     case RIGHT_MARGIN_KERN_CODE:
         q = mem[p + 5].b32.s1;
-        p = prev_rightmost(q, MIN_HALFWORD);
-        while (p != MIN_HALFWORD &&
+        p = prev_rightmost(q, TEX_NULL);
+        while (p != TEX_NULL &&
                ((p < hi_mem_min &&
                  (NODE_type(p) == INS_NODE ||
                   NODE_type(p) == MARK_NODE ||
                   NODE_type(p) == ADJUST_NODE ||
                   NODE_type(p) == PENALTY_NODE ||
                   (NODE_type(p) == DISC_NODE &&
-                   mem[p + 1].b32.s0 == MIN_HALFWORD &&
-                   mem[p + 1].b32.s1 == MIN_HALFWORD &&
+                   mem[p + 1].b32.s0 == TEX_NULL &&
+                   mem[p + 1].b32.s1 == TEX_NULL &&
                    mem[p].b16.s0 == 0) ||
                   (NODE_type(p) == MATH_NODE &&
                    mem[p + 1].b32.s1 == 0) ||
@@ -9539,12 +9539,12 @@ conv_toks(void)
                    mem[p + 1].b32.s1 == 0 &&
                    mem[p + 3].b32.s1 == 0 &&
                    mem[p + 2].b32.s1 == 0 &&
-                   mem[p + 5].b32.s1 == MIN_HALFWORD)
+                   mem[p + 5].b32.s1 == TEX_NULL)
                   )) ||
                 (p < hi_mem_min && NODE_type(p) == GLUE_NODE && mem[p].b16.s0 == (GLUE_PAR__right_skip + 1))))
             p = prev_rightmost(q, p);
 
-        if (p != MIN_HALFWORD && p < hi_mem_min && NODE_type(p) == MARGIN_KERN_NODE && mem[p].b16.s0 == 1)
+        if (p != TEX_NULL && p < hi_mem_min && NODE_type(p) == MARGIN_KERN_NODE && mem[p].b16.s0 == 1)
             print_scaled(mem[p + 1].b32.s1);
         else
             print('0');
@@ -9576,7 +9576,7 @@ int32_t scan_toks(bool macro_def, bool xpand)
         scanner_status = ABSORBING;
     warning_index = cur_cs;
     def_ref = get_avail();
-    mem[def_ref].b32.s0 = MIN_HALFWORD;
+    mem[def_ref].b32.s0 = TEX_NULL;
     p = def_ref;
     hash_brace = 0;
     t = ZERO_TOKEN;
@@ -9691,7 +9691,7 @@ int32_t scan_toks(bool macro_def, bool xpand)
                 else {
 
                     q = the_toks();
-                    if (mem[TEMP_HEAD].b32.s1 != MIN_HALFWORD) {
+                    if (mem[TEMP_HEAD].b32.s1 != TEX_NULL) {
                         mem[p].b32.s1 = mem[TEMP_HEAD].b32.s1;
                         p = q;
                     }
@@ -9775,7 +9775,7 @@ read_toks(int32_t n, int32_t r, int32_t j)
     scanner_status = DEFINING;
     warning_index = r;
     def_ref = get_avail();
-    mem[def_ref].b32.s0 = MIN_HALFWORD;
+    mem[def_ref].b32.s0 = TEX_NULL;
     p = def_ref;
 
     q = get_avail();
@@ -9919,7 +9919,7 @@ void change_if_limit(small_number l, int32_t p)
         q = cond_ptr;
         while (true) {
 
-            if (q == MIN_HALFWORD)
+            if (q == TEX_NULL)
                 confusion("if");
             if (mem[q].b32.s1 == p) {
                 mem[q].b16.s1 = l;
@@ -10080,15 +10080,15 @@ conditional(void)
             p = BOX_REG(cur_val);
         } else {
             find_sa_element(4, cur_val, false);
-            if (cur_ptr == MIN_HALFWORD)
-                p = MIN_HALFWORD;
+            if (cur_ptr == TEX_NULL)
+                p = TEX_NULL;
             else
                 p = mem[cur_ptr + 1].b32.s1;
         }
 
         if (this_if == IF_VOID_CODE)
-            b = (p == MIN_HALFWORD);
-        else if (p == MIN_HALFWORD)
+            b = (p == TEX_NULL);
+        else if (p == TEX_NULL)
             b = false;
         else if (this_if == IF_HBOX_CODE)
             b = (NODE_type(p) == HLIST_NODE);
@@ -10115,16 +10115,16 @@ conditional(void)
             if (p == q) {
                 b = true;
             } else {
-                while (p != MIN_HALFWORD && q != MIN_HALFWORD) {
+                while (p != TEX_NULL && q != TEX_NULL) {
                     if (mem[p].b32.s0 != mem[q].b32.s0) {
-                        p = MIN_HALFWORD;
+                        p = TEX_NULL;
                     } else {
                         p = mem[p].b32.s1;
                         q = mem[q].b32.s1;
                     }
                 }
 
-                b = (p == MIN_HALFWORD && q == MIN_HALFWORD);
+                b = (p == TEX_NULL && q == TEX_NULL);
             }
         }
 
@@ -10188,7 +10188,7 @@ conditional(void)
         m = first;
         p = mem[n].b32.s1;
 
-        while (p != MIN_HALFWORD) {
+        while (p != TEX_NULL) {
             if (m >= max_buf_stack) {
                 max_buf_stack = m + 1;
                 if (max_buf_stack == buf_size)
@@ -11089,7 +11089,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     font_check[font_ptr].s2 = 0;
     font_check[font_ptr].s1 = 0;
     font_check[font_ptr].s0 = 0;
-    font_glue[font_ptr] = MIN_HALFWORD;
+    font_glue[font_ptr] = TEX_NULL;
     font_dsize[font_ptr] = loaded_font_design_size;
     font_size[font_ptr] = actual_size;
     if (native_font_type_flag == AAT_FONT_FLAG) {
@@ -11634,7 +11634,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     font_area[f] = aire;
     font_bc[f] = bc;
     font_ec[f] = ec;
-    font_glue[f] = MIN_HALFWORD;
+    font_glue[f] = TEX_NULL;
     char_base[f] = char_base[f];
     width_base[f] = width_base[f];
     lig_kern_base[f] = lig_kern_base[f];
@@ -11730,7 +11730,7 @@ int32_t new_character(internal_font_number f, UTF16_code c)
         }
     }
     char_warning(f, c);
-    return MIN_HALFWORD;
+    return TEX_NULL;
 }
 
 void dvi_swap(void)
@@ -11987,7 +11987,7 @@ movement(scaled_t w, eight_bits o)
     p = mem[q].b32.s1;
     mstate = MOV_NONE_SEEN;
 
-    while (p != MIN_HALFWORD) {
+    while (p != TEX_NULL) {
         if (mem[p + 1].b32.s1 == w) { /*632:*/
             switch (mstate + mem[p].b32.s0) {
             case (MOV_NONE_SEEN + MOV_YZ_OK):
@@ -12160,7 +12160,7 @@ found: /*629:*/
 void prune_movements(int32_t l)
 {
     memory_word *mem = zmem; int32_t p;
-    while (down_ptr != MIN_HALFWORD) {
+    while (down_ptr != TEX_NULL) {
 
         if (mem[down_ptr + 2].b32.s1 < l)
             goto done;
@@ -12170,7 +12170,7 @@ void prune_movements(int32_t l)
     }
 
 done:
-    while (right_ptr != MIN_HALFWORD) {
+    while (right_ptr != TEX_NULL) {
 
         if (mem[right_ptr + 2].b32.s1 < l)
             return;
@@ -12195,7 +12195,7 @@ void special_out(int32_t p)
     doing_special = true;
     old_setting = selector;
     selector = SELECTOR_NEW_STRING ;
-    show_token_list(mem[mem[p + 1].b32.s1].b32.s1, MIN_HALFWORD, pool_size - pool_ptr);
+    show_token_list(mem[mem[p + 1].b32.s1].b32.s1, TEX_NULL, pool_size - pool_ptr);
     selector = old_setting;
     {
         if (pool_ptr + 1 > pool_size)
@@ -12539,7 +12539,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
     n = MIN_HALFWORD;
     while (true) {
 
-        while (p != MIN_HALFWORD) /*1511: */
+        while (p != TEX_NULL) /*1511: */
         reswitch:
             if ((p >= hi_mem_min))
                 do {
@@ -12600,7 +12600,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
                         if ((((g_sign == STRETCHING) && (mem[g].b16.s1 == g_order))
                              || ((g_sign == SHRINKING) && (mem[g].b16.s0 == g_order)))) {
                             {
-                                if (mem[g].b32.s1 == MIN_HALFWORD)
+                                if (mem[g].b32.s1 == TEX_NULL)
                                     free_node(g, GLUE_SPEC_SIZE);
                                 else
                                     mem[g].b32.s1--;
@@ -12694,7 +12694,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
  lab15:                        /*next_p */ mem[p].b32.s1 = l;
                 if (NODE_type(p) == KERN_NODE) {
 
-                    if ((rule_wd == 0) || (l == MIN_HALFWORD)) {
+                    if ((rule_wd == 0) || (l == TEX_NULL)) {
                         free_node(p, MEDIUM_NODE_SIZE);
                         p = l;
                     }
@@ -12702,7 +12702,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
                 l = p;
                 p = q;
             }
-        if ((t == MIN_HALFWORD) && (m == MIN_HALFWORD) && (n == MIN_HALFWORD))
+        if ((t == TEX_NULL) && (m == MIN_HALFWORD) && (n == MIN_HALFWORD))
             goto done;
         p = new_math(0, mem[LR_ptr].b32.s0);
         LR_problems = LR_problems + 10000;
@@ -12746,17 +12746,17 @@ void hlist_out(void)
     if (INTPAR(xetex_interword_space_shaping) > 1) {
         p = mem[this_box + 5].b32.s1;
         prev_p = this_box + 5;
-        while (p != MIN_HALFWORD) {
+        while (p != TEX_NULL) {
 
-            if (mem[p].b32.s1 != MIN_HALFWORD) {
-                if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
+            if (mem[p].b32.s1 != TEX_NULL) {
+                if ((((p) != TEX_NULL && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                       && ((mem[p].b16.s0 == NATIVE_WORD_NODE)
                           || (mem[p].b16.s0 == NATIVE_WORD_NODE_AT))))
                     && (font_letter_space[mem[p + 4].b16.s2] == 0)) {
                     r = p;
                     k = mem[r + 4].b16.s1;
                     q = mem[p].b32.s1;
- lab1236:          /*check_next *//*641: */ while ((q != MIN_HALFWORD) && !(q >= hi_mem_min)
+ lab1236:          /*check_next *//*641: */ while ((q != TEX_NULL) && !(q >= hi_mem_min)
                                                     && ((NODE_type(q) == PENALTY_NODE)
                                                         || (NODE_type(q) == INS_NODE)
                                                         || (NODE_type(q) == MARK_NODE)
@@ -12764,17 +12764,17 @@ void hlist_out(void)
                                                         || ((NODE_type(q) == WHATSIT_NODE)
                                                             && (mem[q].b16.s0 <= 4))))
                         q = mem[q].b32.s1 /*:641 */ ;
-                    if ((q != MIN_HALFWORD) && !(q >= hi_mem_min)) {
+                    if ((q != TEX_NULL) && !(q >= hi_mem_min)) {
                         if ((NODE_type(q) == GLUE_NODE) && (GLUE_SPEC_shrink_order(q) == NORMAL)) {
                             if (mem[q + 1].b32.s0 == font_glue[mem[r + 4].b16.s2]) {
                                 q = mem[q].b32.s1;
-                                while ((q != MIN_HALFWORD) && !(q >= hi_mem_min)
+                                while ((q != TEX_NULL) && !(q >= hi_mem_min)
                                        && ((NODE_type(q) == PENALTY_NODE) || (NODE_type(q) == INS_NODE)
                                            || (NODE_type(q) == MARK_NODE)
                                            || (NODE_type(q) == ADJUST_NODE)
                                            || ((NODE_type(q) == WHATSIT_NODE) && (mem[q].b16.s0 <= 4))))
                                     q = mem[q].b32.s1 /*:641 */ ;
-                                if ((((q) != MIN_HALFWORD && (!(q >= hi_mem_min))
+                                if ((((q) != TEX_NULL && (!(q >= hi_mem_min))
                                       && (NODE_type(q) == WHATSIT_NODE)
                                       && ((mem[q].b16.s0 == NATIVE_WORD_NODE)
                                           || (mem[q].b16.s0 == NATIVE_WORD_NODE_AT))))
@@ -12786,16 +12786,16 @@ void hlist_out(void)
                                 }
                             } else
                                 q = mem[q].b32.s1;
-                            if ((q != MIN_HALFWORD) && !(q >= hi_mem_min) && (NODE_type(q) == KERN_NODE)
+                            if ((q != TEX_NULL) && !(q >= hi_mem_min) && (NODE_type(q) == KERN_NODE)
                                 && (mem[q].b16.s0 == SPACE_ADJUSTMENT)) {
                                 q = mem[q].b32.s1;
-                                while ((q != MIN_HALFWORD) && !(q >= hi_mem_min)
+                                while ((q != TEX_NULL) && !(q >= hi_mem_min)
                                        && ((NODE_type(q) == PENALTY_NODE) || (NODE_type(q) == INS_NODE)
                                            || (NODE_type(q) == MARK_NODE)
                                            || (NODE_type(q) == ADJUST_NODE)
                                            || ((NODE_type(q) == WHATSIT_NODE) && (mem[q].b16.s0 <= 4))))
                                     q = mem[q].b32.s1 /*:641 */ ;
-                                if ((((q) != MIN_HALFWORD && (!(q >= hi_mem_min))
+                                if ((((q) != TEX_NULL && (!(q >= hi_mem_min))
                                       && (NODE_type(q) == WHATSIT_NODE)
                                       && ((mem[q].b16.s0 == NATIVE_WORD_NODE)
                                           || (mem[q].b16.s0 == NATIVE_WORD_NODE_AT))))
@@ -12808,7 +12808,7 @@ void hlist_out(void)
                             }
                             goto lab1237;
                         }
-                        if ((((q) != MIN_HALFWORD && (!(q >= hi_mem_min)) && (NODE_type(q) == WHATSIT_NODE)
+                        if ((((q) != TEX_NULL && (!(q >= hi_mem_min)) && (NODE_type(q) == WHATSIT_NODE)
                               && ((mem[q].b16.s0 == NATIVE_WORD_NODE)
                                   || (mem[q].b16.s0 == NATIVE_WORD_NODE_AT))))
                             && (mem[q + 4].b16.s2 == mem[r + 4].b16.s2)) {
@@ -12885,10 +12885,10 @@ void hlist_out(void)
                         set_justified_native_glyphs(q);
                         mem[prev_p].b32.s1 = q;
                         mem[q].b32.s1 = mem[p].b32.s1;
-                        mem[p].b32.s1 = MIN_HALFWORD;
+                        mem[p].b32.s1 = TEX_NULL;
                         prev_p = r;
                         p = mem[r].b32.s1;
-                        while (p != MIN_HALFWORD) {
+                        while (p != TEX_NULL) {
 
                             if (!(p >= hi_mem_min)
                                 && ((NODE_type(p) == PENALTY_NODE) || (NODE_type(p) == INS_NODE)
@@ -12948,7 +12948,7 @@ void hlist_out(void)
         mem[p + 2].b32.s0 = 0;
         mem[prev_p].b32.s1 = p;
         cur_h = 0;
-        mem[p].b32.s1 = reverse(this_box, MIN_HALFWORD, &cur_g, &cur_glue);
+        mem[p].b32.s1 = reverse(this_box, TEX_NULL, &cur_g, &cur_glue);
         mem[p + 1].b32.s1 = -(int32_t) cur_h;
         cur_h = save_h;
         mem[this_box].b16.s0 = REVERSED;
@@ -12956,7 +12956,7 @@ void hlist_out(void)
 
     left_edge = cur_h;
     synctex_hlist(this_box);
-    while (p != MIN_HALFWORD) /*642: */
+    while (p != TEX_NULL) /*642: */
     reswitch:
         if ((p >= hi_mem_min)) {
             if (cur_h != dvi_h) {
@@ -13052,7 +13052,7 @@ void hlist_out(void)
             switch (mem[p].b16.s1) {
             case 0:
             case 1:
-                if (mem[p + 5].b32.s1 == MIN_HALFWORD) {
+                if (mem[p + 5].b32.s1 == TEX_NULL) {
                     if (NODE_type(p) == VLIST_NODE) {
                         synctex_void_vlist(p, this_box);
                     } else {
@@ -13285,7 +13285,7 @@ void hlist_out(void)
 /*1486: */
                     if ((g_sign == STRETCHING && mem[g].b16.s1 == g_order) ||
                         (g_sign == SHRINKING && mem[g].b16.s0 == g_order)) {
-                        if (mem[g].b32.s1 == MIN_HALFWORD)
+                        if (mem[g].b32.s1 == TEX_NULL)
                             free_node(g, GLUE_SPEC_SIZE);
                         else
                             mem[g].b32.s1--;
@@ -13549,7 +13549,7 @@ void vlist_out(void)
     else
         cur_v = cur_v - mem[this_box + 3].b32.s1;
     top_edge = cur_v;
-    while (p != MIN_HALFWORD) {  /*652: */
+    while (p != TEX_NULL) {  /*652: */
 
         if ((p >= hi_mem_min))
             confusion("vlistout");
@@ -13558,7 +13558,7 @@ void vlist_out(void)
             switch (mem[p].b16.s1) {
             case 0:
             case 1:
-                if (mem[p + 5].b32.s1 == MIN_HALFWORD) {
+                if (mem[p + 5].b32.s1 == TEX_NULL) {
                     if (upwards)
                         cur_v = cur_v - mem[p + 2].b32.s1;
                     else
@@ -14077,7 +14077,7 @@ done: /*1518:*/
         print_ln();
     }
 
-    if (LR_ptr != MIN_HALFWORD || cur_dir != LEFT_TO_RIGHT)
+    if (LR_ptr != TEX_NULL || cur_dir != LEFT_TO_RIGHT)
         confusion("LR3");
 
     if (INTPAR(tracing_output) <= 0)
@@ -14124,12 +14124,12 @@ scaled_t char_pw(int32_t p, small_number side)
     memory_word *mem = zmem; internal_font_number f;
     int32_t c;
     if (side == 0)
-        last_leftmost_char = MIN_HALFWORD;
+        last_leftmost_char = TEX_NULL;
     else
-        last_rightmost_char = MIN_HALFWORD;
-    if (p == MIN_HALFWORD)
+        last_rightmost_char = TEX_NULL;
+    if (p == TEX_NULL)
         return 0;
-    if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
+    if ((((p) != TEX_NULL && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
           && ((mem[p].b16.s0 == NATIVE_WORD_NODE) || (mem[p].b16.s0 == NATIVE_WORD_NODE_AT))))) {
         if (mem[p + 5].ptr != NULL) {
             f = mem[p + 4].b16.s2;
@@ -14138,7 +14138,7 @@ scaled_t char_pw(int32_t p, small_number side)
             return 0;
         }
     }
-    if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
+    if ((((p) != TEX_NULL && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
           && (mem[p].b16.s0 == GLYPH_NODE)))) {
         f = mem[p + 4].b16.s2;
         return round_xn_over_d(font_info[QUAD_CODE + param_base[f]].b32.s1, get_cp_code(f, mem[p + 4].b16.s1, side),
@@ -14187,7 +14187,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
     internal_font_number f;
     b16x4 i;
     eight_bits hd;
-    int32_t pp, ppp = MIN_HALFWORD;
+    int32_t pp, ppp = TEX_NULL;
     int32_t total_chars, k;
 
     last_badness = 0;
@@ -14214,7 +14214,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
         mem[temp_ptr].b32.s1 = LR_ptr;
         LR_ptr = temp_ptr;
     }
-    while (p != MIN_HALFWORD) {  /*674: */
+    while (p != TEX_NULL) {  /*674: */
 
     reswitch:
         while ((p >= hi_mem_min)) {
@@ -14232,7 +14232,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                 d = s;
             p = mem[p].b32.s1;
         }
-        if (p != MIN_HALFWORD) {
+        if (p != TEX_NULL) {
             switch (mem[p].b16.s1) {
             case 0:
             case 1:
@@ -14253,22 +14253,22 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
             case 3:
             case 4:
             case 5:
-                if ((adjust_tail != MIN_HALFWORD) || (pre_adjust_tail != MIN_HALFWORD)) { /*680: */
+                if ((adjust_tail != TEX_NULL) || (pre_adjust_tail != TEX_NULL)) { /*680: */
                     while (mem[q].b32.s1 != p)
                         q = mem[q].b32.s1;
                     if (NODE_type(p) == ADJUST_NODE) {
                         if (mem[p].b16.s0 != 0) {
-                            if (pre_adjust_tail == MIN_HALFWORD)
+                            if (pre_adjust_tail == TEX_NULL)
                                 confusion("pre vadjust");
                             mem[pre_adjust_tail].b32.s1 = mem[p + 1].b32.s1;
-                            while (mem[pre_adjust_tail].b32.s1 != MIN_HALFWORD)
+                            while (mem[pre_adjust_tail].b32.s1 != TEX_NULL)
                                 pre_adjust_tail = mem[pre_adjust_tail].b32.s1;
                         } else {
 
-                            if (adjust_tail == MIN_HALFWORD)
+                            if (adjust_tail == TEX_NULL)
                                 confusion("pre vadjust");
                             mem[adjust_tail].b32.s1 = mem[p + 1].b32.s1;
-                            while (mem[adjust_tail].b32.s1 != MIN_HALFWORD)
+                            while (mem[adjust_tail].b32.s1 != TEX_NULL)
                                 adjust_tail = mem[adjust_tail].b32.s1;
                         }
                         p = mem[p].b32.s1;
@@ -14302,7 +14302,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                             }
                             pp = mem[p].b32.s1;
                         restart:
-                            if ((k <= 0) && (pp != MIN_HALFWORD) && (!(pp >= hi_mem_min))) {
+                            if ((k <= 0) && (pp != TEX_NULL) && (!(pp >= hi_mem_min))) {
                                 if ((NODE_type(pp) == WHATSIT_NODE)
                                     && ((mem[pp].b16.s0 == NATIVE_WORD_NODE)
                                         || (mem[pp].b16.s0 == NATIVE_WORD_NODE_AT))
@@ -14311,7 +14311,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                                     goto restart;
                                 } else if (NODE_type(pp) == DISC_NODE) {
                                     ppp = mem[pp].b32.s1;
-                                    if ((((ppp) != MIN_HALFWORD && (!(ppp >= hi_mem_min))
+                                    if ((((ppp) != TEX_NULL && (!(ppp >= hi_mem_min))
                                           && (NODE_type(ppp) == WHATSIT_NODE)
                                           && ((mem[ppp].b16.s0 == NATIVE_WORD_NODE)
                                               || (mem[ppp].b16.s0 == NATIVE_WORD_NODE_AT))))
@@ -14336,7 +14336,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                                 mem[pp].b16.s0 = mem[p].b16.s0;
                                 mem[q].b32.s1 = pp;
                                 mem[pp].b32.s1 = mem[ppp].b32.s1;
-                                mem[ppp].b32.s1 = MIN_HALFWORD;
+                                mem[ppp].b32.s1 = TEX_NULL;
                                 total_chars = 0;
                                 ppp = p;
                                 do {
@@ -14352,7 +14352,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                                             while (k++ < for_end);
                                     }
                                     ppp = mem[ppp].b32.s1;
-                                } while (!((ppp == MIN_HALFWORD)));
+                                } while (!((ppp == TEX_NULL)));
                                 flush_node_list(p);
                                 p = mem[q].b32.s1;
                                 set_native_metrics(p, (INTPAR(xetex_use_glyph_metrics) > 0));
@@ -14446,10 +14446,10 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
             p = mem[p].b32.s1;
         }
     }
-    if (adjust_tail != MIN_HALFWORD)
-        mem[adjust_tail].b32.s1 = MIN_HALFWORD;
-    if (pre_adjust_tail != MIN_HALFWORD)
-        mem[pre_adjust_tail].b32.s1 = MIN_HALFWORD;
+    if (adjust_tail != TEX_NULL)
+        mem[adjust_tail].b32.s1 = TEX_NULL;
+    if (pre_adjust_tail != TEX_NULL)
+        mem[pre_adjust_tail].b32.s1 = TEX_NULL;
     mem[r + 3].b32.s1 = h;
     mem[r + 2].b32.s1 = d;
     if (m == ADDITIONAL)
@@ -14481,7 +14481,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
         }
         if (o == NORMAL) {
 
-            if (mem[r + 5].b32.s1 != MIN_HALFWORD) {    /*685: */
+            if (mem[r + 5].b32.s1 != TEX_NULL) {    /*685: */
                 last_badness = badness(x, total_stretch[NORMAL]);
                 if (last_badness > INTPAR(hbadness)) {
                     print_ln();
@@ -14515,14 +14515,14 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
             mem[r + 5].b16.s1 = NORMAL;
             mem[r + 6].gr = 0.0;
         }
-        if ((total_shrink[o] < -(int32_t) x) && (o == NORMAL) && (mem[r + 5].b32.s1 != MIN_HALFWORD)) {
+        if ((total_shrink[o] < -(int32_t) x) && (o == NORMAL) && (mem[r + 5].b32.s1 != TEX_NULL)) {
             last_badness = 1000000L;
             mem[r + 6].gr = 1.0;
             if ((-(int32_t) x - total_shrink[NORMAL] > DIMENPAR(hfuzz))
                 || (INTPAR(hbadness) < 100)) {
                 if ((DIMENPAR(overfull_rule) > 0)
                     && (-(int32_t) x - total_shrink[NORMAL] > DIMENPAR(hfuzz))) {
-                    while (mem[q].b32.s1 != MIN_HALFWORD)
+                    while (mem[q].b32.s1 != TEX_NULL)
                         q = mem[q].b32.s1;
                     mem[q].b32.s1 = new_rule();
                     mem[mem[q].b32.s1 + 1].b32.s1 = DIMENPAR(overfull_rule);
@@ -14535,7 +14535,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
             }
         } else if (o == NORMAL) {
 
-            if (mem[r + 5].b32.s1 != MIN_HALFWORD) {    /*692: */
+            if (mem[r + 5].b32.s1 != TEX_NULL) {    /*692: */
                 last_badness = badness(-(int32_t) x, total_shrink[NORMAL]);
                 if (last_badness > INTPAR(hbadness)) {
                     print_ln();
@@ -14576,7 +14576,7 @@ exit:
     if (INTPAR(texxet) > 0) {
         /*1499: */
         if (mem[LR_ptr].b32.s0 != BEFORE) {
-            while (mem[q].b32.s1 != MIN_HALFWORD)
+            while (mem[q].b32.s1 != TEX_NULL)
                 q = mem[q].b32.s1;
             do {
                 temp_ptr = q;
@@ -14613,7 +14613,7 @@ exit:
                 avail = temp_ptr;
             }
         }
-        if (LR_ptr != MIN_HALFWORD)
+        if (LR_ptr != TEX_NULL)
             confusion("LR1");
     }
     return r;
@@ -14648,7 +14648,7 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
     total_shrink[FILL] = 0;
     total_stretch[FILLL] = 0;
     total_shrink[FILLL] = 0 /*:673 */ ;
-    while (p != MIN_HALFWORD) {  /*694: */
+    while (p != TEX_NULL) {  /*694: */
 
         if ((p >= hi_mem_min))
             confusion("vpack");
@@ -14743,7 +14743,7 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
         }
         if (o == NORMAL) {
 
-            if (mem[r + 5].b32.s1 != MIN_HALFWORD) {    /*699: */
+            if (mem[r + 5].b32.s1 != TEX_NULL) {    /*699: */
                 last_badness = badness(x, total_stretch[NORMAL]);
                 if (last_badness > INTPAR(vbadness)) {
                     print_ln();
@@ -14777,7 +14777,7 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
             mem[r + 5].b16.s1 = NORMAL;
             mem[r + 6].gr = 0.0;
         }
-        if ((total_shrink[o] < -(int32_t) x) && (o == NORMAL) && (mem[r + 5].b32.s1 != MIN_HALFWORD)) {
+        if ((total_shrink[o] < -(int32_t) x) && (o == NORMAL) && (mem[r + 5].b32.s1 != TEX_NULL)) {
             last_badness = 1000000L;
             mem[r + 6].gr = 1.0;
             if ((-(int32_t) x - total_shrink[NORMAL] > DIMENPAR(vfuzz))
@@ -14790,7 +14790,7 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
             }
         } else if (o == NORMAL) {
 
-            if (mem[r + 5].b32.s1 != MIN_HALFWORD) {    /*703: */
+            if (mem[r + 5].b32.s1 != TEX_NULL) {    /*703: */
                 last_badness = badness(-(int32_t) x, total_shrink[NORMAL]);
                 if (last_badness > INTPAR(vbadness)) {
                     print_ln();
@@ -14886,10 +14886,10 @@ int32_t new_choice(void)
     p = get_node(STYLE_NODE_SIZE);
     NODE_type(p) = CHOICE_NODE;
     mem[p].b16.s0 = 0;
-    mem[p + 1].b32.s0 = MIN_HALFWORD;
-    mem[p + 1].b32.s1 = MIN_HALFWORD;
-    mem[p + 2].b32.s0 = MIN_HALFWORD;
-    mem[p + 2].b32.s1 = MIN_HALFWORD;
+    mem[p + 1].b32.s0 = TEX_NULL;
+    mem[p + 1].b32.s1 = TEX_NULL;
+    mem[p + 2].b32.s0 = TEX_NULL;
+    mem[p + 2].b32.s1 = TEX_NULL;
     return p;
 }
 
@@ -15303,11 +15303,11 @@ void stack_glyph_into_box(int32_t b, internal_font_number f, int32_t g)
     set_native_glyph_metrics(p, 1);
     if (NODE_type(b) == HLIST_NODE) {
         q = mem[b + 5].b32.s1;
-        if (q == MIN_HALFWORD)
+        if (q == TEX_NULL)
             mem[b + 5].b32.s1 = p;
         else {
 
-            while (mem[q].b32.s1 != MIN_HALFWORD)
+            while (mem[q].b32.s1 != TEX_NULL)
                 q = mem[q].b32.s1;
             mem[q].b32.s1 = p;
             if ((mem[b + 3].b32.s1 < mem[p + 3].b32.s1))
@@ -15334,11 +15334,11 @@ void stack_glue_into_box(int32_t b, scaled_t min, scaled_t max)
     p = new_glue(q);
     if (NODE_type(b) == HLIST_NODE) {
         q = mem[b + 5].b32.s1;
-        if (q == MIN_HALFWORD)
+        if (q == TEX_NULL)
             mem[b + 5].b32.s1 = p;
         else {
 
-            while (mem[q].b32.s1 != MIN_HALFWORD)
+            while (mem[q].b32.s1 != TEX_NULL)
                 q = mem[q].b32.s1;
             mem[q].b32.s1 = p;
         }
@@ -15459,7 +15459,7 @@ int32_t build_opentype_assembly(internal_font_number f, void *a, scaled_t s, boo
     p = mem[b + 5].b32.s1;
     nat = 0;
     str = 0;
-    while (p != MIN_HALFWORD) {
+    while (p != TEX_NULL) {
 
         if (NODE_type(p) == WHATSIT_NODE) {
             if (horiz)
@@ -15678,11 +15678,11 @@ int32_t rebox(int32_t b, scaled_t w)
     memory_word *mem = zmem; int32_t p;
     internal_font_number f;
     scaled_t v;
-    if ((mem[b + 1].b32.s1 != w) && (mem[b + 5].b32.s1 != MIN_HALFWORD)) {
+    if ((mem[b + 1].b32.s1 != w) && (mem[b + 5].b32.s1 != TEX_NULL)) {
         if (NODE_type(b) == VLIST_NODE)
             b = hpack(b, 0, ADDITIONAL);
         p = mem[b + 5].b32.s1;
-        if (((p >= hi_mem_min)) && (mem[p].b32.s1 == MIN_HALFWORD)) {
+        if (((p >= hi_mem_min)) && (mem[p].b32.s1 == TEX_NULL)) {
             f = mem[p].b16.s1;
             v = font_info[width_base[f] + font_info[char_base[f] + effective_char(true, f, mem[p].b16.s0)].b16.s3].b32.s1;
             if (v != mem[b + 1].b32.s1)
@@ -15691,7 +15691,7 @@ int32_t rebox(int32_t b, scaled_t w)
         free_node(b, BOX_NODE_SIZE);
         b = new_glue(12);
         mem[b].b32.s1 = p;
-        while (mem[p].b32.s1 != MIN_HALFWORD)
+        while (mem[p].b32.s1 != TEX_NULL)
             p = mem[p].b32.s1;
         mem[p].b32.s1 = new_glue(12);
         return hpack(b, w, EXACTLY);
@@ -15748,9 +15748,9 @@ void flush_math(void)
 {
     memory_word *mem = zmem; flush_node_list(mem[cur_list.head].b32.s1);
     flush_node_list(cur_list.aux.b32.s1);
-    mem[cur_list.head].b32.s1 = MIN_HALFWORD;
+    mem[cur_list.head].b32.s1 = TEX_NULL;
     cur_list.tail = cur_list.head;
-    cur_list.aux.b32.s1 = MIN_HALFWORD;
+    cur_list.aux.b32.s1 = TEX_NULL;
 }
 
 int32_t clean_box(int32_t p, small_number s)
@@ -15790,24 +15790,24 @@ int32_t clean_box(int32_t p, small_number s)
         cur_mu = x_over_n(math_quad(cur_size), 18);
     }
 found:
-    if ((q >= hi_mem_min) || (q == MIN_HALFWORD))
+    if ((q >= hi_mem_min) || (q == TEX_NULL))
         x = hpack(q, 0, ADDITIONAL);
-    else if ((mem[q].b32.s1 == MIN_HALFWORD) && (NODE_type(q) <= VLIST_NODE) && (mem[q + 4].b32.s1 == 0))
+    else if ((mem[q].b32.s1 == TEX_NULL) && (NODE_type(q) <= VLIST_NODE) && (mem[q + 4].b32.s1 == 0))
         x = q;
     else
         x = hpack(q, 0, ADDITIONAL);
     q = mem[x + 5].b32.s1;
     if ((q >= hi_mem_min)) {
         r = mem[q].b32.s1;
-        if (r != MIN_HALFWORD) {
+        if (r != TEX_NULL) {
 
-            if (mem[r].b32.s1 == MIN_HALFWORD) {
+            if (mem[r].b32.s1 == TEX_NULL) {
 
                 if (!(r >= hi_mem_min)) {
 
                     if (NODE_type(r) == KERN_NODE) {
                         free_node(r, MEDIUM_NODE_SIZE);
-                        mem[q].b32.s1 = MIN_HALFWORD;
+                        mem[q].b32.s1 = TEX_NULL;
                     }
                 }
             }
@@ -15956,7 +15956,7 @@ scaled_t compute_ot_math_accent_pos(int32_t p)
 
         if (mem[p + 1].b32.s1 == SUB_MLIST) {
             r = mem[p + 1].b32.s0;
-            if ((r != MIN_HALFWORD) && (mem[r].b16.s1 == ACCENT_NOAD))
+            if ((r != TEX_NULL) && (mem[r].b16.s1 == ACCENT_NOAD))
                 s = compute_ot_math_accent_pos(r);
             else
                 s = TEX_INFINITY;
@@ -15979,7 +15979,7 @@ void make_math_accent(int32_t q)
     scaled_t w, w2;
     void *ot_assembly_ptr;
     fetch(q + 4);
-    x = MIN_HALFWORD;
+    x = TEX_NULL;
     ot_assembly_ptr = NULL;
     if (((font_area[cur_f] == AAT_FONT_FLAG) || (font_area[cur_f] == OTGR_FONT_FLAG))) {
         c = cur_c;
@@ -16042,7 +16042,7 @@ void make_math_accent(int32_t q)
     done:
         ;
     }
-    if (x != MIN_HALFWORD) {
+    if (x != TEX_NULL) {
         if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f])))) {
 
             if (((mem[q].b16.s0 == BOTTOM_ACC) || (mem[q].b16.s0 == (BOTTOM_ACC + 1))))
@@ -16116,7 +16116,7 @@ void make_math_accent(int32_t q)
                     mem[y + 3].b32.s1 = 0;
             } else if (mem[y + 2].b32.s1 < 0)
                 mem[y + 2].b32.s1 = 0;
-            if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
+            if ((((p) != TEX_NULL && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                   && (mem[p].b16.s0 == GLYPH_NODE)))) {
                 sa = get_ot_math_accent_pos(f, mem[p + 4].b16.s1);
                 if (sa == TEX_INFINITY)
@@ -16304,7 +16304,7 @@ scaled_t make_op(int32_t q)
         x = clean_box(q + 1, cur_style);
         if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
             p = mem[x + 5].b32.s1;
-            if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
+            if ((((p) != TEX_NULL && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                   && (mem[p].b16.s0 == GLYPH_NODE)))) {
                 if (cur_style < TEXT_STYLE) {
                     h1 = get_ot_math_constant(cur_f, DISPLAYOPERATORMINHEIGHT);
@@ -16413,7 +16413,7 @@ restart:
 
             if (mem[q + 1].b32.s1 == MATH_CHAR) {
                 p = mem[q].b32.s1;
-                if (p != MIN_HALFWORD) {
+                if (p != TEX_NULL) {
 
                     if ((mem[p].b16.s1 >= ORD_NOAD) && (mem[p].b16.s1 <= PUNCT_NOAD)) {
 
@@ -16503,12 +16503,12 @@ int32_t attach_hkern_to_new_hlist(int32_t q, scaled_t delta)
 {
     memory_word *mem = zmem; int32_t y, z;
     z = new_kern(delta);
-    if (mem[q + 1].b32.s1 == MIN_HALFWORD)
+    if (mem[q + 1].b32.s1 == TEX_NULL)
         mem[q + 1].b32.s1 = z;
     else {
 
         y = mem[q + 1].b32.s1;
-        while (mem[y].b32.s1 != MIN_HALFWORD)
+        while (mem[y].b32.s1 != TEX_NULL)
             y = mem[y].b32.s1;
         mem[y].b32.s1 = z;
     }
@@ -16528,14 +16528,14 @@ void make_scripts(int32_t q, scaled_t delta)
     internal_font_number save_f;
 
     p = mem[q + 1].b32.s1;
-    script_c = MIN_HALFWORD;
+    script_c = TEX_NULL;
     script_g = 0;
     script_f = 0;
     sup_kern = 0;
     sub_kern = 0;
     if ((p >= hi_mem_min)
         ||
-        (((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
+        (((p) != TEX_NULL && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
           && (mem[p].b16.s0 == GLYPH_NODE)))) {
         shift_up = 0;
         shift_down = 0;
@@ -16580,7 +16580,7 @@ void make_scripts(int32_t q, scaled_t delta)
                 }
                 cur_f = save_f;
             }
-            if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
+            if ((((p) != TEX_NULL && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                   && (mem[p].b16.s0 == GLYPH_NODE))))
                 sub_kern =
                     get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, script_f, script_g, SUB_CMD,
@@ -16625,7 +16625,7 @@ void make_scripts(int32_t q, scaled_t delta)
                     }
                     cur_f = save_f;
                 }
-                if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
+                if ((((p) != TEX_NULL && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                       && (mem[p].b16.s0 == GLYPH_NODE))))
                     sup_kern =
                         get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, script_f, script_g, SUP_CMD,
@@ -16682,7 +16682,7 @@ void make_scripts(int32_t q, scaled_t delta)
                         }
                         cur_f = save_f;
                     }
-                    if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
+                    if ((((p) != TEX_NULL && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                           && (mem[p].b16.s0 == GLYPH_NODE))))
                         sub_kern =
                             get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, script_f, script_g,
@@ -16706,7 +16706,7 @@ void make_scripts(int32_t q, scaled_t delta)
                         }
                         cur_f = save_f;
                     }
-                    if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
+                    if ((((p) != TEX_NULL && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                           && (mem[p].b16.s0 == GLYPH_NODE))))
                         sup_kern =
                             get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, script_f, script_g,
@@ -16723,12 +16723,12 @@ void make_scripts(int32_t q, scaled_t delta)
             mem[x + 4].b32.s1 = shift_down;
         }
     }
-    if (mem[q + 1].b32.s1 == MIN_HALFWORD)
+    if (mem[q + 1].b32.s1 == TEX_NULL)
         mem[q + 1].b32.s1 = x;
     else {
 
         p = mem[q + 1].b32.s1;
-        while (mem[p].b32.s1 != MIN_HALFWORD)
+        while (mem[p].b32.s1 != TEX_NULL)
             p = mem[p].b32.s1;
         mem[p].b32.s1 = x;
     }
@@ -16772,7 +16772,7 @@ void mlist_to_hlist(void)
     int32_t r;
     small_number r_type;
     small_number t;
-    int32_t p = MIN_HALFWORD, x, y, z;
+    int32_t p = TEX_NULL, x, y, z;
     int32_t pen;
     small_number s;
     scaled_t max_h, max_d;
@@ -16782,7 +16782,7 @@ void mlist_to_hlist(void)
     penalties = mlist_penalties;
     style = cur_style;
     q = mlist;
-    r = MIN_HALFWORD;
+    r = TEX_NULL;
     r_type = OP_NOAD;
     max_h = 0;
     max_d = 0;
@@ -16793,7 +16793,7 @@ void mlist_to_hlist(void)
             cur_size = SCRIPT_SIZE * ((cur_style - 2) / 2);
         cur_mu = x_over_n(math_quad(cur_size), 18);
     }
-    while (q != MIN_HALFWORD) {  /*753: */
+    while (q != TEX_NULL) {  /*753: */
 
     reswitch:
         delta = 0;
@@ -16884,25 +16884,25 @@ void mlist_to_hlist(void)
                 case 0:
                     {
                         p = mem[q + 1].b32.s0;
-                        mem[q + 1].b32.s0 = MIN_HALFWORD;
+                        mem[q + 1].b32.s0 = TEX_NULL;
                     }
                     break;
                 case 1:
                     {
                         p = mem[q + 1].b32.s1;
-                        mem[q + 1].b32.s1 = MIN_HALFWORD;
+                        mem[q + 1].b32.s1 = TEX_NULL;
                     }
                     break;
                 case 2:
                     {
                         p = mem[q + 2].b32.s0;
-                        mem[q + 2].b32.s0 = MIN_HALFWORD;
+                        mem[q + 2].b32.s0 = TEX_NULL;
                     }
                     break;
                 case 3:
                     {
                         p = mem[q + 2].b32.s1;
-                        mem[q + 2].b32.s1 = MIN_HALFWORD;
+                        mem[q + 2].b32.s1 = TEX_NULL;
                     }
                     break;
                 }
@@ -16914,10 +16914,10 @@ void mlist_to_hlist(void)
                 mem[q].b16.s0 = cur_style;
                 mem[q + 1].b32.s1 = 0;
                 mem[q + 2].b32.s1 = 0;
-                if (p != MIN_HALFWORD) {
+                if (p != TEX_NULL) {
                     z = mem[q].b32.s1;
                     mem[q].b32.s1 = p;
-                    while (mem[p].b32.s1 != MIN_HALFWORD)
+                    while (mem[p].b32.s1 != TEX_NULL)
                         p = mem[p].b32.s1;
                     mem[p].b32.s1 = z;
                 }
@@ -16951,11 +16951,11 @@ void mlist_to_hlist(void)
                     mem[q].b16.s0 = NORMAL;
                 } else if ((cur_size != TEXT_SIZE) && (mem[q].b16.s0 == COND_MATH_GLUE)) {
                     p = mem[q].b32.s1;
-                    if (p != MIN_HALFWORD) {
+                    if (p != TEX_NULL) {
 
                         if ((NODE_type(p) == GLUE_NODE) || (NODE_type(p) == KERN_NODE)) {
                             mem[q].b32.s1 = mem[p].b32.s1;
-                            mem[p].b32.s1 = MIN_HALFWORD;
+                            mem[p].b32.s1 = TEX_NULL;
                             flush_node_list(p);
                         }
                     }
@@ -17009,11 +17009,11 @@ void mlist_to_hlist(void)
                         delta = 0;
                     }
                 } else
-                    p = MIN_HALFWORD;
+                    p = TEX_NULL;
             }
             break;
         case 0:
-            p = MIN_HALFWORD;
+            p = TEX_NULL;
             break;
         case 2:
             p = mem[q + 1].b32.s0;
@@ -17067,7 +17067,7 @@ void mlist_to_hlist(void)
     if (r_type == BIN_NOAD)
         mem[r].b16.s1 = 16 /*ord_noad *//*:755 */ ;
     p = TEMP_HEAD;
-    mem[p].b32.s1 = MIN_HALFWORD;
+    mem[p].b32.s1 = TEX_NULL;
     q = mlist;
     r_type = 0;
     cur_style = style;
@@ -17078,7 +17078,7 @@ void mlist_to_hlist(void)
             cur_size = SCRIPT_SIZE * ((cur_style - 2) / 2);
         cur_mu = x_over_n(math_quad(cur_size), 18);
     }
-    while (q != MIN_HALFWORD) {
+    while (q != TEX_NULL) {
 
         t = ORD_NOAD;
         s = NOAD_SIZE;
@@ -17152,7 +17152,7 @@ void mlist_to_hlist(void)
                 mem[p].b32.s1 = q;
                 p = q;
                 q = mem[q].b32.s1;
-                mem[p].b32.s1 = MIN_HALFWORD;
+                mem[p].b32.s1 = TEX_NULL;
                 goto done;
             }
             break;
@@ -17206,21 +17206,21 @@ void mlist_to_hlist(void)
             if (x != 0) {
                 y = math_glue(eqtb[GLUE_BASE + x].b32.s1, cur_mu);
                 z = new_glue(y);
-                mem[y].b32.s1 = MIN_HALFWORD;
+                mem[y].b32.s1 = TEX_NULL;
                 mem[p].b32.s1 = z;
                 p = z;
                 mem[z].b16.s0 = x + 1;
             }
         }
-        if (mem[q + 1].b32.s1 != MIN_HALFWORD) {
+        if (mem[q + 1].b32.s1 != TEX_NULL) {
             mem[p].b32.s1 = mem[q + 1].b32.s1;
             do {
                 p = mem[p].b32.s1;
-            } while (!(mem[p].b32.s1 == MIN_HALFWORD));
+            } while (!(mem[p].b32.s1 == TEX_NULL));
         }
         if (penalties) {
 
-            if (mem[q].b32.s1 != MIN_HALFWORD) {
+            if (mem[q].b32.s1 != TEX_NULL) {
 
                 if (pen < INF_PENALTY) {
                     r_type = mem[mem[q].b32.s1].b16.s1;
@@ -17331,7 +17331,7 @@ init_align(void)
     push_alignment();
     align_state = -1000000L;
 
-    if (cur_list.mode == MMODE && (cur_list.tail != cur_list.head || cur_list.aux.b32.s1 != MIN_HALFWORD)) {
+    if (cur_list.mode == MMODE && (cur_list.tail != cur_list.head || cur_list.aux.b32.s1 != TEX_NULL)) {
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -17357,9 +17357,9 @@ init_align(void)
     }
 
     scan_spec(ALIGN_GROUP, false);
-    mem[ALIGN_HEAD].b32.s1 = MIN_HALFWORD;
+    mem[ALIGN_HEAD].b32.s1 = TEX_NULL;
     cur_align = ALIGN_HEAD;
-    cur_loop = MIN_HALFWORD;
+    cur_loop = TEX_NULL;
     scanner_status = ALIGNING;
     warning_index = save_cs_ptr;
     align_state = -1000000L;
@@ -17371,7 +17371,7 @@ init_align(void)
             goto done;
 
         p = HOLD_HEAD;
-        mem[p].b32.s1 = MIN_HALFWORD;
+        mem[p].b32.s1 = TEX_NULL;
 
         while (true) {
             get_preamble_token();
@@ -17379,7 +17379,7 @@ init_align(void)
                 goto done1;
 
             if (cur_cmd <= CAR_RET && cur_cmd >= TAB_MARK && align_state == -1000000L) {
-                if (p == HOLD_HEAD && cur_loop == MIN_HALFWORD && cur_cmd == TAB_MARK) {
+                if (p == HOLD_HEAD && cur_loop == TEX_NULL && cur_cmd == TAB_MARK) {
                     cur_loop = cur_align;
                 } else {
                     if (file_line_error_style_p)
@@ -17408,7 +17408,7 @@ init_align(void)
         mem[cur_align + 1].b32.s1 = NULL_FLAG;
         mem[cur_align + 3].b32.s1 = mem[HOLD_HEAD].b32.s1;
         p = HOLD_HEAD;
-        mem[p].b32.s1 = MIN_HALFWORD;
+        mem[p].b32.s1 = TEX_NULL;
 
         while (true) {
         continue_:
@@ -17446,7 +17446,7 @@ done:
     scanner_status = NORMAL; /*:806 */
     new_save_level(ALIGN_GROUP);
 
-    if (LOCAL(every_cr) != MIN_HALFWORD)
+    if (LOCAL(every_cr) != TEX_NULL)
         begin_token_list(LOCAL(every_cr), EVERY_CR_TEXT);
 
     align_peek();
@@ -17506,17 +17506,17 @@ bool fin_col(void)
     scaled_t w;
     glue_ord o;
     int32_t n;
-    if (cur_align == MIN_HALFWORD)
+    if (cur_align == TEX_NULL)
         confusion("endv");
     q = mem[cur_align].b32.s1;
-    if (q == MIN_HALFWORD)
+    if (q == TEX_NULL)
         confusion("endv");
     if (align_state < 500000L)
         fatal_error("(interwoven alignment preambles are not allowed)");
     p = mem[q].b32.s1;
-    if ((p == MIN_HALFWORD) && (mem[cur_align + 5].b32.s0 < CR_CODE)) {
+    if ((p == TEX_NULL) && (mem[cur_align + 5].b32.s0 < CR_CODE)) {
 
-        if (cur_loop != MIN_HALFWORD) {  /*822: */
+        if (cur_loop != TEX_NULL) {  /*822: */
             mem[q].b32.s1 = new_null_box();
             p = mem[q].b32.s1;
             mem[p].b32.s0 = END_SPAN;
@@ -17524,25 +17524,25 @@ bool fin_col(void)
             cur_loop = mem[cur_loop].b32.s1;
             q = HOLD_HEAD;
             r = mem[cur_loop + 3].b32.s1;
-            while (r != MIN_HALFWORD) {
+            while (r != TEX_NULL) {
 
                 mem[q].b32.s1 = get_avail();
                 q = mem[q].b32.s1;
                 mem[q].b32.s0 = mem[r].b32.s0;
                 r = mem[r].b32.s1;
             }
-            mem[q].b32.s1 = MIN_HALFWORD;
+            mem[q].b32.s1 = TEX_NULL;
             mem[p + 3].b32.s1 = mem[HOLD_HEAD].b32.s1;
             q = HOLD_HEAD;
             r = mem[cur_loop + 2].b32.s1;
-            while (r != MIN_HALFWORD) {
+            while (r != TEX_NULL) {
 
                 mem[q].b32.s1 = get_avail();
                 q = mem[q].b32.s1;
                 mem[q].b32.s0 = mem[r].b32.s0;
                 r = mem[r].b32.s1;
             }
-            mem[q].b32.s1 = MIN_HALFWORD;
+            mem[q].b32.s1 = TEX_NULL;
             mem[p + 2].b32.s1 = mem[HOLD_HEAD].b32.s1 /*:823 */ ;
             cur_loop = mem[cur_loop].b32.s1;
             mem[p].b32.s1 = new_glue(mem[cur_loop + 1].b32.s0);
@@ -17576,9 +17576,9 @@ bool fin_col(void)
                 u = hpack(mem[cur_list.head].b32.s1, 0, ADDITIONAL);
                 w = mem[u + 1].b32.s1;
                 cur_tail = adjust_tail;
-                adjust_tail = MIN_HALFWORD;
+                adjust_tail = TEX_NULL;
                 cur_pre_tail = pre_adjust_tail;
-                pre_adjust_tail = MIN_HALFWORD;
+                pre_adjust_tail = TEX_NULL;
             } else {
 
                 u = vpackage(mem[cur_list.head].b32.s1, 0, ADDITIONAL, 0);
@@ -17679,7 +17679,7 @@ void fin_row(void)
     }
     NODE_type(p) = UNSET_NODE;
     mem[p + 6].b32.s1 = 0;
-    if (LOCAL(every_cr) != MIN_HALFWORD)
+    if (LOCAL(every_cr) != TEX_NULL)
         begin_token_list(LOCAL(every_cr), EVERY_CR_TEXT);
     align_peek();
 }
@@ -17757,7 +17757,7 @@ void fin_align(void)
         mem[q + 6].b32.s1 = 0;
         mem[q + 4].b32.s1 = 0;
         q = p;
-    } while (!(q == MIN_HALFWORD /*:830 */ ));
+    } while (!(q == TEX_NULL /*:830 */ ));
     save_ptr = save_ptr - 2;
     pack_begin_line = -(int32_t) cur_list.mode_line;
     if (cur_list.mode == -1) {
@@ -17772,7 +17772,7 @@ void fin_align(void)
             mem[q + 3].b32.s1 = mem[q + 1].b32.s1;
             mem[q + 1].b32.s1 = 0;
             q = mem[mem[q].b32.s1].b32.s1;
-        } while (!(q == MIN_HALFWORD));
+        } while (!(q == TEX_NULL));
         p = vpackage(mem[ALIGN_HEAD].b32.s1, save_stack[save_ptr + 1].b32.s1, save_stack[save_ptr + 0].b32.s1,
                      MAX_HALFWORD);
         q = mem[mem[ALIGN_HEAD].b32.s1].b32.s1;
@@ -17780,12 +17780,12 @@ void fin_align(void)
             mem[q + 1].b32.s1 = mem[q + 3].b32.s1;
             mem[q + 3].b32.s1 = 0;
             q = mem[mem[q].b32.s1].b32.s1;
-        } while (!(q == MIN_HALFWORD));
+        } while (!(q == TEX_NULL));
     }
     pack_begin_line = 0 /*:833 */ ;
     q = mem[cur_list.head].b32.s1;
     s = cur_list.head;
-    while (q != MIN_HALFWORD) {
+    while (q != TEX_NULL) {
 
         if (!(q >= hi_mem_min)) {
 
@@ -17901,7 +17901,7 @@ void fin_align(void)
                     }
                     r = mem[mem[r].b32.s1].b32.s1;
                     s = mem[mem[s].b32.s1].b32.s1;
-                } while (!(r == MIN_HALFWORD));
+                } while (!(r == TEX_NULL));
             } else if (NODE_type(q) == RULE_NODE) {     /*835: */
                 if (mem[q + 1].b32.s1 == NULL_FLAG)
                     mem[q + 1].b32.s1 = mem[p + 1].b32.s1;
@@ -17911,7 +17911,7 @@ void fin_align(void)
                     mem[q + 2].b32.s1 = mem[p + 2].b32.s1;
                 if (o != 0) {
                     r = mem[q].b32.s1;
-                    mem[q].b32.s1 = MIN_HALFWORD;
+                    mem[q].b32.s1 = TEX_NULL;
                     q = hpack(q, 0, ADDITIONAL);
                     mem[q + 4].b32.s1 = o;
                     mem[q].b32.s1 = r;
@@ -17974,7 +17974,7 @@ void fin_align(void)
             cur_list.tail = mem[cur_list.tail].b32.s1;
         }
         mem[cur_list.tail].b32.s1 = p;
-        if (p != MIN_HALFWORD)
+        if (p != TEX_NULL)
             cur_list.tail = q;
         {
             mem[cur_list.tail].b32.s1 = new_penalty(INTPAR(post_display_penalty));
@@ -17990,7 +17990,7 @@ void fin_align(void)
 
         cur_list.aux = aux_save;
         mem[cur_list.tail].b32.s1 = p;
-        if (p != MIN_HALFWORD)
+        if (p != TEX_NULL)
             cur_list.tail = q;
         if (cur_list.mode == VMODE)
             build_page();
@@ -18069,17 +18069,17 @@ int32_t find_protchar_left(int32_t l, bool d)
 {
     memory_word *mem = zmem; int32_t t;
     bool run;
-    if ((mem[l].b32.s1 != MIN_HALFWORD) && (NODE_type(l) == HLIST_NODE) && (mem[l + 1].b32.s1 == 0)
-        && (mem[l + 3].b32.s1 == 0) && (mem[l + 2].b32.s1 == 0) && (mem[l + 5].b32.s1 == MIN_HALFWORD))
+    if ((mem[l].b32.s1 != TEX_NULL) && (NODE_type(l) == HLIST_NODE) && (mem[l + 1].b32.s1 == 0)
+        && (mem[l + 3].b32.s1 == 0) && (mem[l + 2].b32.s1 == 0) && (mem[l + 5].b32.s1 == TEX_NULL))
         l = mem[l].b32.s1;
     else if (d)
-        while ((mem[l].b32.s1 != MIN_HALFWORD) && (!((l >= hi_mem_min) || (NODE_type(l) < MATH_NODE))))
+        while ((mem[l].b32.s1 != TEX_NULL) && (!((l >= hi_mem_min) || (NODE_type(l) < MATH_NODE))))
             l = mem[l].b32.s1;
     hlist_stack_level = 0;
     run = true;
     do {
         t = l;
-        while (run && (NODE_type(l) == HLIST_NODE) && (mem[l + 5].b32.s1 != MIN_HALFWORD)) {
+        while (run && (NODE_type(l) == HLIST_NODE) && (mem[l + 5].b32.s1 != TEX_NULL)) {
 
             push_node(l);
             l = mem[l + 5].b32.s1;
@@ -18088,20 +18088,20 @@ int32_t find_protchar_left(int32_t l, bool d)
                && (!(l >= hi_mem_min)
                    && ((NODE_type(l) == INS_NODE) || (NODE_type(l) == MARK_NODE)
                        || (NODE_type(l) == ADJUST_NODE) || (NODE_type(l) == PENALTY_NODE)
-                       || ((NODE_type(l) == DISC_NODE) && (mem[l + 1].b32.s0 == MIN_HALFWORD)
-                           && (mem[l + 1].b32.s1 == MIN_HALFWORD) && (mem[l].b16.s0 == 0))
+                       || ((NODE_type(l) == DISC_NODE) && (mem[l + 1].b32.s0 == TEX_NULL)
+                           && (mem[l + 1].b32.s1 == TEX_NULL) && (mem[l].b16.s0 == 0))
                        || ((NODE_type(l) == MATH_NODE) && (mem[l + 1].b32.s1 == 0))
                        || ((NODE_type(l) == KERN_NODE)
                            && ((mem[l + 1].b32.s1 == 0) || (mem[l].b16.s0 == NORMAL)))
                        || ((NODE_type(l) == GLUE_NODE) && (mem[l + 1].b32.s0 == 0))
                        || ((NODE_type(l) == HLIST_NODE) && (mem[l + 1].b32.s1 == 0) && (mem[l + 3].b32.s1 == 0)
-                           && (mem[l + 2].b32.s1 == 0) && (mem[l + 5].b32.s1 == MIN_HALFWORD))))) {
+                           && (mem[l + 2].b32.s1 == 0) && (mem[l + 5].b32.s1 == TEX_NULL))))) {
 
-            while ((mem[l].b32.s1 == MIN_HALFWORD) && (hlist_stack_level > 0)) {
+            while ((mem[l].b32.s1 == TEX_NULL) && (hlist_stack_level > 0)) {
 
                 l = pop_node();
             }
-            if (mem[l].b32.s1 != MIN_HALFWORD)
+            if (mem[l].b32.s1 != TEX_NULL)
                 l = mem[l].b32.s1;
             else if (hlist_stack_level == 0)
                 run = false;
@@ -18114,40 +18114,40 @@ int32_t find_protchar_right(int32_t l, int32_t r)
 {
     memory_word *mem = zmem; int32_t t;
     bool run;
-    if (r == MIN_HALFWORD)
-        return MIN_HALFWORD;
+    if (r == TEX_NULL)
+        return TEX_NULL;
     hlist_stack_level = 0;
     run = true;
     do {
         t = r;
-        while (run && (NODE_type(r) == HLIST_NODE) && (mem[r + 5].b32.s1 != MIN_HALFWORD)) {
+        while (run && (NODE_type(r) == HLIST_NODE) && (mem[r + 5].b32.s1 != TEX_NULL)) {
 
             push_node(l);
             push_node(r);
             l = mem[r + 5].b32.s1;
             r = l;
-            while (mem[r].b32.s1 != MIN_HALFWORD)
+            while (mem[r].b32.s1 != TEX_NULL)
                 r = mem[r].b32.s1;
         }
         while (run
                && (!(r >= hi_mem_min)
                    && ((NODE_type(r) == INS_NODE) || (NODE_type(r) == MARK_NODE)
                        || (NODE_type(r) == ADJUST_NODE) || (NODE_type(r) == PENALTY_NODE)
-                       || ((NODE_type(r) == DISC_NODE) && (mem[r + 1].b32.s0 == MIN_HALFWORD)
-                           && (mem[r + 1].b32.s1 == MIN_HALFWORD) && (mem[r].b16.s0 == 0))
+                       || ((NODE_type(r) == DISC_NODE) && (mem[r + 1].b32.s0 == TEX_NULL)
+                           && (mem[r + 1].b32.s1 == TEX_NULL) && (mem[r].b16.s0 == 0))
                        || ((NODE_type(r) == MATH_NODE) && (mem[r + 1].b32.s1 == 0))
                        || ((NODE_type(r) == KERN_NODE)
                            && ((mem[r + 1].b32.s1 == 0) || (mem[r].b16.s0 == NORMAL)))
                        || ((NODE_type(r) == GLUE_NODE) && (mem[r + 1].b32.s0 == 0))
                        || ((NODE_type(r) == HLIST_NODE) && (mem[r + 1].b32.s1 == 0) && (mem[r + 3].b32.s1 == 0)
-                           && (mem[r + 2].b32.s1 == 0) && (mem[r + 5].b32.s1 == MIN_HALFWORD))))) {
+                           && (mem[r + 2].b32.s1 == 0) && (mem[r + 5].b32.s1 == TEX_NULL))))) {
 
             while ((r == l) && (hlist_stack_level > 0)) {
 
                 r = pop_node();
                 l = pop_node();
             }
-            if ((r != l) && (r != MIN_HALFWORD))
+            if ((r != l) && (r != TEX_NULL))
                 r = prev_rightmost(l, r);
             else if ((r == l) && (hlist_stack_level == 0))
                 run = false;
@@ -18160,19 +18160,19 @@ scaled_t total_pw(int32_t q, int32_t p)
 {
     memory_word *mem = zmem; int32_t l, r;
     int32_t n;
-    if (mem[q + 1].b32.s1 == MIN_HALFWORD)
+    if (mem[q + 1].b32.s1 == TEX_NULL)
         l = first_p;
     else
         l = mem[mem[q + 1].b32.s1 + 1].b32.s1;
     r = prev_rightmost(global_prev_p, p);
-    if ((p != MIN_HALFWORD) && (NODE_type(p) == DISC_NODE) && (mem[p + 1].b32.s0 != MIN_HALFWORD)) {
+    if ((p != TEX_NULL) && (NODE_type(p) == DISC_NODE) && (mem[p + 1].b32.s0 != TEX_NULL)) {
         r = mem[p + 1].b32.s0;
-        while (mem[r].b32.s1 != MIN_HALFWORD)
+        while (mem[r].b32.s1 != TEX_NULL)
             r = mem[r].b32.s1;
     } else
         r = find_protchar_right(l, r);
-    if ((l != MIN_HALFWORD) && (NODE_type(l) == DISC_NODE)) {
-        if (mem[l + 1].b32.s1 != MIN_HALFWORD) {
+    if ((l != TEX_NULL) && (NODE_type(l) == DISC_NODE)) {
+        if (mem[l + 1].b32.s1 != TEX_NULL) {
             l = mem[l + 1].b32.s1;
             goto done;
         } else {
@@ -18181,7 +18181,7 @@ scaled_t total_pw(int32_t q, int32_t p)
             l = mem[l].b32.s1;
             while (n > 0) {
 
-                if (mem[l].b32.s1 != MIN_HALFWORD)
+                if (mem[l].b32.s1 != TEX_NULL)
                     l = mem[l].b32.s1;
                 n--;
             }
@@ -18203,7 +18203,7 @@ try_break(int32_t pi, small_number break_type)
     int32_t prev_r;
     int32_t old_l;
     bool no_break_yet;
-    int32_t prev_prev_r = MIN_HALFWORD;
+    int32_t prev_prev_r = TEX_NULL;
     int32_t s;
     int32_t q;
     int32_t v;
@@ -18267,7 +18267,7 @@ try_break(int32_t pi, small_number break_type)
                     s = cur_p;
 
                     if (break_type > UNHYPHENATED) {
-                        if (cur_p != MIN_HALFWORD) { /*869:*/
+                        if (cur_p != TEX_NULL) { /*869:*/
                             t = mem[cur_p].b16.s0;
                             v = cur_p;
                             s = mem[cur_p + 1].b32.s1;
@@ -18319,7 +18319,7 @@ try_break(int32_t pi, small_number break_type)
                                     }
                             }
 
-                            while (s != MIN_HALFWORD) {
+                            while (s != TEX_NULL) {
                                 if (s >= hi_mem_min) {
                                     int32_t eff_char;
                                     uint16_t char_info;
@@ -18366,12 +18366,12 @@ try_break(int32_t pi, small_number break_type)
                             }
 
                             break_width[1] += disc_width;
-                            if (mem[cur_p + 1].b32.s1 == MIN_HALFWORD)
+                            if (mem[cur_p + 1].b32.s1 == TEX_NULL)
                                 s = mem[v].b32.s1;
                         }
                     }
 
-                    while (s != MIN_HALFWORD) {
+                    while (s != TEX_NULL) {
                         if (s >= hi_mem_min)
                             goto done;
 
@@ -18499,7 +18499,7 @@ try_break(int32_t pi, small_number break_type)
 
                 if (l > last_special_line)
                     line_width = second_width;
-                else if (LOCAL(par_shape) == MIN_HALFWORD)
+                else if (LOCAL(par_shape) == TEX_NULL)
                     line_width = first_width;
                 else
                     line_width = mem[LOCAL(par_shape) + 2 * l].b32.s1;
@@ -18515,7 +18515,7 @@ try_break(int32_t pi, small_number break_type)
         if (shortfall > 0) { /*881:*/
             if (cur_active_width[3] != 0 || cur_active_width[4] != 0 || cur_active_width[5] != 0) {
                 if (do_last_line_fit) {
-                    if (cur_p == MIN_HALFWORD) { /*1634:*/
+                    if (cur_p == TEX_NULL) { /*1634:*/
                         if (mem[r + 3].b32.s1 == 0 || mem[r + 4].b32.s1 <= 0)
                             goto not_found;
 
@@ -18624,7 +18624,7 @@ try_break(int32_t pi, small_number break_type)
         }
 
         if (do_last_line_fit) { /*1637:*/
-            if (cur_p == MIN_HALFWORD)
+            if (cur_p == TEX_NULL)
                 shortfall = 0;
 
             if (shortfall > 0)
@@ -18668,7 +18668,7 @@ try_break(int32_t pi, small_number break_type)
             }
 
             if (break_type == HYPHENATED && mem[r].b16.s1 == HYPHENATED) {
-                if (cur_p != MIN_HALFWORD)
+                if (cur_p != TEX_NULL)
                     d = d + INTPAR(double_hyphen_demerits);
                 else
                     d = d + INTPAR(final_hyphen_demerits);
@@ -18767,7 +18767,7 @@ small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t
     hyphen_passed = 0;
     t = HOLD_HEAD;
     w = 0;
-    mem[HOLD_HEAD].b32.s1 = MIN_HALFWORD;
+    mem[HOLD_HEAD].b32.s1 = TEX_NULL;
     cur_l = hu[j];
     cur_q = t;
     if (j == 0) {
@@ -18775,7 +18775,7 @@ small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t
         p = init_list;
         if (ligature_present)
             lft_hit = init_lft;
-        while (p > MIN_HALFWORD) {
+        while (p > TEX_NULL) {
 
             {
                 mem[t].b32.s1 = get_avail();
@@ -18791,7 +18791,7 @@ small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t
         mem[t].b16.s1 = hf;
         mem[t].b16.s0 = cur_l;
     }
-    lig_stack = MIN_HALFWORD;
+    lig_stack = TEX_NULL;
     {
         if (j < n)
             cur_r = hu[j + 1];
@@ -18850,7 +18850,7 @@ continue_:
                             lft_hit = true;
                         if (j == n) {
 
-                            if (lig_stack == MIN_HALFWORD)
+                            if (lig_stack == TEX_NULL)
                                 rt_hit = true;
                         }
                         switch (q.s1) {
@@ -18865,7 +18865,7 @@ continue_:
                         case 6:
                             {
                                 cur_r = q.s0;
-                                if (lig_stack > MIN_HALFWORD)
+                                if (lig_stack > TEX_NULL)
                                     mem[lig_stack].b16.s0 = cur_r;
                                 else {
 
@@ -18901,7 +18901,7 @@ continue_:
                                     }
                                     if (false) {
 
-                                        if (lig_stack == MIN_HALFWORD) {
+                                        if (lig_stack == TEX_NULL) {
                                             mem[p].b16.s0++;
                                             rt_hit = false;
                                         }
@@ -18919,8 +18919,8 @@ continue_:
                             {
                                 cur_l = q.s0;
                                 ligature_present = true;
-                                if (lig_stack > MIN_HALFWORD) {
-                                    if (mem[lig_stack + 1].b32.s1 > MIN_HALFWORD) {
+                                if (lig_stack > TEX_NULL) {
+                                    if (mem[lig_stack + 1].b32.s1 > TEX_NULL) {
                                         mem[t].b32.s1 = mem[lig_stack + 1].b32.s1;
                                         t = mem[t].b32.s1;
                                         j++;
@@ -18928,7 +18928,7 @@ continue_:
                                     p = lig_stack;
                                     lig_stack = mem[p].b32.s1;
                                     free_node(p, SMALL_NODE_SIZE);
-                                    if (lig_stack == MIN_HALFWORD) {
+                                    if (lig_stack == TEX_NULL) {
                                         if (j < n)
                                             cur_r = hu[j + 1];
                                         else
@@ -18998,7 +18998,7 @@ done:
         }
         if (rt_hit) {
 
-            if (lig_stack == MIN_HALFWORD) {
+            if (lig_stack == TEX_NULL) {
                 mem[p].b16.s0++;
                 rt_hit = false;
             }
@@ -19013,12 +19013,12 @@ done:
         w = 0;
         mem[t + 2].b32.s0 = 0;
     }
-    if (lig_stack > MIN_HALFWORD) {
+    if (lig_stack > TEX_NULL) {
         cur_q = t;
         cur_l = mem[lig_stack].b16.s0;
         ligature_present = true;
         {
-            if (mem[lig_stack + 1].b32.s1 > MIN_HALFWORD) {
+            if (mem[lig_stack + 1].b32.s1 > TEX_NULL) {
                 mem[t].b32.s1 = mem[lig_stack + 1].b32.s1;
                 t = mem[t].b32.s1;
                 j++;
@@ -19026,7 +19026,7 @@ done:
             p = lig_stack;
             lig_stack = mem[p].b32.s1;
             free_node(p, SMALL_NODE_SIZE);
-            if (lig_stack == MIN_HALFWORD) {
+            if (lig_stack == TEX_NULL) {
                 if (j < n)
                     cur_r = hu[j + 1];
                 else
@@ -19097,7 +19097,7 @@ void hyphenate(void)
                 u++;
             } while (!(j > hn));
             s = hyph_list[h];
-            while (s != MIN_HALFWORD) {
+            while (s != TEX_NULL) {
 
                 hyf[mem[s].b32.s0] = 1;
                 s = mem[s].b32.s1;
@@ -19176,7 +19176,7 @@ not_found:
     return;
 
 found1:
-    if ((((ha) != MIN_HALFWORD && (!(ha >= hi_mem_min)) && (NODE_type(ha) == WHATSIT_NODE)
+    if ((((ha) != TEX_NULL && (!(ha >= hi_mem_min)) && (NODE_type(ha) == WHATSIT_NODE)
           && ((mem[ha].b16.s0 == NATIVE_WORD_NODE) || (mem[ha].b16.s0 == NATIVE_WORD_NODE_AT))))) {
         s = cur_p;
         while (mem[s].b32.s1 != ha)
@@ -19229,14 +19229,14 @@ found1:
         s = q;
         q = mem[ha].b32.s1;
         mem[s].b32.s1 = q;
-        mem[ha].b32.s1 = MIN_HALFWORD;
+        mem[ha].b32.s1 = TEX_NULL;
         flush_node_list(ha);
     } else {
 
         q = mem[hb].b32.s1;
-        mem[hb].b32.s1 = MIN_HALFWORD;
+        mem[hb].b32.s1 = TEX_NULL;
         r = mem[ha].b32.s1;
-        mem[ha].b32.s1 = MIN_HALFWORD;
+        mem[ha].b32.s1 = TEX_NULL;
         bchar = hyf_bchar;
         if ((ha >= hi_mem_min)) {
 
@@ -19258,7 +19258,7 @@ found1:
                 init_lig = true;
                 init_lft = (mem[ha].b16.s0 > 1);
                 hu[0] = mem[ha + 1].b16.s0;
-                if (init_list == MIN_HALFWORD) {
+                if (init_list == TEX_NULL) {
 
                     if (init_lft) {
                         hu[0] = max_hyph_char;
@@ -19279,7 +19279,7 @@ found1:
             }
             j = 1;
             s = ha;
-            init_list = MIN_HALFWORD;
+            init_list = TEX_NULL;
             goto common_ending;
         }
         s = cur_p;
@@ -19292,7 +19292,7 @@ found1:
         j = 0;
         hu[0] = max_hyph_char;
         init_lig = false;
-        init_list = MIN_HALFWORD;
+        init_list = TEX_NULL;
 
     common_ending:
         flush_node_list(r);
@@ -19301,12 +19301,12 @@ found1:
             j = reconstitute(j, hn, bchar, hyf_char) + 1;
             if (hyphen_passed == 0) {
                 mem[s].b32.s1 = mem[HOLD_HEAD].b32.s1;
-                while (mem[s].b32.s1 > MIN_HALFWORD)
+                while (mem[s].b32.s1 > TEX_NULL)
                     s = mem[s].b32.s1;
                 if (odd(hyf[j - 1])) {
                     l = j;
                     hyphen_passed = j - 1;
-                    mem[HOLD_HEAD].b32.s1 = MIN_HALFWORD;
+                    mem[HOLD_HEAD].b32.s1 = TEX_NULL;
                 }
             }
             if (hyphen_passed > 0) /*949: */
@@ -19316,17 +19316,17 @@ found1:
                     NODE_type(r) = DISC_NODE;
                     major_tail = r;
                     r_count = 0;
-                    while (mem[major_tail].b32.s1 > MIN_HALFWORD) {
+                    while (mem[major_tail].b32.s1 > TEX_NULL) {
 
                         major_tail = mem[major_tail].b32.s1;
                         r_count++;
                     }
                     i = hyphen_passed;
                     hyf[i] = 0;
-                    minor_tail = MIN_HALFWORD;
-                    mem[r + 1].b32.s0 = MIN_HALFWORD;
+                    minor_tail = TEX_NULL;
+                    mem[r + 1].b32.s0 = TEX_NULL;
                     hyf_node = new_character(hf, hyf_char);
-                    if (hyf_node != MIN_HALFWORD) {
+                    if (hyf_node != TEX_NULL) {
                         i++;
                         c = hu[i];
                         hu[i] = hyf_char;
@@ -19338,23 +19338,23 @@ found1:
                     while (l <= i) {
 
                         l = reconstitute(l, i, font_bchar[hf], TOO_BIG_CHAR) + 1;
-                        if (mem[HOLD_HEAD].b32.s1 > MIN_HALFWORD) {
-                            if (minor_tail == MIN_HALFWORD)
+                        if (mem[HOLD_HEAD].b32.s1 > TEX_NULL) {
+                            if (minor_tail == TEX_NULL)
                                 mem[r + 1].b32.s0 = mem[HOLD_HEAD].b32.s1;
                             else
                                 mem[minor_tail].b32.s1 = mem[HOLD_HEAD].b32.s1;
                             minor_tail = mem[HOLD_HEAD].b32.s1;
-                            while (mem[minor_tail].b32.s1 > MIN_HALFWORD)
+                            while (mem[minor_tail].b32.s1 > TEX_NULL)
                                 minor_tail = mem[minor_tail].b32.s1;
                         }
                     }
-                    if (hyf_node != MIN_HALFWORD) {
+                    if (hyf_node != TEX_NULL) {
                         hu[i] = c;
                         l = i;
                         i--;
                     }
-                    minor_tail = MIN_HALFWORD;
-                    mem[r + 1].b32.s1 = MIN_HALFWORD;
+                    minor_tail = TEX_NULL;
+                    mem[r + 1].b32.s1 = TEX_NULL;
                     c_loc = 0;
                     if (bchar_label[hf] != NON_ADDRESS) {
                         l--;
@@ -19370,13 +19370,13 @@ found1:
                                 hu[c_loc] = c;
                                 c_loc = 0;
                             }
-                            if (mem[HOLD_HEAD].b32.s1 > MIN_HALFWORD) {
-                                if (minor_tail == MIN_HALFWORD)
+                            if (mem[HOLD_HEAD].b32.s1 > TEX_NULL) {
+                                if (minor_tail == TEX_NULL)
                                     mem[r + 1].b32.s1 = mem[HOLD_HEAD].b32.s1;
                                 else
                                     mem[minor_tail].b32.s1 = mem[HOLD_HEAD].b32.s1;
                                 minor_tail = mem[HOLD_HEAD].b32.s1;
-                                while (mem[minor_tail].b32.s1 > MIN_HALFWORD)
+                                while (mem[minor_tail].b32.s1 > TEX_NULL)
                                     minor_tail = mem[minor_tail].b32.s1;
                             }
                         } while (!(l >= j));
@@ -19384,7 +19384,7 @@ found1:
 
                             j = reconstitute(j, hn, bchar, TOO_BIG_CHAR) + 1;
                             mem[major_tail].b32.s1 = mem[HOLD_HEAD].b32.s1;
-                            while (mem[major_tail].b32.s1 > MIN_HALFWORD) {
+                            while (mem[major_tail].b32.s1 > TEX_NULL) {
 
                                 major_tail = mem[major_tail].b32.s1;
                                 r_count++;
@@ -19393,7 +19393,7 @@ found1:
                     }
                     if (r_count > 127) {
                         mem[s].b32.s1 = mem[r].b32.s1;
-                        mem[r].b32.s1 = MIN_HALFWORD;
+                        mem[r].b32.s1 = TEX_NULL;
                         flush_node_list(r);
                     } else {
 
@@ -19402,7 +19402,7 @@ found1:
                     }
                     s = /*:953 */ major_tail;
                     hyphen_passed = j - 1;
-                    mem[HOLD_HEAD].b32.s1 = MIN_HALFWORD;
+                    mem[HOLD_HEAD].b32.s1 = TEX_NULL;
                 } while (!(!odd(hyf[j - 1]) /*:949 */ ));
         } while (!(j > hn));
         mem[s].b32.s1 = /*:948 */ q;
@@ -19661,7 +19661,7 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
     int32_t pi;
     int32_t b;
     int32_t least_cost;
-    int32_t best_place = MIN_HALFWORD;
+    int32_t best_place = TEX_NULL;
     scaled_t prev_dp;
     small_number t;
     prev_p = p;
@@ -19675,7 +19675,7 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
     prev_dp = 0;
     while (true) {
 
-        if (p == MIN_HALFWORD)
+        if (p == TEX_NULL)
             pi = EJECT_PENALTY;
         else /*1008: */
             switch (mem[p].b16.s1) {
@@ -19699,7 +19699,7 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
                     goto lab90;
                 }
             case 11:
-                if (mem[p].b32.s1 == MIN_HALFWORD) {
+                if (mem[p].b32.s1 == TEX_NULL) {
                     t = PENALTY_NODE;
                 } else {
                     t = mem[mem[p].b32.s1].b16.s1;
@@ -19808,26 +19808,26 @@ int32_t vsplit(int32_t n, scaled_t h)
     else {
 
         find_sa_element(4, cur_val, false);
-        if (cur_ptr == MIN_HALFWORD)
-            v = MIN_HALFWORD;
+        if (cur_ptr == TEX_NULL)
+            v = TEX_NULL;
         else
             v = mem[cur_ptr + 1].b32.s1;
     }
     flush_node_list(disc_ptr[VSPLIT_CODE]);
-    disc_ptr[VSPLIT_CODE] = MIN_HALFWORD;
-    if (sa_root[MARK_VAL] != MIN_HALFWORD) {
+    disc_ptr[VSPLIT_CODE] = TEX_NULL;
+    if (sa_root[MARK_VAL] != TEX_NULL) {
 
         if (do_marks(0, 0, sa_root[MARK_VAL]))
-            sa_root[MARK_VAL] = MIN_HALFWORD;
+            sa_root[MARK_VAL] = TEX_NULL;
     }
-    if (cur_mark[SPLIT_FIRST_MARK_CODE] != MIN_HALFWORD) {
+    if (cur_mark[SPLIT_FIRST_MARK_CODE] != TEX_NULL) {
         delete_token_ref(cur_mark[SPLIT_FIRST_MARK_CODE]);
-        cur_mark[SPLIT_FIRST_MARK_CODE] = MIN_HALFWORD;
+        cur_mark[SPLIT_FIRST_MARK_CODE] = TEX_NULL;
         delete_token_ref(cur_mark[SPLIT_BOT_MARK_CODE]);
-        cur_mark[SPLIT_BOT_MARK_CODE] = MIN_HALFWORD;
+        cur_mark[SPLIT_BOT_MARK_CODE] = TEX_NULL;
     }
-    if (v == MIN_HALFWORD) {
-        return MIN_HALFWORD;
+    if (v == TEX_NULL) {
+        return TEX_NULL;
     }
     if (NODE_type(v) != VLIST_NODE) {
         {
@@ -19846,12 +19846,12 @@ int32_t vsplit(int32_t n, scaled_t h)
             help_line[0] = "I can't split such a box, so I'll leave it alone.";
         }
         error();
-        return MIN_HALFWORD;
+        return TEX_NULL;
     }
     q = vert_break(mem[v + 5].b32.s1, h, DIMENPAR(split_max_depth));
     p = mem[v + 5].b32.s1;
     if (p == q)
-        mem[v + 5].b32.s1 = MIN_HALFWORD;
+        mem[v + 5].b32.s1 = TEX_NULL;
     else
         while (true) {
 
@@ -19859,14 +19859,14 @@ int32_t vsplit(int32_t n, scaled_t h)
 
                 if (mem[p + 1].b32.s0 != 0) {  /*1615: */
                     find_sa_element(MARK_VAL, mem[p + 1].b32.s0, true);
-                    if (mem[cur_ptr + 2].b32.s1 == MIN_HALFWORD) {
+                    if (mem[cur_ptr + 2].b32.s1 == TEX_NULL) {
                         mem[cur_ptr + 2].b32.s1 = mem[p + 1].b32.s1;
                         mem[mem[p + 1].b32.s1].b32.s0++;
                     } else
                         delete_token_ref(mem[cur_ptr + 3].b32.s0);
                     mem[cur_ptr + 3].b32.s0 = mem[p + 1].b32.s1;
                     mem[mem[p + 1].b32.s1].b32.s0++;
-                } else if (cur_mark[SPLIT_FIRST_MARK_CODE] == MIN_HALFWORD) {
+                } else if (cur_mark[SPLIT_FIRST_MARK_CODE] == TEX_NULL) {
                     cur_mark[SPLIT_FIRST_MARK_CODE] = mem[p + 1].b32.s1;
                     cur_mark[SPLIT_BOT_MARK_CODE] = cur_mark[SPLIT_FIRST_MARK_CODE];
                     mem[cur_mark[SPLIT_FIRST_MARK_CODE]].b32.s0 =
@@ -19879,7 +19879,7 @@ int32_t vsplit(int32_t n, scaled_t h)
                 }
             }
             if (mem[p].b32.s1 == q) {
-                mem[p].b32.s1 = MIN_HALFWORD;
+                mem[p].b32.s1 = TEX_NULL;
                 goto done;
             }
             p = mem[p].b32.s1;
@@ -19888,14 +19888,14 @@ done:
     q = prune_page_top(q, INTPAR(saving_vdiscards) > 0);
     p = mem[v + 5].b32.s1;
     free_node(v, BOX_NODE_SIZE);
-    if (q != MIN_HALFWORD)
+    if (q != TEX_NULL)
         q = vpackage(q, 0, ADDITIONAL, MAX_HALFWORD);
     if (cur_val < 256)
         BOX_REG(cur_val) = q;
     else {
 
         find_sa_element(4, cur_val, false);
-        if (cur_ptr != MIN_HALFWORD) {
+        if (cur_ptr != TEX_NULL) {
             mem[cur_ptr + 1].b32.s1 = q;
             mem[cur_ptr + 1].b32.s0++;
             delete_sa_ref(cur_ptr);
@@ -19960,7 +19960,7 @@ void box_error(eight_bits n)
     show_box(BOX_REG(n));
     end_diagnostic(true);
     flush_node_list(BOX_REG(n));
-    BOX_REG(n) = MIN_HALFWORD;
+    BOX_REG(n) = TEX_NULL;
 }
 
 void ensure_vbox(eight_bits n)
@@ -19970,7 +19970,7 @@ void ensure_vbox(eight_bits n)
     int32_t p;
     p = BOX_REG(n);
 
-    if (p != MIN_HALFWORD) {
+    if (p != TEX_NULL) {
 
         if (NODE_type(p) == HLIST_NODE) {
             {
@@ -20008,22 +20008,22 @@ void fire_up(int32_t c)
         PENALTY_NODE_penalty(best_page_break) = INF_PENALTY;
     } else
         geq_word_define(INT_BASE + INT_PAR__output_penalty, INF_PENALTY);
-    if (sa_root[MARK_VAL] != MIN_HALFWORD) {
+    if (sa_root[MARK_VAL] != TEX_NULL) {
 
         if (do_marks(1, 0, sa_root[MARK_VAL]))
-            sa_root[MARK_VAL] = MIN_HALFWORD;
+            sa_root[MARK_VAL] = TEX_NULL;
     }
-    if (cur_mark[BOT_MARK_CODE] != MIN_HALFWORD) {
-        if (cur_mark[TOP_MARK_CODE] != MIN_HALFWORD)
+    if (cur_mark[BOT_MARK_CODE] != TEX_NULL) {
+        if (cur_mark[TOP_MARK_CODE] != TEX_NULL)
             delete_token_ref(cur_mark[TOP_MARK_CODE]);
         cur_mark[TOP_MARK_CODE] = cur_mark[BOT_MARK_CODE];
         mem[cur_mark[TOP_MARK_CODE]].b32.s0++;
         delete_token_ref(cur_mark[FIRST_MARK_CODE]);
-        cur_mark[FIRST_MARK_CODE] = MIN_HALFWORD;
+        cur_mark[FIRST_MARK_CODE] = TEX_NULL;
     }
     if (c == best_page_break)
-        best_page_break = MIN_HALFWORD;
-    if (BOX_REG(255) != MIN_HALFWORD) {
+        best_page_break = TEX_NULL;
+    if (BOX_REG(255) != TEX_NULL) {
         {
             if (file_line_error_style_p)
                 print_file_line();
@@ -20046,13 +20046,13 @@ void fire_up(int32_t c)
         r = mem[PAGE_INS_HEAD].b32.s1;
         while (r != PAGE_INS_HEAD) {
 
-            if (mem[r + 2].b32.s0 != MIN_HALFWORD) {
+            if (mem[r + 2].b32.s0 != TEX_NULL) {
                 n = mem[r].b16.s0;
                 ensure_vbox(n);
-                if (BOX_REG(n) == MIN_HALFWORD)
+                if (BOX_REG(n) == TEX_NULL)
                     BOX_REG(n) = new_null_box();
                 p = BOX_REG(n) + 5;
-                while (mem[p].b32.s1 != MIN_HALFWORD)
+                while (mem[p].b32.s1 != TEX_NULL)
                     p = mem[p].b32.s1;
                 mem[r + 2].b32.s1 = p;
             }
@@ -20060,7 +20060,7 @@ void fire_up(int32_t c)
         }
     }
     q = HOLD_HEAD;
-    mem[q].b32.s1 = MIN_HALFWORD;
+    mem[q].b32.s1 = TEX_NULL;
     prev_p = PAGE_HEAD;
     p = mem[prev_p].b32.s1;
     while (p != best_page_break) {
@@ -20070,7 +20070,7 @@ void fire_up(int32_t c)
                 r = mem[PAGE_INS_HEAD].b32.s1;
                 while (mem[r].b16.s0 != mem[p].b16.s0)
                     r = mem[r].b32.s1;
-                if (mem[r + 2].b32.s0 == MIN_HALFWORD)
+                if (mem[r + 2].b32.s0 == TEX_NULL)
                     wait = true;
                 else {
 
@@ -20080,13 +20080,13 @@ void fire_up(int32_t c)
                     if (mem[r + 2].b32.s0 == p) {      /*1056: */
                         if (mem[r].b16.s1 == SPLIT_UP) {
 
-                            if ((mem[r + 1].b32.s0 == p) && (mem[r + 1].b32.s1 != MIN_HALFWORD)) {
+                            if ((mem[r + 1].b32.s0 == p) && (mem[r + 1].b32.s1 != TEX_NULL)) {
                                 while (mem[s].b32.s1 != mem[r + 1].b32.s1)
                                     s = mem[s].b32.s1;
-                                mem[s].b32.s1 = MIN_HALFWORD;
+                                mem[s].b32.s1 = TEX_NULL;
                                 GLUEPAR(split_top_skip) = mem[p + 4].b32.s1;
                                 mem[p + 4].b32.s0 = prune_page_top(mem[r + 1].b32.s1, false);
-                                if (mem[p + 4].b32.s0 != MIN_HALFWORD) {
+                                if (mem[p + 4].b32.s0 != TEX_NULL) {
                                     temp_ptr = vpackage(mem[p + 4].b32.s0, 0, ADDITIONAL, MAX_HALFWORD);
                                     mem[p + 3].b32.s1 = mem[temp_ptr + 3].b32.s1 + mem[temp_ptr + 2].b32.s1;
                                     free_node(temp_ptr, BOX_NODE_SIZE);
@@ -20094,7 +20094,7 @@ void fire_up(int32_t c)
                                 }
                             }
                         }
-                        mem[r + 2].b32.s0 = MIN_HALFWORD;
+                        mem[r + 2].b32.s0 = TEX_NULL;
                         n = mem[r].b16.s0;
                         temp_ptr = mem[BOX_REG(n) + 5].b32.s1;
                         free_node(BOX_REG(n), BOX_NODE_SIZE);
@@ -20102,13 +20102,13 @@ void fire_up(int32_t c)
                             vpackage(temp_ptr, 0, ADDITIONAL, MAX_HALFWORD);
                     } else {
 
-                        while (mem[s].b32.s1 != MIN_HALFWORD)
+                        while (mem[s].b32.s1 != TEX_NULL)
                             s = mem[s].b32.s1;
                         mem[r + 2].b32.s1 = s;
                     }
                 }
                 mem[prev_p].b32.s1 = mem[p].b32.s1;
-                mem[p].b32.s1 = MIN_HALFWORD;
+                mem[p].b32.s1 = TEX_NULL;
                 if (wait) {
                     mem[q].b32.s1 = p;
                     q = p;
@@ -20124,21 +20124,21 @@ void fire_up(int32_t c)
 
             if (mem[p + 1].b32.s0 != 0) {      /*1618: */
                 find_sa_element(MARK_VAL, mem[p + 1].b32.s0, true);
-                if (mem[cur_ptr + 1].b32.s1 == MIN_HALFWORD) {
+                if (mem[cur_ptr + 1].b32.s1 == TEX_NULL) {
                     mem[cur_ptr + 1].b32.s1 = mem[p + 1].b32.s1;
                     mem[mem[p + 1].b32.s1].b32.s0++;
                 }
-                if (mem[cur_ptr + 2].b32.s0 != MIN_HALFWORD)
+                if (mem[cur_ptr + 2].b32.s0 != TEX_NULL)
                     delete_token_ref(mem[cur_ptr + 2].b32.s0);
                 mem[cur_ptr + 2].b32.s0 = mem[p + 1].b32.s1;
                 mem[mem[p + 1].b32.s1].b32.s0++;
             } else {            /*1051: */
 
-                if (cur_mark[FIRST_MARK_CODE] == MIN_HALFWORD) {
+                if (cur_mark[FIRST_MARK_CODE] == TEX_NULL) {
                     cur_mark[FIRST_MARK_CODE] = mem[p + 1].b32.s1;
                     mem[cur_mark[FIRST_MARK_CODE]].b32.s0++;
                 }
-                if (cur_mark[BOT_MARK_CODE] != MIN_HALFWORD)
+                if (cur_mark[BOT_MARK_CODE] != TEX_NULL)
                     delete_token_ref(cur_mark[BOT_MARK_CODE]);
                 cur_mark[BOT_MARK_CODE] = mem[p + 1].b32.s1;
                 mem[cur_mark[BOT_MARK_CODE]].b32.s0++;
@@ -20148,8 +20148,8 @@ void fire_up(int32_t c)
         p = mem[prev_p].b32.s1;
     }
     GLUEPAR(split_top_skip) = save_split_top_skip;
-    if (p != MIN_HALFWORD) {
-        if (mem[CONTRIB_HEAD].b32.s1 == MIN_HALFWORD) {
+    if (p != TEX_NULL) {
+        if (mem[CONTRIB_HEAD].b32.s1 == TEX_NULL) {
 
             if (nest_ptr == 0)
                 cur_list.tail = page_tail;
@@ -20158,7 +20158,7 @@ void fire_up(int32_t c)
         }
         mem[page_tail].b32.s1 = mem[CONTRIB_HEAD].b32.s1;
         mem[CONTRIB_HEAD].b32.s1 = p;
-        mem[prev_p].b32.s1 = MIN_HALFWORD;
+        mem[prev_p].b32.s1 = TEX_NULL;
     }
     save_vbadness = INTPAR(vbadness);
     INTPAR(vbadness) = INF_BAD;
@@ -20172,7 +20172,7 @@ void fire_up(int32_t c)
         delete_glue_ref(last_glue);
     page_contents = EMPTY;
     page_tail = PAGE_HEAD;
-    mem[PAGE_HEAD].b32.s1 = MIN_HALFWORD;
+    mem[PAGE_HEAD].b32.s1 = TEX_NULL;
     last_glue = MAX_HALFWORD;
     last_penalty = 0;
     last_kern = 0;
@@ -20191,16 +20191,16 @@ void fire_up(int32_t c)
         r = q;
     }
     mem[PAGE_INS_HEAD].b32.s1 = PAGE_INS_HEAD; /*:1054 *//*:1049 */
-    if (sa_root[MARK_VAL] != MIN_HALFWORD) {
+    if (sa_root[MARK_VAL] != TEX_NULL) {
 
         if (do_marks(2, 0, sa_root[MARK_VAL]))
-            sa_root[MARK_VAL] = MIN_HALFWORD;
+            sa_root[MARK_VAL] = TEX_NULL;
     }
-    if ((cur_mark[TOP_MARK_CODE] != MIN_HALFWORD) && (cur_mark[FIRST_MARK_CODE] == MIN_HALFWORD)) {
+    if ((cur_mark[TOP_MARK_CODE] != TEX_NULL) && (cur_mark[FIRST_MARK_CODE] == TEX_NULL)) {
         cur_mark[FIRST_MARK_CODE] = cur_mark[TOP_MARK_CODE];
         mem[cur_mark[TOP_MARK_CODE]].b32.s0++;
     }
-    if (LOCAL(output_routine) != MIN_HALFWORD) {
+    if (LOCAL(output_routine) != TEX_NULL) {
 
         if (dead_cycles >= INTPAR(max_dead_cycles)) {     /*1059: */
             {
@@ -20235,8 +20235,8 @@ void fire_up(int32_t c)
         }
     }
     {
-        if (mem[PAGE_HEAD].b32.s1 != MIN_HALFWORD) {
-            if (mem[CONTRIB_HEAD].b32.s1 == MIN_HALFWORD) {
+        if (mem[PAGE_HEAD].b32.s1 != TEX_NULL) {
+            if (mem[CONTRIB_HEAD].b32.s1 == TEX_NULL) {
 
                 if (nest_ptr == 0)
                     cur_list.tail = page_tail;
@@ -20245,13 +20245,13 @@ void fire_up(int32_t c)
             } else
                 mem[page_tail].b32.s1 = mem[CONTRIB_HEAD].b32.s1;
             mem[CONTRIB_HEAD].b32.s1 = mem[PAGE_HEAD].b32.s1;
-            mem[PAGE_HEAD].b32.s1 = MIN_HALFWORD;
+            mem[PAGE_HEAD].b32.s1 = TEX_NULL;
             page_tail = PAGE_HEAD;
         }
         flush_node_list(disc_ptr[LAST_BOX_CODE]);
-        disc_ptr[LAST_BOX_CODE] = MIN_HALFWORD;
+        disc_ptr[LAST_BOX_CODE] = TEX_NULL;
         ship_out(BOX_REG(255));
-        BOX_REG(255) = MIN_HALFWORD;
+        BOX_REG(255) = TEX_NULL;
     }
 }
 
@@ -20266,7 +20266,7 @@ void build_page(void)
     unsigned char /*biggest_reg */ n;
     scaled_t delta, h, w;
 
-    if ((mem[CONTRIB_HEAD].b32.s1 == MIN_HALFWORD) || output_active)
+    if ((mem[CONTRIB_HEAD].b32.s1 == TEX_NULL) || output_active)
         return;
     do {
     continue_:
@@ -20331,7 +20331,7 @@ void build_page(void)
         case 11:
             if (page_contents < BOX_THERE)
                 goto done1;
-            else if (mem[p].b32.s1 == MIN_HALFWORD)
+            else if (mem[p].b32.s1 == TEX_NULL)
                 return;
             else if (NODE_type(mem[p].b32.s1) == GLUE_NODE)
                 pi = 0;
@@ -20363,13 +20363,13 @@ void build_page(void)
                     mem[r].b16.s0 = n;
                     mem[r].b16.s1 = INSERTING;
                     ensure_vbox(n);
-                    if (BOX_REG(n) == MIN_HALFWORD)
+                    if (BOX_REG(n) == TEX_NULL)
                         mem[r + 3].b32.s1 = 0;
                     else
                         mem[r + 3].b32.s1 =
                             mem[BOX_REG(n) + 3].b32.s1 +
                             mem[BOX_REG(n) + 2].b32.s1;
-                    mem[r + 2].b32.s0 = MIN_HALFWORD;
+                    mem[r + 2].b32.s0 = TEX_NULL;
                     q = SKIP_REG(n);
                     if (COUNT_REG(n) == 1000)
                         h = mem[r + 3].b32.s1;
@@ -20432,7 +20432,7 @@ void build_page(void)
                         mem[r].b16.s1 = SPLIT_UP;
                         mem[r + 1].b32.s1 = q;
                         mem[r + 1].b32.s0 = p;
-                        if (q == MIN_HALFWORD)
+                        if (q == TEX_NULL)
                             insert_penalties = insert_penalties - 10000;
                         else if (NODE_type(q) == PENALTY_NODE)
                             insert_penalties = insert_penalties + mem[q + 1].b32.s1;
@@ -20527,13 +20527,13 @@ void build_page(void)
         mem[page_tail].b32.s1 = p;
         page_tail = p;
         mem[CONTRIB_HEAD].b32.s1 = mem[p].b32.s1;
-        mem[p].b32.s1 = MIN_HALFWORD;
+        mem[p].b32.s1 = TEX_NULL;
         goto done;
     done1:
         mem[CONTRIB_HEAD].b32.s1 = mem[p].b32.s1;
-        mem[p].b32.s1 = MIN_HALFWORD;
+        mem[p].b32.s1 = TEX_NULL;
         if (INTPAR(saving_vdiscards) > 0) {
-            if (disc_ptr[LAST_BOX_CODE] == MIN_HALFWORD)
+            if (disc_ptr[LAST_BOX_CODE] == TEX_NULL)
                 disc_ptr[LAST_BOX_CODE] = p;
             else
                 mem[disc_ptr[COPY_CODE]].b32.s1 = p;
@@ -20542,7 +20542,7 @@ void build_page(void)
             flush_node_list(p); /*:1032*/
     done:
         ;
-    } while (!(mem[CONTRIB_HEAD].b32.s1 == MIN_HALFWORD));
+    } while (!(mem[CONTRIB_HEAD].b32.s1 == TEX_NULL));
     if (nest_ptr == 0)
         cur_list.tail = CONTRIB_HEAD;
     else
@@ -20564,7 +20564,7 @@ void app_space(void)
         else {                  /*1077: */
 
             main_p = font_glue[eqtb[CUR_FONT_LOC].b32.s1];
-            if (main_p == MIN_HALFWORD) {
+            if (main_p == TEX_NULL) {
                 main_p = new_spec(0);
                 main_k = param_base[eqtb[CUR_FONT_LOC].b32.s1] + 2;
                 mem[main_p + 1].b32.s1 = font_info[main_k].b32.s1;
@@ -20581,7 +20581,7 @@ void app_space(void)
         mem[main_p + 2].b32.s1 = xn_over_d(mem[main_p + 2].b32.s1, cur_list.aux.b32.s0, 1000);
         mem[main_p + 3].b32.s1 = xn_over_d(mem[main_p + 3].b32.s1, 1000, cur_list.aux.b32.s0) /*:1079 */ ;
         q = new_glue(main_p);
-        mem[main_p].b32.s1 = MIN_HALFWORD;
+        mem[main_p].b32.s1 = TEX_NULL;
     }
     mem[cur_list.tail].b32.s1 = q;
     cur_list.tail = q;
@@ -20822,10 +20822,10 @@ void normal_paragraph(void)
         eq_word_define(DIMEN_BASE + DIMEN_PAR__hang_indent, 0);
     if (INTPAR(hang_after) != 1)
         eq_word_define(INT_BASE + INT_PAR__hang_after, 1);
-    if (LOCAL(par_shape) != MIN_HALFWORD)
-        eq_define(LOCAL_BASE + LOCAL__par_shape, SHAPE_REF, MIN_HALFWORD);
-    if (eqtb[INTER_LINE_PENALTIES_LOC].b32.s1 != MIN_HALFWORD)
-        eq_define(INTER_LINE_PENALTIES_LOC, SHAPE_REF, MIN_HALFWORD);
+    if (LOCAL(par_shape) != TEX_NULL)
+        eq_define(LOCAL_BASE + LOCAL__par_shape, SHAPE_REF, TEX_NULL);
+    if (eqtb[INTER_LINE_PENALTIES_LOC].b32.s1 != TEX_NULL)
+        eq_define(INTER_LINE_PENALTIES_LOC, SHAPE_REF, TEX_NULL);
 }
 
 
@@ -20837,26 +20837,26 @@ box_end(int32_t box_context)
     small_number a;
 
     if (box_context < BOX_FLAG) { /*1111:*/
-        if (cur_box != MIN_HALFWORD) {
+        if (cur_box != TEX_NULL) {
             mem[cur_box + 4].b32.s1 = box_context;
 
             if (abs(cur_list.mode) == VMODE) {
-                if (pre_adjust_tail != MIN_HALFWORD) {
+                if (pre_adjust_tail != TEX_NULL) {
                     if (PRE_ADJUST_HEAD != pre_adjust_tail) {
                         mem[cur_list.tail].b32.s1 = mem[PRE_ADJUST_HEAD].b32.s1;
                         cur_list.tail = pre_adjust_tail;
                     }
-                    pre_adjust_tail = MIN_HALFWORD;
+                    pre_adjust_tail = TEX_NULL;
                 }
 
                 append_to_vlist(cur_box);
 
-                if (adjust_tail != MIN_HALFWORD) {
+                if (adjust_tail != TEX_NULL) {
                     if (ADJUST_HEAD != adjust_tail) {
                         mem[cur_list.tail].b32.s1 = mem[ADJUST_HEAD].b32.s1;
                         cur_list.tail = adjust_tail;
                     }
-                    adjust_tail = MIN_HALFWORD;
+                    adjust_tail = TEX_NULL;
                 }
 
                 if (cur_list.mode > 0)
@@ -20896,7 +20896,7 @@ box_end(int32_t box_context)
             else
                 sa_def(cur_ptr, cur_box);
         }
-    } else if (cur_box != MIN_HALFWORD) {
+    } else if (cur_box != TEX_NULL) {
         if (box_context > SHIP_OUT_FLAG) { /*1113:*/
             do {
                 get_x_token();
@@ -20947,18 +20947,18 @@ begin_box(int32_t box_context)
             cur_box = BOX_REG(cur_val);
         } else {
             find_sa_element(4, cur_val, false);
-            if (cur_ptr == MIN_HALFWORD)
-                cur_box = MIN_HALFWORD;
+            if (cur_ptr == TEX_NULL)
+                cur_box = TEX_NULL;
             else
                 cur_box = mem[cur_ptr + 1].b32.s1;
         }
 
         if (cur_val < 256) {
-            BOX_REG(cur_val) = MIN_HALFWORD;
+            BOX_REG(cur_val) = TEX_NULL;
         } else {
             find_sa_element(4, cur_val, false);
-            if (cur_ptr != MIN_HALFWORD) {
-                mem[cur_ptr + 1].b32.s1 = MIN_HALFWORD;
+            if (cur_ptr != TEX_NULL) {
+                mem[cur_ptr + 1].b32.s1 = TEX_NULL;
                 mem[cur_ptr + 1].b32.s0++;
                 delete_sa_ref(cur_ptr);
             }
@@ -20972,8 +20972,8 @@ begin_box(int32_t box_context)
             q = BOX_REG(cur_val);
         } else {
             find_sa_element(4, cur_val, false);
-            if (cur_ptr == MIN_HALFWORD)
-                q = MIN_HALFWORD;
+            if (cur_ptr == TEX_NULL)
+                q = TEX_NULL;
             else
                 q = mem[cur_ptr + 1].b32.s1;
         }
@@ -20982,7 +20982,7 @@ begin_box(int32_t box_context)
         break;
 
     case LAST_BOX_CODE:
-        cur_box = MIN_HALFWORD;
+        cur_box = TEX_NULL;
 
         if (abs(cur_list.mode) == MMODE) {
             you_cant();
@@ -21012,7 +21012,7 @@ begin_box(int32_t box_context)
             if (tx < hi_mem_min) {
                 if (NODE_type(tx) == HLIST_NODE || NODE_type(tx) == VLIST_NODE) { /*1116:*/
                     q = cur_list.head;
-                    p = MIN_HALFWORD;
+                    p = TEX_NULL;
 
                     do {
                         r = p;
@@ -21036,16 +21036,16 @@ begin_box(int32_t box_context)
 
                     q = mem[tx].b32.s1;
                     mem[p].b32.s1 = q;
-                    mem[tx].b32.s1 = MIN_HALFWORD;
+                    mem[tx].b32.s1 = TEX_NULL;
 
-                    if (q == MIN_HALFWORD) {
+                    if (q == TEX_NULL) {
                         if (fm)
                             confusion("tail1");
                         else
                             cur_list.tail = p;
                     } else if (fm) {
                         cur_list.tail = r;
-                        mem[r].b32.s1 = MIN_HALFWORD;
+                        mem[r].b32.s1 = TEX_NULL;
                         flush_node_list(p);
                     }
 
@@ -21101,11 +21101,11 @@ begin_box(int32_t box_context)
 
         if (k == VMODE) {
             cur_list.aux.b32.s1 = IGNORE_DEPTH;
-            if (LOCAL(every_vbox) != MIN_HALFWORD)
+            if (LOCAL(every_vbox) != TEX_NULL)
                 begin_token_list(LOCAL(every_vbox), EVERY_VBOX_TEXT);
         } else {
             cur_list.aux.b32.s0 = 1000;
-            if (LOCAL(every_hbox) != MIN_HALFWORD)
+            if (LOCAL(every_hbox) != TEX_NULL)
                 begin_token_list(LOCAL(every_hbox), EVERY_HBOX_TEXT);
         }
 
@@ -21167,7 +21167,7 @@ void package(small_number c)
         if (c == VTOP_CODE) {   /*1122: */
             h = 0;
             p = mem[cur_box + 5].b32.s1;
-            if (p != MIN_HALFWORD) {
+            if (p != TEX_NULL) {
 
                 if (NODE_type(p) <= RULE_NODE)
                     h = mem[p + 3].b32.s1;
@@ -21222,7 +21222,7 @@ void new_graf(bool indented)
         if ((insert_src_special_every_par))
             insert_src_special();
     }
-    if (LOCAL(every_par) != MIN_HALFWORD)
+    if (LOCAL(every_par) != TEX_NULL)
         begin_token_list(LOCAL(every_par), EVERY_PAR_TEXT);
     if (nest_ptr == 1)
         build_page();
@@ -21293,9 +21293,9 @@ void end_graf(void)
             pop_nest();
         else
             line_break(false);
-        if (cur_list.eTeX_aux != MIN_HALFWORD) {
+        if (cur_list.eTeX_aux != TEX_NULL) {
             flush_list(cur_list.eTeX_aux);
-            cur_list.eTeX_aux = MIN_HALFWORD;
+            cur_list.eTeX_aux = TEX_NULL;
         }
         normal_paragraph();
         error_count = 0;
@@ -21412,7 +21412,7 @@ void delete_last(void)
 
             if (mem[tx].b16.s1 == cur_chr) {
                 q = cur_list.head;
-                p = MIN_HALFWORD;
+                p = TEX_NULL;
                 do {
                     r = p;
                     p = q;
@@ -21438,8 +21438,8 @@ void delete_last(void)
                 } while (!(q == tx));
                 q = mem[tx].b32.s1;
                 mem[p].b32.s1 = q;
-                mem[tx].b32.s1 = MIN_HALFWORD;
-                if (q == MIN_HALFWORD) {
+                mem[tx].b32.s1 = TEX_NULL;
+                if (q == TEX_NULL) {
 
                     if (fm)
                         confusion("tail1");
@@ -21447,7 +21447,7 @@ void delete_last(void)
                         cur_list.tail = p;
                 } else if (fm) {
                     cur_list.tail = r;
-                    mem[r].b32.s1 = MIN_HALFWORD;
+                    mem[r].b32.s1 = TEX_NULL;
                     flush_node_list(p);
                 }
                 flush_node_list(tx);
@@ -21466,7 +21466,7 @@ void unpackage(void)
 
     if (cur_chr > COPY_CODE) {  /*1651: */
         mem[cur_list.tail].b32.s1 = disc_ptr[cur_chr];
-        disc_ptr[cur_chr] = MIN_HALFWORD;
+        disc_ptr[cur_chr] = TEX_NULL;
         goto done;
     }
     c = cur_chr;
@@ -21476,12 +21476,12 @@ void unpackage(void)
     else {
 
         find_sa_element(4, cur_val, false);
-        if (cur_ptr == MIN_HALFWORD)
-            p = MIN_HALFWORD;
+        if (cur_ptr == TEX_NULL)
+            p = TEX_NULL;
         else
             p = mem[cur_ptr + 1].b32.s1;
     }
-    if (p == MIN_HALFWORD)
+    if (p == TEX_NULL)
         return;
     if ((abs(cur_list.mode) == MMODE)
         || ((abs(cur_list.mode) == VMODE) && (NODE_type(p) != VLIST_NODE))
@@ -21508,12 +21508,12 @@ void unpackage(void)
 
         mem[cur_list.tail].b32.s1 = mem[p + 5].b32.s1;
         if (cur_val < 256)
-            BOX_REG(cur_val) = MIN_HALFWORD;
+            BOX_REG(cur_val) = TEX_NULL;
         else {
 
             find_sa_element(4, cur_val, false);
-            if (cur_ptr != MIN_HALFWORD) {
-                mem[cur_ptr + 1].b32.s1 = MIN_HALFWORD;
+            if (cur_ptr != TEX_NULL) {
+                mem[cur_ptr + 1].b32.s1 = TEX_NULL;
                 mem[cur_ptr + 1].b32.s0++;
                 delete_sa_ref(cur_ptr);
             }
@@ -21521,7 +21521,7 @@ void unpackage(void)
         free_node(p, BOX_NODE_SIZE);
     }
 done:
-    while (mem[cur_list.tail].b32.s1 != MIN_HALFWORD) {
+    while (mem[cur_list.tail].b32.s1 != TEX_NULL) {
 
         r = mem[cur_list.tail].b32.s1;
         if (!(r >= hi_mem_min) && (NODE_type(r) == MARGIN_KERN_NODE)) {
@@ -21608,7 +21608,7 @@ void build_discretionary(void)
     q = cur_list.head;
     p = mem[q].b32.s1;
     n = 0;
-    while (p != MIN_HALFWORD) {
+    while (p != TEX_NULL) {
 
         if (!(p >= hi_mem_min)) {
 
@@ -21639,7 +21639,7 @@ void build_discretionary(void)
                             show_box(p);
                             end_diagnostic(true);
                             flush_node_list(p);
-                            mem[q].b32.s1 = MIN_HALFWORD;
+                            mem[q].b32.s1 = TEX_NULL;
                             goto done;
                         }
                     }
@@ -21728,7 +21728,7 @@ void make_accent(void)
     f = eqtb[CUR_FONT_LOC].b32.s1;
     p = new_character(f, cur_val);
 
-    if (p != MIN_HALFWORD) {
+    if (p != TEX_NULL) {
         x = font_info[X_HEIGHT_CODE + param_base[f]].b32.s1;
         s = font_info[SLANT_CODE + param_base[f]].b32.s1 / ((double)65536.0);
         if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
@@ -21738,7 +21738,7 @@ void make_accent(void)
         } else
             a = font_info[width_base[f] + font_info[char_base[f] + effective_char(true, f, mem[p].b16.s0)].b16.s3].b32.s1;
         do_assignments();
-        q = MIN_HALFWORD;
+        q = TEX_NULL;
         f = eqtb[CUR_FONT_LOC].b32.s1;
         if ((cur_cmd == LETTER) || (cur_cmd == OTHER_CHAR) || (cur_cmd == CHAR_GIVEN)) {
             q = new_character(f, cur_chr);
@@ -21748,7 +21748,7 @@ void make_accent(void)
             q = new_character(f, cur_val);
         } else
             back_input();
-        if (q != MIN_HALFWORD) { /*1160: */
+        if (q != TEX_NULL) { /*1160: */
             t = font_info[SLANT_CODE + param_base[f]].b32.s1 / ((double)65536.0);
             if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
                 w = mem[q + 1].b32.s1;
@@ -21891,10 +21891,10 @@ void do_endv(void)
 {
     base_ptr = input_ptr;
     input_stack[base_ptr] = cur_input;
-    while ((input_stack[base_ptr].index != V_TEMPLATE) && (input_stack[base_ptr].loc == MIN_HALFWORD)
+    while ((input_stack[base_ptr].index != V_TEMPLATE) && (input_stack[base_ptr].loc == TEX_NULL)
            && (input_stack[base_ptr].state == TOKEN_LIST))
         base_ptr--;
-    if ((input_stack[base_ptr].index != V_TEMPLATE) || (input_stack[base_ptr].loc != MIN_HALFWORD)
+    if ((input_stack[base_ptr].index != V_TEMPLATE) || (input_stack[base_ptr].loc != TEX_NULL)
         || (input_stack[base_ptr].state != TOKEN_LIST))
         fatal_error("(interwoven alignment preambles are not allowed)");
     if (cur_group == ALIGN_GROUP) {
@@ -21926,7 +21926,7 @@ void push_math(group_code c)
 {
     push_nest();
     cur_list.mode = -207;
-    cur_list.aux.b32.s1 = MIN_HALFWORD;
+    cur_list.aux.b32.s1 = TEX_NULL;
     new_save_level(c);
 }
 
@@ -21934,7 +21934,7 @@ void just_copy(int32_t p, int32_t h, int32_t t)
 {
     memory_word *mem = zmem; int32_t r;
     unsigned char words;
-    while (p != MIN_HALFWORD) {
+    while (p != TEX_NULL) {
 
         words = 1;
         if ((p >= hi_mem_min))
@@ -21950,7 +21950,7 @@ void just_copy(int32_t p, int32_t h, int32_t t)
                     mem[r + 6] = mem[p + 6];
                     mem[r + 5] = mem[p + 5];
                     words = 5;
-                    mem[r + 5].b32.s1 = MIN_HALFWORD;
+                    mem[r + 5].b32.s1 = TEX_NULL;
                 }
                 break;
             case 2:
@@ -21980,7 +21980,7 @@ void just_copy(int32_t p, int32_t h, int32_t t)
                     mem[r + 2].b32.s0 = mem[p + 2].b32.s0;
                     mem[r + 2].b32.s1 = mem[p + 2].b32.s1;
                     mem[r + 1].b32.s0 = mem[p + 1].b32.s0;
-                    mem[r + 1].b32.s1 = MIN_HALFWORD;
+                    mem[r + 1].b32.s1 = TEX_NULL;
                 }
                 break;
             case 8:
@@ -22071,19 +22071,19 @@ void just_reverse(int32_t p)
     int32_t m, n;
     m = MIN_HALFWORD;
     n = MIN_HALFWORD;
-    if (mem[TEMP_HEAD].b32.s1 == MIN_HALFWORD) {
-        just_copy(mem[p].b32.s1, TEMP_HEAD, MIN_HALFWORD);
+    if (mem[TEMP_HEAD].b32.s1 == TEX_NULL) {
+        just_copy(mem[p].b32.s1, TEMP_HEAD, TEX_NULL);
         q = mem[TEMP_HEAD].b32.s1;
     } else {
 
         q = mem[p].b32.s1;
-        mem[p].b32.s1 = MIN_HALFWORD;
+        mem[p].b32.s1 = TEX_NULL;
         flush_node_list(mem[TEMP_HEAD].b32.s1);
     }
     t = new_edge(cur_dir, 0);
     l = t;
     cur_dir = 1 - cur_dir;
-    while (q != MIN_HALFWORD)
+    while (q != TEX_NULL)
         if ((q >= hi_mem_min))
             do {
                 p = q;
@@ -22177,11 +22177,11 @@ void init_math(void)
     get_token();
 
     if ((cur_cmd == MATH_SHIFT) && (cur_list.mode > 0)) { /*1180: */
-        j = MIN_HALFWORD;
+        j = TEX_NULL;
         w = -MAX_HALFWORD;
         if (cur_list.head == cur_list.tail) {       /*1520: */
             pop_nest();
-            if (cur_list.eTeX_aux == MIN_HALFWORD)
+            if (cur_list.eTeX_aux == TEX_NULL)
                 x = 0;
             else if (mem[cur_list.eTeX_aux].b32.s0 >= R_CODE)
                 x = -1;
@@ -22211,7 +22211,7 @@ void init_math(void)
             mem[j + 6].gr = mem[just_box + 6].gr;
 
             v = mem[just_box + 4].b32.s1;
-            if (cur_list.eTeX_aux == MIN_HALFWORD)
+            if (cur_list.eTeX_aux == TEX_NULL)
                 x = 0;
             else if (mem[cur_list.eTeX_aux].b32.s0 >= R_CODE)
                 x = -1;
@@ -22219,7 +22219,7 @@ void init_math(void)
                 x = 1 /*:1519 */ ;
             if (x >= 0) {
                 p = mem[just_box + 5].b32.s1;
-                mem[TEMP_HEAD].b32.s1 = MIN_HALFWORD;
+                mem[TEMP_HEAD].b32.s1 = TEX_NULL;
             } else {
 
                 v = -(int32_t) v - mem[just_box + 1].b32.s1;
@@ -22235,7 +22235,7 @@ void init_math(void)
                 mem[temp_ptr].b32.s1 = LR_ptr;
                 LR_ptr = temp_ptr;
             }
-            while (p != MIN_HALFWORD) {
+            while (p != TEX_NULL) {
 
             reswitch:
                 if ((p >= hi_mem_min)) {
@@ -22354,7 +22354,7 @@ void init_math(void)
             } /*1523:*/
         done:
             if (INTPAR(texxet) > 0) {
-                while (LR_ptr != MIN_HALFWORD) {
+                while (LR_ptr != TEX_NULL) {
 
                     temp_ptr = LR_ptr;
                     LR_ptr = mem[temp_ptr].b32.s1;
@@ -22371,7 +22371,7 @@ void init_math(void)
             cur_dir = LEFT_TO_RIGHT;
             flush_node_list(mem[TEMP_HEAD].b32.s1);
         }
-        if (LOCAL(par_shape) == MIN_HALFWORD) {
+        if (LOCAL(par_shape) == TEX_NULL) {
 
             if ((DIMENPAR(hang_indent) != 0)
                 &&
@@ -22406,7 +22406,7 @@ void init_math(void)
         eq_word_define(INT_BASE + INT_PAR__pre_display_correction, x);
         eq_word_define(DIMEN_BASE + DIMEN_PAR__display_width, l);
         eq_word_define(DIMEN_BASE + DIMEN_PAR__display_indent, s);
-        if (LOCAL(every_display) != MIN_HALFWORD)
+        if (LOCAL(every_display) != TEX_NULL)
             begin_token_list(LOCAL(every_display), EVERY_DISPLAY_TEXT);
         if (nest_ptr == 1)
             build_page();
@@ -22418,7 +22418,7 @@ void init_math(void)
             eq_word_define(INT_BASE + INT_PAR__cur_fam, -1);
             if ((insert_src_special_every_math))
                 insert_src_special();
-            if (LOCAL(every_math) != MIN_HALFWORD)
+            if (LOCAL(every_math) != TEX_NULL)
                 begin_token_list(LOCAL(every_math), EVERY_MATH_TEXT);
         }
     }
@@ -22435,7 +22435,7 @@ void start_eq_no(void)
     eq_word_define(INT_BASE + INT_PAR__cur_fam, -1);
     if (insert_src_special_every_math)
         insert_src_special();
-    if (LOCAL(every_math) != MIN_HALFWORD)
+    if (LOCAL(every_math) != TEX_NULL)
         begin_token_list(LOCAL(every_math), EVERY_MATH_TEXT);
 }
 
@@ -22766,15 +22766,15 @@ void append_choices(void)
 int32_t fin_mlist(int32_t p)
 {
     memory_word *mem = zmem; int32_t q;
-    if (cur_list.aux.b32.s1 != MIN_HALFWORD) {       /*1220: */
+    if (cur_list.aux.b32.s1 != TEX_NULL) {       /*1220: */
         mem[cur_list.aux.b32.s1 + 3].b32.s1 = SUB_MLIST;
         mem[cur_list.aux.b32.s1 + 3].b32.s0 = mem[cur_list.head].b32.s1;
-        if (p == MIN_HALFWORD)
+        if (p == TEX_NULL)
             q = cur_list.aux.b32.s1;
         else {
 
             q = mem[cur_list.aux.b32.s1 + 2].b32.s0;
-            if ((mem[q].b16.s1 != LEFT_NOAD) || (cur_list.eTeX_aux == MIN_HALFWORD))
+            if ((mem[q].b16.s1 != LEFT_NOAD) || (cur_list.eTeX_aux == TEX_NULL))
                 confusion("right");
             mem[cur_list.aux.b32.s1 + 2].b32.s0 = mem[cur_list.eTeX_aux].b32.s1;
             mem[cur_list.eTeX_aux].b32.s1 = cur_list.aux.b32.s1;
@@ -22793,7 +22793,7 @@ void build_choices(void)
 {
     memory_word *mem = zmem; int32_t p;
     unsave();
-    p = fin_mlist(MIN_HALFWORD);
+    p = fin_mlist(TEX_NULL);
     switch (save_stack[save_ptr - 1].b32.s1) {
     case 0:
         mem[cur_list.tail + 1].b32.s0 = p;
@@ -22822,7 +22822,7 @@ void sub_sup(void)
     memory_word *mem = zmem; small_number t;
     int32_t p;
     t = EMPTY;
-    p = MIN_HALFWORD;
+    p = TEX_NULL;
     if (cur_list.tail != cur_list.head) {
 
         if ((mem[cur_list.tail].b16.s1 >= ORD_NOAD)
@@ -22831,7 +22831,7 @@ void sub_sup(void)
             t = mem[p].b32.s1;
         }
     }
-    if ((p == MIN_HALFWORD) || (t != EMPTY)) {   /*1212: */
+    if ((p == TEX_NULL) || (t != EMPTY)) {   /*1212: */
         {
             mem[cur_list.tail].b32.s1 = new_noad();
             cur_list.tail = mem[cur_list.tail].b32.s1;
@@ -22879,7 +22879,7 @@ math_fraction(void)
 
     c = cur_chr;
 
-    if (cur_list.aux.b32.s1 != MIN_HALFWORD) { /*1218:*/
+    if (cur_list.aux.b32.s1 != TEX_NULL) { /*1218:*/
         if (c >= DELIMITED_CODE) {
             scan_delimiter(GARBAGE, false);
             scan_delimiter(GARBAGE, false);
@@ -22907,7 +22907,7 @@ math_fraction(void)
         mem[cur_list.aux.b32.s1 + 3].b32 = empty;
         mem[cur_list.aux.b32.s1 + 4].b16 = null_delimiter;
         mem[cur_list.aux.b32.s1 + 5].b16 = null_delimiter;
-        mem[cur_list.head].b32.s1 = MIN_HALFWORD;
+        mem[cur_list.head].b32.s1 = TEX_NULL;
 
         cur_list.tail = cur_list.head;
 
@@ -23025,7 +23025,7 @@ void app_display(int32_t j, int32_t b, scaled_t d)
             e = d;
             d = z - e - mem[p + 1].b32.s1;
         }
-        if (j != MIN_HALFWORD) {
+        if (j != TEX_NULL) {
             b = copy_node_list(j);
             mem[b + 3].b32.s1 = mem[p + 3].b32.s1;
             mem[b + 2].b32.s1 = mem[p + 2].b32.s1;
@@ -23039,27 +23039,27 @@ void app_display(int32_t j, int32_t b, scaled_t d)
 
             r = mem[p + 5].b32.s1;
             free_node(p, BOX_NODE_SIZE);
-            if (r == MIN_HALFWORD)
+            if (r == TEX_NULL)
                 confusion("LR4");
             if (x > 0) {
                 p = r;
                 do {
                     q = r;
                     r = mem[r].b32.s1;
-                } while (!(r == MIN_HALFWORD));
+                } while (!(r == TEX_NULL));
             } else {
 
-                p = MIN_HALFWORD;
+                p = TEX_NULL;
                 q = r;
                 do {
                     t = mem[r].b32.s1;
                     mem[r].b32.s1 = p;
                     p = r;
                     r = t;
-                } while (!(r == MIN_HALFWORD));
+                } while (!(r == TEX_NULL));
             }
         }
-        if (j == MIN_HALFWORD) {
+        if (j == TEX_NULL) {
             r = new_kern(0);
             t = new_kern(0);
         } else {
@@ -23102,7 +23102,7 @@ void app_display(int32_t j, int32_t b, scaled_t d)
             mem[r + 1].b32.s1 = d;
             mem[r].b32.s1 = p;
             mem[u].b32.s1 = r;
-            if (j == MIN_HALFWORD) {
+            if (j == TEX_NULL) {
                 b = hpack(u, 0, ADDITIONAL);
                 mem[b + 4].b32.s1 = s;
             } else
@@ -23132,7 +23132,7 @@ void after_math(void)
     int32_t r;
     int32_t t;
     int32_t pre_t;
-    int32_t j = MIN_HALFWORD;
+    int32_t j = TEX_NULL;
 
     danger = false;
 
@@ -23198,7 +23198,7 @@ void after_math(void)
     }
     m = cur_list.mode;
     l = false;
-    p = fin_mlist(MIN_HALFWORD);
+    p = fin_mlist(TEX_NULL);
     if (cur_list.mode == -(int32_t) m) {
         {
             get_x_token();
@@ -23291,9 +23291,9 @@ void after_math(void)
             danger = true;
         }
         m = cur_list.mode;
-        p = fin_mlist(MIN_HALFWORD);
+        p = fin_mlist(TEX_NULL);
     } else
-        a = MIN_HALFWORD;
+        a = TEX_NULL;
     if (m < 0) {                /*1231: */
         {
             mem[cur_list.tail].b32.s1 = new_math(DIMENPAR(math_surround), BEFORE);
@@ -23304,7 +23304,7 @@ void after_math(void)
         mlist_penalties = (cur_list.mode > 0);
         mlist_to_hlist();
         mem[cur_list.tail].b32.s1 = mem[TEMP_HEAD].b32.s1;
-        while (mem[cur_list.tail].b32.s1 != MIN_HALFWORD)
+        while (mem[cur_list.tail].b32.s1 != TEX_NULL)
             cur_list.tail = mem[cur_list.tail].b32.s1;
         {
             mem[cur_list.tail].b32.s1 = new_math(DIMENPAR(math_surround), AFTER);
@@ -23314,7 +23314,7 @@ void after_math(void)
         unsave();
     } else {
 
-        if (a == MIN_HALFWORD) { /*1232: */
+        if (a == TEX_NULL) { /*1232: */
             get_x_token();
             if (cur_cmd != MATH_SHIFT) {
                 {
@@ -23342,15 +23342,15 @@ void after_math(void)
         b = hpack(p, 0, ADDITIONAL);
         p = mem[b + 5].b32.s1;
         t = adjust_tail;
-        adjust_tail = MIN_HALFWORD;
+        adjust_tail = TEX_NULL;
         pre_t = pre_adjust_tail;
-        pre_adjust_tail = MIN_HALFWORD;
+        pre_adjust_tail = TEX_NULL;
         w = mem[b + 1].b32.s1;
         z = DIMENPAR(display_width);
         s = DIMENPAR(display_indent);
         if (INTPAR(pre_display_correction) < 0)
             s = -(int32_t) s - z;
-        if ((a == MIN_HALFWORD) || danger) {
+        if ((a == TEX_NULL) || danger) {
             e = 0;
             q = 0;
         } else {
@@ -23378,7 +23378,7 @@ void after_math(void)
         d = half(z - w);
         if ((e > 0) && (d < 2 * e)) {
             d = half(z - w - e);
-            if (p != MIN_HALFWORD) {
+            if (p != TEX_NULL) {
 
                 if (!(p >= hi_mem_min)) {
 
@@ -23424,7 +23424,7 @@ void after_math(void)
             b = hpack(b, 0, ADDITIONAL);
         }
         app_display(j, b, d);
-        if ((a != MIN_HALFWORD) && (e == 0) && !l) {
+        if ((a != TEX_NULL) && (e == 0) && !l) {
             {
                 mem[cur_list.tail].b32.s1 = new_penalty(INF_PENALTY);
                 cur_list.tail = mem[cur_list.tail].b32.s1;
@@ -23533,7 +23533,7 @@ do_register_command(small_number a)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    int32_t l = MIN_HALFWORD, q, r, s = MIN_HALFWORD;
+    int32_t l = TEX_NULL, q, r, s = TEX_NULL;
     unsigned char /*mu_val */ p;
     bool e;
     int32_t w = 0;
@@ -23846,14 +23846,14 @@ void alter_box_dimen(void)
     else {
 
         find_sa_element(4, cur_val, false);
-        if (cur_ptr == MIN_HALFWORD)
-            b = MIN_HALFWORD;
+        if (cur_ptr == TEX_NULL)
+            b = TEX_NULL;
         else
             b = mem[cur_ptr + 1].b32.s1;
     }
     scan_optional_equals();
     scan_dimen(false, false, false);
-    if (b != MIN_HALFWORD)
+    if (b != TEX_NULL)
         mem[b + c].b32.s1 = cur_val;
 }
 
@@ -24045,7 +24045,7 @@ void issue_message(void)
             print_cstr("");
         }
         print(s);
-        if (LOCAL(err_help) != MIN_HALFWORD)
+        if (LOCAL(err_help) != TEX_NULL)
             use_err_help = true;
         else if (long_help_seen) {
             help_ptr = 1;
@@ -24086,7 +24086,7 @@ shift_case(void)
     p = scan_toks(false, false);
     p = mem[def_ref].b32.s1;
 
-    while (p != MIN_HALFWORD) {
+    while (p != TEX_NULL) {
         t = mem[p].b32.s0;
         if (t < CS_TOKEN_FLAG + SINGLE_BASE) {
             c = t % MAX_CHAR_VAL;
@@ -24127,8 +24127,8 @@ void show_whatever(void)
             else {
 
                 find_sa_element(4, cur_val, false);
-                if (cur_ptr == MIN_HALFWORD)
-                    p = MIN_HALFWORD;
+                if (cur_ptr == TEX_NULL)
+                    p = TEX_NULL;
                 else
                     p = mem[cur_ptr + 1].b32.s1;
             }
@@ -24136,7 +24136,7 @@ void show_whatever(void)
             print_nl_cstr("> \\box");
             print_int(cur_val);
             print_char('=');
-            if (p == MIN_HALFWORD)
+            if (p == TEX_NULL)
                 print_cstr("void");
             else
                 show_box(p);
@@ -24165,7 +24165,7 @@ void show_whatever(void)
             begin_diagnostic();
             print_nl_cstr("");
             print_ln();
-            if (cond_ptr == MIN_HALFWORD) {
+            if (cond_ptr == TEX_NULL) {
                 print_nl_cstr("### ");
                 print_cstr("no active conditionals");
             } else {
@@ -24175,7 +24175,7 @@ void show_whatever(void)
                 do {
                     n++;
                     p = mem[p].b32.s1;
-                } while (!(p == MIN_HALFWORD));
+                } while (!(p == TEX_NULL));
                 p = cond_ptr;
                 t = cur_if;
                 l = if_line;
@@ -24196,7 +24196,7 @@ void show_whatever(void)
                     l = mem[p + 1].b32.s1;
                     m = mem[p].b16.s1;
                     p = mem[p].b32.s1;
-                } while (!(p == MIN_HALFWORD));
+                } while (!(p == TEX_NULL));
             }
         }
         break;
@@ -24649,13 +24649,13 @@ void do_extension(void)
     case 2:
         {
             new_write_whatsit(WRITE_NODE_SIZE);
-            mem[cur_list.tail + 1].b32.s1 = MIN_HALFWORD;
+            mem[cur_list.tail + 1].b32.s1 = TEX_NULL;
         }
         break;
     case 3:
         {
             new_whatsit(SPECIAL_NODE, WRITE_NODE_SIZE);
-            mem[cur_list.tail + 1].b32.s0 = MIN_HALFWORD;
+            mem[cur_list.tail + 1].b32.s0 = TEX_NULL;
             p = scan_toks(false, true);
             mem[cur_list.tail + 1].b32.s1 = def_ref;
         }
@@ -24669,7 +24669,7 @@ void do_extension(void)
                 out_what(cur_list.tail);
                 flush_node_list(cur_list.tail);
                 cur_list.tail = p;
-                mem[p].b32.s1 = MIN_HALFWORD;
+                mem[p].b32.s1 = TEX_NULL;
             } else
                 back_input();
         }
@@ -24847,7 +24847,7 @@ void append_src_special(void)
         new_whatsit(SPECIAL_NODE, WRITE_NODE_SIZE);
         mem[cur_list.tail + 1].b32.s0 = 0;
         def_ref = get_avail();
-        mem[def_ref].b32.s0 = MIN_HALFWORD;
+        mem[def_ref].b32.s0 = TEX_NULL;
         str_toks(make_src_special(source_filename_stack[in_open], line));
         mem[def_ref].b32.s1 = mem[TEMP_HEAD].b32.s1;
         mem[cur_list.tail + 1].b32.s1 = def_ref;
@@ -24944,7 +24944,7 @@ handle_right_brace(void)
         break;
 
     case OUTPUT_GROUP: /*1062:*/
-        if (cur_input.loc != MIN_HALFWORD || (cur_input.index != OUTPUT_TEXT && cur_input.index != BACKED_UP)) {
+        if (cur_input.loc != TEX_NULL || (cur_input.index != OUTPUT_TEXT && cur_input.index != BACKED_UP)) {
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -24957,7 +24957,7 @@ handle_right_brace(void)
 
             do {
                 get_token();
-            } while (cur_input.loc != MIN_HALFWORD);
+            } while (cur_input.loc != TEX_NULL);
         }
 
         end_token_list();
@@ -24966,7 +24966,7 @@ handle_right_brace(void)
         output_active = false;
         insert_penalties = 0;
 
-        if (BOX_REG(255) != MIN_HALFWORD) {
+        if (BOX_REG(255) != TEX_NULL) {
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -24986,17 +24986,17 @@ handle_right_brace(void)
             page_tail = cur_list.tail;
         }
 
-        if (mem[PAGE_HEAD].b32.s1 != MIN_HALFWORD) {
-            if (mem[CONTRIB_HEAD].b32.s1 == MIN_HALFWORD)
+        if (mem[PAGE_HEAD].b32.s1 != TEX_NULL) {
+            if (mem[CONTRIB_HEAD].b32.s1 == TEX_NULL)
                 nest[0].tail = page_tail;
             mem[page_tail].b32.s1 = mem[CONTRIB_HEAD].b32.s1;
             mem[CONTRIB_HEAD].b32.s1 = mem[PAGE_HEAD].b32.s1;
-            mem[PAGE_HEAD].b32.s1 = MIN_HALFWORD;
+            mem[PAGE_HEAD].b32.s1 = TEX_NULL;
             page_tail = PAGE_HEAD;
         }
 
         flush_node_list(disc_ptr[LAST_BOX_CODE]);
-        disc_ptr[LAST_BOX_CODE] = MIN_HALFWORD;
+        disc_ptr[LAST_BOX_CODE] = TEX_NULL;
         pop_nest();
         build_page();
         break;
@@ -25050,11 +25050,11 @@ handle_right_brace(void)
         unsave();
         save_ptr--;
         mem[save_stack[save_ptr + 0].b32.s1].b32.s1 = SUB_MLIST;
-        p = fin_mlist(MIN_HALFWORD);
+        p = fin_mlist(TEX_NULL);
         mem[save_stack[save_ptr + 0].b32.s1].b32.s0 = p;
 
-        if (p != MIN_HALFWORD) {
-            if (mem[p].b32.s1 == MIN_HALFWORD) {
+        if (p != TEX_NULL) {
+            if (mem[p].b32.s1 == TEX_NULL) {
                 if (mem[p].b16.s1 == ORD_NOAD) {
                     if (mem[p + 3].b32.s1 == EMPTY) {
                         if (mem[p + 2].b32.s1 == EMPTY) {
@@ -25091,7 +25091,7 @@ void main_control(void)
     memory_word *mem = zmem;
     int32_t t;
 
-    if (LOCAL(every_job) != MIN_HALFWORD)
+    if (LOCAL(every_job) != TEX_NULL)
         begin_token_list(LOCAL(every_job), EVERY_JOB_TEXT);
 
 big_switch: /* big_switch */
@@ -25134,7 +25134,7 @@ reswitch:
                     find_sa_element(INTER_CHAR_VAL,
                                     space_class * CHAR_CLASS_LIMIT + ((CHAR_CLASS_LIMIT - 1)),
                                     false);
-                    if (cur_ptr != MIN_HALFWORD) {
+                    if (cur_ptr != TEX_NULL) {
                         if (cur_cs == 0) {
                             if (cur_cmd == CHAR_NUM)
                                 cur_cmd = OTHER_CHAR;
@@ -25576,7 +25576,7 @@ reswitch:
                     cur_list.aux.b32.s1 = IGNORE_DEPTH;
                     if ((insert_src_special_every_vbox))
                         insert_src_special();
-                    if (LOCAL(every_vbox) != MIN_HALFWORD)
+                    if (LOCAL(every_vbox) != TEX_NULL)
                         begin_token_list(LOCAL(every_vbox), EVERY_VBOX_TEXT);
                 }
                 break;
@@ -25780,7 +25780,7 @@ reswitch:
             cur_list.aux.b32.s0 = 1000;
         else
             cur_list.aux.b32.s0 = main_s;
-        cur_ptr = MIN_HALFWORD;
+        cur_ptr = TEX_NULL;
         space_class = SF_CODE(cur_chr) / 65536L;
         if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
             if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
@@ -25788,7 +25788,7 @@ reswitch:
                     find_sa_element(INTER_CHAR_VAL,
                                     ((CHAR_CLASS_LIMIT - 1)) * CHAR_CLASS_LIMIT + space_class,
                                     false);
-                    if (cur_ptr != MIN_HALFWORD) {
+                    if (cur_ptr != TEX_NULL) {
                         if (cur_cmd != LETTER)
                             cur_cmd = OTHER_CHAR;
                         cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
@@ -25801,7 +25801,7 @@ reswitch:
             } else {
 
                 find_sa_element(INTER_CHAR_VAL, prev_class * CHAR_CLASS_LIMIT + space_class, false);
-                if (cur_ptr != MIN_HALFWORD) {
+                if (cur_ptr != TEX_NULL) {
                     if (cur_cmd != LETTER)
                         cur_cmd = OTHER_CHAR;
                     cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
@@ -25860,7 +25860,7 @@ reswitch:
             prev_class = ((CHAR_CLASS_LIMIT - 1));
             find_sa_element(INTER_CHAR_VAL,
                             space_class * CHAR_CLASS_LIMIT + ((CHAR_CLASS_LIMIT - 1)), false);
-            if (cur_ptr != MIN_HALFWORD) {
+            if (cur_ptr != TEX_NULL) {
                 if (cur_cs == 0) {
                     if (cur_cmd == CHAR_NUM)
                         cur_cmd = OTHER_CHAR;
@@ -25941,7 +25941,7 @@ reswitch:
             do {
                 if (main_h == 0)
                     main_h = main_k;
-                if ((((main_pp) != MIN_HALFWORD && (!(main_pp >= hi_mem_min))
+                if ((((main_pp) != TEX_NULL && (!(main_pp >= hi_mem_min))
                       && (NODE_type(main_pp) == WHATSIT_NODE)
                       && ((mem[main_pp].b16.s0 == NATIVE_WORD_NODE)
                           || (mem[main_pp].b16.s0 == NATIVE_WORD_NODE_AT))))
@@ -25989,7 +25989,7 @@ reswitch:
                     if ((main_h < main_k))
                         main_h++;
                     mem[main_ppp].b32.s1 = mem[main_pp].b32.s1;
-                    mem[main_pp].b32.s1 = MIN_HALFWORD;
+                    mem[main_pp].b32.s1 = TEX_NULL;
                     flush_node_list(main_pp);
                     main_pp = cur_list.tail;
                     while ((mem[main_ppp].b32.s1 != main_pp))
@@ -26037,7 +26037,7 @@ reswitch:
                     if (main_ppp != main_pp)
                         main_ppp = mem[main_ppp].b32.s1;
                 }
-            if ((((main_pp) != MIN_HALFWORD && (!(main_pp >= hi_mem_min)) && (NODE_type(main_pp) == WHATSIT_NODE)
+            if ((((main_pp) != TEX_NULL && (!(main_pp >= hi_mem_min)) && (NODE_type(main_pp) == WHATSIT_NODE)
                   && ((mem[main_pp].b16.s0 == NATIVE_WORD_NODE)
                       || (mem[main_pp].b16.s0 == NATIVE_WORD_NODE_AT)))) && (mem[main_pp + 4].b16.s2 == main_f)
                 && (main_ppp != main_pp) && (!(main_ppp >= hi_mem_min)) && (NODE_type(main_ppp) != DISC_NODE)) {
@@ -26068,7 +26068,7 @@ reswitch:
                     while (mem[main_p].b32.s1 != main_pp)
                         main_p = mem[main_p].b32.s1;
                 mem[main_p].b32.s1 = mem[main_pp].b32.s1;
-                mem[main_pp].b32.s1 = MIN_HALFWORD;
+                mem[main_pp].b32.s1 = TEX_NULL;
                 flush_node_list(main_pp);
             } else {
 
@@ -26088,17 +26088,17 @@ reswitch:
         }
         if (INTPAR(xetex_interword_space_shaping) > 0) {
             main_p = cur_list.head;
-            main_pp = MIN_HALFWORD;
+            main_pp = TEX_NULL;
             while (main_p != cur_list.tail) {
 
-                if ((((main_p) != MIN_HALFWORD && (!(main_p >= hi_mem_min))
+                if ((((main_p) != TEX_NULL && (!(main_p >= hi_mem_min))
                       && (NODE_type(main_p) == WHATSIT_NODE)
                       && ((mem[main_p].b16.s0 == NATIVE_WORD_NODE)
                           || (mem[main_p].b16.s0 == NATIVE_WORD_NODE_AT)))))
                     main_pp = main_p;
                 main_p = mem[main_p].b32.s1;
             }
-            if ((main_pp != MIN_HALFWORD)) {
+            if ((main_pp != TEX_NULL)) {
                 if (mem[main_pp + 4].b16.s2 == main_f) {
                     main_p = mem[main_pp].b32.s1;
                     while (!(main_p >= hi_mem_min)
@@ -26159,7 +26159,7 @@ reswitch:
                 }
             }
         }
-        if (cur_ptr != MIN_HALFWORD)
+        if (cur_ptr != TEX_NULL)
             goto big_switch;
         else
             goto reswitch;
@@ -26174,14 +26174,14 @@ reswitch:
         cur_list.aux.b32.s0 = 1000;
     else
         cur_list.aux.b32.s0 = main_s;
-    cur_ptr = MIN_HALFWORD;
+    cur_ptr = TEX_NULL;
     space_class = SF_CODE(cur_chr) / 65536L;
     if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
         if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
             if ((cur_input.state != TOKEN_LIST) || (cur_input.index != BACKED_UP_CHAR)) {
                 find_sa_element(INTER_CHAR_VAL,
                                 ((CHAR_CLASS_LIMIT - 1)) * CHAR_CLASS_LIMIT + space_class, false);
-                if (cur_ptr != MIN_HALFWORD) {
+                if (cur_ptr != TEX_NULL) {
                     if (cur_cmd != LETTER)
                         cur_cmd = OTHER_CHAR;
                     cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
@@ -26194,7 +26194,7 @@ reswitch:
         } else {
 
             find_sa_element(INTER_CHAR_VAL, prev_class * CHAR_CLASS_LIMIT + space_class, false);
-            if (cur_ptr != MIN_HALFWORD) {
+            if (cur_ptr != TEX_NULL) {
                 if (cur_cmd != LETTER)
                     cur_cmd = OTHER_CHAR;
                 cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
@@ -26217,12 +26217,12 @@ reswitch:
     }
     {
         lig_stack = avail;
-        if (lig_stack == MIN_HALFWORD)
+        if (lig_stack == TEX_NULL)
             lig_stack = get_avail();
         else {
 
             avail = mem[lig_stack].b32.s1;
-            mem[lig_stack].b32.s1 = MIN_HALFWORD;
+            mem[lig_stack].b32.s1 = TEX_NULL;
         }
     }
     mem[lig_stack].b16.s1 = main_f;
@@ -26240,7 +26240,7 @@ reswitch:
     cur_l = TOO_BIG_CHAR;
     goto lab111;
  lab80:/*main_loop_wrapup *//*1070: */ if (cur_l < TOO_BIG_CHAR) {
-        if (mem[cur_q].b32.s1 > MIN_HALFWORD) {
+        if (mem[cur_q].b32.s1 > TEX_NULL) {
 
             if (mem[cur_list.tail].b16.s0 == hyphen_char[main_f])
                 ins_disc = true;
@@ -26253,7 +26253,7 @@ reswitch:
             }
             if (rt_hit) {
 
-                if (lig_stack == MIN_HALFWORD) {
+                if (lig_stack == TEX_NULL) {
                     mem[main_p].b16.s0++;
                     rt_hit = false;
                 }
@@ -26270,7 +26270,7 @@ reswitch:
             }
         }
     }
- lab90:                        /*main_loop_move *//*1071: */ if (lig_stack == MIN_HALFWORD)
+ lab90:                        /*main_loop_move *//*1071: */ if (lig_stack == TEX_NULL)
         goto reswitch;
     cur_q = cur_list.tail;
     cur_l = mem[lig_stack].b16.s0;
@@ -26318,7 +26318,7 @@ reswitch:
     if (cur_cmd == NO_BOUNDARY)
         bchar = TOO_BIG_CHAR;
     cur_r = bchar;
-    lig_stack = MIN_HALFWORD;
+    lig_stack = TEX_NULL;
     goto lab110;
  lab101:/*main_loop_lookahead 1 */ main_s = SF_CODE(cur_chr) % 65536L;
     if (main_s == 1000)
@@ -26330,14 +26330,14 @@ reswitch:
         cur_list.aux.b32.s0 = 1000;
     else
         cur_list.aux.b32.s0 = main_s;
-    cur_ptr = MIN_HALFWORD;
+    cur_ptr = TEX_NULL;
     space_class = SF_CODE(cur_chr) / 65536L;
     if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
         if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
             if ((cur_input.state != TOKEN_LIST) || (cur_input.index != BACKED_UP_CHAR)) {
                 find_sa_element(INTER_CHAR_VAL,
                                 ((CHAR_CLASS_LIMIT - 1)) * CHAR_CLASS_LIMIT + space_class, false);
-                if (cur_ptr != MIN_HALFWORD) {
+                if (cur_ptr != TEX_NULL) {
                     if (cur_cmd != LETTER)
                         cur_cmd = OTHER_CHAR;
                     cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
@@ -26350,7 +26350,7 @@ reswitch:
         } else {
 
             find_sa_element(INTER_CHAR_VAL, prev_class * CHAR_CLASS_LIMIT + space_class, false);
-            if (cur_ptr != MIN_HALFWORD) {
+            if (cur_ptr != TEX_NULL) {
                 if (cur_cmd != LETTER)
                     cur_cmd = OTHER_CHAR;
                 cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
@@ -26365,12 +26365,12 @@ reswitch:
     }
     {
         lig_stack = avail;
-        if (lig_stack == MIN_HALFWORD)
+        if (lig_stack == TEX_NULL)
             lig_stack = get_avail();
         else {
 
             avail = mem[lig_stack].b32.s1;
-            mem[lig_stack].b32.s1 = MIN_HALFWORD;
+            mem[lig_stack].b32.s1 = TEX_NULL;
         }
     }
     mem[lig_stack].b16.s1 = main_f;
@@ -26393,7 +26393,7 @@ reswitch:
         if (main_j.s3 <= 128) { /*1075: */
             if (main_j.s1 >= 128) {
                 if (cur_l < TOO_BIG_CHAR) {
-                    if (mem[cur_q].b32.s1 > MIN_HALFWORD) {
+                    if (mem[cur_q].b32.s1 > TEX_NULL) {
 
                         if (mem[cur_list.tail].b16.s0 == hyphen_char[main_f])
                             ins_disc = true;
@@ -26406,7 +26406,7 @@ reswitch:
                         }
                         if (rt_hit) {
 
-                            if (lig_stack == MIN_HALFWORD) {
+                            if (lig_stack == TEX_NULL) {
                                 mem[main_p].b16.s0++;
                                 rt_hit = false;
                             }
@@ -26432,7 +26432,7 @@ reswitch:
             }
             if (cur_l == TOO_BIG_CHAR)
                 lft_hit = true;
-            else if (lig_stack == MIN_HALFWORD)
+            else if (lig_stack == TEX_NULL)
                 rt_hit = true;
             switch (main_j.s1) {
             case 1:
@@ -26447,7 +26447,7 @@ reswitch:
             case 6:
                 {
                     cur_r = main_j.s0;
-                    if (lig_stack == MIN_HALFWORD) {
+                    if (lig_stack == TEX_NULL) {
                         lig_stack = new_lig_item(cur_r);
                         bchar = TOO_BIG_CHAR;
                     } else if ((lig_stack >= hi_mem_min)) {
@@ -26470,7 +26470,7 @@ reswitch:
             case 11:
                 {
                     if (cur_l < TOO_BIG_CHAR) {
-                        if (mem[cur_q].b32.s1 > MIN_HALFWORD) {
+                        if (mem[cur_q].b32.s1 > TEX_NULL) {
 
                             if (mem[cur_list.tail].b16.s0 == hyphen_char[main_f])
                                 ins_disc = true;
@@ -26483,7 +26483,7 @@ reswitch:
                             }
                             if (false) {
 
-                                if (lig_stack == MIN_HALFWORD) {
+                                if (lig_stack == TEX_NULL) {
                                     mem[main_p].b16.s0++;
                                     rt_hit = false;
                                 }
@@ -26510,7 +26510,7 @@ reswitch:
                 {
                     cur_l = main_j.s0;
                     ligature_present = true;
-                    if (lig_stack == MIN_HALFWORD)
+                    if (lig_stack == TEX_NULL)
                         goto lab80;
                     else
                         goto lab91;
@@ -26538,7 +26538,7 @@ reswitch:
     }
     goto lab111;
  lab95:                        /*main_loop_move_lig *//*1072: */ main_p = mem[lig_stack + 1].b32.s1;
-    if (main_p > MIN_HALFWORD) {
+    if (main_p > TEX_NULL) {
         mem[cur_list.tail].b32.s1 = main_p;
         cur_list.tail = mem[cur_list.tail].b32.s1;
     }
@@ -26547,9 +26547,9 @@ reswitch:
     free_node(temp_ptr, SMALL_NODE_SIZE);
     main_i = font_info[char_base[main_f] + effective_char(true, main_f, cur_l)].b16;
     ligature_present = true;
-    if (lig_stack == MIN_HALFWORD) {
+    if (lig_stack == TEX_NULL) {
 
-        if (main_p > MIN_HALFWORD)
+        if (main_p > TEX_NULL)
             goto lab100;
         else
             cur_r = bchar;
@@ -26562,7 +26562,7 @@ reswitch:
         prev_class = ((CHAR_CLASS_LIMIT - 1));
         find_sa_element(INTER_CHAR_VAL,
                         space_class * CHAR_CLASS_LIMIT + ((CHAR_CLASS_LIMIT - 1)), false);
-        if (cur_ptr != MIN_HALFWORD) {
+        if (cur_ptr != TEX_NULL) {
             if (cur_cs == 0) {
                 if (cur_cmd == CHAR_NUM)
                     cur_cmd = OTHER_CHAR;
@@ -26577,7 +26577,7 @@ reswitch:
     if (GLUEPAR(space_skip) == 0) {
         {
             main_p = font_glue[eqtb[CUR_FONT_LOC].b32.s1];
-            if (main_p == MIN_HALFWORD) {
+            if (main_p == TEX_NULL) {
                 main_p = new_spec(0);
                 main_k = param_base[eqtb[CUR_FONT_LOC].b32.s1] + 2;
                 mem[main_p + 1].b32.s1 = font_info[main_k].b32.s1;
@@ -26767,7 +26767,7 @@ str_number tokens_to_string(int32_t p)
         pdf_error("tokens", "tokens_to_string() called while selector = new_string");
     old_setting = selector;
     selector = SELECTOR_NEW_STRING ;
-    show_token_list(mem[p].b32.s1, MIN_HALFWORD, pool_size - pool_ptr);
+    show_token_list(mem[p].b32.s1, TEX_NULL, pool_size - pool_ptr);
     selector = old_setting;
     return make_string();
 }

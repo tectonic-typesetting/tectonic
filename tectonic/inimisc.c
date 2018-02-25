@@ -112,7 +112,7 @@ line_break(bool d)
 
     /* Prep relating to par_shape (877) */
 
-    if (LOCAL(par_shape) == MIN_HALFWORD) {
+    if (LOCAL(par_shape) == TEX_NULL) {
         if (DIMENPAR(hang_indent) == 0) {
             last_special_line = 0;
             second_width = DIMENPAR(hsize);
@@ -185,7 +185,7 @@ line_break(bool d)
         NODE_type(q) = UNHYPHENATED;
         ACTIVE_NODE_fitness(q) = DECENT_FIT;
         LLIST_link(q) = ACTIVE_LIST;
-        ACTIVE_NODE_break_node(q) = MIN_HALFWORD;
+        ACTIVE_NODE_break_node(q) = TEX_NULL;
         ACTIVE_NODE_line_number(q) = cur_list.prev_graf + 1;
         ACTIVE_NODE_total_demerits(q) = 0;
         LLIST_link(ACTIVE_LIST) = q;
@@ -201,7 +201,7 @@ line_break(bool d)
         active_width[4] = background[4];
         active_width[5] = background[5];
         active_width[6] = background[6];
-        passive = MIN_HALFWORD;
+        passive = TEX_NULL;
         printed_node = TEMP_HEAD;
         pass_number = 0;
         font_in_short_display = 0; /*:893*/
@@ -211,7 +211,7 @@ line_break(bool d)
         prev_p = global_prev_p = cur_p;
         first_p = cur_p;
 
-        while (cur_p != MIN_HALFWORD && LLIST_link(ACTIVE_LIST) != ACTIVE_LIST) { /*895:*/
+        while (cur_p != TEX_NULL && LLIST_link(ACTIVE_LIST) != ACTIVE_LIST) { /*895:*/
             if (cur_p >= hi_mem_min) { /*896:*/
                 prev_p = global_prev_p = cur_p;
 
@@ -274,13 +274,13 @@ line_break(bool d)
                     prev_s = cur_p;
                     s = mem[prev_s].b32.s1;
 
-                    if (s != MIN_HALFWORD) {
+                    if (s != TEX_NULL) {
                         while (true) {
                             if (s >= hi_mem_min) {
                                 c = mem[s].b16.s0;
                                 hf = mem[s].b16.s1;
                             } else if (NODE_type(s) == LIGATURE_NODE) {
-                                if (mem[s + 1].b32.s1 == MIN_HALFWORD)
+                                if (mem[s + 1].b32.s1 == TEX_NULL)
                                     goto _continue;
 
                                 q = mem[s + 1].b32.s1;
@@ -351,7 +351,7 @@ line_break(bool d)
                         if (l_hyf + r_hyf > max_hyphenatable_length())
                             goto done1;
 
-                        if (ha != MIN_HALFWORD &&
+                        if (ha != TEX_NULL &&
                             ha < hi_mem_min &&
                             NODE_type(ha) == WHATSIT_NODE &&
                             (mem[ha].b16.s0 == NATIVE_WORD_NODE || mem[ha].b16.s0 == NATIVE_WORD_NODE_AT))
@@ -489,10 +489,10 @@ line_break(bool d)
                                     j = hn;
                                     q = mem[s + 1].b32.s1;
 
-                                    if (q > MIN_HALFWORD)
+                                    if (q > TEX_NULL)
                                         hyf_bchar = mem[q].b16.s0;
 
-                                    while (q > MIN_HALFWORD) {
+                                    while (q > TEX_NULL) {
                                         c = mem[q].b16.s0;
                                         if (hyph_index == 0 || c > 255)
                                             hc[0] = LC_CODE(c);
@@ -603,7 +603,7 @@ line_break(bool d)
                 s = mem[cur_p + 1].b32.s0;
                 disc_width = 0;
 
-                if (s == MIN_HALFWORD) {
+                if (s == TEX_NULL) {
                     try_break(INTPAR(ex_hyphen_penalty), HYPHENATED);
                 } else {
                     do {
@@ -653,7 +653,7 @@ line_break(bool d)
                         }
 
                         s = mem[s].b32.s1;
-                    } while (s != MIN_HALFWORD);
+                    } while (s != TEX_NULL);
 
                     active_width[1] += disc_width;
                     try_break(INTPAR(hyphen_penalty), HYPHENATED);
@@ -749,7 +749,7 @@ line_break(bool d)
             ;
         }
 
-        if (cur_p == MIN_HALFWORD) { /*902:*/
+        if (cur_p == TEX_NULL) { /*902:*/
             try_break(EJECT_PENALTY, HYPHENATED);
 
             if (mem[ACTIVE_LIST].b32.s1 != ACTIVE_LIST) {
@@ -809,7 +809,7 @@ line_break(bool d)
 
         q = passive;
 
-        while (q != MIN_HALFWORD) {
+        while (q != TEX_NULL) {
             cur_p = mem[q].b32.s1;
             free_node(q, PASSIVE_NODE_SIZE);
             q = cur_p;
@@ -855,7 +855,7 @@ done:
 
     q = passive;
 
-    while (q != MIN_HALFWORD) {
+    while (q != TEX_NULL) {
         cur_p = mem[q].b32.s1;
         free_node(q, PASSIVE_NODE_SIZE);
         q = cur_p;
@@ -892,14 +892,14 @@ post_line_break(bool d)
     /* Reverse the list of break nodes (907) */
 
     q = mem[best_bet + 1].b32.s1;
-    cur_p = MIN_HALFWORD;
+    cur_p = TEX_NULL;
 
     do {
         r = q;
         q = mem[q + 1].b32.s0;
         mem[r + 1].b32.s0 = cur_p;
         cur_p = r;
-    } while (q != MIN_HALFWORD); /*:907*/
+    } while (q != TEX_NULL); /*:907*/
 
     cur_line = cur_list.prev_graf + 1;
 
@@ -913,7 +913,7 @@ post_line_break(bool d)
         if (INTPAR(texxet) > 0) { /*1494:*/
             q = mem[TEMP_HEAD].b32.s1;
 
-            if (LR_ptr != MIN_HALFWORD) {
+            if (LR_ptr != TEX_NULL) {
                 temp_ptr = LR_ptr;
                 r = q;
 
@@ -922,7 +922,7 @@ post_line_break(bool d)
                     mem[s].b32.s1 = r;
                     r = s;
                     temp_ptr = mem[temp_ptr].b32.s1;
-                } while (temp_ptr != MIN_HALFWORD);
+                } while (temp_ptr != TEX_NULL);
 
                 mem[TEMP_HEAD].b32.s1 = r;
             }
@@ -930,7 +930,7 @@ post_line_break(bool d)
             while (q != mem[cur_p + 1].b32.s1) {
                 if (q < hi_mem_min && NODE_type(q) == MATH_NODE) { /*1495:*/
                     if (odd(mem[q].b16.s0)) {
-                        if (LR_ptr != MIN_HALFWORD && mem[LR_ptr].b32.s0 == (L_CODE * (mem[q].b16.s0 / L_CODE) + 3)) {
+                        if (LR_ptr != TEX_NULL && mem[LR_ptr].b32.s0 == (L_CODE * (mem[q].b16.s0 / L_CODE) + 3)) {
                             temp_ptr = LR_ptr;
                             LR_ptr = mem[temp_ptr].b32.s1;
                             mem[temp_ptr].b32.s1 = avail;
@@ -957,9 +957,9 @@ post_line_break(bool d)
         post_disc_break = false;
         glue_break = false;
 
-        if (q == MIN_HALFWORD) {
+        if (q == TEX_NULL) {
             q = TEMP_HEAD;
-            while (mem[q].b32.s1 != MIN_HALFWORD)
+            while (mem[q].b32.s1 != TEX_NULL)
                 q = mem[q].b32.s1;
         } else {
             if (NODE_type(q) == GLUE_NODE) {
@@ -985,27 +985,27 @@ post_line_break(bool d)
 
                         s = mem[r].b32.s1;
                         r = mem[s].b32.s1;
-                        mem[s].b32.s1 = MIN_HALFWORD;
+                        mem[s].b32.s1 = TEX_NULL;
                         flush_node_list(mem[q].b32.s1);
                         mem[q].b16.s0 = 0;
                     }
 
-                    if (mem[q + 1].b32.s1 != MIN_HALFWORD) { /*913:*/
+                    if (mem[q + 1].b32.s1 != TEX_NULL) { /*913:*/
                         s = mem[q + 1].b32.s1;
-                        while (mem[s].b32.s1 != MIN_HALFWORD)
+                        while (mem[s].b32.s1 != TEX_NULL)
                             s = mem[s].b32.s1;
                         mem[s].b32.s1 = r;
                         r = mem[q + 1].b32.s1;
-                        mem[q + 1].b32.s1 = MIN_HALFWORD;
+                        mem[q + 1].b32.s1 = TEX_NULL;
                         post_disc_break = true;
                     }
 
-                    if (mem[q + 1].b32.s0 != MIN_HALFWORD) { /*914:*/
+                    if (mem[q + 1].b32.s0 != TEX_NULL) { /*914:*/
                         s = mem[q + 1].b32.s0;
                         mem[q].b32.s1 = s;
-                        while (mem[s].b32.s1 != MIN_HALFWORD)
+                        while (mem[s].b32.s1 != TEX_NULL)
                             s = mem[s].b32.s1;
-                        mem[q + 1].b32.s0 = MIN_HALFWORD;
+                        mem[q + 1].b32.s0 = TEX_NULL;
                         q = s;
                     }
 
@@ -1018,7 +1018,7 @@ post_line_break(bool d)
 
                     if (INTPAR(texxet) > 0) { /*1495:*/
                         if (odd(mem[q].b16.s0)) {
-                            if (LR_ptr != MIN_HALFWORD && mem[LR_ptr].b32.s0 == (L_CODE * (mem[q].b16.s0 / L_CODE) + 3)) {
+                            if (LR_ptr != TEX_NULL && mem[LR_ptr].b32.s0 == (L_CODE * (mem[q].b16.s0 / L_CODE) + 3)) {
                                 temp_ptr = LR_ptr;
                                 LR_ptr = mem[temp_ptr].b32.s1;
                                 mem[temp_ptr].b32.s1 = avail;
@@ -1065,7 +1065,7 @@ post_line_break(bool d)
         } /*:915*/
 
         if (INTPAR(texxet) > 0) { /*1496:*/
-            if (LR_ptr != MIN_HALFWORD) {
+            if (LR_ptr != TEX_NULL) {
                 s = TEMP_HEAD;
                 r = mem[s].b32.s1;
 
@@ -1076,7 +1076,7 @@ post_line_break(bool d)
 
                 r = LR_ptr;
 
-                while (r != MIN_HALFWORD) {
+                while (r != TEX_NULL) {
                     temp_ptr = new_math(0, mem[r].b32.s0);
                     mem[s].b32.s1 = temp_ptr;
                     s = temp_ptr;
@@ -1090,7 +1090,7 @@ post_line_break(bool d)
         /* 916: Put \leftskip at the left and detach this line. */
 
         r = mem[q].b32.s1;
-        mem[q].b32.s1 = MIN_HALFWORD;
+        mem[q].b32.s1 = TEX_NULL;
         q = mem[TEMP_HEAD].b32.s1;
         mem[TEMP_HEAD].b32.s1 = r;
 
@@ -1117,7 +1117,7 @@ post_line_break(bool d)
         if (cur_line > last_special_line) {
             cur_width = second_width;
             cur_indent = second_indent;
-        } else if (LOCAL(par_shape) == MIN_HALFWORD) {
+        } else if (LOCAL(par_shape) == TEX_NULL) {
             cur_width = first_width;
             cur_indent = first_indent;
         } else {
@@ -1138,7 +1138,7 @@ post_line_break(bool d)
             cur_list.tail = pre_adjust_tail;
         }
 
-        pre_adjust_tail = MIN_HALFWORD;
+        pre_adjust_tail = TEX_NULL;
         append_to_vlist(just_box);
 
         if (ADJUST_HEAD != adjust_tail) {
@@ -1146,14 +1146,14 @@ post_line_break(bool d)
             cur_list.tail = adjust_tail;
         }
 
-        adjust_tail = MIN_HALFWORD; /*:917*/
+        adjust_tail = TEX_NULL; /*:917*/
 
         /* 919: Set `pen` to all of the penalties relevant to this line. */
 
         if (cur_line + 1 != best_line) {
             q = eqtb[INTER_LINE_PENALTIES_LOC].b32.s1;
 
-            if (q != MIN_HALFWORD) {
+            if (q != TEX_NULL) {
                 r = cur_line;
                 if (r > mem[q + 1].b32.s1)
                     r = mem[q + 1].b32.s1;
@@ -1163,7 +1163,7 @@ post_line_break(bool d)
             }
 
             q = eqtb[CLUB_PENALTIES_LOC].b32.s1;
-            if (q != MIN_HALFWORD) {
+            if (q != TEX_NULL) {
                 r = cur_line - cur_list.prev_graf;
                 if (r > mem[q + 1].b32.s1)
                     r = mem[q + 1].b32.s1;
@@ -1177,7 +1177,7 @@ post_line_break(bool d)
             else
                 q = eqtb[WIDOW_PENALTIES_LOC].b32.s1;
 
-            if (q != MIN_HALFWORD) {
+            if (q != TEX_NULL) {
                 r = best_line - cur_line - 1;
                 if (r > mem[q + 1].b32.s1)
                     r = mem[q + 1].b32.s1;
@@ -1204,7 +1204,7 @@ post_line_break(bool d)
         cur_line++;
         cur_p = mem[cur_p + 1].b32.s0;
 
-        if (cur_p != MIN_HALFWORD) {
+        if (cur_p != TEX_NULL) {
             if (!post_disc_break) {
                 /* 908: "prune unwanted nodes at the beginning of the next
                  * line". Delete glues, penalties, kerns, and math nodes at
@@ -1227,7 +1227,7 @@ post_line_break(bool d)
 
                     if (NODE_type(q) == MATH_NODE && INTPAR(texxet) > 0) { /*1495:*/
                         if (odd(mem[q].b16.s0)) {
-                            if (LR_ptr != MIN_HALFWORD && mem[LR_ptr].b32.s0 == (L_CODE * (mem[q].b16.s0 / L_CODE) + 3)) {
+                            if (LR_ptr != TEX_NULL && mem[LR_ptr].b32.s0 == (L_CODE * (mem[q].b16.s0 / L_CODE) + 3)) {
                                 temp_ptr = LR_ptr;
                                 LR_ptr = mem[temp_ptr].b32.s1;
                                 mem[temp_ptr].b32.s1 = avail;
@@ -1244,15 +1244,15 @@ post_line_break(bool d)
 
             done1:
                 if (r != TEMP_HEAD) {
-                    mem[r].b32.s1 = MIN_HALFWORD;
+                    mem[r].b32.s1 = TEX_NULL;
                     flush_node_list(mem[TEMP_HEAD].b32.s1);
                     mem[TEMP_HEAD].b32.s1 = q;
                 }
             }
         }
-    } while (cur_p != MIN_HALFWORD);
+    } while (cur_p != TEX_NULL);
 
-    if (cur_line != best_line || mem[TEMP_HEAD].b32.s1 != MIN_HALFWORD)
+    if (cur_line != best_line || mem[TEMP_HEAD].b32.s1 != TEX_NULL)
         confusion("line breaking");
 
     cur_list.prev_graf = best_line - 1;
@@ -1265,12 +1265,12 @@ prune_page_top(int32_t p, bool s)
 {
     memory_word *mem = zmem;
     int32_t prev_p;
-    int32_t q, r = MIN_HALFWORD;
+    int32_t q, r = TEX_NULL;
 
     prev_p = TEMP_HEAD;
     mem[TEMP_HEAD].b32.s1 = p;
 
-    while (p != MIN_HALFWORD) {
+    while (p != TEX_NULL) {
         switch (mem[p].b16.s1) {
         case HLIST_NODE:
         case VLIST_NODE:
@@ -1282,7 +1282,7 @@ prune_page_top(int32_t p, bool s)
                 mem[temp_ptr + 1].b32.s1 = mem[temp_ptr + 1].b32.s1 - mem[p + 3].b32.s1;
             else
                 mem[temp_ptr + 1].b32.s1 = 0;
-            p = MIN_HALFWORD;
+            p = TEX_NULL;
             break;
         case WHATSIT_NODE:
         case MARK_NODE:
@@ -1295,10 +1295,10 @@ prune_page_top(int32_t p, bool s)
         case PENALTY_NODE:
             q = p;
             p = mem[q].b32.s1;
-            mem[q].b32.s1 = MIN_HALFWORD;
+            mem[q].b32.s1 = TEX_NULL;
             mem[prev_p].b32.s1 = p;
             if (s) {
-                if (disc_ptr[VSPLIT_CODE] == MIN_HALFWORD)
+                if (disc_ptr[VSPLIT_CODE] == TEX_NULL)
                     disc_ptr[VSPLIT_CODE] = q;
                 else
                     mem[r].b32.s1 = q;
@@ -1330,12 +1330,12 @@ do_marks(small_number a, small_number l, int32_t q)
             else
                 cur_ptr = mem[q + (i / 2) + 1].b32.s0;
 
-            if (cur_ptr != MIN_HALFWORD) {
+            if (cur_ptr != TEX_NULL) {
                 if (do_marks(a, l + 1, cur_ptr)) {
                     if (odd(i))
-                        mem[q + (i / 2) + 1].b32.s1 = MIN_HALFWORD;
+                        mem[q + (i / 2) + 1].b32.s1 = TEX_NULL;
                     else
-                        mem[q + (i / 2) + 1].b32.s0 = MIN_HALFWORD;
+                        mem[q + (i / 2) + 1].b32.s0 = TEX_NULL;
                     mem[q].b16.s0--;
                 }
             }
@@ -1343,28 +1343,28 @@ do_marks(small_number a, small_number l, int32_t q)
 
         if (mem[q].b16.s0 == 0) {
             free_node(q, INDEX_NODE_SIZE);
-            q = MIN_HALFWORD;
+            q = TEX_NULL;
         }
     } else {
         switch (a) { /*1614: */
         case VSPLIT_INIT:
-            if (mem[q + 2].b32.s1 != MIN_HALFWORD) {
+            if (mem[q + 2].b32.s1 != TEX_NULL) {
                 delete_token_ref(mem[q + 2].b32.s1);
-                mem[q + 2].b32.s1 = MIN_HALFWORD;
+                mem[q + 2].b32.s1 = TEX_NULL;
                 delete_token_ref(mem[q + 3].b32.s0);
-                mem[q + 3].b32.s0 = MIN_HALFWORD;
+                mem[q + 3].b32.s0 = TEX_NULL;
             }
             break;
 
         case FIRE_UP_INIT:
-            if (mem[q + 2].b32.s0 != MIN_HALFWORD) {
-                if (mem[q + 1].b32.s0 != MIN_HALFWORD)
+            if (mem[q + 2].b32.s0 != TEX_NULL) {
+                if (mem[q + 1].b32.s0 != TEX_NULL)
                     delete_token_ref(mem[q + 1].b32.s0);
                 delete_token_ref(mem[q + 1].b32.s1);
-                mem[q + 1].b32.s1 = MIN_HALFWORD;
-                if (mem[mem[q + 2].b32.s0].b32.s1 == MIN_HALFWORD) {
+                mem[q + 1].b32.s1 = TEX_NULL;
+                if (mem[mem[q + 2].b32.s0].b32.s1 == TEX_NULL) {
                     delete_token_ref(mem[q + 2].b32.s0);
-                    mem[q + 2].b32.s0 = MIN_HALFWORD;
+                    mem[q + 2].b32.s0 = TEX_NULL;
                 } else
                     mem[mem[q + 2].b32.s0].b32.s0++;
                 mem[q + 1].b32.s0 = mem[q + 2].b32.s0;
@@ -1372,7 +1372,7 @@ do_marks(small_number a, small_number l, int32_t q)
             break;
 
         case FIRE_UP_DONE:
-            if ((mem[q + 1].b32.s0 != MIN_HALFWORD) && (mem[q + 1].b32.s1 == MIN_HALFWORD)) {
+            if ((mem[q + 1].b32.s0 != TEX_NULL) && (mem[q + 1].b32.s1 == TEX_NULL)) {
                 mem[q + 1].b32.s1 = mem[q + 1].b32.s0;
                 mem[mem[q + 1].b32.s0].b32.s0++;
             }
@@ -1385,26 +1385,26 @@ do_marks(small_number a, small_number l, int32_t q)
                 else
                     cur_ptr = mem[q + (i / 2) + 1].b32.s0;
 
-                if (cur_ptr != MIN_HALFWORD) {
+                if (cur_ptr != TEX_NULL) {
                     delete_token_ref(cur_ptr);
                     if (odd(i))
-                        mem[q + (i / 2) + 1].b32.s1 = MIN_HALFWORD;
+                        mem[q + (i / 2) + 1].b32.s1 = TEX_NULL;
                     else
-                        mem[q + (i / 2) + 1].b32.s0 = MIN_HALFWORD;
+                        mem[q + (i / 2) + 1].b32.s0 = TEX_NULL;
                 }
             }
             break;
         }
 
-        if (mem[q + 2].b32.s0 == MIN_HALFWORD) {
-            if (mem[q + 3].b32.s0 == MIN_HALFWORD) {
+        if (mem[q + 2].b32.s0 == TEX_NULL) {
+            if (mem[q + 3].b32.s0 == TEX_NULL) {
                 free_node(q, MARK_CLASS_NODE_SIZE);
-                q = MIN_HALFWORD;
+                q = TEX_NULL;
             }
         }
     }
 
-    return (q == MIN_HALFWORD);
+    return (q == TEX_NULL);
 }
 
 

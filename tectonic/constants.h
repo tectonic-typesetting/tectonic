@@ -11,6 +11,7 @@
 #define MIN_HALFWORD -0x0FFFFFFF
 #define MAX_HALFWORD  0x3FFFFFFF
 
+#define TEX_NULL     MIN_HALFWORD /* a null "pointer" */
 #define TEX_INFINITY 0x7FFFFFFF /* "the largest positive value that TeX knows" */
 #define NULL_FLAG   -0x40000000 /* "signifies a missing item" in rule nodes */
 #define DEFAULT_CODE 0x40000000 /* "denotes default_rule_thickness" */

@@ -1238,7 +1238,7 @@ new_hyph_exceptions(void)
 
 not_found1: /*970:*/
     n = 0;
-    p = MIN_HALFWORD;
+    p = TEX_NULL;
 
     while (true) {
         get_x_token();
@@ -1362,7 +1362,7 @@ not_found1: /*970:*/
                 return;
 
             n = 0;
-            p = MIN_HALFWORD;
+            p = TEX_NULL;
             break;
 
         default:
@@ -1746,8 +1746,8 @@ prefixed_command(void)
                             q = TOKS_REG(cur_val);
                         } else {
                             find_sa_element(TOK_VAL, cur_val, false);
-                            if (cur_ptr == MIN_HALFWORD)
-                                q = MIN_HALFWORD;
+                            if (cur_ptr == TEX_NULL)
+                                q = TEX_NULL;
                             else
                                 q = mem[cur_ptr + 1].b32.s1;
                         }
@@ -1759,24 +1759,24 @@ prefixed_command(void)
                     cur_ptr = cur_val;
                     scan_char_class_not_ignored();
                     find_sa_element(INTER_CHAR_VAL, cur_ptr * CHAR_CLASS_LIMIT + cur_val, false);
-                    if (cur_ptr == MIN_HALFWORD)
-                        q = MIN_HALFWORD;
+                    if (cur_ptr == TEX_NULL)
+                        q = TEX_NULL;
                     else
                         q = mem[cur_ptr + 1].b32.s1;
                 } else {
                     q = eqtb[cur_chr].b32.s1;
                 }
 
-                if (q == MIN_HALFWORD) {
+                if (q == TEX_NULL) {
                     if (e) {
                         if (a >= 4)
-                            gsa_def(p, MIN_HALFWORD);
+                            gsa_def(p, TEX_NULL);
                         else
-                            sa_def(p, MIN_HALFWORD);
+                            sa_def(p, TEX_NULL);
                     } else if (a >= 4) {
-                        geq_define(p, UNDEFINED_CS, MIN_HALFWORD);
+                        geq_define(p, UNDEFINED_CS, TEX_NULL);
                     } else {
-                        eq_define(p, UNDEFINED_CS, MIN_HALFWORD);
+                        eq_define(p, UNDEFINED_CS, TEX_NULL);
                     }
                 } else {
                     mem[q].b32.s0++;
@@ -1800,16 +1800,16 @@ prefixed_command(void)
         cur_cs = q;
         q = scan_toks(false, false);
 
-        if (mem[def_ref].b32.s1 == MIN_HALFWORD) {
+        if (mem[def_ref].b32.s1 == TEX_NULL) {
             if (e) {
                 if (a >= 4)
-                    gsa_def(p, MIN_HALFWORD);
+                    gsa_def(p, TEX_NULL);
                 else
-                    sa_def(p, MIN_HALFWORD);
+                    sa_def(p, TEX_NULL);
             } else if (a >= 4) {
-                geq_define(p, UNDEFINED_CS, MIN_HALFWORD);
+                geq_define(p, UNDEFINED_CS, TEX_NULL);
             } else {
-                eq_define(p, UNDEFINED_CS, MIN_HALFWORD);
+                eq_define(p, UNDEFINED_CS, TEX_NULL);
             }
 
             mem[def_ref].b32.s1 = avail;
@@ -2075,7 +2075,7 @@ prefixed_command(void)
         n = cur_val;
 
         if (n <= 0) {
-            p = MIN_HALFWORD;
+            p = TEX_NULL;
         } else if (q > LOCAL_BASE + LOCAL__par_shape) {
             n = (cur_val / 2) + 1;
             p = get_node(2 * n + 1);
@@ -2270,7 +2270,7 @@ store_fmt_file(void)
     dump_int(FORMAT_SERIAL);
     dump_int(hash_high);
 
-    while (pseudo_files != MIN_HALFWORD)
+    while (pseudo_files != TEX_NULL)
         pseudo_close(); /* TODO: can we move this farther up in this function? */
 
     dump_int(MEM_TOP);
@@ -2322,7 +2322,7 @@ store_fmt_file(void)
 
     x = x + mem_end + 1 - hi_mem_min;
     p = avail;
-    while (p != MIN_HALFWORD) {
+    while (p != TEX_NULL) {
         dyn_used--;
         p = mem[p].b32.s1;
     }
@@ -2718,7 +2718,7 @@ load_fmt_file(void)
 
     eqtb = the_eqtb = xmalloc_array(memory_word, eqtb_top + 1);
     eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s1 = UNDEFINED_CS;
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].b32.s1 = MIN_HALFWORD;
+    eqtb[UNDEFINED_CONTROL_SEQUENCE].b32.s1 = TEX_NULL;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s0 = LEVEL_ZERO;
 
     for (x = EQTB_SIZE + 1; x <= eqtb_top; x++)
@@ -3162,7 +3162,7 @@ final_cleanup(void)
         print_char(')');
         show_save_groups();
     }
-    while (cond_ptr != MIN_HALFWORD) {
+    while (cond_ptr != TEX_NULL) {
 
         print_nl('(' );
         print_esc_cstr("end occurred ");
@@ -3198,14 +3198,14 @@ final_cleanup(void)
                 for_end = SPLIT_BOT_MARK_CODE;
                 if (c <= for_end)
                     do
-                        if (cur_mark[c] != MIN_HALFWORD)
+                        if (cur_mark[c] != TEX_NULL)
                             delete_token_ref(cur_mark[c]);
                     while (c++ < for_end) ;
             }
-            if (sa_root[MARK_VAL] != MIN_HALFWORD) {
+            if (sa_root[MARK_VAL] != TEX_NULL) {
 
                 if (do_marks(3, 0, sa_root[MARK_VAL]))
-                    sa_root[MARK_VAL] = MIN_HALFWORD;
+                    sa_root[MARK_VAL] = TEX_NULL;
             }
             {
                 register int32_t for_end;
@@ -3273,7 +3273,7 @@ initialize_more_variables(void)
     cur_list.mode = VMODE;
     cur_list.head = CONTRIB_HEAD;
     cur_list.tail = CONTRIB_HEAD;
-    cur_list.eTeX_aux = MIN_HALFWORD;
+    cur_list.eTeX_aux = TEX_NULL;
     cur_list.aux.b32.s1 = IGNORE_DEPTH;
     cur_list.mode_line = 0;
     cur_list.prev_graf = 0;
@@ -3298,7 +3298,7 @@ initialize_more_variables(void)
 
     prim_eqtb[0].b16.s0 = LEVEL_ZERO;
     prim_eqtb[0].b16.s1 = UNDEFINED_CS;
-    prim_eqtb[0].b32.s1 = MIN_HALFWORD;
+    prim_eqtb[0].b32.s1 = TEX_NULL;
 
     for (k = 1; k <= PRIM_SIZE; k++)
         prim_eqtb[k] = prim_eqtb[0];
@@ -3311,11 +3311,11 @@ initialize_more_variables(void)
     mag_set = 0;
     expand_depth_count = 0;
     is_in_csname = false;
-    cur_mark[TOP_MARK_CODE] = MIN_HALFWORD;
-    cur_mark[FIRST_MARK_CODE] = MIN_HALFWORD;
-    cur_mark[BOT_MARK_CODE] = MIN_HALFWORD;
-    cur_mark[SPLIT_FIRST_MARK_CODE] = MIN_HALFWORD;
-    cur_mark[SPLIT_BOT_MARK_CODE] = MIN_HALFWORD;
+    cur_mark[TOP_MARK_CODE] = TEX_NULL;
+    cur_mark[FIRST_MARK_CODE] = TEX_NULL;
+    cur_mark[BOT_MARK_CODE] = TEX_NULL;
+    cur_mark[SPLIT_FIRST_MARK_CODE] = TEX_NULL;
+    cur_mark[SPLIT_BOT_MARK_CODE] = TEX_NULL;
     cur_val = 0;
     cur_val_level = INT_VAL;
     radix = 0;
@@ -3324,7 +3324,7 @@ initialize_more_variables(void)
     for (k = 0; k <= 16; k++)
         read_open[k] = CLOSED;
 
-    cond_ptr = MIN_HALFWORD;
+    cond_ptr = TEX_NULL;
     if_limit = NORMAL;
     cur_if = 0;
     if_line = 0;
@@ -3345,31 +3345,31 @@ initialize_more_variables(void)
     dvi_ptr = 0;
     dvi_offset = 0;
     dvi_gone = 0;
-    down_ptr = MIN_HALFWORD;
-    right_ptr = MIN_HALFWORD;
-    adjust_tail = MIN_HALFWORD;
+    down_ptr = TEX_NULL;
+    right_ptr = TEX_NULL;
+    adjust_tail = TEX_NULL;
     last_badness = 0;
-    pre_adjust_tail = MIN_HALFWORD;
+    pre_adjust_tail = TEX_NULL;
     pack_begin_line = 0;
     empty.s1 = EMPTY;
-    empty.s0 = MIN_HALFWORD;
+    empty.s0 = TEX_NULL;
     null_delimiter.s3 = 0;
     null_delimiter.s2 = 0;
     null_delimiter.s1 = 0;
     null_delimiter.s0 = 0;
-    align_ptr = MIN_HALFWORD;
-    cur_align = MIN_HALFWORD;
-    cur_span = MIN_HALFWORD;
-    cur_loop = MIN_HALFWORD;
-    cur_head = MIN_HALFWORD;
-    cur_tail = MIN_HALFWORD;
-    cur_pre_head = MIN_HALFWORD;
-    cur_pre_tail = MIN_HALFWORD;
+    align_ptr = TEX_NULL;
+    cur_align = TEX_NULL;
+    cur_span = TEX_NULL;
+    cur_loop = TEX_NULL;
+    cur_head = TEX_NULL;
+    cur_tail = TEX_NULL;
+    cur_pre_head = TEX_NULL;
+    cur_pre_tail = TEX_NULL;
     max_hyph_char = TOO_BIG_LANG;
 
     for (z = 0; z <= hyph_size; z++) {
         hyph_word[z] = 0;
-        hyph_list[z] = MIN_HALFWORD;
+        hyph_list[z] = TEX_NULL;
         hyph_link[z] = 0;
     }
 
@@ -3392,17 +3392,17 @@ initialize_more_variables(void)
     for (k = 0; k <= 17; k++)
         write_open[k] = false;
 
-    LR_ptr = MIN_HALFWORD;
+    LR_ptr = TEX_NULL;
     LR_problems = 0;
     cur_dir = LEFT_TO_RIGHT;
-    pseudo_files = MIN_HALFWORD;
-    sa_root[MARK_VAL] = MIN_HALFWORD;
-    sa_null.b32.s0 = MIN_HALFWORD;
-    sa_null.b32.s1 = MIN_HALFWORD;
-    sa_chain = MIN_HALFWORD;
+    pseudo_files = TEX_NULL;
+    sa_root[MARK_VAL] = TEX_NULL;
+    sa_null.b32.s0 = TEX_NULL;
+    sa_null.b32.s1 = TEX_NULL;
+    sa_chain = TEX_NULL;
     sa_level = LEVEL_ZERO;
-    disc_ptr[LAST_BOX_CODE] = MIN_HALFWORD;
-    disc_ptr[VSPLIT_CODE] = MIN_HALFWORD;
+    disc_ptr[LAST_BOX_CODE] = TEX_NULL;
+    disc_ptr[VSPLIT_CODE] = TEX_NULL;
     edit_name_start = 0;
     stop_at_space = true;
 }
@@ -3418,7 +3418,7 @@ initialize_more_initex_variables(void)
         mem[k].b32.s1 = 0;
 
     for (k = 0; k <= 19; k += 4) {
-        mem[k].b32.s1 = MIN_HALFWORD + 1;
+        mem[k].b32.s1 = TEX_NULL + 1;
         mem[k].b16.s1 = NORMAL;
         mem[k].b16.s0 = NORMAL;
     }
@@ -3439,15 +3439,15 @@ initialize_more_initex_variables(void)
     mem[rover + 1].b32.s0 = rover;
     mem[rover + 1].b32.s1 = rover;
     lo_mem_max = rover + 1000;
-    mem[lo_mem_max].b32.s1 = MIN_HALFWORD;
-    mem[lo_mem_max].b32.s0 = MIN_HALFWORD;
+    mem[lo_mem_max].b32.s1 = TEX_NULL;
+    mem[lo_mem_max].b32.s0 = TEX_NULL;
 
     for (k = PRE_ADJUST_HEAD; k <= MEM_TOP; k++)
         mem[k] = mem[lo_mem_max];
 
     mem[OMIT_TEMPLATE].b32.s0 = CS_TOKEN_FLAG + FROZEN_END_TEMPLATE;
     mem[END_SPAN].b32.s1 = UINT16_MAX + 1;
-    mem[END_SPAN].b32.s0 = MIN_HALFWORD;
+    mem[END_SPAN].b32.s0 = TEX_NULL;
     mem[ACTIVE_LIST].b16.s1 = HYPHENATED;
     mem[ACTIVE_LIST+1].b32.s0 = MAX_HALFWORD;
     mem[ACTIVE_LIST].b16.s0 = 0;
@@ -3456,13 +3456,13 @@ initialize_more_initex_variables(void)
     mem[PAGE_INS_HEAD].b32.s1 = PAGE_INS_HEAD;
     NODE_type(PAGE_HEAD) = GLUE_NODE;
     mem[PAGE_HEAD].b16.s0 = NORMAL;
-    avail = MIN_HALFWORD;
+    avail = TEX_NULL;
     mem_end = MEM_TOP;
     hi_mem_min = PRE_ADJUST_HEAD;
     var_used = 20;
     dyn_used = HI_MEM_STAT_USAGE;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s1 = UNDEFINED_CS;
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].b32.s1 = MIN_HALFWORD;
+    eqtb[UNDEFINED_CONTROL_SEQUENCE].b32.s1 = TEX_NULL;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s0 = LEVEL_ZERO;
 
     for (k = ACTIVE_BASE; k <= eqtb_top; k++)
@@ -3476,7 +3476,7 @@ initialize_more_initex_variables(void)
         eqtb[k] = eqtb[GLUE_BASE];
 
     mem[0].b32.s1 += 531;
-    LOCAL(par_shape) = MIN_HALFWORD;
+    LOCAL(par_shape) = TEX_NULL;
     eqtb[LOCAL_BASE + LOCAL__par_shape].b16.s1 = SHAPE_REF;
     eqtb[LOCAL_BASE + LOCAL__par_shape].b16.s0 = LEVEL_ONE;
 
@@ -3486,7 +3486,7 @@ initialize_more_initex_variables(void)
     for (k = LOCAL_BASE + LOCAL__output_routine; k <= TOKS_BASE + NUMBER_REGS - 1; k++)
         eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
 
-    eqtb[BOX_BASE].b32.s1 = MIN_HALFWORD;
+    eqtb[BOX_BASE].b32.s1 = TEX_NULL;
     eqtb[BOX_BASE].b16.s1 = BOX_REF;
     eqtb[BOX_BASE].b16.s0 = LEVEL_ONE;
 
@@ -3582,13 +3582,13 @@ initialize_more_initex_variables(void)
     hash[END_WRITE].s1 = maketexstring("endwrite");
     eqtb[END_WRITE].b16.s0 = LEVEL_ONE;
     eqtb[END_WRITE].b16.s1 = OUTER_CALL;
-    eqtb[END_WRITE].b32.s1 = MIN_HALFWORD;
+    eqtb[END_WRITE].b32.s1 = TEX_NULL;
 
     max_reg_num = 32767;
     max_reg_help_line = "A register number must be between 0 and 32767.";
 
     for (i = INT_VAL; i <= INTER_CHAR_VAL; i++)
-        sa_root[i] = MIN_HALFWORD;
+        sa_root[i] = TEX_NULL;
 
     INTPAR(xetex_hyphenatable_length) = 63;
 }
@@ -4226,7 +4226,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     open_parens = 0;
     max_buf_stack = 0;
     grp_stack[0] = 0;
-    if_stack[0] = MIN_HALFWORD;
+    if_stack[0] = TEX_NULL;
     param_ptr = 0;
     max_param_stack = 0;
     used_tectonic_coda_tokens = false;
@@ -4235,7 +4235,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     first = 0;
 
     scanner_status = NORMAL;
-    warning_index = MIN_HALFWORD;
+    warning_index = TEX_NULL;
     first = 1;
     cur_input.state = NEW_LINE;
     cur_input.start = 1;
@@ -4500,7 +4500,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         lig_kern_base[FONT_BASE] = 0;
         kern_base[FONT_BASE] = 0;
         exten_base[FONT_BASE] = 0;
-        font_glue[FONT_BASE] = MIN_HALFWORD;
+        font_glue[FONT_BASE] = TEX_NULL;
         font_params[FONT_BASE] = 7;
         font_mapping[FONT_BASE] = 0;
         param_base[FONT_BASE] = -1;
