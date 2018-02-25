@@ -209,6 +209,72 @@ typedef union {
  *
  */
 
+/* Symbolic accessors for various TeX data structures. I would loooove to turn these
+ * into actual structs, but the path to doing that is not currently clear. Making
+ * field references symbolic seems like a decent start. Sadly I don't see how to do
+ * this conversion besides painstakingly annotating things.
+ */
+
+#define LLIST_link(p) mem[p].b32.s1
+#define LLIST_info(p) mem[p].b32.s0
+
+#define NODE_type(p) mem[p].b16.s1 /* half of LLIST_info(p) */
+#define NODE_subtype(p) mem[p].b16.s0 /* the other half of LLIST_info(p) */
+
+#define BOX_width(p) mem[(p) + 1].b32.s1 /* a scaled; 1 <=> WEB const `width_offset` */
+#define BOX_depth(p) mem[(p) + 2].b32.s1 /* a scaled; 2 <=> WEB const `depth_offset` */
+#define BOX_height(p) mem[(p) + 3].b32.s1 /* a scaled; 3 <=> WEB const `height_offset` */
+#define BOX_shift_amount(p) mem[(p) + 4].b32.s1 /* a scaled */
+#define BOX_list_ptr(p) mem[(p) + 5].b32.s1 /* aka `link` of p+5 */
+#define BOX_glue_sign(p) mem[(p) + 5].b16.s1 /* aka `type` of p+5 */
+#define BOX_glue_order(p) mem[(p) + 5].b16.s0 /* aka `subtype` of p+5 */
+#define BOX_glue_set(p) mem[(p) + 6].gr /* the glue ratio */
+
+#define ACTIVE_NODE_fitness(p) mem[p].b16.s0 /* aka "subtype" of a node */
+#define ACTIVE_NODE_break_node(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
+#define ACTIVE_NODE_line_number(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
+#define ACTIVE_NODE_total_demerits(p) mem[(p) + 2].b32.s1 /* was originally the `mem[x+2].int` field */
+#define ACTIVE_NODE_shortfall(p) mem[(p) + 3].b32.s1 /* a scaled; "active_short" in the WEB */
+#define ACTIVE_NODE_glue(p) mem[(p) + 4].b32.s1 /* a scaled */
+
+#define CHAR_NODE_font(p) mem[p].b16.s1 /* aka "type" of a node */
+#define CHAR_NODE_character(p) mem[p].b16.s0 /* aka "subtype" of a node */
+
+#define DISCRETIONARY_NODE_replace_count(p) mem[p].b16.s0 /* aka "subtype" of a node */
+#define DISCRETIONARY_NODE_pre_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
+#define DISCRETIONARY_NODE_post_break(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
+
+#define GLUE_NODE_glue_ptr(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
+#define GLUE_NODE_leader_ptr(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
+
+#define INSERTION_NODE_float_cost(p) mem[(p) + 1].b32.s1 /* "the floating_penalty to be used" */
+#define INSERTION_NODE_split_top_ptr(p) mem[(p) + 4].b32.s1 /* a glue pointer */
+#define INSERTION_NODE_ins_ptr(p) mem[(p) + 4].b32.s0 /* a pointer to a vlist */
+
+#define LIGATURE_NODE_lig_font(p) mem[(p) + 1].b16.s1 /* WEB: font(lig_char(p)) */
+#define LIGATURE_NODE_lig_char(p) mem[(p) + 1].b16.s0 /* WEB: character(lig_char(p)) */
+#define LIGATURE_NODE_lig_ptr(p) mem[(p) + 1].b32.s1 /* WEB: link(lig_char(p)) */
+
+#define PASSIVE_NODE_prev_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
+#define PASSIVE_NODE_next_break(p) PASSIVE_NODE_prev_break(p) /* siggggghhhhh */
+#define PASSIVE_NODE_cur_break(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
+#define PASSIVE_NODE_serial(p) mem[p].b32.s0 /* aka "info" */
+
+#define PENALTY_NODE_penalty(p) mem[(p) + 1].b32.s1 /* was originally the `mem[x+1].int` field */
+
+#define GLUE_SPEC_ref_count(p) mem[p].b32.s1 /* aka "link" of a link-list node */
+#define GLUE_SPEC_stretch_order(p) mem[p].b16.s1 /* aka "type" of a node */
+#define GLUE_SPEC_shrink_order(p) mem[p].b16.s0 /* aka "subtype" of a node */
+#define GLUE_SPEC_stretch(p) mem[(p) + 2].b32.s1 /* a scaled */
+#define GLUE_SPEC_shrink(p) mem[(p) + 3].b32.s1 /* a scaled */
+
+#define FONT_CHARACTER_INFO(f, c) font_info[char_base[f] + (c)].b16
+#define FONT_CHARINFO_WIDTH(f, info) font_info[width_base[f] + (info).s3].b32.s1
+#define FONT_CHARINFO_HEIGHT(f, info) font_info[height_base[f] + (info).s2 / 16].b32.s1
+#define FONT_CHARINFO_DEPTH(f, info) font_info[depth_base[f] + (info).s2 % 16].b32.s1
+#define FONT_CHARINFO_ITALCORR(f, info) font_info[italic_base[f] + (info).s1 / 4].b32.s1
+#define FONT_CHARACTER_WIDTH(f, c) FONT_CHARINFO_WIDTH(f, FONT_CHARACTER_INFO(f, c))
+
 
 typedef unsigned char glue_ord; /* enum: normal .. filll */
 typedef unsigned char group_code;
@@ -985,7 +1051,6 @@ int32_t find_protchar_left(int32_t l, bool d);
 int32_t find_protchar_right(int32_t l, int32_t r);
 scaled_t total_pw(int32_t q, int32_t p);
 void try_break(int32_t pi, small_number break_type);
-void post_line_break(bool d);
 small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar);
 void hyphenate(void);
 int32_t max_hyphenatable_length(void);
@@ -1096,6 +1161,17 @@ void flush_str(str_number s);
 str_number tokens_to_string(int32_t p);
 void scan_pdf_ext_toks(void);
 void compare_strings(void);
+
+/* Inlines */
+
+static inline bool is_char_node(const int32_t p) {
+    return p >= hi_mem_min;
+}
+
+static inline bool is_non_discardable_node(const int32_t p) {
+    memory_word *mem = zmem;
+    return NODE_type(p) < MATH_NODE;
+}
 
 /* Tectonic related functions */
 tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
