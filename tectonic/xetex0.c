@@ -12544,7 +12544,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
             if ((is_char_node(p)))
                 do {
                     f = CHAR_NODE_font(p);
-                    c = mem[p].b16.s0;
+                    c = CHAR_NODE_character(p);
                     cur_h =
                         cur_h + font_info[width_base[f] +
                                           font_info[char_base[f] + effective_char(true, f, c)].b16.s3].b32.s1;
@@ -12969,7 +12969,7 @@ void hlist_out(void)
             }
             do {
                 f = CHAR_NODE_font(p);
-                c = mem[p].b16.s0;
+                c = CHAR_NODE_character(p);
                 if ((p != LIG_TRICK) && (font_mapping[f] != NULL))
                     c = apply_tfm_font_mapping(font_mapping[f], c);
                 if (f != dvi_f) {       /*643: */

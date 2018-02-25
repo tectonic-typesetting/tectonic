@@ -277,14 +277,14 @@ line_break(bool d)
                     if (s != TEX_NULL) {
                         while (true) {
                             if (is_char_node(s)) {
-                                c = mem[s].b16.s0;
+                                c = CHAR_NODE_character(s);
                                 hf = mem[s].b16.s1;
                             } else if (NODE_type(s) == LIGATURE_NODE) {
                                 if (mem[s + 1].b32.s1 == TEX_NULL)
                                     goto _continue;
 
                                 q = mem[s + 1].b32.s1;
-                                c = mem[q].b16.s0;
+                                c = CHAR_NODE_character(q);
                                 hf = mem[q].b16.s1;
                             } else if (NODE_type(s) == KERN_NODE && mem[s].b16.s0 == NORMAL) {
                                 goto _continue;
@@ -493,7 +493,7 @@ line_break(bool d)
                                         hyf_bchar = mem[q].b16.s0;
 
                                     while (q > TEX_NULL) {
-                                        c = mem[q].b16.s0;
+                                        c = CHAR_NODE_character(q);
                                         if (hyph_index == 0 || c > 255)
                                             hc[0] = LC_CODE(c);
                                         else if (trie_trc[hyph_index + c] != c)
