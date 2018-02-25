@@ -595,8 +595,9 @@ line_break(bool d)
                 active_width[1] =
                     active_width[1] + font_info[width_base[f] +
                                                 font_info[char_base[f] +
-                                                          effective_char(true, f,
-                                                                         mem[cur_p + 1].b16.s0)].b16.s3].b32.s1;
+                                                          effective_char(true,
+                                                                         f,
+                                                                         LIGATURE_NODE_lig_char(cur_p))].b16.s3].b32.s1;
                 break;
 
             case DISC_NODE:
@@ -625,7 +626,8 @@ line_break(bool d)
 
                                 f = LIGATURE_NODE_lig_font(s);
                                 xtx_ligature_present = true;
-                                eff_char = effective_char(true, f, mem[s + 1].b16.s0);
+                                eff_char = effective_char(true, f,
+                                                          LIGATURE_NODE_lig_char(s));
                                 char_info = font_info[char_base[f] + eff_char].b16.s3;
                                 disc_width += font_info[width_base[f] + char_info].b32.s1;
                                 break;
@@ -681,7 +683,8 @@ line_break(bool d)
 
                             f = LIGATURE_NODE_lig_font(s);
                             xtx_ligature_present = true;
-                            eff_char = effective_char(true, f, mem[s + 1].b16.s0);
+                            eff_char = effective_char(true, f,
+                                                      LIGATURE_NODE_lig_char(s));
                             char_info = font_info[char_base[f] + eff_char].b16.s3;
                             active_width[1] += font_info[width_base[f] + char_info].b32.s1;
                             break;

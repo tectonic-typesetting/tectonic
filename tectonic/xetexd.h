@@ -239,6 +239,7 @@ typedef union {
 #define GLUE_NODE_leader_ptr(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
 
 #define LIGATURE_NODE_lig_font(p) mem[(p) + 1].b16.s1 /* WEB: font(lig_char(p)) */
+#define LIGATURE_NODE_lig_char(p) mem[(p) + 1].b16.s0 /* WEB: character(lig_char(p)) */
 #define LIGATURE_NODE_lig_ptr(p) mem[(p) + 1].b32.s1 /* WEB: link(lig_char(p)) */
 
 #define PENALTY_NODE_penalty(p) mem[(p) + 1].b32.s1 /* was originally the `mem[x+1].int` field */

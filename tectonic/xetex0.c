@@ -18292,7 +18292,8 @@ try_break(int32_t pi, small_number break_type)
 
                                         f = LIGATURE_NODE_lig_font(v);
                                         xtx_ligature_present = true;
-                                        eff_char = effective_char(true, f, mem[v + 1].b16.s0);
+                                        eff_char = effective_char(true, f,
+                                                                  LIGATURE_NODE_lig_char(v));
                                         char_info = font_info[char_base[f] + eff_char].b16.s3;
                                         break_width[1] -= font_info[width_base[f] + char_info].b32.s1;
                                         break;
@@ -18337,7 +18338,8 @@ try_break(int32_t pi, small_number break_type)
 
                                         f = LIGATURE_NODE_lig_font(s);
                                         xtx_ligature_present = true;
-                                        eff_char = effective_char(true, f, mem[s + 1].b16.s0);
+                                        eff_char = effective_char(true, f,
+                                                                  LIGATURE_NODE_lig_char(s));
                                         char_info = font_info[char_base[f] + eff_char].b16.s3;
                                         break_width[1] += font_info[width_base[f] + char_info].b32.s1;
                                         break;
