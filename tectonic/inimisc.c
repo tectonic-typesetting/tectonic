@@ -1242,15 +1242,15 @@ post_line_break(bool d)
                 }
 
                 if (r != TEMP_HEAD) {
-                    mem[r].b32.s1 = TEX_NULL;
-                    flush_node_list(mem[TEMP_HEAD].b32.s1);
-                    mem[TEMP_HEAD].b32.s1 = q;
+                    LLIST_link(r) = TEX_NULL;
+                    flush_node_list(LLIST_link(TEMP_HEAD));
+                    LLIST_link(TEMP_HEAD) = q;
                 }
             }
         }
     } while (cur_p != TEX_NULL);
 
-    if (cur_line != best_line || mem[TEMP_HEAD].b32.s1 != TEX_NULL)
+    if (cur_line != best_line || LLIST_link(TEMP_HEAD) != TEX_NULL)
         confusion("line breaking");
 
     cur_list.prev_graf = best_line - 1;
