@@ -232,16 +232,22 @@ typedef union {
 #define ACTIVE_NODE_shortfall(p) mem[(p) + 3].b32.s1 /* a scaled; "active_short" in the WEB */
 #define ACTIVE_NODE_glue(p) mem[(p) + 4].b32.s1 /* a scaled */
 
+#define CHAR_NODE_font(p) mem[p].b16.s1 /* aka "type" of a node */
+#define CHAR_NODE_character(p) mem[p].b16.s0 /* aka "subtype" of a node */
+
 #define GLUE_NODE_glue_ptr(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define GLUE_NODE_leader_ptr(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
+
+#define LIGATURE_NODE_lig_font(p) mem[(p) + 1].b16.s1 /* WEB: font(lig_char(p)) */
+#define LIGATURE_NODE_lig_ptr(p) mem[(p) + 1].b32.s1 /* WEB: link(lig_char(p)) */
+
+#define PENALTY_NODE_penalty(p) mem[(p) + 1].b32.s1 /* was originally the `mem[x+1].int` field */
 
 #define GLUE_SPEC_ref_count(p) mem[p].b32.s1 /* aka "link" of a link-list node */
 #define GLUE_SPEC_stretch_order(p) mem[p].b16.s1 /* aka "type" of a node */
 #define GLUE_SPEC_shrink_order(p) mem[p].b16.s0 /* aka "subtype" of a node */
 #define GLUE_SPEC_stretch(p) mem[(p) + 2].b32.s1 /* a scaled */
 #define GLUE_SPEC_shrink(p) mem[(p) + 3].b32.s1 /* a scaled */
-
-#define PENALTY_NODE_penalty(p) mem[(p) + 1].b32.s1 /* was originally the `mem[x+1].int` field */
 
 typedef unsigned char glue_ord; /* enum: normal .. filll */
 typedef unsigned char group_code;

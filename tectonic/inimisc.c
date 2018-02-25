@@ -205,7 +205,7 @@ line_break(bool d)
         printed_node = TEMP_HEAD;
         pass_number = 0;
         font_in_short_display = 0; /*:893*/
-        cur_p = mem[TEMP_HEAD].b32.s1;
+        cur_p = LLIST_link(TEMP_HEAD);
         auto_breaking = true;
 
         prev_p = global_prev_p = cur_p;
@@ -219,7 +219,7 @@ line_break(bool d)
                     int32_t eff_char;
                     uint16_t char_info;
 
-                    f = mem[cur_p].b16.s1;
+                    f = CHAR_NODE_font(cur_p);
                     eff_char = effective_char(true, f, mem[cur_p].b16.s0);
                     char_info = font_info[char_base[f] + eff_char].b16.s3;
                     active_width[1] += font_info[width_base[f] + char_info].b32.s1;
@@ -590,7 +590,7 @@ line_break(bool d)
                 break;
 
             case LIGATURE_NODE:
-                f = mem[cur_p + 1].b16.s1;
+                f = LIGATURE_NODE_lig_font(cur_p);
                 xtx_ligature_present = true;
                 active_width[1] =
                     active_width[1] + font_info[width_base[f] +
@@ -623,7 +623,7 @@ line_break(bool d)
                                 int32_t eff_char;
                                 uint16_t char_info;
 
-                                f = mem[s + 1].b16.s1;
+                                f = LIGATURE_NODE_lig_font(s);
                                 xtx_ligature_present = true;
                                 eff_char = effective_char(true, f, mem[s + 1].b16.s0);
                                 char_info = font_info[char_base[f] + eff_char].b16.s3;
@@ -679,7 +679,7 @@ line_break(bool d)
                             int32_t eff_char;
                             uint16_t char_info;
 
-                            f = mem[s + 1].b16.s1;
+                            f = LIGATURE_NODE_lig_font(s);
                             xtx_ligature_present = true;
                             eff_char = effective_char(true, f, mem[s + 1].b16.s0);
                             char_info = font_info[char_base[f] + eff_char].b16.s3;
