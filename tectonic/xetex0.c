@@ -20005,7 +20005,7 @@ void fire_up(int32_t c)
 
     if (mem[best_page_break].b16.s1 == PENALTY_NODE) {
         geq_word_define(INT_BASE + INT_PAR__output_penalty, mem[best_page_break + 1].b32.s1);
-        mem[best_page_break + 1].b32.s1 = INF_PENALTY;
+        PENALTY_NODE_penalty(best_page_break) = INF_PENALTY;
     } else
         geq_word_define(INT_BASE + INT_PAR__output_penalty, INF_PENALTY);
     if (sa_root[MARK_VAL] != MIN_HALFWORD) {
