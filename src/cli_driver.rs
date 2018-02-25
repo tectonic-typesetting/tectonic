@@ -833,7 +833,7 @@ impl ProcessingSession {
             TexEngine::new()
                     .halt_on_error_mode(true)
                     .initex_mode(true)
-                    .process(&mut stack, &mut self.events, status, "UNUSED.fmt.gz", "texput")
+                    .process(&mut stack, &mut self.events, status, "UNUSED.fmt", "texput")
         };
 
         match result {
@@ -871,7 +871,7 @@ impl ProcessingSession {
 
             let sname = name.to_string_lossy();
 
-            if !sname.ends_with(".fmt.gz") {
+            if !sname.ends_with(".fmt") {
                 continue;
             }
 

@@ -117,7 +117,7 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
         TexEngine::new()
             .initex_mode(true)
             .process(&mut io, &mut events,
-                     &mut NoopStatusBackend::new(), "unused.fmt.gz", texname).unwrap();
+                     &mut NoopStatusBackend::new(), "unused.fmt", texname).unwrap();
     }
 
     // Did we get what we expected?
@@ -129,7 +129,7 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
             let observed = info.write_digest.unwrap();
 
             if observed != want_digest {
-                println!("expected uncompressed {} to have SHA256 = {}", fmtname, want_digest.to_string());
+                println!("expected {} to have SHA256 = {}", fmtname, want_digest.to_string());
                 println!("instead, got {}", observed.to_string());
                 panic!();
             }
@@ -144,7 +144,7 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
 fn plain_format() {
     test_format_generation(
         "plain.tex",
-        "plain.fmt.gz",
-        "0a096fc88e7b8732ed56beca4319e57e7526a484a5b4f15b5413be7b7cae34ae",
+        "plain.fmt",
+        "83684a4992274fdae8de1b142146f85b0bf1a4f3489c54a04e12739d578dd863",
     )
 }

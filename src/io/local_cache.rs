@@ -356,7 +356,7 @@ impl<B: IoProvider> LocalCache<B> {
         };
 
         let mut p = self.formats_base.clone();
-        p.push(format!("{}-{}-{}.fmt.gz", self.cached_digest.to_string(), stem, ::FORMAT_SERIAL));
+        p.push(format!("{}-{}-{}.fmt", self.cached_digest.to_string(), stem, ::FORMAT_SERIAL));
         Ok(p)
     }
 }

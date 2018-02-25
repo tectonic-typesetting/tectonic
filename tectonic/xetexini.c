@@ -2249,9 +2249,9 @@ store_fmt_file(void)
         overflow("pool size", pool_size - init_pool_ptr);
 
     format_ident = make_string();
-    pack_job_name(".fmt.gz");
+    pack_job_name(".fmt");
 
-    fmt_out = ttstub_output_open ((const char *) name_of_file + 1, 1);
+    fmt_out = ttstub_output_open ((const char *) name_of_file + 1, 0);
     if (fmt_out == NULL)
         _tt_abort ("cannot open format output file \"%s\"", name_of_file + 1);
 
@@ -2667,7 +2667,7 @@ load_fmt_file(void)
 
     pack_buffered_name(format_default_length - 4, 1, 0);
 
-    fmt_in = ttstub_input_open((const char *) name_of_file + 1, TTIF_FORMAT, 1);
+    fmt_in = ttstub_input_open((const char *) name_of_file + 1, TTIF_FORMAT, 0);
     if (fmt_in == NULL)
         _tt_abort("cannot open the format file \"%s\"", (char *) name_of_file + 1);
 
