@@ -218,12 +218,19 @@ typedef union {
 #define LLIST_link(p) mem[p].b32.s1
 #define LLIST_info(p) mem[p].b32.s0
 
-#define NODE_type(p) mem[p].b16.s1
-#define NODE_subtype(p) mem[p].b16.s0
+#define NODE_type(p) mem[p].b16.s1 /* half of LLIST_info(p) */
+#define NODE_subtype(p) mem[p].b16.s0 /* the other half of LLIST_info(p) */
 
-#define BOX_width(p) mem[(p) + 1].b32.s1 /* 1 <=> const `width_offset` */
-#define BOX_depth(p) mem[(p) + 2].b32.s1 /* 2 <=> const `depth_offset` */
-#define BOX_height(p) mem[(p) + 3].b32.s1 /* 1 <=> const `height_offset` */
+#define BOX_width(p) mem[(p) + 1].b32.s1 /* 1 <=> WEB const `width_offset` */
+#define BOX_depth(p) mem[(p) + 2].b32.s1 /* 2 <=> WEB const `depth_offset` */
+#define BOX_height(p) mem[(p) + 3].b32.s1 /* 3 <=> WEB const `height_offset` */
+
+#define ACTIVE_NODE_fitness(p) mem[p].b16.s0 /* aka "subtype" of a node */
+#define ACTIVE_NODE_break_node(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
+#define ACTIVE_NODE_line_number(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
+#define ACTIVE_NODE_total_demerits(p) mem[(p) + 2].b32.s1 /* was originally the `mem[x+2].int` field */
+#define ACTIVE_NODE_shortfall(p) mem[(p) + 3].b32.s1 /* a scaled; "active_short" in the WEB */
+#define ACTIVE_NODE_glue(p) mem[(p) + 4].b32.s1 /* a scaled */
 
 #define GLUE_NODE_glue_ptr(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define GLUE_NODE_leader_ptr(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
