@@ -7496,7 +7496,7 @@ scan_something_internal(small_number level, bool negative)
                                 cur_val = FONT_CHARINFO_HEIGHT(q, i);
                                 break;
                             case FONT_CHAR_DP_CODE:
-                                cur_val = font_info[depth_base[q] + (i.s2) % 16].b32.s1;
+                                cur_val = FONT_CHARINFO_DEPTH(q, i);
                                 break;
                             case FONT_CHAR_IC_CODE:
                                 cur_val = font_info[italic_base[q] + (i.s1) / 4].b32.s1;
@@ -14187,7 +14187,6 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
     glue_ord o;
     internal_font_number f;
     b16x4 i;
-    eight_bits hd;
     int32_t pp, ppp = TEX_NULL;
     int32_t total_chars, k;
 
@@ -14223,12 +14222,11 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
 
             f = CHAR_NODE_font(p);
             i = FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(p)));
-            hd = i.s2;
             x = x + FONT_CHARINFO_WIDTH(f, i);
             s = FONT_CHARINFO_HEIGHT(f, i);
             if (s > h)
                 h = s;
-            s = font_info[depth_base[f] + (hd) % 16].b32.s1;
+            s = FONT_CHARINFO_DEPTH(f, i);
             if (s > d)
                 d = s;
             p = mem[p].b32.s1;
@@ -15247,7 +15245,6 @@ int32_t overbar(int32_t b, scaled_t k, scaled_t t)
 int32_t char_box(internal_font_number f, int32_t c)
 {
     memory_word *mem = zmem; b16x4 q;
-    eight_bits hd;
     int32_t b, p;
     if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
         b = new_null_box();
@@ -15262,11 +15259,10 @@ int32_t char_box(internal_font_number f, int32_t c)
     } else {
 
         q = FONT_CHARACTER_INFO(f, effective_char(true, f, c));
-        hd = q.s2;
         b = new_null_box();
         mem[b + 1].b32.s1 = FONT_CHARINFO_WIDTH(f, q) + font_info[italic_base[f] + (q.s1) / 4].b32.s1;
         mem[b + 3].b32.s1 = FONT_CHARINFO_HEIGHT(f, q);
-        mem[b + 2].b32.s1 = font_info[depth_base[f] + (hd) % 16].b32.s1;
+        mem[b + 2].b32.s1 = FONT_CHARINFO_DEPTH(f, q);
         p = get_avail();
         mem[p].b16.s0 = c;
         mem[p].b16.s1 = f;
@@ -15286,11 +15282,8 @@ void stack_into_box(int32_t b, internal_font_number f, uint16_t c)
 
 scaled_t height_plus_depth(internal_font_number f, uint16_t c)
 {
-    b16x4 q;
-    eight_bits hd;
-    q = FONT_CHARACTER_INFO(f, effective_char(true, f, c));
-    hd = q.s2;
-    return FONT_CHARINFO_HEIGHT(f, q) + font_info[depth_base[f] + (hd) % 16].b32.s1;
+    b16x4 q = FONT_CHARACTER_INFO(f, effective_char(true, f, c));
+    return FONT_CHARINFO_HEIGHT(f, q) + FONT_CHARINFO_DEPTH(f, q);
 }
 
 void stack_glyph_into_box(int32_t b, internal_font_number f, int32_t g)
@@ -15504,7 +15497,6 @@ int32_t var_delimiter(int32_t d, int32_t s, scaled_t v)
     scaled_t u;
     scaled_t w;
     b16x4 q = { 0, 0, 0, 0 };
-    eight_bits hd;
     b16x4 r;
     int32_t z;
     bool large_attempt;
@@ -15555,9 +15547,7 @@ int32_t var_delimiter(int32_t d, int32_t s, scaled_t v)
                                     c = y;
                                     goto found;
                                 }
-                                hd = q.s2;
-                                u = FONT_CHARINFO_HEIGHT(g, q) + font_info[depth_base[g] +
-                                                                                           (hd) % 16].b32.s1;
+                                u = FONT_CHARINFO_HEIGHT(g, q) + FONT_CHARINFO_DEPTH(g, q);
                                 if (u > w) {
                                     f = g;
                                     c = y;
