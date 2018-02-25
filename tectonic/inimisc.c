@@ -39,25 +39,22 @@ line_break(bool d)
 
     pack_begin_line = cur_list.mode_line; /* "this is for over/underfull box messages" */
 
-    mem[TEMP_HEAD].b32.s1 = mem[cur_list.head].b32.s1;
+    LLIST_link(TEMP_HEAD) = LLIST_link(cur_list.head);
 
     /* Remove trailing space or glue if present; add infinite penalty then par_fill_skip */
 
-    if (cur_list.tail >= hi_mem_min) {
-        mem[cur_list.tail].b32.s1 = new_penalty(INF_PENALTY);
-        cur_list.tail = mem[cur_list.tail].b32.s1;
-    } else if (mem[cur_list.tail].b16.s1 != GLUE_NODE) {
-        mem[cur_list.tail].b32.s1 = new_penalty(INF_PENALTY);
-        cur_list.tail = mem[cur_list.tail].b32.s1;
+    if (cur_list.tail >= hi_mem_min) { /* is_char_node */
+        cur_list.tail = LLIST_link(cur_list.tail) = new_penalty(INF_PENALTY);
+    } else if (BOX_type(cur_list.tail) != GLUE_NODE) {
+        cur_list.tail = LLIST_link(cur_list.tail) = new_penalty(INF_PENALTY);
     } else {
-        mem[cur_list.tail].b16.s1 = PENALTY_NODE;
-        delete_glue_ref(mem[cur_list.tail + 1].b32.s0);
-        flush_node_list(mem[cur_list.tail + 1].b32.s1);
-        mem[cur_list.tail + 1].b32.s1 = INF_PENALTY;
+        BOX_type(cur_list.tail) = PENALTY_NODE;
+        delete_glue_ref(GLUE_NODE_glue_ptr(cur_list.tail));
+        flush_node_list(GLUE_NODE_leader_ptr(cur_list.tail));
+        PENALTY_NODE_penalty(cur_list.tail) = INF_PENALTY;
     }
 
-    mem[cur_list.tail].b32.s1 = new_param_glue(GLUE_PAR__par_fill_skip);
-    last_line_fill = mem[cur_list.tail].b32.s1;
+    last_line_fill = LLIST_link(cur_list.tail) = new_param_glue(GLUE_PAR__par_fill_skip);
 
     /* Yet more initialization of various kinds */
 

@@ -209,6 +209,21 @@ typedef union {
  *
  */
 
+/* Symbolic accessors for various TeX data structures. I would loooove to turn these
+ * into actual structs, but the path to doing that is not currently clear. Making
+ * field references symbolic seems like a decent start. Sadly I don't see how to do
+ * this conversion besides painstakingly annotating things.
+ */
+
+#define LLIST_link(p) mem[p].b32.s1
+#define LLIST_info(p) mem[p].b32.s0
+
+#define BOX_type(p) mem[p].b16.s1
+
+#define GLUE_NODE_glue_ptr(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
+#define GLUE_NODE_leader_ptr(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
+
+#define PENALTY_NODE_penalty(p) mem[(p) + 1].b32.s1 /* was originally the `mem[x+1].int` field */
 
 typedef unsigned char glue_ord; /* enum: normal .. filll */
 typedef unsigned char group_code;
