@@ -7493,7 +7493,7 @@ scan_something_internal(small_number level, bool negative)
                                 cur_val = FONT_CHARINFO_WIDTH(q, i);
                                 break;
                             case FONT_CHAR_HT_CODE:
-                                cur_val = font_info[height_base[q] + (i.s2) / 16].b32.s1;
+                                cur_val = FONT_CHARINFO_HEIGHT(q, i);
                                 break;
                             case FONT_CHAR_DP_CODE:
                                 cur_val = font_info[depth_base[q] + (i.s2) % 16].b32.s1;
@@ -14225,7 +14225,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
             i = FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(p)));
             hd = i.s2;
             x = x + FONT_CHARINFO_WIDTH(f, i);
-            s = font_info[height_base[f] + (hd) / 16].b32.s1;
+            s = FONT_CHARINFO_HEIGHT(f, i);
             if (s > h)
                 h = s;
             s = font_info[depth_base[f] + (hd) % 16].b32.s1;
@@ -15265,7 +15265,7 @@ int32_t char_box(internal_font_number f, int32_t c)
         hd = q.s2;
         b = new_null_box();
         mem[b + 1].b32.s1 = FONT_CHARINFO_WIDTH(f, q) + font_info[italic_base[f] + (q.s1) / 4].b32.s1;
-        mem[b + 3].b32.s1 = font_info[height_base[f] + (hd) / 16].b32.s1;
+        mem[b + 3].b32.s1 = FONT_CHARINFO_HEIGHT(f, q);
         mem[b + 2].b32.s1 = font_info[depth_base[f] + (hd) % 16].b32.s1;
         p = get_avail();
         mem[p].b16.s0 = c;
@@ -15290,7 +15290,7 @@ scaled_t height_plus_depth(internal_font_number f, uint16_t c)
     eight_bits hd;
     q = FONT_CHARACTER_INFO(f, effective_char(true, f, c));
     hd = q.s2;
-    return font_info[height_base[f] + (hd) / 16].b32.s1 + font_info[depth_base[f] + (hd) % 16].b32.s1;
+    return FONT_CHARINFO_HEIGHT(f, q) + font_info[depth_base[f] + (hd) % 16].b32.s1;
 }
 
 void stack_glyph_into_box(int32_t b, internal_font_number f, int32_t g)
@@ -15556,7 +15556,7 @@ int32_t var_delimiter(int32_t d, int32_t s, scaled_t v)
                                     goto found;
                                 }
                                 hd = q.s2;
-                                u = font_info[height_base[g] + (hd) / 16].b32.s1 + font_info[depth_base[g] +
+                                u = FONT_CHARINFO_HEIGHT(g, q) + font_info[depth_base[g] +
                                                                                            (hd) % 16].b32.s1;
                                 if (u > w) {
                                     f = g;
@@ -21752,7 +21752,7 @@ void make_accent(void)
 
                 i = FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(q)));
                 w = FONT_CHARINFO_WIDTH(f, i);
-                h = font_info[height_base[f] + (i.s2) / 16].b32.s1;
+                h = FONT_CHARINFO_HEIGHT(f, i);
             }
             if (h != x) {
                 p = hpack(p, 0, ADDITIONAL);
