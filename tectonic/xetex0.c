@@ -12543,7 +12543,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
         reswitch:
             if ((is_char_node(p)))
                 do {
-                    f = mem[p].b16.s1;
+                    f = CHAR_NODE_font(p);
                     c = mem[p].b16.s0;
                     cur_h =
                         cur_h + font_info[width_base[f] +
@@ -12968,7 +12968,7 @@ void hlist_out(void)
                 dvi_v = cur_v;
             }
             do {
-                f = mem[p].b16.s1;
+                f = CHAR_NODE_font(p);
                 c = mem[p].b16.s0;
                 if ((p != LIG_TRICK) && (font_mapping[f] != NULL))
                     c = apply_tfm_font_mapping(font_mapping[f], c);
@@ -14150,7 +14150,7 @@ scaled_t char_pw(int32_t p, small_number side)
         else
             return 0;
     }
-    f = mem[p].b16.s1;
+    f = CHAR_NODE_font(p);
     c = get_cp_code(f, mem[p].b16.s0, side);
     switch (side) {
     case 0:
@@ -14220,7 +14220,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
         while ((is_char_node(p))) {
                                                         /*677: */
 
-            f = mem[p].b16.s1;
+            f = CHAR_NODE_font(p);
             i = font_info[char_base[f] + effective_char(true, f, mem[p].b16.s0)].b16;
             hd = i.s2;
             x = x + font_info[width_base[f] + i.s3].b32.s1;
@@ -15683,7 +15683,7 @@ int32_t rebox(int32_t b, scaled_t w)
             b = hpack(b, 0, ADDITIONAL);
         p = mem[b + 5].b32.s1;
         if (((is_char_node(p))) && (mem[p].b32.s1 == TEX_NULL)) {
-            f = mem[p].b16.s1;
+            f = CHAR_NODE_font(p);
             v = font_info[width_base[f] + font_info[char_base[f] + effective_char(true, f, mem[p].b16.s0)].b16.s3].b32.s1;
             if (v != mem[b + 1].b32.s1)
                 mem[p].b32.s1 = new_kern(mem[b + 1].b32.s1 - v);
@@ -18279,7 +18279,7 @@ try_break(int32_t pi, small_number break_type)
                                     int32_t eff_char;
                                     uint16_t char_info;
 
-                                    f = mem[v].b16.s1;
+                                    f = CHAR_NODE_font(v);
                                     eff_char = effective_char(true, f, mem[v].b16.s0);
                                     char_info = font_info[char_base[f] + eff_char].b16.s3;
                                     break_width[1] -= font_info[width_base[f] + char_info].b32.s1;
@@ -18324,7 +18324,7 @@ try_break(int32_t pi, small_number break_type)
                                     int32_t eff_char;
                                     uint16_t char_info;
 
-                                    f = mem[s].b16.s1;
+                                    f = CHAR_NODE_font(s);
                                     eff_char = effective_char(true, f, mem[s].b16.s0);
                                     char_info = font_info[char_base[f] + eff_char].b16.s3;
                                     break_width[1] += font_info[width_base[f] + char_info].b32.s1;
@@ -21560,7 +21560,7 @@ void append_italic_correction(void)
             return;
         } else
             return;
-        f = mem[p].b16.s1;
+        f = CHAR_NODE_font(p);
         {
             mem[cur_list.tail].b32.s1 =
                 new_kern(font_info
@@ -22239,7 +22239,7 @@ void init_math(void)
 
             reswitch:
                 if ((is_char_node(p))) {
-                    f = mem[p].b16.s1;
+                    f = CHAR_NODE_font(p);
                     d = font_info[width_base[f] +
                                   font_info[char_base[f] + effective_char(true, f, mem[p].b16.s0)].b16.s3].b32.s1;
                     goto found;

@@ -612,7 +612,7 @@ line_break(bool d)
                             int32_t eff_char;
                             uint16_t char_info;
 
-                            f = mem[s].b16.s1;
+                            f = CHAR_NODE_font(s);
                             eff_char = effective_char(true, f, mem[s].b16.s0);
                             char_info = font_info[char_base[f] + eff_char].b16.s3;
                             disc_width += font_info[width_base[f] + char_info].b32.s1;
@@ -668,7 +668,7 @@ line_break(bool d)
                         int32_t eff_char;
                         uint16_t char_info;
 
-                        f = mem[s].b16.s1;
+                        f = CHAR_NODE_font(s);
                         eff_char = effective_char(true, f, mem[s].b16.s0);
                         char_info = font_info[char_base[f] + eff_char].b16.s3;
                         active_width[1] += font_info[width_base[f] + char_info].b32.s1;
