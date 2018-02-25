@@ -250,6 +250,10 @@ typedef union {
 #define GLUE_SPEC_stretch(p) mem[(p) + 2].b32.s1 /* a scaled */
 #define GLUE_SPEC_shrink(p) mem[(p) + 3].b32.s1 /* a scaled */
 
+#define FONT_CHARACTER_INFO(f, c) font_info[char_base[f] + (c)]
+#define FONT_CHARACTER_WIDTH(f, c) font_info[width_base[f] + FONT_CHARACTER_INFO(f, c).b16.s3].b32.s1
+
+
 typedef unsigned char glue_ord; /* enum: normal .. filll */
 typedef unsigned char group_code;
 typedef int32_t internal_font_number;

@@ -220,9 +220,8 @@ line_break(bool d)
                     uint16_t char_info;
 
                     f = CHAR_NODE_font(cur_p);
-                    eff_char = effective_char(true, f,
-                                              CHAR_NODE_character(cur_p));
-                    char_info = font_info[char_base[f] + eff_char].b16.s3;
+                    eff_char = effective_char(true, f, CHAR_NODE_character(cur_p));
+                    char_info = FONT_CHARACTER_INFO(f, eff_char).b16.s3;
                     active_width[1] += font_info[width_base[f] + char_info].b32.s1;
                     cur_p = mem[cur_p].b32.s1;
                 } while (is_char_node(cur_p));
@@ -595,10 +594,8 @@ line_break(bool d)
                 xtx_ligature_present = true;
                 active_width[1] =
                     active_width[1] + font_info[width_base[f] +
-                                                font_info[char_base[f] +
-                                                          effective_char(true,
-                                                                         f,
-                                                                         LIGATURE_NODE_lig_char(cur_p))].b16.s3].b32.s1;
+                                                FONT_CHARACTER_INFO(f,
+                                                                    effective_char(true, f, LIGATURE_NODE_lig_char(cur_p))).b16.s3].b32.s1;
                 break;
 
             case DISC_NODE:
@@ -617,7 +614,7 @@ line_break(bool d)
                             f = CHAR_NODE_font(s);
                             eff_char = effective_char(true, f,
                                                       CHAR_NODE_character(s));
-                            char_info = font_info[char_base[f] + eff_char].b16.s3;
+                            char_info = FONT_CHARACTER_INFO(f, eff_char).b16.s3;
                             disc_width += font_info[width_base[f] + char_info].b32.s1;
                         } else {
                             switch (mem[s].b16.s1) {
@@ -630,7 +627,7 @@ line_break(bool d)
                                 xtx_ligature_present = true;
                                 eff_char = effective_char(true, f,
                                                           LIGATURE_NODE_lig_char(s));
-                                char_info = font_info[char_base[f] + eff_char].b16.s3;
+                                char_info = FONT_CHARACTER_INFO(f, eff_char).b16.s3;
                                 disc_width += font_info[width_base[f] + char_info].b32.s1;
                                 break;
                             }
@@ -675,7 +672,7 @@ line_break(bool d)
                         f = CHAR_NODE_font(s);
                         eff_char = effective_char(true, f,
                                                   CHAR_NODE_character(s));
-                        char_info = font_info[char_base[f] + eff_char].b16.s3;
+                        char_info = FONT_CHARACTER_INFO(f, eff_char).b16.s3;
                         active_width[1] += font_info[width_base[f] + char_info].b32.s1;
                     } else {
                         switch (mem[s].b16.s1) {
@@ -688,7 +685,7 @@ line_break(bool d)
                             xtx_ligature_present = true;
                             eff_char = effective_char(true, f,
                                                       LIGATURE_NODE_lig_char(s));
-                            char_info = font_info[char_base[f] + eff_char].b16.s3;
+                            char_info = FONT_CHARACTER_INFO(f, eff_char).b16.s3;
                             active_width[1] += font_info[width_base[f] + char_info].b32.s1;
                             break;
                         }
