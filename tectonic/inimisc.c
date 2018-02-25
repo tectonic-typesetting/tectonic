@@ -256,7 +256,7 @@ line_break(bool d)
                         try_break(0, UNHYPHENATED);
                     else if (is_non_discardable_node(prev_p))
                         try_break(0, UNHYPHENATED);
-                    else if (NODE_type(prev_p) == KERN_NODE && mem[prev_p].b16.s0 != EXPLICIT)
+                    else if (NODE_type(prev_p) == KERN_NODE && NODE_subtype(prev_p) != EXPLICIT)
                         try_break(0, UNHYPHENATED);
                 }
 
@@ -577,7 +577,7 @@ line_break(bool d)
                 break; /* that was a long-ass GLUE_NODE case */
 
             case KERN_NODE:
-                if (mem[cur_p].b16.s0 == EXPLICIT) {
+                if (NODE_subtype(cur_p) == EXPLICIT) {
                     if (mem[cur_p].b32.s1 < hi_mem_min && auto_breaking) {
                         if (NODE_type(mem[cur_p].b32.s1) == GLUE_NODE)
                             try_break(0, UNHYPHENATED);
@@ -1219,7 +1219,7 @@ post_line_break(bool d)
                         break;
                     if (is_non_discardable_node(q))
                         break;
-                    if (NODE_type(q) == KERN_NODE && mem[q].b16.s0 != EXPLICIT && mem[q].b16.s0 != SPACE_ADJUSTMENT)
+                    if (NODE_type(q) == KERN_NODE && NODE_subtype(q) != EXPLICIT && mem[q].b16.s0 != SPACE_ADJUSTMENT)
                         break;
 
                     r = q;

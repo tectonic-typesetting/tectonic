@@ -14421,7 +14421,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
 
                                 LR_problems++;
                                 NODE_type(p) = KERN_NODE;
-                                mem[p].b16.s0 = EXPLICIT;
+                                NODE_subtype(p) = EXPLICIT;
                             }
                         } else {
 
@@ -15729,7 +15729,7 @@ void math_kern(int32_t p, scaled_t m)
             f = f + 65536L;
         }
         mem[p + 1].b32.s1 = mult_and_add(n, mem[p + 1].b32.s1, xn_over_d(mem[p + 1].b32.s1, f, 65536L), MAX_HALFWORD);
-        mem[p].b16.s0 = EXPLICIT;
+        NODE_subtype(p) = EXPLICIT;
     }
 }
 
@@ -18369,7 +18369,7 @@ try_break(int32_t pi, small_number break_type)
                             break_width[1] -= mem[s + 1].b32.s1;
                             break;
                         case KERN_NODE:
-                            if (mem[s].b16.s0 != EXPLICIT)
+                            if (NODE_subtype(s) != EXPLICIT)
                                 goto done;
                             break_width[1] -= mem[s + 1].b32.s1;
                             break;
@@ -21528,14 +21528,14 @@ void append_italic_correction(void)
                     mem[cur_list.tail].b32.s1 = new_kern(get_native_italic_correction(cur_list.tail));
                     cur_list.tail = mem[cur_list.tail].b32.s1;
                 }
-                mem[cur_list.tail].b16.s0 = EXPLICIT;
+                NODE_subtype(cur_list.tail) = EXPLICIT;
             } else if (mem[cur_list.tail].b16.s0 == GLYPH_NODE) {
                 {
                     mem[cur_list.tail].b32.s1 =
                         new_kern(get_native_glyph_italic_correction(cur_list.tail));
                     cur_list.tail = mem[cur_list.tail].b32.s1;
                 }
-                mem[cur_list.tail].b16.s0 = EXPLICIT;
+                NODE_subtype(cur_list.tail) = EXPLICIT;
             }
             return;
         } else
@@ -21546,7 +21546,7 @@ void append_italic_correction(void)
                 new_kern(FONT_CHARINFO_ITALCORR(f, FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(p)))));
             cur_list.tail = mem[cur_list.tail].b32.s1;
         }
-        mem[cur_list.tail].b16.s0 = EXPLICIT;
+        NODE_subtype(cur_list.tail) = EXPLICIT;
     }
 }
 
