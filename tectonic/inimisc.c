@@ -959,50 +959,55 @@ post_line_break(bool d)
             GLUE_SPEC_ref_count(GLUEPAR(right_skip))++;
             glue_break = true;
         } else if (NODE_type(q) == DISC_NODE) { /*911:*/
-            t = mem[q].b16.s0;
+            t = DISCRETIONARY_NODE_replace_count(q);
 
             if (t == 0) {
-                r = mem[q].b32.s1;
+                r = LLIST_link(q);
             } else {
                 r = q;
 
                 while (t > 1) {
-                    r = mem[r].b32.s1;
+                    r = LLIST_link(r);
                     t--;
                 }
 
-                s = mem[r].b32.s1;
-                r = mem[s].b32.s1;
-                mem[s].b32.s1 = TEX_NULL;
-                flush_node_list(mem[q].b32.s1);
-                mem[q].b16.s0 = 0;
+                s = LLIST_link(r);
+                r = LLIST_link(s);
+                LLIST_link(s) = TEX_NULL;
+                flush_node_list(LLIST_link(q));
+                DISCRETIONARY_NODE_replace_count(q) = 0;
             }
 
-            if (mem[q + 1].b32.s1 != TEX_NULL) { /*913:*/
-                s = mem[q + 1].b32.s1;
-                while (mem[s].b32.s1 != TEX_NULL)
-                    s = mem[s].b32.s1;
-                mem[s].b32.s1 = r;
-                r = mem[q + 1].b32.s1;
-                mem[q + 1].b32.s1 = TEX_NULL;
+            if (DISCRETIONARY_NODE_post_break(q) != TEX_NULL) { /*913:*/
+                s = DISCRETIONARY_NODE_post_break(q);
+
+                while (LLIST_link(s) != TEX_NULL)
+                    s = LLIST_link(s);
+
+                LLIST_link(s) = r;
+
+                r = DISCRETIONARY_NODE_post_break(q);
+                DISCRETIONARY_NODE_post_break(q) = TEX_NULL;
                 post_disc_break = true;
             }
 
-            if (mem[q + 1].b32.s0 != TEX_NULL) { /*914:*/
-                s = mem[q + 1].b32.s0;
-                mem[q].b32.s1 = s;
-                while (mem[s].b32.s1 != TEX_NULL)
-                    s = mem[s].b32.s1;
-                mem[q + 1].b32.s0 = TEX_NULL;
+            if (DISCRETIONARY_NODE_pre_break(q) != TEX_NULL) { /*914:*/
+                s = DISCRETIONARY_NODE_pre_break(q);
+                LLIST_link(q) = s;
+
+                while (LLIST_link(s) != TEX_NULL)
+                    s = LLIST_link(s);
+
+                DISCRETIONARY_NODE_pre_break(q) = TEX_NULL;
                 q = s;
             }
 
-            mem[q].b32.s1 = r;
+            LLIST_link(q) = r;
             disc_break = true;
         } else if (NODE_type(q) == KERN_NODE) {
-            mem[q + 1].b32.s1 = 0;
+            BOX_width(q) = 0;
         } else if (NODE_type(q) == MATH_NODE) {
-            mem[q + 1].b32.s1 = 0;
+            BOX_width(q) = 0;
 
             if (INTPAR(texxet) > 0) { /*1495:*/
                 if (odd(mem[q].b16.s0)) {
@@ -1048,8 +1053,8 @@ post_line_break(bool d)
 
         if (!glue_break) {
             r = new_param_glue(GLUE_PAR__right_skip);
-            mem[r].b32.s1 = mem[q].b32.s1;
-            mem[q].b32.s1 = r;
+            LLIST_link(r) = LLIST_link(q);
+            LLIST_link(q) = r;
             q = r;
         } /*:915*/
 
@@ -1078,10 +1083,12 @@ post_line_break(bool d)
 
         /* 916: Put \leftskip at the left and detach this line. */
 
-        r = mem[q].b32.s1;
-        mem[q].b32.s1 = TEX_NULL;
-        q = mem[TEMP_HEAD].b32.s1;
-        mem[TEMP_HEAD].b32.s1 = r;
+        r = LLIST_link(q);
+        LLIST_link(q) = TEX_NULL;
+        q = LLIST_link(TEMP_HEAD);
+        LLIST_link(TEMP_HEAD) = r;
+
+        /* "at this point q is the leftmost node; all discardable nodes have been discarded */
 
         if (INTPAR(xetex_protrude_chars) > 0) {
             p = q;
@@ -1089,14 +1096,14 @@ post_line_break(bool d)
             w = char_pw(p, 0);
             if (w != 0) {
                 k = new_margin_kern(-(int32_t) w, last_leftmost_char, 0);
-                mem[k].b32.s1 = q;
+                LLIST_link(k) = q;
                 q = k;
             }
         }
 
         if (GLUEPAR(left_skip) != 0) {
             r = new_param_glue(GLUE_PAR__left_skip);
-            mem[r].b32.s1 = q;
+            LLIST_link(r) = q;
             q = r;
         }
 
@@ -1110,6 +1117,7 @@ post_line_break(bool d)
             cur_width = first_width;
             cur_indent = first_indent;
         } else {
+            /* These manual `mem` indices are in the original WEB code */
             cur_width = mem[LOCAL(par_shape) + 2 * cur_line].b32.s1;
             cur_indent = mem[LOCAL(par_shape) + 2 * cur_line - 1].b32.s1;
         }
@@ -1117,7 +1125,7 @@ post_line_break(bool d)
         adjust_tail = ADJUST_HEAD;
         pre_adjust_tail = PRE_ADJUST_HEAD;
         just_box = hpack(q, cur_width, EXACTLY);
-        mem[just_box + 4].b32.s1 = cur_indent; /*:918*/
+        BOX_shift_amount(just_box) = cur_indent; /*:918*/
 
         /* 917: append the new box to the urrent vertical list, followed
          * by any of its special nodes that were taken out */

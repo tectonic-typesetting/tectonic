@@ -221,9 +221,14 @@ typedef union {
 #define NODE_type(p) mem[p].b16.s1 /* half of LLIST_info(p) */
 #define NODE_subtype(p) mem[p].b16.s0 /* the other half of LLIST_info(p) */
 
-#define BOX_width(p) mem[(p) + 1].b32.s1 /* 1 <=> WEB const `width_offset` */
-#define BOX_depth(p) mem[(p) + 2].b32.s1 /* 2 <=> WEB const `depth_offset` */
-#define BOX_height(p) mem[(p) + 3].b32.s1 /* 3 <=> WEB const `height_offset` */
+#define BOX_width(p) mem[(p) + 1].b32.s1 /* a scaled; 1 <=> WEB const `width_offset` */
+#define BOX_depth(p) mem[(p) + 2].b32.s1 /* a scaled; 2 <=> WEB const `depth_offset` */
+#define BOX_height(p) mem[(p) + 3].b32.s1 /* a scaled; 3 <=> WEB const `height_offset` */
+#define BOX_shift_amount(p) mem[(p) + 4].b32.s1 /* a scaled */
+#define BOX_list_ptr(p) mem[(p) + 5].b32.s1 /* aka `link` of p+5 */
+#define BOX_glue_sign(p) mem[(p) + 5].b16.s1 /* aka `type` of p+5 */
+#define BOX_glue_order(p) mem[(p) + 5].b16.s0 /* aka `subtype` of p+5 */
+#define BOX_glue_set(p) mem[(p) + 6].gr /* the glue ratio */
 
 #define ACTIVE_NODE_fitness(p) mem[p].b16.s0 /* aka "subtype" of a node */
 #define ACTIVE_NODE_break_node(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
@@ -234,6 +239,10 @@ typedef union {
 
 #define CHAR_NODE_font(p) mem[p].b16.s1 /* aka "type" of a node */
 #define CHAR_NODE_character(p) mem[p].b16.s0 /* aka "subtype" of a node */
+
+#define DISCRETIONARY_NODE_replace_count(p) mem[p].b16.s0 /* aka "subtype" of a node */
+#define DISCRETIONARY_NODE_pre_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
+#define DISCRETIONARY_NODE_post_break(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
 
 #define GLUE_NODE_glue_ptr(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define GLUE_NODE_leader_ptr(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
