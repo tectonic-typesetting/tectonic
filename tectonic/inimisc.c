@@ -66,23 +66,23 @@ line_break(bool d)
 
     no_shrink_error_yet = true;
 
-    if (GLUE_SPEC_shrink_order(GLUEPAR(left_skip)) != NORMAL && mem[GLUEPAR(left_skip) + 3].b32.s1 != 0)
+    if (GLUE_SPEC_shrink_order(GLUEPAR(left_skip)) != NORMAL && GLUE_SPEC_shrink(GLUEPAR(left_skip)) != 0)
         GLUEPAR(left_skip) = finite_shrink(GLUEPAR(left_skip));
 
-    if (GLUE_SPEC_shrink_order(GLUEPAR(right_skip)) != NORMAL && mem[GLUEPAR(right_skip) + 3].b32.s1 != 0)
+    if (GLUE_SPEC_shrink_order(GLUEPAR(right_skip)) != NORMAL && GLUE_SPEC_shrink(GLUEPAR(right_skip)) != 0)
         GLUEPAR(right_skip) = finite_shrink(GLUEPAR(right_skip));
 
     q = GLUEPAR(left_skip);
     r = GLUEPAR(right_skip);
 
-    background[1] = mem[q + 1].b32.s1 + mem[r + 1].b32.s1;
+    background[1] = BOX_width(q) + BOX_width(r);
     background[2] = 0;
     background[3] = 0;
     background[4] = 0;
     background[5] = 0;
-    background[2 + mem[q].b16.s1] = mem[q + 2].b32.s1;
-    background[2 + mem[r].b16.s1] = background[2 + mem[r].b16.s1] + mem[r + 2].b32.s1;
-    background[6] = mem[q + 3].b32.s1 + mem[r + 3].b32.s1;
+    background[2 + GLUE_SPEC_stretch_order(q)] = GLUE_SPEC_stretch(q);
+    background[2 + GLUE_SPEC_stretch_order(r)] += GLUE_SPEC_stretch(r);
+    background[6] = GLUE_SPEC_shrink(q) + GLUE_SPEC_shrink(r);
 
     /* 1631: "check for special treatment of last line of paragraph" (\lastlinefit > 0) */
 

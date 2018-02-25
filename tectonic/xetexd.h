@@ -221,10 +221,18 @@ typedef union {
 #define NODE_type(p) mem[p].b16.s1
 #define NODE_subtype(p) mem[p].b16.s0
 
+#define BOX_width(p) mem[(p) + 1].b32.s1 /* 1 <=> const `width_offset` */
+#define BOX_depth(p) mem[(p) + 2].b32.s1 /* 2 <=> const `depth_offset` */
+#define BOX_height(p) mem[(p) + 3].b32.s1 /* 1 <=> const `height_offset` */
+
 #define GLUE_NODE_glue_ptr(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define GLUE_NODE_leader_ptr(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
 
+#define GLUE_SPEC_ref_count(p) mem[p].b32.s1 /* aka "link" of a link-list node */
+#define GLUE_SPEC_stretch_order(p) mem[p].b16.s1 /* aka "type" of a node */
 #define GLUE_SPEC_shrink_order(p) mem[p].b16.s0 /* aka "subtype" of a node */
+#define GLUE_SPEC_stretch(p) mem[(p) + 2].b32.s1 /* a scaled */
+#define GLUE_SPEC_shrink(p) mem[(p) + 3].b32.s1 /* a scaled */
 
 #define PENALTY_NODE_penalty(p) mem[(p) + 1].b32.s1 /* was originally the `mem[x+1].int` field */
 
