@@ -320,7 +320,7 @@ int32_t new_null_box(void)
     mem[p + 5].b32.s1 = TEX_NULL;
     mem[p + 5].b16.s1 = NORMAL;
     mem[p + 5].b16.s0 = NORMAL;
-    mem[p + 6].gr = 0.0;
+    BOX_glue_set(p) = 0.0;
     return p;
 }
 
@@ -852,7 +852,7 @@ show_node_list(int32_t p)
                         print_glue(mem[p + 4].b32.s1, mem[p + 5].b16.s1, NULL);
                     }
                 } else {
-                    g = mem[p + 6].gr;
+                    g = BOX_glue_set(p);
 
                     if (g != 0.0 && mem[p + 5].b16.s1 != NORMAL) {
                         print_cstr(", glue set ");
@@ -12580,7 +12580,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
                             if (g_sign == STRETCHING) {
                                 if (mem[g].b16.s1 == g_order) {
                                     *cur_glue = *cur_glue + mem[g + 2].b32.s1;
-                                    glue_temp = mem[this_box + 6].gr * *cur_glue;
+                                    glue_temp = BOX_glue_set(this_box) * *cur_glue;
                                     if (glue_temp > 1000000000.0)
                                         glue_temp = 1000000000.0;
                                     else if (glue_temp < -1000000000.0)
@@ -12589,7 +12589,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
                                 }
                             } else if (mem[g].b16.s0 == g_order) {
                                 *cur_glue = *cur_glue - mem[g + 3].b32.s1;
-                                glue_temp = mem[this_box + 6].gr * *cur_glue;
+                                glue_temp = BOX_glue_set(this_box) * *cur_glue;
                                 if (glue_temp > 1000000000.0)
                                     glue_temp = 1000000000.0;
                                 else if (glue_temp < -1000000000.0)
@@ -12854,12 +12854,12 @@ void hlist_out(void)
                                 if (g_sign != NORMAL) {
                                     if (g_sign == STRETCHING) {
                                         if (mem[g].b16.s1 == g_order) {
-                                            k = k + tex_round(mem[this_box + 6].gr * mem[g + 2].b32.s1);
+                                            k = k + tex_round(BOX_glue_set(this_box) * mem[g + 2].b32.s1);
                                         }
                                     } else {
 
                                         if (mem[g].b16.s0 == g_order) {
-                                            k = k - tex_round(mem[this_box + 6].gr * mem[g + 3].b32.s1);
+                                            k = k - tex_round(BOX_glue_set(this_box) * mem[g + 3].b32.s1);
                                         }
                                     }
                                 }
@@ -13264,7 +13264,7 @@ void hlist_out(void)
                         if (g_sign == STRETCHING) {
                             if (mem[g].b16.s1 == g_order) {
                                 cur_glue = cur_glue + mem[g + 2].b32.s1;
-                                glue_temp = mem[this_box + 6].gr * cur_glue;
+                                glue_temp = BOX_glue_set(this_box) * cur_glue;
                                 if (glue_temp > 1000000000.0)
                                     glue_temp = 1000000000.0;
                                 else if (glue_temp < -1000000000.0)
@@ -13273,7 +13273,7 @@ void hlist_out(void)
                             }
                         } else if (mem[g].b16.s0 == g_order) {
                             cur_glue = cur_glue - mem[g + 3].b32.s1;
-                            glue_temp = mem[this_box + 6].gr * cur_glue;
+                            glue_temp = BOX_glue_set(this_box) * cur_glue;
                             if (glue_temp > 1000000000.0)
                                 glue_temp = 1000000000.0;
                             else if (glue_temp < -1000000000.0)
@@ -13722,7 +13722,7 @@ void vlist_out(void)
                         if (g_sign == STRETCHING) {
                             if (mem[g].b16.s1 == g_order) {
                                 cur_glue = cur_glue + mem[g + 2].b32.s1;
-                                glue_temp = mem[this_box + 6].gr * cur_glue;
+                                glue_temp = BOX_glue_set(this_box) * cur_glue;
                                 if (glue_temp > 1000000000.0)
                                     glue_temp = 1000000000.0;
                                 else if (glue_temp < -1000000000.0)
@@ -13731,7 +13731,7 @@ void vlist_out(void)
                             }
                         } else if (mem[g].b16.s0 == g_order) {
                             cur_glue = cur_glue - mem[g + 3].b32.s1;
-                            glue_temp = mem[this_box + 6].gr * cur_glue;
+                            glue_temp = BOX_glue_set(this_box) * cur_glue;
                             if (glue_temp > 1000000000.0)
                                 glue_temp = 1000000000.0;
                             else if (glue_temp < -1000000000.0)
@@ -14458,7 +14458,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
     if (x == 0) {
         mem[r + 5].b16.s1 = NORMAL;
         mem[r + 5].b16.s0 = NORMAL;
-        mem[r + 6].gr = 0.0;
+        BOX_glue_set(r) = 0.0;
         goto exit;
     } else if (x > 0) {         /*683: */
         if (total_stretch[FILLL] != 0)
@@ -14472,12 +14472,12 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
         mem[r + 5].b16.s0 = o;
         mem[r + 5].b16.s1 = STRETCHING;
         if (total_stretch[o] != 0)
-            mem[r + 6].gr = x / ((double)total_stretch[o]);
+            BOX_glue_set(r) = x / ((double)total_stretch[o]);
         else {
-
             mem[r + 5].b16.s1 = NORMAL;
-            mem[r + 6].gr = 0.0;
+            BOX_glue_set(r) = 0.0;
         }
+        
         if (o == NORMAL) {
 
             if (mem[r + 5].b32.s1 != TEX_NULL) {    /*685: */
@@ -14508,15 +14508,14 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
         mem[r + 5].b16.s0 = o;
         mem[r + 5].b16.s1 = SHRINKING;
         if (total_shrink[o] != 0)
-            mem[r + 6].gr = (-(int32_t) x) / ((double)total_shrink[o]);
+            BOX_glue_set(r) = (-(int32_t) x) / ((double)total_shrink[o]);
         else {
-
             mem[r + 5].b16.s1 = NORMAL;
-            mem[r + 6].gr = 0.0;
+            BOX_glue_set(r) = 0.0;
         }
         if ((total_shrink[o] < -(int32_t) x) && (o == NORMAL) && (mem[r + 5].b32.s1 != TEX_NULL)) {
             last_badness = 1000000L;
-            mem[r + 6].gr = 1.0;
+            BOX_glue_set(r) = 1.0;
             if ((-(int32_t) x - total_shrink[NORMAL] > DIMENPAR(hfuzz))
                 || (INTPAR(hbadness) < 100)) {
                 if ((DIMENPAR(overfull_rule) > 0)
@@ -14720,7 +14719,7 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
     if (x == 0) {
         mem[r + 5].b16.s1 = NORMAL;
         mem[r + 5].b16.s0 = NORMAL;
-        mem[r + 6].gr = 0.0;
+        BOX_glue_set(r) = 0.0;
         goto exit;
     } else if (x > 0) {         /*698: */
         if (total_stretch[FILLL] != 0)
@@ -14734,11 +14733,10 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
         mem[r + 5].b16.s0 = o;
         mem[r + 5].b16.s1 = STRETCHING;
         if (total_stretch[o] != 0)
-            mem[r + 6].gr = x / ((double)total_stretch[o]);
+            BOX_glue_set(r) = x / ((double)total_stretch[o]);
         else {
-
             mem[r + 5].b16.s1 = NORMAL;
-            mem[r + 6].gr = 0.0;
+            BOX_glue_set(r) = 0.0;
         }
         if (o == NORMAL) {
 
@@ -14770,15 +14768,14 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
         mem[r + 5].b16.s0 = o;
         mem[r + 5].b16.s1 = SHRINKING;
         if (total_shrink[o] != 0)
-            mem[r + 6].gr = (-(int32_t) x) / ((double)total_shrink[o]);
+            BOX_glue_set(r) = (-(int32_t) x) / ((double)total_shrink[o]);
         else {
-
             mem[r + 5].b16.s1 = NORMAL;
-            mem[r + 6].gr = 0.0;
+            BOX_glue_set(r) = 0.0;
         }
         if ((total_shrink[o] < -(int32_t) x) && (o == NORMAL) && (mem[r + 5].b32.s1 != TEX_NULL)) {
             last_badness = 1000000L;
-            mem[r + 6].gr = 1.0;
+            BOX_glue_set(r) = 1.0;
             if ((-(int32_t) x - total_shrink[NORMAL] > DIMENPAR(vfuzz))
                 || (INTPAR(vbadness) < 100)) {
                 print_ln();
@@ -15473,11 +15470,11 @@ int32_t build_opentype_assembly(internal_font_number f, void *a, scaled_t s, boo
             o = str;
         mem[b + 5].b16.s0 = NORMAL;
         mem[b + 5].b16.s1 = STRETCHING;
-        mem[b + 6].gr = o / ((double)str);
+        BOX_glue_set(b) = o / ((double)str);
         if (horiz)
-            mem[b + 1].b32.s1 = nat + tex_round(str * mem[b + 6].gr);
+            mem[b + 1].b32.s1 = nat + tex_round(str * BOX_glue_set(b));
         else
-            mem[b + 3].b32.s1 = nat + tex_round(str * mem[b + 6].gr);
+            mem[b + 3].b32.s1 = nat + tex_round(str * BOX_glue_set(b));
     } else if (horiz)
         mem[b + 1].b32.s1 = nat;
     else
@@ -17794,7 +17791,7 @@ void fin_align(void)
                 }
                 mem[q + 5].b16.s0 = mem[p + 5].b16.s0;
                 mem[q + 5].b16.s1 = mem[p + 5].b16.s1;
-                mem[q + 6].gr = mem[p + 6].gr;
+                BOX_glue_set(q) = BOX_glue_set(p);
                 mem[q + 4].b32.s1 = o;
                 r = mem[mem[q + 5].b32.s1].b32.s1;
                 s = mem[mem[p + 5].b32.s1].b32.s1;
@@ -17815,10 +17812,10 @@ void fin_align(void)
                         t = t + mem[v + 1].b32.s1;
                         if (mem[p + 5].b16.s1 == STRETCHING) {
                             if (mem[v].b16.s1 == mem[p + 5].b16.s0)
-                                t = t + tex_round(mem[p + 6].gr * mem[v + 2].b32.s1);
+                                t = t + tex_round(BOX_glue_set(p) * mem[v + 2].b32.s1);
                         } else if (mem[p + 5].b16.s1 == SHRINKING) {
                             if (mem[v].b16.s0 == mem[p + 5].b16.s0)
-                                t = t - tex_round(mem[p + 6].gr * mem[v + 3].b32.s1);
+                                t = t - tex_round(BOX_glue_set(p) * mem[v + 3].b32.s1);
                         }
                         s = mem[s].b32.s1;
                         mem[u].b32.s1 = new_null_box();
@@ -17838,23 +17835,23 @@ void fin_align(void)
                         if (t == mem[r + 1].b32.s1) {
                             mem[r + 5].b16.s1 = NORMAL;
                             mem[r + 5].b16.s0 = NORMAL;
-                            mem[r + 6].gr = 0.0;
+                            BOX_glue_set(r) = 0.0;
                         } else if (t > mem[r + 1].b32.s1) {
                             mem[r + 5].b16.s1 = STRETCHING;
                             if (mem[r + 6].b32.s1 == 0)
-                                mem[r + 6].gr = 0.0;
+                                BOX_glue_set(r) = 0.0;
                             else
-                                mem[r + 6].gr = (t - mem[r + 1].b32.s1) / ((double)mem[r + 6].b32.s1);
+                                BOX_glue_set(r) = (t - mem[r + 1].b32.s1) / ((double)mem[r + 6].b32.s1);
                         } else {
 
                             mem[r + 5].b16.s0 = mem[r + 5].b16.s1;
                             mem[r + 5].b16.s1 = SHRINKING;
                             if (mem[r + 4].b32.s1 == 0)
-                                mem[r + 6].gr = 0.0;
+                                BOX_glue_set(r) = 0.0;
                             else if ((mem[r + 5].b16.s0 == NORMAL) && (mem[r + 1].b32.s1 - t > mem[r + 4].b32.s1))
-                                mem[r + 6].gr = 1.0;
+                                BOX_glue_set(r) = 1.0;
                             else
-                                mem[r + 6].gr = (mem[r + 1].b32.s1 - t) / ((double)mem[r + 4].b32.s1);
+                                BOX_glue_set(r) = (mem[r + 1].b32.s1 - t) / ((double)mem[r + 4].b32.s1);
                         }
                         mem[r + 1].b32.s1 = w;
                         NODE_type(r) = HLIST_NODE;
@@ -17864,23 +17861,23 @@ void fin_align(void)
                         if (t == mem[r + 3].b32.s1) {
                             mem[r + 5].b16.s1 = NORMAL;
                             mem[r + 5].b16.s0 = NORMAL;
-                            mem[r + 6].gr = 0.0;
+                            BOX_glue_set(r) = 0.0;
                         } else if (t > mem[r + 3].b32.s1) {
                             mem[r + 5].b16.s1 = STRETCHING;
                             if (mem[r + 6].b32.s1 == 0)
-                                mem[r + 6].gr = 0.0;
+                                BOX_glue_set(r) = 0.0;
                             else
-                                mem[r + 6].gr = (t - mem[r + 3].b32.s1) / ((double)mem[r + 6].b32.s1);
+                                BOX_glue_set(r) = (t - mem[r + 3].b32.s1) / ((double)mem[r + 6].b32.s1);
                         } else {
 
                             mem[r + 5].b16.s0 = mem[r + 5].b16.s1;
                             mem[r + 5].b16.s1 = SHRINKING;
                             if (mem[r + 4].b32.s1 == 0)
-                                mem[r + 6].gr = 0.0;
+                                BOX_glue_set(r) = 0.0;
                             else if ((mem[r + 5].b16.s0 == NORMAL) && (mem[r + 3].b32.s1 - t > mem[r + 4].b32.s1))
-                                mem[r + 6].gr = 1.0;
+                                BOX_glue_set(r) = 1.0;
                             else
-                                mem[r + 6].gr = (mem[r + 3].b32.s1 - t) / ((double)mem[r + 4].b32.s1);
+                                BOX_glue_set(r) = (mem[r + 3].b32.s1 - t) / ((double)mem[r + 4].b32.s1);
                         }
                         mem[r + 3].b32.s1 = w;
                         NODE_type(r) = VLIST_NODE;
@@ -22190,7 +22187,7 @@ void init_math(void)
             mem[j + 5].b32.s1 = p;
             mem[j + 5].b16.s0 = mem[just_box + 5].b16.s0;
             mem[j + 5].b16.s1 = mem[just_box + 5].b16.s1;
-            mem[j + 6].gr = mem[just_box + 6].gr;
+            BOX_glue_set(j) = BOX_glue_set(just_box);
 
             v = mem[just_box + 4].b32.s1;
             if (cur_list.eTeX_aux == TEX_NULL)
