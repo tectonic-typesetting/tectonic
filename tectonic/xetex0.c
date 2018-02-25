@@ -413,7 +413,7 @@ int32_t new_param_glue(small_number n)
     mem[p + 1].b32.s1 = TEX_NULL;
     q = /*232: */ eqtb[GLUE_BASE + n].b32.s1 /*:232 */ ;
     mem[p + 1].b32.s0 = q;
-    mem[q].b32.s1++;
+    GLUE_SPEC_ref_count(q)++;
     return p;
 }
 
@@ -425,7 +425,7 @@ int32_t new_glue(int32_t q)
     GLUE_SPEC_shrink_order(p) = NORMAL;
     mem[p + 1].b32.s1 = TEX_NULL;
     mem[p + 1].b32.s0 = q;
-    mem[q].b32.s1++;
+    GLUE_SPEC_ref_count(q)++;
     return p;
 }
 
@@ -1524,7 +1524,7 @@ copy_node_list(int32_t p)
             case INS_NODE:
                 r = get_node(INS_NODE_SIZE);
                 mem[r + 4] = mem[p + 4];
-                mem[mem[p + 4].b32.s1].b32.s1++;
+                GLUE_SPEC_ref_count(mem[p + 4].b32.s1)++;
                 mem[r + 4].b32.s0 = copy_node_list(mem[p + 4].b32.s0);
                 words = (INS_NODE_SIZE - 1);
                 break;
@@ -1582,7 +1582,7 @@ copy_node_list(int32_t p)
 
             case GLUE_NODE:
                 r = get_node(MEDIUM_NODE_SIZE);
-                mem[mem[p + 1].b32.s0].b32.s1++;
+                GLUE_SPEC_ref_count(mem[p + 1].b32.s0)++;
                 mem[r + 2].b32.s0 = mem[p + 2].b32.s0;
                 mem[r + 2].b32.s1 = mem[p + 2].b32.s1;
                 mem[r + 1].b32.s0 = mem[p + 1].b32.s0;
@@ -6132,7 +6132,7 @@ void find_sa_element(small_number t, int32_t n, bool w)
             cur_ptr = get_node(POINTER_NODE_SIZE);
             if (t <= MU_VAL) {
                 mem[cur_ptr + 1].b32.s1 = 0;
-                mem[0].b32.s1++;
+                GLUE_SPEC_ref_count(0)++;
             } else
                 mem[cur_ptr + 1].b32.s1 = TEX_NULL;
         }
@@ -7948,7 +7948,7 @@ scan_something_internal(small_number level, bool negative)
             cur_val = -(int32_t) cur_val;
         }
     } else if (cur_val_level >= GLUE_VAL && cur_val_level <= MU_VAL) {
-        mem[cur_val].b32.s1++;
+        GLUE_SPEC_ref_count(cur_val)++;
     }
 }
 
@@ -8840,7 +8840,7 @@ found: /*1572:*//*424:*/
         if (l >= GLUE_VAL) {
             delete_glue_ref(e);
             e = 0;
-            mem[e].b32.s1++;
+            GLUE_SPEC_ref_count(e)++;
         } else
             e = 0;
     }
@@ -17707,7 +17707,7 @@ void fin_align(void)
             r = mem[q].b32.s1;
             s = mem[r + 1].b32.s0;
             if (s != 0) {
-                mem[0].b32.s1++;
+                GLUE_SPEC_ref_count(0)++;
                 delete_glue_ref(s);
                 mem[r + 1].b32.s0 = 0;
             }
@@ -20262,7 +20262,7 @@ void build_page(void)
         last_node_type = mem[p].b16.s1 + 1;
         if (NODE_type(p) == GLUE_NODE) {
             last_glue = mem[p + 1].b32.s0;
-            mem[last_glue].b32.s1++;
+            GLUE_SPEC_ref_count(last_glue)++;
         } else {
 
             last_glue = MAX_HALFWORD;
@@ -21958,7 +21958,7 @@ void just_copy(int32_t p, int32_t h, int32_t t)
             case 10:
                 {
                     r = get_node(MEDIUM_NODE_SIZE);
-                    mem[mem[p + 1].b32.s0].b32.s1++;
+                    GLUE_SPEC_ref_count(mem[p + 1].b32.s0)++;
                     mem[r + 2].b32.s0 = mem[p + 2].b32.s0;
                     mem[r + 2].b32.s1 = mem[p + 2].b32.s1;
                     mem[r + 1].b32.s0 = mem[p + 1].b32.s0;
@@ -23503,7 +23503,7 @@ void trap_zero_glue(void)
     memory_word *mem = zmem;
 
     if ((mem[cur_val + 1].b32.s1 == 0) && (mem[cur_val + 2].b32.s1 == 0) && (mem[cur_val + 3].b32.s1 == 0)) {
-        mem[0].b32.s1++;
+        GLUE_SPEC_ref_count(0)++;
         delete_glue_ref(cur_val);
         cur_val = 0;
     }
@@ -24893,7 +24893,7 @@ handle_right_brace(void)
     case INSERT_GROUP:
         end_graf();
         q = GLUEPAR(split_top_skip);
-        mem[q].b32.s1++;
+        GLUE_SPEC_ref_count(q)++;
         d = DIMENPAR(split_max_depth);
         f = INTPAR(floating_penalty);
         unsave();

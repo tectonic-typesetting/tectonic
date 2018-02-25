@@ -881,13 +881,13 @@ post_line_break(bool d)
 
     /* Reverse the list of break nodes (907) */
 
-    q = mem[best_bet + 1].b32.s1;
+    q = ACTIVE_NODE_break_node(best_bet);
     cur_p = TEX_NULL;
 
     do {
         r = q;
-        q = mem[q + 1].b32.s0;
-        mem[r + 1].b32.s0 = cur_p;
+        q = PASSIVE_NODE_prev_break(q);
+        PASSIVE_NODE_next_break(r) = cur_p;
         cur_p = r;
     } while (q != TEX_NULL); /*:907*/
 
@@ -942,21 +942,22 @@ post_line_break(bool d)
          * and to include \rightskip; also set the proper value of
          * disc_break" */
 
-        q = mem[cur_p + 1].b32.s1;
+        q = PASSIVE_NODE_cur_break(cur_p);
         disc_break = false;
         post_disc_break = false;
         glue_break = false;
 
         if (q == TEX_NULL) {
             q = TEMP_HEAD;
-            while (mem[q].b32.s1 != TEX_NULL)
-                q = mem[q].b32.s1;
+
+            while (LLIST_link(q) != TEX_NULL)
+                q = LLIST_link(q);
         } else {
             if (NODE_type(q) == GLUE_NODE) {
                 delete_glue_ref(GLUE_NODE_glue_ptr(q));
-                mem[q + 1].b32.s0 = GLUEPAR(right_skip);
-                mem[q].b16.s0 = (GLUE_PAR__right_skip + 1);
-                mem[GLUEPAR(right_skip)].b32.s1++;
+                GLUE_NODE_glue_ptr(q) = GLUEPAR(right_skip);
+                NODE_subtype(q) = GLUE_PAR__right_skip + 1;
+                GLUE_SPEC_ref_count(GLUEPAR(right_skip))++;
                 glue_break = true;
                 goto done;
             } else {
