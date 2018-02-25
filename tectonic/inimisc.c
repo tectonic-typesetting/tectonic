@@ -952,81 +952,79 @@ post_line_break(bool d)
 
             while (LLIST_link(q) != TEX_NULL)
                 q = LLIST_link(q);
-        } else {
-            if (NODE_type(q) == GLUE_NODE) {
-                delete_glue_ref(GLUE_NODE_glue_ptr(q));
-                GLUE_NODE_glue_ptr(q) = GLUEPAR(right_skip);
-                NODE_subtype(q) = GLUE_PAR__right_skip + 1;
-                GLUE_SPEC_ref_count(GLUEPAR(right_skip))++;
-                glue_break = true;
-                goto done;
+        } else if (NODE_type(q) == GLUE_NODE) {
+            delete_glue_ref(GLUE_NODE_glue_ptr(q));
+            GLUE_NODE_glue_ptr(q) = GLUEPAR(right_skip);
+            NODE_subtype(q) = GLUE_PAR__right_skip + 1;
+            GLUE_SPEC_ref_count(GLUEPAR(right_skip))++;
+            glue_break = true;
+        } else if (NODE_type(q) == DISC_NODE) { /*911:*/
+            t = mem[q].b16.s0;
+
+            if (t == 0) {
+                r = mem[q].b32.s1;
             } else {
-                if (NODE_type(q) == DISC_NODE) { /*911:*/
-                    t = mem[q].b16.s0;
+                r = q;
 
-                    if (t == 0) {
-                        r = mem[q].b32.s1;
-                    } else {
-                        r = q;
+                while (t > 1) {
+                    r = mem[r].b32.s1;
+                    t--;
+                }
 
-                        while (t > 1) {
-                            r = mem[r].b32.s1;
-                            t--;
-                        }
+                s = mem[r].b32.s1;
+                r = mem[s].b32.s1;
+                mem[s].b32.s1 = TEX_NULL;
+                flush_node_list(mem[q].b32.s1);
+                mem[q].b16.s0 = 0;
+            }
 
-                        s = mem[r].b32.s1;
-                        r = mem[s].b32.s1;
-                        mem[s].b32.s1 = TEX_NULL;
-                        flush_node_list(mem[q].b32.s1);
-                        mem[q].b16.s0 = 0;
+            if (mem[q + 1].b32.s1 != TEX_NULL) { /*913:*/
+                s = mem[q + 1].b32.s1;
+                while (mem[s].b32.s1 != TEX_NULL)
+                    s = mem[s].b32.s1;
+                mem[s].b32.s1 = r;
+                r = mem[q + 1].b32.s1;
+                mem[q + 1].b32.s1 = TEX_NULL;
+                post_disc_break = true;
+            }
+
+            if (mem[q + 1].b32.s0 != TEX_NULL) { /*914:*/
+                s = mem[q + 1].b32.s0;
+                mem[q].b32.s1 = s;
+                while (mem[s].b32.s1 != TEX_NULL)
+                    s = mem[s].b32.s1;
+                mem[q + 1].b32.s0 = TEX_NULL;
+                q = s;
+            }
+
+            mem[q].b32.s1 = r;
+            disc_break = true;
+        } else if (NODE_type(q) == KERN_NODE) {
+            mem[q + 1].b32.s1 = 0;
+        } else if (NODE_type(q) == MATH_NODE) {
+            mem[q + 1].b32.s1 = 0;
+
+            if (INTPAR(texxet) > 0) { /*1495:*/
+                if (odd(mem[q].b16.s0)) {
+                    if (LR_ptr != TEX_NULL && mem[LR_ptr].b32.s0 == (L_CODE * (mem[q].b16.s0 / L_CODE) + 3)) {
+                        temp_ptr = LR_ptr;
+                        LR_ptr = mem[temp_ptr].b32.s1;
+                        mem[temp_ptr].b32.s1 = avail;
+                        avail = temp_ptr;
                     }
-
-                    if (mem[q + 1].b32.s1 != TEX_NULL) { /*913:*/
-                        s = mem[q + 1].b32.s1;
-                        while (mem[s].b32.s1 != TEX_NULL)
-                            s = mem[s].b32.s1;
-                        mem[s].b32.s1 = r;
-                        r = mem[q + 1].b32.s1;
-                        mem[q + 1].b32.s1 = TEX_NULL;
-                        post_disc_break = true;
-                    }
-
-                    if (mem[q + 1].b32.s0 != TEX_NULL) { /*914:*/
-                        s = mem[q + 1].b32.s0;
-                        mem[q].b32.s1 = s;
-                        while (mem[s].b32.s1 != TEX_NULL)
-                            s = mem[s].b32.s1;
-                        mem[q + 1].b32.s0 = TEX_NULL;
-                        q = s;
-                    }
-
-                    mem[q].b32.s1 = r;
-                    disc_break = true;
-                } else if (NODE_type(q) == KERN_NODE) {
-                    mem[q + 1].b32.s1 = 0;
-                } else if (NODE_type(q) == MATH_NODE) {
-                    mem[q + 1].b32.s1 = 0;
-
-                    if (INTPAR(texxet) > 0) { /*1495:*/
-                        if (odd(mem[q].b16.s0)) {
-                            if (LR_ptr != TEX_NULL && mem[LR_ptr].b32.s0 == (L_CODE * (mem[q].b16.s0 / L_CODE) + 3)) {
-                                temp_ptr = LR_ptr;
-                                LR_ptr = mem[temp_ptr].b32.s1;
-                                mem[temp_ptr].b32.s1 = avail;
-                                avail = temp_ptr;
-                            }
-                        } else {
-                            temp_ptr = get_avail();
-                            mem[temp_ptr].b32.s0 = (L_CODE * (mem[q].b16.s0 / L_CODE) + 3);
-                            mem[temp_ptr].b32.s1 = LR_ptr;
-                            LR_ptr = temp_ptr;
-                        }
-                    }
+                } else {
+                    temp_ptr = get_avail();
+                    mem[temp_ptr].b32.s0 = (L_CODE * (mem[q].b16.s0 / L_CODE) + 3);
+                    mem[temp_ptr].b32.s1 = LR_ptr;
+                    LR_ptr = temp_ptr;
                 }
             }
         }
 
-    done:
+        /* "at this point q is the rightmost breakpoint; the only exception is
+         * the case of a discretionary break with non-empty pre_break -- then
+         * q has been changed to the last node of the pre-break list" */
+
         if (INTPAR(xetex_protrude_chars) > 0) {
             if (disc_break && (is_char_node(q) || NODE_type(q) != DISC_NODE)) {
                 p = q;
