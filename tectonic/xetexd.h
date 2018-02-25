@@ -254,6 +254,7 @@ typedef union {
 #define FONT_CHARINFO_WIDTH(f, info) font_info[width_base[f] + (info).s3].b32.s1
 #define FONT_CHARINFO_HEIGHT(f, info) font_info[height_base[f] + (info).s2 / 16].b32.s1
 #define FONT_CHARINFO_DEPTH(f, info) font_info[depth_base[f] + (info).s2 % 16].b32.s1
+#define FONT_CHARINFO_ITALCORR(f, info) font_info[italic_base[f] + (info).s1 / 4].b32.s1
 #define FONT_CHARACTER_WIDTH(f, c) FONT_CHARINFO_WIDTH(f, FONT_CHARACTER_INFO(f, c))
 
 

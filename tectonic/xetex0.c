@@ -7499,7 +7499,7 @@ scan_something_internal(small_number level, bool negative)
                                 cur_val = FONT_CHARINFO_DEPTH(q, i);
                                 break;
                             case FONT_CHAR_IC_CODE:
-                                cur_val = font_info[italic_base[q] + (i.s1) / 4].b32.s1;
+                                cur_val = FONT_CHARINFO_ITALCORR(q, i);
                                 break;
                             }
                         } else {
@@ -15260,7 +15260,7 @@ int32_t char_box(internal_font_number f, int32_t c)
 
         q = FONT_CHARACTER_INFO(f, effective_char(true, f, c));
         b = new_null_box();
-        mem[b + 1].b32.s1 = FONT_CHARINFO_WIDTH(f, q) + font_info[italic_base[f] + (q.s1) / 4].b32.s1;
+        mem[b + 1].b32.s1 = FONT_CHARINFO_WIDTH(f, q) + FONT_CHARINFO_ITALCORR(f, q);
         mem[b + 3].b32.s1 = FONT_CHARINFO_HEIGHT(f, q);
         mem[b + 2].b32.s1 = FONT_CHARINFO_DEPTH(f, q);
         p = get_avail();
@@ -15583,7 +15583,7 @@ int32_t var_delimiter(int32_t d, int32_t s, scaled_t v)
                 u = height_plus_depth(f, c);
                 w = 0;
                 q = FONT_CHARACTER_INFO(f, effective_char(true, f, c));
-                mem[b + 1].b32.s1 = FONT_CHARINFO_WIDTH(f, q) + font_info[italic_base[f] + (q.s1) / 4].b32.s1;
+                mem[b + 1].b32.s1 = FONT_CHARINFO_WIDTH(f, q) + FONT_CHARINFO_ITALCORR(f, q);
                 c = r.s1;
                 if (c != 0)
                     w = w + height_plus_depth(f, c);
@@ -16291,7 +16291,7 @@ scaled_t make_op(int32_t q)
                     mem[q + 1].b16.s0 = c;
                 }
             }
-            delta = font_info[italic_base[cur_f] + (cur_i.s1) / 4].b32.s1;
+            delta = FONT_CHARINFO_ITALCORR(cur_f, cur_i);
         }
         x = clean_box(q + 1, cur_style);
         if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
@@ -16991,7 +16991,7 @@ void mlist_to_hlist(void)
                         delta = 0;
                     }
                 } else if ((cur_i.s3 > 0)) {
-                    delta = font_info[italic_base[cur_f] + (cur_i.s1) / 4].b32.s1;
+                    delta = FONT_CHARINFO_ITALCORR(cur_f, cur_i);
                     p = new_character(cur_f, cur_c);
                     if ((mem[q + 1].b32.s1 == MATH_TEXT_CHAR)
                         && (font_info[SPACE_CODE + param_base[cur_f]].b32.s1 != 0))
@@ -21547,9 +21547,7 @@ void append_italic_correction(void)
         f = CHAR_NODE_font(p);
         {
             mem[cur_list.tail].b32.s1 =
-                new_kern(font_info
-                         [italic_base[f] +
-                          (FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(p))).s1) / 4].b32.s1);
+                new_kern(FONT_CHARINFO_ITALCORR(f, FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(p)))));
             cur_list.tail = mem[cur_list.tail].b32.s1;
         }
         mem[cur_list.tail].b16.s0 = EXPLICIT;
