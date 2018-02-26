@@ -18,6 +18,12 @@ static void prune_movements(int32_t l);
 static void special_out(int32_t p);
 static void write_out(int32_t p);
 static void pic_out(int32_t p);
+static void write_to_dvi(int32_t a, int32_t b);
+static void dvi_swap(void);
+static void dvi_four(int32_t x);
+static void dvi_two(UTF16_code s);
+static void dvi_pop(int32_t l);
+static void dvi_font_def(internal_font_number f);
 
 
 void
@@ -2310,4 +2316,231 @@ pic_out(int32_t p)
             while (k++ < for_end);
     }
     pool_ptr = str_start[str_ptr - 65536L];
+}
+
+
+void
+finalize_dvi_file(void)
+{
+    CACHE_THE_EQTB;
+
+    while (cur_s > -1) {
+        if (cur_s > 0) {
+            dvi_buf[dvi_ptr] = POP;
+            dvi_ptr++;
+            if (dvi_ptr == dvi_limit)
+                dvi_swap();
+        } else {
+            dvi_buf[dvi_ptr] = EOP;
+            dvi_ptr++;
+            if (dvi_ptr == dvi_limit)
+                dvi_swap();
+            total_pages++;
+        }
+        cur_s--;
+    }
+
+    if (total_pages == 0)
+        print_nl_cstr("No pages of output.");
+    else if (cur_s != -2) {
+        dvi_buf[dvi_ptr] = POST;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        dvi_four(last_bop);
+        last_bop = dvi_offset + dvi_ptr - 5;
+        dvi_four(25400000L); /* magic values: conversion ratio for sp */
+        dvi_four(473628672L); /* magic values: conversion ratio for sp */
+        prepare_mag();
+        dvi_four(INTPAR(mag));
+        dvi_four(max_v);
+        dvi_four(max_h);
+
+        dvi_buf[dvi_ptr] = max_push / 256;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        dvi_buf[dvi_ptr] = max_push % 256;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        dvi_buf[dvi_ptr] = (total_pages / 256) % 256;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        dvi_buf[dvi_ptr] = total_pages % 256;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        while (font_ptr > FONT_BASE) {
+            if (font_used[font_ptr])
+                dvi_font_def(font_ptr);
+            font_ptr--;
+        }
+
+        dvi_buf[dvi_ptr] = POST_POST;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        dvi_four(last_bop);
+
+        if (semantic_pagination_enabled)
+            dvi_buf[dvi_ptr] = SPX_ID_BYTE;
+        else
+            dvi_buf[dvi_ptr] = XDV_ID_BYTE;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        k = 4 + (dvi_buf_size - dvi_ptr) % 4;
+
+        while (k > 0) {
+            dvi_buf[dvi_ptr] = 223;
+            dvi_ptr++;
+            if (dvi_ptr == dvi_limit)
+                dvi_swap();
+            k--;
+        }
+
+        if (dvi_limit == half_buf)
+            write_to_dvi(half_buf, dvi_buf_size - 1);
+
+        if (dvi_ptr > TEX_INFINITY - dvi_offset) {
+            cur_s = -2;
+            fatal_error("dvi length exceeds \"7FFFFFFF");
+        }
+
+        if (dvi_ptr > 0)
+            write_to_dvi(0, dvi_ptr - 1);
+
+        k = ttstub_output_close(dvi_file);
+
+        if (k == 0) {
+            print_nl_cstr("Output written on ");
+            print(output_file_name);
+            print_cstr(" (");
+            print_int(total_pages);
+            if (total_pages != 1)
+                print_cstr(" pages");
+            else
+                print_cstr(" page");
+            print_cstr(", ");
+            print_int(dvi_offset + dvi_ptr);
+            print_cstr(" bytes).");
+        } else {
+            print_nl_cstr("Error ");
+            print_int(k);
+            print_cstr(" (");
+            print_c_string(strerror(k));
+            print_cstr(") generating output;");
+            print_nl_cstr("file ");
+            print(output_file_name);
+            print_cstr(" may not be valid.");
+            /* XeTeX adds history = OUTPUT_FAILURE = 4 here; I'm not implementing that. */
+        }
+    }
+}
+
+
+static void
+write_to_dvi(int32_t a, int32_t b)
+{
+    int32_t n = b - a + 1;
+
+    if (ttstub_output_write (dvi_file, (char *) &dvi_buf[a], n) != n)
+        _tt_abort ("failed to write data to XDV file");
+}
+
+
+static void
+dvi_swap(void)
+{
+    if (dvi_ptr > (TEX_INFINITY - dvi_offset)) {
+        cur_s = -2;
+        fatal_error("dvi length exceeds \"7FFFFFFF");
+    }
+    if (dvi_limit == dvi_buf_size) {
+        write_to_dvi(0, half_buf - 1);
+        dvi_limit = half_buf;
+        dvi_offset = dvi_offset + dvi_buf_size;
+        dvi_ptr = 0;
+    } else {
+
+        write_to_dvi(half_buf, dvi_buf_size - 1);
+        dvi_limit = dvi_buf_size;
+    }
+    dvi_gone = dvi_gone + half_buf;
+}
+
+
+static void
+dvi_four(int32_t x)
+{
+    if (x >= 0) {
+        dvi_buf[dvi_ptr] = x / 0x1000000;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+    } else {
+        x = x + 0x40000000;
+        x = x + 0x40000000;
+
+        dvi_buf[dvi_ptr] = (x / 0x1000000) + 128;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+    }
+
+    x = x % 0x1000000;
+    dvi_buf[dvi_ptr] = x / 0x10000;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+
+    x = x % 0x10000;
+    dvi_buf[dvi_ptr] = x / 0x100;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+
+    dvi_buf[dvi_ptr] = x % 0x100;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+}
+
+
+static void
+dvi_two(UTF16_code s)
+{
+    dvi_buf[dvi_ptr] = s / 0x100;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+
+    dvi_buf[dvi_ptr] = s % 0x100;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+}
+
+
+static void
+dvi_pop(int32_t l)
+{
+    if ((l == dvi_offset + dvi_ptr) && (dvi_ptr > 0))
+        dvi_ptr--;
+    else {
+
+        dvi_buf[dvi_ptr] = POP;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+    }
 }
