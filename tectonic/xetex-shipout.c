@@ -16,6 +16,15 @@ static rust_output_handle_t dvi_file;
 static str_number output_file_name;
 static eight_bits *dvi_buf = NULL;
 static int32_t dvi_limit;
+static int32_t g;
+static int32_t lq, lr;
+static int32_t dvi_ptr;
+static int32_t dvi_offset;
+static int32_t dvi_gone;
+static int32_t down_ptr, right_ptr;
+static scaled_t dvi_h, dvi_v;
+static internal_font_number dvi_f;
+static int32_t cur_s;
 
 
 static void hlist_out(void);
@@ -41,6 +50,12 @@ initialize_shipout_variables(void)
     output_file_name = 0;
     dvi_buf = xmalloc_array(eight_bits, DVI_BUF_SIZE);
     dvi_limit = DVI_BUF_SIZE;
+    dvi_ptr = 0;
+    dvi_offset = 0;
+    dvi_gone = 0;
+    down_ptr = TEX_NULL;
+    right_ptr = TEX_NULL;
+    cur_s = -1;
 }
 
 

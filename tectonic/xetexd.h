@@ -536,16 +536,7 @@ extern bool doing_leaders;
 extern uint16_t c;
 extern internal_font_number f;
 extern scaled_t rule_ht, rule_dp, rule_wd;
-extern int32_t g;
-extern int32_t lq, lr;
-extern int32_t dvi_ptr;
-extern int32_t dvi_offset;
-extern int32_t dvi_gone;
-extern int32_t down_ptr, right_ptr;
-extern scaled_t dvi_h, dvi_v;
-extern scaled_t cur_h, cur_v;
-extern internal_font_number dvi_f;
-extern int32_t cur_s;
+extern scaled_t cur_h, cur_v; /* should be internal to shipout, but accessed by synctex */
 extern scaled_t total_stretch[4], total_shrink[4];
 extern int32_t last_badness;
 extern int32_t adjust_tail;
