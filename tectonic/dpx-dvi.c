@@ -1307,7 +1307,7 @@ dvi_push (void)
     dvi_stack[dvi_stack_depth++] = dvi_state;
 }
 
-static void
+void
 dpx_dvi_pop (void)
 {
     if (dvi_stack_depth <= 0)
