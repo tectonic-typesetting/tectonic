@@ -24953,7 +24953,7 @@ reswitch:
             if (main_ppp != main_pp)
                 while ((mem[main_ppp].b32.s1 != main_pp)) {
 
-                    if ((!(is_char_node(main_ppp))) && (mem[main_ppp == DISC_NODE].b16.s1)) {
+                    if (!is_char_node(main_ppp) && NODE_type(main_ppp) == DISC_NODE) {
                         temp_ptr = main_ppp;
                         {
                             register int32_t for_end;
@@ -25053,7 +25053,7 @@ reswitch:
             if (main_ppp != main_pp)
                 while ((mem[main_ppp].b32.s1 != main_pp)) {
 
-                    if ((!(is_char_node(main_ppp))) && (mem[main_ppp == DISC_NODE].b16.s1)) {
+                    if (!is_char_node(main_ppp) && NODE_type(main_ppp) == DISC_NODE) {
                         temp_ptr = main_ppp;
                         {
                             register int32_t for_end;
