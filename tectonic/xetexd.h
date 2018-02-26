@@ -281,7 +281,6 @@ typedef unsigned char group_code;
 typedef int32_t internal_font_number;
 typedef int32_t font_index;
 typedef int32_t nine_bits; /* range: 0 .. 0x1FF */
-typedef int32_t dvi_index;
 typedef int32_t trie_pointer;
 typedef unsigned short trie_opcode;
 typedef unsigned short hyph_pointer;
@@ -489,8 +488,6 @@ extern bool name_in_progress;
 extern str_number job_name;
 extern bool log_opened;
 extern const char* output_file_extension;
-extern rust_output_handle_t dvi_file;
-extern str_number output_file_name;
 extern str_number texmf_log_name;
 extern memory_word *font_info;
 extern font_index fmem_ptr;
@@ -924,8 +921,7 @@ internal_font_number read_font_info(int32_t u, str_number nom, str_number aire, 
 int32_t new_character(internal_font_number f, UTF16_code c);
 void out_what(int32_t p);
 int32_t new_edge(small_number s, scaled_t w);
-void ship_out(int32_t p);
-void finalize_dvi_file(void);
+
 void scan_spec(group_code c, bool three_codes);
 scaled_t char_pw(int32_t p, small_number side);
 int32_t new_margin_kern(scaled_t w, int32_t p, small_number side);
@@ -1112,6 +1108,12 @@ void flush_str(str_number s);
 str_number tokens_to_string(int32_t p);
 void scan_pdf_ext_toks(void);
 void compare_strings(void);
+
+/* xetex-shipout */
+
+void initialize_shipout_variables(void);
+void ship_out(int32_t p);
+void finalize_dvi_file(void);
 
 /* Inlines */
 

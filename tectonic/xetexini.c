@@ -178,7 +178,6 @@ str_number job_name;
 bool log_opened;
 const char* output_file_extension;
 rust_output_handle_t dvi_file;
-str_number output_file_name;
 str_number texmf_log_name;
 memory_word *font_info;
 font_index fmem_ptr;
@@ -4173,6 +4172,8 @@ tt_run_engine(char *dump_name, char *input_file_name)
     }
 
     /*55:*/
+    initialize_shipout_variables();
+
     selector = SELECTOR_TERM_ONLY;
     tally = 0;
     term_offset = 0;
@@ -4180,7 +4181,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
     job_name = 0;
     name_in_progress = false;
     log_opened = false;
-    output_file_name = 0;
 
     if (semantic_pagination_enabled)
         output_file_extension = ".spx";

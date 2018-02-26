@@ -9,6 +9,10 @@
 #include "core-bridge.h"
 
 
+static rust_output_handle_t dvi_file;
+static str_number output_file_name;
+
+
 static void hlist_out(void);
 static void vlist_out(void);
 static int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue);
@@ -24,6 +28,13 @@ static void dvi_four(int32_t x);
 static void dvi_two(UTF16_code s);
 static void dvi_pop(int32_t l);
 static void dvi_font_def(internal_font_number f);
+
+
+void
+initialize_shipout_variables(void)
+{
+    output_file_name = 0;
+}
 
 
 void
