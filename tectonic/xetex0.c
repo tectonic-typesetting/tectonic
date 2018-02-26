@@ -14477,7 +14477,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
             mem[r + 5].b16.s1 = NORMAL;
             BOX_glue_set(r) = 0.0;
         }
-        
+
         if (o == NORMAL) {
 
             if (mem[r + 5].b32.s1 != TEX_NULL) {    /*685: */
@@ -26797,4 +26797,184 @@ done:
     flush_str(s2);
     flush_str(s1);
     cur_val_level = INT_VAL;
+}
+
+
+int32_t
+prune_page_top(int32_t p, bool s)
+{
+    memory_word *mem = zmem;
+    int32_t prev_p;
+    int32_t q, r = TEX_NULL;
+
+    prev_p = TEMP_HEAD;
+    mem[TEMP_HEAD].b32.s1 = p;
+
+    while (p != TEX_NULL) {
+        switch (mem[p].b16.s1) {
+        case HLIST_NODE:
+        case VLIST_NODE:
+        case RULE_NODE:
+            q = new_skip_param(GLUE_PAR__split_top_skip);
+            mem[prev_p].b32.s1 = q;
+            mem[q].b32.s1 = p;
+            if (mem[temp_ptr + 1].b32.s1 > mem[p + 3].b32.s1)
+                mem[temp_ptr + 1].b32.s1 = mem[temp_ptr + 1].b32.s1 - mem[p + 3].b32.s1;
+            else
+                mem[temp_ptr + 1].b32.s1 = 0;
+            p = TEX_NULL;
+            break;
+        case WHATSIT_NODE:
+        case MARK_NODE:
+        case INS_NODE:
+            prev_p = p;
+            p = mem[prev_p].b32.s1;
+            break;
+        case GLUE_NODE:
+        case KERN_NODE:
+        case PENALTY_NODE:
+            q = p;
+            p = mem[q].b32.s1;
+            mem[q].b32.s1 = TEX_NULL;
+            mem[prev_p].b32.s1 = p;
+            if (s) {
+                if (disc_ptr[VSPLIT_CODE] == TEX_NULL)
+                    disc_ptr[VSPLIT_CODE] = q;
+                else
+                    mem[r].b32.s1 = q;
+                r = q;
+            } else {
+                flush_node_list(q);
+            }
+            break;
+        default:
+            confusion("pruning");
+            break;
+        }
+    }
+
+    return mem[TEMP_HEAD].b32.s1;
+}
+
+
+bool
+do_marks(small_number a, small_number l, int32_t q)
+{
+    memory_word *mem = zmem;
+    small_number i;
+
+    if (l < 4) {
+        for (i = 0; i <= 15; i++) {
+            if (odd(i))
+                cur_ptr = mem[q + (i / 2) + 1].b32.s1;
+            else
+                cur_ptr = mem[q + (i / 2) + 1].b32.s0;
+
+            if (cur_ptr != TEX_NULL) {
+                if (do_marks(a, l + 1, cur_ptr)) {
+                    if (odd(i))
+                        mem[q + (i / 2) + 1].b32.s1 = TEX_NULL;
+                    else
+                        mem[q + (i / 2) + 1].b32.s0 = TEX_NULL;
+                    mem[q].b16.s0--;
+                }
+            }
+        }
+
+        if (mem[q].b16.s0 == 0) {
+            free_node(q, INDEX_NODE_SIZE);
+            q = TEX_NULL;
+        }
+    } else {
+        switch (a) { /*1614: */
+        case VSPLIT_INIT:
+            if (mem[q + 2].b32.s1 != TEX_NULL) {
+                delete_token_ref(mem[q + 2].b32.s1);
+                mem[q + 2].b32.s1 = TEX_NULL;
+                delete_token_ref(mem[q + 3].b32.s0);
+                mem[q + 3].b32.s0 = TEX_NULL;
+            }
+            break;
+
+        case FIRE_UP_INIT:
+            if (mem[q + 2].b32.s0 != TEX_NULL) {
+                if (mem[q + 1].b32.s0 != TEX_NULL)
+                    delete_token_ref(mem[q + 1].b32.s0);
+                delete_token_ref(mem[q + 1].b32.s1);
+                mem[q + 1].b32.s1 = TEX_NULL;
+                if (mem[mem[q + 2].b32.s0].b32.s1 == TEX_NULL) {
+                    delete_token_ref(mem[q + 2].b32.s0);
+                    mem[q + 2].b32.s0 = TEX_NULL;
+                } else
+                    mem[mem[q + 2].b32.s0].b32.s0++;
+                mem[q + 1].b32.s0 = mem[q + 2].b32.s0;
+            }
+            break;
+
+        case FIRE_UP_DONE:
+            if ((mem[q + 1].b32.s0 != TEX_NULL) && (mem[q + 1].b32.s1 == TEX_NULL)) {
+                mem[q + 1].b32.s1 = mem[q + 1].b32.s0;
+                mem[mem[q + 1].b32.s0].b32.s0++;
+            }
+            break;
+
+        case DESTROY_MARKS:
+            for (i = TOP_MARK_CODE; i <= SPLIT_BOT_MARK_CODE; i++) {
+                if (odd(i))
+                    cur_ptr = mem[q + (i / 2) + 1].b32.s1;
+                else
+                    cur_ptr = mem[q + (i / 2) + 1].b32.s0;
+
+                if (cur_ptr != TEX_NULL) {
+                    delete_token_ref(cur_ptr);
+                    if (odd(i))
+                        mem[q + (i / 2) + 1].b32.s1 = TEX_NULL;
+                    else
+                        mem[q + (i / 2) + 1].b32.s0 = TEX_NULL;
+                }
+            }
+            break;
+        }
+
+        if (mem[q + 2].b32.s0 == TEX_NULL) {
+            if (mem[q + 3].b32.s0 == TEX_NULL) {
+                free_node(q, MARK_CLASS_NODE_SIZE);
+                q = TEX_NULL;
+            }
+        }
+    }
+
+    return (q == TEX_NULL);
+}
+
+
+void
+do_assignments(void)
+{
+    while (true) {
+        do {
+            get_x_token();
+        } while (cur_cmd == SPACER || cur_cmd == RELAX);
+
+        if (cur_cmd <= MAX_NON_PREFIXED_COMMAND)
+            return;
+
+        set_box_allowed = false;
+        prefixed_command();
+        set_box_allowed = true;
+    }
+}
+
+
+void
+new_whatsit(small_number s, small_number w)
+{
+    memory_word *mem = zmem;
+    int32_t p;
+
+    p = get_node(w);
+    NODE_type(p) = WHATSIT_NODE;
+    mem[p].b16.s0 = s;
+    mem[cur_list.tail].b32.s1 = p;
+    cur_list.tail = p;
 }
