@@ -105,7 +105,6 @@ list_state_record cur_list;
 short shown_mode;
 unsigned char old_setting;
 b32x2 *hash;
-b32x2 *yhash;
 int32_t hash_used;
 int32_t hash_extra;
 int32_t hash_top;
@@ -384,6 +383,8 @@ bool semantic_pagination_enabled;
 
 uint16_t _xeq_level_array[1114731];
 int32_t _trie_op_hash_array[trie_op_size - neg_trie_op_size + 1];
+
+static b32x2 *yhash;
 
 #define FORMAT_HEADER_MAGIC 0x54544E43 /* "TTNC" in ASCII */
 #define FORMAT_FOOTER_MAGIC 0x0000029A

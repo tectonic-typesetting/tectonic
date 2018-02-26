@@ -417,7 +417,6 @@ extern list_state_record cur_list;
 extern short shown_mode;
 extern unsigned char old_setting;
 extern b32x2 *hash;
-extern b32x2 *yhash;
 extern int32_t hash_used;
 extern int32_t hash_extra;
 extern int32_t hash_top;
