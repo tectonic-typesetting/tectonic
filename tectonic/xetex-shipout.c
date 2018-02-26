@@ -9,8 +9,13 @@
 #include "core-bridge.h"
 
 
+#define DVI_BUF_SIZE 16384
+#define HALF_BUF 8192
+
 static rust_output_handle_t dvi_file;
 static str_number output_file_name;
+static eight_bits *dvi_buf = NULL;
+static int32_t dvi_limit;
 
 
 static void hlist_out(void);
@@ -34,6 +39,16 @@ void
 initialize_shipout_variables(void)
 {
     output_file_name = 0;
+    dvi_buf = xmalloc_array(eight_bits, DVI_BUF_SIZE);
+    dvi_limit = DVI_BUF_SIZE;
+}
+
+
+void
+deinitialize_shipout_variables(void)
+{
+    free(dvi_buf);
+    dvi_buf = NULL;
 }
 
 
@@ -1887,7 +1902,7 @@ movement(scaled_t w, eight_bits o)
                 } else { /*633:*/
                     k = mem[p + 2].b32.s1 - dvi_offset;
                     if (k < 0)
-                        k = k + dvi_buf_size;
+                        k = k + DVI_BUF_SIZE;
                     dvi_buf[k] = dvi_buf[k] + 5;
                     mem[p].b32.s0 = MOV_Y_HERE;
                     goto found;
@@ -1902,7 +1917,7 @@ movement(scaled_t w, eight_bits o)
                 } else { /*634:*/
                     k = mem[p + 2].b32.s1 - dvi_offset;
                     if (k < 0)
-                        k = k + dvi_buf_size;
+                        k = k + DVI_BUF_SIZE;
                     dvi_buf[k] = dvi_buf[k] + 10;
                     mem[p].b32.s0 = MOV_Z_HERE;
                     goto found;
@@ -2409,7 +2424,7 @@ finalize_dvi_file(void)
         if (dvi_ptr == dvi_limit)
             dvi_swap();
 
-        k = 4 + (dvi_buf_size - dvi_ptr) % 4;
+        k = 4 + (DVI_BUF_SIZE - dvi_ptr) % 4;
 
         while (k > 0) {
             dvi_buf[dvi_ptr] = 223;
@@ -2419,8 +2434,8 @@ finalize_dvi_file(void)
             k--;
         }
 
-        if (dvi_limit == half_buf)
-            write_to_dvi(half_buf, dvi_buf_size - 1);
+        if (dvi_limit == HALF_BUF)
+            write_to_dvi(HALF_BUF, DVI_BUF_SIZE - 1);
 
         if (dvi_ptr > TEX_INFINITY - dvi_offset) {
             cur_s = -2;
@@ -2476,17 +2491,17 @@ dvi_swap(void)
         cur_s = -2;
         fatal_error("dvi length exceeds \"7FFFFFFF");
     }
-    if (dvi_limit == dvi_buf_size) {
-        write_to_dvi(0, half_buf - 1);
-        dvi_limit = half_buf;
-        dvi_offset = dvi_offset + dvi_buf_size;
+    if (dvi_limit == DVI_BUF_SIZE) {
+        write_to_dvi(0, HALF_BUF - 1);
+        dvi_limit = HALF_BUF;
+        dvi_offset = dvi_offset + DVI_BUF_SIZE;
         dvi_ptr = 0;
     } else {
 
-        write_to_dvi(half_buf, dvi_buf_size - 1);
-        dvi_limit = dvi_buf_size;
+        write_to_dvi(HALF_BUF, DVI_BUF_SIZE - 1);
+        dvi_limit = DVI_BUF_SIZE;
     }
-    dvi_gone = dvi_gone + half_buf;
+    dvi_gone = dvi_gone + HALF_BUF;
 }
 
 

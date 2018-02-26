@@ -352,7 +352,6 @@ extern int32_t max_in_open;
 extern int32_t param_size;
 extern int32_t nest_size;
 extern int32_t save_size;
-extern int32_t dvi_buf_size;
 extern int32_t expand_depth;
 extern int file_line_error_style_p;
 extern int halt_on_error_p;
@@ -539,9 +538,6 @@ extern internal_font_number f;
 extern scaled_t rule_ht, rule_dp, rule_wd;
 extern int32_t g;
 extern int32_t lq, lr;
-extern eight_bits *dvi_buf;
-extern int32_t half_buf;
-extern int32_t dvi_limit;
 extern int32_t dvi_ptr;
 extern int32_t dvi_offset;
 extern int32_t dvi_gone;
@@ -1112,6 +1108,7 @@ void compare_strings(void);
 /* xetex-shipout */
 
 void initialize_shipout_variables(void);
+void deinitialize_shipout_variables(void);
 void ship_out(int32_t p);
 void finalize_dvi_file(void);
 

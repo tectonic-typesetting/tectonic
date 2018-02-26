@@ -41,7 +41,6 @@ int32_t max_in_open;
 int32_t param_size;
 int32_t nest_size;
 int32_t save_size;
-int32_t dvi_buf_size;
 int32_t expand_depth;
 int file_line_error_style_p;
 int halt_on_error_p;
@@ -229,9 +228,6 @@ internal_font_number f;
 scaled_t rule_ht, rule_dp, rule_wd;
 int32_t g;
 int32_t lq, lr;
-eight_bits *dvi_buf;
-int32_t half_buf;
-int32_t dvi_limit;
 int32_t dvi_ptr;
 int32_t dvi_offset;
 int32_t dvi_gone;
@@ -3308,8 +3304,6 @@ initialize_more_variables(void)
     doing_leaders = false;
     dead_cycles = 0;
     cur_s = -1;
-    half_buf = dvi_buf_size / 2;
-    dvi_limit = dvi_buf_size;
     dvi_ptr = 0;
     dvi_offset = 0;
     dvi_gone = 0;
@@ -4067,7 +4061,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
     param_size = 10000;
     save_size = 80000L;
     stack_size = 5000;
-    dvi_buf_size = 16384;
     error_line = 79;
     half_error_line = 50;
     max_print_line = 79;
@@ -4088,7 +4081,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
     source_filename_stack = xmalloc_array(str_number, max_in_open);
     full_source_filename_stack = xmalloc_array(str_number, max_in_open);
     param_stack = xmalloc_array(int32_t, param_size);
-    dvi_buf = xmalloc_array(eight_bits, dvi_buf_size);
     hyph_word = xmalloc_array(str_number, hyph_size);
     hyph_list = xmalloc_array(int32_t, hyph_size);
     hyph_link = xmalloc_array(hyph_pointer, hyph_size);
@@ -4127,8 +4119,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
         bad = 1;
     if (max_print_line < 60)
         bad = 2;
-    if (dvi_buf_size % 8 != 0)
-        bad = 3;
     if (1100 > MEM_TOP)
         bad = 4;
     if (HASH_PRIME > HASH_SIZE)
@@ -4499,8 +4489,8 @@ tt_run_engine(char *dump_name, char *input_file_name)
     close_files_and_terminate();
     pdf_files_close();
     free(TEX_format_default);
-
     free(font_used);
+    deinitialize_shipout_variables();
 
     // Free the big allocated arrays
     free(buffer);
@@ -4515,7 +4505,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
     free(source_filename_stack);
     free(full_source_filename_stack);
     free(param_stack);
-    free(dvi_buf);
     free(hyph_word);
     free(hyph_list);
     free(hyph_link);
