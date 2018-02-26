@@ -460,7 +460,7 @@ void vf_set_char(int32_t ch, int vf_font)
                 dvi_push();
                 break;
             case POP:
-                dvi_pop();
+                dpx_dvi_pop();
                 break;
             case RIGHT1: case RIGHT2: case RIGHT3: case RIGHT4:
                 dvi_right (sqxfw (ptsize, get_pkt_signed_num (&start, end, opcode-RIGHT1)));

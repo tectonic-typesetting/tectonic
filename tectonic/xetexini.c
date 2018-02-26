@@ -41,7 +41,6 @@ int32_t max_in_open;
 int32_t param_size;
 int32_t nest_size;
 int32_t save_size;
-int32_t dvi_buf_size;
 int32_t expand_depth;
 int file_line_error_style_p;
 int halt_on_error_p;
@@ -105,7 +104,6 @@ list_state_record cur_list;
 short shown_mode;
 unsigned char old_setting;
 b32x2 *hash;
-b32x2 *yhash;
 int32_t hash_used;
 int32_t hash_extra;
 int32_t hash_top;
@@ -179,7 +177,6 @@ str_number job_name;
 bool log_opened;
 const char* output_file_extension;
 rust_output_handle_t dvi_file;
-str_number output_file_name;
 str_number texmf_log_name;
 memory_word *font_info;
 font_index fmem_ptr;
@@ -229,19 +226,7 @@ bool doing_leaders;
 uint16_t c;
 internal_font_number f;
 scaled_t rule_ht, rule_dp, rule_wd;
-int32_t g;
-int32_t lq, lr;
-eight_bits *dvi_buf;
-int32_t half_buf;
-int32_t dvi_limit;
-int32_t dvi_ptr;
-int32_t dvi_offset;
-int32_t dvi_gone;
-int32_t down_ptr, right_ptr;
-scaled_t dvi_h, dvi_v;
 scaled_t cur_h, cur_v;
-internal_font_number dvi_f;
-int32_t cur_s;
 scaled_t total_stretch[4], total_shrink[4];
 int32_t last_badness;
 int32_t adjust_tail;
@@ -264,43 +249,11 @@ int32_t align_ptr;
 int32_t cur_head, cur_tail;
 int32_t cur_pre_head, cur_pre_tail;
 int32_t just_box;
-int32_t passive;
-int32_t printed_node;
-int32_t pass_number;
 scaled_t active_width[7];
-scaled_t cur_active_width[7];
-scaled_t background[7];
-scaled_t break_width[7];
-bool no_shrink_error_yet;
-int32_t cur_p;
-bool second_pass;
-bool final_pass;
-int32_t threshold;
-int32_t minimal_demerits[4];
-int32_t minimum_demerits;
-int32_t best_place[4];
-int32_t best_pl_line[4];
-scaled_t disc_width;
-int32_t easy_line;
-int32_t last_special_line;
-scaled_t first_width;
-scaled_t second_width;
-scaled_t first_indent;
-scaled_t second_indent;
-int32_t best_bet;
-int32_t fewest_demerits;
-int32_t best_line;
-int32_t actual_looseness;
-int32_t line_diff;
 int32_t hc[4099];
-small_number hn;
-int32_t ha, hb;
 internal_font_number hf;
 int32_t hu[4097];
-int32_t hyf_char;
-unsigned char cur_lang, init_cur_lang;
-int32_t l_hyf, r_hyf, init_l_hyf, init_r_hyf;
-int32_t hyf_bchar;
+unsigned char cur_lang;
 int32_t max_hyph_char;
 unsigned char hyf[4097];
 int32_t init_list;
@@ -416,6 +369,8 @@ bool semantic_pagination_enabled;
 
 uint16_t _xeq_level_array[1114731];
 int32_t _trie_op_hash_array[trie_op_size - neg_trie_op_size + 1];
+
+static b32x2 *yhash;
 
 #define FORMAT_HEADER_MAGIC 0x54544E43 /* "TTNC" in ASCII */
 #define FORMAT_FOOTER_MAGIC 0x0000029A
@@ -3339,14 +3294,6 @@ initialize_more_variables(void)
     last_bop = -1;
     doing_leaders = false;
     dead_cycles = 0;
-    cur_s = -1;
-    half_buf = dvi_buf_size / 2;
-    dvi_limit = dvi_buf_size;
-    dvi_ptr = 0;
-    dvi_offset = 0;
-    dvi_gone = 0;
-    down_ptr = TEX_NULL;
-    right_ptr = TEX_NULL;
     adjust_tail = TEX_NULL;
     last_badness = 0;
     pre_adjust_tail = TEX_NULL;
@@ -4099,7 +4046,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
     param_size = 10000;
     save_size = 80000L;
     stack_size = 5000;
-    dvi_buf_size = 16384;
     error_line = 79;
     half_error_line = 50;
     max_print_line = 79;
@@ -4120,7 +4066,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
     source_filename_stack = xmalloc_array(str_number, max_in_open);
     full_source_filename_stack = xmalloc_array(str_number, max_in_open);
     param_stack = xmalloc_array(int32_t, param_size);
-    dvi_buf = xmalloc_array(eight_bits, dvi_buf_size);
     hyph_word = xmalloc_array(str_number, hyph_size);
     hyph_list = xmalloc_array(int32_t, hyph_size);
     hyph_link = xmalloc_array(hyph_pointer, hyph_size);
@@ -4159,8 +4104,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
         bad = 1;
     if (max_print_line < 60)
         bad = 2;
-    if (dvi_buf_size % 8 != 0)
-        bad = 3;
     if (1100 > MEM_TOP)
         bad = 4;
     if (HASH_PRIME > HASH_SIZE)
@@ -4204,6 +4147,8 @@ tt_run_engine(char *dump_name, char *input_file_name)
     }
 
     /*55:*/
+    initialize_shipout_variables();
+
     selector = SELECTOR_TERM_ONLY;
     tally = 0;
     term_offset = 0;
@@ -4211,7 +4156,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
     job_name = 0;
     name_in_progress = false;
     log_opened = false;
-    output_file_name = 0;
 
     if (semantic_pagination_enabled)
         output_file_extension = ".spx";
@@ -4530,8 +4474,8 @@ tt_run_engine(char *dump_name, char *input_file_name)
     close_files_and_terminate();
     pdf_files_close();
     free(TEX_format_default);
-
     free(font_used);
+    deinitialize_shipout_variables();
 
     // Free the big allocated arrays
     free(buffer);
@@ -4546,7 +4490,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
     free(source_filename_stack);
     free(full_source_filename_stack);
     free(param_stack);
-    free(dvi_buf);
     free(hyph_word);
     free(hyph_list);
     free(hyph_link);

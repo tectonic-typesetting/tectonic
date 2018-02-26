@@ -61,7 +61,7 @@ void dvi_rule     (int32_t width, int32_t height);
 void dvi_right (int32_t x);
 void dvi_put   (int32_t ch);
 void dvi_push  (void);
-void dvi_pop   (void);
+void dpx_dvi_pop(void); /* Renamed to avoid clash with XeTeX */
 void dvi_w0    (void);
 void dvi_w     (int32_t ch);
 void dvi_x0    (void);
