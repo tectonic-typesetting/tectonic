@@ -7,8 +7,44 @@
 #include "xetexd.h"
 #include "core-bridge.h"
 
+static int32_t passive;
+static scaled_t cur_active_width[7];
+static scaled_t background[7];
+static scaled_t break_width[7];
+static int32_t best_place[4];
+static int32_t best_pl_line[4];
+static scaled_t disc_width;
+static bool no_shrink_error_yet;
+static int32_t cur_p;
+static bool second_pass;
+static bool final_pass;
+static int32_t threshold;
+static int32_t minimal_demerits[4];
+static int32_t minimum_demerits;
+static int32_t easy_line;
+static int32_t last_special_line;
+static scaled_t first_width;
+static scaled_t second_width;
+static scaled_t first_indent;
+static scaled_t second_indent;
+static int32_t best_bet;
+static int32_t fewest_demerits;
+static int32_t best_line;
+static int32_t actual_looseness;
+static int32_t line_diff;
+static small_number hn;
+static int32_t ha, hb;
+static int32_t hyf_char;
+static unsigned char init_cur_lang;
+static int32_t l_hyf, r_hyf, init_l_hyf, init_r_hyf;
+static int32_t hyf_bchar;
+
 
 static void post_line_break(bool d);
+static void try_break(int32_t pi, small_number break_type);
+static void hyphenate(void);
+static int32_t finite_shrink(int32_t p);
+
 
 /* Break a paragraph into lines (XTTP:843).
  *
@@ -201,8 +237,6 @@ line_break(bool d)
         active_width[5] = background[5];
         active_width[6] = background[6];
         passive = TEX_NULL;
-        printed_node = TEMP_HEAD;
-        pass_number = 0;
         font_in_short_display = 0; /*:893*/
         cur_p = LLIST_link(TEMP_HEAD);
         auto_breaking = true;
@@ -1254,4 +1288,956 @@ post_line_break(bool d)
 
     cur_list.prev_graf = best_line - 1;
     cur_list.eTeX_aux = LR_ptr;
+}
+
+
+static void
+try_break(int32_t pi, small_number break_type)
+{
+    CACHE_THE_EQTB;
+    memory_word *mem = zmem;
+    int32_t r;
+    int32_t prev_r;
+    int32_t old_l;
+    bool no_break_yet;
+    int32_t prev_prev_r = TEX_NULL;
+    int32_t s;
+    int32_t q;
+    int32_t v;
+    int32_t t;
+    internal_font_number f;
+    int32_t l;
+    bool node_r_stays_active;
+    scaled_t line_width = 0;
+    unsigned char /*tight_fit */ fit_class;
+    int32_t b;
+    int32_t d;
+    bool artificial_demerits;
+    scaled_t shortfall;
+    scaled_t g = 0;
+
+    if (abs(pi) >= INF_PENALTY) {
+        if (pi > 0)
+            goto exit;
+        else
+            pi = EJECT_PENALTY;
+    }
+
+    no_break_yet = true;
+    prev_r = ACTIVE_LIST;
+    old_l = 0;
+    cur_active_width[1] = active_width[1];
+    cur_active_width[2] = active_width[2];
+    cur_active_width[3] = active_width[3];
+    cur_active_width[4] = active_width[4];
+    cur_active_width[5] = active_width[5];
+    cur_active_width[6] = active_width[6];
+
+    while (true) {
+
+    continue_:
+        r = mem[prev_r].b32.s1;
+        if (NODE_type(r) == DELTA_NODE) {
+            cur_active_width[1] += mem[r + 1].b32.s1;
+            cur_active_width[2] += mem[r + 2].b32.s1;
+            cur_active_width[3] += mem[r + 3].b32.s1;
+            cur_active_width[4] += mem[r + 4].b32.s1;
+            cur_active_width[5] += mem[r + 5].b32.s1;
+            cur_active_width[6] += mem[r + 6].b32.s1;
+            prev_prev_r = prev_r;
+            prev_r = r;
+            goto continue_;
+        }
+
+        l = mem[r + 1].b32.s0;
+
+        if (l > old_l) {
+            if (minimum_demerits < MAX_HALFWORD && (old_l != easy_line || r == ACTIVE_LIST)) { /*865:*/
+                if (no_break_yet) { /*866:*/
+                    no_break_yet = false;
+                    break_width[1] = background[1];
+                    break_width[2] = background[2];
+                    break_width[3] = background[3];
+                    break_width[4] = background[4];
+                    break_width[5] = background[5];
+                    break_width[6] = background[6];
+                    s = cur_p;
+
+                    if (break_type > UNHYPHENATED) {
+                        if (cur_p != TEX_NULL) { /*869:*/
+                            t = mem[cur_p].b16.s0;
+                            v = cur_p;
+                            s = mem[cur_p + 1].b32.s1;
+
+                            while (t > 0) {
+                                t--;
+                                v = mem[v].b32.s1;
+                                if (is_char_node(v)) {
+                                    int32_t eff_char;
+
+                                    f = CHAR_NODE_font(v);
+                                    eff_char = effective_char(true, f, CHAR_NODE_character(v));
+                                    break_width[1] -= FONT_CHARACTER_WIDTH(f, eff_char);
+                                } else
+                                    switch (mem[v].b16.s1) {
+                                    case LIGATURE_NODE:
+                                    {
+                                        int32_t eff_char;
+
+                                        f = LIGATURE_NODE_lig_font(v);
+                                        xtx_ligature_present = true;
+                                        eff_char = effective_char(true, f, LIGATURE_NODE_lig_char(v));
+                                        break_width[1] -= FONT_CHARACTER_WIDTH(f, eff_char);
+                                        break;
+                                    }
+                                    case HLIST_NODE:
+                                    case VLIST_NODE:
+                                    case RULE_NODE:
+                                    case KERN_NODE:
+                                        break_width[1] -= mem[v + 1].b32.s1;
+                                        break;
+                                    case WHATSIT_NODE:
+                                        if (mem[v].b16.s0 == NATIVE_WORD_NODE
+                                            || mem[v].b16.s0 == NATIVE_WORD_NODE_AT
+                                            || mem[v].b16.s0 == GLYPH_NODE
+                                            || mem[v].b16.s0 == PIC_NODE
+                                            || mem[v].b16.s0 == PDF_NODE)
+                                            break_width[1] -= mem[v + 1].b32.s1;
+                                        else
+                                            confusion("disc1a");
+                                        break;
+                                    default:
+                                        confusion("disc1");
+                                        break;
+                                    }
+                            }
+
+                            while (s != TEX_NULL) {
+                                if (is_char_node(s)) {
+                                    int32_t eff_char;
+
+                                    f = CHAR_NODE_font(s);
+                                    eff_char = effective_char(true, f, CHAR_NODE_character(s));
+                                    break_width[1] += FONT_CHARACTER_WIDTH(f, eff_char);;
+                                } else
+                                    switch (mem[s].b16.s1) {
+                                    case LIGATURE_NODE:
+                                    {
+                                        int32_t eff_char;
+
+                                        f = LIGATURE_NODE_lig_font(s);
+                                        xtx_ligature_present = true;
+                                        eff_char = effective_char(true, f, LIGATURE_NODE_lig_char(s));
+                                        break_width[1] += FONT_CHARACTER_WIDTH(f, eff_char);
+                                        break;
+                                    }
+                                    case HLIST_NODE:
+                                    case VLIST_NODE:
+                                    case RULE_NODE:
+                                    case KERN_NODE:
+                                        break_width[1] += mem[s + 1].b32.s1;
+                                        break;
+                                    case WHATSIT_NODE:
+                                        if (mem[s].b16.s0 == NATIVE_WORD_NODE
+                                            || mem[s].b16.s0 == NATIVE_WORD_NODE_AT
+                                            || mem[s].b16.s0 == GLYPH_NODE
+                                            || mem[s].b16.s0 == PIC_NODE
+                                            || mem[s].b16.s0 == PDF_NODE)
+                                            break_width[1] += mem[s + 1].b32.s1;
+                                        else
+                                            confusion("disc2a");
+                                        break;
+                                    default:
+                                        confusion("disc2");
+                                        break;
+                                    }
+                                s = mem[s].b32.s1;
+                            }
+
+                            break_width[1] += disc_width;
+                            if (mem[cur_p + 1].b32.s1 == TEX_NULL)
+                                s = mem[v].b32.s1;
+                        }
+                    }
+
+                    while (s != TEX_NULL) {
+                        if (is_char_node(s))
+                            goto done;
+
+                        switch (mem[s].b16.s1) {
+                        case GLUE_NODE:
+                            v = mem[s + 1].b32.s0;
+                            break_width[1] -= mem[v + 1].b32.s1;
+                            break_width[2 + mem[v].b16.s1] -= mem[v + 2].b32.s1;
+                            break_width[6] -= mem[v + 3].b32.s1;
+                            break;
+                        case PENALTY_NODE:
+                            break;
+                        case MATH_NODE:
+                            break_width[1] -= mem[s + 1].b32.s1;
+                            break;
+                        case KERN_NODE:
+                            if (NODE_subtype(s) != EXPLICIT)
+                                goto done;
+                            break_width[1] -= mem[s + 1].b32.s1;
+                            break;
+                        default:
+                            goto done;
+                            break;
+                        }
+
+                        s = mem[s].b32.s1;
+                    }
+                done:
+                    ;
+                }
+
+                if (NODE_type(prev_r) == DELTA_NODE) {
+                    mem[prev_r + 1].b32.s1 = mem[prev_r + 1].b32.s1 - cur_active_width[1] + break_width[1];
+                    mem[prev_r + 2].b32.s1 = mem[prev_r + 2].b32.s1 - cur_active_width[2] + break_width[2];
+                    mem[prev_r + 3].b32.s1 = mem[prev_r + 3].b32.s1 - cur_active_width[3] + break_width[3];
+                    mem[prev_r + 4].b32.s1 = mem[prev_r + 4].b32.s1 - cur_active_width[4] + break_width[4];
+                    mem[prev_r + 5].b32.s1 = mem[prev_r + 5].b32.s1 - cur_active_width[5] + break_width[5];
+                    mem[prev_r + 6].b32.s1 = mem[prev_r + 6].b32.s1 - cur_active_width[6] + break_width[6];
+                } else if (prev_r == ACTIVE_LIST) {
+                    active_width[1] = break_width[1];
+                    active_width[2] = break_width[2];
+                    active_width[3] = break_width[3];
+                    active_width[4] = break_width[4];
+                    active_width[5] = break_width[5];
+                    active_width[6] = break_width[6];
+                } else {
+                    q = get_node(DELTA_NODE_SIZE);
+                    mem[q].b32.s1 = r;
+                    NODE_type(q) = DELTA_NODE;
+                    mem[q].b16.s0 = 0;
+                    mem[q + 1].b32.s1 = break_width[1] - cur_active_width[1];
+                    mem[q + 2].b32.s1 = break_width[2] - cur_active_width[2];
+                    mem[q + 3].b32.s1 = break_width[3] - cur_active_width[3];
+                    mem[q + 4].b32.s1 = break_width[4] - cur_active_width[4];
+                    mem[q + 5].b32.s1 = break_width[5] - cur_active_width[5];
+                    mem[q + 6].b32.s1 = break_width[6] - cur_active_width[6];
+                    mem[prev_r].b32.s1 = q;
+                    prev_prev_r = prev_r;
+                    prev_r = q;
+                }
+
+                if (abs(INTPAR(adj_demerits)) >= MAX_HALFWORD - minimum_demerits)
+                    minimum_demerits = AWFUL_BAD - 1;
+                else
+                    minimum_demerits = minimum_demerits + abs(INTPAR(adj_demerits));
+
+                {
+                    register int32_t for_end;
+                    fit_class = VERY_LOOSE_FIT;
+                    for_end = TIGHT_FIT;
+                    if (fit_class <= for_end)
+                        do {
+                            if (minimal_demerits[fit_class] <= minimum_demerits) {  /*874: */
+                                q = get_node(PASSIVE_NODE_SIZE);
+                                mem[q].b32.s1 = passive;
+                                passive = q;
+                                mem[q + 1].b32.s1 = cur_p;
+                                mem[q + 1].b32.s0 = best_place[fit_class];
+                                q = get_node(active_node_size);
+                                mem[q + 1].b32.s1 = passive;
+                                mem[q + 1].b32.s0 = best_pl_line[fit_class] + 1;
+                                mem[q].b16.s0 = fit_class;
+                                mem[q].b16.s1 = break_type;
+                                mem[q + 2].b32.s1 = minimal_demerits[fit_class];
+                                if (do_last_line_fit) {     /*1639: */
+                                    mem[q + 3].b32.s1 = best_pl_short[fit_class];
+                                    mem[q + 4].b32.s1 = best_pl_glue[fit_class];
+                                }
+                                mem[q].b32.s1 = r;
+                                mem[prev_r].b32.s1 = q;
+                                prev_r = q;
+                            }
+                            minimal_demerits[fit_class] = MAX_HALFWORD;
+                        }
+                        while (fit_class++ < for_end);
+                }
+
+                minimum_demerits = MAX_HALFWORD;
+
+                if (r != ACTIVE_LIST) {
+                    q = get_node(DELTA_NODE_SIZE);
+                    mem[q].b32.s1 = r;
+                    NODE_type(q) = DELTA_NODE;
+                    mem[q].b16.s0 = 0;
+                    mem[q + 1].b32.s1 = cur_active_width[1] - break_width[1];
+                    mem[q + 2].b32.s1 = cur_active_width[2] - break_width[2];
+                    mem[q + 3].b32.s1 = cur_active_width[3] - break_width[3];
+                    mem[q + 4].b32.s1 = cur_active_width[4] - break_width[4];
+                    mem[q + 5].b32.s1 = cur_active_width[5] - break_width[5];
+                    mem[q + 6].b32.s1 = cur_active_width[6] - break_width[6];
+                    mem[prev_r].b32.s1 = q;
+                    prev_prev_r = prev_r;
+                    prev_r = q;
+                }
+            }
+
+            if (r == ACTIVE_LIST)
+                goto exit;
+
+            if (l > easy_line) {
+                line_width = second_width;
+                old_l = MAX_HALFWORD - 1;
+            } else {
+                old_l = l;
+
+                if (l > last_special_line)
+                    line_width = second_width;
+                else if (LOCAL(par_shape) == TEX_NULL)
+                    line_width = first_width;
+                else
+                    line_width = mem[LOCAL(par_shape) + 2 * l].b32.s1;
+            }
+        }
+
+        artificial_demerits = false;
+        shortfall = line_width - cur_active_width[1];
+
+        if (INTPAR(xetex_protrude_chars) > 1)
+            shortfall = shortfall + total_pw(r, cur_p);
+
+        if (shortfall > 0) { /*881:*/
+            if (cur_active_width[3] != 0 || cur_active_width[4] != 0 || cur_active_width[5] != 0) {
+                if (do_last_line_fit) {
+                    if (cur_p == TEX_NULL) { /*1634:*/
+                        if (mem[r + 3].b32.s1 == 0 || mem[r + 4].b32.s1 <= 0)
+                            goto not_found;
+
+                        if (cur_active_width[3] != fill_width[0] || cur_active_width[4] != fill_width[1]
+                            || cur_active_width[5] != fill_width[2])
+                            goto not_found;
+
+                        if (mem[r + 3].b32.s1 > 0)
+                            g = cur_active_width[2];
+                        else
+                            g = cur_active_width[6];
+
+                        if (g <= 0)
+                            goto not_found;
+
+                        arith_error = false;
+                        g = fract(g, mem[r + 3].b32.s1, mem[r + 4].b32.s1, MAX_HALFWORD);
+                        if (INTPAR(last_line_fit) < 1000)
+                            g = fract(g, INTPAR(last_line_fit), 1000, MAX_HALFWORD);
+
+                        if (arith_error) {
+                            if (mem[r + 3].b32.s1 > 0)
+                                g = MAX_HALFWORD;
+                            else
+                                g = -MAX_HALFWORD;
+                        }
+
+                        if (g > 0) { /*1635:*/
+                            if (g > shortfall)
+                                g = shortfall;
+
+                            if (g > 7230584L) { /* XXX: magic number in original WEB code */
+                                if (cur_active_width[2] < 1663497L) { /* XXX: magic number in original WEB code */
+                                    b = INF_BAD;
+                                    fit_class = VERY_LOOSE_FIT;
+                                    goto found;
+                                }
+                            }
+
+                            b = badness(g, cur_active_width[2]);
+
+                            if (b > 12) {
+                                if (b > 99)
+                                    fit_class = VERY_LOOSE_FIT;
+                                else
+                                    fit_class = LOOSE_FIT;
+                            } else {
+                                fit_class = DECENT_FIT;
+                            }
+
+                            goto found;
+                        } else if (g < 0) { /*1636:*/
+                            if (-(int32_t) g > cur_active_width[6])
+                                g = -(int32_t) cur_active_width[6];
+
+                            b = badness(-(int32_t) g, cur_active_width[6]);
+                            if (b > 12)
+                                fit_class = TIGHT_FIT;
+                            else
+                                fit_class = DECENT_FIT;
+
+                            goto found;
+                        }
+
+                    not_found:
+                        ;
+                    }
+
+                    shortfall = 0;
+                }
+
+                b = 0;
+                fit_class = DECENT_FIT;
+            } else {
+                if (shortfall > 7230584L) { /* XXX: magic number in original WEB code */
+                    if (cur_active_width[2] < 1663497L) { /* XXX: magic number in original WEB code */
+                        b = INF_BAD;
+                        fit_class = VERY_LOOSE_FIT;
+                        goto done1;
+                    }
+                }
+
+                b = badness(shortfall, cur_active_width[2]);
+                if (b > 12) {
+                    if (b > 99)
+                        fit_class = VERY_LOOSE_FIT;
+                    else
+                        fit_class = LOOSE_FIT;
+                } else {
+                    fit_class = DECENT_FIT;
+                }
+
+            done1:
+                ;
+            }
+        } else { /*882:*/
+            if (-(int32_t) shortfall > cur_active_width[6])
+                b = (INF_BAD + 1);
+            else
+                b = badness(-(int32_t) shortfall, cur_active_width[6]);
+
+            if (b > 12)
+                fit_class = TIGHT_FIT;
+            else
+                fit_class = DECENT_FIT;
+        }
+
+        if (do_last_line_fit) { /*1637:*/
+            if (cur_p == TEX_NULL)
+                shortfall = 0;
+
+            if (shortfall > 0)
+                g = cur_active_width[2];
+            else if (shortfall < 0)
+                g = cur_active_width[6];
+            else
+                g = 0;
+        }
+
+    found:
+        if (b > INF_BAD || pi == EJECT_PENALTY) { /*883:*/
+            if (final_pass && minimum_demerits == MAX_HALFWORD && mem[r].b32.s1 == ACTIVE_LIST
+                && prev_r == ACTIVE_LIST)
+                artificial_demerits = true;
+            else if (b > threshold)
+                goto deactivate;
+
+            node_r_stays_active = false;
+        } else {
+            prev_r = r;
+            if (b > threshold)
+                goto continue_;
+            node_r_stays_active = true;
+        }
+
+        if (artificial_demerits) {
+            d = 0;
+        } else { /*888:*/
+            d = INTPAR(line_penalty) + b;
+            if (abs(d) >= 10000)
+                d = 100000000L; /* algorithmic constant */
+            else
+                d = d * d;
+
+            if (pi != 0) {
+                if (pi > 0)
+                    d = d + pi * pi;
+                else if (pi > EJECT_PENALTY)
+                    d = d - pi * pi;
+            }
+
+            if (break_type == HYPHENATED && mem[r].b16.s1 == HYPHENATED) {
+                if (cur_p != TEX_NULL)
+                    d = d + INTPAR(double_hyphen_demerits);
+                else
+                    d = d + INTPAR(final_hyphen_demerits);
+            }
+
+            if (abs(fit_class - mem[r].b16.s0) > 1)
+                d = d + INTPAR(adj_demerits);
+        }
+
+        d = d + mem[r + 2].b32.s1;
+
+        if (d <= minimal_demerits[fit_class]) {
+            minimal_demerits[fit_class] = d;
+            best_place[fit_class] = mem[r + 1].b32.s1;
+            best_pl_line[fit_class] = l;
+            if (do_last_line_fit) { /*1638:*/
+                best_pl_short[fit_class] = shortfall;
+                best_pl_glue[fit_class] = g;
+            }
+            if (d < minimum_demerits)
+                minimum_demerits = d;
+        }
+
+        if (node_r_stays_active)
+            goto continue_;
+
+    deactivate: /*889:*/
+        mem[prev_r].b32.s1 = mem[r].b32.s1;
+        free_node(r, active_node_size);
+
+        if (prev_r == ACTIVE_LIST) { /*890:*/
+            r = mem[ACTIVE_LIST].b32.s1;
+
+            if (NODE_type(r) == DELTA_NODE) {
+                active_width[1] = active_width[1] + mem[r + 1].b32.s1;
+                active_width[2] = active_width[2] + mem[r + 2].b32.s1;
+                active_width[3] = active_width[3] + mem[r + 3].b32.s1;
+                active_width[4] = active_width[4] + mem[r + 4].b32.s1;
+                active_width[5] = active_width[5] + mem[r + 5].b32.s1;
+                active_width[6] = active_width[6] + mem[r + 6].b32.s1;
+                cur_active_width[1] = active_width[1];
+                cur_active_width[2] = active_width[2];
+                cur_active_width[3] = active_width[3];
+                cur_active_width[4] = active_width[4];
+                cur_active_width[5] = active_width[5];
+                cur_active_width[6] = active_width[6];
+                mem[ACTIVE_LIST].b32.s1 = mem[r].b32.s1;
+                free_node(r, DELTA_NODE_SIZE);
+            }
+        } else if (NODE_type(prev_r) == DELTA_NODE) {
+            r = mem[prev_r].b32.s1;
+
+            if (r == ACTIVE_LIST) {
+                cur_active_width[1] = cur_active_width[1] - mem[prev_r + 1].b32.s1;
+                cur_active_width[2] = cur_active_width[2] - mem[prev_r + 2].b32.s1;
+                cur_active_width[3] = cur_active_width[3] - mem[prev_r + 3].b32.s1;
+                cur_active_width[4] = cur_active_width[4] - mem[prev_r + 4].b32.s1;
+                cur_active_width[5] = cur_active_width[5] - mem[prev_r + 5].b32.s1;
+                cur_active_width[6] = cur_active_width[6] - mem[prev_r + 6].b32.s1;
+                mem[prev_prev_r].b32.s1 = ACTIVE_LIST;
+                free_node(prev_r, DELTA_NODE_SIZE);
+                prev_r = prev_prev_r;
+            } else if (NODE_type(r) == DELTA_NODE) {
+                cur_active_width[1] = cur_active_width[1] + mem[r + 1].b32.s1;
+                cur_active_width[2] = cur_active_width[2] + mem[r + 2].b32.s1;
+                cur_active_width[3] = cur_active_width[3] + mem[r + 3].b32.s1;
+                cur_active_width[4] = cur_active_width[4] + mem[r + 4].b32.s1;
+                cur_active_width[5] = cur_active_width[5] + mem[r + 5].b32.s1;
+                cur_active_width[6] = cur_active_width[6] + mem[r + 6].b32.s1;
+                mem[prev_r + 1].b32.s1 = mem[prev_r + 1].b32.s1 + mem[r + 1].b32.s1;
+                mem[prev_r + 2].b32.s1 = mem[prev_r + 2].b32.s1 + mem[r + 2].b32.s1;
+                mem[prev_r + 3].b32.s1 = mem[prev_r + 3].b32.s1 + mem[r + 3].b32.s1;
+                mem[prev_r + 4].b32.s1 = mem[prev_r + 4].b32.s1 + mem[r + 4].b32.s1;
+                mem[prev_r + 5].b32.s1 = mem[prev_r + 5].b32.s1 + mem[r + 5].b32.s1;
+                mem[prev_r + 6].b32.s1 = mem[prev_r + 6].b32.s1 + mem[r + 6].b32.s1;
+                mem[prev_r].b32.s1 = mem[r].b32.s1;
+                free_node(r, DELTA_NODE_SIZE);
+            }
+        }
+    }
+
+exit:
+    ;
+}
+
+
+static void
+hyphenate(void)
+{
+    CACHE_THE_EQTB;
+    memory_word *mem = zmem;
+    short /*hyphenatable_length_limit 2 */ i, j, l;
+    int32_t q, r, s;
+    int32_t bchar;
+    int32_t major_tail, minor_tail;
+    UnicodeScalar c = 0;
+    short /*hyphenatable_length_limit */ c_loc;
+    int32_t r_count;
+    int32_t hyf_node;
+    trie_pointer z;
+    int32_t v;
+    hyph_pointer h;
+    str_number k;
+    pool_pointer u;
+
+    {
+        register int32_t for_end;
+        j = 0;
+        for_end = hn;
+        if (j <= for_end)
+            do
+                hyf[j] = 0;
+            while (j++ < for_end);
+    }
+    h = hc[1];
+    hn++;
+    hc[hn] = cur_lang;
+    {
+        register int32_t for_end;
+        j = 2;
+        for_end = hn;
+        if (j <= for_end)
+            do
+                h = (h + h + hc[j]) % HYPH_PRIME;
+            while (j++ < for_end);
+    }
+    while (true) {
+
+        k = hyph_word[h];
+        if (k == 0)
+            goto not_found;
+        if (length(k) == hn) {
+            j = 1;
+            u = str_start[(k) - 65536L];
+            do {
+                if (str_pool[u] != hc[j])
+                    goto done;
+                j++;
+                u++;
+            } while (!(j > hn));
+            s = hyph_list[h];
+            while (s != TEX_NULL) {
+
+                hyf[mem[s].b32.s0] = 1;
+                s = mem[s].b32.s1;
+            }
+            hn--;
+            goto found;
+        } /*:966 */
+    done:
+        h = hyph_link[h];
+        if (h == 0)
+            goto not_found;
+        h--;
+    }
+not_found:
+    hn--;
+    if (trie_trc[cur_lang + 1] != cur_lang)
+        return;
+    hc[0] = 0;
+    hc[hn + 1] = 0;
+    hc[hn + 2] = max_hyph_char;
+    {
+        register int32_t for_end;
+        j = 0;
+        for_end = hn - r_hyf + 1;
+        if (j <= for_end)
+            do {
+                z = trie_trl[cur_lang + 1] + hc[j];
+                l = j;
+                while (hc[l] == trie_trc[z]) {
+
+                    if (trie_tro[z] != min_trie_op) {   /*959: */
+                        v = trie_tro[z];
+                        do {
+                            v = v + op_start[cur_lang];
+                            i = l - hyf_distance[v];
+                            if (hyf_num[v] > hyf[i])
+                                hyf[i] = hyf_num[v];
+                            v = hyf_next[v];
+                        } while (!(v == min_trie_op));
+                    }
+                    l++;
+                    z = trie_trl[z] + hc[l];
+                }
+            }
+            while (j++ < for_end);
+    }
+ found:
+    {
+        register int32_t for_end;
+        j = 0;
+        for_end = l_hyf - 1;
+        if (j <= for_end)
+            do
+                hyf[j] = 0;
+            while (j++ < for_end);
+    }
+    {
+        register int32_t for_end;
+        j = 0;
+        for_end = r_hyf - 1;
+        if (j <= for_end)
+            do
+                hyf[hn - j] = 0 /*:958 */ ;
+            while (j++ < for_end);
+    }
+    {
+        register int32_t for_end;
+        j = l_hyf;
+        for_end = hn - r_hyf;
+        if (j <= for_end)
+            do
+                if (odd(hyf[j]))
+                    goto found1;
+            while (j++ < for_end) ;
+    }
+    return;
+
+found1:
+    if ((((ha) != TEX_NULL && (!(is_char_node(ha))) && (NODE_type(ha) == WHATSIT_NODE)
+          && ((mem[ha].b16.s0 == NATIVE_WORD_NODE) || (mem[ha].b16.s0 == NATIVE_WORD_NODE_AT))))) {
+        s = cur_p;
+        while (mem[s].b32.s1 != ha)
+            s = mem[s].b32.s1;
+        hyphen_passed = 0;
+        {
+            register int32_t for_end;
+            j = l_hyf;
+            for_end = hn - r_hyf;
+            if (j <= for_end)
+                do {
+                    if (odd(hyf[j])) {
+                        q = new_native_word_node(hf, j - hyphen_passed);
+                        mem[q].b16.s0 = mem[ha].b16.s0;
+                        {
+                            register int32_t for_end;
+                            i = 0;
+                            for_end = j - hyphen_passed - 1;
+                            if (i <= for_end)
+                                do
+                                    set_native_char(q, i, get_native_char(ha, i + hyphen_passed));
+                                while (i++ < for_end);
+                        }
+                        set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
+                        mem[s].b32.s1 = q;
+                        s = q;
+                        q = new_disc();
+                        mem[q + 1].b32.s0 = new_native_character(hf, hyf_char);
+                        mem[s].b32.s1 = q;
+                        s = q;
+                        hyphen_passed = j;
+                    }
+                }
+                while (j++ < for_end);
+        }
+        hn = mem[ha + 4].b16.s1;
+        q = new_native_word_node(hf, hn - hyphen_passed);
+        mem[q].b16.s0 = mem[ha].b16.s0;
+        {
+            register int32_t for_end;
+            i = 0;
+            for_end = hn - hyphen_passed - 1;
+            if (i <= for_end)
+                do
+                    set_native_char(q, i, get_native_char(ha, i + hyphen_passed));
+                while (i++ < for_end);
+        }
+        set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
+        mem[s].b32.s1 = q;
+        s = q;
+        q = mem[ha].b32.s1;
+        mem[s].b32.s1 = q;
+        mem[ha].b32.s1 = TEX_NULL;
+        flush_node_list(ha);
+    } else {
+
+        q = mem[hb].b32.s1;
+        mem[hb].b32.s1 = TEX_NULL;
+        r = mem[ha].b32.s1;
+        mem[ha].b32.s1 = TEX_NULL;
+        bchar = hyf_bchar;
+        if ((is_char_node(ha))) {
+
+            if (mem[ha].b16.s1 != hf)
+                goto found2;
+            else {
+
+                init_list = ha;
+                init_lig = false;
+                hu[0] = mem[ha].b16.s0;
+            }
+        } else if (NODE_type(ha) == LIGATURE_NODE) {
+
+            if (mem[ha + 1].b16.s1 != hf)
+                goto found2;
+            else {
+
+                init_list = mem[ha + 1].b32.s1;
+                init_lig = true;
+                init_lft = (mem[ha].b16.s0 > 1);
+                hu[0] = mem[ha + 1].b16.s0;
+                if (init_list == TEX_NULL) {
+
+                    if (init_lft) {
+                        hu[0] = max_hyph_char;
+                        init_lig = false;
+                    }
+                }
+                free_node(ha, SMALL_NODE_SIZE);
+            }
+        } else {
+
+            if (!(is_char_node(r))) {
+
+                if (NODE_type(r) == LIGATURE_NODE) {
+
+                    if (mem[r].b16.s0 > 1)
+                        goto found2;
+                }
+            }
+            j = 1;
+            s = ha;
+            init_list = TEX_NULL;
+            goto common_ending;
+        }
+        s = cur_p;
+        while (mem[s].b32.s1 != ha)
+            s = mem[s].b32.s1;
+        j = 0;
+        goto common_ending;
+    found2:
+        s = ha;
+        j = 0;
+        hu[0] = max_hyph_char;
+        init_lig = false;
+        init_list = TEX_NULL;
+
+    common_ending:
+        flush_node_list(r);
+        do {
+            l = j;
+            j = reconstitute(j, hn, bchar, hyf_char) + 1;
+            if (hyphen_passed == 0) {
+                mem[s].b32.s1 = mem[HOLD_HEAD].b32.s1;
+                while (mem[s].b32.s1 > TEX_NULL)
+                    s = mem[s].b32.s1;
+                if (odd(hyf[j - 1])) {
+                    l = j;
+                    hyphen_passed = j - 1;
+                    mem[HOLD_HEAD].b32.s1 = TEX_NULL;
+                }
+            }
+            if (hyphen_passed > 0) /*949: */
+                do {
+                    r = get_node(SMALL_NODE_SIZE);
+                    mem[r].b32.s1 = mem[HOLD_HEAD].b32.s1;
+                    NODE_type(r) = DISC_NODE;
+                    major_tail = r;
+                    r_count = 0;
+                    while (mem[major_tail].b32.s1 > TEX_NULL) {
+
+                        major_tail = mem[major_tail].b32.s1;
+                        r_count++;
+                    }
+                    i = hyphen_passed;
+                    hyf[i] = 0;
+                    minor_tail = TEX_NULL;
+                    mem[r + 1].b32.s0 = TEX_NULL;
+                    hyf_node = new_character(hf, hyf_char);
+                    if (hyf_node != TEX_NULL) {
+                        i++;
+                        c = hu[i];
+                        hu[i] = hyf_char;
+                        {
+                            mem[hyf_node].b32.s1 = avail;
+                            avail = hyf_node;
+                        }
+                    }
+                    while (l <= i) {
+
+                        l = reconstitute(l, i, font_bchar[hf], TOO_BIG_CHAR) + 1;
+                        if (mem[HOLD_HEAD].b32.s1 > TEX_NULL) {
+                            if (minor_tail == TEX_NULL)
+                                mem[r + 1].b32.s0 = mem[HOLD_HEAD].b32.s1;
+                            else
+                                mem[minor_tail].b32.s1 = mem[HOLD_HEAD].b32.s1;
+                            minor_tail = mem[HOLD_HEAD].b32.s1;
+                            while (mem[minor_tail].b32.s1 > TEX_NULL)
+                                minor_tail = mem[minor_tail].b32.s1;
+                        }
+                    }
+                    if (hyf_node != TEX_NULL) {
+                        hu[i] = c;
+                        l = i;
+                        i--;
+                    }
+                    minor_tail = TEX_NULL;
+                    mem[r + 1].b32.s1 = TEX_NULL;
+                    c_loc = 0;
+                    if (bchar_label[hf] != NON_ADDRESS) {
+                        l--;
+                        c = hu[l];
+                        c_loc = l;
+                        hu[l] = max_hyph_char;
+                    }
+                    while (l < j) {
+
+                        do {
+                            l = reconstitute(l, hn, bchar, TOO_BIG_CHAR) + 1;
+                            if (c_loc > 0) {
+                                hu[c_loc] = c;
+                                c_loc = 0;
+                            }
+                            if (mem[HOLD_HEAD].b32.s1 > TEX_NULL) {
+                                if (minor_tail == TEX_NULL)
+                                    mem[r + 1].b32.s1 = mem[HOLD_HEAD].b32.s1;
+                                else
+                                    mem[minor_tail].b32.s1 = mem[HOLD_HEAD].b32.s1;
+                                minor_tail = mem[HOLD_HEAD].b32.s1;
+                                while (mem[minor_tail].b32.s1 > TEX_NULL)
+                                    minor_tail = mem[minor_tail].b32.s1;
+                            }
+                        } while (!(l >= j));
+                        while (l > j) { /*952: */
+
+                            j = reconstitute(j, hn, bchar, TOO_BIG_CHAR) + 1;
+                            mem[major_tail].b32.s1 = mem[HOLD_HEAD].b32.s1;
+                            while (mem[major_tail].b32.s1 > TEX_NULL) {
+
+                                major_tail = mem[major_tail].b32.s1;
+                                r_count++;
+                            }
+                        }
+                    }
+                    if (r_count > 127) {
+                        mem[s].b32.s1 = mem[r].b32.s1;
+                        mem[r].b32.s1 = TEX_NULL;
+                        flush_node_list(r);
+                    } else {
+
+                        mem[s].b32.s1 = r;
+                        mem[r].b16.s0 = r_count;
+                    }
+                    s = /*:953 */ major_tail;
+                    hyphen_passed = j - 1;
+                    mem[HOLD_HEAD].b32.s1 = TEX_NULL;
+                } while (!(!odd(hyf[j - 1]) /*:949 */ ));
+        } while (!(j > hn));
+        mem[s].b32.s1 = /*:948 */ q;
+        flush_list(init_list);
+    }
+}
+
+
+static int32_t
+finite_shrink(int32_t p)
+{
+    memory_word *mem = zmem; int32_t q;
+    if (no_shrink_error_yet) {
+        no_shrink_error_yet = false;
+        {
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl_cstr("! ");
+            print_cstr("Infinite glue shrinkage found in a paragraph");
+        }
+        {
+            help_ptr = 5;
+            help_line[4] = "The paragraph just ended includes some glue that has";
+            help_line[3] = "infinite shrinkability, e.g., `\\hskip 0pt minus 1fil'.";
+            help_line[2] = "Such glue doesn't belong there---it allows a paragraph";
+            help_line[1] = "of any length to fit on one line. But it's safe to proceed,";
+            help_line[0] = "since the offensive shrinkability has been made finite.";
+        }
+        error();
+    }
+    q = new_spec(p);
+    GLUE_SPEC_shrink_order(q) = NORMAL;
+    delete_glue_ref(p);
+    return q;
 }
