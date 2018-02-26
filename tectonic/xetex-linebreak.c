@@ -44,6 +44,7 @@ static void post_line_break(bool d);
 static void try_break(int32_t pi, small_number break_type);
 static void hyphenate(void);
 static int32_t finite_shrink(int32_t p);
+static small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar);
 
 
 /* Break a paragraph into lines (XTTP:843).
@@ -2240,4 +2241,294 @@ finite_shrink(int32_t p)
     GLUE_SPEC_shrink_order(q) = NORMAL;
     delete_glue_ref(p);
     return q;
+}
+
+
+static small_number
+reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar)
+{
+    memory_word *mem = zmem; int32_t p;
+    int32_t t;
+    b16x4 q;
+    int32_t cur_rh;
+    int32_t test_char;
+    scaled_t w;
+    font_index k;
+    hyphen_passed = 0;
+    t = HOLD_HEAD;
+    w = 0;
+    mem[HOLD_HEAD].b32.s1 = TEX_NULL;
+    cur_l = hu[j];
+    cur_q = t;
+    if (j == 0) {
+        ligature_present = init_lig;
+        p = init_list;
+        if (ligature_present)
+            lft_hit = init_lft;
+        while (p > TEX_NULL) {
+
+            {
+                mem[t].b32.s1 = get_avail();
+                t = mem[t].b32.s1;
+                mem[t].b16.s1 = hf;
+                mem[t].b16.s0 = mem[p].b16.s0;
+            }
+            p = mem[p].b32.s1;
+        }
+    } else if (cur_l < TOO_BIG_CHAR) {
+        mem[t].b32.s1 = get_avail();
+        t = mem[t].b32.s1;
+        mem[t].b16.s1 = hf;
+        mem[t].b16.s0 = cur_l;
+    }
+    lig_stack = TEX_NULL;
+    {
+        if (j < n)
+            cur_r = hu[j + 1];
+        else
+            cur_r = bchar;
+        if (odd(hyf[j]))
+            cur_rh = hchar;
+        else
+            cur_rh = TOO_BIG_CHAR;
+    }
+continue_:
+    if (cur_l == TOO_BIG_CHAR) {
+        k = bchar_label[hf];
+        if (k == NON_ADDRESS)
+            goto done;
+        else
+            q = font_info[k].b16;
+    } else {
+
+        q = FONT_CHARACTER_INFO(hf, effective_char(true, hf, cur_l));
+        if (((q.s1) % 4) != LIG_TAG)
+            goto done;
+        k = lig_kern_base[hf] + q.s0;
+        q = font_info[k].b16;
+        if (q.s3 > 128) {
+            k = lig_kern_base[hf] + 256 * q.s1 + q.s0 + 32768L - 256 * (128);
+            q = font_info[k].b16;
+        }
+    }
+    if (cur_rh < TOO_BIG_CHAR)
+        test_char = cur_rh;
+    else
+        test_char = cur_r;
+    while (true) {
+
+        if (q.s2 == test_char) {
+
+            if (q.s3 <= 128) {
+
+                if (cur_rh < TOO_BIG_CHAR) {
+                    hyphen_passed = j;
+                    hchar = TOO_BIG_CHAR;
+                    cur_rh = TOO_BIG_CHAR;
+                    goto continue_;
+                } else {
+
+                    if (hchar < TOO_BIG_CHAR) {
+
+                        if (odd(hyf[j])) {
+                            hyphen_passed = j;
+                            hchar = TOO_BIG_CHAR;
+                        }
+                    }
+                    if (q.s1 < 128) {   /*946: */
+                        if (cur_l == TOO_BIG_CHAR)
+                            lft_hit = true;
+                        if (j == n) {
+
+                            if (lig_stack == TEX_NULL)
+                                rt_hit = true;
+                        }
+                        switch (q.s1) {
+                        case 1:
+                        case 5:
+                            {
+                                cur_l = q.s0;
+                                ligature_present = true;
+                            }
+                            break;
+                        case 2:
+                        case 6:
+                            {
+                                cur_r = q.s0;
+                                if (lig_stack > TEX_NULL)
+                                    mem[lig_stack].b16.s0 = cur_r;
+                                else {
+
+                                    lig_stack = new_lig_item(cur_r);
+                                    if (j == n)
+                                        bchar = TOO_BIG_CHAR;
+                                    else {
+
+                                        p = get_avail();
+                                        mem[lig_stack + 1].b32.s1 = p;
+                                        mem[p].b16.s0 = hu[j + 1];
+                                        mem[p].b16.s1 = hf;
+                                    }
+                                }
+                            }
+                            break;
+                        case 3:
+                            {
+                                cur_r = q.s0;
+                                p = lig_stack;
+                                lig_stack = new_lig_item(cur_r);
+                                mem[lig_stack].b32.s1 = p;
+                            }
+                            break;
+                        case 7:
+                        case 11:
+                            {
+                                if (ligature_present) {
+                                    p = new_ligature(hf, cur_l, mem[cur_q].b32.s1);
+                                    if (lft_hit) {
+                                        mem[p].b16.s0 = 2;
+                                        lft_hit = false;
+                                    }
+                                    if (false) {
+
+                                        if (lig_stack == TEX_NULL) {
+                                            mem[p].b16.s0++;
+                                            rt_hit = false;
+                                        }
+                                    }
+                                    mem[cur_q].b32.s1 = p;
+                                    t = p;
+                                    ligature_present = false;
+                                }
+                                cur_q = t;
+                                cur_l = q.s0;
+                                ligature_present = true;
+                            }
+                            break;
+                        default:
+                            {
+                                cur_l = q.s0;
+                                ligature_present = true;
+                                if (lig_stack > TEX_NULL) {
+                                    if (mem[lig_stack + 1].b32.s1 > TEX_NULL) {
+                                        mem[t].b32.s1 = mem[lig_stack + 1].b32.s1;
+                                        t = mem[t].b32.s1;
+                                        j++;
+                                    }
+                                    p = lig_stack;
+                                    lig_stack = mem[p].b32.s1;
+                                    free_node(p, SMALL_NODE_SIZE);
+                                    if (lig_stack == TEX_NULL) {
+                                        if (j < n)
+                                            cur_r = hu[j + 1];
+                                        else
+                                            cur_r = bchar;
+                                        if (odd(hyf[j]))
+                                            cur_rh = hchar;
+                                        else
+                                            cur_rh = TOO_BIG_CHAR;
+                                    } else
+                                        cur_r = mem[lig_stack].b16.s0;
+                                } else if (j == n)
+                                    goto done;
+                                else {
+
+                                    {
+                                        mem[t].b32.s1 = get_avail();
+                                        t = mem[t].b32.s1;
+                                        mem[t].b16.s1 = hf;
+                                        mem[t].b16.s0 = cur_r;
+                                    }
+                                    j++;
+                                    {
+                                        if (j < n)
+                                            cur_r = hu[j + 1];
+                                        else
+                                            cur_r = bchar;
+                                        if (odd(hyf[j]))
+                                            cur_rh = hchar;
+                                        else
+                                            cur_rh = TOO_BIG_CHAR;
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                        if (q.s1 > 4) {
+
+                            if (q.s1 != 7)
+                                goto done;
+                        }
+                        goto continue_;
+                    }
+                    w = font_info[kern_base[hf] + 256 * q.s1 + q.s0].b32.s1;
+                    goto done;
+                }
+            }
+        }
+        if (q.s3 >= 128) {
+
+            if (cur_rh == TOO_BIG_CHAR)
+                goto done;
+            else {
+
+                cur_rh = TOO_BIG_CHAR;
+                goto continue_;
+            }
+        }
+        k = k + q.s3 + 1;
+        q = font_info[k].b16;
+    } /*:944*/
+done:
+    if (ligature_present) {
+        p = new_ligature(hf, cur_l, mem[cur_q].b32.s1);
+        if (lft_hit) {
+            mem[p].b16.s0 = 2;
+            lft_hit = false;
+        }
+        if (rt_hit) {
+
+            if (lig_stack == TEX_NULL) {
+                mem[p].b16.s0++;
+                rt_hit = false;
+            }
+        }
+        mem[cur_q].b32.s1 = p;
+        t = p;
+        ligature_present = false;
+    }
+    if (w != 0) {
+        mem[t].b32.s1 = new_kern(w);
+        t = mem[t].b32.s1;
+        w = 0;
+        mem[t + 2].b32.s0 = 0;
+    }
+    if (lig_stack > TEX_NULL) {
+        cur_q = t;
+        cur_l = mem[lig_stack].b16.s0;
+        ligature_present = true;
+        {
+            if (mem[lig_stack + 1].b32.s1 > TEX_NULL) {
+                mem[t].b32.s1 = mem[lig_stack + 1].b32.s1;
+                t = mem[t].b32.s1;
+                j++;
+            }
+            p = lig_stack;
+            lig_stack = mem[p].b32.s1;
+            free_node(p, SMALL_NODE_SIZE);
+            if (lig_stack == TEX_NULL) {
+                if (j < n)
+                    cur_r = hu[j + 1];
+                else
+                    cur_r = bchar;
+                if (odd(hyf[j]))
+                    cur_rh = hchar;
+                else
+                    cur_rh = TOO_BIG_CHAR;
+            } else
+                cur_r = mem[lig_stack].b16.s0;
+        }
+        goto continue_;
+    }
+    return j;
 }

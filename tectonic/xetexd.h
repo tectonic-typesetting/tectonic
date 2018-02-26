@@ -986,7 +986,6 @@ int32_t pop_node(void);
 int32_t find_protchar_left(int32_t l, bool d);
 int32_t find_protchar_right(int32_t l, int32_t r);
 scaled_t total_pw(int32_t q, int32_t p);
-small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar);
 int32_t max_hyphenatable_length(void);
 trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v);
 trie_pointer trie_node(trie_pointer p);
