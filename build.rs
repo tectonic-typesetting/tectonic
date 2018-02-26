@@ -199,6 +199,7 @@ fn main() {
         .file("tectonic/xetexini.c")
         .file("tectonic/XeTeX_pic.c")
         .file("tectonic/xetex-linebreak.c")
+        .file("tectonic/xetex-shipout.c")
         .define("HAVE_ZLIB", "1")
         .define("HAVE_ZLIB_COMPRESS2", "1")
         .define("ZLIB_CONST", "1")
