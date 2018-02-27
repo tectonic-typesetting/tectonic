@@ -1,23 +1,25 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
-#[macro_use] extern crate lazy_static;
+#[macro_use]
+extern crate lazy_static;
 extern crate tectonic;
 
 use std::collections::HashSet;
 use std::env;
 use std::sync::Mutex;
+use std::path::Path;
 
-use tectonic::errors::{DefinitelySame, ErrorKind, Result};
-use tectonic::engines::NoopIoEventBackend;
 use tectonic::engines::tex::TexResult;
-use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo};
+use tectonic::engines::NoopIoEventBackend;
+use tectonic::errors::{DefinitelySame, ErrorKind, Result};
 use tectonic::io::testing::SingleInputFileIo;
+use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
 use tectonic::status::NoopStatusBackend;
 use tectonic::{TexEngine, XdvipdfmxEngine};
 
 mod util;
-use util::{ExpectedInfo, ensure_plain_format, test_path};
+use util::{ensure_plain_format, test_path, ExpectedInfo};
 
 lazy_static! {
     static ref LOCK: Mutex<u8> = Mutex::new(0u8);
@@ -28,8 +30,8 @@ struct TestCase {
     expected_result: Result<TexResult>,
     check_synctex: bool,
     check_pdf: bool,
+    extra_io: Vec<Box<IoProvider>>,
 }
-
 
 impl TestCase {
     fn new(stem: &str) -> Self {
@@ -38,6 +40,7 @@ impl TestCase {
             expected_result: Ok(TexResult::Spotless),
             check_synctex: false,
             check_pdf: false,
+            extra_io: Vec::new(),
         }
     }
 
@@ -51,6 +54,16 @@ impl TestCase {
         self
     }
 
+    fn with_fs(&mut self, path: &Path) -> &mut Self {
+        self.extra_io.push(Box::new(FilesystemIo::new(
+            path,
+            false,
+            false,
+            HashSet::new(),
+        )));
+        self
+    }
+
     fn expect(&mut self, result: Result<TexResult>) -> &mut Self {
         self.expected_result = result;
         self
@@ -60,7 +73,7 @@ impl TestCase {
         self.expect(Err(ErrorKind::Msg(msg.to_owned()).into()))
     }
 
-    fn go(&self) {
+    fn go(&mut self) {
         let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
 
         let expect_xdv = self.expected_result.is_ok();
@@ -69,7 +82,8 @@ impl TestCase {
 
         // IoProvider for the format file; with magic to generate the format
         // on-the-fly if needed.
-        let mut fmt = SingleInputFileIo::new(&ensure_plain_format().expect("couldn't write format file"));
+        let mut fmt =
+            SingleInputFileIo::new(&ensure_plain_format().expect("couldn't write format file"));
 
         // Set up some useful paths, and the IoProvider for the primary input file.
         p.push("tex-outputs");
@@ -96,12 +110,17 @@ impl TestCase {
 
         // Run the engine(s)!
         let res = {
-            let mut io = IoStack::new(vec![&mut mem, &mut tex, &mut fmt, &mut assets]);
+            let mut io_list: Vec<&mut IoProvider> = vec![&mut mem, &mut tex, &mut fmt, &mut assets];
+            for io in &mut self.extra_io {
+                io_list.push(&mut **io);
+            }
+            let mut io = IoStack::new(io_list);
+
             let mut events = NoopIoEventBackend::new();
             let mut status = NoopStatusBackend::new();
 
-            let tex_res = TexEngine::new()
-                .process(&mut io, &mut events, &mut status, "plain.fmt", &texname);
+            let tex_res =
+                TexEngine::new().process(&mut io, &mut events, &mut status, "plain.fmt", &texname);
 
             if self.check_pdf && tex_res.definitely_same(&Ok(TexResult::Spotless)) {
                 // While the xdv and log output is deterministic without setting
@@ -119,7 +138,10 @@ impl TestCase {
         };
 
         if !res.definitely_same(&self.expected_result) {
-            panic!(format!("expected TeX result {:?}, got {:?}", self.expected_result, res));
+            panic!(format!(
+                "expected TeX result {:?}, got {:?}",
+                self.expected_result, res
+            ));
         }
 
         // Check that outputs match expectations.
@@ -142,26 +164,47 @@ impl TestCase {
     }
 }
 
-
 // Keep these alphabetized.
 
 #[test]
-fn md5_of_hello() { TestCase::new("md5_of_hello").check_pdf(true).go() }
+fn md5_of_hello() {
+    TestCase::new("md5_of_hello").check_pdf(true).go()
+}
 
 #[test]
-fn negative_roman_numeral() { TestCase::new("negative_roman_numeral").go() }
+fn negative_roman_numeral() {
+    TestCase::new("negative_roman_numeral").go()
+}
 
 #[test]
-fn tex_logo() { TestCase::new("tex_logo").go() }
+fn tex_logo() {
+    TestCase::new("tex_logo").go()
+}
 
 #[test]
-fn pdfoutput() { TestCase::new("pdfoutput").go() }
+fn pdfoutput() {
+    TestCase::new("pdfoutput").go()
+}
 
 #[test]
-fn synctex() { TestCase::new("synctex").check_synctex(true).go() }
+fn synctex() {
+    TestCase::new("synctex").check_synctex(true).go()
+}
 
 #[test]
-fn unicode_file_name() { TestCase::new("hallöchen 🐨 welt 🌍.tex").expect(Ok(TexResult::Warnings)).go() }
+fn unicode_file_name() {
+    TestCase::new("hallöchen 🐨 welt 🌍.tex")
+        .expect(Ok(TexResult::Warnings))
+        .go()
+}
+
+#[test]
+fn file_encoding() {
+    TestCase::new("file_encoding.tex")
+        .with_fs(&test_path(&["tex-outputs"]))
+        .expect(Ok(TexResult::Warnings))
+        .go()
+}
 
 #[test]
 fn tectoniccodatokens_errinside() {
@@ -178,7 +221,11 @@ fn tectoniccodatokens_noend() {
 }
 
 #[test]
-fn tectoniccodatokens_ok() { TestCase::new("tectoniccodatokens_ok").go() }
+fn tectoniccodatokens_ok() {
+    TestCase::new("tectoniccodatokens_ok").go()
+}
 
 #[test]
-fn the_letter_a() { TestCase::new("the_letter_a").check_pdf(true).go() }
+fn the_letter_a() {
+    TestCase::new("the_letter_a").check_pdf(true).go()
+}
