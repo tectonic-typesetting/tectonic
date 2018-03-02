@@ -11679,11 +11679,6 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     font_bc[f] = bc;
     font_ec[f] = ec;
     font_glue[f] = TEX_NULL;
-    char_base[f] = char_base[f];
-    width_base[f] = width_base[f];
-    lig_kern_base[f] = lig_kern_base[f];
-    kern_base[f] = kern_base[f];
-    exten_base[f] = exten_base[f];
     param_base[f]--;
     fmem_ptr = fmem_ptr + lf;
     font_ptr = f;
