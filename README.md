@@ -25,7 +25,7 @@ page is just a quick reference for Tectonic developers.
 - [Community discussion forum](https://tectonic.newton.cx/).
 - [Installation](https://tectonic-typesetting.github.io/install.html).
 - [Developer documentation, including build instructions](https://tectonic-typesetting.github.io/develop.html).
-- [API documentation](https://tectonic-typesetting.github.io/api-docs/tectonic/).
+- [API documentation](https://docs.rs/tectonic/).
 - [Issues](https://github.com/tectonic-typesetting/tectonic/issues/).
 
 ## The “reference sources”
