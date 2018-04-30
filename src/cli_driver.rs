@@ -9,7 +9,7 @@ extern crate termcolor;
 
 use aho_corasick::{Automaton, AcAutomaton};
 use clap::{Arg, ArgMatches, App};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::Write;
@@ -21,169 +21,12 @@ use tectonic::config::PersistentConfig;
 use tectonic::digest::DigestData;
 use tectonic::engines::IoEventBackend;
 use tectonic::errors::{ErrorKind, Result, ResultExt};
-use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, GenuineStdoutIo, InputOrigin,
-                   IoProvider, IoStack, MemoryIo, OpenResult};
+use tectonic::io::{InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
 use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
-use tectonic::io::stdstreams::BufferedPrimaryIo;
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::status::{ChatterLevel, StatusBackend};
 use tectonic::status::termcolor::TermcolorStatusBackend;
 use tectonic::{BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
-
-
-/// The CliIoSetup struct encapsulates, well, the input/output setup used by
-/// the Tectonic engines in this CLI session.
-///
-/// The IoStack struct must necessarily erase types (i.e., turn I/O layers
-/// into IoProvider trait objects) while it lives. But, between invocations of
-/// various engines, we want to look at our individual typed I/O providers and
-/// interrogate them (i.e., see what files were created in the memory layer.
-/// The CliIoSetup struct helps us maintain detailed knowledge of types while
-/// creating an IoStack when needed. In principle we could reuse the same
-/// IoStack for each processing step, but the borrow checker doesn't let us
-/// poke at (e.g.) io.mem while the IoStack exists, since the IoStack keeps a
-/// mutable borrow of it.
-
-struct CliIoSetup {
-    primary_input: Box<IoProvider>,
-    bundle: Option<Box<IoProvider>>,
-    mem: MemoryIo,
-    filesystem: FilesystemIo,
-    genuine_stdout: Option<GenuineStdoutIo>,
-    format_primary: Option<BufferedPrimaryIo>,
-}
-
-impl CliIoSetup {
-    fn as_stack<'a> (&'a mut self) -> IoStack<'a> {
-        let mut providers: Vec<&mut IoProvider> = Vec::new();
-
-        if let Some(ref mut p) = self.genuine_stdout {
-            providers.push(p);
-        }
-
-        providers.push(&mut *self.primary_input);
-        providers.push(&mut self.mem);
-        providers.push(&mut self.filesystem);
-
-        if let Some(ref mut b) = self.bundle {
-            providers.push(&mut **b);
-        }
-
-        IoStack::new(providers)
-    }
-
-    fn as_stack_for_format<'a> (&'a mut self, kickstart: &str) -> IoStack<'a> {
-        let mut providers: Vec<&mut IoProvider> = Vec::new();
-
-        if let Some(ref mut p) = self.genuine_stdout {
-            providers.push(p);
-        }
-
-
-        self.format_primary = Some(BufferedPrimaryIo::from_text(kickstart));
-        providers.push(self.format_primary.as_mut().unwrap());
-        providers.push(&mut self.mem);
-
-        if let Some(ref mut b) = self.bundle {
-            providers.push(&mut **b);
-        }
-
-        IoStack::new(providers)
-    }
-}
-
-/// The CliIoBuilder provides a convenient builder interface for specifying
-/// the I/O setup.
-
-struct CliIoBuilder {
-    primary_input_path: Option<PathBuf>,
-    filesystem_root: PathBuf,
-    use_stdin: bool,
-    bundle: Option<Box<IoProvider>>,
-    use_genuine_stdout: bool,
-    hidden_input_paths: HashSet<PathBuf>,
-}
-
-impl Default for CliIoBuilder {
-    fn default() -> Self {
-        CliIoBuilder {
-            primary_input_path: None,
-            filesystem_root: PathBuf::new(),
-            use_stdin: false,
-            bundle: None,
-            use_genuine_stdout: false,
-            hidden_input_paths: HashSet::new(),
-        }
-    }
-}
-
-impl CliIoBuilder {
-    fn primary_input_path<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
-        if self.use_stdin {
-            panic!("cannot use both stdin and primary_input_path");
-        }
-
-        self.primary_input_path = Some(path.as_ref().to_owned());
-        self
-    }
-
-    fn primary_input_stdin(&mut self) -> &mut Self {
-        if self.primary_input_path.is_some() {
-            panic!("cannot use both primary_input_path and stdin");
-        }
-
-        self.use_stdin = true;
-        self
-    }
-
-    fn filesystem_root<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
-        self.filesystem_root = path.as_ref().to_owned();
-        self
-    }
-
-    fn bundle<T: 'static + IoProvider>(&mut self, bundle: T) -> &mut Self {
-        self.bundle = Some(Box::new(bundle));
-        self
-    }
-
-    fn boxed_bundle(&mut self, bundle: Box<IoProvider>) -> &mut Self {
-        self.bundle = Some(bundle);
-        self
-    }
-
-    fn use_genuine_stdout(&mut self, setting: bool) -> &mut Self {
-        self.use_genuine_stdout = setting;
-        self
-    }
-
-    fn hide_path<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
-        self.hidden_input_paths.insert(path.as_ref().to_owned());
-        self
-    }
-
-    fn create(self) -> Result<CliIoSetup> {
-        let pio: Box<IoProvider> = if self.use_stdin {
-            Box::new(ctry!(BufferedPrimaryIo::from_stdin(); "error reading standard input"))
-        } else if let Some(pip) = self.primary_input_path {
-            Box::new(FilesystemPrimaryInputIo::new(&pip))
-        } else {
-            panic!("no primary input mechanism specified");
-        };
-
-        Ok(CliIoSetup {
-            primary_input: pio,
-            mem: MemoryIo::new(true),
-            filesystem: FilesystemIo::new(&self.filesystem_root, false, true, self.hidden_input_paths),
-            bundle: self.bundle,
-            genuine_stdout: if self.use_genuine_stdout {
-                Some(GenuineStdoutIo::new())
-            } else {
-                None
-            },
-            format_primary: None,
-        })
-    }
-}
 
 
 /// Different patterns with which files may have been accessed by the
@@ -350,7 +193,7 @@ enum PassSetting {
 }
 
 struct ProcessingSession {
-    io: CliIoSetup,
+    io: IoSetup,
     events: CliIoEvents,
 
     /// If our primary input is an actual file on disk, this is its path.
@@ -428,7 +271,7 @@ impl ProcessingSession {
 
         // Input and path setup
 
-        let mut io_builder = CliIoBuilder::default();
+        let mut io_builder = IoSetupBuilder::default();
         let primary_input_path;
         let mut output_path;
         let tex_input_stem;
@@ -492,7 +335,7 @@ impl ProcessingSession {
             let tb = ITarBundle::<HttpITarIoFactory>::new(&u);
             io_builder.bundle(tb);
         } else {
-            io_builder.boxed_bundle(config.default_io_provider(status)?);
+            io_builder.bundle(config.default_io_provider(status)?);
         }
 
         let io = io_builder.create()?;
@@ -834,7 +677,7 @@ impl ProcessingSession {
         let stem = r?;
 
         let result = {
-            let mut stack = self.io.as_stack_for_format(&format!("\\input tectonic-format-{}.tex", stem));
+            let mut stack = self.io.as_stack_for_format(&format!("tectonic-format-{}.tex", stem));
             TexEngine::new()
                     .halt_on_error_mode(true)
                     .initex_mode(true)

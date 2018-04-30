@@ -23,6 +23,7 @@ pub mod filesystem;
 pub mod itarbundle;
 pub mod local_cache;
 pub mod memory;
+pub mod setup;
 pub mod stack;
 pub mod stdstreams;
 pub mod zipbundle;
@@ -338,6 +339,32 @@ pub trait IoProvider {
     }
 }
 
+impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
+    fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
+        (**self).output_open_name(name)
+    }
+
+    fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
+        (**self).output_open_stdout()
+    }
+
+    fn input_open_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+        (**self).input_open_name(name, status)
+    }
+
+    fn input_open_primary(&mut self, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+        (**self).input_open_primary(status)
+    }
+
+    fn input_open_format(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+        (**self).input_open_format(name, status)
+    }
+
+    fn write_format(&mut self, name: &str, data: &[u8], status: &mut StatusBackend) -> Result<()> {
+        (**self).write_format(name, data, status)
+    }
+}
+
 
 // Some generically helpful InputFeatures impls
 
@@ -369,6 +396,7 @@ pub use self::filesystem::{FilesystemIo, FilesystemPrimaryInputIo};
 pub use self::stdstreams::GenuineStdoutIo;
 pub use self::memory::MemoryIo;
 pub use self::stack::IoStack;
+pub use self::setup::{IoSetup, IoSetupBuilder};
 
 
 // Helpful.
