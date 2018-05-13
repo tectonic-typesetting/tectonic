@@ -448,7 +448,7 @@ spc_handler_ps_tricks_transform (struct spc_env *spe, struct spc_arg *args)
   static const char *post = "concat matrix currentmatrix ==";
 
   cmd = xcalloc(l + 41, 1);
-  strncpy(cmd, "matrix setmatrix ", 17);
+  strncpy(cmd, "matrix setmatrix ", 18);
   strncpy(cmd + 17, args->curptr, l);
   concat = strstr(cmd, "concat");
   if (concat) {
