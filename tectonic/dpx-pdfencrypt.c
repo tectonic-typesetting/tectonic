@@ -162,7 +162,7 @@ compute_owner_password (struct pdf_sec *p,
   unsigned char padded[32];
   MD5_CONTEXT   md5;
   ARC4_CONTEXT  arc4;
-  unsigned char hash[16];
+  unsigned char hash[32];
 
   passwd_padding((strlen(opasswd) > 0 ? opasswd : upasswd), padded);
 

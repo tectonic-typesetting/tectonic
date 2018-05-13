@@ -542,7 +542,7 @@ pdf_doc_close_docinfo (pdf_doc *p)
   }
 
   if (!pdf_lookup_dict(docinfo, "CreationDate")) {
-    char now[32];
+    char now[80];
 
     asn_date(now);
     pdf_add_dict(docinfo,
@@ -2529,15 +2529,16 @@ pdf_open_document (const char *filename,
 
   /* Create a default name for thumbnail image files */
   if (manual_thumb_enabled) {
-    if (strlen(filename) > 4 &&
-        !strncmp(".pdf", filename + strlen(filename) - 4, 4)) {
-      thumb_basename = NEW(strlen(filename)-4+1, char);
-      strncpy(thumb_basename, filename, strlen(filename)-4);
-      thumb_basename[strlen(filename)-4] = 0;
-    } else {
-      thumb_basename = NEW(strlen(filename)+1, char);
-      strcpy(thumb_basename, filename);
-    }
+      size_t fn_len = strlen(filename);
+
+      if (fn_len > 4 && !strncmp(".pdf", filename + fn_len - 4, 4)) {
+          thumb_basename = NEW(fn_len - 4 + 1, char);
+          strncpy(thumb_basename, filename, fn_len - 4);
+          thumb_basename[fn_len - 4] = 0;
+      } else {
+          thumb_basename = NEW(fn_len + 1, char);
+          strcpy(thumb_basename, filename);
+      }
   }
 
   p->pending_forms = NULL;
