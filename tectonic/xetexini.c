@@ -366,6 +366,7 @@ scaled_t delta;
 int synctex_enabled;
 bool used_tectonic_coda_tokens;
 bool semantic_pagination_enabled;
+bool gave_char_warning_help;
 
 uint16_t _xeq_level_array[1114731];
 int32_t _trie_op_hash_array[trie_op_size - neg_trie_op_size + 1];
@@ -4174,6 +4175,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     param_ptr = 0;
     max_param_stack = 0;
     used_tectonic_coda_tokens = false;
+    gave_char_warning_help = false;
 
     memset(buffer, 0, buf_size * sizeof(buffer[0]));
     first = 0;
