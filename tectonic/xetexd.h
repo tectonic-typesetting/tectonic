@@ -676,6 +676,7 @@ extern scaled_t delta;
 extern int synctex_enabled;
 extern bool used_tectonic_coda_tokens;
 extern bool semantic_pagination_enabled;
+extern bool gave_char_warning_help;
 
 /*:1683*/
 

@@ -10791,6 +10791,35 @@ void char_warning(internal_font_number f, int32_t c)
 
         INTPAR(tracing_online) = old_setting;
     }
+
+    {
+        char *fn = gettexstring(font_name[f]);
+        char *chr = NULL;
+        selector_t prev_selector = selector;
+        int s;
+
+        selector = SELECTOR_NEW_STRING;
+        if (c < 0x10000)
+            print(c);
+        else
+            print_char(c);
+        selector = prev_selector;
+        s = make_string();
+        chr = gettexstring(s);
+        str_ptr--; /* this is the "flush_string" macro which discards the most recent string */
+        pool_ptr = str_start[str_ptr - 0x10000];
+
+        ttstub_issue_warning("could not represent character \"%s\" in font \"%s\"", chr, fn);
+
+        free(fn);
+        free(chr);
+
+        if (!gave_char_warning_help) {
+            ttstub_issue_warning("  you may need to load the `fontspec` package and use (e.g.) \\setmainfont to");
+            ttstub_issue_warning("  choose a different font that covers the unrepresentable character(s)");
+            gave_char_warning_help = true;
+        }
+    }
 }
 
 

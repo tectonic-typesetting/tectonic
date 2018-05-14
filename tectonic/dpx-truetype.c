@@ -123,7 +123,11 @@ pdf_font_open_truetype (pdf_font *font)
         length = tt_get_ps_fontname(sfont, fontname, 255);
         if (length < 1) {
             length = MIN(strlen(ident), 255);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
             strncpy(fontname, ident, length);
+#pragma GCC diagnostic pop
         }
         fontname[length] = '\0';
         for (n = 0; n < length; n++) {
