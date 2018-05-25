@@ -32,6 +32,7 @@
 //! frontend](https://github.com/tectonic-typesetting/tectonic/blob/master/src/cli_driver.rs)
 //! for a demonstration of how to run the engine.
 
+extern crate aho_corasick;
 extern crate app_dirs;
 #[macro_use] extern crate error_chain;
 extern crate flate2;
@@ -53,6 +54,7 @@ extern crate zip;
 #[macro_use] pub mod errors;
 pub mod config;
 pub mod digest;
+pub mod driver;
 pub mod engines;
 pub mod io;
 

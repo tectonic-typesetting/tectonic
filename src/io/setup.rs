@@ -163,6 +163,7 @@ impl IoSetupBuilder {
         self
     }
 
+    /// Marks a path as hidden, meaning that the filesystem layer will pretend it doesn't exist.
     pub fn hide_path<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
         self.hidden_input_paths.insert(path.as_ref().to_owned());
         self
