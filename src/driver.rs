@@ -777,15 +777,7 @@ impl ProcessingSession {
                 return Err(ErrorKind::Msg("unhandled TeX engine error".to_owned()).into());
             },
             Err(e) => {
-                if let Some(output) = self.io.mem.files.borrow().get(self.io.mem.stdout_key()) {
-                    tt_error!(status, "something bad happened inside TeX; its output follows:\n");
-                    tt_error_styled!(status, "===============================================================================");
-                    status.dump_to_stderr(&output);
-                    tt_error_styled!(status, "===============================================================================");
-                    tt_error_styled!(status, "");
-                }
-
-                return Err(e);
+                return Err(e.chain_err(|| ErrorKind::EngineError("TeX")));
             }
         }
 
@@ -853,15 +845,7 @@ impl ProcessingSession {
                 }
             },
             Err(e) => {
-                if let Some(output) = self.io.mem.files.borrow().get(self.io.mem.stdout_key()) {
-                    tt_error!(status, "something bad happened inside TeX; its output follows:\n");
-                    tt_error_styled!(status, "===============================================================================");
-                    status.dump_to_stderr(&output);
-                    tt_error_styled!(status, "===============================================================================");
-                    tt_error_styled!(status, "");
-                }
-
-                return Err(e);
+                return Err(e.chain_err(|| ErrorKind::EngineError("TeX")));
             }
         }
 
@@ -888,15 +872,7 @@ impl ProcessingSession {
                                           use --print and/or --keep-logs for details.");
             },
             Err(e) => {
-                if let Some(output) = self.io.mem.files.borrow().get(self.io.mem.stdout_key()) {
-                    tt_error!(status, "something bad happened inside BibTeX; its output follows:\n");
-                    tt_error_styled!(status, "===============================================================================");
-                    status.dump_to_stderr(&output);
-                    tt_error_styled!(status, "===============================================================================");
-                    tt_error_styled!(status, "");
-                }
-
-                return Err(e);
+                return Err(e.chain_err(|| ErrorKind::EngineError("BibTeX")));
             }
         }
 

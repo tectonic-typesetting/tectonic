@@ -14,7 +14,7 @@ use std::process;
 
 use tectonic::config::PersistentConfig;
 use tectonic::driver::{OutputFormat, PassSetting, ProcessingSessionBuilder};
-use tectonic::errors::{Result, ResultExt};
+use tectonic::errors::{ErrorKind, Result, ResultExt};
 use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::status::{ChatterLevel, StatusBackend};
@@ -112,7 +112,20 @@ fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatu
     }
 
     let mut sess = sess_builder.create()?;
-    sess.run(status)
+    let result = sess.run(status);
+
+    if let Err(ref e) = result {
+        if let ErrorKind::EngineError(ref engine) = e.kind() {
+                if let Some(output) = sess.io.mem.files.borrow().get(sess.io.mem.stdout_key()) {
+                    tt_error!(status, "something bad happened inside {}; its output follows:\n", engine);
+                    tt_error_styled!(status, "===============================================================================");
+                    status.dump_to_stderr(&output);
+                    tt_error_styled!(status, "===============================================================================");
+                    tt_error_styled!(status, "");
+            }
+        }
+    }
+    result
 }
 
 

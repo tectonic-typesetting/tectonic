@@ -50,6 +50,11 @@ error_chain! {
             description("access to this file path is forbidden")
             display("access to the path {} is forbidden", path)
         }
+
+        EngineError(engine: &'static str) {
+            description("some engine had an unrecoverable error")
+            display("the {} engine had an unrecoverable error", engine)
+        }
     }
 }
 
