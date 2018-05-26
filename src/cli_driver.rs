@@ -115,7 +115,7 @@ fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatu
     let result = sess.run(status);
 
     if let Err(ref e) = result {
-        if let ErrorKind::EngineError(ref engine) = e.kind() {
+        if let &ErrorKind::EngineError(ref engine) = e.kind() {
                 if let Some(output) = sess.io.mem.files.borrow().get(sess.io.mem.stdout_key()) {
                     tt_error!(status, "something bad happened inside {}; its output follows:\n", engine);
                     tt_error_styled!(status, "===============================================================================");

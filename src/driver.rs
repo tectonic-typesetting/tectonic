@@ -1,3 +1,7 @@
+// src/driver.rs -- utilities for running and rerunning the tex engine
+// Copyright 2018 the Tectonic Project
+// Licensed under the MIT License.
+
 #![deny(missing_docs)]
 
 //! This module contains the high-level interface that ties together the various engines. The main
@@ -665,7 +669,6 @@ impl ProcessingSession {
             Some(String::new())
         } else {
             self.tex_pass(None, status)?;
-            //
 
             let use_bibtex = {
                 if let Some(auxdata) = self.io.mem.files.borrow().get(&self.tex_aux_path) {
