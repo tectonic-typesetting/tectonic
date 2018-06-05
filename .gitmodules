@@ -1,3 +1,3 @@
 [submodule "reference_sources"]
 	path = reference_sources
-	url = ../tectonic-staging.git
+	url = https://github.com/tectonic-typesetting/tectonic-staging
