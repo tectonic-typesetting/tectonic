@@ -59,6 +59,14 @@
 #define PDFDOC_ARTICLE_ALLOC_SIZE 16
 #define PDFDOC_BEAD_ALLOC_SIZE    16
 
+#ifdef _WIN32
+#define tectonic_gmtime_r(a, b) gmtime_s(b, a)
+#define tectonic_localtime_r(a, b) localtime_s(b, a)
+#else
+#define tectonic_gmtime_r(a, b) gmtime_r(a, b)
+#define tectonic_localtime_r(a, b) localtime_r(a, b)
+#endif
+
 static int verbose = 0;
 
 static char  manual_thumb_enabled  = 0;
@@ -436,8 +444,8 @@ compute_timezone_offset(void)
   now = get_unique_time_if_given();
   if (now == INVALID_EPOCH_VALUE) {
     now = time(NULL);
-    localtime_r(&now, &local);
-    gmtime_r(&now, &tm);
+    tectonic_localtime_r(&now, &local);
+    tectonic_gmtime_r(&now, &tm);
     return (mktime(&local) - mktime(&tm));
   } else {
     return(0);

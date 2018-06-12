@@ -1,6 +1,9 @@
 #include "bibtex.h"
 #include "internals.h"
 
+/* hack: the name eof conflicts with other function declarations under mingw. */
+#define eof tectonic_eof
+
 /* (Re)Allocate N items of type T using xmalloc/xrealloc.  */
 #define XTALLOC(n, t) (xmalloc ((n) * sizeof (t)))
 

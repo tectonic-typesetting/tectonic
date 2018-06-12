@@ -79,6 +79,10 @@ extern "C" {
 
 #ifdef _WIN32
 /* MS compiler has predefined _WIN32, so assume Windows target  */
+#ifdef INPUT
+#undef INPUT
+#endif
+
 #include <windows.h>
 #undef WINAPI
 #define WINAPI

@@ -3,7 +3,7 @@
 // Licensed under the MIT License.
 
 use fs2::FileExt;
-use mkstemp;
+use tempfile;
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::fs::{self, File};
@@ -264,34 +264,30 @@ impl<B: Bundle> LocalCache<B> {
         let mut digest_builder = digest::create();
         let mut length = 0;
 
-        let temp_path = {
-            let mut templ = self.data_path.clone();
-            templ.push("download_XXXXXX");
+		let mut temp_dest = match tempfile::Builder::new()
+			.prefix("download_")
+			.rand_bytes(6)
+			.tempfile_in(&self.data_path) {
+			Ok(f) => f,
+            Err(e) => return OpenResult::Err(e.into()),
+		};
 
-            let mut temp_dest = match mkstemp::TempFile::new(&templ.to_string_lossy(), false) {
-                Ok(f) => f,
-                Err(e) => return OpenResult::Err(e.into()),
-            };
+		let mut buf = [0u8; 8192];
 
-            let mut buf = [0u8; 8192];
+		while let Ok(nbytes) = stream.read(&mut buf) {
+			if nbytes == 0 {
+				break;
+			}
 
-            while let Ok(nbytes) = stream.read(&mut buf) {
-                if nbytes == 0 {
-                    break;
-                }
+			length += nbytes;
+			let chunk = &buf[..nbytes];
 
-                length += nbytes;
-                let chunk = &buf[..nbytes];
-
-                digest_builder.input(chunk);
-                if let Err(e) = temp_dest.write_all(chunk) {
-                    return OpenResult::Err(e.into());
-                }
-            }
-
-            temp_dest.path().to_owned()
-        };
-
+			digest_builder.input(chunk);
+			if let Err(e) = temp_dest.write_all(chunk) {
+				return OpenResult::Err(e.into());
+			}
+		}
+		
         let digest = DigestData::from(digest_builder);
 
         // Now we can move it to its final destination ..
@@ -301,9 +297,9 @@ impl<B: Bundle> LocalCache<B> {
             Err(e) => return OpenResult::Err(e.into()),
         };
 
-        if let Err(e) = fs::rename(&temp_path, &final_path) {
-            return OpenResult::Err(e.into());
-        }
+		if let Err(e) = temp_dest.persist(&final_path) {
+			return OpenResult::Err(e.error.into());
+		};
 
         // Make the file readonly once it's at its final path.
         // XXX: It would be better to set these using the already-open file handle owned by the
