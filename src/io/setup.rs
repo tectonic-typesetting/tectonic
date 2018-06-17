@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
-use errors::{Result, ResultExt};
+use errors::Result;
 use io::{FilesystemIo, FilesystemPrimaryInputIo, GenuineStdoutIo,
                    IoProvider, IoStack, MemoryIo};
 use io::stdstreams::BufferedPrimaryIo;

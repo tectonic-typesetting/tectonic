@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use digest::{self, Digest, DigestData};
-use errors::{ErrorKind, Result, ResultExt};
+use errors::{ErrorKind, Result};
 use super::{try_open_file, InputHandle, InputOrigin, IoProvider, OpenResult};
 use status::StatusBackend;
 

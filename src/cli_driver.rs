@@ -14,7 +14,7 @@ use std::process;
 
 use tectonic::config::PersistentConfig;
 use tectonic::driver::{OutputFormat, PassSetting, ProcessingSessionBuilder};
-use tectonic::errors::{ErrorKind, Result, ResultExt};
+use tectonic::errors::{ErrorKind, Result};
 use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::status::{ChatterLevel, StatusBackend};
