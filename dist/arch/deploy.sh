@@ -1,4 +1,6 @@
 #!/bin/env bash
+
+set -x
 cd "$TRAVIS_BUILD_DIR/dist/arch"
 
 # Obtain mksrcinfo
