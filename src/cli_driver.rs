@@ -3,7 +3,7 @@
 // Licensed under the MIT License.
 
 extern crate aho_corasick;
-extern crate clap;
+#[macro_use] extern crate clap;
 #[macro_use] extern crate tectonic;
 extern crate termcolor;
 
@@ -131,7 +131,7 @@ fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatu
 
 fn main() {
     let matches = App::new("Tectonic")
-        .version("0.1.8-dev")
+        .version(crate_version!())
         .about("Process a (La)TeX document.")
         .arg(Arg::with_name("format")
              .long("format")
