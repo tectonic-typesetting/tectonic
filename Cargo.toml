@@ -37,8 +37,7 @@ path = "src/cli_driver.rs"
 doc = false
 
 [build-dependencies]
-# TODO: bump cc to 1.0.5 when released
-cc = { git = "https://github.com/alexcrichton/cc-rs", rev="a00c415929156aeba5485d7dee27f8fe1d1a69bf" }
+cc = "^1.0"
 pkg-config = "^0.3"
 regex = "^0.2"
 sha2 = "^0.7"
