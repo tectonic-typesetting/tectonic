@@ -644,7 +644,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic"
-version = "0.1.8-dev"
+version = "0.1.8"
 dependencies = [
  "aho-corasick 0.6.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "app_dirs 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -664,7 +664,7 @@ dependencies = [
  "serde 1.0.66 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.66 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha2 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "tectonic_xdv 0.1.8-dev",
+ "tectonic_xdv 0.1.8",
  "tempdir 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "termcolor 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -673,7 +673,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_xdv"
-version = "0.1.8-dev"
+version = "0.1.8"
 dependencies = [
  "byteorder 1.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.31.2 (registry+https://github.com/rust-lang/crates.io-index)",
