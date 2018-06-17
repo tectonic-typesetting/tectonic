@@ -7,6 +7,8 @@
 # has a longer build time limit, which is important in this laughably
 # inefficient approach that we're taking.
 
+version: 2
+
 jobs:
   build:
     machine:
