@@ -1,5 +1,4 @@
-Tectonic
-========
+# Tectonic
 
 Tectonic is a modernized, complete, self-contained
 [TeX](https://en.wikipedia.org/wiki/TeX)/[LaTeX](https://www.latex-project.org/)
@@ -27,6 +26,7 @@ page is just a quick reference for Tectonic developers.
 - [Developer documentation, including build instructions](https://tectonic-typesetting.github.io/develop.html).
 - [API documentation](https://docs.rs/tectonic/).
 - [Issues](https://github.com/tectonic-typesetting/tectonic/issues/).
+- [Changelog](./CHANGELOG.md).
 
 ## The “reference sources”
 
