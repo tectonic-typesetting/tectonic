@@ -31,11 +31,6 @@ members = ["xdv"]
 name = "tectonic"
 crate-type = ["rlib"]
 
-[[bin]]
-name = "tectonic"
-path = "src/cli_driver.rs"
-doc = false
-
 [build-dependencies]
 cc = "^1.0"
 pkg-config = "^0.3"
