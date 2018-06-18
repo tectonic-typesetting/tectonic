@@ -74,7 +74,7 @@ impl PersistentConfig {
         Ok(config)
     }
 
-    fn make_cached_url_provider(&self, url: &str, status: &mut StatusBackend) -> Result<LocalCache<ITarBundle<HttpITarIoFactory>>> {
+    pub fn make_cached_url_provider(&self, url: &str, status: &mut StatusBackend) -> Result<LocalCache<ITarBundle<HttpITarIoFactory>>> {
         let itb = ITarBundle::<HttpITarIoFactory>::new(url);
 
         let mut url2digest_path = app_dir(AppDataType::UserCache, &::APP_INFO, "urls")?;

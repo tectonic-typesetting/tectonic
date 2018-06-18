@@ -15,7 +15,6 @@ use std::process;
 use tectonic::config::PersistentConfig;
 use tectonic::driver::{OutputFormat, PassSetting, ProcessingSessionBuilder};
 use tectonic::errors::{ErrorKind, Result};
-use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::status::{ChatterLevel, StatusBackend};
 use tectonic::status::termcolor::TermcolorStatusBackend;
@@ -106,8 +105,7 @@ fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatu
         let zb = ctry!(ZipBundle::<File>::open(Path::new(&p)); "error opening bundle");
         sess_builder.bundle(Box::new(zb));
     } else if let Some(u) = args.value_of("web_bundle") {
-        let tb = ITarBundle::<HttpITarIoFactory>::new(&u);
-        sess_builder.bundle(Box::new(tb));
+        sess_builder.bundle(Box::new(config.make_cached_url_provider(&u, status)?));
     } else {
         sess_builder.bundle(config.default_bundle(status)?);
     }
