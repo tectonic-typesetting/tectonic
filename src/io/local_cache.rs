@@ -29,15 +29,16 @@ pub struct LocalCache<B: Bundle> {
     cached_digest: DigestData,
     checked_digest: bool,
     manifest_path: PathBuf,
-    formats_base: PathBuf,
     data_path: PathBuf,
     contents: HashMap<OsString,LocalCacheItem>,
 }
 
 
 impl<B: Bundle> LocalCache<B> {
-    pub fn new(mut backend: B, digest: &Path, manifest_base: &Path, formats_base: &Path,
-               data: &Path, status: &mut StatusBackend) -> Result<LocalCache<B>> {
+    pub fn new(
+        mut backend: B, digest: &Path, manifest_base: &Path,
+        data: &Path, status: &mut StatusBackend
+    ) -> Result<LocalCache<B>> {
         // If the `digest` file exists, we assume that it is valid; this is
         // *essential* so that we can use a URL as our default IoProvider
         // without requiring a network connection to run. If it does not
@@ -140,7 +141,6 @@ impl<B: Bundle> LocalCache<B> {
             cached_digest: cached_digest,
             checked_digest: checked_digest,
             manifest_path: manifest_path,
-            formats_base: formats_base.to_owned(),
             data_path: data.to_owned(),
             contents: contents
         })
@@ -320,30 +320,6 @@ impl<B: Bundle> LocalCache<B> {
 
         OpenResult::Ok(final_path)
     }
-
-
-    /// Get an on-disk path name for a given format file. Unlike
-    /// path_for_name(), we do *not* do any fetching or caching; this simply
-    /// produces a path that may or may not exist. We rely on the cached
-    /// digest and do *not* call check_digest() because otherwise we'd need to
-    /// open up the backend whenever we wanted to open a format file, breaking
-    /// network-free operation.
-    fn path_for_format(&mut self, name: &OsStr) -> Result<PathBuf> {
-        // Remove all extensions from the format name. PathBuf.file_stem() doesn't
-        // do what we want since it only strips one extension, so here we go:
-
-        let stem = match name.to_str().and_then(|s| s.splitn(2, '.').next()) {
-            Some(s) => s,
-            None => {
-                return Err(ErrorKind::Msg(format!("incomprehensible format file name \"{}\"",
-                                                  name.to_string_lossy())).into());
-            }
-        };
-
-        let mut p = self.formats_base.clone();
-        p.push(format!("{}-{}-{}.fmt", self.cached_digest.to_string(), stem, ::FORMAT_SERIAL));
-        Ok(p)
-    }
 }
 
 
@@ -355,44 +331,12 @@ impl<B: Bundle> IoProvider for LocalCache<B> {
             OpenResult::Err(e) => return OpenResult::Err(e),
         };
 
-        let f = match File::open (&path) {
+        let f = match File::open(&path) {
             Ok(f) => f,
             Err(e) => return OpenResult::Err(e.into())
         };
 
         OpenResult::Ok(InputHandle::new(name, BufReader::new(f), InputOrigin::Other))
-    }
-
-
-    fn input_open_format(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
-        let path = match self.path_for_format(name) {
-            Ok(p) => p,
-            Err(e) => return OpenResult::Err(e.into()),
-        };
-
-        let f = match super::try_open_file(&path) {
-            OpenResult::Ok(f) => f,
-            OpenResult::NotAvailable => return OpenResult::NotAvailable,
-            OpenResult::Err(e) => return OpenResult::Err(e),
-        };
-
-        OpenResult::Ok(InputHandle::new(name, BufReader::new(f), InputOrigin::Other))
-    }
-
-
-    fn write_format(&mut self, name: &str, data: &[u8], _status: &mut StatusBackend) -> Result<()> {
-        let final_path = self.path_for_format(OsStr::new(name))?;
-
-        let mut templ = self.formats_base.clone();
-        templ.push("format_XXXXXX");
-
-        let temp_path = {
-            let mut temp_dest = mkstemp::TempFile::new(&templ.to_string_lossy(), false)?;
-            temp_dest.write_all(data)?;
-            temp_dest.path().to_owned()
-        };
-
-        fs::rename(&temp_path, &final_path).map_err(|e| e.into())
     }
 }
 

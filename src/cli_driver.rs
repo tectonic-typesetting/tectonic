@@ -27,6 +27,7 @@ fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatu
     sess_builder.format_name(format_path)
         .keep_logs(args.is_present("keep_logs"))
         .keep_intermediates(args.is_present("keep_intermediates"))
+        .format_cache_path(config.format_cache_path()?)
         .synctex(args.is_present("synctex"));
 
     let output_format = match args.value_of("outfmt").unwrap() {
@@ -108,10 +109,10 @@ fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatu
         let tb = ITarBundle::<HttpITarIoFactory>::new(&u);
         sess_builder.bundle(Box::new(tb));
     } else {
-        sess_builder.bundle(config.default_io_provider(status)?);
+        sess_builder.bundle(config.default_bundle(status)?);
     }
 
-    let mut sess = sess_builder.create()?;
+    let mut sess = sess_builder.create(status)?;
     let result = sess.run(status);
 
     if let Err(ref e) = result {

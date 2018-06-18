@@ -2,7 +2,11 @@
 
 The following changes will appear in the next release:
 
-(None yet.)
+User-facing improvements:
+
+- The `--bundle` and `--web-bundle` options finally work again. The switch to
+  on-the-fly generation of format files broke them due to an internal
+  implementation problem; this has now been fixed.
 
 
 # 0.1.8 (2018 Jun 17)

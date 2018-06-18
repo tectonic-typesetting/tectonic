@@ -13,12 +13,13 @@
 use std::io::{Read, Write};
 use std::io::ErrorKind as IoErrorKind;
 use std::fs::File;
+use std::path::PathBuf;
 
 use app_dirs::{app_dir, app_root, get_app_root, sanitized, AppDataType};
 use toml;
 
 use errors::{ErrorKind, Result};
-use io::IoProvider;
+use io::Bundle;
 use io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use io::local_cache::LocalCache;
 use status::StatusBackend;
@@ -83,17 +84,20 @@ impl PersistentConfig {
             itb,
             &url2digest_path,
             &app_dir(AppDataType::UserCache, &::APP_INFO, "manifests")?,
-            &app_dir(AppDataType::UserCache, &::APP_INFO, "formats")?,
             &app_dir(AppDataType::UserCache, &::APP_INFO, "files")?,
             status
         )
     }
 
-    pub fn default_io_provider(&self, status: &mut StatusBackend) -> Result<Box<IoProvider>> {
+    pub fn default_bundle(&self, status: &mut StatusBackend) -> Result<Box<Bundle>> {
         if self.default_bundles.len() != 1 {
             return Err(ErrorKind::Msg("exactly one default_bundle item must be specified (for now)".to_owned()).into());
         }
 
         Ok(Box::new(self.make_cached_url_provider(&self.default_bundles[0].url, status)?))
+    }
+
+    pub fn format_cache_path(&self) -> Result<PathBuf> {
+        Ok(app_dir(AppDataType::UserCache, &::APP_INFO, "formats")?)
     }
 }

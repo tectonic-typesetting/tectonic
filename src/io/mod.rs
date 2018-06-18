@@ -20,6 +20,7 @@ use errors::{Error, ErrorKind, Result};
 use status::StatusBackend;
 
 pub mod filesystem;
+pub mod format_cache;
 //pub mod hyper_seekable; -- Not currently used, but nice code to keep around.
 pub mod itarbundle;
 pub mod local_cache;
@@ -301,7 +302,26 @@ impl<T> OpenResult<T> {
 }
 
 
-pub trait IoProvider {
+/// A hack to allow casting of Bundles to IoProviders.
+///
+/// The code that sets up the I/O stack is handed a reference to a Bundle
+/// trait object. For the actual I/O, it needs to convert this to an
+/// IoProvider trait object. [According to
+/// StackExchange](https://stackoverflow.com/a/28664881/3760486), the
+/// following pattern is the least-bad way to achieve the necessary upcasting.
+pub trait AsIoProviderMut {
+    /// Represent this value as an IoProvider trait object.
+    fn as_ioprovider_mut(&mut self) -> &mut IoProvider;
+}
+
+impl<T: IoProvider> AsIoProviderMut for T {
+    fn as_ioprovider_mut(&mut self) -> &mut IoProvider {
+        self
+    }
+}
+
+/// A trait for types that can read or write files needed by the TeX engine.
+pub trait IoProvider: AsIoProviderMut {
     fn output_open_name(&mut self, _name: &OsStr) -> OpenResult<OutputHandle> {
         OpenResult::NotAvailable
     }

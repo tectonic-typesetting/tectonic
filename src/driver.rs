@@ -22,7 +22,7 @@ use std::path::{Path, PathBuf};
 use digest::DigestData;
 use engines::IoEventBackend;
 use errors::{ErrorKind, Result, ResultExt};
-use io::{InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
+use io::{Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
 use status::StatusBackend;
 use status::termcolor::TermcolorStatusBackend;
 use {BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
@@ -210,13 +210,14 @@ pub struct ProcessingSessionBuilder {
     tex_input_name: Option<String>,
     output_dir: Option<PathBuf>,
     format_name: Option<String>,
+    format_cache_path: Option<PathBuf>,
     output_format: OutputFormat,
     makefile_output_path: Option<PathBuf>,
     hidden_input_paths: HashSet<PathBuf>,
     pass: PassSetting,
     reruns: Option<usize>,
     print_stdout: bool,
-    bundle: Option<Box<IoProvider>>,
+    bundle: Option<Box<Bundle>>,
     keep_intermediates: bool,
     keep_logs: bool,
     synctex: bool,
@@ -256,6 +257,17 @@ impl ProcessingSessionBuilder {
     /// This file does not necessarily have to exist already; it will be created if it doesn't.
     pub fn format_name(&mut self, p: &str) -> &mut Self {
         self.format_name = Some(p.to_owned());
+        self
+    }
+
+    /// Sets the path to the format file cache.
+    ///
+    /// This is used to, well, cache format files, which are generated as
+    /// needed from the backing bundle. Defaults to the same directory as the
+    /// input file, or PWD if the input is a non-file (such as standard
+    /// input).
+    pub fn format_cache_path<P: AsRef<Path>>(&mut self, p: P) -> &mut Self {
+        self.format_cache_path = Some(p.as_ref().to_owned());
         self
     }
 
@@ -303,7 +315,7 @@ impl ProcessingSessionBuilder {
 
     /// Sets the bundle, which the various engines will use for finding style files, font files,
     /// etc.
-    pub fn bundle(&mut self, b: Box<IoProvider>) -> &mut Self {
+    pub fn bundle(&mut self, b: Box<Bundle>) -> &mut Self {
         self.bundle = Some(b);
         self
     }
@@ -327,7 +339,7 @@ impl ProcessingSessionBuilder {
     }
 
     /// Creates a `ProcessingSession`.
-    pub fn create(self) -> Result<ProcessingSession> {
+    pub fn create(self, status: &mut StatusBackend) -> Result<ProcessingSession> {
         let mut io = IoSetupBuilder::default();
         io.bundle(self.bundle.expect("a bundle must be specified"))
             .use_genuine_stdout(self.print_stdout);
@@ -352,6 +364,10 @@ impl ProcessingSessionBuilder {
             io.primary_input_stdin();
         }
 
+        if let Some(ref p) = self.format_cache_path {
+            io.format_cache_path(p);
+        }
+
         let tex_input_name = self.tex_input_name.expect("tex_input_name must be specified");
         let mut aux_path = PathBuf::from(tex_input_name.clone());
         aux_path.set_extension("aux");
@@ -361,7 +377,7 @@ impl ProcessingSessionBuilder {
         pdf_path.set_extension("pdf");
 
         Ok(ProcessingSession {
-            io: io.create()?,
+            io: io.create(status)?,
             events: IoEvents::new(),
             pass: self.pass,
             primary_input_path: self.primary_input_path,
@@ -754,6 +770,10 @@ impl ProcessingSession {
             return Err(ErrorKind::Msg("cannot create formats without using a bundle".to_owned()).into())
         }
 
+        if self.io.format_cache.is_none() {
+            return Err(ErrorKind::Msg("cannot create formats without having a place to save them".to_owned()).into())
+        }
+
         // PathBuf.file_stem() doesn't do what we want since it only strips
         // one extension. As of 1.17, the compiler needs a type annotation for
         // some reason, which is why we use the `r` variable.
@@ -788,7 +808,7 @@ impl ProcessingSession {
         // principle we could stream the format file directly to the staging
         // area as we ran the TeX engine, but we don't bother.
 
-        let bundle = &mut *self.io.bundle.as_mut().unwrap();
+        let format_cache = &mut *self.io.format_cache.as_mut().unwrap();
 
         for (name, contents) in &*self.io.mem.files.borrow() {
             if name == self.io.mem.stdout_key() {
@@ -802,7 +822,7 @@ impl ProcessingSession {
             }
 
             // Note that we intentionally pass 'stem', not 'name'.
-            ctry!(bundle.write_format(stem, contents, status); "cannot write format file {}", sname);
+            ctry!(format_cache.write_format(stem, contents, status); "cannot write format file {}", sname);
         }
 
         // All done. Clear the memory layer since this was a special preparatory step.
@@ -910,5 +930,3 @@ impl ProcessingSession {
         Ok(0)
     }
 }
-
-
