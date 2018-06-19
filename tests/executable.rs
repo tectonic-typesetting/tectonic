@@ -1,7 +1,6 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
-extern crate flate2;
 extern crate tempdir;
 
 use std::env;

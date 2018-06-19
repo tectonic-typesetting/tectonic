@@ -15,7 +15,6 @@
 /// to disk, which may be helpful in debugging. There is probably a less gross
 /// way to implement that option.
 
-extern crate flate2;
 #[macro_use] extern crate lazy_static;
 extern crate tectonic;
 

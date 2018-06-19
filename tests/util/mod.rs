@@ -10,7 +10,9 @@
 // using this testing setup...
 #![allow(dead_code)]
 
-use flate2::read::GzDecoder;
+extern crate flate2;
+
+use self::flate2::read::GzDecoder;
 use std::collections::HashMap;
 use std::env;
 use std::ffi::OsString;
