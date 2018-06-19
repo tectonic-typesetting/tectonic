@@ -101,3 +101,10 @@ impl PersistentConfig {
         Ok(app_dir(AppDataType::UserCache, &::APP_INFO, "formats")?)
     }
 }
+
+
+impl Default for PersistentConfig {
+    fn default() -> Self {
+        toml::from_str(DEFAULT_CONFIG).expect("un-parseable built-in default configuration (?!)")
+    }
+}
