@@ -1,0 +1,175 @@
+% /home/texlive/karl/Master/texmf-dist/fonts/map/dvipdfmx/updmap/kanjix.map:
+% maintained by updmap[-sys] (multi).
+% Don't change this file directly. Use updmap[-sys] instead.
+% See the updmap documentation.
+% A log of the run that created this file is available here:
+% /tmp/umap-var/web2c/updmap.log
+% morisawa.map
+futogo-b H FutoGoB101-Bold
+futogo-b-v V FutoGoB101-Bold
+futomin-b H FutoMinA101-Bold
+futomin-b-v V FutoMinA101-Bold
+gtbbb-m H GothicBBB-Medium
+gtbbb-m-v V GothicBBB-Medium
+jun101-l H Jun101-Light
+jun101-l-v V Jun101-Light
+ryumin-l H Ryumin-Light
+ryumin-l-v V Ryumin-Light
+% otf-ipaex.map
+hgothb-h H ipaexg.ttf %!PS IPAexGothic
+hgothb-v V ipaexg.ttf %!PS IPAexGothic
+hgothbn-h H ipaexg.ttf %!PS IPAexGothic
+hgothbn-v V ipaexg.ttf %!PS IPAexGothic
+hgotheb-h H ipaexg.ttf %!PS IPAexGothic
+hgotheb-v V ipaexg.ttf %!PS IPAexGothic
+hgothebn-h H ipaexg.ttf %!PS IPAexGothic
+hgothebn-v V ipaexg.ttf %!PS IPAexGothic
+hgothr-h H ipaexg.ttf %!PS IPAexGothic
+hgothr-v V ipaexg.ttf %!PS IPAexGothic
+hgothrn-h H ipaexg.ttf %!PS IPAexGothic
+hgothrn-v V ipaexg.ttf %!PS IPAexGothic
+hmgothr-h H ipaexg.ttf %!PS IPAexGothic
+hmgothr-v V ipaexg.ttf %!PS IPAexGothic
+hmgothrn-h H ipaexg.ttf %!PS IPAexGothic
+hmgothrn-v V ipaexg.ttf %!PS IPAexGothic
+hminb-h H ipaexm.ttf %!PS IPAexMincho
+hminb-v V ipaexm.ttf %!PS IPAexMincho
+hminbn-h H ipaexm.ttf %!PS IPAexMincho
+hminbn-v V ipaexm.ttf %!PS IPAexMincho
+hminl-h H ipaexm.ttf %!PS IPAexMincho
+hminl-v V ipaexm.ttf %!PS IPAexMincho
+hminln-h H ipaexm.ttf %!PS IPAexMincho
+hminln-v V ipaexm.ttf %!PS IPAexMincho
+hminr-h H ipaexm.ttf %!PS IPAexMincho
+hminr-v V ipaexm.ttf %!PS IPAexMincho
+hminrn-h H ipaexm.ttf %!PS IPAexMincho
+hminrn-v V ipaexm.ttf %!PS IPAexMincho
+otf-cjgb-h Identity-H ipaexg.ttf/AJ16 %!PS IPAexGothic
+otf-cjgb-v Identity-V ipaexg.ttf/AJ16 %!PS IPAexGothic
+otf-cjge-h Identity-H ipaexg.ttf/AJ16 %!PS IPAexGothic
+otf-cjge-v Identity-V ipaexg.ttf/AJ16 %!PS IPAexGothic
+otf-cjgr-h Identity-H ipaexg.ttf/AJ16 %!PS IPAexGothic
+otf-cjgr-v Identity-V ipaexg.ttf/AJ16 %!PS IPAexGothic
+otf-cjmb-h Identity-H ipaexm.ttf/AJ16 %!PS IPAexMincho
+otf-cjmb-v Identity-V ipaexm.ttf/AJ16 %!PS IPAexMincho
+otf-cjmgr-h Identity-H ipaexg.ttf/AJ16 %!PS IPAexGothic
+otf-cjmgr-v Identity-V ipaexg.ttf/AJ16 %!PS IPAexGothic
+otf-cjml-h Identity-H ipaexm.ttf/AJ16 %!PS IPAexMincho
+otf-cjml-v Identity-V ipaexm.ttf/AJ16 %!PS IPAexMincho
+otf-cjmr-h Identity-H ipaexm.ttf/AJ16 %!PS IPAexMincho
+otf-cjmr-v Identity-V ipaexm.ttf/AJ16 %!PS IPAexMincho
+otf-ujgb-h UniJIS-UTF16-H ipaexg.ttf %!PS IPAexGothic
+otf-ujgb-v UniJIS-UTF16-V ipaexg.ttf %!PS IPAexGothic
+otf-ujgbn-h UniJIS2004-UTF16-H ipaexg.ttf %!PS IPAexGothic
+otf-ujgbn-v UniJIS2004-UTF16-V ipaexg.ttf %!PS IPAexGothic
+otf-ujge-h UniJIS-UTF16-H ipaexg.ttf %!PS IPAexGothic
+otf-ujge-v UniJIS-UTF16-V ipaexg.ttf %!PS IPAexGothic
+otf-ujgen-h UniJIS2004-UTF16-H ipaexg.ttf %!PS IPAexGothic
+otf-ujgen-v UniJIS2004-UTF16-V ipaexg.ttf %!PS IPAexGothic
+otf-ujgr-h UniJIS-UTF16-H ipaexg.ttf %!PS IPAexGothic
+otf-ujgr-v UniJIS-UTF16-V ipaexg.ttf %!PS IPAexGothic
+otf-ujgrn-h UniJIS2004-UTF16-H ipaexg.ttf %!PS IPAexGothic
+otf-ujgrn-v UniJIS2004-UTF16-V ipaexg.ttf %!PS IPAexGothic
+otf-ujmb-h UniJIS-UTF16-H ipaexm.ttf %!PS IPAexMincho
+otf-ujmb-v UniJIS-UTF16-V ipaexm.ttf %!PS IPAexMincho
+otf-ujmbn-h UniJIS2004-UTF16-H ipaexm.ttf %!PS IPAexMincho
+otf-ujmbn-v UniJIS2004-UTF16-V ipaexm.ttf %!PS IPAexMincho
+otf-ujmgr-h UniJIS-UTF16-H ipaexg.ttf %!PS IPAexGothic
+otf-ujmgr-v UniJIS-UTF16-V ipaexg.ttf %!PS IPAexGothic
+otf-ujmgrn-h UniJIS2004-UTF16-H ipaexg.ttf %!PS IPAexGothic
+otf-ujmgrn-v UniJIS2004-UTF16-V ipaexg.ttf %!PS IPAexGothic
+otf-ujml-h UniJIS-UTF16-H ipaexm.ttf %!PS IPAexMincho
+otf-ujml-v UniJIS-UTF16-V ipaexm.ttf %!PS IPAexMincho
+otf-ujmln-h UniJIS2004-UTF16-H ipaexm.ttf %!PS IPAexMincho
+otf-ujmln-v UniJIS2004-UTF16-V ipaexm.ttf %!PS IPAexMincho
+otf-ujmr-h UniJIS-UTF16-H ipaexm.ttf %!PS IPAexMincho
+otf-ujmr-v UniJIS-UTF16-V ipaexm.ttf %!PS IPAexMincho
+otf-ujmrn-h UniJIS2004-UTF16-H ipaexm.ttf %!PS IPAexMincho
+otf-ujmrn-v UniJIS2004-UTF16-V ipaexm.ttf %!PS IPAexMincho
+% otf-ko-baekmuk.map
+otf-ckgr-h Identity-H dotum.ttf/AK12 %!PS Baekmuk-Dotum
+otf-ckgr-v Identity-V dotum.ttf/AK12 %!PS Baekmuk-Dotum
+otf-ckmr-h Identity-H batang.ttf/AK12 %!PS Baekmuk-Batang
+otf-ckmr-v Identity-V batang.ttf/AK12 %!PS Baekmuk-Batang
+otf-ukgr-h UniKS-UCS2-H dotum.ttf %!PS Baekmuk-Dotum
+otf-ukgr-v UniKS-UCS2-V dotum.ttf %!PS Baekmuk-Dotum
+otf-ukmr-h UniKS-UCS2-H batang.ttf %!PS Baekmuk-Batang
+otf-ukmr-v UniKS-UCS2-V batang.ttf %!PS Baekmuk-Batang
+% otf-sc-arphic.map
+otf-ccgr-h Identity-H gkai00mp.ttf/AG14 %!PS GBZenKai-Medium
+otf-ccgr-v Identity-V gkai00mp.ttf/AG14 %!PS GBZenKai-Medium
+otf-ccmr-h Identity-H gbsn00lp.ttf/AG14 %!PS BousungEG-Light-GB
+otf-ccmr-v Identity-V gbsn00lp.ttf/AG14 %!PS BousungEG-Light-GB
+otf-ucgr-h UniGB-UCS2-H gkai00mp.ttf %!PS GBZenKai-Medium
+otf-ucgr-v UniGB-UCS2-V gkai00mp.ttf %!PS GBZenKai-Medium
+otf-ucmr-h UniGB-UCS2-H gbsn00lp.ttf %!PS BousungEG-Light-GB
+otf-ucmr-v UniGB-UCS2-V gbsn00lp.ttf %!PS BousungEG-Light-GB
+% otf-tc-arphic.map
+otf-ctgr-h Identity-H bkai00mp.ttf/AC14 %!PS ZenKai-Medium
+otf-ctgr-v Identity-V bkai00mp.ttf/AC14 %!PS ZenKai-Medium
+otf-ctmr-h Identity-H bsmi00lp.ttf/AC14 %!PS ShanHeiSun-Light
+otf-ctmr-v Identity-V bsmi00lp.ttf/AC14 %!PS ShanHeiSun-Light
+otf-utgr-h UniCNS-UCS2-H bkai00mp.ttf %!PS ZenKai-Medium
+otf-utgr-v UniCNS-UCS2-V bkai00mp.ttf %!PS ZenKai-Medium
+otf-utmr-h UniCNS-UCS2-H bsmi00lp.ttf %!PS ShanHeiSun-Light
+otf-utmr-v UniCNS-UCS2-V bsmi00lp.ttf %!PS ShanHeiSun-Light
+% otf-up-ipaex.map
+uphgothb-h UniJIS-UTF16-H ipaexg.ttf %!PS IPAexGothic
+uphgothb-v UniJIS-UTF16-V ipaexg.ttf %!PS IPAexGothic
+uphgothbn-h UniJIS2004-UTF16-H ipaexg.ttf %!PS IPAexGothic
+uphgothbn-v UniJIS2004-UTF16-V ipaexg.ttf %!PS IPAexGothic
+uphgotheb-h UniJIS-UTF16-H ipaexg.ttf %!PS IPAexGothic
+uphgotheb-v UniJIS-UTF16-V ipaexg.ttf %!PS IPAexGothic
+uphgothebn-h UniJIS2004-UTF16-H ipaexg.ttf %!PS IPAexGothic
+uphgothebn-v UniJIS2004-UTF16-V ipaexg.ttf %!PS IPAexGothic
+uphgothr-h UniJIS-UTF16-H ipaexg.ttf %!PS IPAexGothic
+uphgothr-v UniJIS-UTF16-V ipaexg.ttf %!PS IPAexGothic
+uphgothrn-h UniJIS2004-UTF16-H ipaexg.ttf %!PS IPAexGothic
+uphgothrn-v UniJIS2004-UTF16-V ipaexg.ttf %!PS IPAexGothic
+uphmgothr-h UniJIS-UTF16-H ipaexg.ttf %!PS IPAexGothic
+uphmgothr-v UniJIS-UTF16-V ipaexg.ttf %!PS IPAexGothic
+uphmgothrn-h UniJIS2004-UTF16-H ipaexg.ttf %!PS IPAexGothic
+uphmgothrn-v UniJIS2004-UTF16-V ipaexg.ttf %!PS IPAexGothic
+uphminb-h UniJIS-UTF16-H ipaexm.ttf %!PS IPAexMincho
+uphminb-v UniJIS-UTF16-V ipaexm.ttf %!PS IPAexMincho
+uphminbn-h UniJIS2004-UTF16-H ipaexm.ttf %!PS IPAexMincho
+uphminbn-v UniJIS2004-UTF16-V ipaexm.ttf %!PS IPAexMincho
+uphminl-h UniJIS-UTF16-H ipaexm.ttf %!PS IPAexMincho
+uphminl-v UniJIS-UTF16-V ipaexm.ttf %!PS IPAexMincho
+uphminln-h UniJIS2004-UTF16-H ipaexm.ttf %!PS IPAexMincho
+uphminln-v UniJIS2004-UTF16-V ipaexm.ttf %!PS IPAexMincho
+uphminr-h UniJIS-UTF16-H ipaexm.ttf %!PS IPAexMincho
+uphminr-v UniJIS-UTF16-V ipaexm.ttf %!PS IPAexMincho
+uphminrn-h UniJIS2004-UTF16-H ipaexm.ttf %!PS IPAexMincho
+uphminrn-v UniJIS2004-UTF16-V ipaexm.ttf %!PS IPAexMincho
+% ptex-ipaex.map
+gbm H ipaexg.ttf %!PS IPAexGothic
+gbmv V ipaexg.ttf %!PS IPAexGothic
+rml H ipaexm.ttf %!PS IPAexMincho
+rmlv V ipaexm.ttf %!PS IPAexMincho
+% uptex-ipaex.map
+ugbm UniJIS-UTF16-H ipaexg.ttf %!PS IPAexGothic
+ugbmv UniJIS-UTF16-V ipaexg.ttf %!PS IPAexGothic
+upgbm-h UniJIS-UTF16-H ipaexg.ttf %!PS IPAexGothic
+upgbm-hq UniJIS-UCS2-H ipaexg.ttf %!PS IPAexGothic
+upgbm-v UniJIS-UTF16-V ipaexg.ttf %!PS IPAexGothic
+uprml-h UniJIS-UTF16-H ipaexm.ttf %!PS IPAexMincho
+uprml-hq UniJIS-UCS2-H ipaexm.ttf %!PS IPAexMincho
+uprml-v UniJIS-UTF16-V ipaexm.ttf %!PS IPAexMincho
+urml UniJIS-UTF16-H ipaexm.ttf %!PS IPAexMincho
+urmlv UniJIS-UTF16-V ipaexm.ttf %!PS IPAexMincho
+% uptex-ko-baekmuk.map
+uphygt-h UniKS-UTF16-H dotum.ttf %!PS Baekmuk-Dotum
+uphygt-v UniKS-UTF16-V dotum.ttf %!PS Baekmuk-Dotum
+uphysmjm-h UniKS-UTF16-H batang.ttf %!PS Baekmuk-Batang
+uphysmjm-v UniKS-UTF16-V batang.ttf %!PS Baekmuk-Batang
+% uptex-sc-arphic.map
+upstht-h UniGB-UTF16-H gkai00mp.ttf %!PS GBZenKai-Medium
+upstht-v UniGB-UTF16-V gkai00mp.ttf %!PS GBZenKai-Medium
+upstsl-h UniGB-UTF16-H gbsn00lp.ttf %!PS BousungEG-Light-GB
+upstsl-v UniGB-UTF16-V gbsn00lp.ttf %!PS BousungEG-Light-GB
+% uptex-tc-arphic.map
+upmhm-h UniCNS-UTF16-H bkai00mp.ttf %!PS ZenKai-Medium
+upmhm-v UniCNS-UTF16-V bkai00mp.ttf %!PS ZenKai-Medium
+upmsl-h UniCNS-UTF16-H bsmi00lp.ttf %!PS ShanHeiSun-Light
+upmsl-v UniCNS-UTF16-V bsmi00lp.ttf %!PS ShanHeiSun-Light

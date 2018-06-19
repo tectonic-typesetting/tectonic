@@ -14,7 +14,6 @@
 /// variable to "1", but that's an annoying solution. So, we use a global mutex
 /// to achieve the same effect. Classy.
 
-extern crate flate2;
 #[macro_use] extern crate lazy_static;
 extern crate tectonic;
 

@@ -13,12 +13,14 @@ use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
 use std::path::Path;
+use std::str::FromStr;
 
 use digest::{self, Digest, DigestData};
 use errors::{Error, ErrorKind, Result};
 use status::StatusBackend;
 
 pub mod filesystem;
+pub mod format_cache;
 //pub mod hyper_seekable; -- Not currently used, but nice code to keep around.
 pub mod itarbundle;
 pub mod local_cache;
@@ -300,7 +302,26 @@ impl<T> OpenResult<T> {
 }
 
 
-pub trait IoProvider {
+/// A hack to allow casting of Bundles to IoProviders.
+///
+/// The code that sets up the I/O stack is handed a reference to a Bundle
+/// trait object. For the actual I/O, it needs to convert this to an
+/// IoProvider trait object. [According to
+/// StackExchange](https://stackoverflow.com/a/28664881/3760486), the
+/// following pattern is the least-bad way to achieve the necessary upcasting.
+pub trait AsIoProviderMut {
+    /// Represent this value as an IoProvider trait object.
+    fn as_ioprovider_mut(&mut self) -> &mut IoProvider;
+}
+
+impl<T: IoProvider> AsIoProviderMut for T {
+    fn as_ioprovider_mut(&mut self) -> &mut IoProvider {
+        self
+    }
+}
+
+/// A trait for types that can read or write files needed by the TeX engine.
+pub trait IoProvider: AsIoProviderMut {
     fn output_open_name(&mut self, _name: &OsStr) -> OpenResult<OutputHandle> {
         OpenResult::NotAvailable
     }
@@ -362,6 +383,54 @@ impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
 
     fn write_format(&mut self, name: &str, data: &[u8], status: &mut StatusBackend) -> Result<()> {
         (**self).write_format(name, data, status)
+    }
+}
+
+
+/// A special IoProvider that can make TeX format files.
+///
+/// A “bundle” is expected to contain a large number of TeX support files —
+/// for instance, a compilation of a TeXLive distribution. In terms of the
+/// software architecture, though, what is special about a bundle is that one
+/// can generate one or more TeX format files from its contents without
+/// reference to any other I/O resources.
+pub trait Bundle: IoProvider {
+    /// Get a cryptographic digest summarizing this bundle’s contents.
+    ///
+    /// The digest summarizes the exact contents of every file in the bundle.
+    /// It is computed from the sorted names and SHA256 digests of the
+    /// component files [as implemented in the script
+    /// builder/make-zipfile.py](https://github.com/tectonic-typesetting/tectonic-staging/blob/master/builder/make-zipfile.py#L138)
+    /// in the `tectonic-staging` module.
+    ///
+    /// The default implementation gets the digest from a file name
+    /// `SHA256SUM`, which is expected to contain the digest in hex-encoded
+    /// format.
+    fn get_digest(&mut self, status: &mut StatusBackend) -> Result<DigestData> {
+        let digest_text = match self.input_open_name(OsStr::new(digest::DIGEST_NAME), status) {
+            OpenResult::Ok(h) => {
+                let mut text = String::new();
+                h.take(64).read_to_string(&mut text)?;
+                text
+            },
+
+            OpenResult::NotAvailable => {
+                // Broken or un-cacheable backend.
+                return Err(ErrorKind::Msg("itar-format bundle does not provide needed SHA256SUM file".to_owned()).into());
+            },
+
+            OpenResult::Err(e) => {
+                return Err(e.into());
+            }
+        };
+
+        Ok(ctry!(DigestData::from_str(&digest_text); "corrupted SHA256 digest data"))
+    }
+}
+
+impl<B: Bundle + ?Sized> Bundle for Box<B> {
+    fn get_digest(&mut self, status: &mut StatusBackend) -> Result<DigestData> {
+        (**self).get_digest(status)
     }
 }
 

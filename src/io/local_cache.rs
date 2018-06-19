@@ -1,5 +1,5 @@
 // src/io/local_cache.rs -- a local cache of files obtained from another IoProvider
-// Copyright 2017 the Tectonic Project
+// Copyright 2017-2018 the Tectonic Project
 // Licensed under the MIT License.
 
 use fs2::FileExt;
@@ -13,8 +13,8 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use digest::{self, Digest, DigestData};
-use errors::{ErrorKind, Result, ResultExt};
-use super::{try_open_file, InputHandle, InputOrigin, IoProvider, OpenResult};
+use errors::{ErrorKind, Result};
+use super::{try_open_file, Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
 use status::StatusBackend;
 
 
@@ -23,61 +23,47 @@ struct LocalCacheItem {
     digest: Option<DigestData>, // None => negative cache: this file is not in the bundle
 }
 
-pub struct LocalCache<B: IoProvider> {
+pub struct LocalCache<B: Bundle> {
     backend: B,
     digest_path: PathBuf,
     cached_digest: DigestData,
     checked_digest: bool,
     manifest_path: PathBuf,
-    formats_base: PathBuf,
     data_path: PathBuf,
     contents: HashMap<OsString,LocalCacheItem>,
 }
 
 
-impl<B: IoProvider> LocalCache<B> {
-    pub fn new(mut backend: B, digest: &Path, manifest_base: &Path, formats_base: &Path,
-               data: &Path, status: &mut StatusBackend) -> Result<LocalCache<B>> {
+impl<B: Bundle> LocalCache<B> {
+    pub fn new(
+        mut backend: B, digest: &Path, manifest_base: &Path,
+        data: &Path, status: &mut StatusBackend
+    ) -> Result<LocalCache<B>> {
         // If the `digest` file exists, we assume that it is valid; this is
         // *essential* so that we can use a URL as our default IoProvider
         // without requiring a network connection to run. If it does not
         // exist, we need to query the backend.
 
-        let mut checked_digest = false;
-
-        let digest_text = match File::open(digest) {
+        let (digest_text, cached_digest, checked_digest) = match File::open(digest) {
             Ok(f) => {
                 let mut text = String::new();
                 f.take(64).read_to_string(&mut text)?;
-                text
+                let cached_digest = ctry!(DigestData::from_str(&text); "corrupted SHA256 digest cache");
+                (text, cached_digest, false)
             },
+
             Err(e) => {
                 if e.kind() != IoErrorKind::NotFound {
                     // Unexpected error reading the digest cache file. Ruh roh!
                     return Err(e.into());
                 }
 
-                // OK, digest file just doesn't exist. We need to query the backend for it.
-                match backend.input_open_name(OsStr::new(digest::DIGEST_NAME), status) {
-                    OpenResult::Ok(h) => {
-                        // Phew, the backend has the info we need.
-                        let mut text = String::new();
-                        h.take(64).read_to_string(&mut text)?;
-                        checked_digest = true;
-                        text
-                    },
-                    OpenResult::NotAvailable => {
-                        // Broken or un-cacheable backend.
-                        return Err(ErrorKind::Msg("backend does not provide needed SHA256SUM file".to_owned()).into());
-                    },
-                    OpenResult::Err(e) => {
-                        return Err(e.into());
-                    }
-                }
+                // Digest file just doesn't exist. We need to query the backend for it.
+                let cached_digest = ctry!(backend.get_digest(status); "could not get backend summary digest");
+                let text = cached_digest.to_string();
+                (text, cached_digest, true)
             }
         };
-
-        let cached_digest = ctry!(DigestData::from_str(&digest_text); "corrupted SHA256 digest cache");
 
         if checked_digest {
             // If checked_digest is true, the digest cache file did not exist
@@ -155,7 +141,6 @@ impl<B: IoProvider> LocalCache<B> {
             cached_digest: cached_digest,
             checked_digest: checked_digest,
             manifest_path: manifest_path,
-            formats_base: formats_base.to_owned(),
             data_path: data.to_owned(),
             contents: contents
         })
@@ -335,34 +320,10 @@ impl<B: IoProvider> LocalCache<B> {
 
         OpenResult::Ok(final_path)
     }
-
-
-    /// Get an on-disk path name for a given format file. Unlike
-    /// path_for_name(), we do *not* do any fetching or caching; this simply
-    /// produces a path that may or may not exist. We rely on the cached
-    /// digest and do *not* call check_digest() because otherwise we'd need to
-    /// open up the backend whenever we wanted to open a format file, breaking
-    /// network-free operation.
-    fn path_for_format(&mut self, name: &OsStr) -> Result<PathBuf> {
-        // Remove all extensions from the format name. PathBuf.file_stem() doesn't
-        // do what we want since it only strips one extension, so here we go:
-
-        let stem = match name.to_str().and_then(|s| s.splitn(2, '.').next()) {
-            Some(s) => s,
-            None => {
-                return Err(ErrorKind::Msg(format!("incomprehensible format file name \"{}\"",
-                                                  name.to_string_lossy())).into());
-            }
-        };
-
-        let mut p = self.formats_base.clone();
-        p.push(format!("{}-{}-{}.fmt", self.cached_digest.to_string(), stem, ::FORMAT_SERIAL));
-        Ok(p)
-    }
 }
 
 
-impl<B: IoProvider> IoProvider for LocalCache<B> {
+impl<B: Bundle> IoProvider for LocalCache<B> {
     fn input_open_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
         let path = match self.path_for_name(name, status) {
             OpenResult::Ok(p) => p,
@@ -370,43 +331,18 @@ impl<B: IoProvider> IoProvider for LocalCache<B> {
             OpenResult::Err(e) => return OpenResult::Err(e),
         };
 
-        let f = match File::open (&path) {
+        let f = match File::open(&path) {
             Ok(f) => f,
             Err(e) => return OpenResult::Err(e.into())
         };
 
         OpenResult::Ok(InputHandle::new(name, BufReader::new(f), InputOrigin::Other))
     }
+}
 
 
-    fn input_open_format(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
-        let path = match self.path_for_format(name) {
-            Ok(p) => p,
-            Err(e) => return OpenResult::Err(e.into()),
-        };
-
-        let f = match super::try_open_file(&path) {
-            OpenResult::Ok(f) => f,
-            OpenResult::NotAvailable => return OpenResult::NotAvailable,
-            OpenResult::Err(e) => return OpenResult::Err(e),
-        };
-
-        OpenResult::Ok(InputHandle::new(name, BufReader::new(f), InputOrigin::Other))
-    }
-
-
-    fn write_format(&mut self, name: &str, data: &[u8], _status: &mut StatusBackend) -> Result<()> {
-        let final_path = self.path_for_format(OsStr::new(name))?;
-
-        let mut templ = self.formats_base.clone();
-        templ.push("format_XXXXXX");
-
-        let temp_path = {
-            let mut temp_dest = mkstemp::TempFile::new(&templ.to_string_lossy(), false)?;
-            temp_dest.write_all(data)?;
-            temp_dest.path().to_owned()
-        };
-
-        fs::rename(&temp_path, &final_path).map_err(|e| e.into())
+impl<B: Bundle> Bundle for LocalCache<B> {
+    fn get_digest(&mut self, _status: &mut StatusBackend) -> Result<DigestData> {
+        Ok(self.cached_digest)
     }
 }

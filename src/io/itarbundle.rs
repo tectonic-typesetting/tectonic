@@ -1,5 +1,5 @@
 // src/io/itarbundle.rs -- I/O on files in an indexed tar file "bundle"
-// Copyright 2017 the Tectonic Project
+// Copyright 2017-2018 the Tectonic Project
 // Licensed under the MIT License.
 
 use flate2::read::GzDecoder;
@@ -12,7 +12,7 @@ use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader, Cursor, Read};
 
 use errors::{Error, ErrorKind, Result, ResultExt};
-use super::{InputHandle, InputOrigin, IoProvider, OpenResult, create_hyper_client};
+use super::{Bundle, InputHandle, InputOrigin, IoProvider, OpenResult, create_hyper_client};
 use status::StatusBackend;
 
 
@@ -196,6 +196,10 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
         OpenResult::Ok(InputHandle::new(name, Cursor::new(buf), InputOrigin::Other))
     }
 }
+
+
+impl<F: ITarIoFactory> Bundle for ITarBundle<F> {}
+
 
 pub struct HttpITarIoFactory {
     url: String,

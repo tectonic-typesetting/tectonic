@@ -1,5 +1,5 @@
 // src/io/zipbundle.rs -- I/O on files in a Zipped-up "bundle"
-// Copyright 2016 the Tectonic Project
+// Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
 use std::ffi::OsStr;
@@ -10,7 +10,7 @@ use zip::result::ZipError;
 use zip::ZipArchive;
 
 use errors::Result;
-use super::{InputHandle, InputOrigin, IoProvider, OpenResult};
+use super::{Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
 use status::StatusBackend;
 
 
@@ -69,3 +69,6 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
         OpenResult::Ok(InputHandle::new(name, Cursor::new(buf), InputOrigin::Other))
     }
 }
+
+
+impl<R: Read + Seek> Bundle for ZipBundle<R> {}

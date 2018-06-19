@@ -1,10 +1,11 @@
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
-use errors::{Result, ResultExt};
-use io::{FilesystemIo, FilesystemPrimaryInputIo, GenuineStdoutIo,
-                   IoProvider, IoStack, MemoryIo};
+use errors::Result;
+use io::{Bundle, FilesystemIo, FilesystemPrimaryInputIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo};
 use io::stdstreams::BufferedPrimaryIo;
+use io::format_cache::FormatCache;
+use status::StatusBackend;
 
 /// An `IoSetup` is essentially a typed, structured version of an [`IoStack`].
 ///
@@ -20,9 +21,10 @@ use io::stdstreams::BufferedPrimaryIo;
 
 pub struct IoSetup {
     primary_input: Box<IoProvider>,
-    pub bundle: Option<Box<IoProvider>>,
+    pub bundle: Option<Box<Bundle>>,
     pub mem: MemoryIo,
     filesystem: FilesystemIo,
+    pub format_cache: Option<FormatCache>,
     genuine_stdout: Option<GenuineStdoutIo>,
     format_primary: Option<BufferedPrimaryIo>,
 }
@@ -40,7 +42,11 @@ impl IoSetup {
         providers.push(&mut self.filesystem);
 
         if let Some(ref mut b) = self.bundle {
-            providers.push(&mut **b);
+            providers.push(b.as_ioprovider_mut());
+        }
+
+        if let Some(ref mut c) = self.format_cache {
+            providers.push(&mut *c);
         }
 
         IoStack::new(providers)
@@ -48,7 +54,7 @@ impl IoSetup {
 
     /// Creates an `IoStack` for the specific purpose of writing out a format file.
     ///
-    /// This differs from [`IoSetup::as_stack`] in two ways: 
+    /// This differs from [`IoSetup::as_stack`] in two ways:
     ///
     /// - the primary input is not used here; instead, this method provides a "dummy" primary input
     ///   file containing only "\input format-file-name.tex"
@@ -72,7 +78,11 @@ impl IoSetup {
         providers.push(&mut self.mem);
 
         if let Some(ref mut b) = self.bundle {
-            providers.push(&mut **b);
+            providers.push(b.as_ioprovider_mut());
+        }
+
+        if let Some(ref mut c) = self.format_cache {
+            providers.push(&mut *c);
         }
 
         IoStack::new(providers)
@@ -85,8 +95,9 @@ impl IoSetup {
 pub struct IoSetupBuilder {
     primary_input_path: Option<PathBuf>,
     filesystem_root: PathBuf,
+    format_cache_path: Option<PathBuf>,
     use_stdin: bool,
-    bundle: Option<Box<IoProvider>>,
+    bundle: Option<Box<Bundle>>,
     use_genuine_stdout: bool,
     hidden_input_paths: HashSet<PathBuf>,
 }
@@ -96,6 +107,7 @@ impl Default for IoSetupBuilder {
         IoSetupBuilder {
             primary_input_path: None,
             filesystem_root: PathBuf::new(),
+            format_cache_path: None,
             use_stdin: false,
             bundle: None,
             use_genuine_stdout: false,
@@ -148,8 +160,20 @@ impl IoSetupBuilder {
         self
     }
 
+    /// Sets the path for the format cache.
+    ///
+    /// The IoSetup created from this object will cache format files if the
+    /// primary bundle has been specified (by calling `self.bundle()`). This
+    /// call sets the filesystem path where format files are cached. If left
+    /// unset, it defaults to the filesystem root, which is probably not what
+    /// you want.
+    pub fn format_cache_path<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
+        self.format_cache_path = Some(path.as_ref().to_owned());
+        self
+    }
+
     /// Adds a bundle to the I/O configuration.
-    pub fn bundle<T: 'static + IoProvider>(&mut self, bundle: T) -> &mut Self {
+    pub fn bundle<T: 'static + Bundle>(&mut self, bundle: T) -> &mut Self {
         self.bundle = Some(Box::new(bundle));
         self
     }
@@ -174,7 +198,15 @@ impl IoSetupBuilder {
     /// # Panics
     ///
     /// Panics if no primary input mechanism was specified.
-    pub fn create(self) -> Result<IoSetup> {
+    pub fn create(mut self, status: &mut StatusBackend) -> Result<IoSetup> {
+        let format_cache = if let Some(ref mut b) = self.bundle {
+            let default_path = self.filesystem_root.clone(); // unwrap_or_else() causes borrowck issues
+            let format_cache_path = self.format_cache_path.unwrap_or(default_path);
+            Some(FormatCache::new(b.get_digest(status)?, format_cache_path))
+        } else {
+            None
+        };
+
         let pio: Box<IoProvider> = if self.use_stdin {
             Box::new(ctry!(BufferedPrimaryIo::from_stdin(); "error reading standard input"))
         } else if let Some(pip) = self.primary_input_path {
@@ -187,6 +219,7 @@ impl IoSetupBuilder {
             primary_input: pio,
             mem: MemoryIo::new(true),
             filesystem: FilesystemIo::new(&self.filesystem_root, false, true, self.hidden_input_paths),
+            format_cache: format_cache,
             bundle: self.bundle,
             genuine_stdout: if self.use_genuine_stdout {
                 Some(GenuineStdoutIo::new())
@@ -197,5 +230,3 @@ impl IoSetupBuilder {
         })
     }
 }
-
-

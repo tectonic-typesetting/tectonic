@@ -72,9 +72,10 @@ macro_rules! errmsg {
 /// “Chained try” — like `try!`, but with the ability to add context to the error message.
 #[macro_export]
 macro_rules! ctry {
-    ($op:expr ; $( $chain_fmt_args:expr ),*) => {
+    ($op:expr ; $( $chain_fmt_args:expr ),*) => {{
+        use $crate::errors::ResultExt;
         $op.chain_err(|| format!($( $chain_fmt_args ),*))?
-    }
+    }}
 }
 
 impl convert::From<Error> for io::Error {

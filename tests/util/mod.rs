@@ -10,13 +10,21 @@
 // using this testing setup...
 #![allow(dead_code)]
 
-use flate2::read::GzDecoder;
-use std::collections::HashMap;
+extern crate flate2;
+extern crate tectonic;
+
+use self::flate2::read::GzDecoder;
+use std::collections::{HashMap, HashSet};
 use std::env;
-use std::ffi::OsString;
+use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
+
+use self::tectonic::digest::DigestData;
+use self::tectonic::errors::Result;
+use self::tectonic::io::{Bundle, FilesystemIo, InputHandle, IoProvider, OpenResult};
+use self::tectonic::status::StatusBackend;
 
 const TOP: &str = env!("CARGO_MANIFEST_DIR");
 
@@ -117,5 +125,29 @@ impl ExpectedInfo {
             dec.read_to_end(&mut buf).unwrap();
             self.test_data(&buf);
         }
+    }
+}
+
+
+/// Utility for being able to treat the "assets/" directory as a bundle.
+pub struct TestBundle(FilesystemIo);
+
+impl Default for TestBundle {
+    fn default() -> Self {
+        TestBundle(FilesystemIo::new(&test_path(&["assets"]), false, false, HashSet::new()))
+    }
+}
+
+impl IoProvider for TestBundle {
+    // All other functions can default to NotAvailable/error.
+
+    fn input_open_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+        self.0.input_open_name(name, status)
+    }
+}
+
+impl Bundle for TestBundle {
+    fn get_digest(&mut self, _status: &mut StatusBackend) -> Result<DigestData> {
+        Ok(DigestData::zeros())
     }
 }
