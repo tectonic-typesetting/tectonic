@@ -59,9 +59,22 @@ pub enum AccessPattern {
 #[derive(Clone,Debug,Eq,PartialEq)]
 pub struct FileSummary {
     access_pattern: AccessPattern,
-    input_origin: InputOrigin,
-    read_digest: Option<DigestData>,
-    write_digest: Option<DigestData>,
+
+    /// If this file was read, where did it come from?
+    pub input_origin: InputOrigin,
+
+    /// If this file was read, this is the digest of its contents at the time it was *first* read.
+    /// The "first" is significant for files that were read and then written (for example, `.aux`
+    /// files).
+    ///
+    /// There's some chance that this will be `None` even if the file was read. Tectonic makes an
+    /// effort to compute the digest as the data is being read from the file, but this can fail if
+    /// tex decides to seek in the file as it is being written.
+    pub read_digest: Option<DigestData>,
+
+    /// If this file was written, this is the digest of its contents at the time it was last
+    /// written.
+    pub write_digest: Option<DigestData>,
     got_written_to_disk: bool,
 }
 
@@ -79,7 +92,7 @@ impl FileSummary {
 
 /// The IoEvents type implements the IoEventBackend. It is used to figure out when to rerun the TeX
 /// engine, to figure out which files should be written to disk, and to emit Makefile rules.
-pub struct IoEvents(HashMap<OsString, FileSummary>);
+pub struct IoEvents(pub HashMap<OsString, FileSummary>);
 
 impl IoEvents {
     fn new() -> IoEvents { IoEvents(HashMap::new()) }
@@ -255,6 +268,7 @@ impl ProcessingSessionBuilder {
     /// The name of the `.fmt` file used to initialize the TeX engine.
     ///
     /// This file does not necessarily have to exist already; it will be created if it doesn't.
+    /// This parameter is mandatory (if it is not provided, [`create`] will panic).
     pub fn format_name(&mut self, p: &str) -> &mut Self {
         self.format_name = Some(p.to_owned());
         self
@@ -339,7 +353,7 @@ impl ProcessingSessionBuilder {
     }
 
     /// Creates a `ProcessingSession`.
-    pub fn create(self, status: &mut StatusBackend) -> Result<ProcessingSession> {
+    pub fn create(mut self, status: &mut StatusBackend) -> Result<ProcessingSession> {
         let mut io = IoSetupBuilder::default();
         io.bundle(self.bundle.expect("a bundle must be specified"))
             .use_genuine_stdout(self.print_stdout);
@@ -354,6 +368,9 @@ impl ProcessingSessionBuilder {
             // same directory as the main input file.
             if let Some(parent) = p.parent() {
                 io.filesystem_root(parent);
+                if self.output_dir.is_none() {
+                    self.output_dir = Some(parent.to_owned());
+                }
             } else {
                 return Err(errmsg!("can't figure out a parent directory for input path \"{}\"",
                                    p.to_string_lossy()));
@@ -362,6 +379,9 @@ impl ProcessingSessionBuilder {
             // If the main input file is stdin, we don't set a filesystem root, which means we'll
             // default to the current working directory.
             io.primary_input_stdin();
+            if self.output_dir.is_none() {
+                self.output_dir = Some("".into());
+            }
         }
 
         if let Some(ref p) = self.format_cache_path {
