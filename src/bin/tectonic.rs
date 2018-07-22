@@ -203,7 +203,7 @@ fn main() {
              .value_name("OUTDIR")
              .help("The directory in which to place output files. [default: the directory containing INPUT]"))
         .arg(Arg::with_name("INPUT")
-             .help("The file to process.")
+             .help("The file to process, or \"-\" to process the standard input stream")
              .required(true)
              .index(1))
         .get_matches ();
