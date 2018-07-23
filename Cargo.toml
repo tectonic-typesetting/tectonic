@@ -34,7 +34,7 @@ crate-type = ["rlib"]
 [build-dependencies]
 cc = "^1.0"
 pkg-config = "^0.3"
-regex = "^0.2"
+regex = "^1.0"
 sha2 = "^0.7"
 
 [dependencies]
