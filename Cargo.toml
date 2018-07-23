@@ -55,7 +55,7 @@ serde_derive = "^1.0"
 tectonic_xdv = { path = "xdv", version = "0.1.9-dev" }
 termcolor = "^0.3"
 toml = "^0.4"
-zip = "^0.2"
+zip = "^0.4"
 
 # freetype-sys = "^0.4"
 # harfbuzz-sys = "^0.1"
