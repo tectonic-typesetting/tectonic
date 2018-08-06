@@ -76,7 +76,7 @@ name = "base64"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "byteorder 1.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "byteorder 1.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "safemem 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -111,7 +111,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "byteorder"
-version = "1.2.3"
+version = "1.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -673,7 +673,7 @@ dependencies = [
 name = "tectonic_xdv"
 version = "0.1.9-dev"
 dependencies = [
- "byteorder 1.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "byteorder 1.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -903,7 +903,7 @@ dependencies = [
 "checksum block-buffer 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "a076c298b9ecdb530ed9d967e74a6027d6a7478924520acddcddc24c1c8ab3ab"
 "checksum build_const 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "39092a32794787acd8525ee150305ff051b0aa6cc2abaf193924f5ab05425f39"
 "checksum byte-tools 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "560c32574a12a89ecd91f5e742165893f86e3ab98d21f8ea548658eb9eef5f40"
-"checksum byteorder 1.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "74c0b906e9446b0a2e4f760cdb3fa4b2c48cdc6db8766a845c54b6ff063fd2e9"
+"checksum byteorder 1.2.4 (registry+https://github.com/rust-lang/crates.io-index)" = "8389c509ec62b9fe8eca58c502a0acaf017737355615243496cde4994f8fa4f9"
 "checksum bzip2 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "42b7c3cbf0fa9c1b82308d57191728ca0256cb821220f4e2fd410a72ade26e3b"
 "checksum bzip2-sys 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "2c5162604199bbb17690ede847eaa6120a3f33d5ab4dcc8e7c25b16d849ae79b"
 "checksum cc 1.0.18 (registry+https://github.com/rust-lang/crates.io-index)" = "2119ea4867bd2b8ed3aecab467709720b2d55b1bcfe09f772fd68066eaf15275"
