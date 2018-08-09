@@ -15,7 +15,7 @@ use std::path::PathBuf;
 // MacOS platform specifics:
 
 #[cfg(target_os = "macos")]
-const LIBS: &'static str = "harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
+const LIBS: &'static str = "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 #[cfg(target_os = "macos")]
 fn c_platform_specifics(cfg: &mut cc::Build) {
@@ -40,7 +40,7 @@ fn cpp_platform_specifics(cfg: &mut cc::Build) {
 // Not-MacOS:
 
 #[cfg(not(target_os = "macos"))]
-const LIBS: &'static str = "fontconfig harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
+const LIBS: &'static str = "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 #[cfg(not(target_os = "macos"))]
 fn c_platform_specifics(_: &mut cc::Build) {
