@@ -74,7 +74,7 @@ impl PersistentConfig {
         Ok(config)
     }
 
-    pub fn make_cached_url_provider(&self, url: &str, status: &mut StatusBackend) -> Result<LocalCache<ITarBundle<HttpITarIoFactory>>> {
+    pub fn make_cached_url_provider(&self, url: &str, only_cached: bool, status: &mut StatusBackend) -> Result<LocalCache<ITarBundle<HttpITarIoFactory>>> {
         let itb = ITarBundle::<HttpITarIoFactory>::new(url);
 
         let mut url2digest_path = app_dir(AppDataType::UserCache, &::APP_INFO, "urls")?;
@@ -85,16 +85,17 @@ impl PersistentConfig {
             &url2digest_path,
             &app_dir(AppDataType::UserCache, &::APP_INFO, "manifests")?,
             &app_dir(AppDataType::UserCache, &::APP_INFO, "files")?,
+            only_cached,
             status
         )
     }
 
-    pub fn default_bundle(&self, status: &mut StatusBackend) -> Result<Box<Bundle>> {
+    pub fn default_bundle(&self, only_cached: bool, status: &mut StatusBackend) -> Result<Box<Bundle>> {
         if self.default_bundles.len() != 1 {
             return Err(ErrorKind::Msg("exactly one default_bundle item must be specified (for now)".to_owned()).into());
         }
 
-        Ok(Box::new(self.make_cached_url_provider(&self.default_bundles[0].url, status)?))
+        Ok(Box::new(self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, status)?))
     }
 
     pub fn format_cache_path(&self) -> Result<PathBuf> {

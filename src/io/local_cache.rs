@@ -31,13 +31,14 @@ pub struct LocalCache<B: Bundle> {
     manifest_path: PathBuf,
     data_path: PathBuf,
     contents: HashMap<OsString,LocalCacheItem>,
+    only_cached: bool,
 }
 
 
 impl<B: Bundle> LocalCache<B> {
     pub fn new(
         mut backend: B, digest: &Path, manifest_base: &Path,
-        data: &Path, status: &mut StatusBackend
+        data: &Path, only_cached: bool, status: &mut StatusBackend
     ) -> Result<LocalCache<B>> {
         // If the `digest` file exists, we assume that it is valid; this is
         // *essential* so that we can use a URL as our default IoProvider
@@ -142,7 +143,8 @@ impl<B: Bundle> LocalCache<B> {
             checked_digest: checked_digest,
             manifest_path: manifest_path,
             data_path: data.to_owned(),
-            contents: contents
+            contents: contents,
+            only_cached: only_cached,
         })
     }
 
@@ -223,6 +225,11 @@ impl<B: Bundle> LocalCache<B> {
                     Err(e) => OpenResult::Err(e.into()),
                 },
             };
+        }
+
+        // The file is not in the cache and we are asked not to try to fetch it.
+        if self.only_cached {
+            return OpenResult::NotAvailable;
         }
 
         // Bummer, we haven't seen this file before. We need to (try to) fetch
