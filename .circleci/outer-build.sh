@@ -5,7 +5,7 @@
 set -e -x
 
 buildroot=$HOME
-tarball='https://bintray.com/pkgw/tectonic/download_file?file_path=tectonic-buildenv-ppc-20180128.tar.gz'
+tarball='https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/VM4ZZ3/NT9HFL'
 
 # Validate that our little scheme is going to work. Annoyingly
 # $CIRCLE_WORKING_DIRECTORY (passed in as $1 since we're sudo) is defined with
