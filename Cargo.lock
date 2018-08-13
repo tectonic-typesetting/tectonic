@@ -465,7 +465,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "cc 1.0.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.42 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkg-config 0.3.12 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pkg-config 0.3.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "vcpkg 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -476,7 +476,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "pkg-config"
-version = "0.3.12"
+version = "0.3.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -657,7 +657,7 @@ dependencies = [
  "libc 0.2.42 (registry+https://github.com/rust-lang/crates.io-index)",
  "md-5 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "mkstemp-rs 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkg-config 0.3.12 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pkg-config 0.3.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.70 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.70 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -947,7 +947,7 @@ dependencies = [
 "checksum openssl 0.9.24 (registry+https://github.com/rust-lang/crates.io-index)" = "a3605c298474a3aa69de92d21139fb5e2a81688d308262359d85cdd0d12a7985"
 "checksum openssl-sys 0.9.33 (registry+https://github.com/rust-lang/crates.io-index)" = "d8abc04833dcedef24221a91852931df2f63e3369ae003134e70aff3645775cc"
 "checksum percent-encoding 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "31010dd2e1ac33d5b46a5b413495239882813e0369f8ed8a5e266f173602f831"
-"checksum pkg-config 0.3.12 (registry+https://github.com/rust-lang/crates.io-index)" = "6a52e4dbc8354505ee07e484ab07127e06d87ca6fa7f0a516a2b294e5ad5ad16"
+"checksum pkg-config 0.3.13 (registry+https://github.com/rust-lang/crates.io-index)" = "104630aa1c83213cbc76db0703630fcb0421dac3585063be4ce9a8a2feeaa745"
 "checksum podio 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "780fb4b6698bbf9cf2444ea5d22411cef2953f0824b98f33cf454ec5615645bd"
 "checksum proc-macro2 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)" = "cccdc7557a98fe98453030f077df7f3a042052fae465bb61d2c2c41435cfd9b6"
 "checksum quote 0.6.4 (registry+https://github.com/rust-lang/crates.io-index)" = "b71f9f575d55555aa9c06188be9d4e2bfc83ed02537948ac0d520c24d0419f1a"
