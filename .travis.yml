@@ -25,7 +25,6 @@ matrix:
       osx_image: xcode8.3
       rust: stable
   allow_failures:
-    - rust: stable # temporary while compiler 1.24 has a bug conflicting with kcov
     - rust: nightly
 
 addons:
