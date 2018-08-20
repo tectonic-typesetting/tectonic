@@ -75,7 +75,7 @@ impl PersistentConfig {
         Ok(config)
     }
 
-    pub fn make_cached_url_provider(&self, url: &str, status: &mut StatusBackend) -> Result<Box<Bundle>> {
+    pub fn make_cached_url_provider(&self, url: &str, only_cached: bool, status: &mut StatusBackend) -> Result<Box<Bundle>> {
         let itb = ITarBundle::<HttpITarIoFactory>::new(url);
 
         let mut url2digest_path = app_dir(AppDataType::UserCache, &::APP_INFO, "urls")?;
@@ -86,6 +86,7 @@ impl PersistentConfig {
             &url2digest_path,
             &app_dir(AppDataType::UserCache, &::APP_INFO, "manifests")?,
             &app_dir(AppDataType::UserCache, &::APP_INFO, "files")?,
+            only_cached,
             status,
         )?;
         
@@ -104,7 +105,7 @@ impl PersistentConfig {
         Ok(Box::new(zip_bundle) as _)
     }
 
-    pub fn default_bundle(&self, status: &mut StatusBackend) -> Result<Box<Bundle>> {
+    pub fn default_bundle(&self, only_cached: bool, status: &mut StatusBackend) -> Result<Box<Bundle>> {
         use std::io;
         use hyper::Url;
 
@@ -122,8 +123,8 @@ impl PersistentConfig {
 
             return Ok(Box::new(zip_bundle) as _);
         }
-        let bundle = self.make_cached_url_provider(&self.default_bundles[0].url, status)?;
-		return Ok(Box::new(bundle) as _);
+        let bundle = self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, status)?;
+    		return Ok(Box::new(bundle) as _);
     }
 
     pub fn format_cache_path(&self) -> Result<PathBuf> {
