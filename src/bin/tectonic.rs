@@ -101,13 +101,17 @@ fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatu
         }
     }
 
+    let only_cached = args.is_present("only_cached");
+    if only_cached {
+        tt_note!(status, "using only cached resource files");
+    }
     if let Some(p) = args.value_of("bundle") {
         let zb = ctry!(ZipBundle::<File>::open(Path::new(&p)); "error opening bundle");
         sess_builder.bundle(Box::new(zb));
     } else if let Some(u) = args.value_of("web_bundle") {
-        sess_builder.bundle(Box::new(config.make_cached_url_provider(&u, status)?));
+        sess_builder.bundle(Box::new(config.make_cached_url_provider(&u, only_cached, status)?));
     } else {
-        sess_builder.bundle(config.default_bundle(status)?);
+        sess_builder.bundle(config.default_bundle(only_cached, status)?);
     }
 
     let mut sess = sess_builder.create(status)?;
@@ -149,6 +153,10 @@ fn main() {
              .value_name("URL")
              .help("Use this URL find resource files instead of the default")
              .takes_value(true))
+        .arg(Arg::with_name("only_cached")
+             .short("C")
+             .long("only-cached")
+             .help("Use only resource files cached locally"))
         .arg(Arg::with_name("outfmt")
              .long("outfmt")
              .value_name("FORMAT")
