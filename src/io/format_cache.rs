@@ -5,9 +5,8 @@
 
 //! Code for locally caching compiled format files.
 
-use mkstemp;
+use tempfile;
 use std::ffi::{OsStr};
-use std::fs;
 use std::io::{BufReader, Write};
 use std::path::PathBuf;
 
@@ -82,15 +81,15 @@ impl IoProvider for FormatCache {
     fn write_format(&mut self, name: &str, data: &[u8], _status: &mut StatusBackend) -> Result<()> {
         let final_path = self.path_for_format(OsStr::new(name))?;
 
-        let mut templ = self.formats_base.clone();
-        templ.push("format_XXXXXX");
+		let mut temp_dest = tempfile::Builder::new()
+			.prefix("format_")
+			.rand_bytes(6)
+			.tempfile_in(&self.formats_base)?;
 
-        let temp_path = {
-            let mut temp_dest = mkstemp::TempFile::new(&templ.to_string_lossy(), false)?;
-            temp_dest.write_all(data)?;
-            temp_dest.path().to_owned()
-        };
-
-        fs::rename(&temp_path, &final_path).map_err(|e| e.into())
+		temp_dest.write_all(data)?;
+		
+		temp_dest.persist(&final_path).map_err(|e| e.error)?;
+		
+		Ok(())
     }
 }

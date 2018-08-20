@@ -41,7 +41,7 @@ extern crate hyper;
 extern crate hyper_native_tls;
 extern crate libc;
 extern crate md5;
-extern crate mkstemp;
+extern crate tempfile;
 #[macro_use] extern crate serde_derive;
 extern crate serde;
 extern crate sha2;

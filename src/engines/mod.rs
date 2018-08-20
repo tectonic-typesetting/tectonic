@@ -18,9 +18,9 @@ use md5::{Md5, Digest};
 use libc;
 use std::ffi::{CStr, OsStr, OsString};
 use std::io::{Read, SeekFrom, Write};
-use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 use std::{io, ptr, slice};
+use std::borrow::Cow;
 
 use digest::DigestData;
 use errors::{Error, ErrorKind, Result};
@@ -40,6 +40,16 @@ pub use self::spx2html::Spx2HtmlEngine;
 pub use self::tex::TexEngine;
 pub use self::xdvipdfmx::XdvipdfmxEngine;
 
+
+#[cfg(unix)]
+fn osstr_from_cstr(s: &CStr) -> Cow<OsStr> {
+	use std::os::unix::ffi::OsStrExt;
+	Cow::Borrowed(OsStr::from_bytes(s.to_bytes()))
+}
+#[cfg(windows)]
+fn osstr_from_cstr(s: &CStr) -> Cow<OsStr> {
+	Cow::Owned(OsString::from(s.to_string_lossy().to_owned().to_string()))
+}
 
 // Now, the public API.
 
@@ -478,10 +488,10 @@ fn issue_error<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *co
 
 fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, path: *const libc::c_char, digest: *mut u8) -> libc::c_int {
     let es = unsafe { &mut *es };
-    let rpath = OsStr::from_bytes(unsafe { CStr::from_ptr(path) }.to_bytes());
+    let rpath = osstr_from_cstr(unsafe { CStr::from_ptr(path) });
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
 
-    if es.get_file_md5(rpath, rdest) {
+    if es.get_file_md5(rpath.as_ref(), rdest) {
         1
     } else {
         0
@@ -503,7 +513,7 @@ fn get_data_md5<'a, I: 'a + IoProvider>(_es: *mut ExecutionState<'a, I>, data: *
 
 fn output_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const libc::c_char, is_gz: libc::c_int) -> *const libc::c_void {
     let es = unsafe { &mut *es };
-    let rname = OsStr::from_bytes(unsafe { CStr::from_ptr(name) }.to_bytes());
+    let rname = osstr_from_cstr(&unsafe { CStr::from_ptr(name) });
     let ris_gz = is_gz != 0;
 
     es.output_open(&rname, ris_gz) as *const _
@@ -571,7 +581,7 @@ fn output_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: 
 
 fn input_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const libc::c_char, format: libc::c_int, is_gz: libc::c_int) -> *const libc::c_void {
     let es = unsafe { &mut *es };
-    let rname = OsStr::from_bytes(unsafe { CStr::from_ptr(name) }.to_bytes());
+    let rname = osstr_from_cstr(unsafe { CStr::from_ptr(name) });
     let rformat = c_format_to_rust(format);
     let ris_gz = is_gz != 0;
 
