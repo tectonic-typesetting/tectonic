@@ -195,6 +195,9 @@ fn md5_of_hello() { TestCase::new("md5_of_hello").check_pdf(true).go() }
 fn negative_roman_numeral() { TestCase::new("negative_roman_numeral").go() }
 
 #[test]
+fn tex_logo() { TestCase::new("tex_logo").go() }
+
+#[test]
 fn pdfoutput() { TestCase::new("pdfoutput").go() }
 
 #[test]

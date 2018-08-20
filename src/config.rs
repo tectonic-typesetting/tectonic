@@ -14,14 +14,16 @@ use std::io::{Read, Write};
 use std::io::ErrorKind as IoErrorKind;
 use std::fs::File;
 use std::path::PathBuf;
+use std::ffi::OsStr;
 
 use app_dirs::{app_dir, app_root, get_app_root, sanitized, AppDataType};
 use toml;
 
 use errors::{ErrorKind, Result};
-use io::Bundle;
 use io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use io::local_cache::LocalCache;
+use io::zipbundle::ZipBundle;
+use io::Bundle;
 use status::StatusBackend;
 
 
@@ -39,7 +41,6 @@ pub struct PersistentConfig {
 pub struct BundleInfo {
     url: String,
 }
-
 
 impl PersistentConfig {
     pub fn open(auto_create_config_file: bool) -> Result<PersistentConfig> {
@@ -74,28 +75,56 @@ impl PersistentConfig {
         Ok(config)
     }
 
-    pub fn make_cached_url_provider(&self, url: &str, only_cached: bool, status: &mut StatusBackend) -> Result<LocalCache<ITarBundle<HttpITarIoFactory>>> {
+    pub fn make_cached_url_provider(&self, url: &str, only_cached: bool, status: &mut StatusBackend) -> Result<Box<Bundle>> {
         let itb = ITarBundle::<HttpITarIoFactory>::new(url);
 
         let mut url2digest_path = app_dir(AppDataType::UserCache, &::APP_INFO, "urls")?;
         url2digest_path.push(sanitized(url));
 
-        LocalCache::<ITarBundle<HttpITarIoFactory>>::new(
+        let bundle = LocalCache::<ITarBundle<HttpITarIoFactory>>::new(
             itb,
             &url2digest_path,
             &app_dir(AppDataType::UserCache, &::APP_INFO, "manifests")?,
             &app_dir(AppDataType::UserCache, &::APP_INFO, "files")?,
             only_cached,
-            status
-        )
+            status,
+        )?;
+        
+        Ok(Box::new(bundle) as _)
+    }
+
+    pub fn make_local_file_provider(
+        &self,
+        file_path: &OsStr,
+        _status: &mut StatusBackend,
+    ) -> Result<Box<Bundle>> {
+        use std::path::Path;
+
+        let zip_bundle = ZipBundle::<File>::open(Path::new(file_path))?;
+
+        Ok(Box::new(zip_bundle) as _)
     }
 
     pub fn default_bundle(&self, only_cached: bool, status: &mut StatusBackend) -> Result<Box<Bundle>> {
+        use std::io;
+        use hyper::Url;
+
         if self.default_bundles.len() != 1 {
             return Err(ErrorKind::Msg("exactly one default_bundle item must be specified (for now)".to_owned()).into());
         }
 
-        Ok(Box::new(self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, status)?))
+        let url = Url::parse(&self.default_bundles[0].url)
+            .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "failed to parse url"))?;
+        if url.scheme() == "file" {
+            // load the local zip file.
+            let file_path = url.to_file_path()
+                .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "failed to parse local path"))?;
+            let zip_bundle = self.make_local_file_provider(file_path.as_os_str(), status)?;
+
+            return Ok(Box::new(zip_bundle) as _);
+        }
+        let bundle = self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, status)?;
+    		return Ok(Box::new(bundle) as _);
     }
 
     pub fn format_cache_path(&self) -> Result<PathBuf> {
