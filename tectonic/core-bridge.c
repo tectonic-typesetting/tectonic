@@ -244,5 +244,9 @@ ttstub_input_ungetc(rust_input_handle_t handle, int ch)
 int
 ttstub_input_close(rust_input_handle_t handle)
 {
-    return TGB->input_close(TGB->context, handle);
+    if (TGB->input_close(TGB->context, handle)) {
+        // Nonzero return value indicates a serious internal error.
+        longjmp(jump_buffer, 1);
+    }
+    return 0;
 }
