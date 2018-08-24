@@ -602,7 +602,7 @@ fn input_get_size<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle
     es.input_get_size(rhandle)
 }
 
-fn input_seek<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, offset: libc::ssize_t, whence: libc::c_int) -> libc::size_t {
+fn input_seek<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, offset: libc::ssize_t, whence: libc::c_int, internal_error: *mut libc::c_int) -> libc::size_t {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
@@ -611,9 +611,11 @@ fn input_seek<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *m
         libc::SEEK_CUR => SeekFrom::Current(offset as i64),
         libc::SEEK_END => SeekFrom::End(offset as i64),
         _ => {
-                // TODO: Handle the error better. This indicates a bug in the engine.
                 tt_error!(es.status, "serious internal bug: unexpected \"whence\" parameter to fseek() wrapper: {}",
                             whence);
+                unsafe {
+                    *internal_error = 1;
+                }
                 return 0;
         }
     };

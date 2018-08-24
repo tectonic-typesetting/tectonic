@@ -220,7 +220,13 @@ ttstub_input_get_size(rust_input_handle_t handle)
 size_t
 ttstub_input_seek(rust_input_handle_t handle, ssize_t offset, int whence)
 {
-    return TGB->input_seek(TGB->context, handle, offset, whence);
+    int internal_error = 0;
+    size_t rv = TGB->input_seek(TGB->context, handle, offset, whence, &internal_error);
+    if (internal_error) {
+        // Nonzero indicates a serious internal error.
+        longjmp(jump_buffer, 1);
+    }
+    return rv;
 }
 
 ssize_t

@@ -68,7 +68,7 @@ typedef struct tt_bridge_api_t {
     rust_input_handle_t (*input_open)(void *context, char const *path, tt_input_format_type format, int is_gz);
     rust_input_handle_t (*input_open_primary)(void *context);
     size_t (*input_get_size)(void *context, rust_input_handle_t handle);
-    size_t (*input_seek)(void *context, rust_input_handle_t handle, ssize_t offset, int whence);
+    size_t (*input_seek)(void *context, rust_input_handle_t handle, ssize_t offset, int whence, int* internal_error);
     ssize_t (*input_read)(void *context, rust_input_handle_t handle, char *data, size_t len);
     int (*input_getc)(void *context, rust_input_handle_t handle);
     int (*input_ungetc)(void *context, rust_input_handle_t handle, int ch);
