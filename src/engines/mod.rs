@@ -383,15 +383,9 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         }
     }
 
-    fn input_seek(&mut self, handle: *mut InputHandle, pos: SeekFrom) -> u64 {
+    fn input_seek(&mut self, handle: *mut InputHandle, pos: SeekFrom) -> Result<u64> {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
-        match rhandle.try_seek(pos) {
-            Ok(pos) => pos,
-            Err(e) => {
-                tt_warning!(self.status, "input seek failed"; e);
-                0
-            }
-        }
+        rhandle.try_seek(pos)
     }
 
     fn input_read(&mut self, handle: *mut InputHandle, buf: &mut [u8]) -> Result<()> {
@@ -422,8 +416,10 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                 return false;
             }
         }
+        // TODO: Handle the error better. This indicates a bug in the engine.
+        tt_error!(self.status, "serious internal bug: unexpected handle in input close: {:?}", handle);
 
-        panic!("unexpected handle {:?}", handle);
+        true
     }
 }
 
@@ -472,21 +468,21 @@ extern {
 
 // Entry points for the C/C++ API functions.
 
-fn issue_warning<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const libc::c_char) {
+extern fn issue_warning<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const libc::c_char) {
     let es = unsafe { &mut *es };
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_warning!(es.status, "{}", rtext.to_string_lossy());
 }
 
-fn issue_error<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const libc::c_char) {
+extern fn issue_error<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const libc::c_char) {
     let es = unsafe { &mut *es };
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_error!(es.status, "{}", rtext.to_string_lossy());
 }
 
-fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, path: *const libc::c_char, digest: *mut u8) -> libc::c_int {
+extern fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, path: *const libc::c_char, digest: *mut u8) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rpath = osstr_from_cstr(unsafe { CStr::from_ptr(path) });
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
@@ -498,7 +494,7 @@ fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, path: *c
     }
 }
 
-fn get_data_md5<'a, I: 'a + IoProvider>(_es: *mut ExecutionState<'a, I>, data: *const u8, len: libc::size_t, digest: *mut u8) -> libc::c_int {
+extern fn get_data_md5<'a, I: 'a + IoProvider>(_es: *mut ExecutionState<'a, I>, data: *const u8, len: libc::size_t, digest: *mut u8) -> libc::c_int {
     //let es = unsafe { &mut *es };
     let rdata = unsafe { slice::from_raw_parts(data, len) };
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
@@ -511,7 +507,7 @@ fn get_data_md5<'a, I: 'a + IoProvider>(_es: *mut ExecutionState<'a, I>, data: *
     0
 }
 
-fn output_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const libc::c_char, is_gz: libc::c_int) -> *const libc::c_void {
+extern fn output_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const libc::c_char, is_gz: libc::c_int) -> *const libc::c_void {
     let es = unsafe { &mut *es };
     let rname = osstr_from_cstr(&unsafe { CStr::from_ptr(name) });
     let ris_gz = is_gz != 0;
@@ -519,13 +515,13 @@ fn output_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *co
     es.output_open(&rname, ris_gz) as *const _
 }
 
-fn output_open_stdout<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, ) -> *const libc::c_void {
+extern fn output_open_stdout<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, ) -> *const libc::c_void {
     let es = unsafe { &mut *es };
 
     es.output_open_stdout() as *const _
 }
 
-fn output_putc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, c: libc::c_int) -> libc::c_int {
+extern fn output_putc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, c: libc::c_int) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut OutputHandle;
     let rc = c as u8;
@@ -537,7 +533,7 @@ fn output_putc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *
     }
 }
 
-fn output_write<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, data: *const u8, len: libc::size_t) -> libc::size_t {
+extern fn output_write<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, data: *const u8, len: libc::size_t) -> libc::size_t {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut OutputHandle;
     let rdata = unsafe { slice::from_raw_parts(data, len) };
@@ -551,7 +547,7 @@ fn output_write<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: 
     }
 }
 
-fn output_flush<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
+extern fn output_flush<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut OutputHandle;
 
@@ -562,7 +558,7 @@ fn output_flush<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: 
     }
 }
 
-fn output_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
+extern fn output_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
     let es = unsafe { &mut *es };
 
     if handle == 0 as *mut _ {
@@ -579,7 +575,7 @@ fn output_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: 
 }
 
 
-fn input_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const libc::c_char, format: libc::c_int, is_gz: libc::c_int) -> *const libc::c_void {
+extern fn input_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const libc::c_char, format: libc::c_int, is_gz: libc::c_int) -> *const libc::c_void {
     let es = unsafe { &mut *es };
     let rname = osstr_from_cstr(unsafe { CStr::from_ptr(name) });
     let rformat = c_format_to_rust(format);
@@ -593,20 +589,20 @@ fn input_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *con
     }
 }
 
-fn input_open_primary<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>) -> *const libc::c_void {
+extern fn input_open_primary<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>) -> *const libc::c_void {
     let es = unsafe { &mut *es };
 
     es.input_open_primary() as *const _
 }
 
-fn input_get_size<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::size_t {
+extern fn input_get_size<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::size_t {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
     es.input_get_size(rhandle)
 }
 
-fn input_seek<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, offset: libc::ssize_t, whence: libc::c_int) -> libc::size_t {
+extern fn input_seek<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, offset: libc::ssize_t, whence: libc::c_int, internal_error: *mut libc::c_int) -> libc::size_t {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
@@ -614,13 +610,27 @@ fn input_seek<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *m
         libc::SEEK_SET => SeekFrom::Start(offset as u64),
         libc::SEEK_CUR => SeekFrom::Current(offset as i64),
         libc::SEEK_END => SeekFrom::End(offset as i64),
-        _ => panic!("Unexpected \"whence\" parameter to fseek() wrapper: {}", whence),
+        _ => {
+                tt_error!(es.status, "serious internal bug: unexpected \"whence\" parameter to fseek() wrapper: {}",
+                            whence);
+                unsafe {
+                    *internal_error = 1;
+                }
+                return 0;
+        }
     };
 
-    es.input_seek(rhandle, rwhence) as libc::size_t
+    match es.input_seek(rhandle, rwhence) {
+        Ok(pos) => pos as libc::size_t,
+        Err(e) => {
+            // TODO: Handle the error better. Report the error properly to the caller?
+            tt_error!(es.status, "input seek failed"; e);
+            0
+        }
+    }
 }
 
-fn input_getc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
+extern fn input_getc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
@@ -637,7 +647,7 @@ fn input_getc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *m
     }
 }
 
-fn input_ungetc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, ch: libc::c_int) -> libc::c_int {
+extern fn input_ungetc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, ch: libc::c_int) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
@@ -650,7 +660,7 @@ fn input_ungetc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: 
     }
 }
 
-fn input_read<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, data: *mut u8, len: libc::size_t) -> libc::ssize_t {
+extern fn input_read<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, data: *mut u8, len: libc::size_t) -> libc::ssize_t {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
     let rdata = unsafe { slice::from_raw_parts_mut(data, len) };
@@ -664,7 +674,7 @@ fn input_read<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *m
     }
 }
 
-fn input_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
+extern fn input_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
     let es = unsafe { &mut *es };
 
     if handle == 0 as *mut _ {
