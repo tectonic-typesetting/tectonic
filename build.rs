@@ -1,5 +1,5 @@
 // build.rs -- build helper script for Tectonic.
-// Copyright 2016-2017 the Tectonic Project
+// Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 //
 // TODO: this surely needs to become much smarter and more flexible.
@@ -12,50 +12,26 @@ extern crate sha2;
 use std::env;
 use std::path::PathBuf;
 
-// MacOS platform specifics:
 
+// No fontconfig on MacOS:
 #[cfg(target_os = "macos")]
 const LIBS: &'static str = "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
-
-#[cfg(target_os = "macos")]
-fn c_platform_specifics(cfg: &mut cc::Build) {
-    cfg.define("XETEX_MAC", Some("1"));
-    cfg.file("tectonic/XeTeX_mac.c");
-
-    println!("cargo:rustc-link-lib=framework=Foundation");
-    println!("cargo:rustc-link-lib=framework=CoreFoundation");
-    println!("cargo:rustc-link-lib=framework=CoreGraphics");
-    println!("cargo:rustc-link-lib=framework=CoreText");
-    println!("cargo:rustc-link-lib=framework=AppKit");
-}
-
-#[cfg(target_os = "macos")]
-fn cpp_platform_specifics(cfg: &mut cc::Build) {
-    cfg.define("XETEX_MAC", Some("1"));
-    cfg.file("tectonic/XeTeXFontInst_Mac.cpp");
-    cfg.file("tectonic/XeTeXFontMgr_Mac.mm");
-}
-
-
-// Not-MacOS:
 
 #[cfg(not(target_os = "macos"))]
 const LIBS: &'static str = "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
-#[cfg(not(target_os = "macos"))]
-fn c_platform_specifics(_: &mut cc::Build) {
-}
+// DLL linking on Windows is a huge hassle, so try to do everything statically:
+#[cfg(target_os = "windows")]
+const STATIK: bool = true;
 
-#[cfg(not(target_os = "macos"))]
-fn cpp_platform_specifics(cfg: &mut cc::Build) {
-    cfg.file("tectonic/XeTeXFontMgr_FC.cpp");
-}
+#[cfg(not(target_os = "windows"))]
+const STATIK: bool = false;
 
 
 fn main() {
     // We (have to) rerun the search again below to emit the metadata at the right time.
 
-    let deps = pkg_config::Config::new().cargo_metadata(false).probe(LIBS).unwrap();
+    let deps = pkg_config::Config::new().cargo_metadata(false).statik(STATIK).probe(LIBS).unwrap();
 
     // First, emit the string pool C code. Sigh.
 
@@ -258,13 +234,34 @@ fn main() {
         cppcfg.include(&p);
     }
 
-    c_platform_specifics(&mut ccfg);
-    cpp_platform_specifics(&mut cppcfg);
+    // Platform-specific adjustments:
+
+    if cfg!(target_os = "macos") {
+        ccfg.define("XETEX_MAC", Some("1"));
+        ccfg.file("tectonic/XeTeX_mac.c");
+
+        cppcfg.define("XETEX_MAC", Some("1"));
+        cppcfg.file("tectonic/XeTeXFontInst_Mac.cpp");
+        cppcfg.file("tectonic/XeTeXFontMgr_Mac.mm");
+
+        println!("cargo:rustc-link-lib=framework=Foundation");
+        println!("cargo:rustc-link-lib=framework=CoreFoundation");
+        println!("cargo:rustc-link-lib=framework=CoreGraphics");
+        println!("cargo:rustc-link-lib=framework=CoreText");
+        println!("cargo:rustc-link-lib=framework=AppKit");
+    }
+
+    if cfg!(not(target_os = "macos")) {
+        // At the moment we use Fontconfig on both Linux and Windows.
+        cppcfg.file("tectonic/XeTeXFontMgr_FC.cpp");
+    }
 
     if cfg!(target_endian = "big") {
         ccfg.define("WORDS_BIGENDIAN", "1");
         cppcfg.define("WORDS_BIGENDIAN", "1");
     }
+
+    // OK, back to generic build rules.
 
     ccfg.compile("libtectonic_c.a");
     cppcfg.compile("libtectonic_cpp.a");
@@ -272,7 +269,7 @@ fn main() {
     // Now that we've emitted the info for our own libraries, we can emit the
     // info for their dependents.
 
-    pkg_config::Config::new().cargo_metadata(true).probe(LIBS).unwrap();
+    pkg_config::Config::new().cargo_metadata(true).statik(STATIK).probe(LIBS).unwrap();
 
     // Tell cargo to rerun build.rs only if files in the tectonic/ directory have changed.
     for file in PathBuf::from("tectonic").read_dir().unwrap() {
