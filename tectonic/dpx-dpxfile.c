@@ -20,14 +20,17 @@
 
 #include "dpx-dpxfile.h"
 
-#include <dirent.h>
 #include <fcntl.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <time.h>
+
+#ifndef _MSC_VER
 #include <unistd.h>
+#include <dirent.h>
+#endif
 
 #include "dpx-mem.h"
 #include "dpx-numbers.h"
@@ -285,7 +288,11 @@ dpx_open_dfont_file (const char *filename)
 static char *
 dpx_get_tmpdir (void)
 {
-#  define __TMPDIR     "/tmp"
+# ifdef _MSC_VER
+#  define __TMPDIR "C:\\Windows\\Temp"
+# else
+#  define __TMPDIR "/tmp"
+# endif
     size_t i;
     char *ret;
     const char *_tmpd;
@@ -306,72 +313,48 @@ dpx_get_tmpdir (void)
 char *
 dpx_create_temp_file (void)
 {
+    char *tmpdir;
+    size_t n;
     char  *tmp = NULL;
 
-#  define TEMPLATE     "/dvipdfmx.XXXXXX"
+#ifndef _MSC_VER
+# define TEMPLATE "/dvipdfmx.XXXXXX"
+#else
+# define TEMPLATE "\\dvipdfmx.XXXXXX"
+#endif
+
+    tmpdir = dpx_get_tmpdir();
+    n = strlen(tmpdir) + strlen(TEMPLATE) + 1;
+    tmp = NEW(n, char);
+    strcpy(tmp, tmpdir);
+    free(tmpdir);
+    strcat(tmp, TEMPLATE);
+
+#ifdef _MSC_VER
+    if (_mktemp_s(tmp, n) != 0)
+        tmp = mfree(tmp);
+#else
     {
-        char *_tmpd;
-        int  _fd = -1;
-        _tmpd = dpx_get_tmpdir();
-        tmp = NEW(strlen(_tmpd) + strlen(TEMPLATE) + 1, char);
-        strcpy(tmp, _tmpd);
-        free(_tmpd);
-        strcat(tmp, TEMPLATE);
-        _fd  = mkstemp(tmp);
-        if (_fd != -1) {
+        int _fd = mkstemp(tmp);
+
+        if (_fd != -1)
             close(_fd);
-        } else {
+        else
             tmp = mfree(tmp);
-        }
     }
+#endif
 
-    return  tmp;
-}
-
-#define DPX_PREFIX "dvipdfm-x."
-
-static int
-dpx_clear_cache_filter (const struct dirent *ent) {
-    size_t plen = strlen(DPX_PREFIX);
-    if (strlen(ent->d_name) != plen + MAX_KEY_LEN * 2) return 0;
-    return strstartswith(ent->d_name, DPX_PREFIX) == 0;
+    return tmp;
 }
 
 void
 dpx_delete_old_cache (int life)
 {
-    char *dir;
-    char *pathname;
-    DIR *dp;
-    struct dirent *de;
-    time_t limit;
+    /* This used to delete files in tmpdir, but that code was ripped out since
+     * it would have been annoying to port to Windows. */
 
-    if (life == -2) {
+    if (life == -2)
         keep_cache = -1;
-        return;
-    }
-
-    dir = dpx_get_tmpdir();
-    pathname = NEW(strlen(dir)+1+strlen(DPX_PREFIX)+MAX_KEY_LEN*2 + 1, char);
-    limit = time(NULL) - life * 60 * 60;
-
-    if (life >= 0) keep_cache = 1;
-    if ((dp = opendir(dir)) != NULL) {
-        while((de = readdir(dp)) != NULL) {
-            if (dpx_clear_cache_filter(de)) {
-                struct stat sb;
-                sprintf(pathname, "%s/%s", dir, de->d_name);
-                stat(pathname, &sb);
-                if (sb.st_mtime < limit) {
-                    remove(pathname);
-                    /* printf("remove: %s\n", pathname); */
-                }
-            }
-        }
-        closedir(dp);
-    }
-    free(dir);
-    free(pathname);
 }
 
 void

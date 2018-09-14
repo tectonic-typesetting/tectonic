@@ -11,11 +11,9 @@
 
 #include <assert.h>
 #include <ctype.h>
-#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <float.h>
-#include <getopt.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
@@ -27,7 +25,22 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
+
+#ifndef _MSC_VER
+# include <dirent.h>
+# include <getopt.h>
+# include <unistd.h>
+#else
+# ifndef __cplusplus
+#  define inline __inline
+# endif
+# define strcasecmp _stricmp
+# define strncasecmp _strnicmp
+# if defined(_VC_CRT_MAJOR_VERSION) && _VC_CRT_MAJOR_VERSION < 14
+#  define snprintf _snprintf
+#  define strtoll _strtoi64
+# endif
+#endif
 
 /* high-level defines */
 

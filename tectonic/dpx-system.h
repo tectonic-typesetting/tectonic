@@ -30,11 +30,14 @@
 #define DPX_VERSION "0.1"
 
 #include <ctype.h>
-#include <dirent.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+
+#ifndef _MSC_VER
+#include <dirent.h>
+#endif
 
 #include "core-bridge.h"
 

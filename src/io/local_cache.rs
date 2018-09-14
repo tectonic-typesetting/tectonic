@@ -155,9 +155,14 @@ impl<B: Bundle> LocalCache<B> {
             None => "-".to_owned(),
         };
 
+        // Due to a quirk about permissions for file locking on Windows, we
+        // need to add `.read(true)` to be able to lock a file opened in
+        // append mode.
+
         let mut man = fs::OpenOptions::new()
             .append(true)
             .create(true)
+            .read(true)
             .open(&self.manifest_path)?;
 
         // Lock will be released when file is closed at the end of this function.
@@ -264,53 +269,64 @@ impl<B: Bundle> LocalCache<B> {
         let mut digest_builder = digest::create();
         let mut length = 0;
 
-		let mut temp_dest = match tempfile::Builder::new()
-			.prefix("download_")
-			.rand_bytes(6)
-			.tempfile_in(&self.data_path) {
-			Ok(f) => f,
-            Err(e) => return OpenResult::Err(e.into()),
-		};
+	let mut temp_dest = match tempfile::Builder::new()
+	    .prefix("download_")
+	    .rand_bytes(6)
+	    .tempfile_in(&self.data_path) {
+		Ok(f) => f,
+                Err(e) => return OpenResult::Err(e.into()),
+	    };
 
-		let mut buf = [0u8; 8192];
+	let mut buf = [0u8; 8192];
 
-		while let Ok(nbytes) = stream.read(&mut buf) {
-			if nbytes == 0 {
-				break;
-			}
+	while let Ok(nbytes) = stream.read(&mut buf) {
+	    if nbytes == 0 {
+		break;
+	    }
 
-			length += nbytes;
-			let chunk = &buf[..nbytes];
+	    length += nbytes;
+	    let chunk = &buf[..nbytes];
 
-			digest_builder.input(chunk);
-			if let Err(e) = temp_dest.write_all(chunk) {
-				return OpenResult::Err(e.into());
-			}
-		}
-		
+	    digest_builder.input(chunk);
+	    if let Err(e) = temp_dest.write_all(chunk) {
+		return OpenResult::Err(e.into());
+	    }
+	}
+
         let digest = DigestData::from(digest_builder);
 
-        // Now we can move it to its final destination ..
+        // Now we can almost move it to its final destination ..
 
         let final_path = match digest.create_two_part_path(&self.data_path) {
             Ok(p) => p,
             Err(e) => return OpenResult::Err(e.into()),
         };
 
-		if let Err(e) = temp_dest.persist(&final_path) {
-			return OpenResult::Err(e.error.into());
-		};
+        // Perform a racy check for the destination existing, because this
+        // matters on Windows: if the destination is already there, we'll get
+        // an error because the destination is marked read-only. Assuming
+        // non-pathological filesystem manipulation, though, we'll only be
+        // subject to the race once.
 
-        // Make the file readonly once it's at its final path.
-        // XXX: It would be better to set these using the already-open file handle owned by the
-        // tempfile, but mkstemp doesn't give us access.
-        let mut perms = match fs::metadata(&final_path) {
-            Ok(p) => p,
-            Err(e) => return OpenResult::Err(e.into()),
-        }.permissions();
-        perms.set_readonly(true);
-        if let Err(e) = fs::set_permissions(&final_path, perms) {
-            return OpenResult::Err(e.into());
+        if !final_path.exists() {
+	    if let Err(e) = temp_dest.persist(&final_path) {
+                return OpenResult::Err(e.error.into());
+            }
+
+            // Now we can make the file readonly. It would be nice to set the
+            // permissions using the already-open file handle owned by the
+            // tempfile, but mkstemp doesn't give us access.
+            let mut perms = match fs::metadata(&final_path) {
+                Ok(p) => p,
+                Err(e) => {
+                    return OpenResult::Err(e.into());
+                }
+            }.permissions();
+            perms.set_readonly(true);
+
+            if let Err(e) = fs::set_permissions(&final_path, perms) {
+                return OpenResult::Err(e.into());
+            }
         }
 
         // And finally add a record of this file to our manifest. Note that

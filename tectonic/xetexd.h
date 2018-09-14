@@ -684,8 +684,8 @@ extern bool gave_char_warning_help;
  * with negative indices. The underlying arrays used to be named "zzzaa" and
  * "zzzbb". */
 
-extern uint16_t _xeq_level_array[1114731];
-#define xeq_level (_xeq_level_array - 8938740)
+extern uint16_t _xeq_level_array[EQTB_SIZE - INT_BASE + 1];
+#define XEQ_LEVEL(i) _xeq_level_array[(i) - INT_BASE]
 
 extern int32_t _trie_op_hash_array[trie_op_size - neg_trie_op_size + 1];
 #define trie_op_hash (_trie_op_hash_array - (int) neg_trie_op_size)
