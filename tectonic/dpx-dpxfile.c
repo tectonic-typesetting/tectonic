@@ -20,14 +20,17 @@
 
 #include "dpx-dpxfile.h"
 
-#include <dirent.h>
 #include <fcntl.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <time.h>
+
+#ifndef _MSC_VER
 #include <unistd.h>
+#include <dirent.h>
+#endif
 
 #include "dpx-mem.h"
 #include "dpx-numbers.h"

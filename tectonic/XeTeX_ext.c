@@ -48,8 +48,11 @@ authorization from the copyright holders.
 #include <locale.h>
 #include <math.h> /* for fabs() */
 #include <signal.h>
-#include <sys/time.h>
 #include <time.h>
+
+#ifndef _MSC_VER
+#include <sys/time.h>
+#endif
 
 #include <unicode/ubidi.h>
 #include <unicode/ubrk.h>
