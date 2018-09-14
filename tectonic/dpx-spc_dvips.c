@@ -959,54 +959,9 @@ spc_dvips_setup_handler (struct spc_handler *handle,
   return  -1;
 }
 
-#define GS_CALCULATOR "gs -q -dNOPAUSE -dBATCH -sDEVICE=nullpage -f "
 
-static
-int calculate_PS (char *string, int length, double *res1, double *res2, double *res3, double *res4, double *res5, double *res6) {
-  char *formula, *cmd;
-  FILE *fp, *coord;
-  int k;
-
-  if (res1 == NULL && res2 == NULL)
+static int
+calculate_PS (char *string, int length, double *res1, double *res2, double *res3, double *res4, double *res5, double *res6) {
+    dpx_warning("PSTricks image conversion not allowed");
     return -1;
-  formula = dpx_create_temp_file();
-  if (!formula) {
-    dpx_warning("Failed to create temporary input file for PSTricks image conversion.");
-    return  -1;
-  }
-
-  fp = fopen(formula, "wb");
-  for (k = 0; k < num_ps_headers; k++)
-    fprintf(fp, "(%s) run\n", ps_headers[k]);
-  fprintf(fp, "0 0 moveto\n");
-  fprintf(fp, "(%s) run\n", global_defs);
-  if (page_defs != NULL)
-    fprintf(fp, "(%s) run\n", page_defs);
-  if (temporary_defs)
-    fprintf(fp, "(%s) run\n", temporary_defs);
-  fwrite(string, 1, length, fp);
-  fclose(fp);
-
-  k = strlen(GS_CALCULATOR) + strlen(formula) + 1;
-  cmd = NEW(k, char);
-  strcpy(cmd, GS_CALCULATOR);
-  strcat(cmd, formula);
-
-  coord = popen(cmd, "r");
-  if (coord) {
-    if (res1 == NULL)
-      fscanf(coord, " %lf ", res2);
-    else if (res2 == NULL)
-      fscanf(coord, " %lf ", res1);
-    else if (res3 == NULL)
-      fscanf(coord, " %lf %lf ", res1, res2);
-    else
-      fscanf(coord, " [%lf %lf %lf %lf %lf %lf] ", res1, res2, res3, res4, res5, res6);
-  } else
-    return -1;
-
-  pclose(coord);
-  free(cmd);
-  dpx_delete_temp_file(formula, true);
-  return 0;
 }
