@@ -20,6 +20,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#ifdef _MSC_VER
+#include <windows.h> /* GetEnvironmentVariable */
+#endif
+
 #include "dpx-pdffont.h"
 
 #include <assert.h>
@@ -88,13 +92,27 @@ pdf_font_set_dpi (int font_dpi)
 time_t
 get_unique_time_if_given(void)
 {
-  const char *source_date_epoch;
   int64_t epoch;
   char *endptr;
   time_t ret = INVALID_EPOCH_VALUE;
+  int got_it;
+
+#ifdef _MSC_VER
+  /* A getenv() API exists on Windows but it has different semantics than
+   * GetEnvironmentVariable() that break the test suite. */
+  char source_date_epoch[256];
+  DWORD rv;
+
+  rv = GetEnvironmentVariable("SOURCE_DATE_EPOCH", source_date_epoch, 256);
+  got_it = (rv != 0) && (rv < 256);
+#else
+  const char *source_date_epoch;
 
   source_date_epoch = getenv("SOURCE_DATE_EPOCH");
-  if (source_date_epoch) {
+  got_it = (source_date_epoch != NULL);
+#endif
+
+  if (got_it) {
     errno = 0;
     epoch = strtoll(source_date_epoch, &endptr, 10);
     if (!(*endptr != '\0' || errno != 0)) {
