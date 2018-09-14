@@ -4,10 +4,45 @@ The following changes will appear in the next release:
 
 User-facing improvements:
 
-- The `--bundle` and `--web-bundle` options finally work again. The switch to
-  on-the-fly generation of format files broke them due to an internal
-  implementation problem; this has now been fixed.
+- Tectonic is now available on Windows!
+  ([#210](https://github.com/tectonic-typesetting/tectonic/pull/210),
+  [#231](https://github.com/tectonic-typesetting/tectonic/pull/231)). There
+  are likely to be rough edges to both the developer and user experience, but
+  the test suite passes and Windows is now included in the CI infrastructure.
+  Big thanks to new contributor [@crlf0710](https://github.com/crlf0710) who
+  really got the ball rolling on this important milestone.
+- Fully offline operation is now much improved:
+  - There is a new `--only-cached` (AKA `-C`) option that will avoid all
+    Internet connections
+    ([#203](https://github.com/tectonic-typesetting/tectonic/pull/203)). While
+    Tectonic takes pains to avoid needing an Internet connection when compiling
+    documents, there are still times when you can get more done by explicitly
+    preventing it from even trying to talk to the network.
+  - The `--bundle` and `--web-bundle` options finally work again. The switch
+    to on-the-fly generation of format files broke them due to an internal
+    implementation problem; this has now been fixed
+    ([[#181](https://github.com/tectonic-typesetting/tectonic/pull/181)).
+  - If you put a `file://` URL into your Tectonic configuration file as your
+    default bundle, Tectonic will now load it correctly
+    ([[#211](https://github.com/tectonic-typesetting/tectonic/pull/211)).
 
+Internal improvements:
+
+- Tectonic now avoids panicking from Rust into C code, which is not supported
+  behavior ([#91](https://github.com/tectonic-typesetting/tectonic/pull/91)).
+  Thanks to [@rekka](https://github.com/rekka) for persistence in getting this
+  one across the finish line.
+- Tectonic now avoids crashing when trying to open empty filenames
+  ([#212](https://github.com/tectonic-typesetting/tectonic/pull/212)).
+
+Developer-facing improvements:
+
+- Tectonic is now more up-front about the fact that it requires Harfbuzz
+  version 1.4 or higher.
+- Much of the code that drives compilation for the CLI tool has been moved
+  into the Tectonic library and mode (more) reusable
+  ([#184](https://github.com/tectonic-typesetting/tectonic/pull/184)). Thanks
+  to new contributor [@jneem](https://github.com/jneem) for the contribution!
 
 # 0.1.8 (2018 Jun 17)
 
