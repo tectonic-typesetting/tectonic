@@ -368,7 +368,7 @@ bool used_tectonic_coda_tokens;
 bool semantic_pagination_enabled;
 bool gave_char_warning_help;
 
-uint16_t _xeq_level_array[1114731];
+uint16_t _xeq_level_array[EQTB_SIZE - INT_BASE + 1];
 int32_t _trie_op_hash_array[trie_op_size - neg_trie_op_size + 1];
 
 static b32x2 *yhash;
@@ -3243,7 +3243,7 @@ initialize_more_variables(void)
     page_max_depth = 0;
 
     for (k = INT_BASE; k <= EQTB_SIZE; k++)
-        xeq_level[k] = LEVEL_ONE;
+        XEQ_LEVEL(k) = LEVEL_ONE;
 
     no_new_control_sequence = true;
     prim[0].s0 = 0;

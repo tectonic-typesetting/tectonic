@@ -4402,9 +4402,9 @@ eq_word_define(int32_t p, int32_t w)
     if (eqtb[p].b32.s1 == w)
         return;
 
-    if (xeq_level[p] != cur_level) {
-        eq_save(p, xeq_level[p]);
-        xeq_level[p] = cur_level;
+    if (XEQ_LEVEL(p) != cur_level) {
+        eq_save(p, XEQ_LEVEL(p));
+        XEQ_LEVEL(p) = cur_level;
     }
     eqtb[p].b32.s1 = w;
 }
@@ -4424,7 +4424,7 @@ void geq_word_define(int32_t p, int32_t w)
     CACHE_THE_EQTB;
 
     eqtb[p].b32.s1 = w;
-    xeq_level[p] = LEVEL_ONE;
+    XEQ_LEVEL(p) = LEVEL_ONE;
 }
 
 void save_for_after(int32_t t)
@@ -4499,9 +4499,9 @@ void unsave(void)
                         eq_destroy(eqtb[p]);
                         eqtb[p] = save_stack[save_ptr];
                     }
-                } else if (xeq_level[p] != LEVEL_ONE) {
+                } else if (XEQ_LEVEL(p) != LEVEL_ONE) {
                     eqtb[p] = save_stack[save_ptr];
-                    xeq_level[p] = l;
+                    XEQ_LEVEL(p) = l;
                 }
             }
         }
