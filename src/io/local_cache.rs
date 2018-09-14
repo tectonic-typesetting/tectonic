@@ -264,30 +264,30 @@ impl<B: Bundle> LocalCache<B> {
         let mut digest_builder = digest::create();
         let mut length = 0;
 
-		let mut temp_dest = match tempfile::Builder::new()
-			.prefix("download_")
-			.rand_bytes(6)
-			.tempfile_in(&self.data_path) {
-			Ok(f) => f,
-            Err(e) => return OpenResult::Err(e.into()),
-		};
+	let mut temp_dest = match tempfile::Builder::new()
+	    .prefix("download_")
+	    .rand_bytes(6)
+	    .tempfile_in(&self.data_path) {
+		Ok(f) => f,
+                Err(e) => return OpenResult::Err(e.into()),
+	    };
 
-		let mut buf = [0u8; 8192];
+	let mut buf = [0u8; 8192];
 
-		while let Ok(nbytes) = stream.read(&mut buf) {
-			if nbytes == 0 {
-				break;
-			}
+	while let Ok(nbytes) = stream.read(&mut buf) {
+	    if nbytes == 0 {
+		break;
+	    }
 
-			length += nbytes;
-			let chunk = &buf[..nbytes];
+	    length += nbytes;
+	    let chunk = &buf[..nbytes];
 
-			digest_builder.input(chunk);
-			if let Err(e) = temp_dest.write_all(chunk) {
-				return OpenResult::Err(e.into());
-			}
-		}
-		
+	    digest_builder.input(chunk);
+	    if let Err(e) = temp_dest.write_all(chunk) {
+		return OpenResult::Err(e.into());
+	    }
+	}
+
         let digest = DigestData::from(digest_builder);
 
         // Now we can move it to its final destination ..
