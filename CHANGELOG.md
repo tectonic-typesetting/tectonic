@@ -24,7 +24,7 @@ User-facing improvements:
     ([[#181](https://github.com/tectonic-typesetting/tectonic/pull/181)).
   - If you put a `file://` URL into your Tectonic configuration file as your
     default bundle, Tectonic will now load it correctly
-    ([[#211](https://github.com/tectonic-typesetting/tectonic/pull/211)).
+    ([#211](https://github.com/tectonic-typesetting/tectonic/pull/211)).
 
 Internal improvements:
 
@@ -42,7 +42,7 @@ Developer-facing improvements:
 - Much of the code that drives compilation for the CLI tool has been moved
   into the Tectonic library and mode (more) reusable
   ([#184](https://github.com/tectonic-typesetting/tectonic/pull/184)). Thanks
-  to new contributor [@jneem](https://github.com/jneem) for the contribution!
+  to new contributor [@jneem](https://github.com/jneem) for doing this!
 
 # 0.1.8 (2018 Jun 17)
 
