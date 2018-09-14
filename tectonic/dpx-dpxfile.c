@@ -288,7 +288,11 @@ dpx_open_dfont_file (const char *filename)
 static char *
 dpx_get_tmpdir (void)
 {
-#  define __TMPDIR     "/tmp"
+# ifdef _MSC_VER
+#  define __TMPDIR "C:\\Windows\\Temp"
+# else
+#  define __TMPDIR "/tmp"
+# endif
     size_t i;
     char *ret;
     const char *_tmpd;
@@ -309,26 +313,38 @@ dpx_get_tmpdir (void)
 char *
 dpx_create_temp_file (void)
 {
+    char *tmpdir;
+    size_t n;
     char  *tmp = NULL;
 
-#  define TEMPLATE     "/dvipdfmx.XXXXXX"
-    {
-        char *_tmpd;
-        int  _fd = -1;
-        _tmpd = dpx_get_tmpdir();
-        tmp = NEW(strlen(_tmpd) + strlen(TEMPLATE) + 1, char);
-        strcpy(tmp, _tmpd);
-        free(_tmpd);
-        strcat(tmp, TEMPLATE);
-        _fd  = mkstemp(tmp);
-        if (_fd != -1) {
-            close(_fd);
-        } else {
-            tmp = mfree(tmp);
-        }
-    }
+#ifndef _MSC_VER
+# define TEMPLATE "/dvipdfmx.XXXXXX"
+#else
+# define TEMPLATE "\\dvipdfmx.XXXXXX"
+#endif
 
-    return  tmp;
+    tmpdir = dpx_get_tmpdir();
+    n = strlen(tmpdir) + strlen(TEMPLATE) + 1;
+    tmp = NEW(n, char);
+    strcpy(tmp, tmpdir);
+    free(tmpdir);
+    strcat(tmp, TEMPLATE);
+
+#ifdef _MSC_VER
+    if (_mktemp_s(tmp, n) != 0)
+        tmp = mfree(tmp);
+#else
+    {
+        int _fd = mkstemp(tmp);
+
+        if (_fd != -1)
+            close(_fd);
+        else
+            tmp = mfree(tmp);
+    }
+#endif
+
+    return tmp;
 }
 
 #define DPX_PREFIX "dvipdfm-x."
