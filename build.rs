@@ -20,18 +20,11 @@ const LIBS: &'static str = "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphi
 #[cfg(not(target_os = "macos"))]
 const LIBS: &'static str = "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
-// DLL linking on Windows is a huge hassle, so try to do everything statically:
-#[cfg(target_os = "windows")]
-const STATIK: bool = true;
-
-#[cfg(not(target_os = "windows"))]
-const STATIK: bool = false;
-
 
 fn main() {
     // We (have to) rerun the search again below to emit the metadata at the right time.
 
-    let deps = pkg_config::Config::new().cargo_metadata(false).statik(STATIK).probe(LIBS).unwrap();
+    let deps = pkg_config::Config::new().cargo_metadata(false).probe(LIBS).unwrap();
 
     // First, emit the string pool C code. Sigh.
 
@@ -269,7 +262,7 @@ fn main() {
     // Now that we've emitted the info for our own libraries, we can emit the
     // info for their dependents.
 
-    pkg_config::Config::new().cargo_metadata(true).statik(STATIK).probe(LIBS).unwrap();
+    pkg_config::Config::new().cargo_metadata(true).probe(LIBS).unwrap();
 
     // Tell cargo to rerun build.rs only if files in the tectonic/ directory have changed.
     for file in PathBuf::from("tectonic").read_dir().unwrap() {
