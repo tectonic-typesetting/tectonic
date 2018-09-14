@@ -20,7 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <windows.h> /* GetEnvironmentVariable */
 #endif
 
@@ -97,7 +97,7 @@ get_unique_time_if_given(void)
   time_t ret = INVALID_EPOCH_VALUE;
   int got_it;
 
-#ifdef _MSC_VER
+#ifdef _WIN32
   /* A getenv() API exists on Windows but it has different semantics than
    * GetEnvironmentVariable() that break the test suite. */
   char source_date_epoch[256];
