@@ -1,3 +1,9 @@
+# The next version
+
+The following changes will appear in the next release:
+
+- None yet
+
 # 0.1.9 (2018 Sep 15)
 
 User-facing improvements:
