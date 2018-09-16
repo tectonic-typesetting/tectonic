@@ -531,7 +531,6 @@ extern int32_t max_push;
 extern int32_t last_bop;
 extern int32_t dead_cycles;
 extern bool doing_leaders;
-extern uint16_t c;
 extern internal_font_number f;
 extern scaled_t rule_ht, rule_dp, rule_wd;
 extern scaled_t cur_h, cur_v; /* should be internal to shipout, but accessed by synctex */

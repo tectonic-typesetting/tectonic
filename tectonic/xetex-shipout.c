@@ -323,6 +323,7 @@ hlist_out(void)
     double glue_temp;
     double cur_glue;
     scaled_t cur_g;
+    uint16_t c;
 
     cur_g = 0;
     cur_glue = 0.0;
@@ -1459,6 +1460,8 @@ reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue)
     unsigned char /*shrinking */ g_sign;
     double glue_temp;
     int32_t m, n;
+    uint16_t c;
+
     g_order = mem[this_box + 5].b16.s0;
     g_sign = mem[this_box + 5].b16.s1;
     l = t;
