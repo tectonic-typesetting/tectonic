@@ -422,7 +422,7 @@ hlist_out(void)
                                         for_end = mem[q + 4].b16.s1 - 1;
                                         if (j <= for_end)
                                             do {
-                                                str_pool[pool_ptr] = get_native_char(q, j);
+                                                str_pool[pool_ptr] = NATIVE_NODE_text(q)[j];
                                                 pool_ptr++;
                                             }
                                             while (j++ < for_end);
@@ -766,7 +766,7 @@ hlist_out(void)
                                             for_end = len - 1;
                                             if (k <= for_end)
                                                 do {
-                                                    dvi_two(get_native_char(p, k));
+                                                    dvi_two(NATIVE_NODE_text(p)[k]);
                                                 }
                                                 while (k++ < for_end);
                                         }

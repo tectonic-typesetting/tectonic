@@ -244,6 +244,13 @@ typedef union {
 #define LIGATURE_NODE_lig_char(p) mem[(p) + 1].b16.s0 /* WEB: character(lig_char(p)) */
 #define LIGATURE_NODE_lig_ptr(p) mem[(p) + 1].b32.s1 /* WEB: link(lig_char(p)) */
 
+#define NATIVE_NODE_text(p) ((unsigned short *) &mem[(p) + NATIVE_NODE_SIZE])
+#define set_native_char(p,i,v) NATIVE_NODE_text(p)[i] = v
+#define get_native_usv(p,i) \
+  ((NATIVE_NODE_text(p)[i] >= 0xd800 && NATIVE_NODE_text(p)[i] < 0xdc00) ? \
+    0x10000 + (NATIVE_NODE_text(p)[i] - 0xd800) * 0x400 + NATIVE_NODE_text(p)[(i)+1] - 0xdc00 : \
+    NATIVE_NODE_text(p)[i])
+
 #define PASSIVE_NODE_prev_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define PASSIVE_NODE_next_break(p) PASSIVE_NODE_prev_break(p) /* siggggghhhhh */
 #define PASSIVE_NODE_cur_break(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
@@ -1109,14 +1116,6 @@ tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
 
 /* formerly xetex.h: */
 /* additional declarations we want to slip in for xetex */
-
-#define native_node_text(p) ((unsigned short*) &mem[(p) + NATIVE_NODE_SIZE])
-#define get_native_char(p,i) native_node_text(p)[i]
-#define set_native_char(p,i,v) native_node_text(p)[i] = v
-#define get_native_usv(p,i) \
-  ((native_node_text(p)[i] >= 0xd800 && native_node_text(p)[i] < 0xdc00) ? \
-    0x10000 + (native_node_text(p)[i] - 0xd800) * 0x400 + native_node_text(p)[(i)+1] - 0xdc00 : \
-    native_node_text(p)[i])
 
 /* p is native_word node; g is XeTeX_use_glyph_metrics flag */
 #define set_native_metrics(p,g)               measure_native_node(&(mem[p]), g)

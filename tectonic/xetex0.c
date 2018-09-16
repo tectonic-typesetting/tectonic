@@ -11931,7 +11931,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                                         for_end = mem[ppp + 4].b16.s1 - 1;
                                         if (k <= for_end)
                                             do {
-                                                set_native_char(pp, total_chars, get_native_char(ppp, k));
+                                                set_native_char(pp, total_chars, NATIVE_NODE_text(ppp)[k]);
                                                 total_chars++;
                                             }
                                             while (k++ < for_end);
@@ -22165,7 +22165,7 @@ reswitch:
                         for_end = mem[main_pp + 4].b16.s1 - 1;
                         if (main_p <= for_end)
                             do {
-                                native_text[native_len] = get_native_char(main_pp, main_p);
+                                native_text[native_len] = NATIVE_NODE_text(main_pp)[main_p];
                                 native_len++;
                             }
                             while (main_p++ < for_end);
@@ -22254,7 +22254,7 @@ reswitch:
                     for_end = mem[main_pp + 4].b16.s1 - 1;
                     if (main_p <= for_end)
                         do
-                            set_native_char(cur_list.tail, main_p, get_native_char(main_pp, main_p));
+                            set_native_char(cur_list.tail, main_p, NATIVE_NODE_text(main_pp)[main_p]);
                         while (main_p++ < for_end);
                 }
                 {
@@ -22332,7 +22332,7 @@ reswitch:
                                 for_end = mem[main_pp + 4].b16.s1 - 1;
                                 if (t <= for_end)
                                     do {
-                                        set_native_char(temp_ptr, main_k, get_native_char(main_pp, t));
+                                        set_native_char(temp_ptr, main_k, NATIVE_NODE_text(main_pp)[t]);
                                         main_k++;
                                     }
                                     while (t++ < for_end);
@@ -22345,7 +22345,7 @@ reswitch:
                                 for_end = mem[cur_list.tail + 4].b16.s1 - 1;
                                 if (t <= for_end)
                                     do {
-                                        set_native_char(temp_ptr, main_k, get_native_char(cur_list.tail, t));
+                                        set_native_char(temp_ptr, main_k, NATIVE_NODE_text(cur_list.tail)[t]);
                                         main_k++;
                                     }
                                     while (t++ < for_end);

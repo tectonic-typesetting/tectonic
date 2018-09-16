@@ -496,10 +496,10 @@ print_native_word(int32_t p)
     int32_t for_end = mem[p + 4].b16.s1 - 1;
 
     for (i = 0; i <= for_end; i++) {
-        c = get_native_char(p, i);
+        c = NATIVE_NODE_text(p)[i];
         if ((c >= 0xD800) && (c < 0xDC00)) {
             if (i < mem[p + 4].b16.s1 - 1) {
-                cc = get_native_char(p, i + 1);
+                cc = NATIVE_NODE_text(p)[i + 1];
                 if ((cc >= 0xDC00) && (cc < 0xE000)) {
                     c = 0x10000 + (c - 0xD800) * 1024 + (cc - 0xDC00);
                     print_char(c);
