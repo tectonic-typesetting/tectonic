@@ -390,7 +390,7 @@ extern bool use_err_help;
 extern bool arith_error;
 extern scaled_t tex_remainder;
 extern int32_t temp_ptr;
-extern memory_word *zmem;
+extern memory_word *mem;
 extern int32_t lo_mem_max;
 extern int32_t hi_mem_min;
 extern int32_t var_used, dyn_used;
@@ -1102,7 +1102,6 @@ static inline bool is_char_node(const int32_t p) {
 }
 
 static inline bool is_non_discardable_node(const int32_t p) {
-    memory_word *mem = zmem;
     return NODE_type(p) < MATH_NODE;
 }
 

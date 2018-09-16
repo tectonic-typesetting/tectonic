@@ -483,7 +483,6 @@ print_size(int32_t s)
 void
 print_write_whatsit(const char* s, int32_t p)
 {
-    memory_word *mem = zmem;
 
     print_esc_cstr(s);
 
@@ -499,7 +498,6 @@ print_write_whatsit(const char* s, int32_t p)
 void
 print_native_word(int32_t p)
 {
-    memory_word *mem = zmem;
     int32_t i, c, cc;
     int32_t for_end = mem[p + 4].b16.s1 - 1;
 
@@ -525,7 +523,6 @@ print_native_word(int32_t p)
 void
 print_sa_num(int32_t q)
 {
-    memory_word *mem = zmem;
     int32_t n;
 
     if (mem[q].b16.s1 < DIMEN_VAL_LIMIT)

@@ -81,7 +81,7 @@ bool use_err_help;
 bool arith_error;
 scaled_t tex_remainder;
 int32_t temp_ptr;
-memory_word *zmem;
+memory_word *mem;
 int32_t lo_mem_max;
 int32_t hi_mem_min;
 int32_t var_used, dyn_used;
@@ -557,7 +557,6 @@ do_undump (char *p, size_t item_size, size_t nitems, rust_input_handle_t in_file
 static void
 sort_avail(void)
 {
-    memory_word *mem = zmem;
     int32_t p, q, r;
     int32_t old_rover;
 
@@ -801,7 +800,6 @@ static void
 new_patterns(void)
 {
     CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     short /*hyphenatable_length_limit 1 */ k, l;
     bool digit_sensed;
     trie_opcode v;
@@ -1165,7 +1163,6 @@ static void
 new_hyph_exceptions(void)
 {
     CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     short /*hyphenatable_length_limit 1 */ n;
     short /*hyphenatable_length_limit 1 */ j;
     hyph_pointer h;
@@ -1345,7 +1342,6 @@ void
 prefixed_command(void)
 {
     CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     small_number a;
     internal_font_number f;
     int32_t j;
@@ -2160,7 +2156,6 @@ static void
 store_fmt_file(void)
 {
     CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     int32_t j, k, l;
     int32_t p, q;
     int32_t x;
@@ -2612,7 +2607,6 @@ static bool
 load_fmt_file(void)
 {
     CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     int32_t j, k;
     int32_t p, q;
     int32_t x;
@@ -2637,8 +2631,8 @@ load_fmt_file(void)
         free(str_start);
         free(yhash);
         free(the_eqtb);
-        free(zmem);
-        mem = zmem = NULL;
+        free(mem);
+        mem = NULL;
     }
 
     /* start reading the header */
@@ -2694,7 +2688,7 @@ load_fmt_file(void)
     cur_list.head = CONTRIB_HEAD;
     cur_list.tail = CONTRIB_HEAD;
     page_tail = PAGE_HEAD;
-    mem = zmem = xmalloc_array(memory_word, MEM_TOP + 1);
+    mem = xmalloc_array(memory_word, MEM_TOP + 1);
 
     undump_int(x);
     if (x != EQTB_SIZE)
@@ -3096,7 +3090,6 @@ bad_fmt:
 static void
 final_cleanup(void)
 {
-    memory_word *mem = zmem;
     small_number c;
 
     c = cur_chr;
@@ -3361,7 +3354,6 @@ static void
 initialize_more_initex_variables(void)
 {
     CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     int32_t i, k;
 
     for (k = 1; k <= 19; k++)
@@ -4076,7 +4068,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     /* First bit of initex handling: more allocations. */
 
     if (in_initex_mode) {
-        zmem = xmalloc_array(memory_word, MEM_TOP + 1);
+        mem = xmalloc_array(memory_word, MEM_TOP + 1);
         eqtb_top = EQTB_SIZE + hash_extra;
 
         if (hash_extra == 0)
@@ -4504,7 +4496,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     // Free arrays allocated in load_fmt_file
     free(yhash);
     free(eqtb);
-    free(zmem);
+    free(mem);
     free(str_start);
     free(str_pool);
     free(font_info);

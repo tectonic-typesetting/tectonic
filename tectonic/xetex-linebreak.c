@@ -62,7 +62,6 @@ void
 line_break(bool d)
 {
     CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     bool auto_breaking;
     int32_t prev_p;
     int32_t q, r, s, prev_s;
@@ -896,7 +895,6 @@ static void
 post_line_break(bool d)
 {
     CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     int32_t q, r, s;
     int32_t p, k;
     scaled_t w;
@@ -1296,7 +1294,6 @@ static void
 try_break(int32_t pi, small_number break_type)
 {
     CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     int32_t r;
     int32_t prev_r;
     int32_t old_l;
@@ -1849,7 +1846,6 @@ static void
 hyphenate(void)
 {
     CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     short /*hyphenatable_length_limit 2 */ i, j, l;
     int32_t q, r, s;
     int32_t bchar;
@@ -2217,7 +2213,7 @@ found1:
 static int32_t
 finite_shrink(int32_t p)
 {
-    memory_word *mem = zmem; int32_t q;
+    int32_t q;
     if (no_shrink_error_yet) {
         no_shrink_error_yet = false;
         {
@@ -2247,7 +2243,7 @@ finite_shrink(int32_t p)
 static small_number
 reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar)
 {
-    memory_word *mem = zmem; int32_t p;
+    int32_t p;
     int32_t t;
     b16x4 q;
     int32_t cur_rh;
