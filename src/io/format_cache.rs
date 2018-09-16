@@ -80,16 +80,12 @@ impl IoProvider for FormatCache {
 
     fn write_format(&mut self, name: &str, data: &[u8], _status: &mut StatusBackend) -> Result<()> {
         let final_path = self.path_for_format(OsStr::new(name))?;
-
-		let mut temp_dest = tempfile::Builder::new()
-			.prefix("format_")
-			.rand_bytes(6)
-			.tempfile_in(&self.formats_base)?;
-
-		temp_dest.write_all(data)?;
-		
-		temp_dest.persist(&final_path).map_err(|e| e.error)?;
-		
-		Ok(())
+        let mut temp_dest = tempfile::Builder::new()
+            .prefix("format_")
+            .rand_bytes(6)
+            .tempfile_in(&self.formats_base)?;
+        temp_dest.write_all(data)?;
+        temp_dest.persist(&final_path)?;
+        Ok(())
     }
 }
