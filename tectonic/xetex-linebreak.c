@@ -440,7 +440,7 @@ line_break(bool d)
                                         mem[q].b16.s0 = mem[ha].b16.s0;
 
                                         for (i = l; i <= mem[ha + 4].b16.s1 - 1; i++)
-                                            set_native_char(q, i - l, NATIVE_NODE_text(ha)[i]);
+                                            NATIVE_NODE_text(q)[i - l] = NATIVE_NODE_text(ha)[i];
 
                                         set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
                                         mem[q].b32.s1 = mem[ha].b32.s1;
@@ -454,7 +454,7 @@ line_break(bool d)
                                     mem[q].b16.s0 = mem[ha].b16.s0;
 
                                     for (i = l; i <= mem[ha + 4].b16.s1 - 1; i++)
-                                        set_native_char(q, i - l, NATIVE_NODE_text(ha)[i]);
+                                        NATIVE_NODE_text(q)[i - l] = NATIVE_NODE_text(ha)[i];
 
                                     set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
                                     mem[q].b32.s1 = mem[ha].b32.s1;
@@ -1992,7 +1992,7 @@ found1:
                             for_end = j - hyphen_passed - 1;
                             if (i <= for_end)
                                 do
-                                    set_native_char(q, i, NATIVE_NODE_text(ha)[i + hyphen_passed]);
+                                    NATIVE_NODE_text(q)[i] = NATIVE_NODE_text(ha)[i + hyphen_passed];
                                 while (i++ < for_end);
                         }
                         set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
@@ -2016,7 +2016,7 @@ found1:
             for_end = hn - hyphen_passed - 1;
             if (i <= for_end)
                 do
-                    set_native_char(q, i, NATIVE_NODE_text(ha)[i + hyphen_passed]);
+                    NATIVE_NODE_text(q)[i] = NATIVE_NODE_text(ha)[i + hyphen_passed];
                 while (i++ < for_end);
         }
         set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));

@@ -245,7 +245,6 @@ typedef union {
 #define LIGATURE_NODE_lig_ptr(p) mem[(p) + 1].b32.s1 /* WEB: link(lig_char(p)) */
 
 #define NATIVE_NODE_text(p) ((unsigned short *) &mem[(p) + NATIVE_NODE_SIZE])
-#define set_native_char(p,i,v) NATIVE_NODE_text(p)[i] = v
 #define get_native_usv(p,i) \
   ((NATIVE_NODE_text(p)[i] >= 0xd800 && NATIVE_NODE_text(p)[i] < 0xdc00) ? \
     0x10000 + (NATIVE_NODE_text(p)[i] - 0xd800) * 0x400 + NATIVE_NODE_text(p)[(i)+1] - 0xdc00 : \

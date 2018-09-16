@@ -464,7 +464,7 @@ hlist_out(void)
                             for_end = (pool_ptr - str_start[str_ptr - 65536L]) - 1;
                             if (j <= for_end)
                                 do
-                                    set_native_char(q, j, str_pool[str_start[str_ptr - 65536L] + j]);
+                                    NATIVE_NODE_text(q)[j] = str_pool[str_start[str_ptr - 65536L] + j];
                                 while (j++ < for_end);
                         }
                         mem[q + 1].b32.s1 = k;

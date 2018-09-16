@@ -10831,7 +10831,7 @@ new_native_character(internal_font_number f, UnicodeScalar c)
         p = new_native_word_node(f, len);
 
         for (i = 0; i <= len - 1; i++)
-            set_native_char(p, i, mapped_text[i]);
+            NATIVE_NODE_text(p)[i] = mapped_text[i];
     } else {
         if (INTPAR(tracing_lost_chars) > 0)
             if (map_char_to_glyph(f, c) == 0)
@@ -10847,11 +10847,11 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 
         if (c > 65535L) {
             mem[p + 4].b16.s1 = 2;
-            set_native_char(p, 0, (c - 65536L) / 1024 + 0xD800);
-            set_native_char(p, 1, (c - 65536L) % 1024 + 0xDC00);
+            NATIVE_NODE_text(p)[0] = (c - 65536L) / 1024 + 0xD800;
+            NATIVE_NODE_text(p)[1] = (c - 65536L) % 1024 + 0xDC00;
         } else {
             mem[p + 4].b16.s1 = 1;
-            set_native_char(p, 0, c);
+            NATIVE_NODE_text(p)[0] = c;
         }
     }
 
@@ -11114,7 +11114,7 @@ void do_locale_linebreaks(int32_t s, int32_t len)
             for_end = len - 1;
             if (i <= for_end)
                 do
-                    set_native_char(cur_list.tail, i, native_text[s + i]);
+                    NATIVE_NODE_text(cur_list.tail)[i] = native_text[s + i];
                 while (i++ < for_end);
         }
         set_native_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
@@ -11146,7 +11146,7 @@ void do_locale_linebreaks(int32_t s, int32_t len)
                     for_end = offs - 1;
                     if (i <= for_end)
                         do
-                            set_native_char(cur_list.tail, i - prevOffs, native_text[s + i]);
+                            NATIVE_NODE_text(cur_list.tail)[i - prevOffs] = native_text[s + i];
                         while (i++ < for_end);
                 }
                 set_native_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
@@ -11931,7 +11931,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                                         for_end = mem[ppp + 4].b16.s1 - 1;
                                         if (k <= for_end)
                                             do {
-                                                set_native_char(pp, total_chars, NATIVE_NODE_text(ppp)[k]);
+                                                NATIVE_NODE_text(pp)[total_chars] = NATIVE_NODE_text(ppp)[k];
                                                 total_chars++;
                                             }
                                             while (k++ < for_end);
@@ -22254,7 +22254,7 @@ reswitch:
                     for_end = mem[main_pp + 4].b16.s1 - 1;
                     if (main_p <= for_end)
                         do
-                            set_native_char(cur_list.tail, main_p, NATIVE_NODE_text(main_pp)[main_p]);
+                            NATIVE_NODE_text(cur_list.tail)[main_p] = NATIVE_NODE_text(main_pp)[main_p];
                         while (main_p++ < for_end);
                 }
                 {
@@ -22263,8 +22263,7 @@ reswitch:
                     for_end = main_k - 1;
                     if (main_p <= for_end)
                         do
-                            set_native_char(cur_list.tail, main_p + mem[main_pp + 4].b16.s1,
-                                            native_text[main_p]);
+                            NATIVE_NODE_text(cur_list.tail)[main_p + mem[main_pp + 4].b16.s1] = native_text[main_p];
                         while (main_p++ < for_end);
                 }
                 set_native_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
@@ -22285,7 +22284,7 @@ reswitch:
                     for_end = main_k - 1;
                     if (main_p <= for_end)
                         do
-                            set_native_char(cur_list.tail, main_p, native_text[main_p]);
+                            NATIVE_NODE_text(cur_list.tail)[main_p] =  native_text[main_p];
                         while (main_p++ < for_end);
                 }
                 set_native_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
@@ -22332,12 +22331,12 @@ reswitch:
                                 for_end = mem[main_pp + 4].b16.s1 - 1;
                                 if (t <= for_end)
                                     do {
-                                        set_native_char(temp_ptr, main_k, NATIVE_NODE_text(main_pp)[t]);
+                                        NATIVE_NODE_text(temp_ptr)[main_k] = NATIVE_NODE_text(main_pp)[t];
                                         main_k++;
                                     }
                                     while (t++ < for_end);
                             }
-                            set_native_char(temp_ptr, main_k, ' ' );
+                            NATIVE_NODE_text(temp_ptr)[main_k] = ' ';
                             main_k++;
                             {
                                 register int32_t for_end;
@@ -22345,7 +22344,7 @@ reswitch:
                                 for_end = mem[cur_list.tail + 4].b16.s1 - 1;
                                 if (t <= for_end)
                                     do {
-                                        set_native_char(temp_ptr, main_k, NATIVE_NODE_text(cur_list.tail)[t]);
+                                        NATIVE_NODE_text(temp_ptr)[main_k] = NATIVE_NODE_text(cur_list.tail)[t];
                                         main_k++;
                                     }
                                     while (t++ < for_end);
