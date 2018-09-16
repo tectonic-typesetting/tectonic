@@ -9,6 +9,58 @@
 #include "core-bridge.h"
 
 
+static scaled_t math_x_height(int32_t size_code);
+static scaled_t math_quad(int32_t size_code);
+static scaled_t num1(int32_t size_code);
+static scaled_t num2(int32_t size_code);
+static scaled_t num3(int32_t size_code);
+static scaled_t denom1(int32_t size_code);
+static scaled_t denom2(int32_t size_code);
+static scaled_t sup1(int32_t size_code);
+static scaled_t sup2(int32_t size_code);
+static scaled_t sup3(int32_t size_code);
+static scaled_t sub1(int32_t size_code);
+static scaled_t sub2(int32_t size_code);
+static scaled_t sup_drop(int32_t size_code);
+static scaled_t sub_drop(int32_t size_code);
+static scaled_t delim1(int32_t size_code);
+static scaled_t delim2(int32_t size_code);
+static scaled_t axis_height(int32_t size_code);
+static scaled_t default_rule_thickness(void);
+static scaled_t big_op_spacing1(void);
+static scaled_t big_op_spacing2(void);
+static scaled_t big_op_spacing3(void);
+static scaled_t big_op_spacing4(void);
+static scaled_t big_op_spacing5(void);
+static int32_t fraction_rule(scaled_t t);
+static int32_t overbar(int32_t b, scaled_t k, scaled_t t);
+static int32_t char_box(internal_font_number f, int32_t c);
+static void stack_into_box(int32_t b, internal_font_number f, uint16_t c);
+static scaled_t height_plus_depth(internal_font_number f, uint16_t c);
+static void stack_glyph_into_box(int32_t b, internal_font_number f, int32_t g);
+static void stack_glue_into_box(int32_t b, scaled_t min, scaled_t max);
+static int32_t build_opentype_assembly(internal_font_number f, void *a, scaled_t s, bool horiz);
+static int32_t var_delimiter(int32_t d, int32_t s, scaled_t v);
+static int32_t rebox(int32_t b, scaled_t w);
+static int32_t math_glue(int32_t g, scaled_t m);
+static void math_kern(int32_t p, scaled_t m);
+static int32_t clean_box(int32_t p, small_number s);
+static void fetch(int32_t a);
+static void make_over(int32_t q);
+static void make_under(int32_t q);
+static void make_vcenter(int32_t q);
+static void make_radical(int32_t q);
+static scaled_t compute_ot_math_accent_pos(int32_t p);
+static void make_math_accent(int32_t q);
+static void make_fraction(int32_t q);
+static scaled_t make_op(int32_t q);
+static void make_ord(int32_t q);
+static int32_t attach_hkern_to_new_hlist(int32_t q, scaled_t delta);
+static void make_scripts(int32_t q, scaled_t delta);
+static small_number make_left_right(int32_t q, small_number style, scaled_t max_d, scaled_t max_h);
+static void mlist_to_hlist(void);
+
+
 static b16x4 null_delimiter;
 static int32_t cur_mlist;
 static small_number cur_style;
@@ -1208,7 +1260,9 @@ void resume_after_display(void)
         build_page();
 }
 
-scaled_t math_x_height(int32_t size_code)
+
+static scaled_t
+math_x_height(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1221,7 +1275,9 @@ scaled_t math_x_height(int32_t size_code)
     return rval;
 }
 
-scaled_t math_quad(int32_t size_code)
+
+static scaled_t
+math_quad(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1234,7 +1290,8 @@ scaled_t math_quad(int32_t size_code)
     return rval;
 }
 
-scaled_t num1(int32_t size_code)
+static scaled_t
+num1(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1247,7 +1304,9 @@ scaled_t num1(int32_t size_code)
     return rval;
 }
 
-scaled_t num2(int32_t size_code)
+
+static scaled_t
+num2(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1260,7 +1319,9 @@ scaled_t num2(int32_t size_code)
     return rval;
 }
 
-scaled_t num3(int32_t size_code)
+
+static scaled_t
+num3(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1273,7 +1334,9 @@ scaled_t num3(int32_t size_code)
     return rval;
 }
 
-scaled_t denom1(int32_t size_code)
+
+static scaled_t
+denom1(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1286,7 +1349,9 @@ scaled_t denom1(int32_t size_code)
     return rval;
 }
 
-scaled_t denom2(int32_t size_code)
+
+static scaled_t
+denom2(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1299,7 +1364,9 @@ scaled_t denom2(int32_t size_code)
     return rval;
 }
 
-scaled_t sup1(int32_t size_code)
+
+static scaled_t
+sup1(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1312,7 +1379,9 @@ scaled_t sup1(int32_t size_code)
     return rval;
 }
 
-scaled_t sup2(int32_t size_code)
+
+static scaled_t
+sup2(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1325,7 +1394,8 @@ scaled_t sup2(int32_t size_code)
     return rval;
 }
 
-scaled_t sup3(int32_t size_code)
+static scaled_t
+sup3(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1338,7 +1408,8 @@ scaled_t sup3(int32_t size_code)
     return rval;
 }
 
-scaled_t sub1(int32_t size_code)
+static scaled_t
+sub1(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1351,7 +1422,8 @@ scaled_t sub1(int32_t size_code)
     return rval;
 }
 
-scaled_t sub2(int32_t size_code)
+static scaled_t
+sub2(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1364,7 +1436,8 @@ scaled_t sub2(int32_t size_code)
     return rval;
 }
 
-scaled_t sup_drop(int32_t size_code)
+static scaled_t
+sup_drop(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1377,7 +1450,8 @@ scaled_t sup_drop(int32_t size_code)
     return rval;
 }
 
-scaled_t sub_drop(int32_t size_code)
+static scaled_t
+sub_drop(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1390,7 +1464,8 @@ scaled_t sub_drop(int32_t size_code)
     return rval;
 }
 
-scaled_t delim1(int32_t size_code)
+static scaled_t
+delim1(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1403,7 +1478,8 @@ scaled_t delim1(int32_t size_code)
     return rval;
 }
 
-scaled_t delim2(int32_t size_code)
+static scaled_t
+delim2(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1416,7 +1492,8 @@ scaled_t delim2(int32_t size_code)
     return rval;
 }
 
-scaled_t axis_height(int32_t size_code)
+static scaled_t
+axis_height(int32_t size_code)
 {
     int32_t f;
     scaled_t rval;
@@ -1429,7 +1506,8 @@ scaled_t axis_height(int32_t size_code)
     return rval;
 }
 
-scaled_t default_rule_thickness(void)
+static scaled_t
+default_rule_thickness(void)
 {
     int32_t f;
     scaled_t rval;
@@ -1442,7 +1520,8 @@ scaled_t default_rule_thickness(void)
     return rval;
 }
 
-scaled_t big_op_spacing1(void)
+static scaled_t
+big_op_spacing1(void)
 {
     int32_t f;
     scaled_t rval;
@@ -1455,7 +1534,8 @@ scaled_t big_op_spacing1(void)
     return rval;
 }
 
-scaled_t big_op_spacing2(void)
+static scaled_t
+big_op_spacing2(void)
 {
     int32_t f;
     scaled_t rval;
@@ -1468,7 +1548,8 @@ scaled_t big_op_spacing2(void)
     return rval;
 }
 
-scaled_t big_op_spacing3(void)
+static scaled_t
+big_op_spacing3(void)
 {
     int32_t f;
     scaled_t rval;
@@ -1481,7 +1562,8 @@ scaled_t big_op_spacing3(void)
     return rval;
 }
 
-scaled_t big_op_spacing4(void)
+static scaled_t
+big_op_spacing4(void)
 {
     int32_t f;
     scaled_t rval;
@@ -1494,7 +1576,8 @@ scaled_t big_op_spacing4(void)
     return rval;
 }
 
-scaled_t big_op_spacing5(void)
+static scaled_t
+big_op_spacing5(void)
 {
     int32_t f;
     scaled_t rval;
@@ -1507,7 +1590,8 @@ scaled_t big_op_spacing5(void)
     return rval;
 }
 
-int32_t fraction_rule(scaled_t t)
+static int32_t
+fraction_rule(scaled_t t)
 {
     int32_t p;
     p = new_rule();
@@ -1516,7 +1600,9 @@ int32_t fraction_rule(scaled_t t)
     return p;
 }
 
-int32_t overbar(int32_t b, scaled_t k, scaled_t t)
+
+static int32_t
+overbar(int32_t b, scaled_t k, scaled_t t)
 {
     int32_t p, q;
     p = new_kern(k);
@@ -1528,7 +1614,9 @@ int32_t overbar(int32_t b, scaled_t k, scaled_t t)
     return vpackage(p, 0, ADDITIONAL, MAX_HALFWORD);
 }
 
-int32_t math_glue(int32_t g, scaled_t m)
+
+static int32_t
+math_glue(int32_t g, scaled_t m)
 {
     int32_t p;
     int32_t n;
@@ -1554,7 +1642,9 @@ int32_t math_glue(int32_t g, scaled_t m)
     return p;
 }
 
-void math_kern(int32_t p, scaled_t m)
+
+static void
+math_kern(int32_t p, scaled_t m)
 {
     int32_t n;
     scaled_t f;
@@ -1570,7 +1660,9 @@ void math_kern(int32_t p, scaled_t m)
     }
 }
 
-void flush_math(void)
+
+void
+flush_math(void)
 {
     flush_node_list(mem[cur_list.head].b32.s1);
     flush_node_list(cur_list.aux.b32.s1);
@@ -1579,7 +1671,9 @@ void flush_math(void)
     cur_list.aux.b32.s1 = TEX_NULL;
 }
 
-int32_t clean_box(int32_t p, small_number s)
+
+static int32_t
+clean_box(int32_t p, small_number s)
 {
     int32_t q;
     small_number save_style;
@@ -1642,9 +1736,10 @@ found:
     return x;
 }
 
-void fetch(int32_t a)
-{
 
+static void
+fetch(int32_t a)
+{
     cur_c = (unsigned short) mem[a].b16.s0;
     cur_f = MATH_FONT((mem[a].b16.s1 % 256) + cur_size);
     cur_c = cur_c + (mem[a].b16.s1 / 256) * 65536L;
@@ -1687,14 +1782,18 @@ void fetch(int32_t a)
     }
 }
 
-void make_over(int32_t q)
+
+static void
+make_over(int32_t q)
 {
         mem[q + 1].b32.s0 =
         overbar(clean_box(q + 1, 2 * (cur_style / 2) + 1), 3 * default_rule_thickness(), default_rule_thickness());
     mem[q + 1].b32.s1 = SUB_BOX;
 }
 
-void make_under(int32_t q)
+
+static void
+make_under(int32_t q)
 {
     int32_t p, x, y;
     scaled_t delta;
@@ -1710,7 +1809,9 @@ void make_under(int32_t q)
     mem[q + 1].b32.s1 = SUB_BOX;
 }
 
-void make_vcenter(int32_t q)
+
+static void
+make_vcenter(int32_t q)
 {
     int32_t v;
     scaled_t delta;
@@ -1722,7 +1823,9 @@ void make_vcenter(int32_t q)
     mem[v + 2].b32.s1 = delta - mem[v + 3].b32.s1;
 }
 
-void make_radical(int32_t q)
+
+static void
+make_radical(int32_t q)
 {
     int32_t x, y;
     internal_font_number f;
@@ -1764,7 +1867,9 @@ void make_radical(int32_t q)
     mem[q + 1].b32.s1 = SUB_BOX;
 }
 
-scaled_t compute_ot_math_accent_pos(int32_t p)
+
+static scaled_t
+compute_ot_math_accent_pos(int32_t p)
 {
     int32_t q, r;
     scaled_t s, g;
@@ -1787,7 +1892,9 @@ scaled_t compute_ot_math_accent_pos(int32_t p)
     return s;
 }
 
-void make_math_accent(int32_t q)
+
+static void
+make_math_accent(int32_t q)
 {
     int32_t p, x, y;
     int32_t a;
@@ -1976,7 +2083,7 @@ void make_math_accent(int32_t q)
 }
 
 
-void
+static void
 make_fraction(int32_t q)
 {
     int32_t p, v, x, y, z;
@@ -2091,7 +2198,8 @@ make_fraction(int32_t q)
 }
 
 
-scaled_t make_op(int32_t q)
+static scaled_t
+make_op(int32_t q)
 {
     scaled_t delta;
     int32_t p, v, x, y, z;
@@ -2220,7 +2328,9 @@ scaled_t make_op(int32_t q)
     return delta;
 }
 
-void make_ord(int32_t q)
+
+static void
+make_ord(int32_t q)
 {
     int32_t a;
     int32_t p, r;
@@ -2318,7 +2428,9 @@ restart:
     }
 }
 
-int32_t attach_hkern_to_new_hlist(int32_t q, scaled_t delta)
+
+static int32_t
+attach_hkern_to_new_hlist(int32_t q, scaled_t delta)
 {
     int32_t y, z;
     z = new_kern(delta);
@@ -2334,7 +2446,9 @@ int32_t attach_hkern_to_new_hlist(int32_t q, scaled_t delta)
     return mem[q + 1].b32.s1;
 }
 
-void make_scripts(int32_t q, scaled_t delta)
+
+static void
+make_scripts(int32_t q, scaled_t delta)
 {
     int32_t p, x, y, z;
     scaled_t shift_up, shift_down, clr, sub_kern, sup_kern;
@@ -2551,7 +2665,9 @@ void make_scripts(int32_t q, scaled_t delta)
     }
 }
 
-small_number make_left_right(int32_t q, small_number style, scaled_t max_d, scaled_t max_h)
+
+static small_number
+make_left_right(int32_t q, small_number style, scaled_t max_d, scaled_t max_h)
 {
     scaled_t delta, delta1, delta2;
 
@@ -2575,7 +2691,9 @@ small_number make_left_right(int32_t q, small_number style, scaled_t max_d, scal
     return mem[q].b16.s1 - ((LEFT_NOAD - 20));
 }
 
-void mlist_to_hlist(void)
+
+static void
+mlist_to_hlist(void)
 {
     int32_t mlist;
     bool penalties;
@@ -3056,5 +3174,471 @@ void mlist_to_hlist(void)
         free_node(r, s);
     done:
         ;
+    }
+}
+
+
+static int32_t
+var_delimiter(int32_t d, int32_t s, scaled_t v)
+{
+    int32_t b;
+    void *ot_assembly_ptr;
+    internal_font_number f, g;
+    uint16_t c, x, y;
+    int32_t m, n;
+    scaled_t u;
+    scaled_t w;
+    b16x4 q = { 0, 0, 0, 0 };
+    b16x4 r;
+    int32_t z;
+    bool large_attempt;
+
+    f = FONT_BASE;
+    w = 0;
+    large_attempt = false;
+    z = (mem[d].b16.s3 % 256);
+    x = (mem[d].b16.s2 + (mem[d].b16.s3 / 256) * 65536L);
+    ot_assembly_ptr = NULL;
+    while (true) {
+
+        if ((z != 0) || (x != 0)) {
+            z = z + s + 256;
+            do {
+                z = z - 256;
+                g = MATH_FONT(z);
+                if (g != FONT_BASE) {   /*734: */
+
+                    if (((font_area[g] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[g])))) {
+                        x = map_char_to_glyph(g, x);
+                        f = g;
+                        c = x;
+                        w = 0;
+                        n = 0;
+                        do {
+                            y = get_ot_math_variant(g, x, n, &u, 0);
+                            if (u > w) {
+                                c = y;
+                                w = u;
+                                if (u >= v)
+                                    goto found;
+                            }
+                            n = n + 1;
+                        } while (!(u < 0));
+                        ot_assembly_ptr = get_ot_assembly_ptr(g, x, 0);
+                        if (ot_assembly_ptr != NULL)
+                            goto found;
+                    } else {
+
+                        y = x;
+                        if ((y >= font_bc[g]) && (y <= font_ec[g])) {
+                        continue_:
+                            q = FONT_CHARACTER_INFO(g, y);
+                            if ((q.s3 > 0)) {
+                                if (((q.s1) % 4) == EXT_TAG) {
+                                    f = g;
+                                    c = y;
+                                    goto found;
+                                }
+                                u = FONT_CHARINFO_HEIGHT(g, q) + FONT_CHARINFO_DEPTH(g, q);
+                                if (u > w) {
+                                    f = g;
+                                    c = y;
+                                    w = u;
+                                    if (u >= v)
+                                        goto found;
+                                }
+                                if (((q.s1) % 4) == LIST_TAG) {
+                                    y = q.s0;
+                                    goto continue_;
+                                }
+                            }
+                        }
+                    }
+                }
+            } while (!(z < SCRIPT_SIZE));
+        }
+        if (large_attempt)
+            goto found;
+        large_attempt = true;
+        z = (mem[d].b16.s1 % 256);
+        x = (mem[d].b16.s0 + (mem[d].b16.s1 / 256) * 65536L);
+    }
+ found:
+    if (f != FONT_BASE) {
+        if (!((font_area[f] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[f])))) {       /*736: */
+
+            if (((q.s1) % 4) == EXT_TAG) {      /*739: */
+                b = new_null_box();
+                NODE_type(b) = VLIST_NODE;
+                r = font_info[exten_base[f] + q.s0].b16;
+                c = r.s0;
+                u = height_plus_depth(f, c);
+                w = 0;
+                q = FONT_CHARACTER_INFO(f, effective_char(true, f, c));
+                mem[b + 1].b32.s1 = FONT_CHARINFO_WIDTH(f, q) + FONT_CHARINFO_ITALCORR(f, q);
+                c = r.s1;
+                if (c != 0)
+                    w = w + height_plus_depth(f, c);
+                c = r.s2;
+                if (c != 0)
+                    w = w + height_plus_depth(f, c);
+                c = r.s3;
+                if (c != 0)
+                    w = w + height_plus_depth(f, c);
+                n = 0;
+                if (u > 0)
+                    while (w < v) {
+
+                        w = w + u;
+                        n++;
+                        if (r.s2 != 0)
+                            w = w + u;
+                    }
+                c = r.s1;
+                if (c != 0)
+                    stack_into_box(b, f, c);
+                c = r.s0;
+                {
+                    register int32_t for_end;
+                    m = 1;
+                    for_end = n;
+                    if (m <= for_end)
+                        do
+                            stack_into_box(b, f, c);
+                        while (m++ < for_end);
+                }
+                c = r.s2;
+                if (c != 0) {
+                    stack_into_box(b, f, c);
+                    c = r.s0;
+                    {
+                        register int32_t for_end;
+                        m = 1;
+                        for_end = n;
+                        if (m <= for_end)
+                            do
+                                stack_into_box(b, f, c);
+                            while (m++ < for_end);
+                    }
+                }
+                c = r.s3;
+                if (c != 0)
+                    stack_into_box(b, f, c);
+                mem[b + 2].b32.s1 = w - mem[b + 3].b32.s1;
+            } else
+                b = char_box(f, c) /*:736 */ ;
+        } else {
+
+            if (ot_assembly_ptr != NULL)
+                b = build_opentype_assembly(f, ot_assembly_ptr, v, 0);
+            else {
+
+                b = new_null_box();
+                NODE_type(b) = VLIST_NODE;
+                mem[b + 5].b32.s1 = get_node(GLYPH_NODE_SIZE);
+                NODE_type(mem[b + 5].b32.s1) = WHATSIT_NODE;
+                mem[mem[b + 5].b32.s1].b16.s0 = GLYPH_NODE;
+                mem[mem[b + 5].b32.s1 + 4].b16.s2 = f;
+                mem[mem[b + 5].b32.s1 + 4].b16.s1 = c;
+                set_native_glyph_metrics(mem[b + 5].b32.s1, 1);
+                mem[b + 1].b32.s1 = mem[mem[b + 5].b32.s1 + 1].b32.s1;
+                mem[b + 3].b32.s1 = mem[mem[b + 5].b32.s1 + 3].b32.s1;
+                mem[b + 2].b32.s1 = mem[mem[b + 5].b32.s1 + 2].b32.s1;
+            }
+        }
+    } else {
+
+        b = new_null_box();
+        mem[b + 1].b32.s1 = DIMENPAR(null_delimiter_space);
+    }
+    mem[b + 4].b32.s1 = half(mem[b + 3].b32.s1 - mem[b + 2].b32.s1) - axis_height(s);
+    free_ot_assembly(ot_assembly_ptr);
+    return b;
+}
+
+
+static int32_t
+char_box(internal_font_number f, int32_t c)
+{
+    b16x4 q;
+    int32_t b, p;
+    if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
+        b = new_null_box();
+        p = new_native_character(f, c);
+        mem[b + 5].b32.s1 = p;
+        mem[b + 3].b32.s1 = mem[p + 3].b32.s1;
+        mem[b + 1].b32.s1 = mem[p + 1].b32.s1;
+        if (mem[p + 2].b32.s1 < 0)
+            mem[b + 2].b32.s1 = 0;
+        else
+            mem[b + 2].b32.s1 = mem[p + 2].b32.s1;
+    } else {
+
+        q = FONT_CHARACTER_INFO(f, effective_char(true, f, c));
+        b = new_null_box();
+        mem[b + 1].b32.s1 = FONT_CHARINFO_WIDTH(f, q) + FONT_CHARINFO_ITALCORR(f, q);
+        mem[b + 3].b32.s1 = FONT_CHARINFO_HEIGHT(f, q);
+        mem[b + 2].b32.s1 = FONT_CHARINFO_DEPTH(f, q);
+        p = get_avail();
+        mem[p].b16.s0 = c;
+        mem[p].b16.s1 = f;
+    }
+    mem[b + 5].b32.s1 = p;
+    return b;
+}
+
+
+static void
+stack_into_box(int32_t b, internal_font_number f, uint16_t c)
+{
+    int32_t p;
+    p = char_box(f, c);
+    mem[p].b32.s1 = mem[b + 5].b32.s1;
+    mem[b + 5].b32.s1 = p;
+    mem[b + 3].b32.s1 = mem[p + 3].b32.s1;
+}
+
+
+static scaled_t
+height_plus_depth(internal_font_number f, uint16_t c)
+{
+    b16x4 q = FONT_CHARACTER_INFO(f, effective_char(true, f, c));
+    return FONT_CHARINFO_HEIGHT(f, q) + FONT_CHARINFO_DEPTH(f, q);
+}
+
+
+static void
+stack_glyph_into_box(int32_t b, internal_font_number f, int32_t g)
+{
+    int32_t p, q;
+    p = get_node(GLYPH_NODE_SIZE);
+    NODE_type(p) = WHATSIT_NODE;
+    mem[p].b16.s0 = GLYPH_NODE;
+    mem[p + 4].b16.s2 = f;
+    mem[p + 4].b16.s1 = g;
+    set_native_glyph_metrics(p, 1);
+    if (NODE_type(b) == HLIST_NODE) {
+        q = mem[b + 5].b32.s1;
+        if (q == TEX_NULL)
+            mem[b + 5].b32.s1 = p;
+        else {
+
+            while (mem[q].b32.s1 != TEX_NULL)
+                q = mem[q].b32.s1;
+            mem[q].b32.s1 = p;
+            if ((mem[b + 3].b32.s1 < mem[p + 3].b32.s1))
+                mem[b + 3].b32.s1 = mem[p + 3].b32.s1;
+            if ((mem[b + 2].b32.s1 < mem[p + 2].b32.s1))
+                mem[b + 2].b32.s1 = mem[p + 2].b32.s1;
+        }
+    } else {
+
+        mem[p].b32.s1 = mem[b + 5].b32.s1;
+        mem[b + 5].b32.s1 = p;
+        mem[b + 3].b32.s1 = mem[p + 3].b32.s1;
+        if ((mem[b + 1].b32.s1 < mem[p + 1].b32.s1))
+            mem[b + 1].b32.s1 = mem[p + 1].b32.s1;
+    }
+}
+
+
+static void
+stack_glue_into_box(int32_t b, scaled_t min, scaled_t max)
+{
+    int32_t p, q;
+    q = new_spec(0);
+    mem[q + 1].b32.s1 = min;
+    mem[q + 2].b32.s1 = max - min;
+    p = new_glue(q);
+    if (NODE_type(b) == HLIST_NODE) {
+        q = mem[b + 5].b32.s1;
+        if (q == TEX_NULL)
+            mem[b + 5].b32.s1 = p;
+        else {
+
+            while (mem[q].b32.s1 != TEX_NULL)
+                q = mem[q].b32.s1;
+            mem[q].b32.s1 = p;
+        }
+    } else {
+
+        mem[p].b32.s1 = mem[b + 5].b32.s1;
+        mem[b + 5].b32.s1 = p;
+        mem[b + 3].b32.s1 = mem[p + 3].b32.s1;
+        mem[b + 1].b32.s1 = mem[p + 1].b32.s1;
+    }
+}
+
+
+static int32_t
+build_opentype_assembly(internal_font_number f, void *a, scaled_t s, bool horiz)
+{
+    int32_t b;
+    int32_t n;
+    int32_t i, j;
+    int32_t g;
+    int32_t p;
+    scaled_t s_max, o, oo, prev_o, min_o;
+    bool no_extenders;
+    scaled_t nat, str;
+    b = new_null_box();
+    if (horiz)
+        NODE_type(b) = HLIST_NODE;
+        else
+            NODE_type(b) = VLIST_NODE;
+    n = -1;
+    no_extenders = true;
+    min_o = ot_min_connector_overlap(f);
+    do {
+        n = n + 1;
+        s_max = 0;
+        prev_o = 0;
+        {
+            register int32_t for_end;
+            i = 0;
+            for_end = ot_part_count(a) - 1;
+            if (i <= for_end)
+                do {
+                    if (ot_part_is_extender(a, i)) {
+                        no_extenders = false;
+                        {
+                            register int32_t for_end;
+                            j = 1;
+                            for_end = n;
+                            if (j <= for_end)
+                                do {
+                                    o = ot_part_start_connector(f, a, i);
+                                    if (min_o < o)
+                                        o = min_o;
+                                    if (prev_o < o)
+                                        o = prev_o;
+                                    s_max = s_max - o + ot_part_full_advance(f, a, i);
+                                    prev_o = ot_part_end_connector(f, a, i);
+                                }
+                                while (j++ < for_end);
+                        }
+                    } else {
+
+                        o = ot_part_start_connector(f, a, i);
+                        if (min_o < o)
+                            o = min_o;
+                        if (prev_o < o)
+                            o = prev_o;
+                        s_max = s_max - o + ot_part_full_advance(f, a, i);
+                        prev_o = ot_part_end_connector(f, a, i);
+                    }
+                }
+                while (i++ < for_end);
+        }
+    } while (!((s_max >= s) || no_extenders));
+    prev_o = 0;
+    {
+        register int32_t for_end;
+        i = 0;
+        for_end = ot_part_count(a) - 1;
+        if (i <= for_end)
+            do {
+                if (ot_part_is_extender(a, i)) {
+                    {
+                        register int32_t for_end;
+                        j = 1;
+                        for_end = n;
+                        if (j <= for_end)
+                            do {
+                                o = ot_part_start_connector(f, a, i);
+                                if (prev_o < o)
+                                    o = prev_o;
+                                oo = o;
+                                if (min_o < o)
+                                    o = min_o;
+                                if (oo > 0)
+                                    stack_glue_into_box(b, -(int32_t) oo, -(int32_t) o);
+                                g = ot_part_glyph(a, i);
+                                stack_glyph_into_box(b, f, g);
+                                prev_o = ot_part_end_connector(f, a, i);
+                            }
+                            while (j++ < for_end);
+                    }
+                } else {
+
+                    o = ot_part_start_connector(f, a, i);
+                    if (prev_o < o)
+                        o = prev_o;
+                    oo = o;
+                    if (min_o < o)
+                        o = min_o;
+                    if (oo > 0)
+                        stack_glue_into_box(b, -(int32_t) oo, -(int32_t) o);
+                    g = ot_part_glyph(a, i);
+                    stack_glyph_into_box(b, f, g);
+                    prev_o = ot_part_end_connector(f, a, i);
+                }
+            }
+            while (i++ < for_end);
+    }
+    p = mem[b + 5].b32.s1;
+    nat = 0;
+    str = 0;
+    while (p != TEX_NULL) {
+
+        if (NODE_type(p) == WHATSIT_NODE) {
+            if (horiz)
+                nat = nat + mem[p + 1].b32.s1;
+            else
+                nat = nat + mem[p + 3].b32.s1 + mem[p + 2].b32.s1;
+        } else if (NODE_type(p) == GLUE_NODE) {
+            nat = nat + mem[mem[p + 1].b32.s0 + 1].b32.s1;
+            str = str + mem[mem[p + 1].b32.s0 + 2].b32.s1;
+        }
+        p = mem[p].b32.s1;
+    }
+    o = 0;
+    if ((s > nat) && (str > 0)) {
+        o = (s - nat);
+        if ((o > str))
+            o = str;
+        mem[b + 5].b16.s0 = NORMAL;
+        mem[b + 5].b16.s1 = STRETCHING;
+        BOX_glue_set(b) = o / ((double)str);
+        if (horiz)
+            mem[b + 1].b32.s1 = nat + tex_round(str * BOX_glue_set(b));
+        else
+            mem[b + 3].b32.s1 = nat + tex_round(str * BOX_glue_set(b));
+    } else if (horiz)
+        mem[b + 1].b32.s1 = nat;
+    else
+        mem[b + 3].b32.s1 = nat;
+    return b;
+}
+
+
+static int32_t
+rebox(int32_t b, scaled_t w)
+{
+    int32_t p;
+    internal_font_number f;
+    scaled_t v;
+    if ((mem[b + 1].b32.s1 != w) && (mem[b + 5].b32.s1 != TEX_NULL)) {
+        if (NODE_type(b) == VLIST_NODE)
+            b = hpack(b, 0, ADDITIONAL);
+        p = mem[b + 5].b32.s1;
+        if (((is_char_node(p))) && (mem[p].b32.s1 == TEX_NULL)) {
+            f = CHAR_NODE_font(p);
+            v = FONT_CHARACTER_WIDTH(f,
+                                     effective_char(true, f, CHAR_NODE_character(p)));
+            if (v != mem[b + 1].b32.s1)
+                mem[p].b32.s1 = new_kern(mem[b + 1].b32.s1 - v);
+        }
+        free_node(b, BOX_NODE_SIZE);
+        b = new_glue(12);
+        mem[b].b32.s1 = p;
+        while (mem[p].b32.s1 != TEX_NULL)
+            p = mem[p].b32.s1;
+        mem[p].b32.s1 = new_glue(12);
+        return hpack(b, w, EXACTLY);
+    } else {
+
+        mem[b + 1].b32.s1 = w;
+        return b;
     }
 }
