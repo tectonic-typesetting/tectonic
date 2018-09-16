@@ -245,10 +245,6 @@ typedef union {
 #define LIGATURE_NODE_lig_ptr(p) mem[(p) + 1].b32.s1 /* WEB: link(lig_char(p)) */
 
 #define NATIVE_NODE_text(p) ((unsigned short *) &mem[(p) + NATIVE_NODE_SIZE])
-#define get_native_usv(p,i) \
-  ((NATIVE_NODE_text(p)[i] >= 0xd800 && NATIVE_NODE_text(p)[i] < 0xdc00) ? \
-    0x10000 + (NATIVE_NODE_text(p)[i] - 0xd800) * 0x400 + NATIVE_NODE_text(p)[(i)+1] - 0xdc00 : \
-    NATIVE_NODE_text(p)[i])
 
 #define PASSIVE_NODE_prev_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define PASSIVE_NODE_next_break(p) PASSIVE_NODE_prev_break(p) /* siggggghhhhh */

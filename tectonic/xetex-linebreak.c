@@ -47,6 +47,16 @@ static int32_t finite_shrink(int32_t p);
 static small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar);
 
 
+static inline UnicodeScalar
+get_native_usv(int32_t p, int32_t i) {
+    unsigned short c = NATIVE_NODE_text(p)[i];
+
+    if (c >= 0xD800 && c < 0xDC00)
+        return 0x10000 + (c - 0xD800) * 0x400 + NATIVE_NODE_text(p)[i+1] - 0xDC00;
+
+    return c;
+}
+
 /* Break a paragraph into lines (XTTP:843).
  *
  * d: true if we are breaking a partial paragraph preceding display math mode
