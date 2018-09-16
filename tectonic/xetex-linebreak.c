@@ -47,6 +47,16 @@ static int32_t finite_shrink(int32_t p);
 static small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar);
 
 
+static inline UnicodeScalar
+get_native_usv(int32_t p, int32_t i) {
+    unsigned short c = NATIVE_NODE_text(p)[i];
+
+    if (c >= 0xD800 && c < 0xDC00)
+        return 0x10000 + (c - 0xD800) * 0x400 + NATIVE_NODE_text(p)[i+1] - 0xDC00;
+
+    return c;
+}
+
 /* Break a paragraph into lines (XTTP:843).
  *
  * d: true if we are breaking a partial paragraph preceding display math mode
@@ -61,8 +71,6 @@ static small_number reconstitute(small_number j, small_number n, int32_t bchar, 
 void
 line_break(bool d)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     bool auto_breaking;
     int32_t prev_p;
     int32_t q, r, s, prev_s;
@@ -442,7 +450,7 @@ line_break(bool d)
                                         mem[q].b16.s0 = mem[ha].b16.s0;
 
                                         for (i = l; i <= mem[ha + 4].b16.s1 - 1; i++)
-                                            set_native_char(q, i - l, get_native_char(ha, i));
+                                            NATIVE_NODE_text(q)[i - l] = NATIVE_NODE_text(ha)[i];
 
                                         set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
                                         mem[q].b32.s1 = mem[ha].b32.s1;
@@ -456,7 +464,7 @@ line_break(bool d)
                                     mem[q].b16.s0 = mem[ha].b16.s0;
 
                                     for (i = l; i <= mem[ha + 4].b16.s1 - 1; i++)
-                                        set_native_char(q, i - l, get_native_char(ha, i));
+                                        NATIVE_NODE_text(q)[i - l] = NATIVE_NODE_text(ha)[i];
 
                                     set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
                                     mem[q].b32.s1 = mem[ha].b32.s1;
@@ -895,8 +903,6 @@ done:
 static void
 post_line_break(bool d)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     int32_t q, r, s;
     int32_t p, k;
     scaled_t w;
@@ -1295,8 +1301,6 @@ post_line_break(bool d)
 static void
 try_break(int32_t pi, small_number break_type)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     int32_t r;
     int32_t prev_r;
     int32_t old_l;
@@ -1848,8 +1852,6 @@ exit:
 static void
 hyphenate(void)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     short /*hyphenatable_length_limit 2 */ i, j, l;
     int32_t q, r, s;
     int32_t bchar;
@@ -1931,7 +1933,7 @@ not_found:
                 l = j;
                 while (hc[l] == trie_trc[z]) {
 
-                    if (trie_tro[z] != min_trie_op) {   /*959: */
+                    if (trie_tro[z] != MIN_TRIE_OP) {   /*959: */
                         v = trie_tro[z];
                         do {
                             v = v + op_start[cur_lang];
@@ -1939,7 +1941,7 @@ not_found:
                             if (hyf_num[v] > hyf[i])
                                 hyf[i] = hyf_num[v];
                             v = hyf_next[v];
-                        } while (!(v == min_trie_op));
+                        } while (!(v == MIN_TRIE_OP));
                     }
                     l++;
                     z = trie_trl[z] + hc[l];
@@ -2000,7 +2002,7 @@ found1:
                             for_end = j - hyphen_passed - 1;
                             if (i <= for_end)
                                 do
-                                    set_native_char(q, i, get_native_char(ha, i + hyphen_passed));
+                                    NATIVE_NODE_text(q)[i] = NATIVE_NODE_text(ha)[i + hyphen_passed];
                                 while (i++ < for_end);
                         }
                         set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
@@ -2024,7 +2026,7 @@ found1:
             for_end = hn - hyphen_passed - 1;
             if (i <= for_end)
                 do
-                    set_native_char(q, i, get_native_char(ha, i + hyphen_passed));
+                    NATIVE_NODE_text(q)[i] = NATIVE_NODE_text(ha)[i + hyphen_passed];
                 while (i++ < for_end);
         }
         set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
@@ -2217,7 +2219,7 @@ found1:
 static int32_t
 finite_shrink(int32_t p)
 {
-    memory_word *mem = zmem; int32_t q;
+    int32_t q;
     if (no_shrink_error_yet) {
         no_shrink_error_yet = false;
         {
@@ -2247,7 +2249,7 @@ finite_shrink(int32_t p)
 static small_number
 reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar)
 {
-    memory_word *mem = zmem; int32_t p;
+    int32_t p;
     int32_t t;
     b16x4 q;
     int32_t cur_rh;

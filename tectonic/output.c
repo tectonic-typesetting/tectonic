@@ -96,7 +96,6 @@ print_raw_char(UTF16_code s, bool incr_offset)
 void
 print_char(int32_t s)
 {
-    CACHE_THE_EQTB;
     small_number l;
 
     if ((selector > SELECTOR_PSEUDO) && (!doing_special)) {
@@ -165,7 +164,6 @@ print_char(int32_t s)
 void
 print(int32_t s)
 {
-    CACHE_THE_EQTB;
     int32_t nl;
 
     if (s >= str_ptr)
@@ -246,7 +244,6 @@ print_nl_cstr(const char* str)
 void
 print_esc(str_number s)
 {
-    CACHE_THE_EQTB;
 
     int32_t c = INTPAR(escape_char) /*:251 */ ;
 
@@ -258,7 +255,6 @@ print_esc(str_number s)
 void
 print_esc_cstr(const char* s)
 {
-    CACHE_THE_EQTB;
 
     int32_t c = INTPAR(escape_char) /*:251 */ ;
 
@@ -318,8 +314,6 @@ print_int(int32_t n)
 void
 print_cs(int32_t p)
 {
-    CACHE_THE_EQTB;
-
     if (p < HASH_BASE) {
         if (p >= SINGLE_BASE) {
             if (p == NULL_CS) {
@@ -483,7 +477,6 @@ print_size(int32_t s)
 void
 print_write_whatsit(const char* s, int32_t p)
 {
-    memory_word *mem = zmem;
 
     print_esc_cstr(s);
 
@@ -499,15 +492,14 @@ print_write_whatsit(const char* s, int32_t p)
 void
 print_native_word(int32_t p)
 {
-    memory_word *mem = zmem;
     int32_t i, c, cc;
     int32_t for_end = mem[p + 4].b16.s1 - 1;
 
     for (i = 0; i <= for_end; i++) {
-        c = get_native_char(p, i);
+        c = NATIVE_NODE_text(p)[i];
         if ((c >= 0xD800) && (c < 0xDC00)) {
             if (i < mem[p + 4].b16.s1 - 1) {
-                cc = get_native_char(p, i + 1);
+                cc = NATIVE_NODE_text(p)[i + 1];
                 if ((cc >= 0xDC00) && (cc < 0xE000)) {
                     c = 0x10000 + (c - 0xD800) * 1024 + (cc - 0xDC00);
                     print_char(c);
@@ -525,7 +517,6 @@ print_native_word(int32_t p)
 void
 print_sa_num(int32_t q)
 {
-    memory_word *mem = zmem;
     int32_t n;
 
     if (mem[q].b16.s1 < DIMEN_VAL_LIMIT)

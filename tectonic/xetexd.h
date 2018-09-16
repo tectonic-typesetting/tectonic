@@ -29,15 +29,6 @@
 #define xcalloc_array(type, size) (xcalloc(size + 1, sizeof(type)))
 #define xrealloc_array(ptr, type, size) ((type*) xrealloc(ptr, (size + 1) * sizeof(type)))
 
-/* We use this rather than a simple fputs so that the string will end up
-   in the .log file, too.  */
-#define print_c_string(STR)      \
-  do {                           \
-    const char *ch_ptr = (STR); \
-    while (*ch_ptr)              \
-      print_char(*(ch_ptr++));   \
-  } while (0)
-
 /* Declarations for the routines we provide ourselves in lib/.  */
 
 #ifndef PRIdPTR
@@ -48,10 +39,8 @@
 #endif
 
 /*11:*/
-#define trie_op_size 35111L
-#define neg_trie_op_size -35111L
-#define min_trie_op 0
-#define max_trie_op 65535L
+#define MIN_TRIE_OP 0
+#define TRIE_OP_SIZE 35111L
 
 /*18: */
 typedef unsigned short UTF16_code;
@@ -255,12 +244,17 @@ typedef union {
 #define LIGATURE_NODE_lig_char(p) mem[(p) + 1].b16.s0 /* WEB: character(lig_char(p)) */
 #define LIGATURE_NODE_lig_ptr(p) mem[(p) + 1].b32.s1 /* WEB: link(lig_char(p)) */
 
+#define NATIVE_NODE_text(p) ((unsigned short *) &mem[(p) + NATIVE_NODE_SIZE])
+
 #define PASSIVE_NODE_prev_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define PASSIVE_NODE_next_break(p) PASSIVE_NODE_prev_break(p) /* siggggghhhhh */
 #define PASSIVE_NODE_cur_break(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
 #define PASSIVE_NODE_serial(p) mem[p].b32.s0 /* aka "info" */
 
 #define PENALTY_NODE_penalty(p) mem[(p) + 1].b32.s1 /* was originally the `mem[x+1].int` field */
+
+#define PIC_NODE_path_len(p) mem[(p) + 4].b16.s1 /* number of bytes in the path item */
+#define PIC_NODE_path(p) ((unsigned char *) &mem[(p) + PIC_NODE_SIZE])
 
 #define GLUE_SPEC_ref_count(p) mem[p].b32.s1 /* aka "link" of a link-list node */
 #define GLUE_SPEC_stretch_order(p) mem[p].b16.s1 /* aka "type" of a node */
@@ -320,8 +314,7 @@ void remember_source_info(str_number, int);
 /* variables! */
 
 /* All the following variables are defined in xetexini.c */
-extern memory_word *the_eqtb;
-#define CACHE_THE_EQTB register memory_word *eqtb = the_eqtb
+extern memory_word *eqtb;
 
 extern int32_t bad;
 extern UTF8_code *name_of_file;
@@ -392,7 +385,7 @@ extern bool use_err_help;
 extern bool arith_error;
 extern scaled_t tex_remainder;
 extern int32_t temp_ptr;
-extern memory_word *zmem;
+extern memory_word *mem;
 extern int32_t lo_mem_max;
 extern int32_t hi_mem_min;
 extern int32_t var_used, dyn_used;
@@ -533,8 +526,6 @@ extern int32_t max_push;
 extern int32_t last_bop;
 extern int32_t dead_cycles;
 extern bool doing_leaders;
-extern uint16_t c;
-extern internal_font_number f;
 extern scaled_t rule_ht, rule_dp, rule_wd;
 extern scaled_t cur_h, cur_v; /* should be internal to shipout, but accessed by synctex */
 extern scaled_t total_stretch[4], total_shrink[4];
@@ -543,12 +534,6 @@ extern int32_t adjust_tail;
 extern int32_t pre_adjust_tail;
 extern int32_t pack_begin_line;
 extern b32x2 empty;
-extern b16x4 null_delimiter;
-extern int32_t cur_mlist;
-extern small_number cur_style;
-extern int32_t cur_size;
-extern scaled_t cur_mu;
-extern bool mlist_penalties;
 extern internal_font_number cur_f;
 extern int32_t cur_c;
 extern b16x4 cur_i;
@@ -578,9 +563,9 @@ extern bool lft_hit, rt_hit;
 extern trie_pointer *trie_trl;
 extern trie_pointer *trie_tro;
 extern uint16_t *trie_trc;
-extern small_number hyf_distance[trie_op_size + 1];
-extern small_number hyf_num[trie_op_size + 1];
-extern trie_opcode hyf_next[trie_op_size + 1];
+extern small_number hyf_distance[TRIE_OP_SIZE + 1];
+extern small_number hyf_num[TRIE_OP_SIZE + 1];
+extern trie_opcode hyf_next[TRIE_OP_SIZE + 1];
 extern int32_t op_start[256];
 extern str_number *hyph_word;
 extern int32_t *hyph_list;
@@ -588,8 +573,8 @@ extern hyph_pointer *hyph_link;
 extern int32_t hyph_count;
 extern int32_t hyph_next;
 extern trie_opcode trie_used[256];
-extern unsigned char trie_op_lang[trie_op_size + 1];
-extern trie_opcode trie_op_val[trie_op_size + 1];
+extern unsigned char trie_op_lang[TRIE_OP_SIZE + 1];
+extern trie_opcode trie_op_val[TRIE_OP_SIZE + 1];
 extern int32_t trie_op_ptr;
 extern trie_opcode max_op_used;
 extern packed_UTF16_code *trie_c;
@@ -669,7 +654,6 @@ extern trie_pointer hyph_index;
 extern int32_t disc_ptr[4];
 extern pool_pointer edit_name_start;
 extern bool stop_at_space;
-extern unsigned char k, l;
 extern int32_t native_font_type_flag;
 extern bool xtx_ligature_present;
 extern scaled_t delta;
@@ -686,9 +670,6 @@ extern bool gave_char_warning_help;
 
 extern uint16_t _xeq_level_array[EQTB_SIZE - INT_BASE + 1];
 #define XEQ_LEVEL(i) _xeq_level_array[(i) - INT_BASE]
-
-extern int32_t _trie_op_hash_array[trie_op_size - neg_trie_op_size + 1];
-#define trie_op_hash (_trie_op_hash_array - (int) neg_trie_op_size)
 
 /* the former xetexcoerce.h: */
 
@@ -909,7 +890,6 @@ internal_font_number read_font_info(int32_t u, str_number nom, str_number aire, 
 int32_t new_character(internal_font_number f, UTF16_code c);
 void out_what(int32_t p);
 int32_t new_edge(small_number s, scaled_t w);
-
 void scan_spec(group_code c, bool three_codes);
 scaled_t char_pw(int32_t p, small_number side);
 int32_t new_margin_kern(scaled_t w, int32_t p, small_number side);
@@ -920,57 +900,6 @@ int32_t new_noad(void);
 int32_t new_style(small_number s);
 int32_t new_choice(void);
 void show_info(void);
-scaled_t math_x_height(int32_t size_code);
-scaled_t math_quad(int32_t size_code);
-scaled_t num1(int32_t size_code);
-scaled_t num2(int32_t size_code);
-scaled_t num3(int32_t size_code);
-scaled_t denom1(int32_t size_code);
-scaled_t denom2(int32_t size_code);
-scaled_t sup1(int32_t size_code);
-scaled_t sup2(int32_t size_code);
-scaled_t sup3(int32_t size_code);
-scaled_t sub1(int32_t size_code);
-scaled_t sub2(int32_t size_code);
-scaled_t sup_drop(int32_t size_code);
-scaled_t sub_drop(int32_t size_code);
-scaled_t delim1(int32_t size_code);
-scaled_t delim2(int32_t size_code);
-scaled_t axis_height(int32_t size_code);
-scaled_t default_rule_thickness(void);
-scaled_t big_op_spacing1(void);
-scaled_t big_op_spacing2(void);
-scaled_t big_op_spacing3(void);
-scaled_t big_op_spacing4(void);
-scaled_t big_op_spacing5(void);
-int32_t fraction_rule(scaled_t t);
-int32_t overbar(int32_t b, scaled_t k, scaled_t t);
-int32_t char_box(internal_font_number f, int32_t c);
-void stack_into_box(int32_t b, internal_font_number f, uint16_t c);
-scaled_t height_plus_depth(internal_font_number f, uint16_t c);
-void stack_glyph_into_box(int32_t b, internal_font_number f, int32_t g);
-void stack_glue_into_box(int32_t b, scaled_t min, scaled_t max);
-int32_t build_opentype_assembly(internal_font_number f, void *a, scaled_t s, bool horiz);
-int32_t var_delimiter(int32_t d, int32_t s, scaled_t v);
-int32_t rebox(int32_t b, scaled_t w);
-int32_t math_glue(int32_t g, scaled_t m);
-void math_kern(int32_t p, scaled_t m);
-void flush_math(void);
-int32_t clean_box(int32_t p, small_number s);
-void fetch(int32_t a);
-void make_over(int32_t q);
-void make_under(int32_t q);
-void make_vcenter(int32_t q);
-void make_radical(int32_t q);
-scaled_t compute_ot_math_accent_pos(int32_t p);
-void make_math_accent(int32_t q);
-void make_fraction(int32_t q);
-scaled_t make_op(int32_t q);
-void make_ord(int32_t q);
-int32_t attach_hkern_to_new_hlist(int32_t q, scaled_t delta);
-void make_scripts(int32_t q, scaled_t delta);
-small_number make_left_right(int32_t q, small_number style, scaled_t max_d, scaled_t max_h);
-void mlist_to_hlist(void);
 void push_alignment(void);
 void pop_alignment(void);
 void get_preamble_token(void);
@@ -1045,22 +974,8 @@ void cs_error(void);
 void push_math(group_code c);
 void just_copy(int32_t p, int32_t h, int32_t t);
 void just_reverse(int32_t p);
-void init_math(void);
-void start_eq_no(void);
 void scan_math(int32_t p);
 void set_math_char(int32_t c);
-void math_limit_switch(void);
-void scan_delimiter(int32_t p, bool r);
-void math_radical(void);
-void math_ac(void);
-void append_choices(void);
-int32_t fin_mlist(int32_t p);
-void build_choices(void);
-void sub_sup(void);
-void math_fraction(void);
-void math_left_right(void);
-void app_display(int32_t j, int32_t b, scaled_t d);
-void after_math(void);
 void resume_after_display(void);
 void get_r_token(void);
 void trap_zero_glue(void);
@@ -1096,6 +1011,23 @@ str_number tokens_to_string(int32_t p);
 void scan_pdf_ext_toks(void);
 void compare_strings(void);
 
+/* xetex-math */
+
+void initialize_math_variables(void);
+void init_math(void);
+void after_math(void);
+void start_eq_no(void);
+void math_limit_switch(void);
+void math_radical(void);
+void math_ac(void);
+void append_choices(void);
+int32_t fin_mlist(int32_t p);
+void build_choices(void);
+void sub_sup(void);
+void math_fraction(void);
+void math_left_right(void);
+void flush_math(void);
+
 /* xetex-shipout */
 
 void initialize_shipout_variables(void);
@@ -1110,9 +1042,16 @@ static inline bool is_char_node(const int32_t p) {
 }
 
 static inline bool is_non_discardable_node(const int32_t p) {
-    memory_word *mem = zmem;
     return NODE_type(p) < MATH_NODE;
 }
+
+static inline void print_c_string(const char *str) {
+    /* Strings printed this way will end up in the .log as well
+     * as the terminal output. */
+    while (*str)
+        print_char(*str++);
+}
+
 
 /* Tectonic related functions */
 tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
@@ -1120,14 +1059,6 @@ tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
 
 /* formerly xetex.h: */
 /* additional declarations we want to slip in for xetex */
-
-#define native_node_text(p) ((unsigned short*) &mem[(p) + NATIVE_NODE_SIZE])
-#define get_native_char(p,i) native_node_text(p)[i]
-#define set_native_char(p,i,v) native_node_text(p)[i] = v
-#define get_native_usv(p,i) \
-  ((native_node_text(p)[i] >= 0xd800 && native_node_text(p)[i] < 0xdc00) ? \
-    0x10000 + (native_node_text(p)[i] - 0xd800) * 0x400 + native_node_text(p)[(i)+1] - 0xdc00 : \
-    native_node_text(p)[i])
 
 /* p is native_word node; g is XeTeX_use_glyph_metrics flag */
 #define set_native_metrics(p,g)               measure_native_node(&(mem[p]), g)
@@ -1138,8 +1069,6 @@ tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
 #define get_native_glyph(p,i)                 real_get_native_glyph(&(mem[p]), i)
 #define make_xdv_glyph_array_data(p)          makeXDVGlyphArrayData(&(mem[p]))
 #define get_native_word_cp(p,s)               real_get_native_word_cp(&(mem[p]), s)
-
-#define pic_path_byte(p,i) ((unsigned char*) &mem[(p) + PIC_NODE_SIZE])[i]
 
 /* easier to do the bit-twiddling here than in Pascal */
 /* read fields from a 32-bit math code */

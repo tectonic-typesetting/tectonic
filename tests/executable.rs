@@ -1,6 +1,7 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
+#[macro_use] extern crate lazy_static;
 extern crate tempdir;
 
 use std::env;
@@ -9,11 +10,26 @@ use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 use std::str;
+use std::sync::Mutex;
 use tempdir::TempDir;
 
 mod util;
-use util::cargo_dir;
+use util::{cargo_dir, ensure_plain_format};
 
+
+lazy_static! {
+    static ref LOCK: Mutex<u8> = Mutex::new(0u8);
+}
+
+
+/// This function might run the TeX engine inside this process to generate the
+/// plain format, so we must use a global lock since the engine is *way* not
+/// thread-safe. For now.
+fn get_plain_format_arg() -> String {
+    let _guard = LOCK.lock().unwrap();
+    let path = ensure_plain_format().expect("couldn't write format file");
+    format!("--format={}", path.display())
+}
 
 fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
     let tectonic = cargo_dir()
@@ -138,11 +154,12 @@ fn help_flag() {
 fn relative_include() {
     if env::var("RUNNING_COVERAGE").is_ok() { return }
 
+    let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["subdirectory/relative_include.tex",
                                          "subdirectory/content/1.tex"]);
 
     let output = run_tectonic(tempdir.path(),
-                              &["--format=plain.fmt", "subdirectory/relative_include.tex"]);
+                              &[&fmt_arg, "subdirectory/relative_include.tex"]);
     success_or_panic(output);
     check_file(&tempdir, "subdirectory/relative_include.pdf");
 }
@@ -152,10 +169,11 @@ fn stdin_content() {
     if env::var("RUNNING_COVERAGE").is_ok() { return }
 
     // No input files here, but output files are created.
+    let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&[]);
     let output = run_tectonic_with_stdin(
         tempdir.path(),
-        &["--format=plain", "-"],
+        &[&fmt_arg, "-"],
         "Standard input content.\\bye"
     );
     success_or_panic(output);
@@ -166,20 +184,22 @@ fn stdin_content() {
 fn test_space() {
     if env::var("RUNNING_COVERAGE").is_ok() { return }
 
+    let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["test space.tex"]);
 
-    let output = run_tectonic(tempdir.path(), &["--format=plain.fmt", "test space.tex"]);
+    let output = run_tectonic(tempdir.path(), &[&fmt_arg, "test space.tex"]);
     success_or_panic(output);
 }
 
-#[test] 
+#[test]
 fn test_outdir() {
     if env::var("RUNNING_COVERAGE").is_ok() { return }
 
+    let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
 
     let output = run_tectonic(tempdir.path(),
-                              &["--format=plain.fmt", "subdirectory/content/1.tex", "--outdir=subdirectory"]);
+                              &[&fmt_arg, "subdirectory/content/1.tex", "--outdir=subdirectory"]);
     success_or_panic(output);
     check_file(&tempdir, "subdirectory/1.pdf");
 }
@@ -189,10 +209,11 @@ fn test_outdir() {
 fn test_bad_outdir() {
     if env::var("RUNNING_COVERAGE").is_ok() { panic!() }
 
+    let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
 
     let output = run_tectonic(tempdir.path(),
-                              &["--format=plain.fmt", "subdirectory/content/1.tex", "--outdir=subdirectory/non_existent"]);
+                              &[&fmt_arg, "subdirectory/content/1.tex", "--outdir=subdirectory/non_existent"]);
     success_or_panic(output);
 }
 
@@ -201,10 +222,11 @@ fn test_bad_outdir() {
 fn test_outdir_is_file() {
     if env::var("RUNNING_COVERAGE").is_ok() { panic!() }
 
+    let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["test space.tex", "subdirectory/content/1.tex"]);
 
     let output = run_tectonic(tempdir.path(),
-                              &["--format=plain.fmt", "subdirectory/content/1.tex", "--outdir=test space.tex"]);
+                              &[&fmt_arg, "subdirectory/content/1.tex", "--outdir=test space.tex"]);
     success_or_panic(output);
 }
 
@@ -213,10 +235,11 @@ fn test_keep_logs_on_error() {
     if env::var("RUNNING_COVERAGE").is_ok() { return }
 
     // No input files here, but output files are created.
+    let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&[]);
     let output = run_tectonic_with_stdin(
         tempdir.path(),
-        &["--format=plain", "-", "--keep-logs"],
+        &[&fmt_arg, "-", "--keep-logs"],
         "no end to this file"
     );
     error_or_panic(output);

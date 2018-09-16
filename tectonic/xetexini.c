@@ -11,7 +11,7 @@
 #include "dpx-pdfobj.h" /* pdf_files_{init,close} */
 
 /* All the following variables are declared in xetexd.h */
-memory_word *the_eqtb;
+memory_word *eqtb;
 int32_t bad;
 UTF8_code *name_of_file;
 UTF16_code *name_of_file16;
@@ -81,7 +81,7 @@ bool use_err_help;
 bool arith_error;
 scaled_t tex_remainder;
 int32_t temp_ptr;
-memory_word *zmem;
+memory_word *mem;
 int32_t lo_mem_max;
 int32_t hi_mem_min;
 int32_t var_used, dyn_used;
@@ -223,8 +223,6 @@ int32_t max_push;
 int32_t last_bop;
 int32_t dead_cycles;
 bool doing_leaders;
-uint16_t c;
-internal_font_number f;
 scaled_t rule_ht, rule_dp, rule_wd;
 scaled_t cur_h, cur_v;
 scaled_t total_stretch[4], total_shrink[4];
@@ -233,12 +231,6 @@ int32_t adjust_tail;
 int32_t pre_adjust_tail;
 int32_t pack_begin_line;
 b32x2 empty;
-b16x4 null_delimiter;
-int32_t cur_mlist;
-small_number cur_style;
-int32_t cur_size;
-scaled_t cur_mu;
-bool mlist_penalties;
 internal_font_number cur_f;
 int32_t cur_c;
 b16x4 cur_i;
@@ -268,9 +260,9 @@ bool lft_hit, rt_hit;
 trie_pointer *trie_trl;
 trie_pointer *trie_tro;
 uint16_t *trie_trc;
-small_number hyf_distance[trie_op_size + 1];
-small_number hyf_num[trie_op_size + 1];
-trie_opcode hyf_next[trie_op_size + 1];
+small_number hyf_distance[TRIE_OP_SIZE + 1];
+small_number hyf_num[TRIE_OP_SIZE + 1];
+trie_opcode hyf_next[TRIE_OP_SIZE + 1];
 int32_t op_start[256];
 str_number *hyph_word;
 int32_t *hyph_list;
@@ -278,8 +270,8 @@ hyph_pointer *hyph_link;
 int32_t hyph_count;
 int32_t hyph_next;
 trie_opcode trie_used[256];
-unsigned char trie_op_lang[trie_op_size + 1];
-trie_opcode trie_op_val[trie_op_size + 1];
+unsigned char trie_op_lang[TRIE_OP_SIZE + 1];
+trie_opcode trie_op_val[TRIE_OP_SIZE + 1];
 int32_t trie_op_ptr;
 trie_opcode max_op_used;
 packed_UTF16_code *trie_c;
@@ -359,7 +351,6 @@ trie_pointer hyph_index;
 int32_t disc_ptr[4];
 pool_pointer edit_name_start;
 bool stop_at_space;
-unsigned char k, l;
 int32_t native_font_type_flag;
 bool xtx_ligature_present;
 scaled_t delta;
@@ -369,7 +360,12 @@ bool semantic_pagination_enabled;
 bool gave_char_warning_help;
 
 uint16_t _xeq_level_array[EQTB_SIZE - INT_BASE + 1];
-int32_t _trie_op_hash_array[trie_op_size - neg_trie_op_size + 1];
+
+#define NEG_TRIE_OP_SIZE -35111L
+#define MAX_TRIE_OP 65535L
+
+int32_t _trie_op_hash_array[TRIE_OP_SIZE - NEG_TRIE_OP_SIZE + 1];
+#define TRIE_OP_HASH(i) _trie_op_hash_array[(i) - NEG_TRIE_OP_SIZE]
 
 static b32x2 *yhash;
 
@@ -555,7 +551,6 @@ do_undump (char *p, size_t item_size, size_t nitems, rust_input_handle_t in_file
 static void
 sort_avail(void)
 {
-    memory_word *mem = zmem;
     int32_t p, q, r;
     int32_t old_rover;
 
@@ -599,7 +594,6 @@ sort_avail(void)
 static void
 primitive(const char* ident, uint16_t c, int32_t o)
 {
-    CACHE_THE_EQTB;
     int32_t prim_val;
     int len = strlen(ident);
     if (len > 1) {
@@ -636,17 +630,17 @@ trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
     int32_t h;
     trie_opcode u;
     int32_t l;
-    h = abs(n + 313 * d + 361 * v + 1009 * cur_lang) % (trie_op_size - neg_trie_op_size) + neg_trie_op_size;
+    h = abs(n + 313 * d + 361 * v + 1009 * cur_lang) % (TRIE_OP_SIZE - NEG_TRIE_OP_SIZE) + NEG_TRIE_OP_SIZE;
     while (true) {
 
-        l = trie_op_hash[h];
+        l = TRIE_OP_HASH(h);
         if (l == 0) {
-            if (trie_op_ptr == trie_op_size)
-                overflow("pattern memory ops", trie_op_size);
+            if (trie_op_ptr == TRIE_OP_SIZE)
+                overflow("pattern memory ops", TRIE_OP_SIZE);
             u = trie_used[cur_lang];
-            if (u == max_trie_op)
+            if (u == MAX_TRIE_OP)
                 overflow("pattern memory ops per language",
-                         max_trie_op - min_trie_op);
+                         MAX_TRIE_OP - MIN_TRIE_OP);
             trie_op_ptr++;
             u++;
             trie_used[cur_lang] = u;
@@ -656,17 +650,17 @@ trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
             hyf_num[trie_op_ptr] = n;
             hyf_next[trie_op_ptr] = v;
             trie_op_lang[trie_op_ptr] = cur_lang;
-            trie_op_hash[h] = trie_op_ptr;
+            TRIE_OP_HASH(h) = trie_op_ptr;
             trie_op_val[trie_op_ptr] = u;
             return u;
         }
         if ((hyf_distance[l] == d) && (hyf_num[l] == n) && (hyf_next[l] == v) && (trie_op_lang[l] == cur_lang)) {
             return trie_op_val[l];
         }
-        if (h > -(int32_t) trie_op_size)
+        if (h > -(int32_t) TRIE_OP_SIZE)
             h--;
         else
-            h = trie_op_size;
+            h = TRIE_OP_SIZE;
     }
 }
 
@@ -798,8 +792,6 @@ void trie_fix(trie_pointer p)
 static void
 new_patterns(void)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     short /*hyphenatable_length_limit 1 */ k, l;
     bool digit_sensed;
     trie_opcode v;
@@ -868,7 +860,7 @@ new_patterns(void)
                         hyf[k] = 0;
 
                     l = k;
-                    v = min_trie_op;
+                    v = MIN_TRIE_OP;
 
                     while (true) {
                         if (hyf[l] != 0)
@@ -906,13 +898,13 @@ new_patterns(void)
                             else
                                 trie_r[q] = p;
                             trie_c[p] = c;
-                            trie_o[p] = min_trie_op;
+                            trie_o[p] = MIN_TRIE_OP;
                         }
 
                         q = p;
                     }
 
-                    if (trie_o[q] != min_trie_op) {
+                    if (trie_o[q] != MIN_TRIE_OP) {
                         if (file_line_error_style_p)
                             print_file_line();
                         else
@@ -971,7 +963,7 @@ new_patterns(void)
                 else
                     trie_r[q] = p;
                 trie_c[p] = c;
-                trie_o[p] = min_trie_op;
+                trie_o[p] = MIN_TRIE_OP;
             }
 
             q = p;
@@ -992,7 +984,7 @@ new_patterns(void)
                         else
                             trie_r[q] = p;
                         trie_c[p] = c;
-                        trie_o[p] = min_trie_op;
+                        trie_o[p] = MIN_TRIE_OP;
                     } else {
                         trie_c[p] = c;
                     }
@@ -1031,7 +1023,7 @@ void init_trie(void)
     int32_t j, k, t;
     trie_pointer r, s;
     max_hyph_char++;
-    op_start[0] = -(int32_t) min_trie_op;
+    op_start[0] = -(int32_t) MIN_TRIE_OP;
     {
         register int32_t for_end;
         j = 1;
@@ -1047,7 +1039,7 @@ void init_trie(void)
         for_end = trie_op_ptr;
         if (j <= for_end)
             do
-                trie_op_hash[j] = op_start[trie_op_lang[j]] + trie_op_val[j];
+                TRIE_OP_HASH(j) = op_start[trie_op_lang[j]] + trie_op_val[j];
             while (j++ < for_end);
     }
     {
@@ -1056,9 +1048,9 @@ void init_trie(void)
         for_end = trie_op_ptr;
         if (j <= for_end)
             do
-                while (trie_op_hash[j] > j) {
+                while (TRIE_OP_HASH(j) > j) {
 
-                    k = trie_op_hash[j];
+                    k = TRIE_OP_HASH(j);
                     t = hyf_distance[k];
                     hyf_distance[k] = hyf_distance[j];
                     hyf_distance[j] = t;
@@ -1068,8 +1060,8 @@ void init_trie(void)
                     t = hyf_next[k];
                     hyf_next[k] = hyf_next[j];
                     hyf_next[j] = t;
-                    trie_op_hash[j] = trie_op_hash[k];
-                    trie_op_hash[k] = k;
+                    TRIE_OP_HASH(j) = TRIE_OP_HASH(k);
+                    TRIE_OP_HASH(k) = k;
                 }
             while (j++ < for_end);
     }
@@ -1130,7 +1122,7 @@ void init_trie(void)
             if (r <= for_end)
                 do {
                     trie_trl[r] = 0;
-                    trie_tro[r] = min_trie_op;
+                    trie_tro[r] = MIN_TRIE_OP;
                     trie_trc[r] = 0;
                 }
                 while (r++ < for_end);
@@ -1147,7 +1139,7 @@ void init_trie(void)
             s = trie_trl[r];
             {
                 trie_trl[r] = 0;
-                trie_tro[r] = min_trie_op;
+                trie_tro[r] = MIN_TRIE_OP;
                 trie_trc[r] = 0;
             }
             r = s;
@@ -1162,8 +1154,6 @@ void init_trie(void)
 static void
 new_hyph_exceptions(void)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     short /*hyphenatable_length_limit 1 */ n;
     short /*hyphenatable_length_limit 1 */ j;
     hyph_pointer h;
@@ -1342,8 +1332,6 @@ not_found1: /*970:*/
 void
 prefixed_command(void)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     small_number a;
     internal_font_number f;
     int32_t j;
@@ -2157,8 +2145,6 @@ done: /*1304:*/
 static void
 store_fmt_file(void)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     int32_t j, k, l;
     int32_t p, q;
     int32_t x;
@@ -2507,7 +2493,7 @@ store_fmt_file(void)
     else
         print_cstr(" op");
     print_cstr(" out of ");
-    print_int(trie_op_size);
+    print_int(TRIE_OP_SIZE);
 
     for (k = BIGGEST_LANG; k >= 0; k--) {
         if (trie_used[k] > 0) {
@@ -2609,8 +2595,6 @@ pack_buffered_name(small_number n, int32_t a, int32_t b)
 static bool
 load_fmt_file(void)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     int32_t j, k;
     int32_t p, q;
     int32_t x;
@@ -2634,9 +2618,9 @@ load_fmt_file(void)
         free(str_pool);
         free(str_start);
         free(yhash);
-        free(the_eqtb);
-        free(zmem);
-        mem = zmem = NULL;
+        free(eqtb);
+        free(mem);
+        mem = NULL;
     }
 
     /* start reading the header */
@@ -2672,7 +2656,7 @@ load_fmt_file(void)
     for (x = HASH_BASE + 1; x <= hash_top; x++)
         hash[x] = hash[HASH_BASE];
 
-    eqtb = the_eqtb = xmalloc_array(memory_word, eqtb_top + 1);
+    eqtb = xmalloc_array(memory_word, eqtb_top + 1);
     eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s1 = UNDEFINED_CS;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].b32.s1 = TEX_NULL;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s0 = LEVEL_ZERO;
@@ -2692,7 +2676,7 @@ load_fmt_file(void)
     cur_list.head = CONTRIB_HEAD;
     cur_list.tail = CONTRIB_HEAD;
     page_tail = PAGE_HEAD;
-    mem = zmem = xmalloc_array(memory_word, MEM_TOP + 1);
+    mem = xmalloc_array(memory_word, MEM_TOP + 1);
 
     undump_int(x);
     if (x != EQTB_SIZE)
@@ -3044,15 +3028,15 @@ load_fmt_file(void)
     undump_int(x);
     if (x < 0)
         goto bad_fmt;
-    if (x > trie_op_size)
-        _tt_abort ("must increase trie_op_size");
+    if (x > TRIE_OP_SIZE)
+        _tt_abort ("must increase TRIE_OP_SIZE");
 
     j = x;
     trie_op_ptr = j;
 
     undump_things(hyf_distance[1], j);
     undump_things(hyf_num[1], j);
-    undump_upper_check_things(max_trie_op, hyf_next[1], j);
+    undump_upper_check_things(MAX_TRIE_OP, hyf_next[1], j);
 
     for (k = 0; k <= BIGGEST_LANG; k++)
         trie_used[k] = 0;
@@ -3094,7 +3078,6 @@ bad_fmt:
 static void
 final_cleanup(void)
 {
-    memory_word *mem = zmem;
     small_number c;
 
     c = cur_chr;
@@ -3301,10 +3284,6 @@ initialize_more_variables(void)
     pack_begin_line = 0;
     empty.s1 = EMPTY;
     empty.s0 = TEX_NULL;
-    null_delimiter.s3 = 0;
-    null_delimiter.s2 = 0;
-    null_delimiter.s1 = 0;
-    null_delimiter.s0 = 0;
     align_ptr = TEX_NULL;
     cur_align = TEX_NULL;
     cur_span = TEX_NULL;
@@ -3358,8 +3337,6 @@ initialize_more_variables(void)
 static void
 initialize_more_initex_variables(void)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     int32_t i, k;
 
     for (k = 1; k <= 19; k++)
@@ -3514,13 +3491,13 @@ initialize_more_initex_variables(void)
     eqtb[FROZEN_PRIMITIVE].b16.s0 = LEVEL_ONE;
     hash[FROZEN_PRIMITIVE].s1 = maketexstring("primitive");
 
-    for (k = -(int32_t) trie_op_size; k <= trie_op_size; k++)
-        trie_op_hash[k] = 0;
+    for (k = -(int32_t) TRIE_OP_SIZE; k <= TRIE_OP_SIZE; k++)
+        TRIE_OP_HASH(k) = 0;
 
     for (k = 0; k <= BIGGEST_LANG; k++)
-        trie_used[k] = min_trie_op;
+        trie_used[k] = MIN_TRIE_OP;
 
-    max_op_used = min_trie_op;
+    max_op_used = MIN_TRIE_OP;
     trie_op_ptr = 0;
     trie_not_ready = true;
     hash[FROZEN_PROTECTION].s1 = maketexstring("inaccessible");
@@ -3546,7 +3523,6 @@ initialize_more_initex_variables(void)
 static void
 initialize_primitives(void)
 {
-    CACHE_THE_EQTB;
 
     no_new_control_sequence = false;
     first = 0;
@@ -4006,8 +3982,6 @@ get_strings_started(void)
 tt_history_t
 tt_run_engine(char *dump_name, char *input_file_name)
 {
-    CACHE_THE_EQTB;
-
     /* Miscellaneous initializations that were mostly originally done in the
      * main() driver routines. */
 
@@ -4074,7 +4048,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     /* First bit of initex handling: more allocations. */
 
     if (in_initex_mode) {
-        zmem = xmalloc_array(memory_word, MEM_TOP + 1);
+        mem = xmalloc_array(memory_word, MEM_TOP + 1);
         eqtb_top = EQTB_SIZE + hash_extra;
 
         if (hash_extra == 0)
@@ -4090,7 +4064,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         for (hash_used = HASH_BASE + 1; hash_used <= hash_top; hash_used++)
             hash[hash_used] = hash[HASH_BASE];
 
-        the_eqtb = xcalloc_array(memory_word, eqtb_top);
+        eqtb = xcalloc_array(memory_word, eqtb_top);
         str_start = xmalloc_array(pool_pointer, max_strings);
         str_pool = xmalloc_array(packed_UTF16_code, pool_size);
         font_info = xmalloc_array(memory_word, font_mem_size);
@@ -4148,6 +4122,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     }
 
     /*55:*/
+    initialize_math_variables();
     initialize_shipout_variables();
 
     selector = SELECTOR_TERM_ONLY;
@@ -4362,8 +4337,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
             return history;
     }
 
-    eqtb = the_eqtb;
-
     if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > BIGGEST_CHAR)
         cur_input.limit--;
     else
@@ -4502,7 +4475,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     // Free arrays allocated in load_fmt_file
     free(yhash);
     free(eqtb);
-    free(zmem);
+    free(mem);
     free(str_start);
     free(str_pool);
     free(font_info);

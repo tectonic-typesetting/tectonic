@@ -70,12 +70,11 @@ deinitialize_shipout_variables(void)
 void
 ship_out(int32_t p)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     int32_t page_loc;
     unsigned char j, k;
     pool_pointer s;
     unsigned char old_setting;
+    unsigned char l;
     const char *output_comment = "tectonic";
 
     synctex_sheet(INTPAR(mag));
@@ -301,8 +300,6 @@ done: /*1518:*/
 static void
 hlist_out(void)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     scaled_t base_line;
     scaled_t left_edge;
     scaled_t save_h, save_v;
@@ -323,6 +320,8 @@ hlist_out(void)
     double glue_temp;
     double cur_glue;
     scaled_t cur_g;
+    uint16_t c;
+    internal_font_number f;
 
     cur_g = 0;
     cur_glue = 0.0;
@@ -423,7 +422,7 @@ hlist_out(void)
                                         for_end = mem[q + 4].b16.s1 - 1;
                                         if (j <= for_end)
                                             do {
-                                                str_pool[pool_ptr] = get_native_char(q, j);
+                                                str_pool[pool_ptr] = NATIVE_NODE_text(q)[j];
                                                 pool_ptr++;
                                             }
                                             while (j++ < for_end);
@@ -465,7 +464,7 @@ hlist_out(void)
                             for_end = (pool_ptr - str_start[str_ptr - 65536L]) - 1;
                             if (j <= for_end)
                                 do
-                                    set_native_char(q, j, str_pool[str_start[str_ptr - 65536L] + j]);
+                                    NATIVE_NODE_text(q)[j] = str_pool[str_start[str_ptr - 65536L] + j];
                                 while (j++ < for_end);
                         }
                         mem[q + 1].b32.s1 = k;
@@ -767,7 +766,7 @@ hlist_out(void)
                                             for_end = len - 1;
                                             if (k <= for_end)
                                                 do {
-                                                    dvi_two(get_native_char(p, k));
+                                                    dvi_two(NATIVE_NODE_text(p)[k]);
                                                 }
                                                 while (k++ < for_end);
                                         }
@@ -1096,7 +1095,6 @@ hlist_out(void)
 static void
 vlist_out(void)
 {
-    memory_word *mem = zmem;
     scaled_t left_edge;
     scaled_t top_edge;
     scaled_t save_h, save_v;
@@ -1114,6 +1112,8 @@ vlist_out(void)
     double cur_glue;
     scaled_t cur_g;
     bool upwards;
+    internal_font_number f;
+
     cur_g = 0;
     cur_glue = 0.0;
     this_box = temp_ptr;
@@ -1452,13 +1452,16 @@ vlist_out(void)
 static int32_t
 reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue)
 {
-    memory_word *mem = zmem; int32_t l;
+    int32_t l;
     int32_t p;
     int32_t q;
     glue_ord g_order;
     unsigned char /*shrinking */ g_sign;
     double glue_temp;
     int32_t m, n;
+    uint16_t c;
+    internal_font_number f;
+
     g_order = mem[this_box + 5].b16.s0;
     g_sign = mem[this_box + 5].b16.s1;
     l = t;
@@ -1644,7 +1647,7 @@ done:
 int32_t
 new_edge(small_number s, scaled_t w)
 {
-    memory_word *mem = zmem; int32_t p;
+    int32_t p;
     p = get_node(EDGE_NODE_SIZE);
     NODE_type(p) = EDGE_NODE;
     mem[p].b16.s0 = s;
@@ -1657,8 +1660,6 @@ new_edge(small_number s, scaled_t w)
 void
 out_what(int32_t p)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     small_number j;
     unsigned char old_setting;
 
@@ -1885,7 +1886,6 @@ dvi_font_def(internal_font_number f)
 static void
 movement(scaled_t w, eight_bits o)
 {
-    memory_word *mem = zmem;
     small_number mstate;
     int32_t p, q;
     int32_t k;
@@ -2078,7 +2078,6 @@ found: /*629:*/
 static void
 prune_movements(int32_t l)
 {
-    memory_word *mem = zmem;
     int32_t p;
 
     while (down_ptr != TEX_NULL) {
@@ -2105,7 +2104,6 @@ done:
 static void
 special_out(int32_t p)
 {
-    memory_word *mem = zmem;
     unsigned char /*max_selector */ old_setting;
     pool_pointer k;
 
@@ -2170,8 +2168,6 @@ special_out(int32_t p)
 static void
 write_out(int32_t p)
 {
-    CACHE_THE_EQTB;
-    memory_word *mem = zmem;
     unsigned char old_setting; /* max_selector enum */
     int32_t old_mode;
     small_number j;
@@ -2258,7 +2254,7 @@ write_out(int32_t p)
 static void
 pic_out(int32_t p)
 {
-    memory_word *mem = zmem; unsigned char /*max_selector */ old_setting;
+    unsigned char /*max_selector */ old_setting;
     int32_t i;
     pool_pointer k;
     if (cur_h != dvi_h) {
@@ -2309,15 +2305,8 @@ pic_out(int32_t p)
         break;
     }
     print('(');
-    {
-        register int32_t for_end;
-        i = 0;
-        for_end = mem[p + 4].b16.s1 - 1;
-        if (i <= for_end)
-            do
-                print_raw_char(pic_path_byte(p, i), true);
-            while (i++ < for_end);
-    }
+    for (i = 0; i < PIC_NODE_path_len(p); i++)
+        print_raw_char(PIC_NODE_path(p)[i], true);
     print(')');
     selector = old_setting;
     if ((pool_ptr - str_start[str_ptr - 65536L]) < 256) {
@@ -2363,7 +2352,7 @@ pic_out(int32_t p)
 void
 finalize_dvi_file(void)
 {
-    CACHE_THE_EQTB;
+    unsigned char k;
 
     while (cur_s > -1) {
         if (cur_s > 0) {

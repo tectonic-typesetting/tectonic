@@ -23,8 +23,8 @@
 /* in XeTeX, "halfword" fields are at least 32 bits, so we'll use those for
  * tag and line so that the sync field size is only one memory_word. */
 
-#define SYNCTEX_TAG_MODEL(NODE,TYPE) zmem[NODE+TYPE##_node_size-synchronization_field_size].b32.s0
-#define SYNCTEX_LINE_MODEL(NODE,TYPE) zmem[NODE+TYPE##_node_size-synchronization_field_size].b32.s1
+#define SYNCTEX_TAG_MODEL(NODE,TYPE) mem[NODE+TYPE##_node_size-synchronization_field_size].b32.s0
+#define SYNCTEX_LINE_MODEL(NODE,TYPE) mem[NODE+TYPE##_node_size-synchronization_field_size].b32.s1
 
 /* end of synctex-xetex.h */
 
@@ -43,11 +43,11 @@
 #define glue_node 10
 #define kern_node 11
 
-#define SYNCTEX_TYPE(NODE) zmem[NODE].b16.s1
-#define SYNCTEX_SUBTYPE(NODE) zmem[NODE].b16.s0
-#define SYNCTEX_WIDTH(NODE) zmem[NODE + width_offset].b32.s1
-#define SYNCTEX_DEPTH(NODE) zmem[NODE + depth_offset].b32.s1
-#define SYNCTEX_HEIGHT(NODE) zmem[NODE + height_offset].b32.s1
+#define SYNCTEX_TYPE(NODE) mem[NODE].b16.s1
+#define SYNCTEX_SUBTYPE(NODE) mem[NODE].b16.s0
+#define SYNCTEX_WIDTH(NODE) mem[NODE + width_offset].b32.s1
+#define SYNCTEX_DEPTH(NODE) mem[NODE + depth_offset].b32.s1
+#define SYNCTEX_HEIGHT(NODE) mem[NODE + height_offset].b32.s1
 
 /*  For non-GCC compilation.  */
 #if !defined(__GNUC__) || (__GNUC__ < 2)
@@ -144,7 +144,6 @@ get_current_name (void)
 void
 synctex_init_command(void)
 {
-    CACHE_THE_EQTB;
 
     /* In the web2c implementations this dealt with the -synctex command line
      * argument. */
@@ -231,7 +230,6 @@ static const char *synctex_suffix_gz = ".gz";
 static rust_output_handle_t
 synctex_dot_open(void)
 {
-    CACHE_THE_EQTB;
     char *tmp = NULL, *the_name = NULL;
     size_t len;
 
@@ -370,7 +368,7 @@ void synctex_start_input(void)
 }
 
 /*  All the synctex... functions below have the smallest set of parameters.  It
- *  appears to be either the address of a node, or nothing at all.  Using zmem,
+ *  appears to be either the address of a node, or nothing at all.  Using mem,
  *  which is the place where all the nodes are stored, one can retrieve every
  *  information about a node.  The other information is obtained through the
  *  global context variable.
@@ -398,7 +396,6 @@ void synctex_terminate(bool log_opened)
  */
 void synctex_sheet(int32_t mag)
 {
-    CACHE_THE_EQTB;
 
     if (synctex_ctxt.flags.off) {
         if (INTPAR(synctex) && !synctex_ctxt.flags.warn) {
@@ -456,7 +453,6 @@ void synctex_teehs(void)
  *  address of the vlist. We assume that p is really a vlist node! */
 void synctex_vlist(int32_t this_box)
 {
-    CACHE_THE_EQTB;
 
     if (SYNCTEX_IGNORE(this_box)) {
         return;
@@ -477,7 +473,6 @@ void synctex_vlist(int32_t this_box)
  *  synctex_vlist sent at the beginning of that procedure.    */
 void synctex_tsilv(int32_t this_box)
 {
-    CACHE_THE_EQTB;
 
     if (SYNCTEX_IGNORE(this_box)) {
         return;
@@ -497,7 +492,6 @@ void synctex_tsilv(int32_t this_box)
  *  There is no need to balance a void vlist.  */
 void synctex_void_vlist(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
-    CACHE_THE_EQTB;
 
     if (SYNCTEX_IGNORE(p)) {
         return;
@@ -518,7 +512,6 @@ void synctex_void_vlist(int32_t p, int32_t this_box __attribute__ ((unused)))
  *  address of the hlist We assume that p is really an hlist node! */
 void synctex_hlist(int32_t this_box)
 {
-    CACHE_THE_EQTB;
 
     if (SYNCTEX_IGNORE(this_box)) {
         return;
@@ -539,7 +532,6 @@ void synctex_hlist(int32_t this_box)
  *  synctex_hlist sent at the beginning of that procedure.    */
 void synctex_tsilh(int32_t this_box)
 {
-    CACHE_THE_EQTB;
 
     if (SYNCTEX_IGNORE(this_box)) {
         return;
@@ -559,7 +551,6 @@ void synctex_tsilh(int32_t this_box)
  *  There is no need to balance a void hlist.  */
 void synctex_void_hlist(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
-    CACHE_THE_EQTB;
 
     if (SYNCTEX_IGNORE(p)) {
         return;
@@ -591,7 +582,6 @@ void synctex_void_hlist(int32_t p, int32_t this_box __attribute__ ((unused)))
  See: @ @<Output the non-|char_node| |p| for...  */
 void synctex_math(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
-    CACHE_THE_EQTB;
 
     if (SYNCTEX_IGNORE(p)) {
         return;
@@ -617,7 +607,6 @@ void synctex_math(int32_t p, int32_t this_box __attribute__ ((unused)))
 || (0 >= SYNCTEX_LINE_MODEL(NODE,TYPE))
 void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
-    CACHE_THE_EQTB;
 
     switch (SYNCTEX_TYPE(p)) {
         case rule_node:
@@ -668,7 +657,6 @@ void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box __attribute__ (
  See: @ @<Output the non-|char_node| |p| for...    */
 void synctex_kern(int32_t p, int32_t this_box)
 {
-    CACHE_THE_EQTB;
 
     if (SYNCTEX_IGNORE(p,kern)) {
         return;
@@ -712,7 +700,6 @@ void synctex_kern(int32_t p, int32_t this_box)
 void
 synctex_current(void)
 {
-    CACHE_THE_EQTB;
     int len;
 
     if (SYNCTEX_IGNORE(nothing))
@@ -858,7 +845,6 @@ synctex_record_teehs(int32_t sheet)
 void
 synctex_pdfxform(int32_t p)
 {
-    CACHE_THE_EQTB;
 
     if (synctex_ctxt.flags.off) {
         if (INTPAR(synctex) && !synctex_ctxt.flags.warn) {
@@ -895,7 +881,6 @@ synctex_pdfrefxform(int objnum)
 static inline int
 synctex_record_pdfxform(int32_t form)
 {
-    CACHE_THE_EQTB;
 
     if (SYNCTEX_IGNORE(nothing)) {
         return 0;
@@ -932,7 +917,6 @@ synctex_record_mrofxfdp(void)
 static inline int
 synctex_record_node_pdfrefxform(int objnum) /* UNUSED form JL */
 {
-    CACHE_THE_EQTB;
 
     synctex_ctxt.curh = SYNCTEX_CURH;
     synctex_ctxt.curv = SYNCTEX_CURV;
