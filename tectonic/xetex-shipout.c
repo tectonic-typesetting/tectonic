@@ -2371,6 +2371,7 @@ void
 finalize_dvi_file(void)
 {
     CACHE_THE_EQTB;
+    unsigned char k;
 
     while (cur_s > -1) {
         if (cur_s > 0) {
