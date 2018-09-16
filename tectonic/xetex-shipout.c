@@ -76,6 +76,7 @@ ship_out(int32_t p)
     unsigned char j, k;
     pool_pointer s;
     unsigned char old_setting;
+    unsigned char l;
     const char *output_comment = "tectonic";
 
     synctex_sheet(INTPAR(mag));

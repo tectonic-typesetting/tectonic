@@ -357,7 +357,6 @@ trie_pointer hyph_index;
 int32_t disc_ptr[4];
 pool_pointer edit_name_start;
 bool stop_at_space;
-unsigned char l;
 int32_t native_font_type_flag;
 bool xtx_ligature_present;
 scaled_t delta;
