@@ -223,7 +223,6 @@ int32_t max_push;
 int32_t last_bop;
 int32_t dead_cycles;
 bool doing_leaders;
-internal_font_number f;
 scaled_t rule_ht, rule_dp, rule_wd;
 scaled_t cur_h, cur_v;
 scaled_t total_stretch[4], total_shrink[4];

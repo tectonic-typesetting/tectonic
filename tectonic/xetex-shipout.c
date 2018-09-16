@@ -324,6 +324,7 @@ hlist_out(void)
     double cur_glue;
     scaled_t cur_g;
     uint16_t c;
+    internal_font_number f;
 
     cur_g = 0;
     cur_glue = 0.0;
@@ -1115,6 +1116,8 @@ vlist_out(void)
     double cur_glue;
     scaled_t cur_g;
     bool upwards;
+    internal_font_number f;
+
     cur_g = 0;
     cur_glue = 0.0;
     this_box = temp_ptr;
@@ -1461,6 +1464,7 @@ reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue)
     double glue_temp;
     int32_t m, n;
     uint16_t c;
+    internal_font_number f;
 
     g_order = mem[this_box + 5].b16.s0;
     g_sign = mem[this_box + 5].b16.s1;
