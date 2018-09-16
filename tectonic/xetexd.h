@@ -29,15 +29,6 @@
 #define xcalloc_array(type, size) (xcalloc(size + 1, sizeof(type)))
 #define xrealloc_array(ptr, type, size) ((type*) xrealloc(ptr, (size + 1) * sizeof(type)))
 
-/* We use this rather than a simple fputs so that the string will end up
-   in the .log file, too.  */
-#define print_c_string(STR)      \
-  do {                           \
-    const char *ch_ptr = (STR); \
-    while (*ch_ptr)              \
-      print_char(*(ch_ptr++));   \
-  } while (0)
-
 /* Declarations for the routines we provide ourselves in lib/.  */
 
 #ifndef PRIdPTR
@@ -1103,6 +1094,14 @@ static inline bool is_char_node(const int32_t p) {
 static inline bool is_non_discardable_node(const int32_t p) {
     return NODE_type(p) < MATH_NODE;
 }
+
+static inline void print_c_string(const char *str) {
+    /* Strings printed this way will end up in the .log as well
+     * as the terminal output. */
+    while (*str)
+        print_char(*str++);
+}
+
 
 /* Tectonic related functions */
 tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
