@@ -96,7 +96,6 @@ print_raw_char(UTF16_code s, bool incr_offset)
 void
 print_char(int32_t s)
 {
-    CACHE_THE_EQTB;
     small_number l;
 
     if ((selector > SELECTOR_PSEUDO) && (!doing_special)) {
@@ -165,7 +164,6 @@ print_char(int32_t s)
 void
 print(int32_t s)
 {
-    CACHE_THE_EQTB;
     int32_t nl;
 
     if (s >= str_ptr)
@@ -246,7 +244,6 @@ print_nl_cstr(const char* str)
 void
 print_esc(str_number s)
 {
-    CACHE_THE_EQTB;
 
     int32_t c = INTPAR(escape_char) /*:251 */ ;
 
@@ -258,7 +255,6 @@ print_esc(str_number s)
 void
 print_esc_cstr(const char* s)
 {
-    CACHE_THE_EQTB;
 
     int32_t c = INTPAR(escape_char) /*:251 */ ;
 
@@ -318,8 +314,6 @@ print_int(int32_t n)
 void
 print_cs(int32_t p)
 {
-    CACHE_THE_EQTB;
-
     if (p < HASH_BASE) {
         if (p >= SINGLE_BASE) {
             if (p == NULL_CS) {

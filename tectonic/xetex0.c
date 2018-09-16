@@ -391,7 +391,6 @@ int32_t new_spec(int32_t p)
 
 int32_t new_param_glue(small_number n)
 {
-    CACHE_THE_EQTB;
     int32_t p;
     int32_t q;
 
@@ -419,7 +418,6 @@ int32_t new_glue(int32_t q)
 
 int32_t new_skip_param(small_number n)
 {
-    CACHE_THE_EQTB;
     int32_t p;
 
     temp_ptr = new_spec( /*232: */ eqtb[GLUE_BASE + n].b32.s1 /*:232 */ );
@@ -1247,7 +1245,6 @@ show_node_list(int32_t p)
 
 void show_box(int32_t p)
 {
-    CACHE_THE_EQTB;
 
     depth_threshold = INTPAR(show_box_depth);
     breadth_max = INTPAR(show_box_breadth) /*:244 */ ;
@@ -1716,7 +1713,6 @@ void pop_nest(void)
 
 void show_activities(void)
 {
-    CACHE_THE_EQTB;
     int32_t p;
     short /*mmode */ m;
     memory_word a;
@@ -2096,7 +2092,6 @@ void print_param(int32_t n)
 
 void begin_diagnostic(void)
 {
-    CACHE_THE_EQTB;
 
     old_setting = selector;
 
@@ -3970,7 +3965,6 @@ void pseudo_close(void)
 
 void group_warning(void)
 {
-    CACHE_THE_EQTB;
     int32_t i;
     bool w;
 
@@ -4003,7 +3997,6 @@ void group_warning(void)
 
 void if_warning(void)
 {
-    CACHE_THE_EQTB;
     int32_t i;
     bool w;
 
@@ -4040,7 +4033,6 @@ void if_warning(void)
 
 void file_warning(void)
 {
-    CACHE_THE_EQTB;
     int32_t p;
     uint16_t l;
     uint16_t c;
@@ -4337,7 +4329,6 @@ void eq_destroy(memory_word w)
 
 void eq_save(int32_t p, uint16_t l)
 {
-    CACHE_THE_EQTB;
 
     if (save_ptr > max_save_stack) {
         max_save_stack = save_ptr;
@@ -4360,7 +4351,6 @@ void eq_save(int32_t p, uint16_t l)
 void
 eq_define(int32_t p, uint16_t t, int32_t e)
 {
-    CACHE_THE_EQTB;
 
     if (eqtb[p].b16.s1 == t && eqtb[p].b32.s1 == e) {
         eq_destroy(eqtb[p]);
@@ -4380,7 +4370,6 @@ eq_define(int32_t p, uint16_t t, int32_t e)
 void
 eq_word_define(int32_t p, int32_t w)
 {
-    CACHE_THE_EQTB;
 
     if (eqtb[p].b32.s1 == w)
         return;
@@ -4394,7 +4383,6 @@ eq_word_define(int32_t p, int32_t w)
 
 void geq_define(int32_t p, uint16_t t, int32_t e)
 {
-    CACHE_THE_EQTB;
 
     eq_destroy(eqtb[p]);
     eqtb[p].b16.s0 = LEVEL_ONE;
@@ -4404,7 +4392,6 @@ void geq_define(int32_t p, uint16_t t, int32_t e)
 
 void geq_word_define(int32_t p, int32_t w)
 {
-    CACHE_THE_EQTB;
 
     eqtb[p].b32.s1 = w;
     XEQ_LEVEL(p) = LEVEL_ONE;
@@ -4427,7 +4414,6 @@ void save_for_after(int32_t t)
 
 void unsave(void)
 {
-    CACHE_THE_EQTB;
     int32_t p;
     uint16_t l = 0;
     int32_t t;
@@ -4501,7 +4487,6 @@ void unsave(void)
 
 void prepare_mag(void)
 {
-    CACHE_THE_EQTB;
 
     if (mag_set > 0 && INTPAR(mag) != mag_set) {
         {
@@ -4563,7 +4548,6 @@ void print_meaning(void)
 
 void show_cur_cmd_chr(void)
 {
-    CACHE_THE_EQTB;
     int32_t n;
     int32_t l;
     int32_t p;
@@ -4614,7 +4598,6 @@ void show_cur_cmd_chr(void)
 
 void show_context(void)
 {
-    CACHE_THE_EQTB;
     unsigned char /*max_selector */ old_setting;
     int32_t nn;
     bool bottom_line;
@@ -4847,7 +4830,6 @@ done:
 void
 begin_token_list(int32_t p, uint16_t t)
 {
-    CACHE_THE_EQTB;
 
     if (input_ptr > max_in_stack) {
         max_in_stack = input_ptr;
@@ -5128,7 +5110,6 @@ check_outer_validity(void)
 void
 get_next(void)
 {
-    CACHE_THE_EQTB;
     int32_t k;
     int32_t t;
     unsigned char /*max_char_code */ cat;
@@ -5636,7 +5617,6 @@ void get_token(void)
 void
 macro_call(void)
 {
-    CACHE_THE_EQTB;
     int32_t r;
     int32_t p = TEX_NULL;
     int32_t q;
@@ -6120,7 +6100,6 @@ void find_sa_element(small_number t, int32_t n, bool w)
 void
 expand(void)
 {
-    CACHE_THE_EQTB;
     int32_t t;
     bool b;
     int32_t p, q, r;
@@ -6890,7 +6869,6 @@ effective_char(bool err_p, internal_font_number f, uint16_t c)
 
 void scan_font_ident(void)
 {
-    CACHE_THE_EQTB;
     internal_font_number f;
     int32_t m;
 
@@ -6985,7 +6963,6 @@ void find_font_dimen(bool writing)
 void
 scan_something_internal(small_number level, bool negative)
 {
-    CACHE_THE_EQTB;
     int32_t m;
     int32_t n, k, kk;
     int32_t q, r;
@@ -8067,7 +8044,6 @@ round_decimals(small_number k)
 void
 xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
 {
-    CACHE_THE_EQTB;
     bool negative;
     int32_t f;
     int32_t num, denom;
@@ -8907,7 +8883,6 @@ void scan_general_text(void)
 
 void pseudo_start(void)
 {
-    CACHE_THE_EQTB;
     unsigned char /*max_selector */ old_setting;
     str_number s;
     pool_pointer l, m;
@@ -9156,7 +9131,6 @@ void ins_the_toks(void)
 void
 conv_toks(void)
 {
-    CACHE_THE_EQTB;
     unsigned char old_setting;
     int32_t save_warning_index, save_def_ref;
     bool boolvar;
@@ -9724,7 +9698,6 @@ found:
 void
 read_toks(int32_t n, int32_t r, int32_t j)
 {
-    CACHE_THE_EQTB;
     int32_t p;
     int32_t q;
     int32_t s;
@@ -9841,7 +9814,6 @@ read_toks(int32_t n, int32_t r, int32_t j)
 
 void pass_text(void)
 {
-    CACHE_THE_EQTB;
     int32_t l;
     small_number save_scanner_status;
 
@@ -9892,7 +9864,6 @@ void change_if_limit(small_number l, int32_t p)
 void
 conditional(void)
 {
-    CACHE_THE_EQTB;
     bool b = false;
     bool e;
     unsigned char /*">" */ r;
@@ -10572,7 +10543,6 @@ void pack_job_name(const char* s)
 void
 open_log_file(void)
 {
-    CACHE_THE_EQTB;
     unsigned char old_setting;
     int32_t k;
     int32_t l;
@@ -10612,7 +10582,6 @@ open_log_file(void)
 void
 start_input(const char *primary_input_name)
 {
-    CACHE_THE_EQTB;
     tt_input_format_type format = TTIF_TEX;
     str_number temp_str;
     int32_t k;
@@ -10736,7 +10705,6 @@ effective_char_info(internal_font_number f, uint16_t c)
 
 void char_warning(internal_font_number f, int32_t c)
 {
-    CACHE_THE_EQTB;
     int32_t old_setting;
 
     if (INTPAR(tracing_lost_chars) > 0) {
@@ -10792,7 +10760,6 @@ void char_warning(internal_font_number f, int32_t c)
 int32_t
 new_native_word_node(internal_font_number f, int32_t n)
 {
-    CACHE_THE_EQTB;
     int32_t l;
     int32_t q;
 
@@ -10817,7 +10784,6 @@ new_native_word_node(internal_font_number f, int32_t n)
 int32_t
 new_native_character(internal_font_number f, UnicodeScalar c)
 {
-    CACHE_THE_EQTB;
     int32_t p;
     int32_t i, len;
 
@@ -10970,7 +10936,6 @@ void graphite_warning(void)
 
 internal_font_number load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
 {
-    CACHE_THE_EQTB;
 
     /*done */
 #define first_math_fontdimen ( 10 )
@@ -11137,7 +11102,6 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
 
 void do_locale_linebreaks(int32_t s, int32_t len)
 {
-    CACHE_THE_EQTB;
     int32_t offs, prevOffs, i;
     bool use_penalty, use_skip;
 
@@ -11208,7 +11172,6 @@ void bad_utf8_warning(void)
 
 int32_t get_input_normalization_state(void)
 {
-    CACHE_THE_EQTB;
 
     if (eqtb == NULL)
         return 0;
@@ -11218,7 +11181,6 @@ int32_t get_input_normalization_state(void)
 
 int32_t get_tracing_fonts_state(void)
 {
-    CACHE_THE_EQTB;
 
     return INTPAR(xetex_tracing_fonts);
 }
@@ -11226,7 +11188,6 @@ int32_t get_tracing_fonts_state(void)
 internal_font_number
 read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
 {
-    CACHE_THE_EQTB;
     font_index k;
     bool name_too_long;
     bool file_opened;
@@ -11804,7 +11765,6 @@ int32_t new_margin_kern(scaled_t w, int32_t p, small_number side)
 
 int32_t hpack(int32_t p, scaled_t w, small_number m)
 {
-    CACHE_THE_EQTB;
     int32_t r;
     int32_t q;
     scaled_t h, d, x;
@@ -12245,7 +12205,6 @@ exit:
 
 int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
 {
-    CACHE_THE_EQTB;
     int32_t r;
     scaled_t w, d, x;
     scaled_t s;
@@ -12449,7 +12408,6 @@ exit:
 
 void append_to_vlist(int32_t b)
 {
-    CACHE_THE_EQTB;
     scaled_t d;
     int32_t p;
     bool upwards;
@@ -12522,7 +12480,6 @@ void show_info(void)
 
 scaled_t math_x_height(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12536,7 +12493,6 @@ scaled_t math_x_height(int32_t size_code)
 
 scaled_t math_quad(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12550,7 +12506,6 @@ scaled_t math_quad(int32_t size_code)
 
 scaled_t num1(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12564,7 +12519,6 @@ scaled_t num1(int32_t size_code)
 
 scaled_t num2(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12578,7 +12532,6 @@ scaled_t num2(int32_t size_code)
 
 scaled_t num3(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12592,7 +12545,6 @@ scaled_t num3(int32_t size_code)
 
 scaled_t denom1(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12606,7 +12558,6 @@ scaled_t denom1(int32_t size_code)
 
 scaled_t denom2(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12620,7 +12571,6 @@ scaled_t denom2(int32_t size_code)
 
 scaled_t sup1(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12634,7 +12584,6 @@ scaled_t sup1(int32_t size_code)
 
 scaled_t sup2(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12648,7 +12597,6 @@ scaled_t sup2(int32_t size_code)
 
 scaled_t sup3(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12662,7 +12610,6 @@ scaled_t sup3(int32_t size_code)
 
 scaled_t sub1(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12676,7 +12623,6 @@ scaled_t sub1(int32_t size_code)
 
 scaled_t sub2(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12690,7 +12636,6 @@ scaled_t sub2(int32_t size_code)
 
 scaled_t sup_drop(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12704,7 +12649,6 @@ scaled_t sup_drop(int32_t size_code)
 
 scaled_t sub_drop(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12718,7 +12662,6 @@ scaled_t sub_drop(int32_t size_code)
 
 scaled_t delim1(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12732,7 +12675,6 @@ scaled_t delim1(int32_t size_code)
 
 scaled_t delim2(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12746,7 +12688,6 @@ scaled_t delim2(int32_t size_code)
 
 scaled_t axis_height(int32_t size_code)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12760,7 +12701,6 @@ scaled_t axis_height(int32_t size_code)
 
 scaled_t default_rule_thickness(void)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12774,7 +12714,6 @@ scaled_t default_rule_thickness(void)
 
 scaled_t big_op_spacing1(void)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12788,7 +12727,6 @@ scaled_t big_op_spacing1(void)
 
 scaled_t big_op_spacing2(void)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12802,7 +12740,6 @@ scaled_t big_op_spacing2(void)
 
 scaled_t big_op_spacing3(void)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12816,7 +12753,6 @@ scaled_t big_op_spacing3(void)
 
 scaled_t big_op_spacing4(void)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -12830,7 +12766,6 @@ scaled_t big_op_spacing4(void)
 
 scaled_t big_op_spacing5(void)
 {
-    CACHE_THE_EQTB;
     int32_t f;
     scaled_t rval;
 
@@ -13108,7 +13043,6 @@ int32_t build_opentype_assembly(internal_font_number f, void *a, scaled_t s, boo
 
 int32_t var_delimiter(int32_t d, int32_t s, scaled_t v)
 {
-    CACHE_THE_EQTB;
     int32_t b;
     void *ot_assembly_ptr;
     internal_font_number f, g;
@@ -13430,7 +13364,6 @@ found:
 
 void fetch(int32_t a)
 {
-    CACHE_THE_EQTB;
 
     cur_c = (unsigned short) mem[a].b16.s0;
     cur_f = MATH_FONT((mem[a].b16.s1 % 256) + cur_size);
@@ -13511,7 +13444,6 @@ void make_vcenter(int32_t q)
 
 void make_radical(int32_t q)
 {
-    CACHE_THE_EQTB;
     int32_t x, y;
     internal_font_number f;
     scaled_t rule_thickness;
@@ -14124,7 +14056,6 @@ int32_t attach_hkern_to_new_hlist(int32_t q, scaled_t delta)
 
 void make_scripts(int32_t q, scaled_t delta)
 {
-    CACHE_THE_EQTB;
     int32_t p, x, y, z;
     scaled_t shift_up, shift_down, clr, sub_kern, sup_kern;
     int32_t script_c;
@@ -14342,7 +14273,6 @@ void make_scripts(int32_t q, scaled_t delta)
 
 small_number make_left_right(int32_t q, small_number style, scaled_t max_d, scaled_t max_h)
 {
-    CACHE_THE_EQTB;
     scaled_t delta, delta1, delta2;
 
     cur_style = style;
@@ -14367,7 +14297,6 @@ small_number make_left_right(int32_t q, small_number style, scaled_t max_d, scal
 
 void mlist_to_hlist(void)
 {
-    CACHE_THE_EQTB;
     int32_t mlist;
     bool penalties;
     small_number style;
@@ -14896,7 +14825,6 @@ void pop_alignment(void)
 
 void get_preamble_token(void)
 {
-    CACHE_THE_EQTB;
 
 restart:
     get_token();
@@ -14926,7 +14854,6 @@ restart:
 void
 init_align(void)
 {
-    CACHE_THE_EQTB;
     int32_t save_cs_ptr;
     int32_t p;
 
@@ -15256,7 +15183,6 @@ bool fin_col(void)
 
 void fin_row(void)
 {
-    CACHE_THE_EQTB;
     int32_t p;
 
     if (cur_list.mode == -104) {
@@ -15288,7 +15214,6 @@ void fin_row(void)
 
 void fin_align(void)
 {
-    CACHE_THE_EQTB;
     int32_t p, q, r, s, u, v;
     scaled_t t, w;
     scaled_t o;
@@ -15768,7 +15693,6 @@ done:
 
 int32_t max_hyphenatable_length(void)
 {
-    CACHE_THE_EQTB;
 
     if (INTPAR(xetex_hyphenatable_length) > HYPHENATABLE_LENGTH_LIMIT)
         return HYPHENATABLE_LENGTH_LIMIT;
@@ -16151,7 +16075,6 @@ done:
 
 int32_t vsplit(int32_t n, scaled_t h)
 {
-    CACHE_THE_EQTB;
     int32_t v;
     int32_t p;
     int32_t q;
@@ -16289,7 +16212,6 @@ void print_totals(void)
 
 void freeze_page_specs(small_number s)
 {
-    CACHE_THE_EQTB;
 
     page_contents = s;
     page_so_far[0] = DIMENPAR(vsize);
@@ -16306,7 +16228,6 @@ void freeze_page_specs(small_number s)
 
 void box_error(eight_bits n)
 {
-    CACHE_THE_EQTB;
 
     error();
     begin_diagnostic();
@@ -16319,7 +16240,6 @@ void box_error(eight_bits n)
 
 void ensure_vbox(eight_bits n)
 {
-    CACHE_THE_EQTB;
     int32_t p;
     p = BOX_REG(n);
 
@@ -16346,7 +16266,6 @@ void ensure_vbox(eight_bits n)
 
 void fire_up(int32_t c)
 {
-    CACHE_THE_EQTB;
     int32_t p, q, r, s;
     int32_t prev_p;
     unsigned char /*biggest_reg */ n;
@@ -16609,7 +16528,6 @@ void fire_up(int32_t c)
 
 void build_page(void)
 {
-    CACHE_THE_EQTB;
     int32_t p;
     int32_t q, r;
     int32_t b, c;
@@ -16901,7 +16819,6 @@ void build_page(void)
 
 void app_space(void)
 {
-    CACHE_THE_EQTB;
     int32_t q;
 
     if ((cur_list.aux.b32.s0 >= 2000) && (GLUEPAR(xspace_skip) != 0))
@@ -16993,7 +16910,6 @@ bool privileged(void)
 
 bool its_all_over(void)
 {
-    CACHE_THE_EQTB;
 
     if (privileged()) {
         if ((PAGE_HEAD == page_tail) && (cur_list.head == cur_list.tail) && (dead_cycles == 0)) {
@@ -17161,7 +17077,6 @@ extra_right_brace(void)
 
 void normal_paragraph(void)
 {
-    CACHE_THE_EQTB;
 
     if (INTPAR(looseness) != 0)
         eq_word_define(INT_BASE + INT_PAR__looseness, 0);
@@ -17275,7 +17190,6 @@ box_end(int32_t box_context)
 void
 begin_box(int32_t box_context)
 {
-    CACHE_THE_EQTB;
     int32_t p, q;
     int32_t r;
     bool fm;
@@ -17490,7 +17404,6 @@ scan_box(int32_t box_context)
 
 void package(small_number c)
 {
-    CACHE_THE_EQTB;
     scaled_t h;
     int32_t p;
     scaled_t d;
@@ -17537,7 +17450,6 @@ small_number norm_min(int32_t h)
 
 void new_graf(bool indented)
 {
-    CACHE_THE_EQTB;
     cur_list.prev_graf = 0;
 
     if ((cur_list.mode == VMODE) || (cur_list.head != cur_list.tail)) {
@@ -17573,7 +17485,6 @@ void new_graf(bool indented)
 
 void indent_in_hmode(void)
 {
-    CACHE_THE_EQTB;
     int32_t p, q;
 
     if (cur_chr > 0) {
@@ -17800,7 +17711,6 @@ void delete_last(void)
 
 void unpackage(void)
 {
-    CACHE_THE_EQTB;
     int32_t p;
     int32_t r;
     unsigned char /*copy_code */ c;
@@ -17913,7 +17823,6 @@ void append_italic_correction(void)
 
 void append_discretionary(void)
 {
-    CACHE_THE_EQTB;
     int32_t c;
 
     mem[cur_list.tail].b32.s1 = new_disc();
@@ -18054,7 +17963,6 @@ done:
 
 void make_accent(void)
 {
-    CACHE_THE_EQTB;
     double s, t;
     int32_t p, q, r;
     internal_font_number f;
@@ -18497,7 +18405,6 @@ done:
 
 void init_math(void)
 {
-    CACHE_THE_EQTB;
     scaled_t w;
     int32_t j;
     int32_t x;
@@ -18762,7 +18669,6 @@ void init_math(void)
 
 void start_eq_no(void)
 {
-    CACHE_THE_EQTB;
 
     save_stack[save_ptr + 0].b32.s1 = cur_chr;
     save_ptr++;
@@ -18777,7 +18683,6 @@ void start_eq_no(void)
 
 void scan_math(int32_t p)
 {
-    CACHE_THE_EQTB;
     int32_t c;
 
 restart: /*422:*/
@@ -18877,7 +18782,6 @@ reswitch:
 
 void set_math_char(int32_t c)
 {
-    CACHE_THE_EQTB;
     int32_t p;
     UnicodeScalar ch;
 
@@ -18932,7 +18836,6 @@ void math_limit_switch(void)
 
 void scan_delimiter(int32_t p, bool r)
 {
-    CACHE_THE_EQTB;
 
     if (r) {
         if (cur_chr == 1) {
@@ -19022,7 +18925,6 @@ void math_radical(void)
 
 void math_ac(void)
 {
-    CACHE_THE_EQTB;
     int32_t c;
 
     if (cur_cmd == ACCENT) {   /*1201: */
@@ -19332,7 +19234,6 @@ void math_left_right(void)
 
 void app_display(int32_t j, int32_t b, scaled_t d)
 {
-    CACHE_THE_EQTB;
     scaled_t z;
     scaled_t s;
     scaled_t e;
@@ -19444,7 +19345,6 @@ void app_display(int32_t j, int32_t b, scaled_t d)
 
 void after_math(void)
 {
-    CACHE_THE_EQTB;
     bool l;
     bool danger;
     int32_t m;
@@ -19784,7 +19684,6 @@ void after_math(void)
 
 void resume_after_display(void)
 {
-    CACHE_THE_EQTB;
 
     if (cur_group != MATH_SHIFT_GROUP)
         confusion("display");
@@ -19859,7 +19758,6 @@ void trap_zero_glue(void)
 void
 do_register_command(small_number a)
 {
-    CACHE_THE_EQTB;
     int32_t l = TEX_NULL, q, r, s = TEX_NULL;
     unsigned char /*mu_val */ p;
     bool e;
@@ -20161,7 +20059,6 @@ void alter_integer(void)
 
 void alter_box_dimen(void)
 {
-    CACHE_THE_EQTB;
     small_number c;
     int32_t b;
 
@@ -20185,7 +20082,6 @@ void alter_box_dimen(void)
 
 void new_font(small_number a)
 {
-    CACHE_THE_EQTB;
     int32_t u;
     scaled_t s;
     internal_font_number f;
@@ -20336,7 +20232,6 @@ void new_interaction(void)
 
 void issue_message(void)
 {
-    CACHE_THE_EQTB;
     unsigned char /*max_selector */ old_setting;
     unsigned char c;
     str_number s;
@@ -20400,7 +20295,6 @@ void issue_message(void)
 void
 shift_case(void)
 {
-    CACHE_THE_EQTB;
     int32_t b;
     int32_t p;
     int32_t t;
@@ -20428,7 +20322,6 @@ shift_case(void)
 
 void show_whatever(void)
 {
-    CACHE_THE_EQTB;
     int32_t p;
     small_number t;
     unsigned char /*or_code */ m;
@@ -20944,7 +20837,6 @@ void scan_and_pack_name(void)
 
 void do_extension(void)
 {
-    CACHE_THE_EQTB;
     int32_t i, j, k;
     int32_t p;
 
@@ -21116,7 +21008,6 @@ void do_extension(void)
 
 void fix_language(void)
 {
-    CACHE_THE_EQTB;
     UTF16_code l;
 
     if (INTPAR(language) <= 0)
@@ -21177,7 +21068,6 @@ void append_src_special(void)
 void
 handle_right_brace(void)
 {
-    CACHE_THE_EQTB;
     int32_t p, q;
     scaled_t d;
     int32_t f;
@@ -21404,7 +21294,6 @@ handle_right_brace(void)
 
 void main_control(void)
 {
-    CACHE_THE_EQTB;
     int32_t t;
 
     if (LOCAL(every_job) != TEX_NULL)
@@ -22912,7 +22801,6 @@ reswitch:
 
 void give_err_help(void)
 {
-    CACHE_THE_EQTB;
     token_show(LOCAL(err_help));
 }
 

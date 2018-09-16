@@ -318,8 +318,7 @@ void remember_source_info(str_number, int);
 /* variables! */
 
 /* All the following variables are defined in xetexini.c */
-extern memory_word *the_eqtb;
-#define CACHE_THE_EQTB register memory_word *eqtb = the_eqtb
+extern memory_word *eqtb;
 
 extern int32_t bad;
 extern UTF8_code *name_of_file;

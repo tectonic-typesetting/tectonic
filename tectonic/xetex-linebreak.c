@@ -61,7 +61,6 @@ static small_number reconstitute(small_number j, small_number n, int32_t bchar, 
 void
 line_break(bool d)
 {
-    CACHE_THE_EQTB;
     bool auto_breaking;
     int32_t prev_p;
     int32_t q, r, s, prev_s;
@@ -894,7 +893,6 @@ done:
 static void
 post_line_break(bool d)
 {
-    CACHE_THE_EQTB;
     int32_t q, r, s;
     int32_t p, k;
     scaled_t w;
@@ -1293,7 +1291,6 @@ post_line_break(bool d)
 static void
 try_break(int32_t pi, small_number break_type)
 {
-    CACHE_THE_EQTB;
     int32_t r;
     int32_t prev_r;
     int32_t old_l;
@@ -1845,7 +1842,6 @@ exit:
 static void
 hyphenate(void)
 {
-    CACHE_THE_EQTB;
     short /*hyphenatable_length_limit 2 */ i, j, l;
     int32_t q, r, s;
     int32_t bchar;

@@ -70,7 +70,6 @@ deinitialize_shipout_variables(void)
 void
 ship_out(int32_t p)
 {
-    CACHE_THE_EQTB;
     int32_t page_loc;
     unsigned char j, k;
     pool_pointer s;
@@ -301,7 +300,6 @@ done: /*1518:*/
 static void
 hlist_out(void)
 {
-    CACHE_THE_EQTB;
     scaled_t base_line;
     scaled_t left_edge;
     scaled_t save_h, save_v;
@@ -1662,7 +1660,6 @@ new_edge(small_number s, scaled_t w)
 void
 out_what(int32_t p)
 {
-    CACHE_THE_EQTB;
     small_number j;
     unsigned char old_setting;
 
@@ -2171,7 +2168,6 @@ special_out(int32_t p)
 static void
 write_out(int32_t p)
 {
-    CACHE_THE_EQTB;
     unsigned char old_setting; /* max_selector enum */
     int32_t old_mode;
     small_number j;
@@ -2363,7 +2359,6 @@ pic_out(int32_t p)
 void
 finalize_dvi_file(void)
 {
-    CACHE_THE_EQTB;
     unsigned char k;
 
     while (cur_s > -1) {

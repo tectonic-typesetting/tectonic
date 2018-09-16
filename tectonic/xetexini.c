@@ -11,7 +11,7 @@
 #include "dpx-pdfobj.h" /* pdf_files_{init,close} */
 
 /* All the following variables are declared in xetexd.h */
-memory_word *the_eqtb;
+memory_word *eqtb;
 int32_t bad;
 UTF8_code *name_of_file;
 UTF16_code *name_of_file16;
@@ -600,7 +600,6 @@ sort_avail(void)
 static void
 primitive(const char* ident, uint16_t c, int32_t o)
 {
-    CACHE_THE_EQTB;
     int32_t prim_val;
     int len = strlen(ident);
     if (len > 1) {
@@ -799,7 +798,6 @@ void trie_fix(trie_pointer p)
 static void
 new_patterns(void)
 {
-    CACHE_THE_EQTB;
     short /*hyphenatable_length_limit 1 */ k, l;
     bool digit_sensed;
     trie_opcode v;
@@ -1162,7 +1160,6 @@ void init_trie(void)
 static void
 new_hyph_exceptions(void)
 {
-    CACHE_THE_EQTB;
     short /*hyphenatable_length_limit 1 */ n;
     short /*hyphenatable_length_limit 1 */ j;
     hyph_pointer h;
@@ -1341,7 +1338,6 @@ not_found1: /*970:*/
 void
 prefixed_command(void)
 {
-    CACHE_THE_EQTB;
     small_number a;
     internal_font_number f;
     int32_t j;
@@ -2155,7 +2151,6 @@ done: /*1304:*/
 static void
 store_fmt_file(void)
 {
-    CACHE_THE_EQTB;
     int32_t j, k, l;
     int32_t p, q;
     int32_t x;
@@ -2606,7 +2601,6 @@ pack_buffered_name(small_number n, int32_t a, int32_t b)
 static bool
 load_fmt_file(void)
 {
-    CACHE_THE_EQTB;
     int32_t j, k;
     int32_t p, q;
     int32_t x;
@@ -2630,7 +2624,7 @@ load_fmt_file(void)
         free(str_pool);
         free(str_start);
         free(yhash);
-        free(the_eqtb);
+        free(eqtb);
         free(mem);
         mem = NULL;
     }
@@ -2668,7 +2662,7 @@ load_fmt_file(void)
     for (x = HASH_BASE + 1; x <= hash_top; x++)
         hash[x] = hash[HASH_BASE];
 
-    eqtb = the_eqtb = xmalloc_array(memory_word, eqtb_top + 1);
+    eqtb = xmalloc_array(memory_word, eqtb_top + 1);
     eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s1 = UNDEFINED_CS;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].b32.s1 = TEX_NULL;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s0 = LEVEL_ZERO;
@@ -3353,7 +3347,6 @@ initialize_more_variables(void)
 static void
 initialize_more_initex_variables(void)
 {
-    CACHE_THE_EQTB;
     int32_t i, k;
 
     for (k = 1; k <= 19; k++)
@@ -3540,7 +3533,6 @@ initialize_more_initex_variables(void)
 static void
 initialize_primitives(void)
 {
-    CACHE_THE_EQTB;
 
     no_new_control_sequence = false;
     first = 0;
@@ -4000,8 +3992,6 @@ get_strings_started(void)
 tt_history_t
 tt_run_engine(char *dump_name, char *input_file_name)
 {
-    CACHE_THE_EQTB;
-
     /* Miscellaneous initializations that were mostly originally done in the
      * main() driver routines. */
 
@@ -4084,7 +4074,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         for (hash_used = HASH_BASE + 1; hash_used <= hash_top; hash_used++)
             hash[hash_used] = hash[HASH_BASE];
 
-        the_eqtb = xcalloc_array(memory_word, eqtb_top);
+        eqtb = xcalloc_array(memory_word, eqtb_top);
         str_start = xmalloc_array(pool_pointer, max_strings);
         str_pool = xmalloc_array(packed_UTF16_code, pool_size);
         font_info = xmalloc_array(memory_word, font_mem_size);
@@ -4355,8 +4345,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
         if (!load_fmt_file())
             return history;
     }
-
-    eqtb = the_eqtb;
 
     if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > BIGGEST_CHAR)
         cur_input.limit--;
