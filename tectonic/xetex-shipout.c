@@ -2305,15 +2305,8 @@ pic_out(int32_t p)
         break;
     }
     print('(');
-    {
-        register int32_t for_end;
-        i = 0;
-        for_end = mem[p + 4].b16.s1 - 1;
-        if (i <= for_end)
-            do
-                print_raw_char(PIC_NODE_path(p)[i], true);
-            while (i++ < for_end);
-    }
+    for (i = 0; i < PIC_NODE_path_len(p); i++)
+        print_raw_char(PIC_NODE_path(p)[i], true);
     print(')');
     selector = old_setting;
     if ((pool_ptr - str_start[str_ptr - 65536L]) < 256) {

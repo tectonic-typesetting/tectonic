@@ -940,7 +940,7 @@ show_node_list(int32_t p)
                         print_esc_cstr("XeTeXpdffile");
 
                     print_cstr("( ");
-                    for (i = 0; i <= mem[p + 4].b16.s1 - 1; i++)
+                    for (i = 0; i < PIC_NODE_path_len(p); i++)
                         print_raw_char(PIC_NODE_path(p)[i], true);
                     print('"');
                     break;
@@ -20786,7 +20786,7 @@ void load_picture(bool is_pdf)
         if (is_pdf) {
             mem[cur_list.tail].b16.s0 = PDF_NODE;
         }
-        mem[cur_list.tail + 4].b16.s1 = strlen(pic_path);
+        PIC_NODE_path_len(cur_list.tail) = strlen(pic_path);
         mem[cur_list.tail + 4].b16.s0 = page;
         mem[cur_list.tail + 8].b16.s1 = pdf_box_type;
         mem[cur_list.tail + 1].b32.s1 = D2Fix(xmax - xmin);
@@ -20798,7 +20798,7 @@ void load_picture(bool is_pdf)
         mem[cur_list.tail + 6].b32.s1 = D2Fix(t.d);
         mem[cur_list.tail + 7].b32.s0 = D2Fix(t.x);
         mem[cur_list.tail + 7].b32.s1 = D2Fix(t.y);
-        memcpy(&mem[cur_list.tail + 9], pic_path, strlen(pic_path));
+        memcpy(PIC_NODE_path(cur_list.tail), pic_path, strlen(pic_path));
         free(pic_path);
     } else {
 

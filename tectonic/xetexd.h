@@ -257,6 +257,7 @@ typedef union {
 
 #define PENALTY_NODE_penalty(p) mem[(p) + 1].b32.s1 /* was originally the `mem[x+1].int` field */
 
+#define PIC_NODE_path_len(p) mem[(p) + 4].b16.s1 /* number of bytes in the path item */
 #define PIC_NODE_path(p) ((unsigned char *) &mem[(p) + PIC_NODE_SIZE])
 
 #define GLUE_SPEC_ref_count(p) mem[p].b32.s1 /* aka "link" of a link-list node */
