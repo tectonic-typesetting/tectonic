@@ -257,6 +257,8 @@ typedef union {
 
 #define PENALTY_NODE_penalty(p) mem[(p) + 1].b32.s1 /* was originally the `mem[x+1].int` field */
 
+#define PIC_NODE_path(p) ((unsigned char *) &mem[(p) + PIC_NODE_SIZE])
+
 #define GLUE_SPEC_ref_count(p) mem[p].b32.s1 /* aka "link" of a link-list node */
 #define GLUE_SPEC_stretch_order(p) mem[p].b16.s1 /* aka "type" of a node */
 #define GLUE_SPEC_shrink_order(p) mem[p].b16.s0 /* aka "subtype" of a node */
@@ -1125,8 +1127,6 @@ tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
 #define get_native_glyph(p,i)                 real_get_native_glyph(&(mem[p]), i)
 #define make_xdv_glyph_array_data(p)          makeXDVGlyphArrayData(&(mem[p]))
 #define get_native_word_cp(p,s)               real_get_native_word_cp(&(mem[p]), s)
-
-#define pic_path_byte(p,i) ((unsigned char*) &mem[(p) + PIC_NODE_SIZE])[i]
 
 /* easier to do the bit-twiddling here than in Pascal */
 /* read fields from a 32-bit math code */

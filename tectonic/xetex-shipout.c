@@ -2311,7 +2311,7 @@ pic_out(int32_t p)
         for_end = mem[p + 4].b16.s1 - 1;
         if (i <= for_end)
             do
-                print_raw_char(pic_path_byte(p, i), true);
+                print_raw_char(PIC_NODE_path(p)[i], true);
             while (i++ < for_end);
     }
     print(')');

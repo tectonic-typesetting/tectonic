@@ -941,7 +941,7 @@ show_node_list(int32_t p)
 
                     print_cstr("( ");
                     for (i = 0; i <= mem[p + 4].b16.s1 - 1; i++)
-                        print_raw_char(pic_path_byte(p, i), true);
+                        print_raw_char(PIC_NODE_path(p)[i], true);
                     print('"');
                     break;
                 case PDF_SAVE_POS_NODE:
