@@ -538,12 +538,6 @@ extern int32_t adjust_tail;
 extern int32_t pre_adjust_tail;
 extern int32_t pack_begin_line;
 extern b32x2 empty;
-extern b16x4 null_delimiter;
-extern int32_t cur_mlist;
-extern small_number cur_style;
-extern int32_t cur_size;
-extern scaled_t cur_mu;
-extern bool mlist_penalties;
 extern internal_font_number cur_f;
 extern int32_t cur_c;
 extern b16x4 cur_i;
@@ -1036,22 +1030,8 @@ void cs_error(void);
 void push_math(group_code c);
 void just_copy(int32_t p, int32_t h, int32_t t);
 void just_reverse(int32_t p);
-void init_math(void);
-void start_eq_no(void);
 void scan_math(int32_t p);
 void set_math_char(int32_t c);
-void math_limit_switch(void);
-void scan_delimiter(int32_t p, bool r);
-void math_radical(void);
-void math_ac(void);
-void append_choices(void);
-int32_t fin_mlist(int32_t p);
-void build_choices(void);
-void sub_sup(void);
-void math_fraction(void);
-void math_left_right(void);
-void app_display(int32_t j, int32_t b, scaled_t d);
-void after_math(void);
 void resume_after_display(void);
 void get_r_token(void);
 void trap_zero_glue(void);
@@ -1086,6 +1066,22 @@ void flush_str(str_number s);
 str_number tokens_to_string(int32_t p);
 void scan_pdf_ext_toks(void);
 void compare_strings(void);
+
+/* xetex-math */
+
+void initialize_math_variables(void);
+void init_math(void);
+void after_math(void);
+void start_eq_no(void);
+void math_limit_switch(void);
+void math_radical(void);
+void math_ac(void);
+void append_choices(void);
+int32_t fin_mlist(int32_t p);
+void build_choices(void);
+void sub_sup(void);
+void math_fraction(void);
+void math_left_right(void);
 
 /* xetex-shipout */
 

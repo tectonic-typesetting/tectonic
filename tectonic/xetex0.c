@@ -6692,6 +6692,136 @@ void scan_xetex_math_char_int(void)
     }
 }
 
+void scan_math(int32_t p)
+{
+    int32_t c;
+
+restart: /*422:*/
+    do {
+        get_x_token();
+    } while (cur_cmd == SPACER || cur_cmd == RELAX);
+reswitch:
+    switch (cur_cmd) {
+    case 11:
+    case 12:
+    case 68:
+        {
+            c = MATH_CODE(cur_chr);
+            if (math_char(c) == ACTIVE_MATH_CHAR) {
+                {
+                    cur_cs = cur_chr + 1;
+                    cur_cmd = eqtb[cur_cs].b16.s1;
+                    cur_chr = eqtb[cur_cs].b32.s1;
+                    x_token();
+                    back_input();
+                }
+                goto restart;
+            }
+        }
+        break;
+    case 16:
+        {
+            scan_char_num();
+            cur_chr = cur_val;
+            cur_cmd = CHAR_GIVEN;
+            goto reswitch;
+        }
+        break;
+    case 17:
+        if (cur_chr == 2) {
+            scan_math_class_int();
+            c = set_class(cur_val);
+            scan_math_fam_int();
+            c = c + set_family(cur_val);
+            scan_usv_num();
+            c = c + cur_val;
+        } else if (cur_chr == 1) {
+            scan_xetex_math_char_int();
+            c = cur_val;
+        } else {
+
+            scan_fifteen_bit_int();
+            c = set_class(cur_val / 4096) + set_family((cur_val % 4096) / 256) + (cur_val % 256);
+        }
+        break;
+    case 69:
+        {
+            c = set_class(cur_chr / 4096) + set_family((cur_chr % 4096) / 256) + (cur_chr % 256);
+        }
+        break;
+    case 70:
+        c = cur_chr;
+        break;
+    case 15:
+        {
+            if (cur_chr == 1) {
+                scan_math_class_int();
+                c = set_class(cur_val);
+                scan_math_fam_int();
+                c = c + set_family(cur_val);
+                scan_usv_num();
+                c = c + cur_val;
+            } else {
+
+                scan_delimiter_int();
+                c = cur_val / 4096;
+                c = set_class(c / 4096) + set_family((c % 4096) / 256) + (c % 256);
+            }
+        }
+        break;
+    default:
+        {
+            back_input();
+            scan_left_brace();
+            save_stack[save_ptr + 0].b32.s1 = p;
+            save_ptr++;
+            push_math(MATH_GROUP);
+            return;
+        }
+        break;
+    }
+    mem[p].b32.s1 = MATH_CHAR;
+    mem[p].b16.s0 = c % 65536L;
+    if ((math_class(c) == 7)
+        && ((INTPAR(cur_fam) >= 0)
+            && (INTPAR(cur_fam) < NUMBER_MATH_FAMILIES)))
+        mem[p].b16.s1 = INTPAR(cur_fam);
+    else
+        mem[p].b16.s1 = (math_fam(c));
+    mem[p].b16.s1 = mem[p].b16.s1 + (math_char(c) / 65536L) * 256;
+}
+
+void set_math_char(int32_t c)
+{
+    int32_t p;
+    UnicodeScalar ch;
+
+    if (math_char(c) == ACTIVE_MATH_CHAR) {        /*1187: */
+        cur_cs = cur_chr + 1;
+        cur_cmd = eqtb[cur_cs].b16.s1;
+        cur_chr = eqtb[cur_cs].b32.s1;
+        x_token();
+        back_input();
+    } else {
+
+        p = new_noad();
+        mem[p + 1].b32.s1 = MATH_CHAR;
+        ch = math_char(c);
+        mem[p + 1].b16.s0 = ch % 65536L;
+        mem[p + 1].b16.s1 = math_fam(c);
+        if (math_class(c) == 7) {
+            if (((INTPAR(cur_fam) >= 0)
+                 && (INTPAR(cur_fam) < NUMBER_MATH_FAMILIES)))
+                mem[p + 1].b16.s1 = INTPAR(cur_fam);
+            mem[p].b16.s1 = ORD_NOAD;
+        } else
+            mem[p].b16.s1 = ORD_NOAD + math_class(c);
+        mem[p + 1].b16.s1 = mem[p + 1].b16.s1 + (ch / 65536L) * 256;
+        mem[cur_list.tail].b32.s1 = p;
+        cur_list.tail = p;
+    }
+}
+
 void scan_math_class_int(void)
 {
     scan_int();

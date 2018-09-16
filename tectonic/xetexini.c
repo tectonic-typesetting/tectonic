@@ -231,12 +231,6 @@ int32_t adjust_tail;
 int32_t pre_adjust_tail;
 int32_t pack_begin_line;
 b32x2 empty;
-b16x4 null_delimiter;
-int32_t cur_mlist;
-small_number cur_style;
-int32_t cur_size;
-scaled_t cur_mu;
-bool mlist_penalties;
 internal_font_number cur_f;
 int32_t cur_c;
 b16x4 cur_i;
@@ -3290,10 +3284,6 @@ initialize_more_variables(void)
     pack_begin_line = 0;
     empty.s1 = EMPTY;
     empty.s0 = TEX_NULL;
-    null_delimiter.s3 = 0;
-    null_delimiter.s2 = 0;
-    null_delimiter.s1 = 0;
-    null_delimiter.s0 = 0;
     align_ptr = TEX_NULL;
     cur_align = TEX_NULL;
     cur_span = TEX_NULL;
@@ -4132,6 +4122,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     }
 
     /*55:*/
+    initialize_math_variables();
     initialize_shipout_variables();
 
     selector = SELECTOR_TERM_ONLY;
