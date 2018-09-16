@@ -48,10 +48,8 @@
 #endif
 
 /*11:*/
-#define trie_op_size 35111L
-#define neg_trie_op_size -35111L
-#define min_trie_op 0
-#define max_trie_op 65535L
+#define MIN_TRIE_OP 0
+#define TRIE_OP_SIZE 35111L
 
 /*18: */
 typedef unsigned short UTF16_code;
@@ -578,9 +576,9 @@ extern bool lft_hit, rt_hit;
 extern trie_pointer *trie_trl;
 extern trie_pointer *trie_tro;
 extern uint16_t *trie_trc;
-extern small_number hyf_distance[trie_op_size + 1];
-extern small_number hyf_num[trie_op_size + 1];
-extern trie_opcode hyf_next[trie_op_size + 1];
+extern small_number hyf_distance[TRIE_OP_SIZE + 1];
+extern small_number hyf_num[TRIE_OP_SIZE + 1];
+extern trie_opcode hyf_next[TRIE_OP_SIZE + 1];
 extern int32_t op_start[256];
 extern str_number *hyph_word;
 extern int32_t *hyph_list;
@@ -588,8 +586,8 @@ extern hyph_pointer *hyph_link;
 extern int32_t hyph_count;
 extern int32_t hyph_next;
 extern trie_opcode trie_used[256];
-extern unsigned char trie_op_lang[trie_op_size + 1];
-extern trie_opcode trie_op_val[trie_op_size + 1];
+extern unsigned char trie_op_lang[TRIE_OP_SIZE + 1];
+extern trie_opcode trie_op_val[TRIE_OP_SIZE + 1];
 extern int32_t trie_op_ptr;
 extern trie_opcode max_op_used;
 extern packed_UTF16_code *trie_c;
@@ -686,9 +684,6 @@ extern bool gave_char_warning_help;
 
 extern uint16_t _xeq_level_array[EQTB_SIZE - INT_BASE + 1];
 #define XEQ_LEVEL(i) _xeq_level_array[(i) - INT_BASE]
-
-extern int32_t _trie_op_hash_array[trie_op_size - neg_trie_op_size + 1];
-#define trie_op_hash (_trie_op_hash_array - (int) neg_trie_op_size)
 
 /* the former xetexcoerce.h: */
 

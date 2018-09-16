@@ -268,9 +268,9 @@ bool lft_hit, rt_hit;
 trie_pointer *trie_trl;
 trie_pointer *trie_tro;
 uint16_t *trie_trc;
-small_number hyf_distance[trie_op_size + 1];
-small_number hyf_num[trie_op_size + 1];
-trie_opcode hyf_next[trie_op_size + 1];
+small_number hyf_distance[TRIE_OP_SIZE + 1];
+small_number hyf_num[TRIE_OP_SIZE + 1];
+trie_opcode hyf_next[TRIE_OP_SIZE + 1];
 int32_t op_start[256];
 str_number *hyph_word;
 int32_t *hyph_list;
@@ -278,8 +278,8 @@ hyph_pointer *hyph_link;
 int32_t hyph_count;
 int32_t hyph_next;
 trie_opcode trie_used[256];
-unsigned char trie_op_lang[trie_op_size + 1];
-trie_opcode trie_op_val[trie_op_size + 1];
+unsigned char trie_op_lang[TRIE_OP_SIZE + 1];
+trie_opcode trie_op_val[TRIE_OP_SIZE + 1];
 int32_t trie_op_ptr;
 trie_opcode max_op_used;
 packed_UTF16_code *trie_c;
@@ -369,7 +369,12 @@ bool semantic_pagination_enabled;
 bool gave_char_warning_help;
 
 uint16_t _xeq_level_array[EQTB_SIZE - INT_BASE + 1];
-int32_t _trie_op_hash_array[trie_op_size - neg_trie_op_size + 1];
+
+#define NEG_TRIE_OP_SIZE -35111L
+#define MAX_TRIE_OP 65535L
+
+int32_t _trie_op_hash_array[TRIE_OP_SIZE - NEG_TRIE_OP_SIZE + 1];
+#define TRIE_OP_HASH(i) _trie_op_hash_array[(i) - NEG_TRIE_OP_SIZE]
 
 static b32x2 *yhash;
 
@@ -636,17 +641,17 @@ trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
     int32_t h;
     trie_opcode u;
     int32_t l;
-    h = abs(n + 313 * d + 361 * v + 1009 * cur_lang) % (trie_op_size - neg_trie_op_size) + neg_trie_op_size;
+    h = abs(n + 313 * d + 361 * v + 1009 * cur_lang) % (TRIE_OP_SIZE - NEG_TRIE_OP_SIZE) + NEG_TRIE_OP_SIZE;
     while (true) {
 
-        l = trie_op_hash[h];
+        l = TRIE_OP_HASH(h);
         if (l == 0) {
-            if (trie_op_ptr == trie_op_size)
-                overflow("pattern memory ops", trie_op_size);
+            if (trie_op_ptr == TRIE_OP_SIZE)
+                overflow("pattern memory ops", TRIE_OP_SIZE);
             u = trie_used[cur_lang];
-            if (u == max_trie_op)
+            if (u == MAX_TRIE_OP)
                 overflow("pattern memory ops per language",
-                         max_trie_op - min_trie_op);
+                         MAX_TRIE_OP - MIN_TRIE_OP);
             trie_op_ptr++;
             u++;
             trie_used[cur_lang] = u;
@@ -656,17 +661,17 @@ trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
             hyf_num[trie_op_ptr] = n;
             hyf_next[trie_op_ptr] = v;
             trie_op_lang[trie_op_ptr] = cur_lang;
-            trie_op_hash[h] = trie_op_ptr;
+            TRIE_OP_HASH(h) = trie_op_ptr;
             trie_op_val[trie_op_ptr] = u;
             return u;
         }
         if ((hyf_distance[l] == d) && (hyf_num[l] == n) && (hyf_next[l] == v) && (trie_op_lang[l] == cur_lang)) {
             return trie_op_val[l];
         }
-        if (h > -(int32_t) trie_op_size)
+        if (h > -(int32_t) TRIE_OP_SIZE)
             h--;
         else
-            h = trie_op_size;
+            h = TRIE_OP_SIZE;
     }
 }
 
@@ -868,7 +873,7 @@ new_patterns(void)
                         hyf[k] = 0;
 
                     l = k;
-                    v = min_trie_op;
+                    v = MIN_TRIE_OP;
 
                     while (true) {
                         if (hyf[l] != 0)
@@ -906,13 +911,13 @@ new_patterns(void)
                             else
                                 trie_r[q] = p;
                             trie_c[p] = c;
-                            trie_o[p] = min_trie_op;
+                            trie_o[p] = MIN_TRIE_OP;
                         }
 
                         q = p;
                     }
 
-                    if (trie_o[q] != min_trie_op) {
+                    if (trie_o[q] != MIN_TRIE_OP) {
                         if (file_line_error_style_p)
                             print_file_line();
                         else
@@ -971,7 +976,7 @@ new_patterns(void)
                 else
                     trie_r[q] = p;
                 trie_c[p] = c;
-                trie_o[p] = min_trie_op;
+                trie_o[p] = MIN_TRIE_OP;
             }
 
             q = p;
@@ -992,7 +997,7 @@ new_patterns(void)
                         else
                             trie_r[q] = p;
                         trie_c[p] = c;
-                        trie_o[p] = min_trie_op;
+                        trie_o[p] = MIN_TRIE_OP;
                     } else {
                         trie_c[p] = c;
                     }
@@ -1031,7 +1036,7 @@ void init_trie(void)
     int32_t j, k, t;
     trie_pointer r, s;
     max_hyph_char++;
-    op_start[0] = -(int32_t) min_trie_op;
+    op_start[0] = -(int32_t) MIN_TRIE_OP;
     {
         register int32_t for_end;
         j = 1;
@@ -1047,7 +1052,7 @@ void init_trie(void)
         for_end = trie_op_ptr;
         if (j <= for_end)
             do
-                trie_op_hash[j] = op_start[trie_op_lang[j]] + trie_op_val[j];
+                TRIE_OP_HASH(j) = op_start[trie_op_lang[j]] + trie_op_val[j];
             while (j++ < for_end);
     }
     {
@@ -1056,9 +1061,9 @@ void init_trie(void)
         for_end = trie_op_ptr;
         if (j <= for_end)
             do
-                while (trie_op_hash[j] > j) {
+                while (TRIE_OP_HASH(j) > j) {
 
-                    k = trie_op_hash[j];
+                    k = TRIE_OP_HASH(j);
                     t = hyf_distance[k];
                     hyf_distance[k] = hyf_distance[j];
                     hyf_distance[j] = t;
@@ -1068,8 +1073,8 @@ void init_trie(void)
                     t = hyf_next[k];
                     hyf_next[k] = hyf_next[j];
                     hyf_next[j] = t;
-                    trie_op_hash[j] = trie_op_hash[k];
-                    trie_op_hash[k] = k;
+                    TRIE_OP_HASH(j) = TRIE_OP_HASH(k);
+                    TRIE_OP_HASH(k) = k;
                 }
             while (j++ < for_end);
     }
@@ -1130,7 +1135,7 @@ void init_trie(void)
             if (r <= for_end)
                 do {
                     trie_trl[r] = 0;
-                    trie_tro[r] = min_trie_op;
+                    trie_tro[r] = MIN_TRIE_OP;
                     trie_trc[r] = 0;
                 }
                 while (r++ < for_end);
@@ -1147,7 +1152,7 @@ void init_trie(void)
             s = trie_trl[r];
             {
                 trie_trl[r] = 0;
-                trie_tro[r] = min_trie_op;
+                trie_tro[r] = MIN_TRIE_OP;
                 trie_trc[r] = 0;
             }
             r = s;
@@ -2507,7 +2512,7 @@ store_fmt_file(void)
     else
         print_cstr(" op");
     print_cstr(" out of ");
-    print_int(trie_op_size);
+    print_int(TRIE_OP_SIZE);
 
     for (k = BIGGEST_LANG; k >= 0; k--) {
         if (trie_used[k] > 0) {
@@ -3044,15 +3049,15 @@ load_fmt_file(void)
     undump_int(x);
     if (x < 0)
         goto bad_fmt;
-    if (x > trie_op_size)
-        _tt_abort ("must increase trie_op_size");
+    if (x > TRIE_OP_SIZE)
+        _tt_abort ("must increase TRIE_OP_SIZE");
 
     j = x;
     trie_op_ptr = j;
 
     undump_things(hyf_distance[1], j);
     undump_things(hyf_num[1], j);
-    undump_upper_check_things(max_trie_op, hyf_next[1], j);
+    undump_upper_check_things(MAX_TRIE_OP, hyf_next[1], j);
 
     for (k = 0; k <= BIGGEST_LANG; k++)
         trie_used[k] = 0;
@@ -3514,13 +3519,13 @@ initialize_more_initex_variables(void)
     eqtb[FROZEN_PRIMITIVE].b16.s0 = LEVEL_ONE;
     hash[FROZEN_PRIMITIVE].s1 = maketexstring("primitive");
 
-    for (k = -(int32_t) trie_op_size; k <= trie_op_size; k++)
-        trie_op_hash[k] = 0;
+    for (k = -(int32_t) TRIE_OP_SIZE; k <= TRIE_OP_SIZE; k++)
+        TRIE_OP_HASH(k) = 0;
 
     for (k = 0; k <= BIGGEST_LANG; k++)
-        trie_used[k] = min_trie_op;
+        trie_used[k] = MIN_TRIE_OP;
 
-    max_op_used = min_trie_op;
+    max_op_used = MIN_TRIE_OP;
     trie_op_ptr = 0;
     trie_not_ready = true;
     hash[FROZEN_PROTECTION].s1 = maketexstring("inaccessible");

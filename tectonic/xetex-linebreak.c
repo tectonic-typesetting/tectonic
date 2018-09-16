@@ -1931,7 +1931,7 @@ not_found:
                 l = j;
                 while (hc[l] == trie_trc[z]) {
 
-                    if (trie_tro[z] != min_trie_op) {   /*959: */
+                    if (trie_tro[z] != MIN_TRIE_OP) {   /*959: */
                         v = trie_tro[z];
                         do {
                             v = v + op_start[cur_lang];
@@ -1939,7 +1939,7 @@ not_found:
                             if (hyf_num[v] > hyf[i])
                                 hyf[i] = hyf_num[v];
                             v = hyf_next[v];
-                        } while (!(v == min_trie_op));
+                        } while (!(v == MIN_TRIE_OP));
                     }
                     l++;
                     z = trie_trl[z] + hc[l];
