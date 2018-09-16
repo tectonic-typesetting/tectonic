@@ -6,65 +6,22 @@ extern crate tectonic;
 
 use std::collections::HashSet;
 use std::env;
-use std::ffi::OsStr;
-use std::fs::File;
-use std::io::Write;
-use std::path::Path;
 use std::sync::Mutex;
 
 use tectonic::errors::{DefinitelySame, ErrorKind, Result};
 use tectonic::engines::NoopIoEventBackend;
 use tectonic::engines::tex::TexResult;
-use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo, try_open_file};
+use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo};
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::status::NoopStatusBackend;
 use tectonic::{TexEngine, XdvipdfmxEngine};
 
 mod util;
-use util::{ExpectedInfo, test_path};
+use util::{ExpectedInfo, ensure_plain_format, test_path};
 
 lazy_static! {
     static ref LOCK: Mutex<u8> = Mutex::new(0u8);
 }
-
-
-fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
-    let mut fmt_path = tests_dir.to_owned();
-    fmt_path.push("plain.fmt");
-
-    if try_open_file(&fmt_path).is_not_available() {
-        // Well, we need to regenerate the format file. Not too difficult.
-        let mut mem = MemoryIo::new(true);
-
-        let mut assets_dir = tests_dir.to_owned();
-        assets_dir.push("assets");
-        let mut fs_support = FilesystemIo::new(&assets_dir, false, false, HashSet::new());
-
-        assets_dir.push("plain");
-        assets_dir.set_extension("tex");
-        let mut fs_primary = FilesystemPrimaryInputIo::new(&assets_dir);
-
-        {
-            let mut io = IoStack::new(vec![
-                &mut mem,
-                &mut fs_primary,
-                &mut fs_support,
-            ]);
-
-            TexEngine::new()
-                .halt_on_error_mode(true)
-                .initex_mode(true)
-                .process(&mut io, &mut NoopIoEventBackend::new(),
-                          &mut NoopStatusBackend::new(), "UNUSED.fmt", "plain.tex")?;
-        }
-
-        let mut fmt_file = File::create(&fmt_path)?;
-        fmt_file.write_all(mem.files.borrow().get(OsStr::new("plain.fmt")).unwrap())?;
-    }
-
-    Ok(SingleInputFileIo::new(&fmt_path))
-}
-
 
 struct TestCase {
     stem: String,
@@ -112,7 +69,7 @@ impl TestCase {
 
         // IoProvider for the format file; with magic to generate the format
         // on-the-fly if needed.
-        let mut fmt = set_up_format_file(&p).expect("couldn't write format file");
+        let mut fmt = SingleInputFileIo::new(&ensure_plain_format().expect("couldn't write format file"));
 
         // Set up some useful paths, and the IoProvider for the primary input file.
         p.push("tex-outputs");

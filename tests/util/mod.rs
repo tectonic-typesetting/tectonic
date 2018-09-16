@@ -12,6 +12,7 @@
 
 extern crate flate2;
 extern crate tectonic;
+extern crate tempfile;
 
 use self::flate2::read::GzDecoder;
 use std::collections::{HashMap, HashSet};
@@ -54,6 +55,56 @@ pub fn cargo_dir() -> PathBuf {
                      })
         })
         .unwrap_or_else(|| panic!("CARGO_BIN_PATH wasn't set. Cannot continue running test"))
+}
+
+
+/// Generate a plain.fmt file using local files only -- a variety of tests
+/// need such a file to exist.
+///
+/// Note that because tests are run in parallel, this can get quite racy. At
+/// the moment we just let everybody write and overwrite the file, but we
+/// could use a locking scheme to get smarter about this.
+pub fn ensure_plain_format() -> Result<PathBuf> {
+    use self::tectonic::TexEngine;
+    use self::tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo, try_open_file};
+    use self::tectonic::engines::NoopIoEventBackend;
+    use self::tectonic::status::NoopStatusBackend;
+
+    let fmt_path = test_path(&["plain.fmt"]);
+
+    if try_open_file(&fmt_path).is_not_available() {
+        let mut mem = MemoryIo::new(true);
+
+        let mut assets_dir = test_path(&["assets"]);
+        let mut fs_support = FilesystemIo::new(&assets_dir, false, false, HashSet::new());
+
+        assets_dir.push("plain");
+        assets_dir.set_extension("tex");
+        let mut fs_primary = FilesystemPrimaryInputIo::new(&assets_dir);
+
+        {
+            let mut io = IoStack::new(vec![
+                &mut mem,
+                &mut fs_primary,
+                &mut fs_support,
+            ]);
+
+            TexEngine::new()
+                .halt_on_error_mode(true)
+                .initex_mode(true)
+                .process(&mut io, &mut NoopIoEventBackend::new(),
+                          &mut NoopStatusBackend::new(), "UNUSED.fmt", "plain.tex")?;
+        }
+
+        let mut temp_fmt = tempfile::Builder::new()
+            .prefix("plain_fmt")
+            .rand_bytes(6)
+            .tempfile_in(test_path(&[]))?;
+        temp_fmt.write_all(mem.files.borrow().get(OsStr::new("plain.fmt")).unwrap())?;
+        temp_fmt.persist(&fmt_path)?;
+    }
+
+    Ok(fmt_path)
 }
 
 
