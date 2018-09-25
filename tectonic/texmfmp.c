@@ -99,14 +99,15 @@ gettexstring (str_number s)
   name = xmalloc(len * 3 + 1); /* max UTF16->UTF8 expansion
                                   (code units, not bytes) */
   for (i = 0, j = 0; i < len; i++) {
-    unsigned int c = str_pool[i + str_start[s - 65536L]];
+    uint32_t c = str_pool[i + str_start[s - 65536L]];
     if (c >= 0xD800 && c <= 0xDBFF) {
-      unsigned int lo = str_pool[++i + str_start[s - 65536L]];
+      uint32_t lo = str_pool[++i + str_start[s - 65536L]];
       if (lo >= 0xDC00 && lo <= 0xDFFF)
-        c = (c - 0xD800) * 0x0400 + lo - 0xDC00;
+        c = (c - 0xD800) * 0x0400 + lo - 0xDC00 + 0x10000;
       else
         c = 0xFFFD;
     }
+
     if (c < 0x80)
       bytesToWrite = 1;
     else if (c < 0x800)

@@ -13,7 +13,7 @@
 /* All the following variables are declared in xetexd.h */
 memory_word *eqtb;
 int32_t bad;
-UTF8_code *name_of_file;
+char *name_of_file;
 UTF16_code *name_of_file16;
 int32_t name_length;
 int32_t name_length16;
@@ -455,7 +455,7 @@ do_dump (char *p, size_t item_size, size_t nitems, rust_output_handle_t out_file
     ssize_t r = ttstub_output_write (out_file, p, item_size * nitems);
     if (r < 0 || (size_t) r != item_size * nitems)
         _tt_abort ("could not write %zu %zu-byte item(s) to %s",
-                   nitems, item_size, name_of_file+1);
+                   nitems, item_size, name_of_file);
 
     /* Have to restore the old contents of memory, since some of it might
        get used again.  */
@@ -471,7 +471,7 @@ do_undump (char *p, size_t item_size, size_t nitems, rust_input_handle_t in_file
     ssize_t r = ttstub_input_read (in_file, p, item_size * nitems);
     if (r < 0 || (size_t) r != item_size * nitems)
         _tt_abort("could not undump %zu %zu-byte item(s) from %s",
-                  nitems, item_size, name_of_file+1);
+                  nitems, item_size, name_of_file);
 
     swap_items (p, nitems, item_size);
 }
@@ -2193,9 +2193,9 @@ store_fmt_file(void)
     format_ident = make_string();
     pack_job_name(".fmt");
 
-    fmt_out = ttstub_output_open ((const char *) name_of_file + 1, 0);
+    fmt_out = ttstub_output_open (name_of_file, 0);
     if (fmt_out == NULL)
-        _tt_abort ("cannot open format output file \"%s\"", name_of_file + 1);
+        _tt_abort ("cannot open format output file \"%s\"", name_of_file);
 
     print_nl_cstr("Beginning to dump on file ");
     print(make_name_string());
@@ -2518,77 +2518,11 @@ store_fmt_file(void)
 static void
 pack_buffered_name(small_number n, int32_t a, int32_t b)
 {
-    int32_t k;
-    UTF16_code c;
-    int32_t j;
-
-    if (n + b - a + 5 > INT32_MAX)
-        b = a + INT32_MAX - n - 5;
-
     free(name_of_file);
-    name_of_file = xmalloc_array(UTF8_code, n + (b - a + 1) + 5);
+    name_of_file = xmalloc_array(UTF8_code, format_default_length + 1);
 
-    k = 0;
-
-    for (j = 1; j <= n; j++) {
-        /* This junk is append_to_name(), inlined, and with UTF-8 decoding, I
-         * think. */
-        c = TEX_format_default[j];
-        k++;
-        if (k <= INT32_MAX) {
-            if (c < 128) {
-                name_of_file[k] = c;
-            } else if (c < 2048) {
-                name_of_file[k++] = 192 + c / 64;
-                name_of_file[k] = 128 + c % 64;
-            } else {
-                name_of_file[k++] = 224 + c / 4096;
-                name_of_file[k++] = 128 + (c % 4096) / 64;
-                name_of_file[k] = 128 + (c % 4096) % 64;
-            }
-        }
-    }
-
-    for (j = a; j <= b; j++) {
-        c = buffer[j];
-        k++;
-        if (k <= INT32_MAX) {
-            if (c < 128) {
-                name_of_file[k] = c;
-            } else if (c < 2048) {
-                name_of_file[k++] = 192 + c / 64;
-                name_of_file[k] = 128 + c % 64;
-            } else {
-                name_of_file[k++] = 224 + c / 4096;
-                name_of_file[k++] = 128 + (c % 4096) / 64;
-                name_of_file[k] = 128 + (c % 4096) % 64;
-            }
-        }
-    }
-
-    for (j = format_default_length - 3; j <= format_default_length; j++) {
-        c = TEX_format_default[j];
-        k++;
-        if (k <= INT32_MAX) {
-            if (c < 128) {
-                name_of_file[k] = c;
-            } else if (c < 2048) {
-                name_of_file[k++] = 192 + c / 64;
-                name_of_file[k] = 128 + c % 64;
-            } else {
-                name_of_file[k++] = 224 + c / 4096;
-                name_of_file[k++] = 128 + (c % 4096) / 64;
-                name_of_file[k] = 128 + (c % 4096) % 64;
-            }
-        }
-    }
-
-    if (k <= INT32_MAX)
-        name_length = k;
-    else
-        name_length = INT32_MAX;
-
-    name_of_file[name_length + 1] = 0;
+    strcpy(name_of_file, TEX_format_default + 1);
+    name_length = strlen(name_of_file);
 }
 
 
@@ -2607,9 +2541,9 @@ load_fmt_file(void)
 
     pack_buffered_name(format_default_length - 4, 1, 0);
 
-    fmt_in = ttstub_input_open((const char *) name_of_file + 1, TTIF_FORMAT, 0);
+    fmt_in = ttstub_input_open(name_of_file, TTIF_FORMAT, 0);
     if (fmt_in == NULL)
-        _tt_abort("cannot open the format file \"%s\"", (char *) name_of_file + 1);
+        _tt_abort("cannot open the format file \"%s\"", name_of_file);
 
     cur_input.loc = j;
 
@@ -2632,7 +2566,7 @@ load_fmt_file(void)
     undump_int(x);
     if (x != FORMAT_SERIAL)
         _tt_abort("format file \"%s\" is of the wrong version: expected %d, found %d",
-                  (char *) name_of_file + 1, FORMAT_SERIAL, x);
+                  name_of_file, FORMAT_SERIAL, x);
 
     /* hash table parameters */
 
@@ -3991,12 +3925,11 @@ tt_run_engine(char *dump_name, char *input_file_name)
 
     /* TEX_format_default must get a leading space character for Pascal
      * style string magic. */
-
     size_t len = strlen (dump_name);
     TEX_format_default = xmalloc (len + 2);
     TEX_format_default[0] = ' ';
     strcpy (TEX_format_default + 1, dump_name);
-    format_default_length = len + 2;
+    format_default_length = len + 1;
 
     /* Not sure why these get custom initializations. */
 

@@ -57,11 +57,11 @@ count_pdf_file_pages (void)
     rust_input_handle_t handle;
     pdf_file *pf;
 
-    handle = ttstub_input_open ((const char *) name_of_file + 1, TTIF_PICT, 0);
+    handle = ttstub_input_open (name_of_file, TTIF_PICT, 0);
     if (handle == NULL)
         return 0;
 
-    if ((pf = pdf_open((const char *) name_of_file + 1, handle)) == NULL) {
+    if ((pf = pdf_open(name_of_file, handle)) == NULL) {
         /* TODO: issue warning */
         ttstub_input_close(handle);
         return 0;
@@ -200,11 +200,10 @@ get_image_size_in_inches (rust_input_handle_t handle, float *width, float *heigh
 int
 find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
 {
-    char *in_path = (char *) name_of_file + 1;
     int err = -1;
     rust_input_handle_t handle;
 
-    handle = ttstub_input_open (in_path, TTIF_PICT, 0);
+    handle = ttstub_input_open (name_of_file, TTIF_PICT, 0);
     bounds->x = bounds->y = bounds->wd = bounds->ht = 0.0;
 
     if (handle == NULL)
@@ -212,7 +211,7 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
 
     if (pdfBoxType != 0) {
         /* if cmd was \XeTeXpdffile, use xpdflib to read it */
-        err = pdf_get_rect (in_path, handle, page, pdfBoxType, bounds);
+        err = pdf_get_rect (name_of_file, handle, page, pdfBoxType, bounds);
     } else {
         err = get_image_size_in_inches (handle, &bounds->wd, &bounds->ht);
         bounds->wd *= 72.27;
@@ -220,7 +219,7 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
     }
 
     if (err == 0)
-        *path = xstrdup(in_path);
+        *path = xstrdup(name_of_file);
 
     ttstub_input_close (handle);
 

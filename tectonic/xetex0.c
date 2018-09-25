@@ -10509,95 +10509,35 @@ end_name(void)
 void
 pack_file_name(str_number n, str_number a, str_number e)
 {
-    int32_t k;
-    UTF16_code c;
-    pool_pointer j;
+    // Note that we populate the buffer in an order different than how the
+    // arguments are passed to this function!
+    char* work_buffer = xmalloc_array(UTF8_code, (length(a) + length(n) + length(e)) * 3 + 1);
+    work_buffer[0] = '\0';
 
-    k = 0;
+    char* a_utf8 = gettexstring(a);
+    strcat(work_buffer, a_utf8);
+    free(a_utf8);
+
+    char* n_utf8 = gettexstring(n);
+    strcat(work_buffer, n_utf8);
+    free(n_utf8);
+
+    char* e_utf8 = gettexstring(e);
+    strcat(work_buffer, e_utf8);
+    free(e_utf8);
+
+    name_length = strlen(work_buffer);
 
     free(name_of_file);
-    name_of_file = xmalloc_array(UTF8_code, (length(a) + length(n) + length(e)) * 3 + 1);
-
-    /* Note that we populate name_of_file in an order different than how the
-     * arguments are passed to this function!
-     */
-
-    for (j = str_start[a - 65536L]; j <= str_start[(a + 1) - 65536L] - 1; j++) {
-        c = str_pool[j];
-        k++;
-
-        if (k <= INT32_MAX) {
-            if (c < 128) {
-                name_of_file[k] = c;
-            } else if (c < 2048) {
-                name_of_file[k] = 192 + c / 64;
-                k++;
-                name_of_file[k] = 128 + c % 64;
-            } else {
-                name_of_file[k] = 224 + c / 4096;
-                k++;
-                name_of_file[k] = 128 + (c % 4096) / 64;
-                k++;
-                name_of_file[k] = 128 + (c % 4096) % 64;
-            }
-        }
-    }
-
-    for (j = str_start[n - 65536L]; j <= str_start[(n + 1) - 65536L] - 1; j++) {
-        c = str_pool[j];
-        k++;
-
-        if (k <= INT32_MAX) {
-            if (c < 128) {
-                name_of_file[k] = c;
-            } else if (c < 2048) {
-                name_of_file[k] = 192 + c / 64;
-                k++;
-                name_of_file[k] = 128 + c % 64;
-            } else {
-                name_of_file[k] = 224 + c / 4096;
-                k++;
-                name_of_file[k] = 128 + (c % 4096) / 64;
-                k++;
-                name_of_file[k] = 128 + (c % 4096) % 64;
-            }
-        }
-    }
-
-    for (j = str_start[e - 65536L]; j <= str_start[(e + 1) - 65536L] - 1; j++) {
-        c = str_pool[j];
-        k++;
-
-        if (k <= INT32_MAX) {
-            if (c < 128) {
-                name_of_file[k] = c;
-            } else if (c < 2048) {
-                name_of_file[k] = 192 + c / 64;
-                k++;
-                name_of_file[k] = 128 + c % 64;
-            } else {
-                name_of_file[k] = 224 + c / 4096;
-                k++;
-                name_of_file[k] = 128 + (c % 4096) / 64;
-                k++;
-                name_of_file[k] = 128 + (c % 4096) % 64;
-            }
-        }
-    }
-
-    if (k <= INT32_MAX)
-        name_length = k;
-    else
-        name_length = INT32_MAX;
-
-    name_of_file[name_length + 1] = 0;
+    name_of_file = xmalloc_array(char, name_length + 1);
+    strcpy(name_of_file, work_buffer);
+    free(work_buffer);
 }
 
 
 str_number
 make_name_string(void)
 {
-    str_number Result;
     int32_t k;
     pool_pointer save_area_delimiter, save_ext_delimiter;
     bool save_name_in_progress, save_stop_at_space;
@@ -10607,10 +10547,11 @@ make_name_string(void)
 
     make_utf16_name();
 
-    for (k = 0; k <= name_length16 - 1; k++)
+    for (k = 0; k < name_length16; k++)
         str_pool[pool_ptr++] = name_of_file16[k];
 
-    Result = make_string();
+
+    str_number Result = make_string();
 
     save_area_delimiter = area_delimiter;
     save_ext_delimiter = ext_delimiter;
@@ -10683,9 +10624,9 @@ open_log_file(void)
 
     pack_job_name(".log");
 
-    log_file = ttstub_output_open ((const char *) name_of_file + 1, 0);
+    log_file = ttstub_output_open (name_of_file, 0);
     if (log_file == NULL)
-        _tt_abort ("cannot open log file output \"%s\"", name_of_file + 1);
+        _tt_abort ("cannot open log file output \"%s\"", name_of_file);
 
     texmf_log_name = make_name_string();
     selector = SELECTOR_LOG_ONLY;
@@ -10714,7 +10655,6 @@ start_input(const char *primary_input_name)
 {
     tt_input_format_type format = TTIF_TEX;
     str_number temp_str;
-    int32_t k;
 
     if (primary_input_name != NULL) {
         /* If this is the case, we're opening the primary input file, and the
@@ -10728,9 +10668,42 @@ start_input(const char *primary_input_name)
         name_in_progress = true;
         begin_name();
         stop_at_space = false;
-        k = 0;
-        while (primary_input_name[k] && more_name(primary_input_name[k]))
-            k++;
+
+
+
+        const unsigned char *cp = (const unsigned char *) primary_input_name;
+
+        if (pool_ptr + strlen(primary_input_name) * 2 >= pool_size)
+            _tt_abort ("string pool overflow [%i bytes]", (int) pool_size);
+
+        UInt32 rval;
+        while ((rval = *(cp++)) != 0) {
+            UInt16 extraBytes = bytesFromUTF8[rval];
+            switch (extraBytes) { /* note: code falls through cases! */
+            case 5: rval <<= 6; if (*cp) rval += *(cp++);
+            case 4: rval <<= 6; if (*cp) rval += *(cp++);
+            case 3: rval <<= 6; if (*cp) rval += *(cp++);
+            case 2: rval <<= 6; if (*cp) rval += *(cp++);
+            case 1: rval <<= 6; if (*cp) rval += *(cp++);
+            case 0: ;
+            };
+            rval -= offsetsFromUTF8[extraBytes];
+            if (rval > 0xffff) {
+                rval -= 0x10000;
+                str_pool[pool_ptr++] = 0xd800 + rval / 0x0400;
+                str_pool[pool_ptr++] = 0xdc00 + rval % 0x0400;
+            } else {
+                str_pool[pool_ptr++] = rval;
+            }
+
+            if (IS_DIR_SEP(rval)) {
+                area_delimiter = pool_ptr - str_start[str_ptr - 65536L];
+                ext_delimiter = 0;
+            } else if (rval == '.' ) {
+                ext_delimiter = pool_ptr - str_start[str_ptr - 65536L];
+            }
+        }
+
         stop_at_space = true;
         end_name();
         name_in_progress = false;
@@ -10750,7 +10723,7 @@ start_input(const char *primary_input_name)
 
     if (!u_open_in(&input_file[cur_input.index], format, "rb",
                   INTPAR(xetex_default_input_mode), INTPAR(xetex_default_input_encoding)))
-        _tt_abort ("failed to open input file \"%s\"", name_of_file + 1);
+        _tt_abort ("failed to open input file \"%s\"", name_of_file);
 
     /* Now re-encode `name_of_file` into the UTF-16 variable `name_of_file16`,
      * and use that to recompute `cur_{name,area,ext}`. */
@@ -10759,7 +10732,7 @@ start_input(const char *primary_input_name)
     name_in_progress = true;
     begin_name();
     stop_at_space = false;
-    k = 0;
+    int k = 0;
     while (k < name_length16 && more_name(name_of_file16[k]))
         k++;
     stop_at_space = true;
@@ -11076,7 +11049,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     scaled_t ascent, descent, font_slant, x_ht, cap_ht;
     internal_font_number f;
     str_number full_name;
-    font_engine = find_native_font(name_of_file + 1, s);
+    font_engine = find_native_font(name_of_file, s);
     if (!font_engine)
         return FONT_BASE;
     if (s >= 0)
@@ -11342,7 +11315,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     if (INTPAR(xetex_tracing_fonts) > 0) {
         begin_diagnostic();
         print_nl_cstr("Requested font \"");
-        print_c_string((char *) (name_of_file + 1));
+        print_c_string(name_of_file);
         print('"');
         if (s < 0) {
             print_cstr(" scaled ");
@@ -11775,7 +11748,7 @@ done:
         } else if (file_opened) {
             begin_diagnostic();
             print_nl_cstr(" -> ");
-            print_c_string((char *) (name_of_file + 1));
+            print_c_string(name_of_file);
             end_diagnostic(false);
         }
     }
@@ -17189,7 +17162,7 @@ void load_picture(bool is_pdf)
                 y_size_req = 0.0;
                 transform_concat(&t, &t2);
             }
-            make_rotation(&t2, Fix2D(cur_val) * 3.141592653589793 / ((double)180.0));
+            make_rotation(&t2, Fix2D(cur_val) * M_PI / ((double)180.0));
             {
                 register int32_t for_end;
                 i = 0;

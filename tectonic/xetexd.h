@@ -317,7 +317,7 @@ void remember_source_info(str_number, int);
 extern memory_word *eqtb;
 
 extern int32_t bad;
-extern UTF8_code *name_of_file;
+extern char *name_of_file;
 extern UTF16_code *name_of_file16;
 extern int32_t name_length;
 extern int32_t name_length16;
