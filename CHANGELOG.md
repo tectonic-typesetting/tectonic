@@ -1,7 +1,14 @@
+# The next version
+
+The following changes will appear in the next release:
+
+- None yet
+
+
 # 0.1.10 (2018 Sep 28)
 
 This release is mainly about upgrading a dependency related to SSL/TLS to
-increases the range of systems on which Tectonic can be compiled.
+increase the range of systems on which Tectonic can be compiled.
 
 User-facing improvements:
 

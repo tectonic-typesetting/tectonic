@@ -4,7 +4,7 @@
 
 [package]
 name = "tectonic"
-version = "0.1.10"
+version = "0.1.11-dev"
 authors = ["Peter Williams <peter@newton.cx>"]
 build = "build.rs"
 description = """
@@ -52,7 +52,7 @@ md-5 = "^0.7"
 sha2 = "^0.7"
 serde = "^1.0"
 serde_derive = "^1.0"
-tectonic_xdv = { path = "xdv", version = "0.1.8" }
+tectonic_xdv = { path = "xdv", version = "0.1.9-dev" }
 termcolor = "^1.0"
 toml = "^0.4"
 zip = "^0.4"
