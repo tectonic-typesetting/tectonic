@@ -2,16 +2,16 @@
 # Maintainer: Jan Tojnar <jtojnar@gmail.com>
 
 pkgname=tectonic
-pkgver=0.1.7
-pkgrel=1
+pkgver=0.1.10
+pkgrel=0
 arch=('x86_64')
 pkgdesc='Modernized, complete, self-contained TeX/LaTeX engine, powered by XeTeX and TeXLive'
-url=https://tectonic-typesetting.github.io/en-US/
+url=https://tectonic-typesetting.github.io/
 license=('MIT')
 depends=('fontconfig' 'harfbuzz-icu' 'openssl')
 makedepends=('rust')
-source=("$pkgname-$pkgver.tar.gz::https://github.com/tectonic-typesetting/$pkgname/archive/v$pkgver.tar.gz")
-sha512sums=('4d9d942d6b2617a58b1a18d8ec91c374b3f3f4c808f6c365c58129194b0fa66d9552dee58c42e499b349ccb753b7378223eaeb75c87b9afbf417bee3585265ac')
+source=("$pkgname-$pkgver.tar.gz::https://crates.io/api/v1/crates/tectonic/$pkgver/download")
+sha512sums=('44d75487a8543e765730751879fab44a78fe0fdc8cd92943be74e6e4c12df3ef0a002e1632991090e853d4944e95d3c1075d6e9a011fd432a8e8501adc52ebb9')
 
 build() {
 	cd $pkgname-$pkgver
