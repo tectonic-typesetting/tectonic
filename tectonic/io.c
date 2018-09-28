@@ -486,7 +486,7 @@ make_utf16_name(void)
     }
     t = name_of_file16;
 
-    while (s < name_of_file + name_length) {
+    while (s < (unsigned char *) name_of_file + name_length) {
         uint16_t extraBytes;
         rval = *(s++);
         extraBytes = bytesFromUTF8[rval];
