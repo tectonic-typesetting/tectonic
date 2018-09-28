@@ -64,6 +64,3 @@ zip = "^0.4"
 [dev-dependencies]
 tempdir = "^0.3"
 lazy_static = "^1.1"
-
-[package.metadata.docs.rs]
-dependencies = ["libfontconfig1-dev", "libgraphite2-dev", "libharfbuzz-dev", "libicu-dev", "zlib1g-dev"]
