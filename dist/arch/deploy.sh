@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/bin/bash
 
 set -x
 cd "$TRAVIS_BUILD_DIR/dist/arch"
