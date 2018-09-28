@@ -1,8 +1,20 @@
-# The next version
+# 0.1.10 (2018 Sep 28)
 
-The following changes will appear in the next release:
+This release is mainly about upgrading a dependency related to SSL/TLS to
+increases the range of systems on which Tectonic can be compiled.
 
-- None yet
+User-facing improvements:
+
+- Tectonic now correctly handles Unicode filenames — even ones containing
+  emoji! — without crashing
+  ([#165](https://github.com/tectonic-typesetting/tectonic/pull/165)).
+
+Developer/packager-facing improvements:
+
+- Tectonic now depends on the 0.3.x series of
+  [hyper-native-tls](https://crates.io/crates/hyper-native-tls), which can
+  build against the 1.1.x series of [OpenSSL](https://www.openssl.org/).
+
 
 # 0.1.9 (2018 Sep 15)
 
