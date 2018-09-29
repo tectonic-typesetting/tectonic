@@ -8,36 +8,12 @@
 
 #include "tectonic.h"
 #include "core-bridge.h"
+#include "core-strutils.h"
 
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-/* other lame #defines */
-
-#ifndef isblank
-#define isblank(c) ((c) == ' ' || (c) == '\t')
-#endif
-#define ISBLANK(c) (isascii (c) && isblank ((unsigned char)c))
-
-#define DIR_SEP '/'
-#define IS_DIR_SEP(ch) ((ch) == DIR_SEP)
-
-static inline bool streq_ptr(const char *s1, const char *s2) {
-    if (s1 && s2)
-        return strcmp(s1, s2) == 0;
-    return false;
-}
-
-static inline const char *strstartswith(const char *s, const char *prefix) {
-    size_t length;
-
-    length = strlen(prefix);
-    if (strncmp(s, prefix, length) == 0)
-        return s + length;
-    return NULL;
-}
 
 /* Core typedefs. */
 
