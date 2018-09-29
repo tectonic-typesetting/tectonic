@@ -117,17 +117,6 @@ make_rotation(transform_t* t, double a)
 }
 
 void
-transform_point(real_point* p, const transform_t* t)
-{
-    real_point r;
-
-    r.x = t->a * p->x + t->c * p->y + t->x;
-    r.y = t->b * p->x + t->d * p->y + t->y;
-
-    *p = r;
-}
-
-void
 transform_concat(transform_t* t1, const transform_t* t2)
 {
     transform_t r;

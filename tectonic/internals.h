@@ -33,11 +33,6 @@ typedef struct {
 typedef struct {
     float x;
     float y;
-} real_point;
-
-typedef struct {
-    float x;
-    float y;
     float wd;
     float ht;
 } real_rect;
@@ -103,7 +98,6 @@ void make_identity(transform_t* t);
 void make_scale(transform_t* t, double xscale, double yscale);
 void make_translation(transform_t* t, double dx, double dy);
 void make_rotation(transform_t* t, double a);
-void transform_point(real_point* p, const transform_t* t);
 void transform_concat(transform_t* t1, const transform_t* t2);
 
 static inline void *mfree(void *ptr) {

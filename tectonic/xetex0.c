@@ -16977,7 +16977,26 @@ void new_write_whatsit(small_number w)
     mem[cur_list.tail + 1].b32.s0 = cur_val;
 }
 
-void load_picture(bool is_pdf)
+
+typedef struct {
+    float x;
+    float y;
+} real_point;
+
+static void
+transform_point(real_point* p, const transform_t* t)
+{
+    real_point r;
+
+    r.x = t->a * p->x + t->c * p->y + t->x;
+    r.y = t->b * p->x + t->d * p->y + t->y;
+
+    *p = r;
+}
+
+
+void
+load_picture(bool is_pdf)
 {
     char *pic_path;
     real_rect bounds;
