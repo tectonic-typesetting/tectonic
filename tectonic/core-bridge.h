@@ -6,15 +6,8 @@
 #ifndef TECTONIC_CORE_BRIDGE_H
 #define TECTONIC_CORE_BRIDGE_H
 
+#include "core-foundation.h"
 #include "tectonic.h"
-
-#include <stddef.h> /* size_t */
-#include <sys/types.h> /* ssize_t */
-
-#if defined(_MSC_VER)
-#include <BaseTsd.h>
-typedef SSIZE_T ssize_t;
-#endif
 
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with

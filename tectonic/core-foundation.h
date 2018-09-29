@@ -26,9 +26,11 @@
 #include <math.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#include <stdint.h> /* for int32_t */
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 
 /* Convenience for C++: this way Emacs doesn't try to indent the prototypes,
  * which I find annoying. */
@@ -74,6 +76,16 @@
 #  define snprintf _snprintf
 #  define strtoll _strtoi64
 # endif
+#endif
+
+/* Portability: ssize_t
+ *
+ * On Unix, sys/types.h gives ssize_t. On MSVC we need to do the following:
+ */
+
+#if defined(_MSC_VER)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
 #endif
 
 #endif /* not TECTONIC_CORE_FOUNDATION_H */
