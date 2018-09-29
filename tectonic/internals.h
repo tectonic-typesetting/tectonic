@@ -15,17 +15,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-typedef enum {
-    SELECTOR_FILE_0 = 0,
-    SELECTOR_FILE_15 = 15,
-    SELECTOR_NO_PRINT = 16,
-    SELECTOR_TERM_ONLY = 17,
-    SELECTOR_LOG_ONLY = 18,
-    SELECTOR_TERM_AND_LOG = 19,
-    SELECTOR_PSEUDO = 20,
-    SELECTOR_NEW_STRING = 21
-} selector_t;
-
 
 BEGIN_EXTERN_C
 
