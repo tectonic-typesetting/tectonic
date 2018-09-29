@@ -1024,6 +1024,14 @@ void math_fraction(void);
 void math_left_right(void);
 void flush_math(void);
 
+/* xetex-scaledmath */
+
+int32_t tex_round(double);
+int32_t half(int32_t x);
+scaled_t mult_and_add(int32_t n, scaled_t x, scaled_t y, scaled_t max_answer);
+scaled_t x_over_n(scaled_t x, int32_t n);
+scaled_t xn_over_d(scaled_t x, int32_t n, int32_t d);
+
 /* xetex-shipout */
 
 void initialize_shipout_variables(void);

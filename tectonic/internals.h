@@ -1,5 +1,5 @@
 /* tectonic/internals.h: global, private header for Tectonic
-   Copyright 2016 the Tectonic Project
+   Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
 
@@ -14,10 +14,6 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-/* Core typedefs. */
-
-typedef int32_t scaled_t;
 
 /* Unicode files */
 
@@ -61,13 +57,6 @@ int u_open_in(UFILE **f, int32_t filefmt, const char* fopen_mode, int32_t mode, 
 int get_uni_c(UFILE* f);
 int input_line(UFILE* f);
 void make_utf16_name(void);
-
-/* mathutil.c */
-int32_t tex_round (double);
-int32_t half(int32_t x);
-scaled_t mult_and_add(int32_t n, scaled_t x, scaled_t y, scaled_t max_answer);
-scaled_t x_over_n(scaled_t x, int32_t n);
-scaled_t xn_over_d(scaled_t x, int32_t n, int32_t d);
 
 /* core-kpathutil.c */
 char *xstrdup (const char *s);

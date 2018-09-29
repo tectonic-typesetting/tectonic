@@ -42,6 +42,8 @@
 
 /* our typedefs */
 
+typedef int32_t scaled_t;
+
 typedef uint32_t OTTag;
 typedef uint16_t GlyphID;
 
