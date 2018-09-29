@@ -12,7 +12,7 @@ export LIBRARY="$(pwd)/usr/share/makepkg"
 config="$(pwd)/etc/makepkg.conf"
 
 # Get the repo
-git config --global --add core.sshCommand "ssh -o StrictHostKeyChecking=false"
+git config --global --add core.sshCommand "ssh -o StrictHostKeyChecking=false -i /tmp/deploy_key"
 git clone ssh://aur@aur.archlinux.org/tectonic.git aur
 
 # Update it
