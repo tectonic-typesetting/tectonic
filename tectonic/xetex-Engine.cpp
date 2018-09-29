@@ -52,7 +52,7 @@ Description:
 #	include <windows.h>
 #endif
 
-#include "Engine.h"
+#include "xetex-Engine.h"
 
 #ifdef TRACING
 #include <iostream>
