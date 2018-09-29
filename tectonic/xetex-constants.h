@@ -1,4 +1,4 @@
-/* tectonic/constants.h: symbolic constants from the WEB code
+/* tectonic/xetex-constants.h: symbolic constants from the WEB code
    Copyright 2017-2018 the Tectonic Project
    Licensed under the MIT License.
 */
