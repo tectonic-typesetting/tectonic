@@ -9,7 +9,6 @@ extern crate pkg_config;
 extern crate regex;
 extern crate sha2;
 
-use std::env;
 use std::path::PathBuf;
 
 
@@ -25,10 +24,6 @@ fn main() {
     // We (have to) rerun the search again below to emit the metadata at the right time.
 
     let deps = pkg_config::Config::new().cargo_metadata(false).probe(LIBS).unwrap();
-
-    // First, emit the string pool C code. Sigh.
-
-    let out_dir = env::var("OUT_DIR").unwrap();
 
     // Actually I'm not 100% sure that I can't compile the C and C++ code
     // into one library, but who cares?
@@ -160,7 +155,6 @@ fn main() {
         .file("tectonic/io.c")
         .file("tectonic/mathutil.c")
         .file("tectonic/output.c")
-        .file("tectonic/stringpool.c")
         .file("tectonic/synctex.c")
         .file("tectonic/texmfmp.c")
         .file("tectonic/xetex0.c")
@@ -170,11 +164,11 @@ fn main() {
         .file("tectonic/xetex-linebreak.c")
         .file("tectonic/xetex-math.c")
         .file("tectonic/xetex-shipout.c")
+        .file("tectonic/xetex-stringpool.c")
         .define("HAVE_ZLIB", "1")
         .define("HAVE_ZLIB_COMPRESS2", "1")
         .define("ZLIB_CONST", "1")
-        .include(".")
-        .include(&out_dir);
+        .include(".");
 
     let cppflags = [
         "-std=c++14",
@@ -215,13 +209,12 @@ fn main() {
     cppcfg
         .cpp(true)
         .flag("-Wall")
-        .file("tectonic/Engine.cpp")
+        .file("tectonic/xetex-Engine.cpp")
         .file("tectonic/XeTeXFontInst.cpp")
         .file("tectonic/XeTeXFontMgr.cpp")
         .file("tectonic/XeTeXLayoutInterface.cpp")
         .file("tectonic/XeTeXOTMath.cpp")
-        .include(".")
-        .include(&out_dir);
+        .include(".");
 
     for p in deps.include_paths {
         ccfg.include(&p);

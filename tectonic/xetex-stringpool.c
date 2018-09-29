@@ -1,5 +1,5 @@
-/* tectonic/stringpool.c: preloaded "string pool" constants
-   Copyright 2017 the Tectonic Project
+/* tectonic/xetex-stringpool.c: preloaded "string pool" constants
+   Copyright 2017-2018 the Tectonic Project
    Licensed under the MIT License.
 */
 

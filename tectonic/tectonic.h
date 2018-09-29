@@ -56,7 +56,4 @@ int tt_set_string_variable (char *var_name, char *value);
 
 END_EXTERN_C
 
-#include "xetex-constants.h"
-#include "stringpool.h"
-
 #endif /* not TECTONIC_TECTONIC_H */

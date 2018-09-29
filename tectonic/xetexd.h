@@ -12,6 +12,7 @@
 #include "TECkit_Common.h"
 #include "XeTeX_ext.h"
 #include "core-bridge.h"
+#include "xetex-constants.h"
 
 #ifdef XETEX_MAC
 /* include this here to avoid conflict between clang's emmintrin.h and
@@ -702,13 +703,6 @@ NORETURN void overflow(const char* s, int32_t n);
 NORETURN void confusion(const char* s);
 NORETURN void pdf_error(const char* t, const char* p);
 
-int32_t length(str_number s);
-str_number make_string(void);
-void append_str(str_number s);
-bool str_eq_buf(str_number s, int32_t k);
-bool str_eq_str(str_number s, str_number t);
-str_number search_string(str_number search);
-str_number slow_make_string(void);
 void print_current_string(void);
 int32_t badness(scaled_t t, scaled_t s);
 void print_word(memory_word w);
@@ -1086,5 +1080,7 @@ tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
 #define UTF16LE    3
 #define RAW        4
 #define ICUMAPPING 5
+
+#include "xetex-stringpool.h"
 
 #endif /* TECTONIC_XETEXD_H */
