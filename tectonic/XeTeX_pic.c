@@ -50,6 +50,30 @@ XeTeX_pic.c
 #include "dpx-bmpimage.h"
 
 
+/* load_picture() needs some helper types and functions */
+
+typedef struct {
+    float x;
+    float y;
+} real_point;
+
+typedef struct {
+    double a;
+    double b;
+    double c;
+    double d;
+    double x;
+    double y;
+} transform_t;
+
+typedef struct {
+    float x;
+    float y;
+    float wd;
+    float ht;
+} real_rect;
+
+
 int
 count_pdf_file_pages (void)
 {
@@ -197,7 +221,7 @@ get_image_size_in_inches (rust_input_handle_t handle, float *width, float *heigh
   return full path in *path
   return bounds (tex points) in *bounds
 */
-int
+static int
 find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
 {
     int err = -1;
@@ -224,4 +248,429 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
     ttstub_input_close (handle);
 
     return err;
+}
+
+
+static void
+transform_point(real_point* p, const transform_t* t)
+{
+    real_point r;
+
+    r.x = t->a * p->x + t->c * p->y + t->x;
+    r.y = t->b * p->x + t->d * p->y + t->y;
+
+    *p = r;
+}
+
+
+static void
+make_identity(transform_t* t)
+{
+    t->a = 1.0;
+    t->b = 0.0;
+    t->c = 0.0;
+    t->d = 1.0;
+    t->x = 0.0;
+    t->y = 0.0;
+}
+
+
+static void
+make_scale(transform_t* t, double xscale, double yscale)
+{
+    t->a = xscale;
+    t->b = 0.0;
+    t->c = 0.0;
+    t->d = yscale;
+    t->x = 0.0;
+    t->y = 0.0;
+}
+
+
+static void
+make_translation(transform_t* t, double dx, double dy)
+{
+    t->a = 1.0;
+    t->b = 0.0;
+    t->c = 0.0;
+    t->d = 1.0;
+    t->x = dx;
+    t->y = dy;
+}
+
+
+static void
+make_rotation(transform_t* t, double a)
+{
+    t->a = cos(a);
+    t->b = sin(a);
+    t->c = -sin(a);
+    t->d = cos(a);
+    t->x = 0.0;
+    t->y = 0.0;
+}
+
+
+static void
+transform_concat(transform_t* t1, const transform_t* t2)
+{
+    transform_t r;
+
+    r.a = t1->a * t2->a + t1->b * t2->c + 0.0 * t2->x;
+    r.b = t1->a * t2->b + t1->b * t2->d + 0.0 * t2->y;
+    r.c = t1->c * t2->a + t1->d * t2->c + 0.0 * t2->x;
+    r.d = t1->c * t2->b + t1->d * t2->d + 0.0 * t2->y;
+    r.x = t1->x * t2->a + t1->y * t2->c + 1.0 * t2->x;
+    r.y = t1->x * t2->b + t1->y * t2->d + 1.0 * t2->y;
+
+    *t1 = r;
+}
+
+
+#define SET_POINT(P,X,Y) do { (P).x = (X); (P).y = (Y); } while (0)
+
+void
+load_picture(bool is_pdf)
+{
+    char *pic_path;
+    real_rect bounds;
+    transform_t t, t2;
+    real_point corners[4];
+    double x_size_req, y_size_req;
+    bool check_keywords;
+    double xmin, xmax, ymin, ymax;
+    small_number i;
+    int32_t page;
+    int32_t pdf_box_type;
+    int32_t result;
+    scan_file_name();
+    pack_file_name(cur_name, cur_area, cur_ext);
+    pdf_box_type = 0;
+    page = 0;
+    if (is_pdf) {
+        if (scan_keyword("page")) {
+            scan_int();
+            page = cur_val;
+        }
+        pdf_box_type = pdfbox_none;
+        if (scan_keyword("crop"))
+            pdf_box_type = pdfbox_crop;
+        else if (scan_keyword("media"))
+            pdf_box_type = pdfbox_media;
+        else if (scan_keyword("bleed"))
+            pdf_box_type = pdfbox_bleed;
+        else if (scan_keyword("trim"))
+            pdf_box_type = pdfbox_trim;
+        else if (scan_keyword("art"))
+            pdf_box_type = pdfbox_art;
+    }
+    if (pdf_box_type == pdfbox_none)
+        result = find_pic_file(&pic_path, &bounds, pdfbox_crop, page);
+    else
+        result = find_pic_file(&pic_path, &bounds, pdf_box_type, page);
+    SET_POINT(corners[0], bounds.x, bounds.y);
+    SET_POINT(corners[1], corners[0].x, bounds.y + bounds.ht);
+    SET_POINT(corners[2], bounds.x + bounds.wd, corners[1].y);
+    SET_POINT(corners[3], corners[2].x, corners[0].y);
+    x_size_req = 0.0;
+    y_size_req = 0.0;
+    make_identity(&t);
+    check_keywords = true;
+    while (check_keywords) {
+
+        if (scan_keyword("scaled")) {
+            scan_int();
+            if ((x_size_req == 0.0) && (y_size_req == 0.0)) {
+                make_scale(&t2, cur_val / ((double)1000.0), cur_val / ((double)1000.0));
+                {
+                    register int32_t for_end;
+                    i = 0;
+                    for_end = 3;
+                    if (i <= for_end)
+                        do
+                            transform_point(&corners[i], &t2);
+                        while (i++ < for_end);
+                }
+                transform_concat(&t, &t2);
+            }
+        } else if (scan_keyword("xscaled")) {
+            scan_int();
+            if ((x_size_req == 0.0) && (y_size_req == 0.0)) {
+                make_scale(&t2, cur_val / ((double)1000.0), 1.0);
+                {
+                    register int32_t for_end;
+                    i = 0;
+                    for_end = 3;
+                    if (i <= for_end)
+                        do
+                            transform_point(&corners[i], &t2);
+                        while (i++ < for_end);
+                }
+                transform_concat(&t, &t2);
+            }
+        } else if (scan_keyword("yscaled")) {
+            scan_int();
+            if ((x_size_req == 0.0) && (y_size_req == 0.0)) {
+                make_scale(&t2, 1.0, cur_val / ((double)1000.0));
+                {
+                    register int32_t for_end;
+                    i = 0;
+                    for_end = 3;
+                    if (i <= for_end)
+                        do
+                            transform_point(&corners[i], &t2);
+                        while (i++ < for_end);
+                }
+                transform_concat(&t, &t2);
+            }
+        } else if (scan_keyword("width")) {
+            scan_dimen(false, false, false);
+            if (cur_val <= 0) {
+                {
+                    if (file_line_error_style_p)
+                        print_file_line();
+                    else
+                        print_nl_cstr("! ");
+                    print_cstr("Improper image ");
+                }
+                print_cstr("size (");
+                print_scaled(cur_val);
+                print_cstr("pt) will be ignored");
+                {
+                    help_ptr = 2;
+                    help_line[1] = "I can't scale images to zero or negative sizes,";
+                    help_line[0] = "so I'm ignoring this.";
+                }
+                error();
+            } else
+                x_size_req = Fix2D(cur_val);
+        } else if (scan_keyword("height")) {
+            scan_dimen(false, false, false);
+            if (cur_val <= 0) {
+                {
+                    if (file_line_error_style_p)
+                        print_file_line();
+                    else
+                        print_nl_cstr("! ");
+                    print_cstr("Improper image ");
+                }
+                print_cstr("size (");
+                print_scaled(cur_val);
+                print_cstr("pt) will be ignored");
+                {
+                    help_ptr = 2;
+                    help_line[1] = "I can't scale images to zero or negative sizes,";
+                    help_line[0] = "so I'm ignoring this.";
+                }
+                error();
+            } else
+                y_size_req = Fix2D(cur_val);
+        } else if (scan_keyword("rotated")) {
+            scan_decimal();
+            if ((x_size_req != 0.0) || (y_size_req != 0.0)) {
+                {
+                    xmin = 1000000.0;
+                    xmax = -(int32_t) xmin;
+                    ymin = xmin;
+                    ymax = xmax;
+                    {
+                        register int32_t for_end;
+                        i = 0;
+                        for_end = 3;
+                        if (i <= for_end)
+                            do {
+                                if (corners[i].x < xmin)
+                                    xmin = corners[i].x;
+                                if (corners[i].x > xmax)
+                                    xmax = corners[i].x;
+                                if (corners[i].y < ymin)
+                                    ymin = corners[i].y;
+                                if (corners[i].y > ymax)
+                                    ymax = corners[i].y;
+                            }
+                            while (i++ < for_end);
+                    }
+                }
+                if (x_size_req == 0.0) {
+                    make_scale(&t2, y_size_req / ((double)(ymax - ymin)),
+                               y_size_req / ((double)(ymax - ymin)));
+                } else if (y_size_req == 0.0) {
+                    make_scale(&t2, x_size_req / ((double)(xmax - xmin)),
+                               x_size_req / ((double)(xmax - xmin)));
+                } else {
+
+                    make_scale(&t2, x_size_req / ((double)(xmax - xmin)),
+                               y_size_req / ((double)(ymax - ymin)));
+                }
+                {
+                    register int32_t for_end;
+                    i = 0;
+                    for_end = 3;
+                    if (i <= for_end)
+                        do
+                            transform_point(&corners[i], &t2);
+                        while (i++ < for_end);
+                }
+                x_size_req = 0.0;
+                y_size_req = 0.0;
+                transform_concat(&t, &t2);
+            }
+            make_rotation(&t2, Fix2D(cur_val) * M_PI / ((double)180.0));
+            {
+                register int32_t for_end;
+                i = 0;
+                for_end = 3;
+                if (i <= for_end)
+                    do
+                        transform_point(&corners[i], &t2);
+                    while (i++ < for_end);
+            }
+            {
+                xmin = 1000000.0;
+                xmax = -(int32_t) xmin;
+                ymin = xmin;
+                ymax = xmax;
+                {
+                    register int32_t for_end;
+                    i = 0;
+                    for_end = 3;
+                    if (i <= for_end)
+                        do {
+                            if (corners[i].x < xmin)
+                                xmin = corners[i].x;
+                            if (corners[i].x > xmax)
+                                xmax = corners[i].x;
+                            if (corners[i].y < ymin)
+                                ymin = corners[i].y;
+                            if (corners[i].y > ymax)
+                                ymax = corners[i].y;
+                        }
+                        while (i++ < for_end);
+                }
+            }
+            SET_POINT(corners[0], xmin, ymin);
+            SET_POINT(corners[1], xmin, ymax);
+            SET_POINT(corners[2], xmax, ymax);
+            SET_POINT(corners[3], xmax, ymin);
+            transform_concat(&t, &t2);
+        } else
+            check_keywords = false;
+    }
+    if ((x_size_req != 0.0) || (y_size_req != 0.0)) {
+        {
+            xmin = 1000000.0;
+            xmax = -(int32_t) xmin;
+            ymin = xmin;
+            ymax = xmax;
+            {
+                register int32_t for_end;
+                i = 0;
+                for_end = 3;
+                if (i <= for_end)
+                    do {
+                        if (corners[i].x < xmin)
+                            xmin = corners[i].x;
+                        if (corners[i].x > xmax)
+                            xmax = corners[i].x;
+                        if (corners[i].y < ymin)
+                            ymin = corners[i].y;
+                        if (corners[i].y > ymax)
+                            ymax = corners[i].y;
+                    }
+                    while (i++ < for_end);
+            }
+        }
+        if (x_size_req == 0.0) {
+            make_scale(&t2, y_size_req / ((double)(ymax - ymin)), y_size_req / ((double)(ymax - ymin)));
+        } else if (y_size_req == 0.0) {
+            make_scale(&t2, x_size_req / ((double)(xmax - xmin)), x_size_req / ((double)(xmax - xmin)));
+        } else {
+
+            make_scale(&t2, x_size_req / ((double)(xmax - xmin)), y_size_req / ((double)(ymax - ymin)));
+        }
+        {
+            register int32_t for_end;
+            i = 0;
+            for_end = 3;
+            if (i <= for_end)
+                do
+                    transform_point(&corners[i], &t2);
+                while (i++ < for_end);
+        }
+        x_size_req = 0.0;
+        y_size_req = 0.0;
+        transform_concat(&t, &t2);
+    }
+    {
+        xmin = 1000000.0;
+        xmax = -(int32_t) xmin;
+        ymin = xmin;
+        ymax = xmax;
+        {
+            register int32_t for_end;
+            i = 0;
+            for_end = 3;
+            if (i <= for_end)
+                do {
+                    if (corners[i].x < xmin)
+                        xmin = corners[i].x;
+                    if (corners[i].x > xmax)
+                        xmax = corners[i].x;
+                    if (corners[i].y < ymin)
+                        ymin = corners[i].y;
+                    if (corners[i].y > ymax)
+                        ymax = corners[i].y;
+                }
+                while (i++ < for_end);
+        }
+    }
+    make_translation(&t2, -(int32_t) xmin * 72 / ((double)72.27), -(int32_t) ymin * 72 / ((double)72.27));
+    transform_concat(&t, &t2);
+    if (result == 0) {
+        new_whatsit(PIC_NODE,
+                    PIC_NODE_SIZE + (strlen(pic_path) + sizeof(memory_word) - 1) / sizeof(memory_word));
+        if (is_pdf) {
+            mem[cur_list.tail].b16.s0 = PDF_NODE;
+        }
+        PIC_NODE_path_len(cur_list.tail) = strlen(pic_path);
+        mem[cur_list.tail + 4].b16.s0 = page;
+        mem[cur_list.tail + 8].b16.s1 = pdf_box_type;
+        mem[cur_list.tail + 1].b32.s1 = D2Fix(xmax - xmin);
+        mem[cur_list.tail + 3].b32.s1 = D2Fix(ymax - ymin);
+        mem[cur_list.tail + 2].b32.s1 = 0;
+        mem[cur_list.tail + 5].b32.s0 = D2Fix(t.a);
+        mem[cur_list.tail + 5].b32.s1 = D2Fix(t.b);
+        mem[cur_list.tail + 6].b32.s0 = D2Fix(t.c);
+        mem[cur_list.tail + 6].b32.s1 = D2Fix(t.d);
+        mem[cur_list.tail + 7].b32.s0 = D2Fix(t.x);
+        mem[cur_list.tail + 7].b32.s1 = D2Fix(t.y);
+        memcpy(PIC_NODE_path(cur_list.tail), pic_path, strlen(pic_path));
+        free(pic_path);
+    } else {
+
+        {
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl_cstr("! ");
+            print_cstr("Unable to load picture or PDF file '");
+        }
+        print_file_name(cur_name, cur_area, cur_ext);
+        print('\'');
+        if (result == -43) {
+            {
+                help_ptr = 2;
+                help_line[1] = "The requested image couldn't be read because";
+                help_line[0] = "the file was not found.";
+            }
+        } else {
+
+            {
+                help_ptr = 2;
+                help_line[1] = "The requested image couldn't be read because";
+                help_line[0] = "it was not a recognized image format.";
+            }
+        }
+        error();
+    }
 }

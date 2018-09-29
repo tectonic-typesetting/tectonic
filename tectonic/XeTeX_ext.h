@@ -154,7 +154,6 @@ double read_double(const char** s);
 unsigned int read_rgb_a(const char** cp);
 
 int count_pdf_file_pages(void);
-int find_pic_file(char** path, real_rect* bounds, int pdfBoxType, int page);
 
 int maketexstring(const char* s);
 void set_cp_code(int fontNum, unsigned int code, int side, int value);

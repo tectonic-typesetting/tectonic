@@ -19,26 +19,6 @@
 
 typedef int32_t scaled_t;
 
-/* affine transforms */
-
-typedef struct {
-    double a;
-    double b;
-    double c;
-    double d;
-    double x;
-    double y;
-} transform_t;
-
-typedef struct {
-    float x;
-    float y;
-    float wd;
-    float ht;
-} real_rect;
-
-#define SET_POINT(P,X,Y) do { (P).x = (X); (P).y = (Y); } while (0)
-
 /* Unicode files */
 
 typedef struct {
@@ -94,11 +74,6 @@ char *xstrdup (const char *s);
 void *xmalloc (size_t size);
 void *xrealloc (void *old_address, size_t new_size);
 void *xcalloc (size_t nelem, size_t elsize);
-void make_identity(transform_t* t);
-void make_scale(transform_t* t, double xscale, double yscale);
-void make_translation(transform_t* t, double dx, double dy);
-void make_rotation(transform_t* t, double a);
-void transform_concat(transform_t* t1, const transform_t* t2);
 
 static inline void *mfree(void *ptr) {
     free(ptr);
