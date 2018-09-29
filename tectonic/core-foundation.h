@@ -11,10 +11,24 @@
 #ifndef TECTONIC_CORE_FOUNDATION_H
 #define TECTONIC_CORE_FOUNDATION_H
 
+/* High-level defines */
+
+#define _DARWIN_USE_64_BIT_INODE 1
+
 /* Universal headers */
 
+#include <assert.h>
+#include <ctype.h>
+#include <errno.h>
+#include <float.h>
+#include <inttypes.h>
+#include <limits.h>
+#include <math.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h> /* for int32_t */
+#include <stdlib.h>
+#include <string.h>
 
 /* Convenience for C++: this way Emacs doesn't try to indent the prototypes,
  * which I find annoying. */
@@ -41,6 +55,25 @@
 #define PRINTF_FUNC(ifmt,iarg) __attribute__((format(printf, ifmt, iarg)))
 #else
 #define PRINTF_FUNC(ifmt,iarg)
+#endif
+
+/* Portability: inline annotation */
+
+#ifdef _MSC_VER
+# ifndef __cplusplus
+#  define inline __inline
+# endif
+#endif
+
+/* Portability: MSVC variations on various common functions */
+
+#ifdef _MSC_VER
+# define strcasecmp _stricmp
+# define strncasecmp _strnicmp
+# if defined(_VC_CRT_MAJOR_VERSION) && _VC_CRT_MAJOR_VERSION < 14
+#  define snprintf _snprintf
+#  define strtoll _strtoi64
+# endif
 #endif
 
 #endif /* not TECTONIC_CORE_FOUNDATION_H */
