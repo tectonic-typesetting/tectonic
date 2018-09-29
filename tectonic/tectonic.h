@@ -6,35 +6,7 @@
 #ifndef TECTONIC_TECTONIC_H
 #define TECTONIC_TECTONIC_H
 
-#include <stdbool.h>
-#include <stdint.h> /* for int32_t */
-
-/* Convenience for C++: this way Emacs doesn't try to indent the prototypes,
- * which I find annoying. */
-
-#ifdef __cplusplus
-#define BEGIN_EXTERN_C extern "C" {
-#define END_EXTERN_C }
-#else
-#define BEGIN_EXTERN_C
-#define END_EXTERN_C
-#endif
-
-/* NORETURN portability */
-
-#if defined __GNUC__ && __GNUC__  >= 3
-#define NORETURN __attribute__((__noreturn__))
-#else
-#define NORETURN
-#endif
-
-/* Ditto for printf argument checking */
-
-#if defined __GNUC__ && __GNUC__  >= 3
-#define PRINTF_FUNC(ifmt,iarg) __attribute__((format(printf, ifmt, iarg)))
-#else
-#define PRINTF_FUNC(ifmt,iarg)
-#endif
+#include "core-foundation.h"
 
 /* TeX-specific enums */
 
