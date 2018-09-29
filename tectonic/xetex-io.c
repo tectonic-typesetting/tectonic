@@ -1,5 +1,5 @@
-/* tectonic/io.c: low-level input/output functions
-   Copyright 2016 The Tectonic Project
+/* tectonic/xetex-io.c: low-level input/output functions tied to the XeTeX engine
+   Copyright 2016-2018 The Tectonic Project
    Licensed under the MIT License.
 */
 
@@ -21,7 +21,7 @@ char *fullnameoffile; /* Defaults to NULL.  */
 
 
 rust_input_handle_t
-tt_open_input (int filefmt)
+tt_xetex_open_input (int filefmt)
 {
     char *fname = NULL;
     rust_input_handle_t handle;
@@ -44,9 +44,6 @@ tt_open_input (int filefmt)
     strcpy(name_of_file, fname);
     return handle;
 }
-
-
-/* XeTeX I/O */
 
 /* tables/values used in UTF-8 interpretation -
    code is based on ConvertUTF.[ch] sample code
@@ -125,7 +122,7 @@ u_open_in(UFILE **f, int32_t filefmt, const char *fopen_mode, int32_t mode, int3
     rust_input_handle_t handle;
     int B1, B2;
 
-    handle = tt_open_input (filefmt);
+    handle = tt_xetex_open_input (filefmt);
     if (handle == NULL)
         return 0;
 

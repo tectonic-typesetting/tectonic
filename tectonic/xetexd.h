@@ -312,6 +312,9 @@ bool is_new_source(str_number, int);
 pool_pointer make_src_special(str_number, int);
 void remember_source_info(str_number, int);
 
+/* Needed here for UFILE */
+#include "xetex-io.h"
+
 /* variables! */
 
 /* All the following variables are defined in xetexini.c */

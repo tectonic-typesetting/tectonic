@@ -11341,7 +11341,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     pack_file_name(nom, aire, EMPTY_STRING);
     check_for_tfm_font_mapping();
 
-    tfm_file = tt_open_input (TTIF_TFM);
+    tfm_file = tt_xetex_open_input (TTIF_TFM);
     if (tfm_file == NULL) {
         if (!quoted_filename) {
             g = load_native_font(u, nom, aire, s);

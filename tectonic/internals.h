@@ -15,16 +15,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-/* Unicode files */
-
-typedef struct {
-    rust_input_handle_t handle;
-    long savedChar;
-    short skipNextLF;
-    short encodingMode;
-    void *conversionData;
-} UFILE;
-
 typedef enum {
     SELECTOR_FILE_0 = 0,
     SELECTOR_FILE_15 = 15,
@@ -39,25 +29,6 @@ typedef enum {
 
 BEGIN_EXTERN_C
 
-/* Unicode constants */
-
-extern const uint32_t offsetsFromUTF8[6];
-extern const uint8_t bytesFromUTF8[256];
-extern const uint8_t firstByteMark[7];
-
-/*
-  Functions
-*/
-
-/* io.c */
-rust_input_handle_t tt_open_input (int filefmt);
-void set_input_file_encoding(UFILE *f, int32_t mode, int32_t encodingData);
-void u_close(UFILE *f);
-int u_open_in(UFILE **f, int32_t filefmt, const char* fopen_mode, int32_t mode, int32_t encodingData);
-int get_uni_c(UFILE* f);
-int input_line(UFILE* f);
-void make_utf16_name(void);
-
 /* core-kpathutil.c */
 char *xstrdup (const char *s);
 void *xmalloc (size_t size);
@@ -68,13 +39,6 @@ static inline void *mfree(void *ptr) {
     free(ptr);
     return NULL;
 }
-
-/*
-   State variables
-*/
-
-/* openclose.c */
-extern char *fullnameoffile;
 
 END_EXTERN_C
 
