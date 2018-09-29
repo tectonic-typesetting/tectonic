@@ -88,4 +88,16 @@
 typedef SSIZE_T ssize_t;
 #endif
 
+/* Portability: M_PI
+ *
+ * MSVC doesn't always define it. Based on research, sometimes #defining
+ * _USE_MATH_DEFINES should fix the problem, but it's not clear if that
+ * *always* works in all versions, and it's easy to cut to the heart of the
+ * matter:
+ */
+
+#ifndef M_PI
+# define M_PI 3.14159265358979
+#endif
+
 #endif /* not TECTONIC_CORE_FOUNDATION_H */
