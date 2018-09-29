@@ -454,8 +454,8 @@ struct TectonicBridgeApi {
 
 extern {
     fn tt_get_error_message() -> *const libc::c_char;
-    fn tt_set_int_variable(var_name: *const libc::c_char, value: libc::c_int) -> libc::c_int;
-    //fn tt_set_string_variable(var_name: *const libc::c_char, value: *const libc::c_char) -> libc::c_int;
+    fn tt_xetex_set_int_variable(var_name: *const libc::c_char, value: libc::c_int) -> libc::c_int;
+    //fn tt_xetex_set_string_variable(var_name: *const libc::c_char, value: *const libc::c_char) -> libc::c_int;
     fn tex_simple_main(api: *const TectonicBridgeApi, dump_name: *const libc::c_char, input_file_name: *const libc::c_char) -> libc::c_int;
     fn dvipdfmx_simple_main(api: *const TectonicBridgeApi,
                             dviname: *const libc::c_char,

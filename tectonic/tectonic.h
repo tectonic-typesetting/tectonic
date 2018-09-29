@@ -45,15 +45,4 @@ typedef enum {
     HISTORY_FATAL_ERROR = 3
 } tt_history_t;
 
-/* The actual API */
-
-BEGIN_EXTERN_C
-
-/* engine-interface.c */
-
-int tt_set_int_variable (char *var_name, int value);
-int tt_set_string_variable (char *var_name, char *value);
-
-END_EXTERN_C
-
 #endif /* not TECTONIC_TECTONIC_H */

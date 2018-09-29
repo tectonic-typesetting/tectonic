@@ -10,8 +10,14 @@
 
 #include <string.h>
 
+/* These functions aren't used within the C/C++ library, but are called
+ * by the Rust code to configure the XeTeX engine before launching it. */
+
+int tt_xetex_set_int_variable (char *var_name, int value);
+int tt_xetex_set_string_variable (char *var_name, char *value);
+
 int
-tt_set_int_variable (char *var_name, int value)
+tt_xetex_set_int_variable (char *var_name, int value)
 {
     if (streq_ptr(var_name, "halt_on_error_p"))
         halt_on_error_p = value;
@@ -29,7 +35,7 @@ tt_set_int_variable (char *var_name, int value)
 
 
 int
-tt_set_string_variable (char *var_name, char *value)
+tt_xetex_set_string_variable (char *var_name, char *value)
 {
     /* Currently unused; see Git history for how we used to set output_comment */
     return 1;
