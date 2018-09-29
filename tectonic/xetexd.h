@@ -697,12 +697,6 @@ void print_hex(int32_t n);
 void print_roman_int(int32_t n);
 void print_scaled(scaled_t s);
 
-void error(void);
-NORETURN void fatal_error(const char* s);
-NORETURN void overflow(const char* s, int32_t n);
-NORETURN void confusion(const char* s);
-NORETURN void pdf_error(const char* t, const char* p);
-
 void print_current_string(void);
 int32_t badness(scaled_t t, scaled_t s);
 void print_word(memory_word w);
@@ -1004,6 +998,14 @@ void flush_str(str_number s);
 str_number tokens_to_string(int32_t p);
 void scan_pdf_ext_toks(void);
 void compare_strings(void);
+
+/* xetex-errors */
+
+void error(void);
+NORETURN void fatal_error(const char* s);
+NORETURN void overflow(const char* s, int32_t n);
+NORETURN void confusion(const char* s);
+NORETURN void pdf_error(const char* t, const char* p);
 
 /* xetex-math */
 
