@@ -39,7 +39,7 @@ authorization from the copyright holders.
 #include "xetex-core.h"
 #include "xetex-ext.h"
 #include "teckit-c-Engine.h"
-#include "XeTeXLayoutInterface.h"
+#include "xetex-XeTeXLayoutInterface.h"
 #include "XeTeXswap.h"
 #include "core-bridge.h"
 

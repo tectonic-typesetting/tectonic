@@ -5,7 +5,7 @@
 
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
-#include "XeTeXLayoutInterface.h"
+#include "xetex-XeTeXLayoutInterface.h"
 #include "xetex-synctex.h"
 
 #define IS_LC_HEX(c) (((c) >= '0' && (c) <= '9' ) || ((c) >= 'a' && (c) <= 'f' ))

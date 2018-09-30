@@ -36,7 +36,7 @@ authorization from the copyright holders.
 
 #include "xetex-core.h"
 
-#include "XeTeXFontMgr.h"
+#include "xetex-XeTeXFontMgr.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 

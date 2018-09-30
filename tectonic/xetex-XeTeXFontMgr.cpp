@@ -35,11 +35,11 @@ authorization from the copyright holders.
 #include "XeTeX_web.h"
 
 #ifdef XETEX_MAC
-#include "XeTeXFontMgr_Mac.h"
+#include "xetex-XeTeXFontMgr_Mac.h"
 #else
-#include "XeTeXFontMgr_FC.h"
+#include "xetex-XeTeXFontMgr_FC.h"
 #endif
-#include "XeTeXFontInst.h"
+#include "xetex-XeTeXFontInst.h"
 
 #include <hb-ot.h>
 

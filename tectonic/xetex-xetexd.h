@@ -7,7 +7,7 @@
 #define TECTONIC_XETEX_XETEXD_H
 
 #include "xetex-core.h"
-#include "XeTeXOTMath.h"
+#include "xetex-XeTeXOTMath.h"
 #include "teckit-Common.h"
 #include "xetex-ext.h"
 #include "core-bridge.h"

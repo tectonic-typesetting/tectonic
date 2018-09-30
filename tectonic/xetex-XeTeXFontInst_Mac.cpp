@@ -3,6 +3,7 @@
  Copyright (c) 1994-2008 by SIL International
  Copyright (c) 2009 by Jonathan Kew
  Copyright (c) 2012, 2013 by Jiang Jiang
+ Copyright (c) 2012-2015 by Khaled Hosny
 
  SIL Author(s): Jonathan Kew
 
@@ -32,34 +33,63 @@ authorization from the copyright holders.
 \****************************************************************************/
 
 /*
- *   file name:  XeTeXFontInst_Mac.h
+ *   file name:  XeTeXFontInst_Mac.cpp
  *
  *   created on: 2005-10-22
  *   created by: Jonathan Kew
  */
 
-
-#ifndef __XeTeXFontInst_Mac_H
-#define __XeTeXFontInst_Mac_H
-
 #include "xetex-core.h"
+#include "xetex-XeTeXFontInst_Mac.h"
+#include "xetex-ext.h"
 
-#include "XeTeXFontInst.h"
-
-#include <ApplicationServices/ApplicationServices.h>
-
-class XeTeXFontInst_Mac : public XeTeXFontInst
+XeTeXFontInst_Mac::XeTeXFontInst_Mac(CTFontDescriptorRef descriptor, float pointSize, int &status)
+    : XeTeXFontInst(NULL, 0, pointSize, status)
+    , m_descriptor(descriptor)
+    , m_fontRef(0)
 {
-protected:
-    CTFontDescriptorRef m_descriptor;
-    CTFontRef           m_fontRef;
+    initialize(status);
+}
 
-public:
-                 XeTeXFontInst_Mac(CTFontDescriptorRef descriptor, float pointSize, int &status);
+XeTeXFontInst_Mac::~XeTeXFontInst_Mac()
+{
+    if (m_descriptor != 0)
+        CFRelease(m_descriptor);
+    if (m_fontRef != 0)
+        CFRelease(m_fontRef);
+}
 
-    virtual     ~XeTeXFontInst_Mac();
+void
+XeTeXFontInst_Mac::initialize(int &status)
+{
+    if (m_descriptor == 0) {
+        status = 1;
+        return;
+    }
 
-    virtual void initialize(int &status);
-};
+    if (status != 0)
+        m_descriptor = 0;
 
-#endif
+    // Create a copy of original font descriptor with font cascading (fallback) disabled
+    CFArrayRef emptyCascadeList = CFArrayCreate(NULL, NULL, 0, &kCFTypeArrayCallBacks);
+    const void* values[] = { emptyCascadeList };
+    static const void* attributeKeys[] = { kCTFontCascadeListAttribute };
+    CFDictionaryRef attributes = CFDictionaryCreate(NULL, attributeKeys, values, 1,
+        &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    CFRelease(emptyCascadeList);
+
+    m_descriptor = CTFontDescriptorCreateCopyWithAttributes(m_descriptor, attributes);
+    CFRelease(attributes);
+    m_fontRef = CTFontCreateWithFontDescriptor(m_descriptor, m_pointSize * 72.0 / 72.27, NULL);
+    if (m_fontRef) {
+        char *pathname;
+        uint32_t index;
+        pathname = getFileNameFromCTFont(m_fontRef, &index);
+
+        XeTeXFontInst::initialize(pathname, index, status);
+    } else {
+        status = 1;
+        CFRelease(m_descriptor);
+        m_descriptor = 0;
+    }
+}

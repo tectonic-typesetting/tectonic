@@ -40,7 +40,7 @@ authorization from the copyright holders.
 #include "xetex-xetexd.h"
 #include "teckit-c-Engine.h"
 #include "xetex-ext.h"
-#include "XeTeXLayoutInterface.h"
+#include "xetex-XeTeXLayoutInterface.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 

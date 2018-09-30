@@ -103,8 +103,8 @@ typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
 #define FONT_FLAGS_COLORED  0x01
 #define FONT_FLAGS_VERTICAL 0x02
 
-/* gFreeTypeLibrary is defined in XeTeXFontInst_FT2.cpp,
- * also used in XeTeXFontMgr_FC.cpp and XeTeX_ext.c.  */
+/* gFreeTypeLibrary is defined in xetex-XeTeXFontInst_FT2.cpp,
+ * also used in xetex-XeTeXFontMgr_FC.cpp and xetex-ext.c.  */
 
 BEGIN_EXTERN_C
 extern FT_Library gFreeTypeLibrary;

@@ -35,11 +35,11 @@ authorization from the copyright holders.
 
 #include <algorithm>
 
-#include "XeTeXOTMath.h"
+#include "xetex-XeTeXOTMath.h"
 
 #include "XeTeX_web.h"
-#include "XeTeXLayoutInterface.h"
-#include "XeTeXFontInst.h"
+#include "xetex-XeTeXLayoutInterface.h"
+#include "xetex-XeTeXFontInst.h"
 
 int
 get_ot_math_constant(int f, int n)

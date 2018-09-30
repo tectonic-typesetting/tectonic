@@ -32,7 +32,7 @@ authorization from the copyright holders.
 
 #include "xetex-core.h"
 
-#include "XeTeXFontMgr_FC.h"
+#include "xetex-XeTeXFontMgr_FC.h"
 
 /* allow compilation with old Fontconfig header */
 #ifndef FC_FULLNAME

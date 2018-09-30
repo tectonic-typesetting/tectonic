@@ -36,7 +36,7 @@ authorization from the copyright holders.
 #define __XETEXEXT_H
 
 #include "xetex-core.h"
-#include "XeTeXLayoutInterface.h"
+#include "xetex-XeTeXLayoutInterface.h"
 
 #define AAT_FONT_FLAG   0xFFFFu
 #define OTGR_FONT_FLAG  0xFFFEu

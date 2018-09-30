@@ -5,7 +5,7 @@
 
 #include "xetex-core.h"
 #include "teckit-c-Engine.h"
-#include "XeTeXLayoutInterface.h"
+#include "xetex-XeTeXLayoutInterface.h"
 #include "XeTeXswap.h"
 #include "xetex-xetexd.h"
 #include "core-bridge.h"

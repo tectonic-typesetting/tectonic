@@ -45,12 +45,12 @@ authorization from the copyright holders.
 
 #include "XeTeX_web.h"
 
-#include "XeTeXLayoutInterface.h"
-#include "XeTeXFontInst.h"
+#include "xetex-XeTeXLayoutInterface.h"
+#include "xetex-XeTeXFontInst.h"
 #ifdef XETEX_MAC
-#include "XeTeXFontInst_Mac.h"
+#include "xetex-XeTeXFontInst_Mac.h"
 #endif
-#include "XeTeXFontMgr.h"
+#include "xetex-XeTeXFontMgr.h"
 
 struct XeTeXLayoutEngine_rec
 {

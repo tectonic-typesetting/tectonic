@@ -43,7 +43,7 @@ authorization from the copyright holders.
 #define __XeTeXFontInst_H
 
 #include "xetex-core.h"
-#include "XeTeXFontMgr.h"
+#include "xetex-XeTeXFontMgr.h"
 
 // create specific subclasses for each supported platform
 

@@ -2,6 +2,7 @@
  Part of the XeTeX typesetting system
  Copyright (c) 1994-2008 by SIL International
  Copyright (c) 2009 by Jonathan Kew
+ Copyright (c) 2012, 2013 by Jiang Jiang
 
  SIL Author(s): Jonathan Kew
 
@@ -30,37 +31,35 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 
-#ifndef __XETEX_FONT_MGR_FC_H
-#define __XETEX_FONT_MGR_FC_H
+/*
+ *   file name:  XeTeXFontInst_Mac.h
+ *
+ *   created on: 2005-10-22
+ *   created by: Jonathan Kew
+ */
+
+
+#ifndef __XeTeXFontInst_Mac_H
+#define __XeTeXFontInst_Mac_H
 
 #include "xetex-core.h"
-#include "XeTeXFontMgr.h"
 
-class XeTeXFontMgr_FC
-    : public XeTeXFontMgr
+#include "xetex-XeTeXFontInst.h"
+
+#include <ApplicationServices/ApplicationServices.h>
+
+class XeTeXFontInst_Mac : public XeTeXFontInst
 {
-public:
-                                    XeTeXFontMgr_FC()
-                                        { }
-    virtual                         ~XeTeXFontMgr_FC()
-                                        { }
-
 protected:
+    CTFontDescriptorRef m_descriptor;
+    CTFontRef           m_fontRef;
 
-    virtual void                    initialize();
-    virtual void                    terminate();
+public:
+                 XeTeXFontInst_Mac(CTFontDescriptorRef descriptor, float pointSize, int &status);
 
-    virtual void                    getOpSizeRecAndStyleFlags(Font* theFont);
-    virtual void                    searchForHostPlatformFonts(const std::string& name);
+    virtual     ~XeTeXFontInst_Mac();
 
-    virtual NameCollection*         readNames(FcPattern* pat);
-
-    std::string                     getPlatformFontDesc(PlatformFontRef font) const;
-
-    void                            cacheFamilyMembers(const std::list<std::string>& familyNames);
-
-    FcFontSet*  allFonts;
-    bool        cachedAll;
+    virtual void initialize(int &status);
 };
 
-#endif  /* __XETEX_FONT_MGR_FC_H */
+#endif

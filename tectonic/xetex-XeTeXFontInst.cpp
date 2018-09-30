@@ -41,8 +41,8 @@ authorization from the copyright holders.
 
 #include "xetex-core.h"
 
-#include "XeTeXFontInst.h"
-#include "XeTeXLayoutInterface.h"
+#include "xetex-XeTeXFontInst.h"
+#include "xetex-XeTeXLayoutInterface.h"
 #include "xetex-ext.h"
 
 #include <string.h>
