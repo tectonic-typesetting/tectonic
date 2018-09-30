@@ -41,7 +41,7 @@ authorization from the copyright holders.
 
 #include "xetex-core.h"
 #include "XeTeXFontInst_Mac.h"
-#include "XeTeX_ext.h"
+#include "xetex-ext.h"
 
 XeTeXFontInst_Mac::XeTeXFontInst_Mac(CTFontDescriptorRef descriptor, float pointSize, int &status)
     : XeTeXFontInst(NULL, 0, pointSize, status)

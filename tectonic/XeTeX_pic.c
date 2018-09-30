@@ -38,7 +38,7 @@ XeTeX_pic.c
 
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
-#include "XeTeX_ext.h"
+#include "xetex-ext.h"
 #include "core-bridge.h"
 #include "dpx-dpxutil.h"
 #include "dpx-pdfdoc.h"
@@ -123,7 +123,7 @@ pdf_get_rect (char *filename, rust_input_handle_t handle, int page_num, int pdf_
 
     /* OMG, magic numbers specifying page bound types do not agree between
      * xdvipdfmx code (dpx-pdfdoc.c:pdf_doc_get_page) and XeTeX/Apple's
-     * pdfbox_* definitions (XeTeX_ext.h). */
+     * pdfbox_* definitions (xetex-ext.h). */
 
     switch (pdf_box) {
     case pdfbox_media:

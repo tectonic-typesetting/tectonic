@@ -43,7 +43,7 @@ authorization from the copyright holders.
 
 #include "XeTeXFontInst.h"
 #include "XeTeXLayoutInterface.h"
-#include "XeTeX_ext.h"
+#include "xetex-ext.h"
 
 #include <string.h>
 #include FT_GLYPH_H

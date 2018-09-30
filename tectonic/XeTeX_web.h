@@ -37,7 +37,7 @@ authorization from the copyright holders.
 #define __XETEX_WEB_H
 
 #include "xetex-core.h"
-#include "XeTeX_ext.h"
+#include "xetex-ext.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327950288

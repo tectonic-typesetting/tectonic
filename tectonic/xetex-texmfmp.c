@@ -7,7 +7,7 @@
 
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
-#include "XeTeX_ext.h"
+#include "xetex-ext.h"
 
 #include <time.h> /* For `struct tm'.  Moved here for Visual Studio 2005.  */
 

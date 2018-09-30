@@ -9,7 +9,7 @@
 #include "xetex-core.h"
 #include "XeTeXOTMath.h"
 #include "teckit-Common.h"
-#include "XeTeX_ext.h"
+#include "xetex-ext.h"
 #include "core-bridge.h"
 #include "xetex-constants.h"
 

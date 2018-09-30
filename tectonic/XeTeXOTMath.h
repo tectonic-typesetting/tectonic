@@ -36,7 +36,7 @@ authorization from the copyright holders.
 #include <stdbool.h>
 
 #include "xetex-core.h"
-#include "XeTeX_ext.h"
+#include "xetex-ext.h"
 
 typedef struct {
     unsigned int count;

@@ -39,7 +39,7 @@ authorization from the copyright holders.
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "teckit-c-Engine.h"
-#include "XeTeX_ext.h"
+#include "xetex-ext.h"
 #include "XeTeXLayoutInterface.h"
 
 #include <ApplicationServices/ApplicationServices.h>
