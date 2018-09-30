@@ -39,7 +39,6 @@ XeTeX_pic.c
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "xetex-ext.h"
-#include "core-bridge.h"
 #include "dpx-dpxutil.h"
 #include "dpx-pdfdoc.h"
 #include "dpx-pdfdraw.h"
