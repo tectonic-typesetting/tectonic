@@ -1,4 +1,4 @@
-/* xetex0.c: bulk of the WEB code translated to C
+/* xetex-xetex0.c: bulk of the WEB code translated to C
    Copyright 2016-2018 The Tectonic Project
    Licensed under the MIT License.
 */
@@ -7,8 +7,6 @@
 #include "xetexd.h"
 #include "XeTeXLayoutInterface.h"
 #include "xetex-synctex.h"
-#include "core-bridge.h"
-
 
 #define IS_LC_HEX(c) (((c) >= '0' && (c) <= '9' ) || ((c) >= 'a' && (c) <= 'f' ))
 
