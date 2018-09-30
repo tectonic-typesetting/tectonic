@@ -31,14 +31,8 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 
-#include "core-foundation.h"
-#include "core-memory.h"
+#include "xetex-core.h"
 
-#include <stdbool.h>
-
-#include "tectonic.h"
-
-#include <assert.h>
 #include <algorithm>
 
 #include "XeTeXOTMath.h"

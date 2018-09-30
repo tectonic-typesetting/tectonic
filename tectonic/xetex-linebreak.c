@@ -3,7 +3,6 @@
  */
 
 #include "xetex-core.h"
-#include "tectonic.h"
 #include "xetexd.h"
 #include "core-bridge.h"
 

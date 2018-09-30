@@ -39,7 +39,7 @@ authorization from the copyright holders.
  *   created by: Jonathan Kew
  */
 
-#include "tectonic.h"
+#include "xetex-core.h"
 #include "XeTeXFontInst_Mac.h"
 #include "XeTeX_ext.h"
 

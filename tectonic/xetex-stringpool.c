@@ -3,7 +3,7 @@
    Licensed under the MIT License.
 */
 
-#include "tectonic.h"
+#include "xetex-core.h"
 #include "xetexd.h"
 #include <string.h>
 

@@ -31,7 +31,7 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 
-#include "tectonic.h"
+#include "xetex-core.h"
 #include "XeTeXFontMgr_Mac.h"
 
 #include <Cocoa/Cocoa.h>

@@ -7,7 +7,15 @@
 #define TECTONIC_CORE_BRIDGE_H
 
 #include "core-foundation.h"
-#include "tectonic.h"
+
+/* Both XeTeX and bibtex use this enum: */
+
+typedef enum {
+    HISTORY_SPOTLESS = 0,
+    HISTORY_WARNING_ISSUED = 1,
+    HISTORY_ERROR_ISSUED = 2,
+    HISTORY_FATAL_ERROR = 3
+} tt_history_t;
 
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with

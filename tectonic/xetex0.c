@@ -4,7 +4,6 @@
 */
 
 #include "xetex-core.h"
-#include "tectonic.h"
 #include "xetexd.h"
 #include "XeTeXLayoutInterface.h"
 #include "xetex-synctex.h"

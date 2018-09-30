@@ -25,8 +25,6 @@
 
 #include "dpx-core.h"
 
-#include "tectonic.h"
-
 struct spc_env {
   double x_user, y_user;
   double mag;

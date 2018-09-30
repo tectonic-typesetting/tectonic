@@ -6,7 +6,7 @@
 #ifndef TECTONIC_XETEXD_H
 #define TECTONIC_XETEXD_H
 
-#include "tectonic.h"
+#include "xetex-core.h"
 #include "XeTeXOTMath.h"
 #include "teckit-Common.h"
 #include "XeTeX_ext.h"

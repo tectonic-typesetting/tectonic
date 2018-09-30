@@ -29,7 +29,6 @@
 #include <stdio.h>
 
 #include "dpx-system.h"
-#include "tectonic.h"
 
 void shut_up (int quietness);
 

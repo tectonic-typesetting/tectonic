@@ -36,7 +36,7 @@ authorization from the copyright holders.
  * additional plain C extensions for XeTeX - MacOS-specific routines
  */
 
-#include "tectonic.h"
+#include "xetex-core.h"
 #include "xetexd.h"
 #include "teckit-c-Engine.h"
 #include "XeTeX_ext.h"
