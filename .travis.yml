@@ -100,5 +100,5 @@ before_deploy:
 deploy:
   provider: script
   script: bash dist/arch/deploy.sh
-#  on:
-#    tags: true
+  on:
+    tags: true

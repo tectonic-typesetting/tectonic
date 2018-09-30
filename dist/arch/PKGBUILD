@@ -1,6 +1,14 @@
 # Maintainer: Daniel M. Capella <polycitizen@gmail.com>
 # Maintainer: Jan Tojnar <jtojnar@gmail.com>
 
+# The master version of this file is maintained here:
+#
+#   https://github.com/tectonic-typesetting/tectonic/blob/master/dist/arch/PKGBUILD
+#
+# The version on aur.archlinux.org is updated automatically through a Travis
+# CI deploy script that's invoked when new tags are pushed to the GitHub
+# tectonic repository.
+
 pkgname=tectonic
 pkgver=0.1.10
 pkgrel=1
