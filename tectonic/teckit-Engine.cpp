@@ -52,7 +52,7 @@ Description:
 #	include <windows.h>
 #endif
 
-#include "xetex-Engine.h"
+#include "teckit-cxx-Engine.h"
 
 #ifdef TRACING
 #include <iostream>
@@ -120,7 +120,7 @@ Stage::lookaheadCount() const
 	return 0;
 }
 
-#include "NormalizationData.c"
+#include "teckit-NormalizationData.c"
 
 Normalizer::Normalizer(bool compose)
 	: prevCombClass(0)

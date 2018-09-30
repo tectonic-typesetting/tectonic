@@ -20,8 +20,8 @@ Description:
 #ifndef __Engine_H__
 #define __Engine_H__
 
-#include "TECkit_Engine.h"
-#include "TECkit_Format.h"
+#include "teckit-c-Engine.h"
+#include "teckit-Format.h"
 
 class Converter;
 

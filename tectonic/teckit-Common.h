@@ -26,6 +26,8 @@ History:
 #ifndef __TECkit_Common_H__
 #define __TECkit_Common_H__
 
+#include "core-foundation.h"
+
 #define	kCurrentTECkitVersion	0x00020004	/* 16.16 version number */
 
 #ifndef __MACTYPES__

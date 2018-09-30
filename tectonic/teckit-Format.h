@@ -17,7 +17,7 @@ Description:
 #ifndef __TECkit_Format_H__
 #define __TECkit_Format_H__
 
-#include "TECkit_Common.h"
+#include "teckit-Common.h"
 
 #define kMagicNumber			0x714d6170	/* 'qMap' */
 #define kMagicNumberCmp			0x7a516d70	/* 'zQmp' */

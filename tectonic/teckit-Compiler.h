@@ -21,7 +21,7 @@
 #ifndef __TECkit_Compiler_H__
 #define __TECkit_Compiler_H__
 
-#include "TECkit_Common.h"
+#include "teckit-Common.h"
 
 #ifdef __cplusplus
 extern "C" {

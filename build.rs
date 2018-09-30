@@ -209,7 +209,7 @@ fn main() {
     cppcfg
         .cpp(true)
         .flag("-Wall")
-        .file("tectonic/xetex-Engine.cpp")
+        .file("tectonic/teckit-Engine.cpp")
         .file("tectonic/XeTeXFontInst.cpp")
         .file("tectonic/XeTeXFontMgr.cpp")
         .file("tectonic/XeTeXLayoutInterface.cpp")

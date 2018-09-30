@@ -5,7 +5,7 @@
 
 #include "xetex-core.h"
 #include "tectonic.h"
-#include "TECkit_Engine.h"
+#include "teckit-c-Engine.h"
 #include "XeTeXLayoutInterface.h"
 #include "XeTeXswap.h"
 #include "xetexd.h"

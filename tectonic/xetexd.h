@@ -8,7 +8,7 @@
 
 #include "tectonic.h"
 #include "XeTeXOTMath.h"
-#include "TECkit_Common.h"
+#include "teckit-Common.h"
 #include "XeTeX_ext.h"
 #include "core-bridge.h"
 #include "xetex-constants.h"

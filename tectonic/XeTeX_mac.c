@@ -38,7 +38,7 @@ authorization from the copyright holders.
 
 #include "tectonic.h"
 #include "xetexd.h"
-#include "TECkit_Engine.h"
+#include "teckit-c-Engine.h"
 #include "XeTeX_ext.h"
 #include "XeTeXLayoutInterface.h"
 

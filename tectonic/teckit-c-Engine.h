@@ -29,7 +29,7 @@ Description:
 #ifndef __TECkit_Engine_H__
 #define __TECkit_Engine_H__
 
-#include "TECkit_Common.h"
+#include "teckit-Common.h"
 
 /* formFlags bits for normalization; if none are set, then this side of the mapping is normalization-form-agnostic on input, and may generate an unspecified mixture */
 #define kFlags_ExpectsNFC		0x00000001	/* expects fully composed text (NC) */
