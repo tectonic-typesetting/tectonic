@@ -7,7 +7,7 @@
 #include "tectonic.h"
 #include "xetexd.h"
 #include "XeTeXLayoutInterface.h"
-#include "synctex.h"
+#include "xetex-synctex.h"
 #include "core-bridge.h"
 
 
