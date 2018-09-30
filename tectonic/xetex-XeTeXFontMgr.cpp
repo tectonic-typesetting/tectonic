@@ -31,8 +31,7 @@ authorization from the copyright holders.
 \****************************************************************************/
 
 #include "xetex-core.h"
-
-#include "XeTeX_web.h"
+#include "xetex-web.h"
 
 #ifdef XETEX_MAC
 #include "xetex-XeTeXFontMgr_Mac.h"

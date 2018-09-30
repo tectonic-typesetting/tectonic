@@ -36,8 +36,7 @@ authorization from the copyright holders.
 #include <algorithm>
 
 #include "xetex-XeTeXOTMath.h"
-
-#include "XeTeX_web.h"
+#include "xetex-web.h"
 #include "xetex-XeTeXLayoutInterface.h"
 #include "xetex-XeTeXFontInst.h"
 
