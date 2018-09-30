@@ -32,7 +32,7 @@ authorization from the copyright holders.
 \****************************************************************************/
 
 #include "xetex-core.h"
-#include "XeTeXFontMgr_Mac.h"
+#include "xetex-XeTeXFontMgr_Mac.h"
 
 #include <Cocoa/Cocoa.h>
 
