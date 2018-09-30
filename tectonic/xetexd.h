@@ -7,7 +7,6 @@
 #define TECTONIC_XETEXD_H
 
 #include "tectonic.h"
-#include "internals.h"
 #include "XeTeXOTMath.h"
 #include "TECkit_Common.h"
 #include "XeTeX_ext.h"
