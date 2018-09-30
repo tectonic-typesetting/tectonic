@@ -1,4 +1,4 @@
-/* Collected kpathsea files in the tidied workalike version.
+/* tectonic/core-memory.c: basic C dynamic memory helpers
 
    Copyright 1993, 1994, 1995, 2008, 2009, 2010, 2011 Karl Berry.
    Copyright 1997, 2002, 2005 Olaf Weber.
@@ -16,8 +16,9 @@
    You should have received a copy of the GNU Lesser General Public License
    along with this library; if not, see <http://www.gnu.org/licenses/>.  */
 
-#include "tectonic.h"
-#include "internals.h"
+#include "core-foundation.h"
+#include "core-bridge.h" /* _tt_abort */
+#include "core-memory.h"
 
 
 void *

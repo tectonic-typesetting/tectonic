@@ -78,7 +78,7 @@ fn main() {
     ccfg
         .file("tectonic/bibtex.c")
         .file("tectonic/core-bridge.c")
-        .file("tectonic/core-kpathutil.c")
+        .file("tectonic/core-memory.c")
         .file("tectonic/dpx-agl.c")
         .file("tectonic/dpx-bmpimage.c")
         .file("tectonic/dpx-cff.c")

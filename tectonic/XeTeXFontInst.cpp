@@ -42,6 +42,7 @@ authorization from the copyright holders.
 #include "tectonic.h"
 #include "internals.h"
 #include "core-bridge.h"
+#include "core-memory.h"
 
 #include "XeTeXFontInst.h"
 #include "XeTeXLayoutInterface.h"

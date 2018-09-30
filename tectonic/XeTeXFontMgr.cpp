@@ -30,6 +30,9 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 
+#include "core-foundation.h"
+#include "core-memory.h"
+
 #include "tectonic.h"
 #include "internals.h"
 
