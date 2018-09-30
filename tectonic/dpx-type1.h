@@ -23,6 +23,8 @@
 #ifndef _TYPE1_H_
 #define _TYPE1_H_
 
+#include "dpx-core.h"
+
 #include   "dpx-pdffont.h"
 
 int  pdf_font_open_type1 (pdf_font *font);

@@ -21,6 +21,8 @@
 #ifndef _CIDTYPE2_H_
 #define _CIDTYPE2_H_
 
+#include "dpx-core.h"
+
 #include "dpx-cid.h"
 #include "dpx-cid_p.h"
 

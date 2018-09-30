@@ -23,6 +23,8 @@
 #ifndef _VF_H_
 #define _VF_H_
 
+#include "dpx-core.h"
+
 #include <stdint.h>
 
 #include "dpx-pdfdev.h"

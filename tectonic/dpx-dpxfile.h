@@ -23,6 +23,7 @@
 #ifndef _DPXFILE_H_
 #define _DPXFILE_H_
 
+#include "dpx-core.h"
 #include "core-bridge.h"
 #include "dpx-mfileio.h"
 

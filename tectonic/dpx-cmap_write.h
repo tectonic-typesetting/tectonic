@@ -23,6 +23,8 @@
 #ifndef _CMAP_WRITE_H_
 #define _CMAP_WRITE_H_
 
+#include "dpx-core.h"
+
 #include "dpx-cmap.h"
 #include "dpx-pdfobj.h"
 

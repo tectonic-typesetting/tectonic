@@ -23,6 +23,8 @@
 #ifndef _PDFENCRYPT_H_
 #define _PDFENCRYPT_H_
 
+#include "dpx-core.h"
+
 #include <stddef.h>
 
 #include "dpx-pdfobj.h"

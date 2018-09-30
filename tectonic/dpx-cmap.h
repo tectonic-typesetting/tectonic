@@ -21,6 +21,8 @@
 #ifndef _CMAP_H_
 #define _CMAP_H_
 
+#include "dpx-core.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <sys/types.h>

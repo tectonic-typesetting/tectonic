@@ -21,6 +21,8 @@
 #ifndef _CID_BASEFONT_H_
 #define _CID_BASEFONT_H_
 
+#include "dpx-core.h"
+
 /* PLEASE SEND INFORMATION ON FONTS
  *
  * Those fonts are only for fixed-pitch glyphs (full-, half-, third-,

@@ -23,6 +23,8 @@
 #ifndef _DPXUTIL_H_
 #define _DPXUTIL_H_
 
+#include "dpx-core.h"
+
 #undef  MIN
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #undef  MAX

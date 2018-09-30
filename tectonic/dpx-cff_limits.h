@@ -21,6 +21,8 @@
 #ifndef _CFF_LIMITS_H_
 #define _CFF_LIMITS_H_
 
+#include "dpx-core.h"
+
 #include <limits.h>
 
 #define CFF_INT_MAX 0x7fffffff

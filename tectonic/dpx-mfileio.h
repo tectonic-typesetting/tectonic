@@ -23,6 +23,8 @@
 #ifndef _MFILEIO_H_
 #define _MFILEIO_H_
 
+#include "dpx-core.h"
+
 #include <stdio.h>
 #include <sys/types.h>
 

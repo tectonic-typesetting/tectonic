@@ -23,6 +23,8 @@
 #ifndef _PDFFONT_H_
 #define _PDFFONT_H_
 
+#include "dpx-core.h"
+
 #include <stdbool.h>
 
 #include "dpx-fontmap.h"

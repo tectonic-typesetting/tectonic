@@ -23,6 +23,8 @@
 #ifndef _PDF_COLOR_H_
 #define _PDF_COLOR_H_
 
+#include "dpx-core.h"
+
 #include <stdbool.h>
 
 #include "dpx-pdfobj.h"

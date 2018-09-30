@@ -23,6 +23,8 @@
 #ifndef _TRUETYPE_H_
 #define _TRUETYPE_H_
 
+#include "dpx-core.h"
+
 #include   "dpx-pdffont.h"
 
 int  pdf_font_open_truetype (pdf_font *font);

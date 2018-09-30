@@ -21,6 +21,8 @@
 #ifndef _TT_TABLE_H_
 #define _TT_TABLE_H_
 
+#include "dpx-core.h"
+
 #include "dpx-sfnt.h"
 
 #define TT_HEAD_TABLE_SIZE 54UL

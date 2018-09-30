@@ -21,6 +21,8 @@
 #ifndef _CFF_H_
 #define _CFF_H_
 
+#include "dpx-core.h"
+
 #include <fcntl.h>
 #include <stdio.h>
 

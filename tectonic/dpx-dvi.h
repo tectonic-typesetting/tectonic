@@ -23,6 +23,8 @@
 #ifndef _DVI_H_
 #define _DVI_H_
 
+#include "dpx-core.h"
+
 #include <stdbool.h>
 #include <sys/types.h>
 

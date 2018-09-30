@@ -25,6 +25,8 @@
 #ifndef _DVIPDFMX_H_
 #define _DVIPDFMX_H_
 
+#include "dpx-core.h"
+
 #include <stdbool.h>
 
 #define DVIPDFMX_PROG_NAME "xdvipdfmx"

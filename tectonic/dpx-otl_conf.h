@@ -21,6 +21,8 @@
 #ifndef _OTL_CONF_H_
 #define _OTL_CONF_H_
 
+#include "dpx-core.h"
+
 #include "dpx-pdfobj.h"
 
 void     otl_conf_set_verbose (int level);

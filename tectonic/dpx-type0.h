@@ -21,6 +21,8 @@
 #ifndef _TYPE0_H_
 #define _TYPE0_H_
 
+#include "dpx-core.h"
+
 #include "dpx-pdfobj.h"
 
 #define add_to_used_chars2(b,c) {(b)[(c)/8] |= (1 << (7-((c)%8)));}

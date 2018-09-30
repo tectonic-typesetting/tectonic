@@ -23,6 +23,8 @@
 #ifndef _SPC_TPIC_H_
 #define _SPC_TPIC_H_
 
+#include "dpx-core.h"
+
 #include <stdbool.h>
 
 #include "dpx-specials.h"

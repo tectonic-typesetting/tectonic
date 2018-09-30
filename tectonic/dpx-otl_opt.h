@@ -21,6 +21,8 @@
 #ifndef _OTL_OPT_H_
 #define _OTL_OPT_H_
 
+#include "dpx-core.h"
+
 
 typedef struct otl_opt otl_opt;
 

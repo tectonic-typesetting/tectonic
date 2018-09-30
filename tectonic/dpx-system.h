@@ -23,6 +23,8 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
+#include "dpx-core.h"
+
 #define FOPEN_R_MODE "r"
 #define FOPEN_RBIN_MODE "rb"
 #define FOPEN_WBIN_MODE "wb"

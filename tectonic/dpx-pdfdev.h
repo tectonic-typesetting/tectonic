@@ -23,6 +23,8 @@
 #ifndef _PDFDEV_H_
 #define _PDFDEV_H_
 
+#include "dpx-core.h"
+
 #include <stddef.h>
 #include <stdint.h>
 

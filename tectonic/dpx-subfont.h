@@ -21,6 +21,8 @@
 #ifndef _SUBFONT_H_
 #define _SUBFONT_H_
 
+#include "dpx-core.h"
+
 void   subfont_set_verbose (int level);
 
 void   release_sfd_record  (void);

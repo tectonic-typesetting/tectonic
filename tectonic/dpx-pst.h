@@ -23,6 +23,8 @@
 #ifndef _PST_H_
 #define _PST_H_
 
+#include "dpx-core.h"
+
 #include <stdio.h>
 
 #include "dpx-dpxutil.h"

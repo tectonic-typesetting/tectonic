@@ -23,6 +23,8 @@
 #ifndef _CMAP_READ_H_
 #define _CMAP_READ_H_
 
+#include "dpx-core.h"
+
 #include <stdio.h>
 
 #include "core-bridge.h"

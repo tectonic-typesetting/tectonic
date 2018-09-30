@@ -21,6 +21,8 @@
 #ifndef _SPC_DVIPDFMX_H_
 #define _SPC_DVIPDFMX_H_
 
+#include "dpx-core.h"
+
 #include <stdbool.h>
 
 #include "dpx-specials.h"

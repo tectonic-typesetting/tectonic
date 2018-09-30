@@ -21,6 +21,8 @@
 #ifndef _CFF_STDSTR_H_
 #define _CFF_STDSTR_H_
 
+#include "dpx-core.h"
+
 #define CFF_STDSTR_MAX 391
 
 static const char *const cff_stdstr[CFF_STDSTR_MAX] = {

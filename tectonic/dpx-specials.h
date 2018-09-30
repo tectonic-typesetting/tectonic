@@ -23,6 +23,8 @@
 #ifndef _SPECIALS_H_
 #define _SPECIALS_H_
 
+#include "dpx-core.h"
+
 #include "tectonic.h"
 
 struct spc_env {
