@@ -40,7 +40,6 @@
 #include "dpx-fontmap.h"
 #include "dpx-mem.h"
 #include "dpx-pdfobj.h"
-#include "internals.h"
 
 
 #define TYPE0FONT_DEBUG_STR "Type0"

@@ -34,7 +34,6 @@
 #include "dpx-pdfcolor.h"
 #include "dpx-pdfdev.h"
 #include "dpx-pdfdoc.h"
-#include "internals.h"
 
 #define OUR_EPSILON 2.5e-16
 

@@ -35,7 +35,6 @@
 /* pdfdev... */
 #include "dpx-pdfdev.h"
 #include "dpx-tfm.h"
-#include "internals.h"
 
 #define VF_ALLOC_SIZE  16u
 

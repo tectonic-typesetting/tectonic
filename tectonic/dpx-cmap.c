@@ -46,7 +46,6 @@
 #include "dpx-dpxutil.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
-#include "internals.h"
 
 static int __verbose = 0;
 static int __silent  = 0;

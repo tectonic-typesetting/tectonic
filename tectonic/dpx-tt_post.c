@@ -26,7 +26,6 @@
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-sfnt.h"
-#include "internals.h"
 
 static const char *macglyphorder[258];
 

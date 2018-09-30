@@ -42,7 +42,6 @@
 #include "dpx-pdfparse.h"
 #include "dpx-subfont.h"
 #include "dpx-tfm.h"
-#include "internals.h"
 
 /*
  * Define the origin as (llx, lly) in order to

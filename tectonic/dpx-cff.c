@@ -30,7 +30,6 @@
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-numbers.h"
-#include "internals.h"
 
 #define CFF_DEBUG     5
 #define CFF_DEBUG_STR "CFF"

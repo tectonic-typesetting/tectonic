@@ -32,7 +32,6 @@
 #include "dpx-pdffont.h"
 #include "dpx-pdflimits.h"
 #include "dpx-pdfobj.h"
-#include "internals.h"
 
 #ifndef PDF_NAME_LEN_MAX
 #  define PDF_NAME_LEN_MAX 255

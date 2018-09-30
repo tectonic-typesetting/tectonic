@@ -42,7 +42,6 @@
 #include "dpx-pdfobj.h"
 #include "dpx-pdfparse.h"
 #include "dpx-pdfximage.h"
-#include "internals.h"
 
 static int  rect_equal       (pdf_obj *rect1, pdf_obj *rect2);
 /*

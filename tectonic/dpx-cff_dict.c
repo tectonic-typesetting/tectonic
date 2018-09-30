@@ -34,7 +34,6 @@
 #include "core-bridge.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
-#include "internals.h"
 
 #ifndef CFF_DEBUG_STR
 #define CFF_DEBUG_STR "CFF"

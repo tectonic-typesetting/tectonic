@@ -35,7 +35,6 @@
 #include "dpx-mem.h"
 #include "dpx-pdfobj.h"
 #include "dpx-pdfparse.h"
-#include "internals.h"
 
 static bool     is_similar_charset (char **encoding, const char **encoding2);
 static pdf_obj *make_encoding_differences (char **encoding, char **baseenc,

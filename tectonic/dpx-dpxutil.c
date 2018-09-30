@@ -30,7 +30,6 @@
 
 #include "dpx-error.h"
 #include "dpx-mem.h"
-#include "internals.h"
 
 int
 xtoi (char c)

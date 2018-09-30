@@ -34,7 +34,6 @@
 #include "dpx-mem.h"
 #include "dpx-otl_opt.h"
 #include "dpx-sfnt.h"
-#include "internals.h"
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;

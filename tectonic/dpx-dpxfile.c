@@ -35,7 +35,6 @@
 #include "dpx-mem.h"
 #include "dpx-numbers.h"
 #include "dpx-system.h"
-#include "internals.h"
 
 #define MAX_KEY_LEN 16
 

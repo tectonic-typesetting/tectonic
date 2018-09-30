@@ -39,7 +39,6 @@
 #include "dpx-pdfdraw.h"
 #include "dpx-pdfobj.h"
 #include "dpx-specials.h"
-#include "internals.h"
 
 #define  DEBUG 1
 #define  ENABLE_SPC_NAMESPACE 1

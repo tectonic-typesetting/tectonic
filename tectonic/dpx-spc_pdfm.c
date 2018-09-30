@@ -46,7 +46,6 @@
 #include "dpx-spc_util.h"
 #include "dpx-specials.h"
 #include "dpx-unicode.h"
-#include "internals.h"
 
 
 /* PLEASE REMOVE THIS */

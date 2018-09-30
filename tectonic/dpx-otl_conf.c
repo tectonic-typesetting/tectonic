@@ -36,7 +36,6 @@
 #include "dpx-mfileio.h"
 #include "dpx-pdfobj.h"
 #include "dpx-pdfparse.h"
-#include "internals.h"
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;

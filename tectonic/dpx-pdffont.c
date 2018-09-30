@@ -51,7 +51,6 @@
 #include "dpx-type0.h"
 #include "dpx-type1.h"
 #include "dpx-type1c.h"
-#include "internals.h"
 
 static int __verbose = 0;
 

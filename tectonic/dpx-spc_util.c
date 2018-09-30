@@ -33,7 +33,6 @@
 #include "dpx-pdfdraw.h"
 #include "dpx-pdfparse.h"
 #include "dpx-specials.h"
-#include "internals.h"
 
 
 #ifndef ISBLANK

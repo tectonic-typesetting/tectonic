@@ -59,7 +59,6 @@
 #include "dpx-tt_aux.h"
 #include "dpx-tt_table.h"
 #include "dpx-vf.h"
-#include "internals.h"
 
 #define DVI_STACK_DEPTH_MAX  256u
 #define TEX_FONTS_ALLOC_SIZE 16u

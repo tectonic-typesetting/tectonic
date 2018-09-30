@@ -27,7 +27,6 @@
 #include <string.h>
 
 #include "dpx-mem.h"
-#include "internals.h"
 
 /*
  * type:

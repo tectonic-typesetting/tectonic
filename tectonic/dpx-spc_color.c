@@ -29,7 +29,6 @@
 #include "dpx-pdfcolor.h"
 #include "dpx-spc_util.h"
 #include "dpx-specials.h"
-#include "internals.h"
 
 
 /* Color stack is actually placed into pdfcolor.c.
