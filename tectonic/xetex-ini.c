@@ -1,4 +1,4 @@
-/* xetexini.c: WEB initialization code translated to C
+/* xetex-ini.c: WEB initialization code translated to C
    Copyright 2016-2018 The Tectonic Project
    Licensed under the MIT License.
 */
@@ -6,7 +6,6 @@
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
-#include "core-bridge.h"
 #include "dpx-pdfobj.h" /* pdf_files_{init,close} */
 
 /* All the following variables are declared in xetex-xetexd.h */
