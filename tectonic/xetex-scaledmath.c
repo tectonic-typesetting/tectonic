@@ -1,10 +1,10 @@
-/* tectonic/mathutil.c: low-level math functions
+/* tectonic/xetex-scaledmath.c: low-level math functions
    Copyright 2017 The Tectonic Project
    Licensed under the MIT License.
 */
 
+#include "xetex-core.h"
 #include "tectonic.h"
-#include "internals.h"
 #include "xetexd.h"
 
 

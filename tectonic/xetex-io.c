@@ -3,8 +3,8 @@
    Licensed under the MIT License.
 */
 
+#include "xetex-core.h"
 #include "tectonic.h"
-#include "internals.h"
 #include "TECkit_Engine.h"
 #include "XeTeXLayoutInterface.h"
 #include "XeTeXswap.h"

@@ -5,8 +5,8 @@
 
    This file is public domain.  */
 
+#include "xetex-core.h"
 #include "tectonic.h"
-#include "internals.h"
 #include "core-bridge.h"
 #include "xetexd.h"
 #include "XeTeX_ext.h"
