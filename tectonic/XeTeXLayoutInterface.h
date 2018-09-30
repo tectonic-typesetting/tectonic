@@ -34,8 +34,6 @@ authorization from the copyright holders.
 #ifndef XETEX_LAYOUT_INTERFACE_H
 #define XETEX_LAYOUT_INTERFACE_H 1
 
-#include "tectonic.h"
-#include "internals.h"
 #include "xetex-core.h"
 
 BEGIN_EXTERN_C

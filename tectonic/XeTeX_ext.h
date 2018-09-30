@@ -35,8 +35,6 @@ authorization from the copyright holders.
 #ifndef __XETEXEXT_H
 #define __XETEXEXT_H
 
-#include "tectonic.h"
-#include "internals.h"
 #include "xetex-core.h"
 #include "XeTeXLayoutInterface.h"
 

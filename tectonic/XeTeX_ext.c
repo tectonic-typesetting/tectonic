@@ -36,8 +36,7 @@ authorization from the copyright holders.
  * additional plain C extensions for XeTeX - mostly platform-neutral
  */
 
-#include "tectonic.h"
-#include "internals.h"
+#include "xetex-core.h"
 #include "XeTeX_ext.h"
 #include "TECkit_Engine.h"
 #include "XeTeXLayoutInterface.h"

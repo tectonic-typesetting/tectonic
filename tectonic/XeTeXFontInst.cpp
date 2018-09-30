@@ -39,10 +39,7 @@ authorization from the copyright holders.
  *     originally based on PortableFontInstance.cpp from ICU
  */
 
-#include "tectonic.h"
-#include "internals.h"
-#include "core-bridge.h"
-#include "core-memory.h"
+#include "xetex-core.h"
 
 #include "XeTeXFontInst.h"
 #include "XeTeXLayoutInterface.h"
