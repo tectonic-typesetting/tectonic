@@ -676,30 +676,6 @@ extern uint16_t _xeq_level_array[EQTB_SIZE - INT_BASE + 1];
 
 /* the former xetexcoerce.h: */
 
-void print_ln(void);
-void print_raw_char(UTF16_code s, bool incr_offset);
-void print_char(int32_t s);
-void print(int32_t s);
-void print_cstr(const char* s);
-void print_nl(str_number s);
-void print_nl_cstr(const char* s);
-void print_esc(str_number s);
-void print_esc_cstr(const char* s);
-void print_int(int32_t n);
-void print_cs(int32_t p);
-void sprint_cs(int32_t p);
-void print_file_name(int32_t n, int32_t a, int32_t e);
-void print_size(int32_t s);
-void print_write_whatsit(const char* s, int32_t p);
-void print_native_word(int32_t p);
-void print_sa_num(int32_t q);
-void print_file_line(void);
-void print_two(int32_t n);
-void print_hex(int32_t n);
-void print_roman_int(int32_t n);
-void print_scaled(scaled_t s);
-
-void print_current_string(void);
 int32_t badness(scaled_t t, scaled_t s);
 void print_word(memory_word w);
 void show_token_list(int32_t p, int32_t q, int32_t l);
@@ -1025,6 +1001,32 @@ void sub_sup(void);
 void math_fraction(void);
 void math_left_right(void);
 void flush_math(void);
+
+/* xetex-output */
+
+void print_ln(void);
+void print_raw_char(UTF16_code s, bool incr_offset);
+void print_char(int32_t s);
+void print(int32_t s);
+void print_cstr(const char* s);
+void print_nl(str_number s);
+void print_nl_cstr(const char* s);
+void print_esc(str_number s);
+void print_esc_cstr(const char* s);
+void print_int(int32_t n);
+void print_cs(int32_t p);
+void sprint_cs(int32_t p);
+void print_file_name(int32_t n, int32_t a, int32_t e);
+void print_size(int32_t s);
+void print_write_whatsit(const char* s, int32_t p);
+void print_native_word(int32_t p);
+void print_sa_num(int32_t q);
+void print_file_line(void);
+void print_two(int32_t n);
+void print_hex(int32_t n);
+void print_roman_int(int32_t n);
+void print_current_string(void);
+void print_scaled(scaled_t s);
 
 /* xetex-scaledmath */
 
