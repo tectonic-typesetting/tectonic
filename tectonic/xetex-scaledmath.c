@@ -4,7 +4,7 @@
 */
 
 #include "xetex-core.h"
-#include "xetexd.h"
+#include "xetex-xetexd.h"
 
 
 int32_t

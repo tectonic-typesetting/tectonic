@@ -4,12 +4,12 @@
 */
 
 #include "xetex-core.h"
-#include "xetexd.h"
+#include "xetex-xetexd.h"
 #include "xetex-synctex.h"
 #include "core-bridge.h"
 #include "dpx-pdfobj.h" /* pdf_files_{init,close} */
 
-/* All the following variables are declared in xetexd.h */
+/* All the following variables are declared in xetex-xetexd.h */
 memory_word *eqtb;
 int32_t bad;
 char *name_of_file;

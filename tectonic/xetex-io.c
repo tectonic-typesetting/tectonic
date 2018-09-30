@@ -7,7 +7,7 @@
 #include "teckit-c-Engine.h"
 #include "XeTeXLayoutInterface.h"
 #include "XeTeXswap.h"
-#include "xetexd.h"
+#include "xetex-xetexd.h"
 #include "core-bridge.h"
 
 #include <unicode/ubidi.h>

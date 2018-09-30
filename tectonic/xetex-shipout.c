@@ -3,7 +3,7 @@
  */
 
 #include "xetex-core.h"
-#include "xetexd.h"
+#include "xetex-xetexd.h"
 #include "xetex-synctex.h"
 #include "core-bridge.h"
 

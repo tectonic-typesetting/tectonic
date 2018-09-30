@@ -59,7 +59,7 @@ authorization from the copyright holders.
 
 #include <graphite2/Font.h>
 
-#include "xetexd.h"
+#include "xetex-xetexd.h"
 
 
 /* OT-related constants we need */

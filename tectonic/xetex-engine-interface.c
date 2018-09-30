@@ -4,7 +4,7 @@
 */
 
 #include "xetex-core.h"
-#include "xetexd.h"
+#include "xetex-xetexd.h"
 #include "XeTeX_ext.h"
 
 #include <string.h>

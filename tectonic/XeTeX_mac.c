@@ -37,7 +37,7 @@ authorization from the copyright holders.
  */
 
 #include "xetex-core.h"
-#include "xetexd.h"
+#include "xetex-xetexd.h"
 #include "teckit-c-Engine.h"
 #include "XeTeX_ext.h"
 #include "XeTeXLayoutInterface.h"

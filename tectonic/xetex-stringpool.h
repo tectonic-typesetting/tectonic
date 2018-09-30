@@ -7,7 +7,7 @@
 #define TECTONIC_STRINGPOOL_H
 
 #include "xetex-core.h"
-#include "xetexd.h"
+#include "xetex-xetexd.h"
 
 #define EMPTY_STRING (65536L + 1)
 

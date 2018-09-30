@@ -3,7 +3,7 @@
  */
 
 #include "xetex-core.h"
-#include "xetexd.h"
+#include "xetex-xetexd.h"
 #include "core-bridge.h"
 
 static int32_t passive;

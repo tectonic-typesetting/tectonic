@@ -6,7 +6,7 @@
    This file is public domain.  */
 
 #include "xetex-core.h"
-#include "xetexd.h"
+#include "xetex-xetexd.h"
 #include "XeTeX_ext.h"
 
 #include <time.h> /* For `struct tm'.  Moved here for Visual Studio 2005.  */

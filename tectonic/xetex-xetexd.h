@@ -1,10 +1,10 @@
-/* tectonic/xetexd.h -- many, many XeTeX symbol definitions
+/* tectonic/xetex-xetexd.h -- many, many XeTeX symbol definitions
    Copyright 2016-2018 The Tectonic Project
    Licensed under the MIT License.
 */
 
-#ifndef TECTONIC_XETEXD_H
-#define TECTONIC_XETEXD_H
+#ifndef TECTONIC_XETEX_XETEXD_H
+#define TECTONIC_XETEX_XETEXD_H
 
 #include "xetex-core.h"
 #include "XeTeXOTMath.h"
@@ -1097,4 +1097,4 @@ tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
 
 #include "xetex-stringpool.h"
 
-#endif /* TECTONIC_XETEXD_H */
+#endif /* TECTONIC_XETEX_XETEXD_H */
