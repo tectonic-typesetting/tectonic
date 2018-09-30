@@ -40,8 +40,7 @@ authorization from the copyright holders.
 #include "xetex-ext.h"
 #include "teckit-c-Engine.h"
 #include "xetex-XeTeXLayoutInterface.h"
-#include "XeTeXswap.h"
-#include "core-bridge.h"
+#include "xetex-swap.h"
 
 #include <assert.h>
 #include <locale.h>
