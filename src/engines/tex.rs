@@ -104,8 +104,8 @@ impl TexEngine {
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 
-        let /*mut*/ state = ExecutionState::new(io, events, status);
-        let bridge = TectonicBridgeApi::new(&state);
+        let mut state = ExecutionState::new(io, events, status);
+        let mut bridge = TectonicBridgeApi::new(&mut state);
 
         // initialize globals
         let v = if self.halt_on_error { 1 } else { 0 };
@@ -130,7 +130,7 @@ impl TexEngine {
         }
 
         unsafe {
-            match super::tex_simple_main(&bridge, cformat.as_ptr(), cinput.as_ptr()) {
+            match super::tex_simple_main(&mut bridge as *mut _, cformat.as_ptr(), cinput.as_ptr()) {
                 0 => Ok(TexResult::Spotless),
                 1 => Ok(TexResult::Warnings),
                 2 => Ok(TexResult::Errors),

@@ -28,11 +28,11 @@ impl BibtexEngine {
 
         let caux = CString::new(aux)?;
 
-        let /*mut*/ state = ExecutionState::new(io, events, status);
-        let bridge = TectonicBridgeApi::new(&state);
+        let mut state = ExecutionState::new(io, events, status);
+        let mut bridge = TectonicBridgeApi::new(&mut state);
 
         unsafe {
-            match super::bibtex_simple_main(&bridge, caux.as_ptr()) {
+            match super::bibtex_simple_main(&mut bridge as *mut _, caux.as_ptr()) {
                 0 => Ok(TexResult::Spotless),
                 1 => Ok(TexResult::Warnings),
                 2 => Ok(TexResult::Errors),
