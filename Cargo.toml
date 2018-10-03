@@ -36,6 +36,7 @@ cc = "^1.0"
 pkg-config = "^0.3"  # note: sync dist/docker/*/pkg-config-rs.sh with the version in Cargo.lock
 regex = "^1.1"
 sha2 = "^0.8"
+cbindgen = { git = "https://github.com/eqrion/cbindgen" }
 
 [dependencies]
 aho-corasick = "^0.6"

@@ -4,11 +4,13 @@
 //
 // TODO: this surely needs to become much smarter and more flexible.
 
+extern crate cbindgen;
 extern crate cc;
 extern crate pkg_config;
 extern crate regex;
 extern crate sha2;
 
+use std::env;
 use std::path::PathBuf;
 
 // No fontconfig on MacOS:
@@ -20,6 +22,15 @@ const LIBS: &'static str =
     "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 fn main() {
+    let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+
+    cbindgen::Builder::new()
+        .with_language(cbindgen::Language::C)
+        .with_crate(crate_dir)
+        .generate()
+        .expect("Unable to generate bindings")
+        .write_to_file("tectonic/core-bindgen.h");
+
     // We (have to) rerun the search again below to emit the metadata at the right time.
 
     let deps = pkg_config::Config::new()
