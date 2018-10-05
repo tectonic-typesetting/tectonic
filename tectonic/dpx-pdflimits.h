@@ -23,6 +23,8 @@
 #ifndef _PDFLIMITS_H_
 #define _PDFLIMITS_H_
 
+#include "dpx-core.h"
+
 /*
  * The minimal and maximal PDF version supported by DVIPDFMx.
  * NOTE: Don't forget to update CIDFont_stdcc_def[] in cid.c

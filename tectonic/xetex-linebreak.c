@@ -2,9 +2,8 @@
  * Licensed under the MIT License.
  */
 
-#include "tectonic.h"
-#include "internals.h"
-#include "xetexd.h"
+#include "xetex-core.h"
+#include "xetex-xetexd.h"
 #include "core-bridge.h"
 
 static int32_t passive;

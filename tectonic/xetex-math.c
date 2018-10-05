@@ -2,10 +2,9 @@
  * Licensed under the MIT License.
  */
 
-#include "tectonic.h"
-#include "internals.h"
-#include "xetexd.h"
-#include "synctex.h"
+#include "xetex-core.h"
+#include "xetex-xetexd.h"
+#include "xetex-synctex.h"
 #include "core-bridge.h"
 
 

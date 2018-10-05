@@ -23,6 +23,8 @@
 #ifndef _TFM_H_
 #define _TFM_H_
 
+#include "dpx-core.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 

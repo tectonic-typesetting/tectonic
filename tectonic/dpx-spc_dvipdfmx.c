@@ -28,7 +28,6 @@
 #include "dpx-dpxutil.h"
 #include "dpx-pdfparse.h"
 #include "dpx-specials.h"
-#include "internals.h"
 
 static int
 spc_handler_null (struct spc_env *spe, struct spc_arg *args)

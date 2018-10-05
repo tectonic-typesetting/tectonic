@@ -21,6 +21,8 @@
 #ifndef _CS_TYPE2_H_
 #define _CS_TYPE2_H_
 
+#include "dpx-core.h"
+
 #include "dpx-cff_types.h"
 
 typedef struct {

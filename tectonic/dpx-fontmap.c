@@ -29,7 +29,6 @@
 #include "dpx-mem.h"
 #include "dpx-mfileio.h"
 #include "dpx-subfont.h"
-#include "internals.h"
 
 /* CIDFont */
 static char *strip_options (const char *map_name, fontmap_opt *opt);

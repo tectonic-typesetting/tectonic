@@ -31,7 +31,6 @@
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-mfileio.h"
-#include "internals.h"
 
 static int verbose = 0;
 void

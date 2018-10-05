@@ -23,6 +23,8 @@
 #ifndef _SPC_HTML_H_
 #define _SPC_HTML_H_
 
+#include "dpx-core.h"
+
 #include <stdbool.h>
 
 #include "dpx-specials.h"

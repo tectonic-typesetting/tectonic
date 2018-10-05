@@ -34,7 +34,6 @@
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-numbers.h"
-#include "internals.h"
 
 #define TFM_FORMAT 1
 #define OFM_FORMAT 2

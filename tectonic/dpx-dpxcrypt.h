@@ -21,6 +21,8 @@
 #ifndef _DPXCRYPT_H_
 #define _DPXCRYPT_H_
 
+#include "dpx-core.h"
+
 #include <stdio.h>
 #include <stdint.h>
 

@@ -23,12 +23,12 @@
 #ifndef _ERROR_H_
 #define _ERROR_H_
 
+#include "dpx-core.h"
+
 #include <assert.h>
 #include <stdio.h>
 
 #include "dpx-system.h"
-#include "internals.h"
-#include "tectonic.h"
 
 void shut_up (int quietness);
 

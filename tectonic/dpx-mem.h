@@ -23,6 +23,8 @@
 #ifndef _MEM_H_
 #define _MEM_H_
 
+#include "dpx-core.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 

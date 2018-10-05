@@ -1,5 +1,9 @@
 #include "bibtex.h"
-#include "internals.h"
+
+#include "core-bridge.h"
+#include "core-memory.h"
+
+#include <stdio.h> /* EOF, snprintf */
 
 /* hack: the name eof conflicts with other function declarations under mingw. */
 #define eof tectonic_eof

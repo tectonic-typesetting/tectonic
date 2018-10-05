@@ -34,7 +34,6 @@
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-pdfobj.h"
-#include "internals.h"
 
 #define PDF_RESOURCE_DEBUG_STR "PDF"
 #define PDF_RESOURCE_DEBUG     3

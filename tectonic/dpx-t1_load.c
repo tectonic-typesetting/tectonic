@@ -36,7 +36,6 @@
 #include "dpx-mem.h"
 #include "dpx-mfileio.h"
 #include "dpx-pst.h"
-#include "internals.h"
 
 /* Migrated from t1crypt */
 #define T1_EEKEY   55665u

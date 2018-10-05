@@ -50,7 +50,6 @@
 #include "dpx-tt_post.h"
 #include "dpx-type0.h"
 #include "dpx-unicode.h"
-#include "internals.h"
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;

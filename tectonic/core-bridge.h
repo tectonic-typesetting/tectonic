@@ -6,15 +6,16 @@
 #ifndef TECTONIC_CORE_BRIDGE_H
 #define TECTONIC_CORE_BRIDGE_H
 
-#include "tectonic.h"
+#include "core-foundation.h"
 
-#include <stddef.h> /* size_t */
-#include <sys/types.h> /* ssize_t */
+/* Both XeTeX and bibtex use this enum: */
 
-#if defined(_MSC_VER)
-#include <BaseTsd.h>
-typedef SSIZE_T ssize_t;
-#endif
+typedef enum {
+    HISTORY_SPOTLESS = 0,
+    HISTORY_WARNING_ISSUED = 1,
+    HISTORY_ERROR_ISSUED = 2,
+    HISTORY_FATAL_ERROR = 3
+} tt_history_t;
 
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with

@@ -10,9 +10,11 @@
 #include <stdbool.h>
 #include <stdio.h> /*vsnprintf*/
 
+/* TODO: these are needed for the various *_main routines which should
+ * probably be moved out into other files. */
 #include "bibtex.h"
 #include "dpx-dvipdfmx.h"
-#include "xetexd.h"
+#include "xetex-xetexd.h"
 
 
 /* The global variable that represents the Rust API. Some fine day we'll get

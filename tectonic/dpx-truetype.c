@@ -45,7 +45,6 @@
 #include "dpx-tt_gsub.h"
 #include "dpx-tt_post.h"
 #include "dpx-tt_table.h"
-#include "internals.h"
 
 /* Modifying this has no effect :P */
 #ifdef ENABLE_NOEMBED

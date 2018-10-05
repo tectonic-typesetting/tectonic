@@ -105,13 +105,13 @@ impl TexEngine {
 
         // initialize globals
         let v = if self.halt_on_error { 1 } else { 0 };
-        unsafe { super::tt_set_int_variable(b"halt_on_error_p\0".as_ptr() as _, v); }
+        unsafe { super::tt_xetex_set_int_variable(b"halt_on_error_p\0".as_ptr() as _, v); }
         let v = if self.initex_mode { 1 } else { 0 };
-        unsafe { super::tt_set_int_variable(b"in_initex_mode\0".as_ptr() as _, v); }
+        unsafe { super::tt_xetex_set_int_variable(b"in_initex_mode\0".as_ptr() as _, v); }
         let v = if self.synctex_enabled { 1 } else { 0 };
-        unsafe { super::tt_set_int_variable(b"synctex_enabled\0".as_ptr() as _, v); }
+        unsafe { super::tt_xetex_set_int_variable(b"synctex_enabled\0".as_ptr() as _, v); }
         let v = if self.semantic_pagination_enabled { 1 } else { 0 };
-        unsafe { super::tt_set_int_variable(b"semantic_pagination_enabled\0".as_ptr() as _, v); }
+        unsafe { super::tt_xetex_set_int_variable(b"semantic_pagination_enabled\0".as_ptr() as _, v); }
 
         unsafe {
             match super::tex_simple_main(&bridge, cformat.as_ptr(), cinput.as_ptr()) {

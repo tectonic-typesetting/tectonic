@@ -23,6 +23,8 @@
 #ifndef _MPOST_H_
 #define _MPOST_H_
 
+#include "dpx-core.h"
+
 #include <stdio.h>
 
 #include  "dpx-mfileio.h"

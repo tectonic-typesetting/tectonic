@@ -24,7 +24,6 @@
 
 #include <stdio.h>
 
-#include "internals.h"
 
 #ifndef  HAVE_LIBPAPER
 const struct paper paperspecs[] = {

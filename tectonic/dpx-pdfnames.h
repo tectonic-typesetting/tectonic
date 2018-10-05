@@ -23,6 +23,8 @@
 #ifndef _PDF_NAMES_H_
 #define _PDF_NAMES_H_
 
+#include "dpx-core.h"
+
 /* Hash */
 #include "dpx-dpxutil.h"
 #include "dpx-pdfobj.h"

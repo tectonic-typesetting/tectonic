@@ -34,7 +34,6 @@
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-pst.h"
-#include "internals.h"
 
 static int __verbose = 0;
 

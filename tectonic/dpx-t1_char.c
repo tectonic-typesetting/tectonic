@@ -33,7 +33,6 @@
 #include "dpx-dpxutil.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
-#include "internals.h"
 
 /*
  * Type 1 -> Type 1C

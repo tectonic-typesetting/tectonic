@@ -23,6 +23,8 @@
 #ifndef _CID_P_H_
 #define _CID_P_H_
 
+#include "dpx-core.h"
+
 #define FONT_FLAG_NONE        0
 #define FONT_FLAG_BASEFONT    (1 << 0)
 #define FONT_FLAG_ACCFONT     (1 << 1)

@@ -23,6 +23,8 @@
 #ifndef _PDFPARSE_H_
 #define _PDFPARSE_H_
 
+#include "dpx-core.h"
+
 #include "dpx-numbers.h"
 #include "dpx-pdfobj.h"
 

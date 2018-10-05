@@ -41,7 +41,6 @@
 #include "dpx-pdfdraw.h"
 #include "dpx-pdfobj.h"
 #include "dpx-pngimage.h"
-#include "internals.h"
 
 static int check_for_ps (rust_input_handle_t handle);
 

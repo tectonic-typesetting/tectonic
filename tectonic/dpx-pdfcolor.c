@@ -36,7 +36,6 @@
 #include "dpx-mem.h"
 #include "dpx-numbers.h"
 #include "dpx-pdfdev.h"
-#include "internals.h"
 
 static int verbose = 0;
 void

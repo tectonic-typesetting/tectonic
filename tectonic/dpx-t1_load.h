@@ -25,6 +25,8 @@
 #ifndef _T1_LOAD_H_
 #define _T1_LOAD_H_
 
+#include "dpx-core.h"
+
 #include <stdbool.h>
 #include <stdio.h>
 

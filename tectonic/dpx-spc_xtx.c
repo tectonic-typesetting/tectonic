@@ -47,7 +47,6 @@
 #include "dpx-pdfparse.h"
 #include "dpx-spc_util.h"
 #include "dpx-specials.h"
-#include "internals.h"
 
 
 int

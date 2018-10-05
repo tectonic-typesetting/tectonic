@@ -40,7 +40,6 @@
 #include "dpx-pdfobj.h"
 #include "dpx-pdfximage.h"
 #include "dpx-specials.h"
-#include "internals.h"
 
 
 #define  ENABLE_HTML_IMG_SUPPORT   1

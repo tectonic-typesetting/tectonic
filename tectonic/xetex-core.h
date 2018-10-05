@@ -6,8 +6,10 @@
 #ifndef TECTONIC_XETEX_CORE_H
 #define TECTONIC_XETEX_CORE_H
 
-#include "tectonic.h"
-#include "internals.h"
+#include "core-foundation.h"
+#include "core-bridge.h"
+#include "core-memory.h"
+#include "core-strutils.h"
 
 #include <unicode/utypes.h>
 #include <unicode/platform.h> // defines U_IS_BIG_ENDIAN for us
@@ -42,6 +44,8 @@
 
 /* our typedefs */
 
+typedef int32_t scaled_t;
+
 typedef uint32_t OTTag;
 typedef uint16_t GlyphID;
 
@@ -71,6 +75,17 @@ typedef struct {
     float yMax;
 } GlyphBBox;
 
+typedef enum {
+    SELECTOR_FILE_0 = 0,
+    SELECTOR_FILE_15 = 15,
+    SELECTOR_NO_PRINT = 16,
+    SELECTOR_TERM_ONLY = 17,
+    SELECTOR_LOG_ONLY = 18,
+    SELECTOR_TERM_AND_LOG = 19,
+    SELECTOR_PSEUDO = 20,
+    SELECTOR_NEW_STRING = 21
+} selector_t;
+
 #ifdef XETEX_MAC
 #include <ApplicationServices/ApplicationServices.h>
 typedef CTFontDescriptorRef PlatformFontRef;
@@ -88,8 +103,8 @@ typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
 #define FONT_FLAGS_COLORED  0x01
 #define FONT_FLAGS_VERTICAL 0x02
 
-/* gFreeTypeLibrary is defined in XeTeXFontInst_FT2.cpp,
- * also used in XeTeXFontMgr_FC.cpp and XeTeX_ext.c.  */
+/* gFreeTypeLibrary is defined in xetex-XeTeXFontInst_FT2.cpp,
+ * also used in xetex-XeTeXFontMgr_FC.cpp and xetex-ext.c.  */
 
 BEGIN_EXTERN_C
 extern FT_Library gFreeTypeLibrary;

@@ -23,6 +23,8 @@
 #ifndef _DVICODES_H_
 #define _DVICODES_H_
 
+#include "dpx-core.h"
+
 /* DVI op codes */
 #define SET_CHAR_0 0
 #define SET_CHAR_1 1

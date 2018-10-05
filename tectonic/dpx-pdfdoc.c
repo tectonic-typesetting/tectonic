@@ -53,7 +53,6 @@
 #include "dpx-pdfximage.h"
 #include "dpx-pngimage.h"
 #include "dpx-system.h"
-#include "internals.h"
 
 #define PDFDOC_PAGES_ALLOC_SIZE   128u
 #define PDFDOC_ARTICLE_ALLOC_SIZE 16

@@ -23,6 +23,8 @@
 #ifndef _PDFXIMAGE_H_
 #define _PDFXIMAGE_H_
 
+#include "dpx-core.h"
+
 #include "dpx-pdfdev.h"
 #include "dpx-pdfobj.h"
 

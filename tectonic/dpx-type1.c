@@ -44,7 +44,6 @@
 #include "dpx-t1_char.h"
 #include "dpx-t1_load.h"
 #include "dpx-tfm.h"
-#include "internals.h"
 
 #define FONT_FLAG_FIXEDPITCH (1 << 0)  /* Fixed-width font */
 #define FONT_FLAG_SERIF      (1 << 1)  /* Serif font */

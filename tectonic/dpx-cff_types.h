@@ -21,6 +21,8 @@
 #ifndef _CFF_TYPES_H_
 #define _CFF_TYPES_H_
 
+#include "dpx-core.h"
+
 #include <stdint.h>
 
 /* CFF Data Types */

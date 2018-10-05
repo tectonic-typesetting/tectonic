@@ -23,6 +23,8 @@
 #ifndef _FONTMAP_H_
 #define _FONTMAP_H_
 
+#include "dpx-core.h"
+
 #include <stdint.h>
 
 #define FONTMAP_RMODE_REPLACE  0

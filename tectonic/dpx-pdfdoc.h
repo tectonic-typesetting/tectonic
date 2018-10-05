@@ -23,6 +23,8 @@
 #ifndef _PDFDOC_H_
 #define _PDFDOC_H_
 
+#include "dpx-core.h"
+
 #include <stdbool.h>
 
 #include "dpx-pdfobj.h"

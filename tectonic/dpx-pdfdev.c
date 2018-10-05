@@ -45,7 +45,6 @@
 #include "dpx-pdfobj.h"
 #include "dpx-pdfximage.h"
 #include "dpx-type0.h"
-#include "internals.h"
 
 static int verbose = 0;
 

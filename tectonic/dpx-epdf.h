@@ -23,6 +23,8 @@
 #ifndef _EPDF_H_
 #define _EPDF_H_
 
+#include "dpx-core.h"
+
 #include <stdio.h>
 
 #include "core-bridge.h"

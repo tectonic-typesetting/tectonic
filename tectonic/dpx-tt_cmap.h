@@ -21,6 +21,8 @@
 #ifndef _TT_CMAP_H_
 #define _TT_CMAP_H_
 
+#include "dpx-core.h"
+
 #include "dpx-sfnt.h"
 
 void otf_cmap_set_verbose (int level);

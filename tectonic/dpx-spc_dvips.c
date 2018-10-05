@@ -46,7 +46,6 @@
 #include "dpx-spc_util.h"
 #include "dpx-spc_xtx.h"
 #include "dpx-specials.h"
-#include "internals.h"
 
 static int    block_pending = 0;
 static double pending_x     = 0.0;

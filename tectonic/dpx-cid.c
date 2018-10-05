@@ -42,7 +42,6 @@
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-pdfobj.h"
-#include "internals.h"
 
 #define CIDFONT_DEBUG     3
 #define CIDFONT_DEBUG_STR "CIDFont"

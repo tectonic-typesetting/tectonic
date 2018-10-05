@@ -23,6 +23,8 @@
 #ifndef _NUMBERS_H_
 #define _NUMBERS_H_
 
+#include "dpx-core.h"
+
 #include <inttypes.h>
 #include <math.h>
 #include <stdint.h>

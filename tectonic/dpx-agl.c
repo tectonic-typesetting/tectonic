@@ -45,7 +45,6 @@
 #include "dpx-mfileio.h"
 #include "dpx-pdfparse.h"
 #include "dpx-unicode.h"
-#include "internals.h"
 
 static int agl_load_listfile (const char *filename, int format);
 

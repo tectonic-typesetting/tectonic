@@ -33,7 +33,6 @@
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-pdfobj.h"
-#include "internals.h"
 
 struct obj_data
 {

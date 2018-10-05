@@ -9,7 +9,6 @@ extern crate pkg_config;
 extern crate regex;
 extern crate sha2;
 
-use std::env;
 use std::path::PathBuf;
 
 
@@ -25,10 +24,6 @@ fn main() {
     // We (have to) rerun the search again below to emit the metadata at the right time.
 
     let deps = pkg_config::Config::new().cargo_metadata(false).probe(LIBS).unwrap();
-
-    // First, emit the string pool C code. Sigh.
-
-    let out_dir = env::var("OUT_DIR").unwrap();
 
     // Actually I'm not 100% sure that I can't compile the C and C++ code
     // into one library, but who cares?
@@ -83,7 +78,7 @@ fn main() {
     ccfg
         .file("tectonic/bibtex.c")
         .file("tectonic/core-bridge.c")
-        .file("tectonic/core-kpathutil.c")
+        .file("tectonic/core-memory.c")
         .file("tectonic/dpx-agl.c")
         .file("tectonic/dpx-bmpimage.c")
         .file("tectonic/dpx-cff.c")
@@ -155,26 +150,25 @@ fn main() {
         .file("tectonic/dpx-type1c.c")
         .file("tectonic/dpx-unicode.c")
         .file("tectonic/dpx-vf.c")
-        .file("tectonic/engine-interface.c")
-        .file("tectonic/errors.c")
-        .file("tectonic/io.c")
-        .file("tectonic/mathutil.c")
-        .file("tectonic/output.c")
-        .file("tectonic/stringpool.c")
-        .file("tectonic/synctex.c")
-        .file("tectonic/texmfmp.c")
-        .file("tectonic/xetex0.c")
-        .file("tectonic/XeTeX_ext.c")
-        .file("tectonic/xetexini.c")
-        .file("tectonic/XeTeX_pic.c")
+        .file("tectonic/xetex-engine-interface.c")
+        .file("tectonic/xetex-errors.c")
+        .file("tectonic/xetex-ext.c")
+        .file("tectonic/xetex-ini.c")
+        .file("tectonic/xetex-io.c")
         .file("tectonic/xetex-linebreak.c")
         .file("tectonic/xetex-math.c")
+        .file("tectonic/xetex-output.c")
+        .file("tectonic/xetex-pic.c")
+        .file("tectonic/xetex-scaledmath.c")
         .file("tectonic/xetex-shipout.c")
+        .file("tectonic/xetex-stringpool.c")
+        .file("tectonic/xetex-synctex.c")
+        .file("tectonic/xetex-texmfmp.c")
+        .file("tectonic/xetex-xetex0.c")
         .define("HAVE_ZLIB", "1")
         .define("HAVE_ZLIB_COMPRESS2", "1")
         .define("ZLIB_CONST", "1")
-        .include(".")
-        .include(&out_dir);
+        .include(".");
 
     let cppflags = [
         "-std=c++14",
@@ -215,13 +209,12 @@ fn main() {
     cppcfg
         .cpp(true)
         .flag("-Wall")
-        .file("tectonic/Engine.cpp")
-        .file("tectonic/XeTeXFontInst.cpp")
-        .file("tectonic/XeTeXFontMgr.cpp")
-        .file("tectonic/XeTeXLayoutInterface.cpp")
-        .file("tectonic/XeTeXOTMath.cpp")
-        .include(".")
-        .include(&out_dir);
+        .file("tectonic/teckit-Engine.cpp")
+        .file("tectonic/xetex-XeTeXFontInst.cpp")
+        .file("tectonic/xetex-XeTeXFontMgr.cpp")
+        .file("tectonic/xetex-XeTeXLayoutInterface.cpp")
+        .file("tectonic/xetex-XeTeXOTMath.cpp")
+        .include(".");
 
     for p in deps.include_paths {
         ccfg.include(&p);
@@ -232,11 +225,11 @@ fn main() {
 
     if cfg!(target_os = "macos") {
         ccfg.define("XETEX_MAC", Some("1"));
-        ccfg.file("tectonic/XeTeX_mac.c");
+        ccfg.file("tectonic/xetex-macos.c");
 
         cppcfg.define("XETEX_MAC", Some("1"));
-        cppcfg.file("tectonic/XeTeXFontInst_Mac.cpp");
-        cppcfg.file("tectonic/XeTeXFontMgr_Mac.mm");
+        cppcfg.file("tectonic/xetex-XeTeXFontInst_Mac.cpp");
+        cppcfg.file("tectonic/xetex-XeTeXFontMgr_Mac.mm");
 
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=framework=CoreFoundation");
@@ -247,7 +240,7 @@ fn main() {
 
     if cfg!(not(target_os = "macos")) {
         // At the moment we use Fontconfig on both Linux and Windows.
-        cppcfg.file("tectonic/XeTeXFontMgr_FC.cpp");
+        cppcfg.file("tectonic/xetex-XeTeXFontMgr_FC.cpp");
     }
 
     if cfg!(target_endian = "big") {

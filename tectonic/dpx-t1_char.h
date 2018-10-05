@@ -1,6 +1,8 @@
 #ifndef _T1_CSTR_H_
 #define _T1_CSTR_H_
 
+#include "dpx-core.h"
+
 #include "dpx-cff_types.h"
 
 typedef struct {

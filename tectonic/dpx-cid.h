@@ -21,6 +21,8 @@
 #ifndef _CID_H_
 #define _CID_H_
 
+#include "dpx-core.h"
+
 #include <stdbool.h>
 
 /* CIDFont types */

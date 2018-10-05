@@ -24,6 +24,8 @@
 #ifndef _PNGIMAGE_H_
 #define _PNGIMAGE_H_
 
+#include "dpx-core.h"
+
 #include <stdint.h>
 
 #include "core-bridge.h"

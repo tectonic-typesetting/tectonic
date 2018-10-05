@@ -63,7 +63,6 @@
 #include "dpx-pdfcolor.h"
 #include "dpx-pdfobj.h"
 #include "dpx-pdfximage.h"
-#include "internals.h"
 
 #define JPEG_DEBUG_STR "JPEG"
 #define JPEG_DEBUG     3

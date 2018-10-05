@@ -23,6 +23,8 @@
 #ifndef _PDF_RESOURCE_H_
 #define _PDF_RESOURCE_H_
 
+#include "dpx-core.h"
+
 #include "dpx-pdfobj.h"
 
 #define PDF_RES_FLUSH_IMMEDIATE 1

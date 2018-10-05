@@ -21,6 +21,8 @@
 #ifndef _TT_GSUB_H_
 #define _TT_GSUB_H_
 
+#include "dpx-core.h"
+
 #include "dpx-otl_opt.h"
 #include "dpx-sfnt.h"
 

@@ -23,6 +23,8 @@
 #ifndef _PST_OBJ_H_
 #define _PST_OBJ_H_
 
+#include "dpx-core.h"
+
 #include "dpx-pst.h"
 
 pst_obj *pst_parse_null   (unsigned char **inbuf, unsigned char *inbufend);

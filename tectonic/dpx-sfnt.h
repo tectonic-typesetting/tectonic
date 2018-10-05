@@ -21,6 +21,8 @@
 #ifndef _SFNT_H_
 #define _SFNT_H_
 
+#include "dpx-core.h"
+
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>

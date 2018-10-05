@@ -35,7 +35,6 @@
 #include "dpx-pdfencrypt.h"
 #include "dpx-pdflimits.h"
 #include "dpx-pdfparse.h"
-#include "internals.h"
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>
