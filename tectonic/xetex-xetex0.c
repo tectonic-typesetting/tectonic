@@ -1331,7 +1331,7 @@ flush_node_list(int32_t p)
                         mem[p + 5].ptr = mfree(mem[p + 5].ptr);
                         mem[p + 4].b16.s0 = 0;
                     }
-                    free_node(p, mem[p + 4].b16.s3);
+                    free_node(p, NATIVE_NODE_size(p));
                     break;
                 case GLYPH_NODE:
                     free_node(p, GLYPH_NODE_SIZE);
@@ -1524,7 +1524,7 @@ copy_node_list(int32_t p)
                     break;
                 case NATIVE_WORD_NODE:
                 case NATIVE_WORD_NODE_AT:
-                    words = mem[p + 4].b16.s3;
+                    words = NATIVE_NODE_size(p);
                     r = get_node(words);
 
                     while (words > 0) {
@@ -10872,11 +10872,11 @@ new_native_word_node(internal_font_number f, int32_t n)
     else
         mem[q].b16.s0 = NATIVE_WORD_NODE;
 
-    mem[q + 4].b16.s3 = l;
-    mem[q + 4].b16.s2 = f;
-    mem[q + 4].b16.s1 = n;
-    mem[q + 4].b16.s0 = 0;
-    mem[q + 5].ptr = NULL;
+    NATIVE_NODE_size(q) = l;
+    NATIVE_NODE_font(q) = f;
+    NATIVE_NODE_length(q) = n;
+    NATIVE_NODE_glyph_count(q) = 0;
+    NATIVE_NODE_glyph_info_ptr(q) = NULL;
     return q;
 }
 
@@ -10939,18 +10939,18 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 
         p = get_node(NATIVE_NODE_SIZE + 1);
         NODE_type(p) = WHATSIT_NODE;
-        mem[p].b16.s0 = NATIVE_WORD_NODE;
-        mem[p + 4].b16.s3 = NATIVE_NODE_SIZE + 1;
-        mem[p + 4].b16.s0 = 0;
-        mem[p + 5].ptr = NULL;
-        mem[p + 4].b16.s2 = f;
+        NODE_subtype(p) = NATIVE_WORD_NODE;
+        NATIVE_NODE_size(p) = NATIVE_NODE_SIZE + 1;
+        NATIVE_NODE_glyph_count(p) = 0;
+        NATIVE_NODE_glyph_info_ptr(p) = NULL;
+        NATIVE_NODE_font(p) = f;
 
         if (c > 65535L) {
-            mem[p + 4].b16.s1 = 2;
+            NATIVE_NODE_length(p) = 2;
             NATIVE_NODE_text(p)[0] = (c - 65536L) / 1024 + 0xD800;
             NATIVE_NODE_text(p)[1] = (c - 65536L) % 1024 + 0xDC00;
         } else {
-            mem[p + 4].b16.s1 = 1;
+            NATIVE_NODE_length(p) = 1;
             NATIVE_NODE_text(p)[0] = c;
         }
     }
@@ -11163,7 +11163,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     font_letter_space[font_ptr] = loaded_font_letter_space;
     p = new_native_character(font_ptr, ' ' );
     s = mem[p + 1].b32.s1 + loaded_font_letter_space;
-    free_node(p, mem[p + 4].b16.s3);
+    free_node(p, NATIVE_NODE_size(p));
     font_info[fmem_ptr].b32.s1 = font_slant;
     fmem_ptr++;
     font_info[fmem_ptr].b32.s1 = s;
