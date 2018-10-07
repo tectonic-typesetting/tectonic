@@ -15975,136 +15975,132 @@ void push_math(group_code c)
     new_save_level(c);
 }
 
-void just_copy(int32_t p, int32_t h, int32_t t)
+
+void
+just_copy(int32_t p, int32_t h, int32_t t)
 {
     int32_t r;
     unsigned char words;
-    while (p != TEX_NULL) {
 
+    while (p != TEX_NULL) {
         words = 1;
-        if ((is_char_node(p)))
+
+        if (is_char_node(p))
             r = get_avail();
         else
-            switch (mem[p].b16.s1) {
-            case 0:
-            case 1:
-                {
-                    r = get_node(BOX_NODE_SIZE);
-                    mem[r + 7].b32.s0 = mem[p + 7].b32.s0;
-                    mem[r + 7].b32.s1 = mem[p + 7].b32.s1;
-                    mem[r + 6] = mem[p + 6];
-                    mem[r + 5] = mem[p + 5];
-                    words = 5;
-                    mem[r + 5].b32.s1 = TEX_NULL;
-                }
+            switch (NODE_type(p)) {
+            case HLIST_NODE:
+            case VLIST_NODE:
+                r = get_node(BOX_NODE_SIZE);
+                SYNCTEX_tag(r, BOX_NODE_SIZE) = SYNCTEX_tag(p, BOX_NODE_SIZE);
+                SYNCTEX_line(r, BOX_NODE_SIZE) = SYNCTEX_line(p, BOX_NODE_SIZE);
+                mem[r + 6] = mem[p + 6];
+                mem[r + 5] = mem[p + 5];
+                words = 5;
+                BOX_list_ptr(r) = TEX_NULL;
                 break;
-            case 2:
-                {
-                    r = get_node(RULE_NODE_SIZE);
-                    words = RULE_NODE_SIZE;
-                }
-                break;
-            case 6:
-                {
-                    r = get_avail();
-                    mem[r] = mem[p + 1];
-                    goto found;
-                }
-                break;
-            case 11:
-            case 9:
-                {
-                    words = MEDIUM_NODE_SIZE;
-                    r = get_node(words);
-                }
-                break;
-            case 10:
-                {
-                    r = get_node(MEDIUM_NODE_SIZE);
-                    GLUE_SPEC_ref_count(mem[p + 1].b32.s0)++;
-                    mem[r + 2].b32.s0 = mem[p + 2].b32.s0;
-                    mem[r + 2].b32.s1 = mem[p + 2].b32.s1;
-                    mem[r + 1].b32.s0 = mem[p + 1].b32.s0;
-                    mem[r + 1].b32.s1 = TEX_NULL;
-                }
-                break;
-            case 8:
-                switch (mem[p].b16.s0) {
-                case 0:
-                    {
-                        r = get_node(OPEN_NODE_SIZE);
-                        words = OPEN_NODE_SIZE;
-                    }
-                    break;
-                case 1:
-                case 3:
-                    {
-                        r = get_node(WRITE_NODE_SIZE);
-                        mem[mem[p + 1].b32.s1].b32.s0++;
-                        words = WRITE_NODE_SIZE;
-                    }
-                    break;
-                case 2:
-                case 4:
-                    {
-                        r = get_node(SMALL_NODE_SIZE);
-                        words = SMALL_NODE_SIZE;
-                    }
-                    break;
-                case 40:
-                case 41:
-                    {
-                        words = mem[p + 4].b16.s3;
-                        r = get_node(words);
-                        while (words > 0) {
 
-                            words--;
-                            mem[r + words] = mem[p + words];
-                        }
-                        mem[r + 5].ptr = NULL;
-                        mem[r + 4].b16.s0 = 0;
-                        copy_native_glyph_info(p, r);
-                    }
+            case RULE_NODE:
+                r = get_node(RULE_NODE_SIZE);
+                words = RULE_NODE_SIZE;
+                break;
+
+            case LIGATURE_NODE:
+                r = get_avail();
+                mem[r] = mem[p + 1];
+                goto found;
+                break;
+
+            case KERN_NODE:
+            case MATH_NODE:
+                words = MEDIUM_NODE_SIZE;
+                r = get_node(words);
+                break;
+
+            case GLUE_NODE:
+                r = get_node(MEDIUM_NODE_SIZE);
+                GLUE_SPEC_ref_count(GLUE_NODE_glue_ptr(p))++;
+                SYNCTEX_tag(r, MEDIUM_NODE_SIZE) = SYNCTEX_tag(p, MEDIUM_NODE_SIZE);
+                SYNCTEX_line(r, MEDIUM_NODE_SIZE) = SYNCTEX_line(p, MEDIUM_NODE_SIZE);
+                GLUE_NODE_glue_ptr(r) = GLUE_NODE_glue_ptr(p);
+                GLUE_NODE_leader_ptr(r) = TEX_NULL;
+                break;
+
+            case WHATSIT_NODE:
+                switch (NODE_subtype(p)) {
+                case OPEN_NODE:
+                    r = get_node(OPEN_NODE_SIZE);
+                    words = OPEN_NODE_SIZE;
                     break;
-                case 42:
-                    {
-                        r = get_node(GLYPH_NODE_SIZE);
-                        words = GLYPH_NODE_SIZE;
-                    }
+
+                case WRITE_NODE:
+                case SPECIAL_NODE:
+                    r = get_node(WRITE_NODE_SIZE);
+                    TOKEN_LIST_ref_count(WRITE_NODE_tokens(p))++;
+                    words = WRITE_NODE_SIZE;
                     break;
-                case 43:
-                case 44:
-                    {
-                        words =
-                            (PIC_NODE_SIZE +
-                             (mem[p + 4].b16.s1 + sizeof(memory_word) - 1) / sizeof(memory_word));
-                        r = get_node(words);
-                    }
+
+                case CLOSE_NODE:
+                case LANGUAGE_NODE:
+                    r = get_node(SMALL_NODE_SIZE);
+                    words = SMALL_NODE_SIZE;
                     break;
-                case 6:
+
+                case NATIVE_WORD_NODE:
+                case NATIVE_WORD_NODE_AT:
+                    words = NATIVE_NODE_size(p);
+                    r = get_node(words);
+
+                    while (words > 0) {
+                        words--;
+                        mem[r + words] = mem[p + words];
+                    }
+
+                    NATIVE_NODE_glyph_info_ptr(r) = NULL;
+                    NATIVE_NODE_glyph_count(r) = 0;
+                    copy_native_glyph_info(p, r);
+                    break;
+
+                case GLYPH_NODE:
+                    r = get_node(GLYPH_NODE_SIZE);
+                    words = GLYPH_NODE_SIZE;
+                    break;
+
+                case PIC_NODE:
+                case PDF_NODE:
+                    words = PIC_NODE_total_size(p);
+                    r = get_node(words);
+                    break;
+
+                case PDF_SAVE_POS_NODE:
                     r = get_node(SMALL_NODE_SIZE);
                     break;
+
                 default:
                     confusion("ext2");
                     break;
                 }
+
                 break;
             default:
                 goto not_found;
                 break;
             }
-        while (words > 0) {
 
+        while (words > 0) {
             words--;
             mem[r + words] = mem[p + words];
         }
+
     found:
-        mem[h].b32.s1 = r;
+        LLIST_link(h) = r;
         h = r;
+
     not_found:
-        p = mem[p].b32.s1;
+        p = LLIST_link(p);
     }
-    mem[h].b32.s1 = t;
+
+    LLIST_link(h) = t;
 }
 
 void just_reverse(int32_t p)
