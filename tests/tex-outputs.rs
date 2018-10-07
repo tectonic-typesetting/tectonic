@@ -177,6 +177,13 @@ fn negative_roman_numeral() {
 }
 
 #[test]
+fn otf_basic() {
+    TestCase::new("otf_basic")
+        .expect(Ok(TexResult::Warnings))
+        .go()
+}
+
+#[test]
 fn tex_logo() {
     TestCase::new("tex_logo").go()
 }
