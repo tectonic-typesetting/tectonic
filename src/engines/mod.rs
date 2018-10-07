@@ -526,7 +526,9 @@ pub struct TectonicBridgeApi<'a> {
     input_close: extern "C" fn(ctx: *mut ExecutionState, handle: *mut InputHandle) -> i32,
 }
 
-// `extern` block uses type `engines::ExecutionState` which is not FFI-safe: this struct has unspecified layout
+// This scilences the following warning:
+//     `extern` block uses type `engines::ExecutionState` which is not FFI-safe: this struct has unspecified layout
+// The C code only ever handles pointers to the execution context. We'll get by without a specified layout.
 #[allow(improper_ctypes)]
 extern "C" {
     fn tt_get_error_message() -> *const libc::c_char;
