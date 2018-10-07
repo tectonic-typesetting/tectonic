@@ -260,6 +260,12 @@ typedef union {
 #define PIC_NODE_path_len(p) mem[(p) + 4].b16.s1 /* number of bytes in the path item */
 #define PIC_NODE_path(p) ((unsigned char *) &mem[(p) + PIC_NODE_SIZE])
 
+/* Synctex hacks various nodes to add an extra word at the end to store its
+ * information, hence the need to know the node size to get the synctex
+ * info. */
+#define SYNCTEX_tag(p, nodesize) mem[(p) + nodesize - SYNCTEX_FIELD_SIZE].b32.s0
+#define SYNCTEX_line(p, nodesize) mem[(p) + nodesize - SYNCTEX_FIELD_SIZE].b32.s1
+
 #define GLUE_SPEC_ref_count(p) mem[p].b32.s1 /* aka "link" of a link-list node */
 #define GLUE_SPEC_stretch_order(p) mem[p].b16.s1 /* aka "type" of a node */
 #define GLUE_SPEC_shrink_order(p) mem[p].b16.s0 /* aka "subtype" of a node */

@@ -1484,8 +1484,8 @@ copy_node_list(int32_t p)
             case VLIST_NODE:
             case UNSET_NODE:
                 r = get_node(BOX_NODE_SIZE);
-                mem[r + 7].b32.s0 = mem[p + 7].b32.s0;
-                mem[r + 7].b32.s1 = mem[p + 7].b32.s1;
+                SYNCTEX_tag(r, BOX_NODE_SIZE) = SYNCTEX_tag(p, BOX_NODE_SIZE);
+                SYNCTEX_line(r, BOX_NODE_SIZE) = SYNCTEX_line(p, BOX_NODE_SIZE);
                 mem[r + 6] = mem[p + 6];
                 mem[r + 5] = mem[p + 5];
                 mem[r + 5].b32.s1 = copy_node_list(mem[p + 5].b32.s1);
