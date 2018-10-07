@@ -302,30 +302,31 @@ line_break(bool d)
                         try_break(0, UNHYPHENATED);
                 }
 
-                if (GLUE_SPEC_shrink_order(mem[cur_p + 1].b32.s0) != NORMAL && mem[mem[cur_p + 1].b32.s0 + 3].b32.s1 != 0)
-                    mem[cur_p + 1].b32.s0 = finite_shrink(mem[cur_p + 1].b32.s0);
+                q = GLUE_NODE_glue_ptr(cur_p);
 
-                q = mem[cur_p + 1].b32.s0;
-                active_width[1] = active_width[1] + mem[q + 1].b32.s1;
-                active_width[2 + mem[q].b16.s1] = active_width[2 + mem[q].b16.s1] + mem[q + 2].b32.s1;
-                active_width[6] = active_width[6] + mem[q + 3].b32.s1; /*:897*/
+                if (GLUE_SPEC_shrink_order(q) != NORMAL && GLUE_SPEC_shrink(q) != 0)
+                    q = GLUE_NODE_glue_ptr(cur_p) = finite_shrink(q);
+
+                active_width[1] += BOX_width(q);
+                active_width[2 + GLUE_SPEC_stretch_order(q)] += GLUE_SPEC_stretch(q);
+                active_width[6] += GLUE_SPEC_shrink(q); /*:897*/
 
                 if (second_pass && auto_breaking) { /*924:*/
                     prev_s = cur_p;
-                    s = mem[prev_s].b32.s1;
+                    s = LLIST_link(prev_s);
 
                     if (s != TEX_NULL) {
                         while (true) {
                             if (is_char_node(s)) {
                                 c = CHAR_NODE_character(s);
-                                hf = mem[s].b16.s1;
+                                hf = CHAR_NODE_font(s);
                             } else if (NODE_type(s) == LIGATURE_NODE) {
-                                if (mem[s + 1].b32.s1 == TEX_NULL)
+                                if (LIGATURE_NODE_lig_ptr(s) == TEX_NULL)
                                     goto _continue;
 
-                                q = mem[s + 1].b32.s1;
+                                q = LIGATURE_NODE_lig_ptr(s);
                                 c = CHAR_NODE_character(q);
-                                hf = mem[q].b16.s1;
+                                hf = CHAR_NODE_font(q);
                             } else if (NODE_type(s) == KERN_NODE && NODE_subtype(s) == NORMAL) {
                                 goto _continue;
                             } else if (NODE_type(s) == MATH_NODE && NODE_subtype(s) >= L_CODE) {
