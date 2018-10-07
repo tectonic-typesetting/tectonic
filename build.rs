@@ -275,4 +275,6 @@ fn main() {
         let file = file.unwrap();
         println!("cargo:rerun-if-changed={}", file.path().display());
     }
+    // Changes to exported rust api require regenerating `core-bindings.h`. This should catch most of them.
+    println!("cargo:rerun-if-changed=src/engines/mod.rs");
 }
