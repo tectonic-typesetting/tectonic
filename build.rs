@@ -24,10 +24,8 @@ const LIBS: &'static str =
 fn main() {
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
-    cbindgen::Builder::new()
-        .with_language(cbindgen::Language::C)
-        .with_crate(crate_dir)
-        .generate()
+    let cbindgen_config = cbindgen::Config::from_file("cbindgen.toml").expect("invalid cbindgen config file");
+    cbindgen::generate_with_config(crate_dir, cbindgen_config)
         .expect("Unable to generate bindings")
         .write_to_file("tectonic/core-bindgen.h");
 

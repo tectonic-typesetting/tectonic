@@ -48,13 +48,12 @@ typedef enum
     TTIF_TECTONIC_PRIMARY = 59, /* quasi-hack to get the primary input */
 } tt_input_format_type;
 
-typedef void *rust_output_handle_t;
-typedef void *rust_input_handle_t;
+typedef OutputHandle* rust_output_handle_t;
+typedef InputHandle* rust_input_handle_t;
 
 
-/* Bridge API. Keep synchronized with src/engines/mod.rs. */
-
-typedef struct tt_bridge_api_t {
+// TODO: remove
+typedef struct tt_old_bridge_api_t {
     void *context;
 
     void (*issue_warning)(void *context, char const *text);
