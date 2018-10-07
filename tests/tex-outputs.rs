@@ -187,6 +187,11 @@ fn pdfoutput() {
 }
 
 #[test]
+fn redbox_png() {
+    TestCase::new("redbox_png").go()
+}
+
+#[test]
 fn synctex() {
     TestCase::new("synctex").check_synctex(true).go()
 }
