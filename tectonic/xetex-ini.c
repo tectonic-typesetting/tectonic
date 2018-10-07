@@ -3903,7 +3903,7 @@ get_strings_started(void)
 
 
 tt_history_t
-tt_run_engine(char *dump_name, char *input_file_name)
+tt_run_engine(const char *dump_name, const char *input_file_name)
 {
     /* Miscellaneous initializations that were mostly originally done in the
      * main() driver routines. */

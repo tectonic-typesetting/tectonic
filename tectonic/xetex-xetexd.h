@@ -1097,7 +1097,7 @@ cur_length(void) {
 
 
 /* Tectonic related functions */
-tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
+tt_history_t tt_run_engine(const char *dump_name, const char *input_file_name);
 
 
 /* formerly xetex.h: */

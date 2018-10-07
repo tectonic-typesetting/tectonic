@@ -52,7 +52,7 @@ tt_get_error_message(void)
  * setjmp aborts and error message extraction. */
 
 int
-tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name)
+tex_simple_main(tt_bridge_api_t *api, const char *dump_name, const char *input_file_name)
 {
     int rv;
 
@@ -70,7 +70,7 @@ tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name)
 
 
 int
-dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname, bool compress, bool deterministic_tags)
+dvipdfmx_simple_main(tt_bridge_api_t *api, const char *dviname, const char *pdfname, bool compress, bool deterministic_tags)
 {
     int rv;
 
@@ -89,7 +89,7 @@ dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname, bool co
 
 
 int
-bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name)
+bibtex_simple_main(tt_bridge_api_t *api, const char *aux_file_name)
 {
     int rv;
 
