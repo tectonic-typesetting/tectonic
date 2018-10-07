@@ -240,6 +240,10 @@ typedef union {
 #define INSERTION_NODE_split_top_ptr(p) mem[(p) + 4].b32.s1 /* a glue pointer */
 #define INSERTION_NODE_ins_ptr(p) mem[(p) + 4].b32.s0 /* a pointer to a vlist */
 
+#define LANGUAGE_NODE_what_lang(p) mem[(p) + 1].b32.s1 /* language number, 0..255 */
+#define LANGUAGE_NODE_what_lhm(p) mem[(p) + 1].b16.s1 /* "minimum left fragment, range 1..63" */
+#define LANGUAGE_NODE_what_rhm(p) mem[(p) + 1].b16.s0 /* "minimum right fragment, range 1..63" */
+
 #define LIGATURE_NODE_lig_font(p) mem[(p) + 1].b16.s1 /* WEB: font(lig_char(p)) */
 #define LIGATURE_NODE_lig_char(p) mem[(p) + 1].b16.s0 /* WEB: character(lig_char(p)) */
 #define LIGATURE_NODE_lig_ptr(p) mem[(p) + 1].b32.s1 /* WEB: link(lig_char(p)) */

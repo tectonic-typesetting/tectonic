@@ -266,28 +266,29 @@ line_break(bool d)
                 } while (is_char_node(cur_p));
             }
 
-            switch (mem[cur_p].b16.s1) {
+            switch (NODE_type(cur_p)) {
             case HLIST_NODE:
             case VLIST_NODE:
             case RULE_NODE:
-                active_width[1] += mem[cur_p + 1].b32.s1;
+                active_width[1] += BOX_width(cur_p);
                 break;
 
             case WHATSIT_NODE:
-                if (mem[cur_p].b16.s0 == LANGUAGE_NODE) {
-                    cur_lang = mem[cur_p + 1].b32.s1;
-                    l_hyf = mem[cur_p + 1].b16.s1;
-                    r_hyf = mem[cur_p + 1].b16.s0;
+                if (NODE_subtype(cur_p) == LANGUAGE_NODE) {
+                    cur_lang = LANGUAGE_NODE_what_lang(cur_p);
+                    l_hyf = LANGUAGE_NODE_what_lhm(cur_p);
+                    r_hyf = LANGUAGE_NODE_what_rhm(cur_p);
+
                     if (trie_trc[hyph_start + cur_lang] != cur_lang)
                         hyph_index = 0;
                     else
                         hyph_index = trie_trl[hyph_start + cur_lang];
-                } else if (mem[cur_p].b16.s0 == NATIVE_WORD_NODE
-                           || mem[cur_p].b16.s0 == NATIVE_WORD_NODE_AT
-                           || mem[cur_p].b16.s0 == GLYPH_NODE
-                           || mem[cur_p].b16.s0 == PIC_NODE
-                           || mem[cur_p].b16.s0 == PDF_NODE) {
-                    active_width[1] += mem[cur_p + 1].b32.s1;
+                } else if (NODE_subtype(cur_p) == NATIVE_WORD_NODE
+                           || NODE_subtype(cur_p) == NATIVE_WORD_NODE_AT
+                           || NODE_subtype(cur_p) == GLYPH_NODE
+                           || NODE_subtype(cur_p) == PIC_NODE
+                           || NODE_subtype(cur_p) == PDF_NODE) {
+                    active_width[1] += BOX_width(cur_p);
                 }
                 break;
 
@@ -325,12 +326,12 @@ line_break(bool d)
                                 q = mem[s + 1].b32.s1;
                                 c = CHAR_NODE_character(q);
                                 hf = mem[q].b16.s1;
-                            } else if (NODE_type(s) == KERN_NODE && mem[s].b16.s0 == NORMAL) {
+                            } else if (NODE_type(s) == KERN_NODE && NODE_subtype(s) == NORMAL) {
                                 goto _continue;
-                            } else if (NODE_type(s) == MATH_NODE && mem[s].b16.s0 >= L_CODE) {
+                            } else if (NODE_type(s) == MATH_NODE && NODE_subtype(s) >= L_CODE) {
                                 goto _continue;
                             } else if (NODE_type(s) == WHATSIT_NODE) {
-                                if (mem[s].b16.s0 == NATIVE_WORD_NODE || mem[s].b16.s0 == NATIVE_WORD_NODE_AT) {
+                                if (NODE_subtype(s) == NATIVE_WORD_NODE || NODE_subtype(s) == NATIVE_WORD_NODE_AT) {
                                     for (l = 0; l <= mem[s + 4].b16.s1 - 1; l++) {
                                         c = get_native_usv(s, l);
                                         if (LC_CODE(c) != 0) {
@@ -344,7 +345,7 @@ line_break(bool d)
                                     }
                                 }
 
-                                if (mem[s].b16.s0 == LANGUAGE_NODE) {
+                                if (NODE_subtype(s) == LANGUAGE_NODE) {
                                     cur_lang = mem[s + 1].b32.s1;
                                     l_hyf = mem[s + 1].b16.s1;
                                     r_hyf = mem[s + 1].b16.s0;
@@ -404,7 +405,7 @@ line_break(bool d)
                                         break;
 
                                     case KERN_NODE:
-                                        if (mem[s].b16.s0 != NORMAL)
+                                        if (NODE_subtype(s) != NORMAL)
                                             goto done6;
                                         break;
 
@@ -560,7 +561,7 @@ line_break(bool d)
                                         hyf_bchar = font_bchar[hf];
                                     else
                                         hyf_bchar = TOO_BIG_CHAR;
-                                } else if (NODE_type(s) == KERN_NODE && mem[s].b16.s0 == NORMAL) {
+                                } else if (NODE_type(s) == KERN_NODE && NODE_subtype(s) == NORMAL) {
                                     hb = s;
                                     hyf_bchar = font_bchar[hf];
                                 } else {
@@ -582,7 +583,7 @@ line_break(bool d)
                                 case LIGATURE_NODE:
                                     break;
                                 case KERN_NODE:
-                                    if (mem[s].b16.s0 != NORMAL)
+                                    if (NODE_subtype(s) != NORMAL)
                                         goto done4;
                                     break;
                                 case WHATSIT_NODE:
@@ -594,7 +595,7 @@ line_break(bool d)
                                     goto done4;
                                     break;
                                 case MATH_NODE:
-                                    if (mem[s].b16.s0 >= L_CODE)
+                                    if (NODE_subtype(s) >= L_CODE)
                                         goto done4;
                                     else
                                         goto done1;
@@ -623,9 +624,9 @@ line_break(bool d)
                         if (NODE_type(mem[cur_p].b32.s1) == GLUE_NODE)
                             try_break(0, UNHYPHENATED);
                     }
-                    active_width[1] += mem[cur_p + 1].b32.s1;
+                    active_width[1] += BOX_width(cur_p);
                 } else
-                    active_width[1] += mem[cur_p + 1].b32.s1;
+                    active_width[1] += BOX_width(cur_p);
                 break;
 
             case LIGATURE_NODE:
@@ -667,15 +668,15 @@ line_break(bool d)
                             case VLIST_NODE:
                             case RULE_NODE:
                             case KERN_NODE:
-                                disc_width += mem[s + 1].b32.s1;
+                                disc_width += BOX_width(s);
                                 break;
                             case WHATSIT_NODE:
-                                if (mem[s].b16.s0 == NATIVE_WORD_NODE ||
-                                    mem[s].b16.s0 == NATIVE_WORD_NODE_AT ||
-                                    mem[s].b16.s0 == GLYPH_NODE ||
-                                    mem[s].b16.s0 == PIC_NODE ||
-                                    mem[s].b16.s0 == PDF_NODE)
-                                    disc_width += mem[s + 1].b32.s1;
+                                if (NODE_subtype(s) == NATIVE_WORD_NODE ||
+                                    NODE_subtype(s) == NATIVE_WORD_NODE_AT ||
+                                    NODE_subtype(s) == GLYPH_NODE ||
+                                    NODE_subtype(s) == PIC_NODE ||
+                                    NODE_subtype(s) == PDF_NODE)
+                                    disc_width += BOX_width(s);
                                 else
                                     confusion("disc3a");
                                 break;
@@ -719,15 +720,15 @@ line_break(bool d)
                         case VLIST_NODE:
                         case RULE_NODE:
                         case KERN_NODE:
-                            active_width[1] += mem[s + 1].b32.s1;
+                            active_width[1] += BOX_width(s);
                             break;
                         case WHATSIT_NODE:
-                            if (mem[s].b16.s0 == NATIVE_WORD_NODE ||
-                                mem[s].b16.s0 == NATIVE_WORD_NODE_AT ||
-                                mem[s].b16.s0 == GLYPH_NODE ||
-                                mem[s].b16.s0 == PIC_NODE ||
-                                mem[s].b16.s0 == PDF_NODE)
-                                active_width[1] += mem[s + 1].b32.s1;
+                            if (NODE_subtype(s) == NATIVE_WORD_NODE ||
+                                NODE_subtype(s) == NATIVE_WORD_NODE_AT ||
+                                NODE_subtype(s) == GLYPH_NODE ||
+                                NODE_subtype(s) == PIC_NODE ||
+                                NODE_subtype(s) == PDF_NODE)
+                                active_width[1] += BOX_width(s);
                             else
                                 confusion("disc4a");
                             break;
@@ -755,11 +756,11 @@ line_break(bool d)
                         try_break(0, UNHYPHENATED);
                 }
 
-                active_width[1] += mem[cur_p + 1].b32.s1;
+                active_width[1] += BOX_width(cur_p);
                 break;
 
             case PENALTY_NODE:
-                try_break(mem[cur_p + 1].b32.s1, UNHYPHENATED);
+                try_break(BOX_width(cur_p), UNHYPHENATED);
                 break;
 
             case MARK_NODE:
@@ -1439,15 +1440,15 @@ try_break(int32_t pi, small_number break_type)
                                     case VLIST_NODE:
                                     case RULE_NODE:
                                     case KERN_NODE:
-                                        break_width[1] += mem[s + 1].b32.s1;
+                                        break_width[1] += BOX_width(s);
                                         break;
                                     case WHATSIT_NODE:
-                                        if (mem[s].b16.s0 == NATIVE_WORD_NODE
-                                            || mem[s].b16.s0 == NATIVE_WORD_NODE_AT
-                                            || mem[s].b16.s0 == GLYPH_NODE
-                                            || mem[s].b16.s0 == PIC_NODE
-                                            || mem[s].b16.s0 == PDF_NODE)
-                                            break_width[1] += mem[s + 1].b32.s1;
+                                        if (NODE_subtype(s) == NATIVE_WORD_NODE
+                                            || NODE_subtype(s) == NATIVE_WORD_NODE_AT
+                                            || NODE_subtype(s) == GLYPH_NODE
+                                            || NODE_subtype(s) == PIC_NODE
+                                            || NODE_subtype(s) == PDF_NODE)
+                                            break_width[1] += BOX_width(s);
                                         else
                                             confusion("disc2a");
                                         break;
@@ -1478,12 +1479,12 @@ try_break(int32_t pi, small_number break_type)
                         case PENALTY_NODE:
                             break;
                         case MATH_NODE:
-                            break_width[1] -= mem[s + 1].b32.s1;
+                            break_width[1] -= BOX_width(s);
                             break;
                         case KERN_NODE:
                             if (NODE_subtype(s) != EXPLICIT)
                                 goto done;
-                            break_width[1] -= mem[s + 1].b32.s1;
+                            break_width[1] -= BOX_width(s);
                             break;
                         default:
                             goto done;
