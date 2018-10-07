@@ -7,6 +7,7 @@
 #define TECTONIC_CORE_BRIDGE_H
 
 #include "core-foundation.h"
+#include "core-bindgen.h"
 
 /* Both XeTeX and bibtex use this enum: */
 
@@ -50,45 +51,7 @@ typedef enum
 
 typedef OutputHandle* rust_output_handle_t;
 typedef InputHandle* rust_input_handle_t;
-
-
-// TODO: remove
-typedef struct tt_old_bridge_api_t {
-    void *context;
-
-    void (*issue_warning)(void *context, char const *text);
-    void (*issue_error)(void *context, char const *text);
-
-    int (*get_file_md5)(void *context, char const *path, char *digest);
-    int (*get_data_md5)(void *context, char const *data, size_t len, char *digest);
-
-    rust_output_handle_t (*output_open)(void *context, char const *path, int is_gz);
-    rust_output_handle_t (*output_open_stdout)(void *context);
-    int (*output_putc)(void *context, rust_output_handle_t handle, int c);
-    size_t (*output_write)(void *context, rust_output_handle_t handle, const char *data, size_t len);
-    int (*output_flush)(void *context, rust_output_handle_t handle);
-    int (*output_close)(void *context, rust_output_handle_t handle);
-
-    rust_input_handle_t (*input_open)(void *context, char const *path, tt_input_format_type format, int is_gz);
-    rust_input_handle_t (*input_open_primary)(void *context);
-    size_t (*input_get_size)(void *context, rust_input_handle_t handle);
-    size_t (*input_seek)(void *context, rust_input_handle_t handle, ssize_t offset, int whence, int* internal_error);
-    ssize_t (*input_read)(void *context, rust_input_handle_t handle, char *data, size_t len);
-    int (*input_getc)(void *context, rust_input_handle_t handle);
-    int (*input_ungetc)(void *context, rust_input_handle_t handle, int ch);
-    int (*input_close)(void *context, rust_input_handle_t handle);
-} tt_bridge_api_t;
-
-
 BEGIN_EXTERN_C
-
-/* These functions are not meant to be used in the C/C++ code. They define the
- * API that we expose to the Rust side of things. */
-
-const char *tt_get_error_message(void);
-int tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name);
-int dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname, bool compress, bool deterministic_tags);
-int bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name);
 
 /* The internal, C/C++ interface: */
 
