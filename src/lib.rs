@@ -98,7 +98,10 @@ const APP_INFO: app_dirs::AppInfo = app_dirs::AppInfo {
     author: "TectonicProject",
 };
 
-const FORMAT_SERIAL: u32 = 28; // keep synchronized with tectonic/xetex-constants.h!!
+/* Increase this whenever the engine internals change such that the contents
+ * of the "format" files must be regenerated -- this includes changes to the
+ * string pool. */
+const FORMAT_SERIAL: u32 = 28;
 
 /// Compile LaTeX text to a PDF.
 ///

@@ -463,7 +463,7 @@ impl<'a> ExecutionState<'a> {
 // Now, here' the actual C API. There are two parts to this: the functions in
 // the backing C/C++ code that *we* call, and the API bridge -- a struct of
 // function pointers that we pass to the C/C++ entry points so that they can
-// call back into our code. Keep synchronized with **tectonic/core-bridge.h**.
+// call back into our code.
 
 #[repr(C)]
 pub struct TectonicBridgeApi<'a> {
