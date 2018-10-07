@@ -115,7 +115,7 @@ static char line_buf[LINE_BUF_SIZE];
  * for line-continuation.
  */
 static char *
-readline (char *buf, int buf_len, rust_input_handle_t *handle)
+readline (char *buf, int buf_len, rust_input_handle_t handle)
 {
     char  *r, *q, *p = buf;
     int    n = 0, c = 0;
@@ -239,7 +239,7 @@ read_sfd_record (struct sfd_rec_ *rec, const char *lbuf)
 
 /* Scan for subfont IDs */
 static int
-scan_sfd_file (struct sfd_file_ *sfd, rust_input_handle_t *handle)
+scan_sfd_file (struct sfd_file_ *sfd, rust_input_handle_t handle)
 {
     char  *id;
     char  *q, *p;
@@ -308,7 +308,7 @@ find_sfd_file (const char *sfd_name)
 
     if (id < 0) {
         struct sfd_file_ *sfd = NULL;
-        rust_input_handle_t *handle = NULL;
+        rust_input_handle_t handle = NULL;
 
         if (num_sfd_files >= max_sfd_files) {
             max_sfd_files += 8;
@@ -362,7 +362,7 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
 {
     int               rec_id = -1;
     struct sfd_file_ *sfd;
-    rust_input_handle_t *handle;
+    rust_input_handle_t handle;
     int               sfd_id, i, error = 0;
     char             *p, *q;
 

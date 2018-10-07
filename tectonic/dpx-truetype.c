@@ -59,7 +59,7 @@ pdf_font_open_truetype (pdf_font *font)
     pdf_obj  *fontdict, *descriptor;
     sfnt     *sfont;
     int       embedding = 1; /* Must be embedded. */
-    rust_input_handle_t *handle = NULL;
+    rust_input_handle_t handle = NULL;
     int       length, error = 0;
 
     assert( font );
@@ -868,7 +868,7 @@ pdf_font_load_truetype (pdf_font *font)
     int        index       = pdf_font_get_index(font);
     char     **enc_vec;
     pdf_obj   *fontfile;
-    rust_input_handle_t *handle = NULL;
+    rust_input_handle_t handle = NULL;
     sfnt      *sfont;
     int        i, error = 0;
 

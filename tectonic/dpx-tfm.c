@@ -927,7 +927,7 @@ tfm_get_design_size (int font_id)
 bool
 tfm_exists (const char *tfm_name)
 {
-    rust_input_handle_t *handle;
+    rust_input_handle_t handle;
 
     handle = ttstub_input_open(tfm_name, TTIF_OFM, 0);
     if (handle) {

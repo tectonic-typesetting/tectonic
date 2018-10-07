@@ -1360,7 +1360,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     sfnt  *sfont;
     ULONG  offset = 0;
     char  *base_name = NULL, *cmap_name = NULL;
-    rust_input_handle_t *handle = NULL;
+    rust_input_handle_t handle = NULL;
     otl_gsub      *gsub_vert = NULL, *gsub_list = NULL;
     tt_cmap       *ttcmap;
     CIDSysInfo     csi = {NULL, NULL, 0};
