@@ -29,15 +29,6 @@
 #define xcalloc_array(type, size) (xcalloc(size + 1, sizeof(type)))
 #define xrealloc_array(ptr, type, size) ((type*) xrealloc(ptr, (size + 1) * sizeof(type)))
 
-/* Declarations for the routines we provide ourselves in lib/.  */
-
-#ifndef PRIdPTR
-#define PRIdPTR "ld"
-#endif
-#ifndef PRIxPTR
-#define PRIxPTR "lx"
-#endif
-
 /*11:*/
 #define MIN_TRIE_OP 0
 #define TRIE_OP_SIZE 35111L

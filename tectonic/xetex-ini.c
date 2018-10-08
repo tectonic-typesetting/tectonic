@@ -433,7 +433,7 @@ swap_items (char *p, size_t nitems, size_t size)
     case 1:
         break; /* Nothing to do. */
     default:
-        _tt_abort("can't swap a %zu-byte item for (un)dumping", size);
+        _tt_abort("can't swap a %"PRIuZ"-byte item for (un)dumping", size);
     }
 }
 #else /* not WORDS_BIGENDIAN */
@@ -452,7 +452,7 @@ do_dump (char *p, size_t item_size, size_t nitems, rust_output_handle_t out_file
 
     ssize_t r = ttstub_output_write (out_file, p, item_size * nitems);
     if (r < 0 || (size_t) r != item_size * nitems)
-        _tt_abort ("could not write %zu %zu-byte item(s) to %s",
+        _tt_abort ("could not write %"PRIuZ" %"PRIuZ"-byte item(s) to %s",
                    nitems, item_size, name_of_file);
 
     /* Have to restore the old contents of memory, since some of it might
@@ -468,7 +468,7 @@ do_undump (char *p, size_t item_size, size_t nitems, rust_input_handle_t in_file
 {
     ssize_t r = ttstub_input_read (in_file, p, item_size * nitems);
     if (r < 0 || (size_t) r != item_size * nitems)
-        _tt_abort("could not undump %zu %zu-byte item(s) from %s",
+        _tt_abort("could not undump %"PRIuZ" %"PRIuZ"-byte item(s) from %s",
                   nitems, item_size, name_of_file);
 
     swap_items (p, nitems, item_size);

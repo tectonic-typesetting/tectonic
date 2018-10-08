@@ -947,7 +947,7 @@ parse_part1 (cff_font *font, char **enc_vec,
             argn = parse_svalue(start, end, &strval);
             CHECK_ARGN_EQ(1);
             if (strlen(strval) > TYPE1_NAME_LEN_MAX) {
-                dpx_warning("FontName too long: %s (%zu bytes)", strval, strlen(strval));
+                dpx_warning("FontName too long: %s (%"PRIuZ" bytes)", strval, strlen(strval));
                 strval[TYPE1_NAME_LEN_MAX] = '\0';
             }
             cff_set_name(font, strval);
@@ -1165,7 +1165,7 @@ t1_get_fontname (rust_input_handle_t handle, char *fontname)
 
             if (parse_svalue(&start, end, &strval) == 1) {
                 if (strlen(strval) > TYPE1_NAME_LEN_MAX) {
-                    dpx_warning("FontName \"%s\" too long. (%zu bytes)", strval, strlen(strval));
+                    dpx_warning("FontName \"%s\" too long. (%"PRIuZ" bytes)", strval, strlen(strval));
                     strval[TYPE1_NAME_LEN_MAX] = '\0';
                 }
                 strcpy(fontname, strval);

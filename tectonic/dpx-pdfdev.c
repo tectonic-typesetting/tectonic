@@ -979,7 +979,7 @@ handle_multibyte_string (struct dev_font *font,
           int c;
           /* Check for valid surrogate pair.  */
           if ((p[i] & 0xfc) != 0xd8 || i + 2 >= length || (p[i+2] & 0xfc) != 0xdc) {
-            dpx_warning("Invalid surrogate p[%zu]=%02X...", i, p[i]);
+            dpx_warning("Invalid surrogate p[%"PRIuZ"]=%02X...", i, p[i]);
             return -1;
           }
           c = (((p[i] & 0x03) << 10) | (p[i+1] << 2) | (p[i+2] & 0x03)) + 0x100;
@@ -1031,7 +1031,7 @@ handle_multibyte_string (struct dev_font *font,
     CMap_decode(cmap,
                 &inbuf, &inbytesleft, &outbuf, &outbytesleft);
     if (inbytesleft != 0) {
-      dpx_warning("CMap conversion failed. (%zu bytes remains)", inbytesleft);
+      dpx_warning("CMap conversion failed. (%"PRIuZ" bytes remains)", inbytesleft);
       return -1;
     }
     length  = FORMAT_BUF_SIZE - outbytesleft;

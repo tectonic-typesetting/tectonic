@@ -100,4 +100,39 @@ typedef SSIZE_T ssize_t;
 # define M_PI 3.14159265358979
 #endif
 
+/* Portability: printf format arguments for various non-core types.
+ *
+ * <inttypes.h> ought to define these for most types. We use a custom one for
+ * size_t since older MSVC doesn't provide %z.
+ */
+
+#ifndef PRId64
+# if defined(SIZEOF_LONG)
+#  if SIZEOF_LONG == 8
+#   define PRId64 "ld"
+#  else
+#   define PRId64 "lld"
+#  endif
+# elif defined(_WIN32)
+#  define PRId64 "I64d"
+# else
+#  error "unhandled compiler/platform for PRId64 definition"
+# endif
+#endif
+
+#ifndef PRIdPTR
+# define PRIdPTR "ld"
+#endif
+#ifndef PRIxPTR
+# define PRIxPTR "lx"
+#endif
+
+#ifdef _WIN32
+# define PRIuZ "Iu"
+# define PRIXZ "IX"
+#else
+# define PRIuZ "zu"
+# define PRIXZ "zX"
+#endif
+
 #endif /* not TECTONIC_CORE_FOUNDATION_H */
