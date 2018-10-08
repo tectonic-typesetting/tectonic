@@ -466,6 +466,9 @@
 #define ABSORBING 5
 
 /* commands */
+
+#undef IGNORE /* Windows OS headers sometimes define this */
+
 #define ESCAPE 0
 #define RELAX 0 /* = ESCAPE */
 #define LEFT_BRACE 1
