@@ -32,14 +32,6 @@
 
 #include "core-bridge.h"
 
-#ifndef PRId64
-# if SIZEOF_LONG == 8
-#  define PRId64 "ld"
-# else
-#  define PRId64 "lld"
-# endif
-#endif
-
 /* When reading numbers from binary files 1, 2, or 3 bytes are
    interpreted as either signed or unsigned.
 

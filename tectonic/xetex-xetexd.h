@@ -29,15 +29,6 @@
 #define xcalloc_array(type, size) (xcalloc(size + 1, sizeof(type)))
 #define xrealloc_array(ptr, type, size) ((type*) xrealloc(ptr, (size + 1) * sizeof(type)))
 
-/* Declarations for the routines we provide ourselves in lib/.  */
-
-#ifndef PRIdPTR
-#define PRIdPTR "ld"
-#endif
-#ifndef PRIxPTR
-#define PRIxPTR "lx"
-#endif
-
 /*11:*/
 #define MIN_TRIE_OP 0
 #define TRIE_OP_SIZE 35111L
@@ -240,10 +231,19 @@ typedef union {
 #define INSERTION_NODE_split_top_ptr(p) mem[(p) + 4].b32.s1 /* a glue pointer */
 #define INSERTION_NODE_ins_ptr(p) mem[(p) + 4].b32.s0 /* a pointer to a vlist */
 
+#define LANGUAGE_NODE_what_lang(p) mem[(p) + 1].b32.s1 /* language number, 0..255 */
+#define LANGUAGE_NODE_what_lhm(p) mem[(p) + 1].b16.s1 /* "minimum left fragment, range 1..63" */
+#define LANGUAGE_NODE_what_rhm(p) mem[(p) + 1].b16.s0 /* "minimum right fragment, range 1..63" */
+
 #define LIGATURE_NODE_lig_font(p) mem[(p) + 1].b16.s1 /* WEB: font(lig_char(p)) */
 #define LIGATURE_NODE_lig_char(p) mem[(p) + 1].b16.s0 /* WEB: character(lig_char(p)) */
 #define LIGATURE_NODE_lig_ptr(p) mem[(p) + 1].b32.s1 /* WEB: link(lig_char(p)) */
 
+#define NATIVE_NODE_size(p) mem[(p) + 4].b16.s3
+#define NATIVE_NODE_font(p) mem[(p) + 4].b16.s2
+#define NATIVE_NODE_length(p) mem[(p) + 4].b16.s1 /* number of UTF16 items in the text */
+#define NATIVE_NODE_glyph_count(p) mem[(p) + 4].b16.s0
+#define NATIVE_NODE_glyph_info_ptr(p) mem[(p) + 5].ptr
 #define NATIVE_NODE_text(p) ((unsigned short *) &mem[(p) + NATIVE_NODE_SIZE])
 
 #define PASSIVE_NODE_prev_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
@@ -255,6 +255,15 @@ typedef union {
 
 #define PIC_NODE_path_len(p) mem[(p) + 4].b16.s1 /* number of bytes in the path item */
 #define PIC_NODE_path(p) ((unsigned char *) &mem[(p) + PIC_NODE_SIZE])
+#define PIC_NODE_total_size(p) (PIC_NODE_SIZE + (PIC_NODE_path_len(p) + sizeof(memory_word) - 1) / sizeof(memory_word))
+
+#define WRITE_NODE_tokens(p) mem[(p) + 1].b32.s1 /* "reference count of token list to write" */
+
+/* Synctex hacks various nodes to add an extra word at the end to store its
+ * information, hence the need to know the node size to get the synctex
+ * info. */
+#define SYNCTEX_tag(p, nodesize) mem[(p) + nodesize - SYNCTEX_FIELD_SIZE].b32.s0
+#define SYNCTEX_line(p, nodesize) mem[(p) + nodesize - SYNCTEX_FIELD_SIZE].b32.s1
 
 #define GLUE_SPEC_ref_count(p) mem[p].b32.s1 /* aka "link" of a link-list node */
 #define GLUE_SPEC_stretch_order(p) mem[p].b16.s1 /* aka "type" of a node */
@@ -269,6 +278,7 @@ typedef union {
 #define FONT_CHARINFO_ITALCORR(f, info) font_info[italic_base[f] + (info).s1 / 4].b32.s1
 #define FONT_CHARACTER_WIDTH(f, c) FONT_CHARINFO_WIDTH(f, FONT_CHARACTER_INFO(f, c))
 
+#define TOKEN_LIST_ref_count(p) mem[p].b32.s0
 
 typedef unsigned char glue_ord; /* enum: normal .. filll */
 typedef unsigned char group_code;

@@ -89,7 +89,7 @@ ifreader_read (ifreader *reader, size_t size)
     bytesrem = (size_t) reader->endptr - (size_t) reader->cursor;
     if (size > reader->max) {
         if (__verbose)
-            dpx_message("\nExtending buffer (%ld bytes)...\n", size);
+            dpx_message("\nExtending buffer (%"PRIuZ" bytes)...\n", size);
         reader->buf = RENEW(reader->buf, size+1, unsigned char);
         reader->max = size;
     }
@@ -103,7 +103,7 @@ ifreader_read (ifreader *reader, size_t size)
         reader->endptr += bytesread;
         reader->unread -= bytesread;
         if (__verbose)
-            dpx_message("Reading more %ld bytes (%ld bytes remains in buffer)...\n", bytesread, bytesrem);
+            dpx_message("Reading more %"PRIuZ" bytes (%"PRIuZ" bytes remains in buffer)...\n", bytesread, bytesrem);
     }
 
     *reader->endptr = 0;

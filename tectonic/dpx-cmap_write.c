@@ -159,8 +159,8 @@ write_map (mapDef *mtab, size_t count,
         wbuf->curptr >= wbuf->limptr ) {
       char fmt_buf[32];
       if (count > 100)
-        _tt_abort("Unexpected error....: %zu", count);
-      sprintf(fmt_buf, "%zu beginbfchar\n", count);
+        _tt_abort("Unexpected error....: %"PRIuZ, count);
+      sprintf(fmt_buf, "%"PRIuZ" beginbfchar\n", count);
       pdf_add_stream(stream, fmt_buf,  strlen(fmt_buf));
       pdf_add_stream(stream,
                      wbuf->buf, (int) (wbuf->curptr - wbuf->buf));
@@ -175,7 +175,7 @@ write_map (mapDef *mtab, size_t count,
     char fmt_buf[32];
 
     if (count > 0) {
-      sprintf(fmt_buf, "%zu beginbfchar\n", count);
+      sprintf(fmt_buf, "%"PRIuZ" beginbfchar\n", count);
       pdf_add_stream(stream, fmt_buf,  strlen(fmt_buf));
       pdf_add_stream(stream,
                      wbuf->buf, (int) (wbuf->curptr - wbuf->buf));
@@ -184,7 +184,7 @@ write_map (mapDef *mtab, size_t count,
                      "endbfchar\n", strlen("endbfchar\n"));
       count = 0;
     }
-    sprintf(fmt_buf, "%zu beginbfrange\n", num_blocks);
+    sprintf(fmt_buf, "%"PRIuZ" beginbfrange\n", num_blocks);
     pdf_add_stream(stream, fmt_buf, strlen(fmt_buf));
     for (i = 0; i < num_blocks; i++) {
       size_t j;
@@ -384,8 +384,8 @@ CMap_create_stream (CMap *cmap)
     if (count > 0) { /* Flush */
       char fmt_buf[32];
       if (count > 100)
-        _tt_abort("Unexpected error....: %zu", count);
-      sprintf(fmt_buf, "%zu beginbfchar\n", count);
+        _tt_abort("Unexpected error....: %"PRIuZ, count);
+      sprintf(fmt_buf, "%"PRIuZ" beginbfchar\n", count);
       pdf_add_stream(stream, fmt_buf,  strlen(fmt_buf));
       pdf_add_stream(stream,
                      wbuf.buf, (int) (wbuf.curptr - wbuf.buf));

@@ -17,24 +17,24 @@
 
 #define SYNCTEX_CURH (cur_h + 4736287)
 #define SYNCTEX_CURV (cur_v + 4736287)
-#define synchronization_field_size 1
 
 /* in XeTeX, "halfword" fields are at least 32 bits, so we'll use those for
  * tag and line so that the sync field size is only one memory_word. */
 
-#define SYNCTEX_TAG_MODEL(NODE,TYPE) mem[NODE+TYPE##_node_size-synchronization_field_size].b32.s0
-#define SYNCTEX_LINE_MODEL(NODE,TYPE) mem[NODE+TYPE##_node_size-synchronization_field_size].b32.s1
+#define SYNCTEX_TAG_MODEL(NODE,TYPE) mem[NODE + TYPE##_NODE_SIZE - SYNCTEX_FIELD_SIZE].b32.s0
+#define SYNCTEX_LINE_MODEL(NODE,TYPE) mem[NODE + TYPE##_NODE_SIZE - SYNCTEX_FIELD_SIZE].b32.s1
+
+#define GLUE_NODE_SIZE MEDIUM_NODE_SIZE
+#define KERN_NODE_SIZE MEDIUM_NODE_SIZE
+#define MATH_NODE_SIZE MEDIUM_NODE_SIZE
+
+/* this is an integer constant in xetex-constants.h that conflicts with the macro approach
+ * used above: */
+#undef KERN
 
 /* end of synctex-xetex.h */
 
 /* these values are constants in the WEB code: */
-#define box_node_size (7 + synchronization_field_size) /* = 8 */
-#define small_node_size 2
-#define medium_node_size (small_node_size + synchronization_field_size) /* = 3 */
-#define rule_node_size (4 + synchronization_field_size)
-#define glue_node_size medium_node_size /* this comes into play via SYNCTEX_{TAG,LINE}_MODEL */
-#define kern_node_size medium_node_size
-#define math_node_size medium_node_size
 #define width_offset 1
 #define depth_offset 2
 #define height_offset 3
@@ -458,8 +458,8 @@ void synctex_vlist(int32_t this_box)
     }
     synctex_ctxt.node = this_box;   /*  0 to reset  */
     synctex_ctxt.recorder = NULL;   /*  reset  */
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(this_box,box);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(this_box,box);
+    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(this_box,BOX);
+    synctex_ctxt.line = SYNCTEX_LINE_MODEL(this_box,BOX);
     synctex_ctxt.curh = SYNCTEX_CURH;
     synctex_ctxt.curv = SYNCTEX_CURV;
     synctex_record_node_vlist(this_box);
@@ -478,8 +478,8 @@ void synctex_tsilv(int32_t this_box)
     }
     /*  Ignoring any pending info to be recorded  */
     synctex_ctxt.node = this_box; /*  0 to reset  */
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(this_box,box);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(this_box,box);
+    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(this_box,BOX);
+    synctex_ctxt.line = SYNCTEX_LINE_MODEL(this_box,BOX);
     synctex_ctxt.curh = SYNCTEX_CURH;
     synctex_ctxt.curv = SYNCTEX_CURV;
     synctex_ctxt.recorder = NULL;
@@ -496,8 +496,8 @@ void synctex_void_vlist(int32_t p, int32_t this_box __attribute__ ((unused)))
         return;
     }
     synctex_ctxt.node = p;          /*  reset  */
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,box);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,box);
+    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,BOX);
+    synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,BOX);
     synctex_ctxt.curh = SYNCTEX_CURH;
     synctex_ctxt.curv = SYNCTEX_CURV;
     synctex_ctxt.recorder = NULL;   /*  reset  */
@@ -516,8 +516,8 @@ void synctex_hlist(int32_t this_box)
         return;
     }
     synctex_ctxt.node = this_box;   /*  0 to reset  */
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(this_box,box);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(this_box,box);
+    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(this_box,BOX);
+    synctex_ctxt.line = SYNCTEX_LINE_MODEL(this_box,BOX);
     synctex_ctxt.curh = SYNCTEX_CURH;
     synctex_ctxt.curv = SYNCTEX_CURV;
     synctex_ctxt.recorder = NULL;   /*  reset  */
@@ -537,8 +537,8 @@ void synctex_tsilh(int32_t this_box)
     }
     /*  Ignoring any pending info to be recorded  */
     synctex_ctxt.node = this_box;     /*  0 to force next node to be recorded!  */
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(this_box,box);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(this_box,box);
+    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(this_box,BOX);
+    synctex_ctxt.line = SYNCTEX_LINE_MODEL(this_box,BOX);
     synctex_ctxt.curh = SYNCTEX_CURH;
     synctex_ctxt.curv = SYNCTEX_CURV;
     synctex_ctxt.recorder = NULL;   /*  reset  */
@@ -560,8 +560,8 @@ void synctex_void_hlist(int32_t p, int32_t this_box __attribute__ ((unused)))
         (*synctex_ctxt.recorder) (synctex_ctxt.node);
     }
     synctex_ctxt.node = p;          /*  0 to reset  */
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,box);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,box);
+    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,BOX);
+    synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,BOX);
     synctex_ctxt.curh = SYNCTEX_CURH;
     synctex_ctxt.curv = SYNCTEX_CURV;
     synctex_ctxt.recorder = NULL;   /*  reset  */
@@ -585,13 +585,13 @@ void synctex_math(int32_t p, int32_t this_box __attribute__ ((unused)))
     if (SYNCTEX_IGNORE(p)) {
         return;
     }
-    if ((synctex_ctxt.recorder != NULL) && SYNCTEX_CONTEXT_DID_CHANGE(p,math)) {
+    if ((synctex_ctxt.recorder != NULL) && SYNCTEX_CONTEXT_DID_CHANGE(p,MATH)) {
         /*  the sync context did change  */
         (*synctex_ctxt.recorder) (synctex_ctxt.node);
     }
     synctex_ctxt.node = p;
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,math);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,math);
+    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,MATH);
+    synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,MATH);
     synctex_ctxt.curh = SYNCTEX_CURH;
     synctex_ctxt.curv = SYNCTEX_CURV;
     synctex_ctxt.recorder = NULL;/*  no need to record once more  */
@@ -609,17 +609,17 @@ void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box __attribute__ (
 
     switch (SYNCTEX_TYPE(p)) {
         case rule_node:
-            if (SYNCTEX_IGNORE(p,rule)) {
+            if (SYNCTEX_IGNORE(p,RULE)) {
                 return;
             }
             break;
         case glue_node:
-            if (SYNCTEX_IGNORE(p,glue)) {
+            if (SYNCTEX_IGNORE(p,GLUE)) {
                 return;
             }
             break;
         case kern_node:
-            if (SYNCTEX_IGNORE(p,kern)) {
+            if (SYNCTEX_IGNORE(p,KERN)) {
                 return;
             }
             break;
@@ -632,18 +632,18 @@ void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box __attribute__ (
     synctex_ctxt.recorder = NULL;
     switch (SYNCTEX_TYPE(p)) {
         case rule_node:
-            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,rule);
-            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,rule);
+            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,RULE);
+            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,RULE);
             synctex_record_node_rule(p); /*  always record synchronously: maybe some text is outside the box  */
             break;
         case glue_node:
-            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,glue);
-            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,glue);
+            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,GLUE);
+            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,GLUE);
             synctex_record_node_glue(p); /*  always record synchronously: maybe some text is outside the box  */
             break;
         case kern_node:
-            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,kern);
-            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,kern);
+            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,KERN);
+            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,KERN);
             synctex_record_node_kern(p); /*  always record synchronously: maybe some text is outside the box  */
             break;
         default:
@@ -657,10 +657,10 @@ void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box __attribute__ (
 void synctex_kern(int32_t p, int32_t this_box)
 {
 
-    if (SYNCTEX_IGNORE(p,kern)) {
+    if (SYNCTEX_IGNORE(p,KERN)) {
         return;
     }
-    if (SYNCTEX_CONTEXT_DID_CHANGE(p,kern)) {
+    if (SYNCTEX_CONTEXT_DID_CHANGE(p,KERN)) {
         /*  the sync context has changed  */
         if (synctex_ctxt.recorder != NULL) {
             /*  but was not yet recorded  */
@@ -669,13 +669,13 @@ void synctex_kern(int32_t p, int32_t this_box)
         if (synctex_ctxt.node == this_box) {
             /* first node in the list */
             synctex_ctxt.node = p;
-            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,kern);
-            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,kern);
+            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,KERN);
+            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,KERN);
             synctex_ctxt.recorder = &synctex_record_node_kern;
         } else {
             synctex_ctxt.node = p;
-            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,kern);
-            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,kern);
+            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,KERN);
+            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,KERN);
             synctex_ctxt.recorder = NULL;
             /*  always record when the context has just changed
              *  and when not the first node  */
@@ -684,8 +684,8 @@ void synctex_kern(int32_t p, int32_t this_box)
     } else {
         /*  just update the geometry and type (for future improvements)  */
         synctex_ctxt.node = p;
-        synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,kern);
-        synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,kern);
+        synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,KERN);
+        synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,KERN);
         synctex_ctxt.recorder = &synctex_record_node_kern;
     }
 }
@@ -940,8 +940,8 @@ static inline void
 synctex_record_node_void_vlist(int32_t p)
 {
     int len = ttstub_fprintf(synctex_ctxt.file, "v%i,%i:%i,%i:%i,%i,%i\n",
-                      SYNCTEX_TAG_MODEL(p,box),
-                      SYNCTEX_LINE_MODEL(p,box),
+                      SYNCTEX_TAG_MODEL(p,BOX),
+                      SYNCTEX_LINE_MODEL(p,BOX),
                       synctex_ctxt.curh / synctex_ctxt.unit,
                       synctex_ctxt.curv / synctex_ctxt.unit,
                       SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
@@ -965,8 +965,8 @@ synctex_record_node_vlist(int32_t p)
     synctex_ctxt.flags.not_void = 1;
 
     len = ttstub_fprintf(synctex_ctxt.file, "[%i,%i:%i,%i:%i,%i,%i\n",
-                  SYNCTEX_TAG_MODEL(p,box),
-                  SYNCTEX_LINE_MODEL(p,box),
+                  SYNCTEX_TAG_MODEL(p,BOX),
+                  SYNCTEX_LINE_MODEL(p,BOX),
                   synctex_ctxt.curh / synctex_ctxt.unit,
                   synctex_ctxt.curv / synctex_ctxt.unit,
                   SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
@@ -999,8 +999,8 @@ static inline void
 synctex_record_node_void_hlist(int32_t p)
 {
     int len = ttstub_fprintf(synctex_ctxt.file, "h%i,%i:%i,%i:%i,%i,%i\n",
-                      SYNCTEX_TAG_MODEL(p,box),
-                      SYNCTEX_LINE_MODEL(p,box),
+                      SYNCTEX_TAG_MODEL(p,BOX),
+                      SYNCTEX_LINE_MODEL(p,BOX),
                       synctex_ctxt.curh / synctex_ctxt.unit,
                       synctex_ctxt.curv / synctex_ctxt.unit,
                       SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
@@ -1024,8 +1024,8 @@ synctex_record_node_hlist(int32_t p)
     synctex_ctxt.flags.not_void = 1;
 
     len = ttstub_fprintf(synctex_ctxt.file, "(%i,%i:%i,%i:%i,%i,%i\n",
-                  SYNCTEX_TAG_MODEL(p,box),
-                  SYNCTEX_LINE_MODEL(p,box),
+                  SYNCTEX_TAG_MODEL(p,BOX),
+                  SYNCTEX_LINE_MODEL(p,BOX),
                   synctex_ctxt.curh / synctex_ctxt.unit,
                   synctex_ctxt.curv / synctex_ctxt.unit,
                   SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
@@ -1093,8 +1093,8 @@ static inline void
 synctex_record_node_glue(int32_t p)
 {
     int len = ttstub_fprintf(synctex_ctxt.file, "g%i,%i:%i,%i\n",
-                      SYNCTEX_TAG_MODEL(p,glue),
-                      SYNCTEX_LINE_MODEL(p,glue),
+                      SYNCTEX_TAG_MODEL(p,GLUE),
+                      SYNCTEX_LINE_MODEL(p,GLUE),
                       synctex_ctxt.curh / synctex_ctxt.unit,
                       synctex_ctxt.curv / synctex_ctxt.unit);
     synctex_ctxt.lastv = SYNCTEX_CURV;
@@ -1111,8 +1111,8 @@ static inline void
 synctex_record_node_kern(int32_t p)
 {
     int len = ttstub_fprintf(synctex_ctxt.file, "k%i,%i:%i,%i:%i\n",
-                      SYNCTEX_TAG_MODEL(p,glue),
-                      SYNCTEX_LINE_MODEL(p,glue),
+                      SYNCTEX_TAG_MODEL(p,GLUE),
+                      SYNCTEX_LINE_MODEL(p,GLUE),
                       synctex_ctxt.curh / synctex_ctxt.unit,
                       synctex_ctxt.curv / synctex_ctxt.unit,
                       SYNCTEX_WIDTH(p) / synctex_ctxt.unit);
@@ -1130,8 +1130,8 @@ static inline void
 synctex_record_node_rule(int32_t p)
 {
     int len = ttstub_fprintf(synctex_ctxt.file, "r%i,%i:%i,%i:%i,%i,%i\n",
-                      SYNCTEX_TAG_MODEL(p,rule),
-                      SYNCTEX_LINE_MODEL(p,rule),
+                      SYNCTEX_TAG_MODEL(p,RULE),
+                      SYNCTEX_LINE_MODEL(p,RULE),
                       synctex_ctxt.curh / synctex_ctxt.unit,
                       synctex_ctxt.curv / synctex_ctxt.unit,
                       rule_wd / synctex_ctxt.unit,
@@ -1151,8 +1151,8 @@ static void
 synctex_record_node_math(int32_t p)
 {
     int len = ttstub_fprintf(synctex_ctxt.file, "$%i,%i:%i,%i\n",
-                      SYNCTEX_TAG_MODEL(p, math),
-                      SYNCTEX_LINE_MODEL(p, math),
+                      SYNCTEX_TAG_MODEL(p,MATH),
+                      SYNCTEX_LINE_MODEL(p,MATH),
                       synctex_ctxt.curh / synctex_ctxt.unit,
                       synctex_ctxt.curv / synctex_ctxt.unit);
     synctex_ctxt.lastv = SYNCTEX_CURV;

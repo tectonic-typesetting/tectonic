@@ -568,7 +568,7 @@ pdf_font_load_pkfont (pdf_font *font)
 
         pkt_ptr = NEW(pkh.pkt_len, unsigned char);
         if ((bytesread = fread(pkt_ptr, 1, pkh.pkt_len, fp))!= pkh.pkt_len) {
-          _tt_abort("Only %zu bytes PK packet read. (expected %d bytes)",
+          _tt_abort("Only %"PRIuZ" bytes PK packet read. (expected %d bytes)",
                 bytesread, pkh.pkt_len);
         }
         charproc = create_pk_CharProc_stream(&pkh, charwidth, pkt_ptr, bytesread);

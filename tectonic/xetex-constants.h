@@ -321,6 +321,12 @@
 #define LEFT_TO_RIGHT 0
 #define RIGHT_TO_LEFT 1
 
+/* How many memory words are needed for storing synctex information on various
+ * kinds of nodes. This extra size is already included in the *_NODE_SIZE
+ * definitions below.
+ */
+#define SYNCTEX_FIELD_SIZE 1
+
 #define HLIST_NODE 0
 #define VLIST_NODE 1
 #define DELTA_NODE 2
@@ -460,6 +466,9 @@
 #define ABSORBING 5
 
 /* commands */
+
+#undef IGNORE /* Windows OS headers sometimes define this */
+
 #define ESCAPE 0
 #define RELAX 0 /* = ESCAPE */
 #define LEFT_BRACE 1
