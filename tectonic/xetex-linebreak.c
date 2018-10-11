@@ -1380,8 +1380,6 @@ try_break(int32_t pi, small_number break_type)
     cur_active_width[6] = active_width[6];
 
     while (true) {
-
-    continue_:
         r = mem[prev_r].b32.s1;
         if (NODE_type(r) == DELTA_NODE) {
             cur_active_width[1] += mem[r + 1].b32.s1;
@@ -1392,7 +1390,7 @@ try_break(int32_t pi, small_number break_type)
             cur_active_width[6] += mem[r + 6].b32.s1;
             prev_prev_r = prev_r;
             prev_r = r;
-            goto continue_;
+            continue;
         }
 
         l = mem[r + 1].b32.s0;
@@ -1782,7 +1780,7 @@ try_break(int32_t pi, small_number break_type)
         } else {
             prev_r = r;
             if (b > threshold)
-                goto continue_;
+                continue;
             node_r_stays_active = true;
         }
 
@@ -1828,7 +1826,7 @@ try_break(int32_t pi, small_number break_type)
         }
 
         if (node_r_stays_active)
-            goto continue_;
+            continue;
 
     deactivate: /*889:*/
         mem[prev_r].b32.s1 = mem[r].b32.s1;
