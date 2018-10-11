@@ -220,6 +220,13 @@ typedef union {
 #define CHAR_NODE_font(p) mem[p].b16.s1 /* aka "type" of a node */
 #define CHAR_NODE_character(p) mem[p].b16.s0 /* aka "subtype" of a node */
 
+#define DELTA_NODE_dwidth(p) mem[(p) + 1].b32.s1 /* the "natural width" difference */
+#define DELTA_NODE_dstretch0(p) mem[(p) + 2].b32.s1 /* the stretch difference in points */
+#define DELTA_NODE_dstretch1(p) mem[(p) + 3].b32.s1 /* the stretch difference in fil */
+#define DELTA_NODE_dstretch2(p) mem[(p) + 4].b32.s1 /* the stretch difference in fill */
+#define DELTA_NODE_dstretch3(p) mem[(p) + 5].b32.s1 /* the stretch difference in fill */
+#define DELTA_NODE_dshrink(p) mem[(p) + 6].b32.s1 /* the shrink difference */
+
 #define DISCRETIONARY_NODE_replace_count(p) mem[p].b16.s0 /* aka "subtype" of a node */
 #define DISCRETIONARY_NODE_pre_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define DISCRETIONARY_NODE_post_break(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
