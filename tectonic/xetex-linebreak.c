@@ -257,7 +257,11 @@ line_break(bool d)
         prev_p = global_prev_p = cur_p;
         first_p = cur_p;
 
-        while (cur_p != TEX_NULL && LLIST_link(ACTIVE_LIST) != ACTIVE_LIST) { /*895:*/
+        while (cur_p != TEX_NULL && LLIST_link(ACTIVE_LIST) != ACTIVE_LIST) {
+            /*895: "Call try_break if cur_p is a legal breakpoint; on the
+             * second pass, also try to hyphenate the next word, if cur_p is a
+             * glue node; then advance cur_p to the next node of the paragraph
+             * that could possibly be a legal breakpoint." */
             if (is_char_node(cur_p)) { /*896:*/
                 prev_p = global_prev_p = cur_p;
 
@@ -267,7 +271,7 @@ line_break(bool d)
                     f = CHAR_NODE_font(cur_p);
                     eff_char = effective_char(true, f, CHAR_NODE_character(cur_p));
                     active_width[1] += FONT_CHARACTER_WIDTH(f, eff_char);
-                    cur_p = mem[cur_p].b32.s1;
+                    cur_p = LLIST_link(cur_p);
                 } while (is_char_node(cur_p));
             }
 
@@ -316,7 +320,8 @@ line_break(bool d)
                 active_width[2 + GLUE_SPEC_stretch_order(q)] += GLUE_SPEC_stretch(q);
                 active_width[6] += GLUE_SPEC_shrink(q); /*:897*/
 
-                if (second_pass && auto_breaking) { /*924:*/
+                if (second_pass && auto_breaking) {
+                    /*924: "Try to hyphenate the following word." */
                     prev_s = cur_p;
                     s = LLIST_link(prev_s);
 
@@ -779,8 +784,8 @@ line_break(bool d)
                 break; /*:898 big DISC_NODE case */
 
             case MATH_NODE:
-                if (mem[cur_p].b16.s0 < L_CODE)
-                    auto_breaking = odd(mem[cur_p].b16.s0);
+                if (NODE_subtype(cur_p) < L_CODE)
+                    auto_breaking = odd(NODE_subtype(cur_p));
 
                 if (!is_char_node(LLIST_link(cur_p)) && auto_breaking) {
                     if (NODE_type(LLIST_link(cur_p)) == GLUE_NODE)
@@ -791,7 +796,7 @@ line_break(bool d)
                 break;
 
             case PENALTY_NODE:
-                try_break(BOX_width(cur_p), UNHYPHENATED);
+                try_break(PENALTY_NODE_penalty(cur_p), UNHYPHENATED);
                 break;
 
             case MARK_NODE:
@@ -810,7 +815,9 @@ line_break(bool d)
             ; /*:895*/
         }
 
-        if (cur_p == TEX_NULL) { /*902:*/
+        if (cur_p == TEX_NULL) {
+            /*902: "Try the final line break at the end of the paragraph, and
+             * goto done if the desired breakpoints have been found." */
             try_break(EJECT_PENALTY, HYPHENATED);
 
             if (LLIST_link(ACTIVE_LIST) != ACTIVE_LIST) { /*903:*/
@@ -1339,6 +1346,17 @@ post_line_break(bool d)
 }
 
 
+/*858: "The heart of the line-breaking procedure is try_break, a subroutine
+ * that tests if the current breakpoint cur_p is feasible, by running through
+ * the active list to see what lines of text can be made from active nodes to
+ * cur_p. If feasible breaks are possible, new break nodes are created. If
+ * cur_p is too far from an active node, that node is deactivated. The
+ * parameter pi to try_break is the penalty associated with a break at cur_p;
+ * we have pi = eject_penalty if the break is forced, and pi = inf_penalty if
+ * the break is illegal. The other parameter, break_type, is set to HYPHENATED
+ * or UNHYPHENATED, depending on whether or not the current break is at a
+ * disc_node. The end of a paragraph is also regarded as hyphenated; this case
+ * is distinguishable by the condition cur_p = null." */
 static void
 try_break(int32_t pi, small_number break_type)
 {
@@ -1382,6 +1400,9 @@ try_break(int32_t pi, small_number break_type)
     while (true) {
         r = LLIST_link(prev_r);
 
+        /*861: "If node r is of type delta_node, update cur_active_width, set
+         * prev_r and prev_prev_r, then goto continue" */
+
         if (NODE_type(r) == DELTA_NODE) {
             cur_active_width[1] += DELTA_NODE_dwidth(r);
             cur_active_width[2] += DELTA_NODE_dstretch0(r);
@@ -1394,11 +1415,18 @@ try_break(int32_t pi, small_number break_type)
             continue;
         }
 
+        /*864: "If a line number class has ended, create new active nodes for
+         * the best feasible breaks in that class; then return if r =
+         * last_active, otherwise compute the new line_width." */
+
         l = ACTIVE_NODE_line_number(r);
 
         if (l > old_l) { /* "now we are no longer in the inner loop" */
-            if (minimum_demerits < MAX_HALFWORD && (old_l != easy_line || r == ACTIVE_LIST)) { /*865:*/
-                if (no_break_yet) { /*866:*/
+            if (minimum_demerits < MAX_HALFWORD && (old_l != easy_line || r == ACTIVE_LIST)) {
+                /*865: "Create new active nodes for the best feasible breaks
+                 * just found." */
+                if (no_break_yet) {
+                    /*866: "Compute the values of break_width". */
                     no_break_yet = false;
                     break_width[1] = background[1];
                     break_width[2] = background[2];
@@ -1555,12 +1583,12 @@ try_break(int32_t pi, small_number break_type)
 
                 /*872: "Insert a delta node to prepare for breaks at cur_p" */
                 if (NODE_type(prev_r) == DELTA_NODE) {
-                    mem[prev_r + 1].b32.s1 = mem[prev_r + 1].b32.s1 - cur_active_width[1] + break_width[1];
-                    mem[prev_r + 2].b32.s1 = mem[prev_r + 2].b32.s1 - cur_active_width[2] + break_width[2];
-                    mem[prev_r + 3].b32.s1 = mem[prev_r + 3].b32.s1 - cur_active_width[3] + break_width[3];
-                    mem[prev_r + 4].b32.s1 = mem[prev_r + 4].b32.s1 - cur_active_width[4] + break_width[4];
-                    mem[prev_r + 5].b32.s1 = mem[prev_r + 5].b32.s1 - cur_active_width[5] + break_width[5];
-                    mem[prev_r + 6].b32.s1 = mem[prev_r + 6].b32.s1 - cur_active_width[6] + break_width[6];
+                    DELTA_NODE_dwidth(prev_r) += -cur_active_width[1] + break_width[1];
+                    DELTA_NODE_dstretch0(prev_r) += -cur_active_width[2] + break_width[2];
+                    DELTA_NODE_dstretch1(prev_r) += -cur_active_width[3] + break_width[3];
+                    DELTA_NODE_dstretch2(prev_r) += -cur_active_width[4] + break_width[4];
+                    DELTA_NODE_dstretch3(prev_r) += -cur_active_width[5] + break_width[5];
+                    DELTA_NODE_dshrink(prev_r) += -cur_active_width[6] + break_width[6];
                 } else if (prev_r == ACTIVE_LIST) {
                     active_width[1] = break_width[1];
                     active_width[2] = break_width[2];
