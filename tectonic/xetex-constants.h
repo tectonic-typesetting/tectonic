@@ -448,11 +448,6 @@
 #define FILL 2
 #define FILLL 3
 
-#define VERY_LOOSE_FIT 0
-#define LOOSE_FIT 1
-#define DECENT_FIT 2
-#define TIGHT_FIT 3
-
 #define LIG_TAG 1
 #define LIST_TAG 2
 #define EXT_TAG 3
@@ -1017,7 +1012,6 @@
 
 #define MARKS_CODE 5
 
-#define AWFUL_BAD 0x3FFFFFFF
 
 #define IGNORE_DEPTH -65536000
 

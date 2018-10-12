@@ -6,6 +6,13 @@
 #include "xetex-xetexd.h"
 #include "core-bridge.h"
 
+#define AWFUL_BAD 0x3FFFFFFF
+
+#define VERY_LOOSE_FIT 0
+#define LOOSE_FIT 1
+#define DECENT_FIT 2
+#define TIGHT_FIT 3
+
 static int32_t passive;
 static scaled_t cur_active_width[7];
 static scaled_t background[7];
@@ -56,6 +63,8 @@ static int32_t find_protchar_right(int32_t l, int32_t r);
 static void push_node(int32_t p);
 static int32_t pop_node(void);
 
+/* "The active list ends where it begins" */
+#define LAST_ACTIVE ACTIVE_LIST
 
 static inline UnicodeScalar
 get_native_usv(int32_t p, int32_t i) {
@@ -238,7 +247,7 @@ line_break(bool d)
         q = get_node(active_node_size); /*893:*/
         NODE_type(q) = UNHYPHENATED;
         ACTIVE_NODE_fitness(q) = DECENT_FIT;
-        LLIST_link(q) = ACTIVE_LIST;
+        LLIST_link(q) = LAST_ACTIVE;
         ACTIVE_NODE_break_node(q) = TEX_NULL;
         ACTIVE_NODE_line_number(q) = cur_list.prev_graf + 1;
         ACTIVE_NODE_total_demerits(q) = 0;
@@ -263,7 +272,7 @@ line_break(bool d)
         prev_p = global_prev_p = cur_p;
         first_p = cur_p;
 
-        while (cur_p != TEX_NULL && LLIST_link(ACTIVE_LIST) != ACTIVE_LIST) {
+        while (cur_p != TEX_NULL && LLIST_link(ACTIVE_LIST) != LAST_ACTIVE) {
             /*895: "Call try_break if cur_p is a legal breakpoint; on the
              * second pass, also try to hyphenate the next word, if cur_p is a
              * glue node; then advance cur_p to the next node of the paragraph
@@ -826,7 +835,7 @@ line_break(bool d)
              * goto done if the desired breakpoints have been found." */
             try_break(EJECT_PENALTY, HYPHENATED);
 
-            if (LLIST_link(ACTIVE_LIST) != ACTIVE_LIST) { /*903:*/
+            if (LLIST_link(ACTIVE_LIST) != LAST_ACTIVE) { /*903:*/
                 r = LLIST_link(ACTIVE_LIST);
                 fewest_demerits = MAX_HALFWORD;
 
@@ -839,7 +848,7 @@ line_break(bool d)
                     }
 
                     r = LLIST_link(r);
-                } while (r != ACTIVE_LIST);
+                } while (r != LAST_ACTIVE);
 
                 best_line = ACTIVE_NODE_line_number(best_bet); /*:903*/
 
@@ -865,7 +874,7 @@ line_break(bool d)
                     }
 
                     r = LLIST_link(r);
-                } while (r != ACTIVE_LIST);
+                } while (r != LAST_ACTIVE);
 
                 best_line = ACTIVE_NODE_line_number(best_bet); /*:904*/
 
@@ -878,7 +887,7 @@ line_break(bool d)
 
         q = LLIST_link(ACTIVE_LIST);
 
-        while (q != ACTIVE_LIST) {
+        while (q != LAST_ACTIVE) {
             cur_p = LLIST_link(q);
 
             if (NODE_type(q) == DELTA_NODE)
@@ -1428,7 +1437,7 @@ try_break(int32_t pi, small_number break_type)
         l = ACTIVE_NODE_line_number(r);
 
         if (l > old_l) { /* "now we are no longer in the inner loop" */
-            if (minimum_demerits < MAX_HALFWORD && (old_l != easy_line || r == ACTIVE_LIST)) {
+            if (minimum_demerits < AWFUL_BAD && (old_l != easy_line || r == LAST_ACTIVE)) {
                 /*865: "Create new active nodes for the best feasible breaks
                  * just found." */
                 if (no_break_yet) {
@@ -1656,7 +1665,7 @@ try_break(int32_t pi, small_number break_type)
                 minimum_demerits = MAX_HALFWORD;
 
                 /*873: "Insert a delta node to prepare for the next active node" */
-                if (r != ACTIVE_LIST) {
+                if (r != LAST_ACTIVE) {
                     q = get_node(DELTA_NODE_SIZE);
                     LLIST_link(q) = r;
                     NODE_type(q) = DELTA_NODE;
@@ -1674,7 +1683,7 @@ try_break(int32_t pi, small_number break_type)
             }
 
             /* ... resuming 864 ... */
-            if (r == ACTIVE_LIST)
+            if (r == LAST_ACTIVE)
                 return;
 
             /*879: "Compute the new line width" */
@@ -1769,10 +1778,10 @@ try_break(int32_t pi, small_number break_type)
                             /*1636: "Set the value of b to the badness of the
                             * last line for shrinking, compute the
                             * corresponding fit_class, and goto found" */
-                            if (-(int32_t) g > cur_active_width[6])
-                                g = -(int32_t) cur_active_width[6];
+                            if (-g > cur_active_width[6])
+                                g = -cur_active_width[6];
 
-                            b = badness(-(int32_t) g, cur_active_width[6]);
+                            b = badness(-g, cur_active_width[6]);
                             if (b > 12) /* XXX hardcoded in WEB */
                                 fit_class = TIGHT_FIT;
                             else
@@ -1843,7 +1852,7 @@ try_break(int32_t pi, small_number break_type)
         if (b > INF_BAD || pi == EJECT_PENALTY) {
             /*883: "Prepare to deactivate node r, and goto deactivate unless
              * there is a reason to consider lines of text from r to cur_p" */
-            if (final_pass && minimum_demerits == MAX_HALFWORD && mem[r].b32.s1 == ACTIVE_LIST && prev_r == ACTIVE_LIST)
+            if (final_pass && minimum_demerits == AWFUL_BAD && LLIST_link(r) == LAST_ACTIVE && prev_r == ACTIVE_LIST)
                 artificial_demerits = true;
             else if (b > threshold)
                 goto deactivate;
@@ -1932,14 +1941,14 @@ try_break(int32_t pi, small_number break_type)
         } else if (NODE_type(prev_r) == DELTA_NODE) {
             r = LLIST_link(prev_r);
 
-            if (r == ACTIVE_LIST) {
+            if (r == LAST_ACTIVE) {
                 cur_active_width[1] -= DELTA_NODE_dwidth(prev_r);
                 cur_active_width[2] -= DELTA_NODE_dstretch0(prev_r);
                 cur_active_width[3] -= DELTA_NODE_dstretch1(prev_r);
                 cur_active_width[4] -= DELTA_NODE_dstretch2(prev_r);
                 cur_active_width[5] -= DELTA_NODE_dstretch3(prev_r);
                 cur_active_width[6] -= DELTA_NODE_dshrink(prev_r);
-                LLIST_link(prev_prev_r) = ACTIVE_LIST;
+                LLIST_link(prev_prev_r) = LAST_ACTIVE;
                 free_node(prev_r, DELTA_NODE_SIZE);
                 prev_r = prev_prev_r;
             } else if (NODE_type(r) == DELTA_NODE) {
