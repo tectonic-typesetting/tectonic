@@ -2,6 +2,14 @@
  * Licensed under the MIT License.
  */
 
+/* Customizations for Tectonic:
+ *
+ * In semantic pagination mode, we don't actually linebreak paragraphs. We
+ * just set them as one big line at its natural width no matter what. In the
+ * context of this algorithm that means that try_break is always a no-op
+ * unless we're trying to break at the very end of the paragraph.
+ */
+
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "core-bridge.h"
@@ -1227,7 +1235,16 @@ post_line_break(bool d)
 
         adjust_tail = ADJUST_HEAD;
         pre_adjust_tail = PRE_ADJUST_HEAD;
-        just_box = hpack(q, cur_width, EXACTLY);
+
+        /* Tectonic: in semantic pagination mode, set each "line" (really the
+         * whole paragraph) at its natural width. */
+
+        if (semantic_pagination_enabled) {
+            just_box = hpack(q, 0, ADDITIONAL);
+        } else {
+            just_box = hpack(q, cur_width, EXACTLY);
+        }
+
         BOX_shift_amount(just_box) = cur_indent; /*:918*/
 
         /* 917: append the new box to the current vertical list, followed
@@ -1394,6 +1411,11 @@ try_break(int32_t pi, small_number break_type)
     bool artificial_demerits;
     scaled_t shortfall;
     scaled_t g = 0;
+
+    /* Tectonic: no-op except at the end of the paragraph. We know we're at
+     * the very end of the paragraph when cur_p is TEX_NULL. */
+    if (semantic_pagination_enabled && cur_p != TEX_NULL)
+        return;
 
     if (abs(pi) >= INF_PENALTY) {
         if (pi > 0)
@@ -1707,11 +1729,21 @@ try_break(int32_t pi, small_number break_type)
          * line from r to cur_p is infeasible; otherwise record a new feasible
          * break" */
 
-        artificial_demerits = false;
-        shortfall = line_width - cur_active_width[1];
+        /* Tectonic: if we got here, we must be "considering" a linebreak
+         * at the very end of the paragraph. How amazing, it's a perfect fit!
+         */
 
-        if (INTPAR(xetex_protrude_chars) > 1)
-            shortfall = shortfall + total_pw(r, cur_p);
+        if (semantic_pagination_enabled) {
+            line_width = cur_active_width[1];
+            artificial_demerits = true;
+            shortfall = 0;
+        } else {
+            artificial_demerits = false;
+            shortfall = line_width - cur_active_width[1];
+
+            if (INTPAR(xetex_protrude_chars) > 1)
+                shortfall = shortfall + total_pw(r, cur_p);
+        }
 
         if (shortfall > 0) {
             /*881: "Set the value of b to the badness for stretching the line,
@@ -1824,10 +1856,10 @@ try_break(int32_t pi, small_number break_type)
         } else {
             /*882: "Set the value of b to the badness for shrinking the line,
             * and compute the corresponding fit_class" */
-            if (-(int32_t) shortfall > cur_active_width[6])
+            if (-shortfall > cur_active_width[6])
                 b = (INF_BAD + 1);
             else
-                b = badness(-(int32_t) shortfall, cur_active_width[6]);
+                b = badness(-shortfall, cur_active_width[6]);
 
             if (b > 12)
                 fit_class = TIGHT_FIT;
