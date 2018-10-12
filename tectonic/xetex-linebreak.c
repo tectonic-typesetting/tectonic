@@ -37,6 +37,12 @@ static int32_t hyf_char;
 static unsigned char init_cur_lang;
 static int32_t l_hyf, r_hyf, init_l_hyf, init_r_hyf;
 static int32_t hyf_bchar;
+static int32_t last_line_fill;
+static bool do_last_line_fit;
+static small_number active_node_size;
+static scaled_t fill_width[3];
+static scaled_t best_pl_short[4];
+static scaled_t best_pl_glue[4];
 
 
 static void post_line_break(bool d);
