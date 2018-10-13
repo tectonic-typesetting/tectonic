@@ -2,9 +2,24 @@
  * Licensed under the MIT License.
  */
 
+/* Customizations for Tectonic:
+ *
+ * In semantic pagination mode, we don't actually linebreak paragraphs. We
+ * just set them as one big line at its natural width no matter what. In the
+ * context of this algorithm that means that try_break is always a no-op
+ * unless we're trying to break at the very end of the paragraph.
+ */
+
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "core-bridge.h"
+
+#define AWFUL_BAD 0x3FFFFFFF
+
+#define VERY_LOOSE_FIT 0
+#define LOOSE_FIT 1
+#define DECENT_FIT 2
+#define TIGHT_FIT 3
 
 static int32_t passive;
 static scaled_t cur_active_width[7];
@@ -37,6 +52,12 @@ static int32_t hyf_char;
 static unsigned char init_cur_lang;
 static int32_t l_hyf, r_hyf, init_l_hyf, init_r_hyf;
 static int32_t hyf_bchar;
+static int32_t last_line_fill;
+static bool do_last_line_fit;
+static small_number active_node_size;
+static scaled_t fill_width[3];
+static scaled_t best_pl_short[4];
+static scaled_t best_pl_glue[4];
 
 
 static void post_line_break(bool d);
@@ -44,7 +65,14 @@ static void try_break(int32_t pi, small_number break_type);
 static void hyphenate(void);
 static int32_t finite_shrink(int32_t p);
 static small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar);
+static scaled_t total_pw(int32_t q, int32_t p);
+static int32_t find_protchar_left(int32_t l, bool d);
+static int32_t find_protchar_right(int32_t l, int32_t r);
+static void push_node(int32_t p);
+static int32_t pop_node(void);
 
+/* "The active list ends where it begins" */
+#define LAST_ACTIVE ACTIVE_LIST
 
 static inline UnicodeScalar
 get_native_usv(int32_t p, int32_t i) {
@@ -227,7 +255,7 @@ line_break(bool d)
         q = get_node(active_node_size); /*893:*/
         NODE_type(q) = UNHYPHENATED;
         ACTIVE_NODE_fitness(q) = DECENT_FIT;
-        LLIST_link(q) = ACTIVE_LIST;
+        LLIST_link(q) = LAST_ACTIVE;
         ACTIVE_NODE_break_node(q) = TEX_NULL;
         ACTIVE_NODE_line_number(q) = cur_list.prev_graf + 1;
         ACTIVE_NODE_total_demerits(q) = 0;
@@ -252,7 +280,11 @@ line_break(bool d)
         prev_p = global_prev_p = cur_p;
         first_p = cur_p;
 
-        while (cur_p != TEX_NULL && LLIST_link(ACTIVE_LIST) != ACTIVE_LIST) { /*895:*/
+        while (cur_p != TEX_NULL && LLIST_link(ACTIVE_LIST) != LAST_ACTIVE) {
+            /*895: "Call try_break if cur_p is a legal breakpoint; on the
+             * second pass, also try to hyphenate the next word, if cur_p is a
+             * glue node; then advance cur_p to the next node of the paragraph
+             * that could possibly be a legal breakpoint." */
             if (is_char_node(cur_p)) { /*896:*/
                 prev_p = global_prev_p = cur_p;
 
@@ -262,7 +294,7 @@ line_break(bool d)
                     f = CHAR_NODE_font(cur_p);
                     eff_char = effective_char(true, f, CHAR_NODE_character(cur_p));
                     active_width[1] += FONT_CHARACTER_WIDTH(f, eff_char);
-                    cur_p = mem[cur_p].b32.s1;
+                    cur_p = LLIST_link(cur_p);
                 } while (is_char_node(cur_p));
             }
 
@@ -311,7 +343,8 @@ line_break(bool d)
                 active_width[2 + GLUE_SPEC_stretch_order(q)] += GLUE_SPEC_stretch(q);
                 active_width[6] += GLUE_SPEC_shrink(q); /*:897*/
 
-                if (second_pass && auto_breaking) { /*924:*/
+                if (second_pass && auto_breaking) {
+                    /*924: "Try to hyphenate the following word." */
                     prev_s = cur_p;
                     s = LLIST_link(prev_s);
 
@@ -774,8 +807,8 @@ line_break(bool d)
                 break; /*:898 big DISC_NODE case */
 
             case MATH_NODE:
-                if (mem[cur_p].b16.s0 < L_CODE)
-                    auto_breaking = odd(mem[cur_p].b16.s0);
+                if (NODE_subtype(cur_p) < L_CODE)
+                    auto_breaking = odd(NODE_subtype(cur_p));
 
                 if (!is_char_node(LLIST_link(cur_p)) && auto_breaking) {
                     if (NODE_type(LLIST_link(cur_p)) == GLUE_NODE)
@@ -786,7 +819,7 @@ line_break(bool d)
                 break;
 
             case PENALTY_NODE:
-                try_break(BOX_width(cur_p), UNHYPHENATED);
+                try_break(PENALTY_NODE_penalty(cur_p), UNHYPHENATED);
                 break;
 
             case MARK_NODE:
@@ -805,10 +838,12 @@ line_break(bool d)
             ; /*:895*/
         }
 
-        if (cur_p == TEX_NULL) { /*902:*/
+        if (cur_p == TEX_NULL) {
+            /*902: "Try the final line break at the end of the paragraph, and
+             * goto done if the desired breakpoints have been found." */
             try_break(EJECT_PENALTY, HYPHENATED);
 
-            if (LLIST_link(ACTIVE_LIST) != ACTIVE_LIST) { /*903:*/
+            if (LLIST_link(ACTIVE_LIST) != LAST_ACTIVE) { /*903:*/
                 r = LLIST_link(ACTIVE_LIST);
                 fewest_demerits = MAX_HALFWORD;
 
@@ -821,7 +856,7 @@ line_break(bool d)
                     }
 
                     r = LLIST_link(r);
-                } while (r != ACTIVE_LIST);
+                } while (r != LAST_ACTIVE);
 
                 best_line = ACTIVE_NODE_line_number(best_bet); /*:903*/
 
@@ -847,7 +882,7 @@ line_break(bool d)
                     }
 
                     r = LLIST_link(r);
-                } while (r != ACTIVE_LIST);
+                } while (r != LAST_ACTIVE);
 
                 best_line = ACTIVE_NODE_line_number(best_bet); /*:904*/
 
@@ -860,7 +895,7 @@ line_break(bool d)
 
         q = LLIST_link(ACTIVE_LIST);
 
-        while (q != ACTIVE_LIST) {
+        while (q != LAST_ACTIVE) {
             cur_p = LLIST_link(q);
 
             if (NODE_type(q) == DELTA_NODE)
@@ -1200,7 +1235,16 @@ post_line_break(bool d)
 
         adjust_tail = ADJUST_HEAD;
         pre_adjust_tail = PRE_ADJUST_HEAD;
-        just_box = hpack(q, cur_width, EXACTLY);
+
+        /* Tectonic: in semantic pagination mode, set each "line" (really the
+         * whole paragraph) at its natural width. */
+
+        if (semantic_pagination_enabled) {
+            just_box = hpack(q, 0, ADDITIONAL);
+        } else {
+            just_box = hpack(q, cur_width, EXACTLY);
+        }
+
         BOX_shift_amount(just_box) = cur_indent; /*:918*/
 
         /* 917: append the new box to the current vertical list, followed
@@ -1334,6 +1378,17 @@ post_line_break(bool d)
 }
 
 
+/*858: "The heart of the line-breaking procedure is try_break, a subroutine
+ * that tests if the current breakpoint cur_p is feasible, by running through
+ * the active list to see what lines of text can be made from active nodes to
+ * cur_p. If feasible breaks are possible, new break nodes are created. If
+ * cur_p is too far from an active node, that node is deactivated. The
+ * parameter pi to try_break is the penalty associated with a break at cur_p;
+ * we have pi = eject_penalty if the break is forced, and pi = inf_penalty if
+ * the break is illegal. The other parameter, break_type, is set to HYPHENATED
+ * or UNHYPHENATED, depending on whether or not the current break is at a
+ * disc_node. The end of a paragraph is also regarded as hyphenated; this case
+ * is distinguishable by the condition cur_p = null." */
 static void
 try_break(int32_t pi, small_number break_type)
 {
@@ -1357,11 +1412,16 @@ try_break(int32_t pi, small_number break_type)
     scaled_t shortfall;
     scaled_t g = 0;
 
+    /* Tectonic: no-op except at the end of the paragraph. We know we're at
+     * the very end of the paragraph when cur_p is TEX_NULL. */
+    if (semantic_pagination_enabled && cur_p != TEX_NULL)
+        return;
+
     if (abs(pi) >= INF_PENALTY) {
         if (pi > 0)
-            goto exit;
-        else
-            pi = EJECT_PENALTY;
+            return;
+
+        pi = EJECT_PENALTY;
     }
 
     no_break_yet = true;
@@ -1375,26 +1435,35 @@ try_break(int32_t pi, small_number break_type)
     cur_active_width[6] = active_width[6];
 
     while (true) {
+        r = LLIST_link(prev_r);
 
-    continue_:
-        r = mem[prev_r].b32.s1;
+        /*861: "If node r is of type delta_node, update cur_active_width, set
+         * prev_r and prev_prev_r, then goto continue" */
+
         if (NODE_type(r) == DELTA_NODE) {
-            cur_active_width[1] += mem[r + 1].b32.s1;
-            cur_active_width[2] += mem[r + 2].b32.s1;
-            cur_active_width[3] += mem[r + 3].b32.s1;
-            cur_active_width[4] += mem[r + 4].b32.s1;
-            cur_active_width[5] += mem[r + 5].b32.s1;
-            cur_active_width[6] += mem[r + 6].b32.s1;
+            cur_active_width[1] += DELTA_NODE_dwidth(r);
+            cur_active_width[2] += DELTA_NODE_dstretch0(r);
+            cur_active_width[3] += DELTA_NODE_dstretch1(r);
+            cur_active_width[4] += DELTA_NODE_dstretch2(r);
+            cur_active_width[5] += DELTA_NODE_dstretch3(r);
+            cur_active_width[6] += DELTA_NODE_dshrink(r);
             prev_prev_r = prev_r;
             prev_r = r;
-            goto continue_;
+            continue;
         }
 
-        l = mem[r + 1].b32.s0;
+        /*864: "If a line number class has ended, create new active nodes for
+         * the best feasible breaks in that class; then return if r =
+         * last_active, otherwise compute the new line_width." */
 
-        if (l > old_l) {
-            if (minimum_demerits < MAX_HALFWORD && (old_l != easy_line || r == ACTIVE_LIST)) { /*865:*/
-                if (no_break_yet) { /*866:*/
+        l = ACTIVE_NODE_line_number(r);
+
+        if (l > old_l) { /* "now we are no longer in the inner loop" */
+            if (minimum_demerits < AWFUL_BAD && (old_l != easy_line || r == LAST_ACTIVE)) {
+                /*865: "Create new active nodes for the best feasible breaks
+                 * just found." */
+                if (no_break_yet) {
+                    /*866: "Compute the values of break_width". */
                     no_break_yet = false;
                     break_width[1] = background[1];
                     break_width[2] = background[2];
@@ -1405,14 +1474,17 @@ try_break(int32_t pi, small_number break_type)
                     s = cur_p;
 
                     if (break_type > UNHYPHENATED) {
-                        if (cur_p != TEX_NULL) { /*869:*/
-                            t = mem[cur_p].b16.s0;
+                        /*869: "Compute the discretionary break_width values" */
+                        if (cur_p != TEX_NULL) {
+                            t = DISCRETIONARY_NODE_replace_count(cur_p);
                             v = cur_p;
-                            s = mem[cur_p + 1].b32.s1;
+                            s = DISCRETIONARY_NODE_post_break(cur_p);
 
                             while (t > 0) {
                                 t--;
-                                v = mem[v].b32.s1;
+                                v = LLIST_link(v);
+
+                                /*870: "subtract the width of node v from break_width" */
                                 if (is_char_node(v)) {
                                     int32_t eff_char;
 
@@ -1420,7 +1492,7 @@ try_break(int32_t pi, small_number break_type)
                                     eff_char = effective_char(true, f, CHAR_NODE_character(v));
                                     break_width[1] -= FONT_CHARACTER_WIDTH(f, eff_char);
                                 } else
-                                    switch (mem[v].b16.s1) {
+                                    switch (NODE_type(v)) {
                                     case LIGATURE_NODE:
                                     {
                                         int32_t eff_char;
@@ -1431,28 +1503,32 @@ try_break(int32_t pi, small_number break_type)
                                         break_width[1] -= FONT_CHARACTER_WIDTH(f, eff_char);
                                         break;
                                     }
+
                                     case HLIST_NODE:
                                     case VLIST_NODE:
                                     case RULE_NODE:
                                     case KERN_NODE:
-                                        break_width[1] -= mem[v + 1].b32.s1;
+                                        break_width[1] -= BOX_width(v);
                                         break;
+
                                     case WHATSIT_NODE:
-                                        if (mem[v].b16.s0 == NATIVE_WORD_NODE
-                                            || mem[v].b16.s0 == NATIVE_WORD_NODE_AT
-                                            || mem[v].b16.s0 == GLYPH_NODE
-                                            || mem[v].b16.s0 == PIC_NODE
-                                            || mem[v].b16.s0 == PDF_NODE)
-                                            break_width[1] -= mem[v + 1].b32.s1;
+                                        if (NODE_subtype(v) == NATIVE_WORD_NODE
+                                            || NODE_subtype(v) == NATIVE_WORD_NODE_AT
+                                            || NODE_subtype(v) == GLYPH_NODE
+                                            || NODE_subtype(v) == PIC_NODE
+                                            || NODE_subtype(v) == PDF_NODE)
+                                            break_width[1] -= BOX_width(v);
                                         else
                                             confusion("disc1a");
                                         break;
+
                                     default:
                                         confusion("disc1");
                                         break;
                                     }
                             }
 
+                            /*871: "add the width of node s to break_width" */
                             while (s != TEX_NULL) {
                                 if (is_char_node(s)) {
                                     int32_t eff_char;
@@ -1472,12 +1548,14 @@ try_break(int32_t pi, small_number break_type)
                                         break_width[1] += FONT_CHARACTER_WIDTH(f, eff_char);
                                         break;
                                     }
+
                                     case HLIST_NODE:
                                     case VLIST_NODE:
                                     case RULE_NODE:
                                     case KERN_NODE:
                                         break_width[1] += BOX_width(s);
                                         break;
+
                                     case WHATSIT_NODE:
                                         if (NODE_subtype(s) == NATIVE_WORD_NODE
                                             || NODE_subtype(s) == NATIVE_WORD_NODE_AT
@@ -1488,16 +1566,18 @@ try_break(int32_t pi, small_number break_type)
                                         else
                                             confusion("disc2a");
                                         break;
+
                                     default:
                                         confusion("disc2");
                                         break;
                                     }
-                                s = mem[s].b32.s1;
+
+                                s = LLIST_link(s);
                             }
 
                             break_width[1] += disc_width;
-                            if (mem[cur_p + 1].b32.s1 == TEX_NULL)
-                                s = mem[v].b32.s1;
+                            if (DISCRETIONARY_NODE_post_break(cur_p) == TEX_NULL)
+                                s = LLIST_link(v);
                         }
                     }
 
@@ -1505,41 +1585,47 @@ try_break(int32_t pi, small_number break_type)
                         if (is_char_node(s))
                             goto done;
 
-                        switch (mem[s].b16.s1) {
+                        switch (NODE_type(s)) {
                         case GLUE_NODE:
-                            v = mem[s + 1].b32.s0;
-                            break_width[1] -= mem[v + 1].b32.s1;
-                            break_width[2 + mem[v].b16.s1] -= mem[v + 2].b32.s1;
-                            break_width[6] -= mem[v + 3].b32.s1;
+                            v = GLUE_NODE_glue_ptr(s);
+                            break_width[1] -= BOX_width(v);
+                            break_width[2 + GLUE_SPEC_stretch_order(v)] -= GLUE_SPEC_stretch(v);
+                            break_width[6] -= GLUE_SPEC_shrink(v);
                             break;
+
                         case PENALTY_NODE:
                             break;
+
                         case MATH_NODE:
                             break_width[1] -= BOX_width(s);
                             break;
+
                         case KERN_NODE:
                             if (NODE_subtype(s) != EXPLICIT)
                                 goto done;
                             break_width[1] -= BOX_width(s);
                             break;
+
                         default:
                             goto done;
                             break;
                         }
 
-                        s = mem[s].b32.s1;
+                        s = LLIST_link(s);
                     }
+
                 done:
                     ;
                 }
 
+                /*872: "Insert a delta node to prepare for breaks at cur_p" */
                 if (NODE_type(prev_r) == DELTA_NODE) {
-                    mem[prev_r + 1].b32.s1 = mem[prev_r + 1].b32.s1 - cur_active_width[1] + break_width[1];
-                    mem[prev_r + 2].b32.s1 = mem[prev_r + 2].b32.s1 - cur_active_width[2] + break_width[2];
-                    mem[prev_r + 3].b32.s1 = mem[prev_r + 3].b32.s1 - cur_active_width[3] + break_width[3];
-                    mem[prev_r + 4].b32.s1 = mem[prev_r + 4].b32.s1 - cur_active_width[4] + break_width[4];
-                    mem[prev_r + 5].b32.s1 = mem[prev_r + 5].b32.s1 - cur_active_width[5] + break_width[5];
-                    mem[prev_r + 6].b32.s1 = mem[prev_r + 6].b32.s1 - cur_active_width[6] + break_width[6];
+                    DELTA_NODE_dwidth(prev_r) += -cur_active_width[1] + break_width[1];
+                    DELTA_NODE_dstretch0(prev_r) += -cur_active_width[2] + break_width[2];
+                    DELTA_NODE_dstretch1(prev_r) += -cur_active_width[3] + break_width[3];
+                    DELTA_NODE_dstretch2(prev_r) += -cur_active_width[4] + break_width[4];
+                    DELTA_NODE_dstretch3(prev_r) += -cur_active_width[5] + break_width[5];
+                    DELTA_NODE_dshrink(prev_r) += -cur_active_width[6] + break_width[6];
                 } else if (prev_r == ACTIVE_LIST) {
                     active_width[1] = break_width[1];
                     active_width[2] = break_width[2];
@@ -1549,78 +1635,80 @@ try_break(int32_t pi, small_number break_type)
                     active_width[6] = break_width[6];
                 } else {
                     q = get_node(DELTA_NODE_SIZE);
-                    mem[q].b32.s1 = r;
+                    LLIST_link(q) = r;
                     NODE_type(q) = DELTA_NODE;
-                    mem[q].b16.s0 = 0;
-                    mem[q + 1].b32.s1 = break_width[1] - cur_active_width[1];
-                    mem[q + 2].b32.s1 = break_width[2] - cur_active_width[2];
-                    mem[q + 3].b32.s1 = break_width[3] - cur_active_width[3];
-                    mem[q + 4].b32.s1 = break_width[4] - cur_active_width[4];
-                    mem[q + 5].b32.s1 = break_width[5] - cur_active_width[5];
-                    mem[q + 6].b32.s1 = break_width[6] - cur_active_width[6];
-                    mem[prev_r].b32.s1 = q;
+                    NODE_subtype(q) = 0; /* this is unused */
+                    DELTA_NODE_dwidth(q) = break_width[1] - cur_active_width[1];
+                    DELTA_NODE_dstretch0(q) = break_width[2] - cur_active_width[2];
+                    DELTA_NODE_dstretch1(q) = break_width[3] - cur_active_width[3];
+                    DELTA_NODE_dstretch2(q) = break_width[4] - cur_active_width[4];
+                    DELTA_NODE_dstretch3(q) = break_width[5] - cur_active_width[5];
+                    DELTA_NODE_dshrink(q) = break_width[6] - cur_active_width[6];
+                    LLIST_link(prev_r) = q;
                     prev_prev_r = prev_r;
                     prev_r = q;
                 }
 
+                /* ... resuming 865 ... */
                 if (abs(INTPAR(adj_demerits)) >= MAX_HALFWORD - minimum_demerits)
                     minimum_demerits = AWFUL_BAD - 1;
                 else
                     minimum_demerits = minimum_demerits + abs(INTPAR(adj_demerits));
 
-                {
-                    register int32_t for_end;
-                    fit_class = VERY_LOOSE_FIT;
-                    for_end = TIGHT_FIT;
-                    if (fit_class <= for_end)
-                        do {
-                            if (minimal_demerits[fit_class] <= minimum_demerits) {  /*874: */
-                                q = get_node(PASSIVE_NODE_SIZE);
-                                mem[q].b32.s1 = passive;
-                                passive = q;
-                                mem[q + 1].b32.s1 = cur_p;
-                                mem[q + 1].b32.s0 = best_place[fit_class];
-                                q = get_node(active_node_size);
-                                mem[q + 1].b32.s1 = passive;
-                                mem[q + 1].b32.s0 = best_pl_line[fit_class] + 1;
-                                mem[q].b16.s0 = fit_class;
-                                mem[q].b16.s1 = break_type;
-                                mem[q + 2].b32.s1 = minimal_demerits[fit_class];
-                                if (do_last_line_fit) {     /*1639: */
-                                    mem[q + 3].b32.s1 = best_pl_short[fit_class];
-                                    mem[q + 4].b32.s1 = best_pl_glue[fit_class];
-                                }
-                                mem[q].b32.s1 = r;
-                                mem[prev_r].b32.s1 = q;
-                                prev_r = q;
-                            }
-                            minimal_demerits[fit_class] = MAX_HALFWORD;
+                for (fit_class = VERY_LOOSE_FIT; fit_class <= TIGHT_FIT; fit_class++) {
+                    if (minimal_demerits[fit_class] <= minimum_demerits) {
+                        /*874: "Insert a new active node from best_place[fit_class] to cur_p" */
+                        q = get_node(PASSIVE_NODE_SIZE);
+                        LLIST_link(q) = passive;
+                        passive = q;
+                        PASSIVE_NODE_cur_break(q) = cur_p;
+                        PASSIVE_NODE_prev_break(q) = best_place[fit_class];
+
+                        q = get_node(active_node_size);
+                        ACTIVE_NODE_break_node(q) = passive;
+                        ACTIVE_NODE_line_number(q) = best_pl_line[fit_class] + 1;
+                        ACTIVE_NODE_fitness(q) = fit_class;
+                        NODE_type(q) = break_type;
+                        ACTIVE_NODE_total_demerits(q) = minimal_demerits[fit_class];
+
+                        if (do_last_line_fit) {     /*1639: */
+                            ACTIVE_NODE_shortfall(q) = best_pl_short[fit_class];
+                            ACTIVE_NODE_glue(q) = best_pl_glue[fit_class];
                         }
-                        while (fit_class++ < for_end);
+
+                        LLIST_link(q) = r;
+                        LLIST_link(prev_r) = q;
+                        prev_r = q;
+                    }
+
+                    minimal_demerits[fit_class] = MAX_HALFWORD;
                 }
 
                 minimum_demerits = MAX_HALFWORD;
 
-                if (r != ACTIVE_LIST) {
+                /*873: "Insert a delta node to prepare for the next active node" */
+                if (r != LAST_ACTIVE) {
                     q = get_node(DELTA_NODE_SIZE);
-                    mem[q].b32.s1 = r;
+                    LLIST_link(q) = r;
                     NODE_type(q) = DELTA_NODE;
-                    mem[q].b16.s0 = 0;
-                    mem[q + 1].b32.s1 = cur_active_width[1] - break_width[1];
-                    mem[q + 2].b32.s1 = cur_active_width[2] - break_width[2];
-                    mem[q + 3].b32.s1 = cur_active_width[3] - break_width[3];
-                    mem[q + 4].b32.s1 = cur_active_width[4] - break_width[4];
-                    mem[q + 5].b32.s1 = cur_active_width[5] - break_width[5];
-                    mem[q + 6].b32.s1 = cur_active_width[6] - break_width[6];
-                    mem[prev_r].b32.s1 = q;
+                    NODE_subtype(q) = 0; /* subtype is not used */
+                    DELTA_NODE_dwidth(q) = cur_active_width[1] - break_width[1];
+                    DELTA_NODE_dstretch0(q) = cur_active_width[2] - break_width[2];
+                    DELTA_NODE_dstretch1(q) = cur_active_width[3] - break_width[3];
+                    DELTA_NODE_dstretch2(q) = cur_active_width[4] - break_width[4];
+                    DELTA_NODE_dstretch3(q) = cur_active_width[5] - break_width[5];
+                    DELTA_NODE_dshrink(q) = cur_active_width[6] - break_width[6];
+                    LLIST_link(prev_r) = q;
                     prev_prev_r = prev_r;
                     prev_r = q;
                 }
             }
 
-            if (r == ACTIVE_LIST)
-                goto exit;
+            /* ... resuming 864 ... */
+            if (r == LAST_ACTIVE)
+                return;
 
+            /*879: "Compute the new line width" */
             if (l > easy_line) {
                 line_width = second_width;
                 old_l = MAX_HALFWORD - 1;
@@ -1632,28 +1720,46 @@ try_break(int32_t pi, small_number break_type)
                 else if (LOCAL(par_shape) == TEX_NULL)
                     line_width = first_width;
                 else
-                    line_width = mem[LOCAL(par_shape) + 2 * l].b32.s1;
+                    line_width = mem[LOCAL(par_shape) + 2 * l].b32.s1; /* this mem access is in the WEB */
             }
         }
 
-        artificial_demerits = false;
-        shortfall = line_width - cur_active_width[1];
+        /*880: "Consider the demerits for a line from r to cur_p; deactivate
+         * node r if it should no longer be active; then goto continue if a
+         * line from r to cur_p is infeasible; otherwise record a new feasible
+         * break" */
 
-        if (INTPAR(xetex_protrude_chars) > 1)
-            shortfall = shortfall + total_pw(r, cur_p);
+        /* Tectonic: if we got here, we must be "considering" a linebreak
+         * at the very end of the paragraph. How amazing, it's a perfect fit!
+         */
 
-        if (shortfall > 0) { /*881:*/
+        if (semantic_pagination_enabled) {
+            line_width = cur_active_width[1];
+            artificial_demerits = true;
+            shortfall = 0;
+        } else {
+            artificial_demerits = false;
+            shortfall = line_width - cur_active_width[1];
+
+            if (INTPAR(xetex_protrude_chars) > 1)
+                shortfall = shortfall + total_pw(r, cur_p);
+        }
+
+        if (shortfall > 0) {
+            /*881: "Set the value of b to the badness for stretching the line,
+             * and compute the corresponding fit_class" */
             if (cur_active_width[3] != 0 || cur_active_width[4] != 0 || cur_active_width[5] != 0) {
                 if (do_last_line_fit) {
-                    if (cur_p == TEX_NULL) { /*1634:*/
-                        if (mem[r + 3].b32.s1 == 0 || mem[r + 4].b32.s1 <= 0)
+                    if (cur_p == TEX_NULL) {
+                        /*1634: "Perform computations for the last line and goto found" */
+                        if (ACTIVE_NODE_shortfall(r) == 0 || ACTIVE_NODE_glue(r) <= 0)
                             goto not_found;
 
                         if (cur_active_width[3] != fill_width[0] || cur_active_width[4] != fill_width[1]
                             || cur_active_width[5] != fill_width[2])
                             goto not_found;
 
-                        if (mem[r + 3].b32.s1 > 0)
+                        if (ACTIVE_NODE_shortfall(r) > 0)
                             g = cur_active_width[2];
                         else
                             g = cur_active_width[6];
@@ -1662,18 +1768,21 @@ try_break(int32_t pi, small_number break_type)
                             goto not_found;
 
                         arith_error = false;
-                        g = fract(g, mem[r + 3].b32.s1, mem[r + 4].b32.s1, MAX_HALFWORD);
+                        g = fract(g, ACTIVE_NODE_shortfall(r), ACTIVE_NODE_glue(r), MAX_HALFWORD);
                         if (INTPAR(last_line_fit) < 1000)
                             g = fract(g, INTPAR(last_line_fit), 1000, MAX_HALFWORD);
 
                         if (arith_error) {
-                            if (mem[r + 3].b32.s1 > 0)
+                            if (ACTIVE_NODE_shortfall(r) > 0)
                                 g = MAX_HALFWORD;
                             else
                                 g = -MAX_HALFWORD;
                         }
 
-                        if (g > 0) { /*1635:*/
+                        if (g > 0) {
+                            /*1635: "Set the value of b to the badness of the
+                            * last line for stretching, compute the
+                            * corresponding fit_class, and goto found" */
                             if (g > shortfall)
                                 g = shortfall;
 
@@ -1697,12 +1806,15 @@ try_break(int32_t pi, small_number break_type)
                             }
 
                             goto found;
-                        } else if (g < 0) { /*1636:*/
-                            if (-(int32_t) g > cur_active_width[6])
-                                g = -(int32_t) cur_active_width[6];
+                        } else if (g < 0) {
+                            /*1636: "Set the value of b to the badness of the
+                            * last line for shrinking, compute the
+                            * corresponding fit_class, and goto found" */
+                            if (-g > cur_active_width[6])
+                                g = -cur_active_width[6];
 
-                            b = badness(-(int32_t) g, cur_active_width[6]);
-                            if (b > 12)
+                            b = badness(-g, cur_active_width[6]);
+                            if (b > 12) /* XXX hardcoded in WEB */
                                 fit_class = TIGHT_FIT;
                             else
                                 fit_class = DECENT_FIT;
@@ -1741,11 +1853,13 @@ try_break(int32_t pi, small_number break_type)
             done1:
                 ;
             }
-        } else { /*882:*/
-            if (-(int32_t) shortfall > cur_active_width[6])
+        } else {
+            /*882: "Set the value of b to the badness for shrinking the line,
+            * and compute the corresponding fit_class" */
+            if (-shortfall > cur_active_width[6])
                 b = (INF_BAD + 1);
             else
-                b = badness(-(int32_t) shortfall, cur_active_width[6]);
+                b = badness(-shortfall, cur_active_width[6]);
 
             if (b > 12)
                 fit_class = TIGHT_FIT;
@@ -1753,7 +1867,8 @@ try_break(int32_t pi, small_number break_type)
                 fit_class = DECENT_FIT;
         }
 
-        if (do_last_line_fit) { /*1637:*/
+        if (do_last_line_fit) {
+            /*1637: "Adjust the additional data for last line" */
             if (cur_p == TEX_NULL)
                 shortfall = 0;
 
@@ -1766,9 +1881,10 @@ try_break(int32_t pi, small_number break_type)
         }
 
     found:
-        if (b > INF_BAD || pi == EJECT_PENALTY) { /*883:*/
-            if (final_pass && minimum_demerits == MAX_HALFWORD && mem[r].b32.s1 == ACTIVE_LIST
-                && prev_r == ACTIVE_LIST)
+        if (b > INF_BAD || pi == EJECT_PENALTY) {
+            /*883: "Prepare to deactivate node r, and goto deactivate unless
+             * there is a reason to consider lines of text from r to cur_p" */
+            if (final_pass && minimum_demerits == AWFUL_BAD && LLIST_link(r) == LAST_ACTIVE && prev_r == ACTIVE_LIST)
                 artificial_demerits = true;
             else if (b > threshold)
                 goto deactivate;
@@ -1777,13 +1893,14 @@ try_break(int32_t pi, small_number break_type)
         } else {
             prev_r = r;
             if (b > threshold)
-                goto continue_;
+                continue;
             node_r_stays_active = true;
         }
 
         if (artificial_demerits) {
             d = 0;
-        } else { /*888:*/
+        } else {
+            /*888: "Compute the demerits, d, from r to cur_p" */
             d = INTPAR(line_penalty) + b;
             if (abs(d) >= 10000)
                 d = 100000000L; /* algorithmic constant */
@@ -1797,91 +1914,93 @@ try_break(int32_t pi, small_number break_type)
                     d = d - pi * pi;
             }
 
-            if (break_type == HYPHENATED && mem[r].b16.s1 == HYPHENATED) {
+            if (break_type == HYPHENATED && NODE_type(r) == HYPHENATED) {
                 if (cur_p != TEX_NULL)
                     d = d + INTPAR(double_hyphen_demerits);
                 else
                     d = d + INTPAR(final_hyphen_demerits);
             }
 
-            if (abs(fit_class - mem[r].b16.s0) > 1)
+            if (abs(fit_class - ACTIVE_NODE_fitness(r)) > 1)
                 d = d + INTPAR(adj_demerits);
         }
 
-        d = d + mem[r + 2].b32.s1;
+        /* resuming 884: */
+        d = d + ACTIVE_NODE_total_demerits(r);
 
         if (d <= minimal_demerits[fit_class]) {
             minimal_demerits[fit_class] = d;
-            best_place[fit_class] = mem[r + 1].b32.s1;
+            best_place[fit_class] = ACTIVE_NODE_break_node(r);
             best_pl_line[fit_class] = l;
+
             if (do_last_line_fit) { /*1638:*/
                 best_pl_short[fit_class] = shortfall;
                 best_pl_glue[fit_class] = g;
             }
+
             if (d < minimum_demerits)
                 minimum_demerits = d;
         }
 
         if (node_r_stays_active)
-            goto continue_;
+            continue;
 
-    deactivate: /*889:*/
-        mem[prev_r].b32.s1 = mem[r].b32.s1;
+    deactivate:
+        /*889: "Deactivate node r" */
+        LLIST_link(prev_r) = LLIST_link(r);
         free_node(r, active_node_size);
 
-        if (prev_r == ACTIVE_LIST) { /*890:*/
-            r = mem[ACTIVE_LIST].b32.s1;
+        if (prev_r == ACTIVE_LIST) {
+            /*890: "Update the active widths, since the first active node has been deleted" */
+            r = LLIST_link(ACTIVE_LIST);
 
             if (NODE_type(r) == DELTA_NODE) {
-                active_width[1] = active_width[1] + mem[r + 1].b32.s1;
-                active_width[2] = active_width[2] + mem[r + 2].b32.s1;
-                active_width[3] = active_width[3] + mem[r + 3].b32.s1;
-                active_width[4] = active_width[4] + mem[r + 4].b32.s1;
-                active_width[5] = active_width[5] + mem[r + 5].b32.s1;
-                active_width[6] = active_width[6] + mem[r + 6].b32.s1;
+                active_width[1] += DELTA_NODE_dwidth(r);
+                active_width[2] += DELTA_NODE_dstretch0(r);
+                active_width[3] += DELTA_NODE_dstretch1(r);
+                active_width[4] += DELTA_NODE_dstretch2(r);
+                active_width[5] += DELTA_NODE_dstretch3(r);
+                active_width[6] += DELTA_NODE_dshrink(r);
                 cur_active_width[1] = active_width[1];
                 cur_active_width[2] = active_width[2];
                 cur_active_width[3] = active_width[3];
                 cur_active_width[4] = active_width[4];
                 cur_active_width[5] = active_width[5];
                 cur_active_width[6] = active_width[6];
-                mem[ACTIVE_LIST].b32.s1 = mem[r].b32.s1;
+                LLIST_link(ACTIVE_LIST) = LLIST_link(r);
                 free_node(r, DELTA_NODE_SIZE);
             }
         } else if (NODE_type(prev_r) == DELTA_NODE) {
-            r = mem[prev_r].b32.s1;
+            r = LLIST_link(prev_r);
 
-            if (r == ACTIVE_LIST) {
-                cur_active_width[1] = cur_active_width[1] - mem[prev_r + 1].b32.s1;
-                cur_active_width[2] = cur_active_width[2] - mem[prev_r + 2].b32.s1;
-                cur_active_width[3] = cur_active_width[3] - mem[prev_r + 3].b32.s1;
-                cur_active_width[4] = cur_active_width[4] - mem[prev_r + 4].b32.s1;
-                cur_active_width[5] = cur_active_width[5] - mem[prev_r + 5].b32.s1;
-                cur_active_width[6] = cur_active_width[6] - mem[prev_r + 6].b32.s1;
-                mem[prev_prev_r].b32.s1 = ACTIVE_LIST;
+            if (r == LAST_ACTIVE) {
+                cur_active_width[1] -= DELTA_NODE_dwidth(prev_r);
+                cur_active_width[2] -= DELTA_NODE_dstretch0(prev_r);
+                cur_active_width[3] -= DELTA_NODE_dstretch1(prev_r);
+                cur_active_width[4] -= DELTA_NODE_dstretch2(prev_r);
+                cur_active_width[5] -= DELTA_NODE_dstretch3(prev_r);
+                cur_active_width[6] -= DELTA_NODE_dshrink(prev_r);
+                LLIST_link(prev_prev_r) = LAST_ACTIVE;
                 free_node(prev_r, DELTA_NODE_SIZE);
                 prev_r = prev_prev_r;
             } else if (NODE_type(r) == DELTA_NODE) {
-                cur_active_width[1] = cur_active_width[1] + mem[r + 1].b32.s1;
-                cur_active_width[2] = cur_active_width[2] + mem[r + 2].b32.s1;
-                cur_active_width[3] = cur_active_width[3] + mem[r + 3].b32.s1;
-                cur_active_width[4] = cur_active_width[4] + mem[r + 4].b32.s1;
-                cur_active_width[5] = cur_active_width[5] + mem[r + 5].b32.s1;
-                cur_active_width[6] = cur_active_width[6] + mem[r + 6].b32.s1;
-                mem[prev_r + 1].b32.s1 = mem[prev_r + 1].b32.s1 + mem[r + 1].b32.s1;
-                mem[prev_r + 2].b32.s1 = mem[prev_r + 2].b32.s1 + mem[r + 2].b32.s1;
-                mem[prev_r + 3].b32.s1 = mem[prev_r + 3].b32.s1 + mem[r + 3].b32.s1;
-                mem[prev_r + 4].b32.s1 = mem[prev_r + 4].b32.s1 + mem[r + 4].b32.s1;
-                mem[prev_r + 5].b32.s1 = mem[prev_r + 5].b32.s1 + mem[r + 5].b32.s1;
-                mem[prev_r + 6].b32.s1 = mem[prev_r + 6].b32.s1 + mem[r + 6].b32.s1;
-                mem[prev_r].b32.s1 = mem[r].b32.s1;
+                cur_active_width[1] += DELTA_NODE_dwidth(r);
+                cur_active_width[2] += DELTA_NODE_dstretch0(r);
+                cur_active_width[3] += DELTA_NODE_dstretch1(r);
+                cur_active_width[4] += DELTA_NODE_dstretch2(r);
+                cur_active_width[5] += DELTA_NODE_dstretch3(r);
+                cur_active_width[6] += DELTA_NODE_dshrink(r);
+                DELTA_NODE_dwidth(prev_r) += DELTA_NODE_dwidth(r);
+                DELTA_NODE_dstretch0(prev_r) += DELTA_NODE_dstretch0(r);
+                DELTA_NODE_dstretch2(prev_r) += DELTA_NODE_dstretch1(r);
+                DELTA_NODE_dstretch2(prev_r) += DELTA_NODE_dstretch2(r);
+                DELTA_NODE_dstretch3(prev_r) += DELTA_NODE_dstretch3(r);
+                DELTA_NODE_dshrink(prev_r) += DELTA_NODE_dshrink(r);
+                LLIST_link(prev_r) = LLIST_link(r);
                 free_node(r, DELTA_NODE_SIZE);
             }
         }
     }
-
-exit:
-    ;
 }
 
 
@@ -2569,4 +2688,158 @@ done:
         goto continue_;
     }
     return j;
+}
+
+
+static scaled_t
+total_pw(int32_t q, int32_t p)
+{
+    int32_t l, r;
+    int32_t n;
+    if (mem[q + 1].b32.s1 == TEX_NULL)
+        l = first_p;
+    else
+        l = mem[mem[q + 1].b32.s1 + 1].b32.s1;
+    r = prev_rightmost(global_prev_p, p);
+    if ((p != TEX_NULL) && (NODE_type(p) == DISC_NODE) && (mem[p + 1].b32.s0 != TEX_NULL)) {
+        r = mem[p + 1].b32.s0;
+        while (mem[r].b32.s1 != TEX_NULL)
+            r = mem[r].b32.s1;
+    } else
+        r = find_protchar_right(l, r);
+    if ((l != TEX_NULL) && (NODE_type(l) == DISC_NODE)) {
+        if (mem[l + 1].b32.s1 != TEX_NULL) {
+            l = mem[l + 1].b32.s1;
+            goto done;
+        } else {
+
+            n = mem[l].b16.s0;
+            l = mem[l].b32.s1;
+            while (n > 0) {
+
+                if (mem[l].b32.s1 != TEX_NULL)
+                    l = mem[l].b32.s1;
+                n--;
+            }
+        }
+    }
+    l = find_protchar_left(l, true);
+
+done:
+    return char_pw(l, 0) + char_pw(r, 1);
+}
+
+
+static int32_t
+find_protchar_left(int32_t l, bool d)
+{
+    int32_t t;
+    bool run;
+    if ((mem[l].b32.s1 != TEX_NULL) && (NODE_type(l) == HLIST_NODE) && (mem[l + 1].b32.s1 == 0)
+        && (mem[l + 3].b32.s1 == 0) && (mem[l + 2].b32.s1 == 0) && (mem[l + 5].b32.s1 == TEX_NULL))
+        l = mem[l].b32.s1;
+    else if (d)
+        while ((mem[l].b32.s1 != TEX_NULL) && (!((is_char_node(l)) || (is_non_discardable_node(l)))))
+            l = mem[l].b32.s1;
+    hlist_stack_level = 0;
+    run = true;
+    do {
+        t = l;
+        while (run && (NODE_type(l) == HLIST_NODE) && (mem[l + 5].b32.s1 != TEX_NULL)) {
+
+            push_node(l);
+            l = mem[l + 5].b32.s1;
+        }
+        while (run
+               && (!(is_char_node(l))
+                   && ((NODE_type(l) == INS_NODE) || (NODE_type(l) == MARK_NODE)
+                       || (NODE_type(l) == ADJUST_NODE) || (NODE_type(l) == PENALTY_NODE)
+                       || ((NODE_type(l) == DISC_NODE) && (mem[l + 1].b32.s0 == TEX_NULL)
+                           && (mem[l + 1].b32.s1 == TEX_NULL) && (mem[l].b16.s0 == 0))
+                       || ((NODE_type(l) == MATH_NODE) && (mem[l + 1].b32.s1 == 0))
+                       || ((NODE_type(l) == KERN_NODE)
+                           && ((mem[l + 1].b32.s1 == 0) || (mem[l].b16.s0 == NORMAL)))
+                       || ((NODE_type(l) == GLUE_NODE) && (mem[l + 1].b32.s0 == 0))
+                       || ((NODE_type(l) == HLIST_NODE) && (mem[l + 1].b32.s1 == 0) && (mem[l + 3].b32.s1 == 0)
+                           && (mem[l + 2].b32.s1 == 0) && (mem[l + 5].b32.s1 == TEX_NULL))))) {
+
+            while ((mem[l].b32.s1 == TEX_NULL) && (hlist_stack_level > 0)) {
+
+                l = pop_node();
+            }
+            if (mem[l].b32.s1 != TEX_NULL)
+                l = mem[l].b32.s1;
+            else if (hlist_stack_level == 0)
+                run = false;
+        }
+    } while (!(t == l));
+    return l;
+}
+
+
+static int32_t
+find_protchar_right(int32_t l, int32_t r)
+{
+    int32_t t;
+    bool run;
+    if (r == TEX_NULL)
+        return TEX_NULL;
+    hlist_stack_level = 0;
+    run = true;
+    do {
+        t = r;
+        while (run && (NODE_type(r) == HLIST_NODE) && (mem[r + 5].b32.s1 != TEX_NULL)) {
+
+            push_node(l);
+            push_node(r);
+            l = mem[r + 5].b32.s1;
+            r = l;
+            while (mem[r].b32.s1 != TEX_NULL)
+                r = mem[r].b32.s1;
+        }
+        while (run
+               && (!(is_char_node(r))
+                   && ((NODE_type(r) == INS_NODE) || (NODE_type(r) == MARK_NODE)
+                       || (NODE_type(r) == ADJUST_NODE) || (NODE_type(r) == PENALTY_NODE)
+                       || ((NODE_type(r) == DISC_NODE) && (mem[r + 1].b32.s0 == TEX_NULL)
+                           && (mem[r + 1].b32.s1 == TEX_NULL) && (mem[r].b16.s0 == 0))
+                       || ((NODE_type(r) == MATH_NODE) && (mem[r + 1].b32.s1 == 0))
+                       || ((NODE_type(r) == KERN_NODE)
+                           && ((mem[r + 1].b32.s1 == 0) || (mem[r].b16.s0 == NORMAL)))
+                       || ((NODE_type(r) == GLUE_NODE) && (mem[r + 1].b32.s0 == 0))
+                       || ((NODE_type(r) == HLIST_NODE) && (mem[r + 1].b32.s1 == 0) && (mem[r + 3].b32.s1 == 0)
+                           && (mem[r + 2].b32.s1 == 0) && (mem[r + 5].b32.s1 == TEX_NULL))))) {
+
+            while ((r == l) && (hlist_stack_level > 0)) {
+
+                r = pop_node();
+                l = pop_node();
+            }
+            if ((r != l) && (r != TEX_NULL))
+                r = prev_rightmost(l, r);
+            else if ((r == l) && (hlist_stack_level == 0))
+                run = false;
+        }
+    } while (!(t == r));
+    return r;
+}
+
+
+static void
+push_node(int32_t p)
+{
+    if (hlist_stack_level > MAX_HLIST_STACK)
+        pdf_error("push_node", "stack overflow");
+    hlist_stack[hlist_stack_level] = p;
+    hlist_stack_level = hlist_stack_level + 1;
+}
+
+
+static int32_t
+pop_node(void)
+{
+    hlist_stack_level = hlist_stack_level - 1;
+    if (hlist_stack_level < 0)
+        pdf_error("pop_node", "stack underflow (internal error)");
+    return hlist_stack[hlist_stack_level];
 }

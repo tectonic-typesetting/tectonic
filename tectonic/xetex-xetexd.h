@@ -220,6 +220,13 @@ typedef union {
 #define CHAR_NODE_font(p) mem[p].b16.s1 /* aka "type" of a node */
 #define CHAR_NODE_character(p) mem[p].b16.s0 /* aka "subtype" of a node */
 
+#define DELTA_NODE_dwidth(p) mem[(p) + 1].b32.s1 /* the "natural width" difference */
+#define DELTA_NODE_dstretch0(p) mem[(p) + 2].b32.s1 /* the stretch difference in points */
+#define DELTA_NODE_dstretch1(p) mem[(p) + 3].b32.s1 /* the stretch difference in fil */
+#define DELTA_NODE_dstretch2(p) mem[(p) + 4].b32.s1 /* the stretch difference in fill */
+#define DELTA_NODE_dstretch3(p) mem[(p) + 5].b32.s1 /* the stretch difference in fill */
+#define DELTA_NODE_dshrink(p) mem[(p) + 6].b32.s1 /* the shrink difference */
+
 #define DISCRETIONARY_NODE_replace_count(p) mem[p].b16.s0 /* aka "subtype" of a node */
 #define DISCRETIONARY_NODE_pre_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define DISCRETIONARY_NODE_post_break(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
@@ -656,12 +663,6 @@ extern int32_t cur_ptr;
 extern memory_word sa_null;
 extern int32_t sa_chain;
 extern uint16_t sa_level;
-extern int32_t last_line_fill;
-extern bool do_last_line_fit;
-extern small_number active_node_size;
-extern scaled_t fill_width[3];
-extern scaled_t best_pl_short[4];
-extern scaled_t best_pl_glue[4];
 extern trie_pointer hyph_start;
 extern trie_pointer hyph_index;
 extern int32_t disc_ptr[4];
@@ -887,11 +888,6 @@ bool fin_col(void);
 void fin_row(void);
 void fin_align(void);
 void align_peek(void);
-void push_node(int32_t p);
-int32_t pop_node(void);
-int32_t find_protchar_left(int32_t l, bool d);
-int32_t find_protchar_right(int32_t l, int32_t r);
-scaled_t total_pw(int32_t q, int32_t p);
 int32_t max_hyphenatable_length(void);
 trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v);
 trie_pointer trie_node(trie_pointer p);
