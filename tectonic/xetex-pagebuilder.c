@@ -66,7 +66,7 @@ ensure_vbox(eight_bits n)
  * simple ships out the page. There is one parameter, `c`, which represents
  * the node that was being contributed to the page when the decision to force
  * an output was made." */
-void
+static void
 fire_up(int32_t c)
 {
     int32_t p, q, r, s;
@@ -77,47 +77,62 @@ fire_up(int32_t c)
     scaled_t save_vfuzz;
     int32_t save_split_top_skip;
 
+    /*1048: "Set the value of output_penalty" */
     if (NODE_type(best_page_break) == PENALTY_NODE) {
-        geq_word_define(INT_BASE + INT_PAR__output_penalty, mem[best_page_break + 1].b32.s1);
+        geq_word_define(INT_BASE + INT_PAR__output_penalty, PENALTY_NODE_penalty(best_page_break));
         PENALTY_NODE_penalty(best_page_break) = INF_PENALTY;
-    } else
+    } else {
         geq_word_define(INT_BASE + INT_PAR__output_penalty, INF_PENALTY);
-    if (sa_root[MARK_VAL] != TEX_NULL) {
+    }
 
-        if (do_marks(1, 0, sa_root[MARK_VAL]))
+    /* ... resuming 1047 ... "We set the values of top_mark, first_mark, and
+     * bot_mark. The program uses the fact that `bot_mark != null` implies
+     * `first_mark != null`; it also knows that `bot_mark == null` implies
+     * `top_mark = first_mark = null`. */
+
+    if (sa_root[MARK_VAL] != TEX_NULL) {
+        if (do_marks(FIRE_UP_INIT, 0, sa_root[MARK_VAL]))
             sa_root[MARK_VAL] = TEX_NULL;
     }
+
     if (cur_mark[BOT_MARK_CODE] != TEX_NULL) {
         if (cur_mark[TOP_MARK_CODE] != TEX_NULL)
             delete_token_ref(cur_mark[TOP_MARK_CODE]);
+
         cur_mark[TOP_MARK_CODE] = cur_mark[BOT_MARK_CODE];
-        mem[cur_mark[TOP_MARK_CODE]].b32.s0++;
+        TOKEN_LIST_ref_count(cur_mark[TOP_MARK_CODE])++;
         delete_token_ref(cur_mark[FIRST_MARK_CODE]);
         cur_mark[FIRST_MARK_CODE] = TEX_NULL;
     }
+
+    /*1049: "Put the optimal current page into box 255, update first_mark and
+     * bot_mark, append insertions to their boxes, and put the remaining nodes
+     * back on the contribution list." */
+
     if (c == best_page_break)
         best_page_break = TEX_NULL;
-    if (BOX_REG(255) != TEX_NULL) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("");
-        }
+
+    if (BOX_REG(255) != TEX_NULL) { /*1050:*/
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl_cstr("! ");
+        print_cstr("");
         print_esc_cstr("box");
         print_cstr("255 is not void");
-        {
-            help_ptr = 2;
-            help_line[1] = "You shouldn't use \\box255 except in \\output routines.";
-            help_line[0] = "Proceed, and I'll discard its present contents.";
-        }
+        help_ptr = 2;
+        help_line[1] = "You shouldn't use \\box255 except in \\output routines.";
+        help_line[0] = "Proceed, and I'll discard its present contents.";
         box_error(255);
     }
-    insert_penalties = 0;
+
+    insert_penalties = 0; /* "this will count the number of insertions held over" */
     save_split_top_skip = GLUEPAR(split_top_skip);
-    if (INTPAR(holding_inserts) <= 0) {   /*1053: */
+
+    if (INTPAR(holding_inserts) <= 0) {
+        /*1053: "Prepare all the boxes involved in insertions to act as queues" */
         r = mem[PAGE_INS_HEAD].b32.s1;
+
         while (r != PAGE_INS_HEAD) {
 
             if (mem[r + 2].b32.s0 != TEX_NULL) {
@@ -133,27 +148,30 @@ fire_up(int32_t c)
             r = mem[r].b32.s1;
         }
     }
-    q = HOLD_HEAD;
-    mem[q].b32.s1 = TEX_NULL;
-    prev_p = PAGE_HEAD;
-    p = mem[prev_p].b32.s1;
-    while (p != best_page_break) {
 
+    q = HOLD_HEAD;
+    LLIST_link(q) = TEX_NULL;
+    prev_p = PAGE_HEAD;
+    p = LLIST_link(prev_p);
+
+    while (p != best_page_break) {
         if (NODE_type(p) == INS_NODE) {
-            if (INTPAR(holding_inserts) <= 0) {   /*1055: */
+            if (INTPAR(holding_inserts) <= 0) {
+                /*1055: "Either insert the material specified by noe p into
+                 * the appropriate box, or hold it for the next page; also
+                 * delete node p from the current page." */
                 r = mem[PAGE_INS_HEAD].b32.s1;
                 while (mem[r].b16.s0 != mem[p].b16.s0)
                     r = mem[r].b32.s1;
-                if (mem[r + 2].b32.s0 == TEX_NULL)
-                    wait = true;
-                else {
 
+                if (mem[r + 2].b32.s0 == TEX_NULL) {
+                    wait = true;
+                } else {
                     wait = false;
                     s = mem[r + 2].b32.s1;
                     mem[s].b32.s1 = mem[p + 4].b32.s0;
                     if (mem[r + 2].b32.s0 == p) {      /*1056: */
                         if (mem[r].b16.s1 == SPLIT_UP) {
-
                             if ((mem[r + 1].b32.s0 == p) && (mem[r + 1].b32.s1 != TEX_NULL)) {
                                 while (mem[s].b32.s1 != mem[r + 1].b32.s1)
                                     s = mem[s].b32.s1;
@@ -175,28 +193,28 @@ fire_up(int32_t c)
                         BOX_REG(n) =
                             vpackage(temp_ptr, 0, ADDITIONAL, MAX_HALFWORD);
                     } else {
-
                         while (mem[s].b32.s1 != TEX_NULL)
                             s = mem[s].b32.s1;
                         mem[r + 2].b32.s1 = s;
                     }
                 }
+
                 mem[prev_p].b32.s1 = mem[p].b32.s1;
                 mem[p].b32.s1 = TEX_NULL;
+
                 if (wait) {
                     mem[q].b32.s1 = p;
                     q = p;
                     insert_penalties++;
                 } else {
-
                     delete_glue_ref(INSERTION_NODE_split_top_ptr(p));
                     free_node(p, INS_NODE_SIZE);
                 }
-                p = /*:1057 */ prev_p;
+                p = prev_p; /*:1057 */
             }
         } else if (NODE_type(p) == MARK_NODE) {
-
-            if (mem[p + 1].b32.s0 != 0) {      /*1618: */
+            if (MARK_NODE_class(p) != 0) {
+                /*1618: "Update the current marks" */
                 find_sa_element(MARK_VAL, mem[p + 1].b32.s0, true);
                 if (mem[cur_ptr + 1].b32.s1 == TEX_NULL) {
                     mem[cur_ptr + 1].b32.s1 = mem[p + 1].b32.s1;
@@ -206,101 +224,116 @@ fire_up(int32_t c)
                     delete_token_ref(mem[cur_ptr + 2].b32.s0);
                 mem[cur_ptr + 2].b32.s0 = mem[p + 1].b32.s1;
                 mem[mem[p + 1].b32.s1].b32.s0++;
-            } else {            /*1051: */
-
+            } else {
+                /*1051: "Update the values of first_mark and bot_mark" */
                 if (cur_mark[FIRST_MARK_CODE] == TEX_NULL) {
-                    cur_mark[FIRST_MARK_CODE] = mem[p + 1].b32.s1;
-                    mem[cur_mark[FIRST_MARK_CODE]].b32.s0++;
+                    cur_mark[FIRST_MARK_CODE] = MARK_NODE_ptr(p);
+                    TOKEN_LIST_ref_count(cur_mark[FIRST_MARK_CODE])++;
                 }
+
                 if (cur_mark[BOT_MARK_CODE] != TEX_NULL)
                     delete_token_ref(cur_mark[BOT_MARK_CODE]);
-                cur_mark[BOT_MARK_CODE] = mem[p + 1].b32.s1;
-                mem[cur_mark[BOT_MARK_CODE]].b32.s0++;
+
+                cur_mark[BOT_MARK_CODE] = MARK_NODE_ptr(p);
+                TOKEN_LIST_ref_count(cur_mark[BOT_MARK_CODE])++;
             }
         }
-        prev_p = p;
-        p = mem[prev_p].b32.s1;
-    }
-    GLUEPAR(split_top_skip) = save_split_top_skip;
-    if (p != TEX_NULL) {
-        if (mem[CONTRIB_HEAD].b32.s1 == TEX_NULL) {
 
+        prev_p = p;
+        p = LLIST_link(prev_p);
+    }
+
+    GLUEPAR(split_top_skip) = save_split_top_skip;
+
+    /*1052: "Break the current page at node p, put it in box 255, and put the
+     * remaining nodes on the contribution list". */
+
+    if (p != TEX_NULL) {
+        if (LLIST_link(CONTRIB_HEAD) == TEX_NULL) {
             if (nest_ptr == 0)
                 cur_list.tail = page_tail;
             else
                 nest[0].tail = page_tail;
         }
-        mem[page_tail].b32.s1 = mem[CONTRIB_HEAD].b32.s1;
-        mem[CONTRIB_HEAD].b32.s1 = p;
-        mem[prev_p].b32.s1 = TEX_NULL;
+
+        LLIST_link(page_tail) = LLIST_link(CONTRIB_HEAD);
+        LLIST_link(CONTRIB_HEAD) = p;
+        LLIST_link(prev_p) = TEX_NULL;
     }
+
+    /* Temporarily futz some variables to inhibit error messages */
     save_vbadness = INTPAR(vbadness);
     INTPAR(vbadness) = INF_BAD;
     save_vfuzz = DIMENPAR(vfuzz);
     DIMENPAR(vfuzz) = MAX_HALFWORD;
-    BOX_REG(255) =
-        vpackage(mem[PAGE_HEAD].b32.s1, best_size, EXACTLY, page_max_depth);
+    BOX_REG(255) = vpackage(LLIST_link(PAGE_HEAD), best_size, EXACTLY, page_max_depth);
     INTPAR(vbadness) = save_vbadness;
     DIMENPAR(vfuzz) = save_vfuzz;
+
     if (last_glue != MAX_HALFWORD)
         delete_glue_ref(last_glue);
+
+    /*1026: "Start a new current page" */
     page_contents = EMPTY;
     page_tail = PAGE_HEAD;
-    mem[PAGE_HEAD].b32.s1 = TEX_NULL;
+    LLIST_link(PAGE_HEAD) = TEX_NULL;
     last_glue = MAX_HALFWORD;
     last_penalty = 0;
     last_kern = 0;
     last_node_type = -1;
     page_so_far[7] = 0;
-    page_max_depth = 0 /*:1026 */ ;
+    page_max_depth = 0;
+
     if (q != HOLD_HEAD) {
-        mem[PAGE_HEAD].b32.s1 = mem[HOLD_HEAD].b32.s1;
+        LLIST_link(PAGE_HEAD) = LLIST_link(HOLD_HEAD);
         page_tail = q;
     }
-    r = mem[PAGE_INS_HEAD].b32.s1;
-    while (r != PAGE_INS_HEAD) {
 
-        q = mem[r].b32.s1;
+    /*1054: "Delete the page-insertion nodes" */
+    r = LLIST_link(PAGE_INS_HEAD);
+    while (r != PAGE_INS_HEAD) {
+        q = LLIST_link(r);
         free_node(r, PAGE_INS_NODE_SIZE);
         r = q;
     }
-    mem[PAGE_INS_HEAD].b32.s1 = PAGE_INS_HEAD; /*:1054 *//*:1049 */
-    if (sa_root[MARK_VAL] != TEX_NULL) {
 
-        if (do_marks(2, 0, sa_root[MARK_VAL]))
+    LLIST_link(PAGE_INS_HEAD) = PAGE_INS_HEAD;
+
+    /* ... resuming 1047 ... */
+
+    if (sa_root[MARK_VAL] != TEX_NULL) {
+        if (do_marks(FIRE_UP_DONE, 0, sa_root[MARK_VAL]))
             sa_root[MARK_VAL] = TEX_NULL;
     }
-    if ((cur_mark[TOP_MARK_CODE] != TEX_NULL) && (cur_mark[FIRST_MARK_CODE] == TEX_NULL)) {
-        cur_mark[FIRST_MARK_CODE] = cur_mark[TOP_MARK_CODE];
-        mem[cur_mark[TOP_MARK_CODE]].b32.s0++;
-    }
-    if (LOCAL(output_routine) != TEX_NULL) {
 
-        if (dead_cycles >= INTPAR(max_dead_cycles)) {     /*1059: */
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Output loop---");
-            }
+    if (cur_mark[TOP_MARK_CODE] != TEX_NULL && cur_mark[FIRST_MARK_CODE] == TEX_NULL) {
+        cur_mark[FIRST_MARK_CODE] = cur_mark[TOP_MARK_CODE];
+        TOKEN_LIST_ref_count(cur_mark[TOP_MARK_CODE])++;
+    }
+
+    if (LOCAL(output_routine) != TEX_NULL) {
+        if (dead_cycles >= INTPAR(max_dead_cycles)) {
+            /*1059: "Explain that too many dead cycles have happened in a row." */
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl_cstr("! ");
+            print_cstr("Output loop---");
             print_int(dead_cycles);
             print_cstr(" consecutive dead cycles");
-            {
-                help_ptr = 3;
-                help_line[2] = "I've concluded that your \\output is awry; it never does a";
-                help_line[1] = "\\shipout, so I'm shipping \\box255 out myself. Next time";
-                help_line[0] = "increase \\maxdeadcycles if you want me to be more patient!";
-            }
+            help_ptr = 3;
+            help_line[2] = "I've concluded that your \\output is awry; it never does a";
+            help_line[1] = "\\shipout, so I'm shipping \\box255 out myself. Next time";
+            help_line[0] = "increase \\maxdeadcycles if you want me to be more patient!";
             error();
-        } else {                /*1060: */
-
+        } else {
+            /*1060: "Fire up the user's output routine and return" */
             output_active = true;
             dead_cycles++;
             push_nest();
-            cur_list.mode = -1;
-            cur_list.aux.b32.s1 = IGNORE_DEPTH;
-            cur_list.mode_line = -(int32_t) line;
+            cur_list.mode = -VMODE;
+            cur_list.aux.b32.s1 = IGNORE_DEPTH; /* this is `prev_depth` */
+            cur_list.mode_line = -line;
             begin_token_list(LOCAL(output_routine), OUTPUT_TEXT);
             new_save_level(OUTPUT_GROUP);
             normal_paragraph();
@@ -308,26 +341,29 @@ fire_up(int32_t c)
             return;
         }
     }
-    {
-        if (mem[PAGE_HEAD].b32.s1 != TEX_NULL) {
-            if (mem[CONTRIB_HEAD].b32.s1 == TEX_NULL) {
 
-                if (nest_ptr == 0)
-                    cur_list.tail = page_tail;
-                else
-                    nest[0].tail = page_tail;
-            } else
-                mem[page_tail].b32.s1 = mem[CONTRIB_HEAD].b32.s1;
-            mem[CONTRIB_HEAD].b32.s1 = mem[PAGE_HEAD].b32.s1;
-            mem[PAGE_HEAD].b32.s1 = TEX_NULL;
-            page_tail = PAGE_HEAD;
+    /*1058: "Perform the default output routine." */
+    if (LLIST_link(PAGE_HEAD) != TEX_NULL) {
+        if (LLIST_link(CONTRIB_HEAD) == TEX_NULL) {
+            if (nest_ptr == 0)
+                cur_list.tail = page_tail;
+            else
+                nest[0].tail = page_tail;
+        } else {
+            LLIST_link(page_tail) = LLIST_link(CONTRIB_HEAD);
         }
-        flush_node_list(disc_ptr[LAST_BOX_CODE]);
-        disc_ptr[LAST_BOX_CODE] = TEX_NULL;
-        ship_out(BOX_REG(255));
-        BOX_REG(255) = TEX_NULL;
+
+        LLIST_link(CONTRIB_HEAD) = LLIST_link(PAGE_HEAD);
+        LLIST_link(PAGE_HEAD) = TEX_NULL;
+        page_tail = PAGE_HEAD;
     }
+
+    flush_node_list(disc_ptr[LAST_BOX_CODE]);
+    disc_ptr[LAST_BOX_CODE] = TEX_NULL;
+    ship_out(BOX_REG(255));
+    BOX_REG(255) = TEX_NULL;
 }
+
 
 /*1029: "When TeX has appended new material in vertical mode, it calls the
  * procedure build_page, which tries to catch up by moving nodes from the

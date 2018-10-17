@@ -246,6 +246,9 @@ typedef union {
 #define LIGATURE_NODE_lig_char(p) mem[(p) + 1].b16.s0 /* WEB: character(lig_char(p)) */
 #define LIGATURE_NODE_lig_ptr(p) mem[(p) + 1].b32.s1 /* WEB: link(lig_char(p)) */
 
+#define MARK_NODE_ptr(p) mem[(p) + 1].b32.s1 /* "head of the token list for the mark" */
+#define MARK_NODE_class(p) mem[(p) + 1].b32.s0 /* "the mark class" */
+
 #define NATIVE_NODE_size(p) mem[(p) + 4].b16.s3
 #define NATIVE_NODE_font(p) mem[(p) + 4].b16.s2
 #define NATIVE_NODE_length(p) mem[(p) + 4].b16.s1 /* number of UTF16 items in the text */
@@ -1034,7 +1037,6 @@ void print_scaled(scaled_t s);
 /* xetex-pagebuilder */
 
 void initialize_pagebuilder_variables(void);
-void fire_up(int32_t c);
 void build_page(void);
 
 /* xetex-scaledmath */
