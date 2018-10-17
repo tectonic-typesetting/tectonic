@@ -14199,6 +14199,9 @@ fire_up(int32_t c)
  * what TeX should return to, after the contribution list has been emptied. A
  * call on build_page should be immediate followed by `goto big_switch`, which
  * is TeX's central control point." */
+
+#define AWFUL_BAD MAX_HALFWORD /* XXX redundant with xetex-linebreak.c */
+
 void
 build_page(void)
 {
@@ -14209,287 +14212,384 @@ build_page(void)
     unsigned char /*biggest_reg */ n;
     scaled_t delta, h, w;
 
-    if ((mem[CONTRIB_HEAD].b32.s1 == TEX_NULL) || output_active)
+    if (LLIST_link(CONTRIB_HEAD) == TEX_NULL || output_active)
         return;
+
     do {
-    continue_:
-        p = mem[CONTRIB_HEAD].b32.s1;
+        p = LLIST_link(CONTRIB_HEAD);
+
+        /*1031: "Update the values of last_glue, last_penalty, and last_kern" */
         if (last_glue != MAX_HALFWORD)
             delete_glue_ref(last_glue);
+
         last_penalty = 0;
         last_kern = 0;
-        last_node_type = mem[p].b16.s1 + 1;
+        last_node_type = NODE_type(p) + 1;
+
         if (NODE_type(p) == GLUE_NODE) {
-            last_glue = mem[p + 1].b32.s0;
+            last_glue = GLUE_NODE_glue_ptr(p);
             GLUE_SPEC_ref_count(last_glue)++;
         } else {
-
             last_glue = MAX_HALFWORD;
+
             if (NODE_type(p) == PENALTY_NODE)
-                last_penalty = mem[p + 1].b32.s1;
+                last_penalty = PENALTY_NODE_penalty(p);
             else if (NODE_type(p) == KERN_NODE)
-                last_kern = mem[p + 1].b32.s1;
+                last_kern = BOX_width(p);
         }
-        switch (mem[p].b16.s1) {
-        case 0:
-        case 1:
-        case 2:
-            if (page_contents < BOX_THERE) {    /*1036: */
+
+        /*1032: "Move node p to the current page; if it is time for a page
+         * break, put the nodes following the break back onto the contribution
+         * list, and return to the user's output routine if there is one" */
+
+        /* "The code here is an example of a many-way switch into routines
+         * that merge together in different places. Some people call this
+         * unstructured programming, but the author doesn't see much wrong
+         * with it, as long as the various labels have a well-understood
+         * meaning." */
+
+        /* 1035: "If the current page is empty and node p is to be deleted,
+         * goto done1; otherwise use node p to update the state of the current
+         * page; if this node is an insertion, goto contribute; otherwise if
+         * this node is not a legal breakpoint, goto contribute or
+         * update_heights; otherwise set `pi` to the penalty associated with
+         * this breakpoint." ... "The title of this section is already so
+         * long, it seems best to avoid making it more accurate but still
+         * longer, by mentioning the fact that a kern node at the end of the
+         * contribution list will not be contributed until we know its
+         * successor." */
+
+        switch (NODE_type(p)) {
+        case HLIST_NODE:
+        case VLIST_NODE:
+        case RULE_NODE:
+            if (page_contents < BOX_THERE) {
+                /*1036: "Initialize the current page, insert the \topskip glue
+                 * ahead of p, and goto continue." */
                 if (page_contents == EMPTY)
                     freeze_page_specs(BOX_THERE);
                 else
                     page_contents = BOX_THERE;
-                q = new_skip_param(GLUE_PAR__top_skip);
-                if (mem[temp_ptr + 1].b32.s1 > mem[p + 3].b32.s1)
-                    mem[temp_ptr + 1].b32.s1 = mem[temp_ptr + 1].b32.s1 - mem[p + 3].b32.s1;
+
+                q = new_skip_param(GLUE_PAR__top_skip); /* "now temp_ptr = glue_ptr(q) */
+
+                if (BOX_width(temp_ptr) > BOX_height(p))
+                    BOX_width(temp_ptr) -= BOX_height(p);
                 else
-                    mem[temp_ptr + 1].b32.s1 = 0;
-                mem[q].b32.s1 = p;
-                mem[CONTRIB_HEAD].b32.s1 = q;
-                goto continue_;
-            } else {            /*1037: */
+                    BOX_width(temp_ptr) = 0;
 
-                page_so_far[1] = page_so_far[1] + page_so_far[7] + mem[p + 3].b32.s1;
-                page_so_far[7] = mem[p + 2].b32.s1;
-                goto lab80;
+                LLIST_link(q) = p;
+                LLIST_link(CONTRIB_HEAD) = q;
+                continue;
+            } else {
+                /*1037: "Prepare to move a box or rule node to the current
+                 * page, then goto contribute." */
+
+                page_so_far[1] += page_so_far[7] + BOX_height(p);
+                page_so_far[7] = BOX_depth(p);
+                goto contribute;
             }
             break;
-        case 8:
-            {
-                if ((mem[p].b16.s0 == PIC_NODE) || (mem[p].b16.s0 == PDF_NODE)) {
-                    page_so_far[1] = page_so_far[1] + page_so_far[7] + mem[p + 3].b32.s1;
-                    page_so_far[7] = mem[p + 2].b32.s1;
-                }
-                goto lab80;
+
+        case WHATSIT_NODE:
+            /*1401: "Prepare to move whatsit p to the current page, then goto contribute" */
+            if (NODE_subtype(p) == PIC_NODE || NODE_subtype(p) == PDF_NODE) {
+                page_so_far[1] += page_so_far[7] + BOX_height(p);
+                page_so_far[7] = BOX_depth(p);
             }
+            goto contribute;
             break;
-        case 10:
+
+        case GLUE_NODE:
             if (page_contents < BOX_THERE)
                 goto done1;
-            else if ((is_non_discardable_node(page_tail)))
+            else if (is_non_discardable_node(page_tail))
                 pi = 0;
             else
-                goto lab90;
+                goto update_heights;
             break;
-        case 11:
+
+        case KERN_NODE:
             if (page_contents < BOX_THERE)
                 goto done1;
-            else if (mem[p].b32.s1 == TEX_NULL)
+            else if (LLIST_link(p) == TEX_NULL)
                 return;
-            else if (NODE_type(mem[p].b32.s1) == GLUE_NODE)
+            else if (NODE_type(LLIST_link(p)) == GLUE_NODE)
                 pi = 0;
             else
-                goto lab90;
+                goto update_heights;
             break;
-        case 12:
+
+        case PENALTY_NODE:
             if (page_contents < BOX_THERE)
                 goto done1;
             else
-                pi = mem[p + 1].b32.s1;
+                pi = PENALTY_NODE_penalty(p);
             break;
-        case 4:
-            goto lab80;
+
+        case MARK_NODE:
+            goto contribute;
             break;
-        case 3:
-            {
-                if (page_contents == EMPTY)
-                    freeze_page_specs(INSERTS_ONLY);
-                n = mem[p].b16.s0;
-                r = PAGE_INS_HEAD;
-                while (n >= mem[mem[r].b32.s1].b16.s0)
-                    r = mem[r].b32.s1;
-                if (mem[r].b16.s0 != n) {        /*1044: */
-                    q = get_node(PAGE_INS_NODE_SIZE);
-                    mem[q].b32.s1 = mem[r].b32.s1;
-                    mem[r].b32.s1 = q;
-                    r = q;
-                    mem[r].b16.s0 = n;
-                    mem[r].b16.s1 = INSERTING;
-                    ensure_vbox(n);
-                    if (BOX_REG(n) == TEX_NULL)
-                        mem[r + 3].b32.s1 = 0;
-                    else
-                        mem[r + 3].b32.s1 =
-                            mem[BOX_REG(n) + 3].b32.s1 +
-                            mem[BOX_REG(n) + 2].b32.s1;
-                    mem[r + 2].b32.s0 = TEX_NULL;
-                    q = SKIP_REG(n);
-                    if (COUNT_REG(n) == 1000)
-                        h = mem[r + 3].b32.s1;
-                    else
-                        h = x_over_n(mem[r + 3].b32.s1, 1000) * COUNT_REG(n);
-                    page_so_far[0] = page_so_far[0] - h - mem[q + 1].b32.s1;
-                    page_so_far[2 + mem[q].b16.s1] = page_so_far[2 + mem[q].b16.s1] + mem[q + 2].b32.s1;
-                    page_so_far[6] = page_so_far[6] + mem[q + 3].b32.s1;
-                    if ((mem[q].b16.s0 != NORMAL) && (mem[q + 3].b32.s1 != 0)) {
-                        {
-                            if (file_line_error_style_p)
-                                print_file_line();
-                            else
-                                print_nl_cstr("! ");
-                            print_cstr("Infinite glue shrinkage inserted from ");
-                        }
-                        print_esc_cstr("skip");
-                        print_int(n);
-                        {
-                            help_ptr = 3;
-                            help_line[2] = "The correction glue for page breaking with insertions";
-                            help_line[1] = "must have finite shrinkability. But you may proceed,";
-                            help_line[0] = "since the offensive shrinkability has been made finite.";
-                        }
-                        error();
-                    }
-                }
-                if (mem[r].b16.s1 == SPLIT_UP)
-                    insert_penalties += INSERTION_NODE_float_cost(p);
-                else {
-                    mem[r + 2].b32.s1 = p;
-                    delta = page_so_far[0] - page_so_far[1] - page_so_far[7] + page_so_far[6];
-                    if (COUNT_REG(n) == 1000)
-                        h = mem[p + 3].b32.s1;
-                    else
-                        h = x_over_n(mem[p + 3].b32.s1, 1000) * COUNT_REG(n);
-                    if (((h <= 0) || (h <= delta))
-                        && (mem[p + 3].b32.s1 + mem[r + 3].b32.s1 <= SCALED_REG(n))) {
-                        page_so_far[0] = page_so_far[0] - h;
-                        mem[r + 3].b32.s1 = mem[r + 3].b32.s1 + mem[p + 3].b32.s1;
-                    } else {    /*1045: */
 
-                        if (COUNT_REG(n) <= 0)
-                            w = MAX_HALFWORD;
-                        else {
+        case INS_NODE:
+            /*1043: "Append an insertion to the current page and goto contribute" */
+            if (page_contents == EMPTY)
+                freeze_page_specs(INSERTS_ONLY);
 
-                            w = page_so_far[0] - page_so_far[1] - page_so_far[7];
-                            if (COUNT_REG(n) != 1000)
-                                w = x_over_n(w, COUNT_REG(n)) * 1000;
-                        }
-                        if (w > SCALED_REG(n) - mem[r + 3].b32.s1)
-                            w = SCALED_REG(n) - mem[r + 3].b32.s1;
-                        q = vert_break(mem[p + 4].b32.s0, w, mem[p + 2].b32.s1);
-                        mem[r + 3].b32.s1 = mem[r + 3].b32.s1 + best_height_plus_depth;
-                        if (COUNT_REG(n) != 1000)
-                            best_height_plus_depth =
-                                x_over_n(best_height_plus_depth, 1000) * COUNT_REG(n);
-                        page_so_far[0] = page_so_far[0] - best_height_plus_depth;
-                        mem[r].b16.s1 = SPLIT_UP;
-                        mem[r + 1].b32.s1 = q;
-                        mem[r + 1].b32.s0 = p;
-                        if (q == TEX_NULL)
-                            insert_penalties = insert_penalties - 10000;
-                        else if (NODE_type(q) == PENALTY_NODE)
-                            insert_penalties = insert_penalties + mem[q + 1].b32.s1;
+            n = NODE_subtype(p);
+            r = PAGE_INS_HEAD;
+
+            while (n >= NODE_subtype(LLIST_link(r)))
+                r = LLIST_link(r);
+
+            if (NODE_subtype(r) != n) {
+                /*1044: "Create a page insertion node with subtype(r) = n, and
+                 * include the glue correction for box `n` in the current page
+                 * state" */
+                q = get_node(PAGE_INS_NODE_SIZE);
+                mem[q].b32.s1 = mem[r].b32.s1;
+                mem[r].b32.s1 = q;
+                r = q;
+                mem[r].b16.s0 = n;
+                mem[r].b16.s1 = INSERTING;
+                ensure_vbox(n);
+                if (BOX_REG(n) == TEX_NULL)
+                    mem[r + 3].b32.s1 = 0;
+                else
+                    mem[r + 3].b32.s1 =
+                        mem[BOX_REG(n) + 3].b32.s1 +
+                        mem[BOX_REG(n) + 2].b32.s1;
+                mem[r + 2].b32.s0 = TEX_NULL;
+                q = SKIP_REG(n);
+                if (COUNT_REG(n) == 1000)
+                    h = mem[r + 3].b32.s1;
+                else
+                    h = x_over_n(mem[r + 3].b32.s1, 1000) * COUNT_REG(n);
+                page_so_far[0] = page_so_far[0] - h - mem[q + 1].b32.s1;
+                page_so_far[2 + mem[q].b16.s1] = page_so_far[2 + mem[q].b16.s1] + mem[q + 2].b32.s1;
+                page_so_far[6] = page_so_far[6] + mem[q + 3].b32.s1;
+                if ((mem[q].b16.s0 != NORMAL) && (mem[q + 3].b32.s1 != 0)) {
+                    {
+                        if (file_line_error_style_p)
+                            print_file_line();
+                        else
+                            print_nl_cstr("! ");
+                        print_cstr("Infinite glue shrinkage inserted from ");
                     }
+                    print_esc_cstr("skip");
+                    print_int(n);
+                    {
+                        help_ptr = 3;
+                        help_line[2] = "The correction glue for page breaking with insertions";
+                        help_line[1] = "must have finite shrinkability. But you may proceed,";
+                        help_line[0] = "since the offensive shrinkability has been made finite.";
+                    }
+                    error();
                 }
-                goto lab80;
             }
-            break;
+
+            if (NODE_type(r) == SPLIT_UP) {
+                insert_penalties += INSERTION_NODE_float_cost(p);
+            } else {
+                PAGE_INS_NODE_last_ins_ptr(r) = p;
+                delta = page_so_far[0] - page_so_far[1] - page_so_far[7] + page_so_far[6];
+
+                if (COUNT_REG(n) == 1000)
+                    h = BOX_height(p);
+                else
+                    h = x_over_n(BOX_height(p), 1000) * COUNT_REG(n);
+
+                if ((h <= 0 || h <= delta) && BOX_height(p) + BOX_height(r) <= SCALED_REG(n)) {
+                    page_so_far[0] -= h;
+                    BOX_height(r) += BOX_height(p);
+                } else {
+                    /*1045: "Find the best way to split the insertion, and
+                     * change type(r) to split_up." ... "Here is code that
+                     * will split a long footnote between pages, in an
+                     * emergency ... Node `p` is an insertion into box `n`;
+                     * the insertion will not fit, in its entirety, either
+                     * because it would make the total contents of box `n`
+                     * greater then `\dimen n`, or because it would make the
+                     * incremental amount of growth `h` greater than the
+                     * available space `delta`, or both. (This amount `h` has
+                     * been weighted by the insertion scaling factor, i.e., by
+                     * `\count n` over 1000.) Now we will choose the best way
+                     * to break the vlist of the insertion, using the same
+                     * criteria as in the `\vsplit` operation." */
+                    if (COUNT_REG(n) <= 0)
+                        w = MAX_HALFWORD;
+                    else {
+                        w = page_so_far[0] - page_so_far[1] - page_so_far[7];
+                        if (COUNT_REG(n) != 1000)
+                            w = x_over_n(w, COUNT_REG(n)) * 1000;
+                    }
+
+                    if (w > SCALED_REG(n) - BOX_height(r))
+                        w = SCALED_REG(n) - BOX_height(r);
+
+                    q = vert_break(INSERTION_NODE_ins_ptr(p), w, BOX_depth(p));
+                    BOX_height(r) += best_height_plus_depth;
+
+                    if (COUNT_REG(n) != 1000)
+                        best_height_plus_depth = x_over_n(best_height_plus_depth, 1000) * COUNT_REG(n);
+
+                    page_so_far[0] -= best_height_plus_depth;
+                    NODE_type(r) = SPLIT_UP;
+                    PAGE_INS_NODE_broken_ptr(r) = q;
+                    PAGE_INS_NODE_broken_ins(r) = p;
+
+                    if (q == TEX_NULL)
+                        insert_penalties += EJECT_PENALTY;
+                    else if (NODE_type(q) == PENALTY_NODE)
+                        insert_penalties += PENALTY_NODE_penalty(q);
+                }
+            }
+            goto contribute;
+            break; /* end of INS_NODE */
+
         default:
             confusion("page");
             break;
         }
-        if (pi < INF_PENALTY) {
-            if (page_so_far[1] < page_so_far[0]) {
 
+        /*1040: "Check if node p is the new champion breakpoint; then if it is
+         * time for a page break, prepare for output, and either fire up the
+         * user's output routine and return or ship out the page and goto
+         * done." */
+
+        if (pi < INF_PENALTY) {
+            /*1042: "Compute the badness b of the current page, using
+             * awful_bad if the box is too full." */
+            if (page_so_far[1] < page_so_far[0]) {
                 if ((page_so_far[3] != 0) || (page_so_far[4] != 0) || (page_so_far[5] != 0))
                     b = 0;
                 else
                     b = badness(page_so_far[0] - page_so_far[1], page_so_far[2]);
             } else if (page_so_far[1] - page_so_far[0] > page_so_far[6])
-                b = MAX_HALFWORD;
+                b = AWFUL_BAD;
             else
                 b = badness(page_so_far[1] - page_so_far[0], page_so_far[6]) /*:1042 */ ;
-            if (b < MAX_HALFWORD) {
 
+            if (b < AWFUL_BAD) {
                 if (pi <= EJECT_PENALTY)
                     c = pi;
                 else if (b < INF_BAD)
                     c = b + pi + insert_penalties;
                 else
-                    c = 100000L;
-            } else
+                    c = 100000L; /* DEPLORABLE */
+            } else {
                 c = b;
+            }
+
             if (insert_penalties >= 10000)
                 c = MAX_HALFWORD;
+
             if (c <= least_page_cost) {
                 best_page_break = p;
                 best_size = page_so_far[0];
                 least_page_cost = c;
-                r = mem[PAGE_INS_HEAD].b32.s1;
-                while (r != PAGE_INS_HEAD) {
+                r = LLIST_link(PAGE_INS_HEAD);
 
-                    mem[r + 2].b32.s0 = mem[r + 2].b32.s1;
-                    r = mem[r].b32.s1;
+                while (r != PAGE_INS_HEAD) {
+                    PAGE_INS_NODE_best_ins_ptr(r) = PAGE_INS_NODE_last_ins_ptr(r);
+                    r = LLIST_link(r);
                 }
             }
-            if ((c == MAX_HALFWORD) || (pi <= EJECT_PENALTY)) {
+
+            if (c == AWFUL_BAD || pi <= EJECT_PENALTY) {
                 fire_up(p);
-                if (output_active)
+                if (output_active) /* "user's output routine will act" */
                     return;
-                goto done;
+                goto done; /* "the page has been shipped out by the default output routine" */
             }
         }
-        if ((NODE_type(p) < GLUE_NODE) || (NODE_type(p) > KERN_NODE))
-            goto lab80;
- lab90:/*update_heights *//*1039: */ if (NODE_type(p) == KERN_NODE)
-            q = p;
-        else {
 
-            q = mem[p + 1].b32.s0;
-            page_so_far[2 + mem[q].b16.s1] = page_so_far[2 + mem[q].b16.s1] + mem[q + 2].b32.s1;
-            page_so_far[6] = page_so_far[6] + mem[q + 3].b32.s1;
-            if ((mem[q].b16.s0 != NORMAL) && (mem[q + 3].b32.s1 != 0)) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Infinite glue shrinkage found on current page");
-                }
-                {
-                    help_ptr = 4;
-                    help_line[3] = "The page about to be output contains some infinitely";
-                    help_line[2] = "shrinkable glue, e.g., `\\vss' or `\\vskip 0pt minus 1fil'.";
-                    help_line[1] = "Such glue doesn't belong there; but you can safely proceed,";
-                    help_line[0] = "since the offensive shrinkability has been made finite.";
-                }
+        /* ... resuming 1032 ... */
+
+        if (NODE_type(p) < GLUE_NODE || NODE_type(p) > KERN_NODE)
+            goto contribute;
+
+ update_heights:
+        /*1039: "Update the current page measurements with respect to the glue or kern
+         * specified by node p" */
+
+        if (NODE_type(p) == KERN_NODE) {
+            q = p;
+        } else {
+            q = GLUE_NODE_glue_ptr(p);
+            page_so_far[2 + GLUE_SPEC_stretch_order(q)] += GLUE_SPEC_stretch(q);
+            page_so_far[6] += GLUE_SPEC_shrink(q);
+
+            if (GLUE_SPEC_shrink_order(q) != NORMAL && GLUE_SPEC_shrink(q) != 0) {
+                if (file_line_error_style_p)
+                    print_file_line();
+                else
+                    print_nl_cstr("! ");
+                print_cstr("Infinite glue shrinkage found on current page");
+
+                help_ptr = 4;
+                help_line[3] = "The page about to be output contains some infinitely";
+                help_line[2] = "shrinkable glue, e.g., `\\vss' or `\\vskip 0pt minus 1fil'.";
+                help_line[1] = "Such glue doesn't belong there; but you can safely proceed,";
+                help_line[0] = "since the offensive shrinkability has been made finite.";
                 error();
+
                 r = new_spec(q);
                 GLUE_SPEC_shrink_order(r) = NORMAL;
                 delete_glue_ref(q);
-                mem[p + 1].b32.s0 = r;
+                GLUE_NODE_glue_ptr(p) = r;
                 q = r;
             }
         }
-        page_so_far[1] = page_so_far[1] + page_so_far[7] + mem[q + 1].b32.s1;
-        page_so_far[7] = 0 /*:1039 */ ;
- lab80:                        /*contribute *//*1038: */ if (page_so_far[7] > page_max_depth) {
-            page_so_far[1] = page_so_far[1] + page_so_far[7] - page_max_depth;
+
+        page_so_far[1] += page_so_far[7] + BOX_width(q);
+        page_so_far[7] = 0;
+
+    contribute:
+        /*1038: "Make sure that page_max_depth is not exceeded." */
+        if (page_so_far[7] > page_max_depth) {
+            page_so_far[1] += page_so_far[7] - page_max_depth;
             page_so_far[7] = page_max_depth;
         }
-        mem[page_tail].b32.s1 = p;
+
+        /*1033: "Link node p into the current age and goto done." */
+        LLIST_link(page_tail) = p;
         page_tail = p;
-        mem[CONTRIB_HEAD].b32.s1 = mem[p].b32.s1;
-        mem[p].b32.s1 = TEX_NULL;
+        LLIST_link(CONTRIB_HEAD) = LLIST_link(p);
+        LLIST_link(p) = TEX_NULL;
         goto done;
+
     done1:
-        mem[CONTRIB_HEAD].b32.s1 = mem[p].b32.s1;
-        mem[p].b32.s1 = TEX_NULL;
+        /*1034: "Recycle node p" */
+        LLIST_link(CONTRIB_HEAD) = LLIST_link(p);
+        LLIST_link(p) = TEX_NULL;
+
         if (INTPAR(saving_vdiscards) > 0) {
+            /* `disc_ptr[LAST_BOX_CODE]` is `tail_page_disc`, the last item
+             * removed by the page builder. `disc_ptr[LAST_BOX_CODE]` is
+             * `page_disc`, the first item removed by the page builder.
+             * `disc_ptr[VSPLIT_CODE]` is `split_disc`, the first item removed
+             * by \vsplit. */
+
             if (disc_ptr[LAST_BOX_CODE] == TEX_NULL)
                 disc_ptr[LAST_BOX_CODE] = p;
             else
-                mem[disc_ptr[COPY_CODE]].b32.s1 = p;
+                LLIST_link(disc_ptr[COPY_CODE]) = p;
+
             disc_ptr[COPY_CODE] = p;
         } else
-            flush_node_list(p); /*:1032*/
+            flush_node_list(p);
+
     done:
         ;
-    } while (!(mem[CONTRIB_HEAD].b32.s1 == TEX_NULL));
+    } while (LLIST_link(CONTRIB_HEAD) != TEX_NULL);
+
     if (nest_ptr == 0)
-        cur_list.tail = CONTRIB_HEAD;
+        cur_list.tail = CONTRIB_HEAD; /* "vertical mode" */
     else
-        nest[0].tail = CONTRIB_HEAD /*:1030 */ ;
+        nest[0].tail = CONTRIB_HEAD; /* "other modes" */
 }
+
 
 void app_space(void)
 {
