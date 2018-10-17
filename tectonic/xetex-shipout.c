@@ -65,7 +65,7 @@ deinitialize_shipout_variables(void)
     dvi_buf = NULL;
 }
 
-
+/*660: output the box `p` */
 void
 ship_out(int32_t p)
 {

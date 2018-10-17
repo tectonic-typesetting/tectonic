@@ -13919,7 +13919,13 @@ void ensure_vbox(eight_bits n)
     }
 }
 
-void fire_up(int32_t c)
+/*1047: "The fire_up subroutine prepares to output the curent page at the best
+ * place; then it fires up the user's output routine, if there is one, or it
+ * simple ships out the page. There is one parameter, `c`, which represents
+ * the node that was being contributed to the page when the decision to force
+ * an output was made." */
+void
+fire_up(int32_t c)
 {
     int32_t p, q, r, s;
     int32_t prev_p;
@@ -14181,7 +14187,20 @@ void fire_up(int32_t c)
     }
 }
 
-void build_page(void)
+/*1029: "When TeX has appended new material in vertical mode, it calls the
+ * procedure build_page, which tries to catch up by moving nodes from the
+ * contribution list to the current page. This procedure will succeed in its
+ * goal of emptying the contribution list, unless a page break is discovered,
+ * i.e., unless the current page has grown to the point where the optimum next
+ * page break has been determined. In the latter case, the nodes after the
+ * optimum break will go back onto the contribution list, and control will
+ * effectively pass to the user's output routine." ... "TeX is not always in
+ * vertical mode at the time build_page is called; the current mode reflects
+ * what TeX should return to, after the contribution list has been emptied. A
+ * call on build_page should be immediate followed by `goto big_switch`, which
+ * is TeX's central control point." */
+void
+build_page(void)
 {
     int32_t p;
     int32_t q, r;
@@ -14746,6 +14765,12 @@ void normal_paragraph(void)
 }
 
 
+/*1110: "The box_end procedure does the right thing with cur_box, if
+ * box_context represents the context as explained [as follows]." The
+ * box_context is one of (1) a signed shift amount; (2) BOX_FLAG+N, signifying
+ * a `\setbox<N>`; (3) GLOBAL_BOX_FLAG+N, signifying `\global\setbox<N>`; (4)
+ * SHIP_OUT_FLAG, signifying `\shipout`; or (5) LEADER_FLAG+k, signifying (in
+ * order) `\leaders`, `\cleaders`, or `\xleaders`. */
 void
 box_end(int32_t box_context)
 {
