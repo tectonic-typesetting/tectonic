@@ -45,10 +45,10 @@ ensure_vbox(eight_bits n)
 
     if (p == TEX_NULL)
         return;
-    
+
     if (NODE_type(p) != HLIST_NODE)
         return;
-    
+
     if (file_line_error_style_p)
         print_file_line();
     else
@@ -597,7 +597,9 @@ build_page(void)
         /*1040: "Check if node p is the new champion breakpoint; then if it is
          * time for a page break, prepare for output, and either fire up the
          * user's output routine and return or ship out the page and goto
-         * done." */
+         * done." We reach this point when p is a glue, kern, or penalty, and
+         * there's already content on the page -- so this might be a place to
+         * break the page. */
 
         if (pi < INF_PENALTY) {
             /*1042: "Compute the badness b of the current page, using
@@ -607,10 +609,11 @@ build_page(void)
                     b = 0;
                 else
                     b = badness(page_so_far[0] - page_so_far[1], page_so_far[2]);
-            } else if (page_so_far[1] - page_so_far[0] > page_so_far[6])
+            } else if (page_so_far[1] - page_so_far[0] > page_so_far[6]) {
                 b = AWFUL_BAD;
-            else
-                b = badness(page_so_far[1] - page_so_far[0], page_so_far[6]) /*:1042 */ ;
+            } else {
+                b = badness(page_so_far[1] - page_so_far[0], page_so_far[6]);
+            }
 
             if (b < AWFUL_BAD) {
                 if (pi <= EJECT_PENALTY)
@@ -646,7 +649,8 @@ build_page(void)
             }
         }
 
-        /* ... resuming 1032 ... */
+        /* ... resuming 1032 ... I believe the "goto" here can only be
+         * triggered if p is a penalty node, and we decided not to break. */
 
         if (NODE_type(p) < GLUE_NODE || NODE_type(p) > KERN_NODE)
             goto contribute;
@@ -694,7 +698,7 @@ build_page(void)
             page_so_far[7] = page_max_depth;
         }
 
-        /*1033: "Link node p into the current age and goto done." */
+        /*1033: "Link node p into the current page and goto done." */
         LLIST_link(page_tail) = p;
         page_tail = p;
         LLIST_link(CONTRIB_HEAD) = LLIST_link(p);
@@ -702,11 +706,16 @@ build_page(void)
         goto done;
 
     done1:
-        /*1034: "Recycle node p" */
+        /*1034: "Recycle node p". This codepath is triggered if we encountered
+         * something nonprinting (glue, kern, penalty) and there aren't any
+         * yes-printing boxes at the top of the page yet. When that happens,
+         * we just discard the nonprinting node. */
         LLIST_link(CONTRIB_HEAD) = LLIST_link(p);
         LLIST_link(p) = TEX_NULL;
 
-        if (INTPAR(saving_vdiscards) > 0) {
+        if (INTPAR(saving_vdiscards) <= 0) {
+            flush_node_list(p);
+        } else {
             /* `disc_ptr[LAST_BOX_CODE]` is `tail_page_disc`, the last item
              * removed by the page builder. `disc_ptr[LAST_BOX_CODE]` is
              * `page_disc`, the first item removed by the page builder.
@@ -719,8 +728,7 @@ build_page(void)
                 LLIST_link(disc_ptr[COPY_CODE]) = p;
 
             disc_ptr[COPY_CODE] = p;
-        } else
-            flush_node_list(p);
+        }
 
     done:
         ;
