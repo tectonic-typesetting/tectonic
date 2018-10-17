@@ -14347,43 +14347,43 @@ build_page(void)
                  * include the glue correction for box `n` in the current page
                  * state" */
                 q = get_node(PAGE_INS_NODE_SIZE);
-                mem[q].b32.s1 = mem[r].b32.s1;
-                mem[r].b32.s1 = q;
+                LLIST_link(q) = LLIST_link(r);
+                LLIST_link(r) = q;
                 r = q;
-                mem[r].b16.s0 = n;
-                mem[r].b16.s1 = INSERTING;
+
+                NODE_subtype(r) = n;
+                NODE_type(r) = INSERTING;
                 ensure_vbox(n);
+
                 if (BOX_REG(n) == TEX_NULL)
-                    mem[r + 3].b32.s1 = 0;
+                    BOX_height(r) = 0;
                 else
-                    mem[r + 3].b32.s1 =
-                        mem[BOX_REG(n) + 3].b32.s1 +
-                        mem[BOX_REG(n) + 2].b32.s1;
-                mem[r + 2].b32.s0 = TEX_NULL;
+                    BOX_height(r) = BOX_height(BOX_REG(n)) + BOX_depth(BOX_REG(n));
+
+                PAGE_INS_NODE_best_ins_ptr(r) = TEX_NULL;
                 q = SKIP_REG(n);
+
                 if (COUNT_REG(n) == 1000)
-                    h = mem[r + 3].b32.s1;
+                    h = BOX_height(r);
                 else
-                    h = x_over_n(mem[r + 3].b32.s1, 1000) * COUNT_REG(n);
-                page_so_far[0] = page_so_far[0] - h - mem[q + 1].b32.s1;
-                page_so_far[2 + mem[q].b16.s1] = page_so_far[2 + mem[q].b16.s1] + mem[q + 2].b32.s1;
-                page_so_far[6] = page_so_far[6] + mem[q + 3].b32.s1;
-                if ((mem[q].b16.s0 != NORMAL) && (mem[q + 3].b32.s1 != 0)) {
-                    {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl_cstr("! ");
-                        print_cstr("Infinite glue shrinkage inserted from ");
-                    }
+                    h = x_over_n(BOX_height(r), 1000) * COUNT_REG(n);
+
+                page_so_far[0] -= h + BOX_width(q);
+                page_so_far[2 + GLUE_SPEC_stretch_order(q)] += GLUE_SPEC_stretch(q);
+                page_so_far[6] += GLUE_SPEC_shrink(q);
+
+                if (GLUE_SPEC_shrink_order(q) != NORMAL && GLUE_SPEC_shrink(q) != 0) {
+                    if (file_line_error_style_p)
+                        print_file_line();
+                    else
+                        print_nl_cstr("! ");
+                    print_cstr("Infinite glue shrinkage inserted from ");
                     print_esc_cstr("skip");
                     print_int(n);
-                    {
-                        help_ptr = 3;
-                        help_line[2] = "The correction glue for page breaking with insertions";
-                        help_line[1] = "must have finite shrinkability. But you may proceed,";
-                        help_line[0] = "since the offensive shrinkability has been made finite.";
-                    }
+                    help_ptr = 3;
+                    help_line[2] = "The correction glue for page breaking with insertions";
+                    help_line[1] = "must have finite shrinkability. But you may proceed,";
+                    help_line[0] = "since the offensive shrinkability has been made finite.";
                     error();
                 }
             }
@@ -14461,7 +14461,7 @@ build_page(void)
             /*1042: "Compute the badness b of the current page, using
              * awful_bad if the box is too full." */
             if (page_so_far[1] < page_so_far[0]) {
-                if ((page_so_far[3] != 0) || (page_so_far[4] != 0) || (page_so_far[5] != 0))
+                if (page_so_far[3] != 0 || page_so_far[4] != 0 || page_so_far[5] != 0)
                     b = 0;
                 else
                     b = badness(page_so_far[0] - page_so_far[1], page_so_far[2]);
