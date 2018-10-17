@@ -283,19 +283,6 @@ trie_pointer trie_min[65536];
 trie_pointer trie_max;
 bool trie_not_ready;
 scaled_t best_height_plus_depth;
-int32_t page_tail;
-unsigned char page_contents;
-scaled_t page_max_depth;
-int32_t best_page_break;
-int32_t least_page_cost;
-scaled_t best_size;
-scaled_t page_so_far[8];
-int32_t last_glue;
-int32_t last_penalty;
-scaled_t last_kern;
-int32_t last_node_type;
-int32_t insert_penalties;
-bool output_active;
 internal_font_number main_f;
 b16x4 main_i;
 b16x4 main_j;
@@ -350,6 +337,17 @@ int synctex_enabled;
 bool used_tectonic_coda_tokens;
 bool semantic_pagination_enabled;
 bool gave_char_warning_help;
+
+/* These ought to live in xetex-pagebuilder.c but are shared a lot: */
+int32_t page_tail;
+unsigned char page_contents;
+scaled_t page_so_far[8];
+int32_t last_glue;
+int32_t last_penalty;
+scaled_t last_kern;
+int32_t last_node_type;
+int32_t insert_penalties;
+bool output_active;
 
 uint16_t _xeq_level_array[EQTB_SIZE - INT_BASE + 1];
 
@@ -3149,7 +3147,6 @@ initialize_more_variables(void)
     last_penalty = 0;
     last_kern = 0;
     page_so_far[7] = 0;
-    page_max_depth = 0;
 
     for (k = INT_BASE; k <= EQTB_SIZE; k++)
         XEQ_LEVEL(k) = LEVEL_ONE;
@@ -4048,6 +4045,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
 
     /*55:*/
     initialize_math_variables();
+    initialize_pagebuilder_variables();
     initialize_shipout_variables();
 
     selector = SELECTOR_TERM_ONLY;

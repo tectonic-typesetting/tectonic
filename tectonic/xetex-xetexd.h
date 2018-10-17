@@ -615,10 +615,6 @@ extern bool trie_not_ready;
 extern scaled_t best_height_plus_depth;
 extern int32_t page_tail;
 extern unsigned char page_contents;
-extern scaled_t page_max_depth;
-extern int32_t best_page_break;
-extern int32_t least_page_cost;
-extern scaled_t best_size;
 extern scaled_t page_so_far[8];
 extern int32_t last_glue;
 extern int32_t last_penalty;
@@ -909,11 +905,7 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d);
 bool do_marks(small_number a, small_number l, int32_t q);
 int32_t vsplit(int32_t n, scaled_t h);
 void print_totals(void);
-void freeze_page_specs(small_number s);
 void box_error(eight_bits n);
-void ensure_vbox(eight_bits n);
-void fire_up(int32_t c);
-void build_page(void);
 void app_space(void);
 void insert_dollar_sign(void);
 void you_cant(void);
@@ -1038,6 +1030,12 @@ void print_hex(int32_t n);
 void print_roman_int(int32_t n);
 void print_current_string(void);
 void print_scaled(scaled_t s);
+
+/* xetex-pagebuilder */
+
+void initialize_pagebuilder_variables(void);
+void fire_up(int32_t c);
+void build_page(void);
 
 /* xetex-scaledmath */
 
