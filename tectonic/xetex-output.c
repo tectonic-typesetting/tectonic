@@ -522,9 +522,9 @@ print_sa_num(int32_t q)
         n = mem[q + 1].b32.s1;
     else {
         n = mem[q].b16.s1 % 64;
-        q = mem[q].b32.s1;
+        q = LLIST_link(q);
         n = n + 64 * mem[q].b16.s1;
-        q = mem[q].b32.s1;
+        q = LLIST_link(q);
         n = n + 64 * 64 * (mem[q].b16.s1 + 64 * mem[mem[q].b32.s1].b16.s1);
     }
 

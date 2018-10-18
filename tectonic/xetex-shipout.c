@@ -348,17 +348,17 @@ hlist_out(void)
                                                         || (NODE_type(q) == ADJUST_NODE)
                                                         || ((NODE_type(q) == WHATSIT_NODE)
                                                             && (mem[q].b16.s0 <= 4))))
-                        q = mem[q].b32.s1 /*:641 */ ;
+                        q = LLIST_link(q) /*:641 */ ;
                     if ((q != TEX_NULL) && !(is_char_node(q))) {
                         if ((NODE_type(q) == GLUE_NODE) && (GLUE_SPEC_shrink_order(q) == NORMAL)) {
                             if (mem[q + 1].b32.s0 == font_glue[mem[r + 4].b16.s2]) {
-                                q = mem[q].b32.s1;
+                                q = LLIST_link(q);
                                 while ((q != TEX_NULL) && !(is_char_node(q))
                                        && ((NODE_type(q) == PENALTY_NODE) || (NODE_type(q) == INS_NODE)
                                            || (NODE_type(q) == MARK_NODE)
                                            || (NODE_type(q) == ADJUST_NODE)
                                            || ((NODE_type(q) == WHATSIT_NODE) && (mem[q].b16.s0 <= 4))))
-                                    q = mem[q].b32.s1 /*:641 */ ;
+                                    q = LLIST_link(q) /*:641 */ ;
                                 if ((((q) != TEX_NULL && (!(is_char_node(q)))
                                       && (NODE_type(q) == WHATSIT_NODE)
                                       && ((mem[q].b16.s0 == NATIVE_WORD_NODE)
@@ -366,20 +366,20 @@ hlist_out(void)
                                     && (mem[q + 4].b16.s2 == mem[r + 4].b16.s2)) {
                                     p = q;
                                     k = k + 1 + mem[q + 4].b16.s1;
-                                    q = mem[q].b32.s1;
+                                    q = LLIST_link(q);
                                     goto lab1236;
                                 }
                             } else
-                                q = mem[q].b32.s1;
+                                q = LLIST_link(q);
                             if ((q != TEX_NULL) && !(is_char_node(q)) && (NODE_type(q) == KERN_NODE)
                                 && (NODE_subtype(q) == SPACE_ADJUSTMENT)) {
-                                q = mem[q].b32.s1;
+                                q = LLIST_link(q);
                                 while ((q != TEX_NULL) && !(is_char_node(q))
                                        && ((NODE_type(q) == PENALTY_NODE) || (NODE_type(q) == INS_NODE)
                                            || (NODE_type(q) == MARK_NODE)
                                            || (NODE_type(q) == ADJUST_NODE)
                                            || ((NODE_type(q) == WHATSIT_NODE) && (mem[q].b16.s0 <= 4))))
-                                    q = mem[q].b32.s1 /*:641 */ ;
+                                    q = LLIST_link(q) /*:641 */ ;
                                 if ((((q) != TEX_NULL && (!(is_char_node(q)))
                                       && (NODE_type(q) == WHATSIT_NODE)
                                       && ((mem[q].b16.s0 == NATIVE_WORD_NODE)
@@ -387,7 +387,7 @@ hlist_out(void)
                                     && (mem[q + 4].b16.s2 == mem[r + 4].b16.s2)) {
                                     p = q;
                                     k = k + 1 + mem[q + 4].b16.s1;
-                                    q = mem[q].b32.s1;
+                                    q = LLIST_link(q);
                                     goto lab1236;
                                 }
                             }
@@ -398,7 +398,7 @@ hlist_out(void)
                                   || (mem[q].b16.s0 == NATIVE_WORD_NODE_AT))))
                             && (mem[q + 4].b16.s2 == mem[r + 4].b16.s2)) {
                             p = q;
-                            q = mem[q].b32.s1;
+                            q = LLIST_link(q);
                             goto lab1236;
                         }
                     }
@@ -453,7 +453,7 @@ hlist_out(void)
                             if (q == p)
                                 break;
                             else
-                                q = mem[q].b32.s1;
+                                q = LLIST_link(q);
                         }
                         q = new_native_word_node(mem[r + 4].b16.s2, (pool_ptr - str_start[str_ptr - 65536L]));
                         mem[q].b16.s0 = mem[r].b16.s0;
@@ -485,7 +485,7 @@ hlist_out(void)
                                 q = p;
                             }
                             prev_p = p;
-                            p = mem[p].b32.s1;
+                            p = LLIST_link(p);
                         }
                         flush_node_list(r);
                         pool_ptr = str_start[str_ptr - 65536L];
@@ -494,7 +494,7 @@ hlist_out(void)
                 }
                 prev_p = p;
             }
-            p = mem[p].b32.s1;
+            p = LLIST_link(p);
         }
     }
     p = mem[this_box + 5].b32.s1;
@@ -627,8 +627,8 @@ hlist_out(void)
                 }
 
             continue_:
-                prev_p = mem[prev_p].b32.s1;
-                p = mem[p].b32.s1;
+                prev_p = LLIST_link(prev_p);
+                p = LLIST_link(p);
             } while (!(!(is_char_node(p))));
             synctex_current();
             dvi_h = cur_h;
@@ -1062,7 +1062,7 @@ hlist_out(void)
                 synctex_horizontal_rule_or_glue(p, this_box);
             }
  lab15:                        /*next_p */ prev_p = p;
-            p = mem[p].b32.s1;
+            p = LLIST_link(p);
         }
     synctex_tsilh(this_box);
 
@@ -1438,7 +1438,7 @@ vlist_out(void)
             else
                 cur_v = cur_v + rule_ht;
         }
- lab15:                        /*next_p */ p = mem[p].b32.s1;
+ lab15:                        /*next_p */ p = LLIST_link(p);
     }
     synctex_tsilv(this_box);
     prune_movements(save_loc);
@@ -1965,7 +1965,7 @@ movement(scaled_t w, eight_bits o)
             }
         }
 
-        p = mem[p].b32.s1;
+        p = LLIST_link(p);
     }
 
 not_found:
@@ -2041,7 +2041,7 @@ found: /*629:*/
             dvi_swap();
 
         while (mem[q].b32.s1 != p) {
-            q = mem[q].b32.s1;
+            q = LLIST_link(q);
 
             switch (mem[q].b32.s0) {
             case MOV_YZ_OK:
@@ -2059,7 +2059,7 @@ found: /*629:*/
             dvi_swap();
 
         while (mem[q].b32.s1 != p) {
-            q = mem[q].b32.s1;
+            q = LLIST_link(q);
 
             switch (mem[q].b32.s0) {
             case MOV_YZ_OK:

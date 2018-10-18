@@ -1751,7 +1751,7 @@ prefixed_command(void)
         } else {
             if (p == LOCAL_BASE + LOCAL__output_routine && !e) {
                 mem[q].b32.s1 = get_avail();
-                q = mem[q].b32.s1;
+                q = LLIST_link(q);
                 mem[q].b32.s0 = (RIGHT_BRACE_TOKEN + 125);
                 q = get_avail();
                 mem[q].b32.s0 = (LEFT_BRACE_TOKEN + 123);
@@ -2256,7 +2256,7 @@ store_fmt_file(void)
     p = avail;
     while (p != TEX_NULL) {
         dyn_used--;
-        p = mem[p].b32.s1;
+        p = LLIST_link(p);
     }
 
     dump_int(var_used);
@@ -3039,7 +3039,7 @@ final_cleanup(void)
         if_line = mem[cond_ptr + 1].b32.s1;
         cur_if = mem[cond_ptr].b16.s0;
         temp_ptr = cond_ptr;
-        cond_ptr = mem[cond_ptr].b32.s1;
+        cond_ptr = LLIST_link(cond_ptr);
         free_node(temp_ptr, IF_NODE_SIZE);
     }
 

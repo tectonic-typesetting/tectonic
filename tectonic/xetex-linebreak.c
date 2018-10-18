@@ -1022,7 +1022,7 @@ post_line_break(bool d)
                     s = new_math(0, (mem[temp_ptr].b32.s0 - 1));
                     mem[s].b32.s1 = r;
                     r = s;
-                    temp_ptr = mem[temp_ptr].b32.s1;
+                    temp_ptr = LLIST_link(temp_ptr);
                 } while (temp_ptr != TEX_NULL);
 
                 mem[TEMP_HEAD].b32.s1 = r;
@@ -1045,7 +1045,7 @@ post_line_break(bool d)
                     }
                 }
 
-                q = mem[q].b32.s1;
+                q = LLIST_link(q);
             }
         }
 
@@ -1158,7 +1158,7 @@ post_line_break(bool d)
                 mem[k].b32.s1 = mem[ptmp].b32.s1;
                 mem[ptmp].b32.s1 = k;
                 if (ptmp == q)
-                    q = mem[q].b32.s1;
+                    q = LLIST_link(q);
             }
         }
 
@@ -1185,7 +1185,7 @@ post_line_break(bool d)
                     temp_ptr = new_math(0, mem[r].b32.s0);
                     mem[s].b32.s1 = temp_ptr;
                     s = temp_ptr;
-                    r = mem[r].b32.s1;
+                    r = LLIST_link(r);
                 }
 
                 mem[s].b32.s1 = q;
@@ -2060,7 +2060,7 @@ hyphenate(void)
             while (s != TEX_NULL) {
 
                 hyf[mem[s].b32.s0] = 1;
-                s = mem[s].b32.s1;
+                s = LLIST_link(s);
             }
             hn--;
             goto found;
@@ -2140,7 +2140,7 @@ found1:
           && ((mem[ha].b16.s0 == NATIVE_WORD_NODE) || (mem[ha].b16.s0 == NATIVE_WORD_NODE_AT))))) {
         s = cur_p;
         while (mem[s].b32.s1 != ha)
-            s = mem[s].b32.s1;
+            s = LLIST_link(s);
         hyphen_passed = 0;
         {
             register int32_t for_end;
@@ -2244,7 +2244,7 @@ found1:
         }
         s = cur_p;
         while (mem[s].b32.s1 != ha)
-            s = mem[s].b32.s1;
+            s = LLIST_link(s);
         j = 0;
         goto common_ending;
     found2:
@@ -2262,7 +2262,7 @@ found1:
             if (hyphen_passed == 0) {
                 mem[s].b32.s1 = mem[HOLD_HEAD].b32.s1;
                 while (mem[s].b32.s1 > TEX_NULL)
-                    s = mem[s].b32.s1;
+                    s = LLIST_link(s);
                 if (odd(hyf[j - 1])) {
                     l = j;
                     hyphen_passed = j - 1;
@@ -2278,7 +2278,7 @@ found1:
                     r_count = 0;
                     while (mem[major_tail].b32.s1 > TEX_NULL) {
 
-                        major_tail = mem[major_tail].b32.s1;
+                        major_tail = LLIST_link(major_tail);
                         r_count++;
                     }
                     i = hyphen_passed;
@@ -2305,7 +2305,7 @@ found1:
                                 mem[minor_tail].b32.s1 = mem[HOLD_HEAD].b32.s1;
                             minor_tail = mem[HOLD_HEAD].b32.s1;
                             while (mem[minor_tail].b32.s1 > TEX_NULL)
-                                minor_tail = mem[minor_tail].b32.s1;
+                                minor_tail = LLIST_link(minor_tail);
                         }
                     }
                     if (hyf_node != TEX_NULL) {
@@ -2337,7 +2337,7 @@ found1:
                                     mem[minor_tail].b32.s1 = mem[HOLD_HEAD].b32.s1;
                                 minor_tail = mem[HOLD_HEAD].b32.s1;
                                 while (mem[minor_tail].b32.s1 > TEX_NULL)
-                                    minor_tail = mem[minor_tail].b32.s1;
+                                    minor_tail = LLIST_link(minor_tail);
                             }
                         } while (!(l >= j));
                         while (l > j) { /*952: */
@@ -2346,7 +2346,7 @@ found1:
                             mem[major_tail].b32.s1 = mem[HOLD_HEAD].b32.s1;
                             while (mem[major_tail].b32.s1 > TEX_NULL) {
 
-                                major_tail = mem[major_tail].b32.s1;
+                                major_tail = LLIST_link(major_tail);
                                 r_count++;
                             }
                         }
@@ -2426,15 +2426,15 @@ reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar)
 
             {
                 mem[t].b32.s1 = get_avail();
-                t = mem[t].b32.s1;
+                t = LLIST_link(t);
                 mem[t].b16.s1 = hf;
                 mem[t].b16.s0 = mem[p].b16.s0;
             }
-            p = mem[p].b32.s1;
+            p = LLIST_link(p);
         }
     } else if (cur_l < TOO_BIG_CHAR) {
         mem[t].b32.s1 = get_avail();
-        t = mem[t].b32.s1;
+        t = LLIST_link(t);
         mem[t].b16.s1 = hf;
         mem[t].b16.s0 = cur_l;
     }
@@ -2569,7 +2569,7 @@ continue_:
                                 if (lig_stack > TEX_NULL) {
                                     if (mem[lig_stack + 1].b32.s1 > TEX_NULL) {
                                         mem[t].b32.s1 = mem[lig_stack + 1].b32.s1;
-                                        t = mem[t].b32.s1;
+                                        t = LLIST_link(t);
                                         j++;
                                     }
                                     p = lig_stack;
@@ -2592,7 +2592,7 @@ continue_:
 
                                     {
                                         mem[t].b32.s1 = get_avail();
-                                        t = mem[t].b32.s1;
+                                        t = LLIST_link(t);
                                         mem[t].b16.s1 = hf;
                                         mem[t].b16.s0 = cur_r;
                                     }
@@ -2656,7 +2656,7 @@ done:
     }
     if (w != 0) {
         mem[t].b32.s1 = new_kern(w);
-        t = mem[t].b32.s1;
+        t = LLIST_link(t);
         w = 0;
         mem[t + 2].b32.s0 = 0;
     }
@@ -2667,7 +2667,7 @@ done:
         {
             if (mem[lig_stack + 1].b32.s1 > TEX_NULL) {
                 mem[t].b32.s1 = mem[lig_stack + 1].b32.s1;
-                t = mem[t].b32.s1;
+                t = LLIST_link(t);
                 j++;
             }
             p = lig_stack;
@@ -2704,7 +2704,7 @@ total_pw(int32_t q, int32_t p)
     if ((p != TEX_NULL) && (NODE_type(p) == DISC_NODE) && (mem[p + 1].b32.s0 != TEX_NULL)) {
         r = mem[p + 1].b32.s0;
         while (mem[r].b32.s1 != TEX_NULL)
-            r = mem[r].b32.s1;
+            r = LLIST_link(r);
     } else
         r = find_protchar_right(l, r);
     if ((l != TEX_NULL) && (NODE_type(l) == DISC_NODE)) {
@@ -2714,11 +2714,11 @@ total_pw(int32_t q, int32_t p)
         } else {
 
             n = mem[l].b16.s0;
-            l = mem[l].b32.s1;
+            l = LLIST_link(l);
             while (n > 0) {
 
                 if (mem[l].b32.s1 != TEX_NULL)
-                    l = mem[l].b32.s1;
+                    l = LLIST_link(l);
                 n--;
             }
         }
@@ -2737,10 +2737,10 @@ find_protchar_left(int32_t l, bool d)
     bool run;
     if ((mem[l].b32.s1 != TEX_NULL) && (NODE_type(l) == HLIST_NODE) && (mem[l + 1].b32.s1 == 0)
         && (mem[l + 3].b32.s1 == 0) && (mem[l + 2].b32.s1 == 0) && (mem[l + 5].b32.s1 == TEX_NULL))
-        l = mem[l].b32.s1;
+        l = LLIST_link(l);
     else if (d)
         while ((mem[l].b32.s1 != TEX_NULL) && (!((is_char_node(l)) || (is_non_discardable_node(l)))))
-            l = mem[l].b32.s1;
+            l = LLIST_link(l);
     hlist_stack_level = 0;
     run = true;
     do {
@@ -2768,7 +2768,7 @@ find_protchar_left(int32_t l, bool d)
                 l = pop_node();
             }
             if (mem[l].b32.s1 != TEX_NULL)
-                l = mem[l].b32.s1;
+                l = LLIST_link(l);
             else if (hlist_stack_level == 0)
                 run = false;
         }
@@ -2795,7 +2795,7 @@ find_protchar_right(int32_t l, int32_t r)
             l = mem[r + 5].b32.s1;
             r = l;
             while (mem[r].b32.s1 != TEX_NULL)
-                r = mem[r].b32.s1;
+                r = LLIST_link(r);
         }
         while (run
                && (!(is_char_node(r))
