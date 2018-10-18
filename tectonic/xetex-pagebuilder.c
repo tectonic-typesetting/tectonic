@@ -23,7 +23,6 @@ initialize_pagebuilder_variables(void)
 static void
 freeze_page_specs(small_number s)
 {
-
     page_contents = s;
     page_so_far[0] = DIMENPAR(vsize);
     page_max_depth = DIMENPAR(max_depth);
@@ -71,7 +70,7 @@ fire_up(int32_t c)
 {
     int32_t p, q, r, s;
     int32_t prev_p;
-    unsigned char /*biggest_reg */ n;
+    unsigned char n;
     bool wait;
     int32_t save_vbadness;
     scaled_t save_vfuzz;
@@ -131,21 +130,24 @@ fire_up(int32_t c)
 
     if (INTPAR(holding_inserts) <= 0) {
         /*1053: "Prepare all the boxes involved in insertions to act as queues" */
-        r = mem[PAGE_INS_HEAD].b32.s1;
+        r = LLIST_link(PAGE_INS_HEAD);
 
         while (r != PAGE_INS_HEAD) {
-
-            if (mem[r + 2].b32.s0 != TEX_NULL) {
-                n = mem[r].b16.s0;
+            if (PAGE_INS_NODE_best_ins_ptr(r) != TEX_NULL) {
+                n = NODE_subtype(r);
                 ensure_vbox(n);
+
                 if (BOX_REG(n) == TEX_NULL)
                     BOX_REG(n) = new_null_box();
-                p = BOX_REG(n) + 5;
-                while (mem[p].b32.s1 != TEX_NULL)
-                    p = mem[p].b32.s1;
-                mem[r + 2].b32.s1 = p;
+
+                p = BOX_REG(n) + 5; /* 5 = list_offset, "position of the list inside the box" */
+                while (LLIST_link(p) != TEX_NULL)
+                    p = LLIST_link(p);
+
+                PAGE_INS_NODE_last_ins_ptr(r) = p;
             }
-            r = mem[r].b32.s1;
+
+            r = LLIST_link(r);
         }
     }
 
@@ -160,70 +162,86 @@ fire_up(int32_t c)
                 /*1055: "Either insert the material specified by noe p into
                  * the appropriate box, or hold it for the next page; also
                  * delete node p from the current page." */
-                r = mem[PAGE_INS_HEAD].b32.s1;
-                while (mem[r].b16.s0 != mem[p].b16.s0)
-                    r = mem[r].b32.s1;
+                r = LLIST_link(PAGE_INS_HEAD);
 
-                if (mem[r + 2].b32.s0 == TEX_NULL) {
+                while (NODE_subtype(r) != NODE_subtype(p))
+                    r = LLIST_link(r);
+
+                if (PAGE_INS_NODE_best_ins_ptr(r) == TEX_NULL) {
                     wait = true;
                 } else {
                     wait = false;
-                    s = mem[r + 2].b32.s1;
-                    mem[s].b32.s1 = mem[p + 4].b32.s0;
-                    if (mem[r + 2].b32.s0 == p) {      /*1056: */
-                        if (mem[r].b16.s1 == SPLIT_UP) {
-                            if ((mem[r + 1].b32.s0 == p) && (mem[r + 1].b32.s1 != TEX_NULL)) {
-                                while (mem[s].b32.s1 != mem[r + 1].b32.s1)
-                                    s = mem[s].b32.s1;
-                                mem[s].b32.s1 = TEX_NULL;
-                                GLUEPAR(split_top_skip) = mem[p + 4].b32.s1;
-                                mem[p + 4].b32.s0 = prune_page_top(mem[r + 1].b32.s1, false);
-                                if (mem[p + 4].b32.s0 != TEX_NULL) {
-                                    temp_ptr = vpackage(mem[p + 4].b32.s0, 0, ADDITIONAL, MAX_HALFWORD);
-                                    mem[p + 3].b32.s1 = mem[temp_ptr + 3].b32.s1 + mem[temp_ptr + 2].b32.s1;
+
+                    s = PAGE_INS_NODE_last_ins_ptr(r);
+                    LLIST_link(s) = INSERTION_NODE_ins_ptr(p);
+
+                    if (PAGE_INS_NODE_best_ins_ptr(r) == p) {
+                        /*1056: "Wrap up the box specified by node r,
+                         * splitting node p if called for; set wait = true if
+                         * node p holds a remainder after splitting" */
+
+                        if (NODE_type(r) == SPLIT_UP) {
+                            if (PAGE_INS_NODE_broken_ins(r) == p && PAGE_INS_NODE_broken_ptr(r) != TEX_NULL) {
+                                while (LLIST_link(s) != PAGE_INS_NODE_broken_ptr(r))
+                                    s = LLIST_link(s);
+
+                                LLIST_link(s) = TEX_NULL;
+                                GLUEPAR(split_top_skip) = INSERTION_NODE_split_top_ptr(p);
+                                INSERTION_NODE_ins_ptr(p) = prune_page_top(PAGE_INS_NODE_broken_ptr(r), false);
+
+                                if (INSERTION_NODE_ins_ptr(p) != TEX_NULL) {
+                                    temp_ptr = vpackage(INSERTION_NODE_ins_ptr(p), 0, ADDITIONAL, MAX_HALFWORD);
+                                    BOX_height(p) = BOX_height(temp_ptr) + BOX_depth(temp_ptr);
                                     free_node(temp_ptr, BOX_NODE_SIZE);
                                     wait = true;
                                 }
                             }
                         }
-                        mem[r + 2].b32.s0 = TEX_NULL;
-                        n = mem[r].b16.s0;
-                        temp_ptr = mem[BOX_REG(n) + 5].b32.s1;
+
+                        PAGE_INS_NODE_best_ins_ptr(r) = TEX_NULL;
+                        n = NODE_subtype(r);
+                        temp_ptr = BOX_list_ptr(BOX_REG(n));
                         free_node(BOX_REG(n), BOX_NODE_SIZE);
-                        BOX_REG(n) =
-                            vpackage(temp_ptr, 0, ADDITIONAL, MAX_HALFWORD);
+                        BOX_REG(n) = vpackage(temp_ptr, 0, ADDITIONAL, MAX_HALFWORD);
                     } else {
-                        while (mem[s].b32.s1 != TEX_NULL)
-                            s = mem[s].b32.s1;
-                        mem[r + 2].b32.s1 = s;
+                        while (LLIST_link(s) != TEX_NULL)
+                            s = LLIST_link(s);
+                        PAGE_INS_NODE_last_ins_ptr(r) = s;
                     }
                 }
 
-                mem[prev_p].b32.s1 = mem[p].b32.s1;
-                mem[p].b32.s1 = TEX_NULL;
+                /*1057: "Either append the insertion node p after node q, and
+                 * remove it from the current page, or delete node(p)" */
+
+                LLIST_link(prev_p) = LLIST_link(p);
+                LLIST_link(p) = TEX_NULL;
 
                 if (wait) {
-                    mem[q].b32.s1 = p;
+                    LLIST_link(q) = p;
                     q = p;
                     insert_penalties++;
                 } else {
                     delete_glue_ref(INSERTION_NODE_split_top_ptr(p));
                     free_node(p, INS_NODE_SIZE);
                 }
+
                 p = prev_p; /*:1057 */
             }
         } else if (NODE_type(p) == MARK_NODE) {
             if (MARK_NODE_class(p) != 0) {
                 /*1618: "Update the current marks" */
-                find_sa_element(MARK_VAL, mem[p + 1].b32.s0, true);
-                if (mem[cur_ptr + 1].b32.s1 == TEX_NULL) {
-                    mem[cur_ptr + 1].b32.s1 = mem[p + 1].b32.s1;
-                    mem[mem[p + 1].b32.s1].b32.s0++;
+                find_sa_element(MARK_VAL, MARK_NODE_class(p), true);
+
+                if (ETEX_MARK_sa_first_mark(cur_ptr) == TEX_NULL) {
+                    ETEX_MARK_sa_first_mark(cur_ptr) = MARK_NODE_ptr(p);
+                    TOKEN_LIST_ref_count(MARK_NODE_ptr(p))++;
                 }
-                if (mem[cur_ptr + 2].b32.s0 != TEX_NULL)
-                    delete_token_ref(mem[cur_ptr + 2].b32.s0);
-                mem[cur_ptr + 2].b32.s0 = mem[p + 1].b32.s1;
-                mem[mem[p + 1].b32.s1].b32.s0++;
+
+                if (ETEX_MARK_sa_bot_mark(cur_ptr) != TEX_NULL)
+                    delete_token_ref(ETEX_MARK_sa_bot_mark(cur_ptr));
+
+                ETEX_MARK_sa_bot_mark(cur_ptr) = MARK_NODE_ptr(p);
+                TOKEN_LIST_ref_count(MARK_NODE_ptr(p))++;
             } else {
                 /*1051: "Update the values of first_mark and bot_mark" */
                 if (cur_mark[FIRST_MARK_CODE] == TEX_NULL) {

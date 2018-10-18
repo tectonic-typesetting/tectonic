@@ -295,6 +295,13 @@ typedef union {
 
 #define TOKEN_LIST_ref_count(p) mem[p].b32.s0
 
+/* e-TeX extended marks stuff ... not sure where to put these */
+#define ETEX_MARK_sa_top_mark(p) mem[(p) + 1].b32.s0 /* \topmarks<n> */
+#define ETEX_MARK_sa_first_mark(p) mem[(p) + 1].b32.s1 /* \firstmarks<n> */
+#define ETEX_MARK_sa_bot_mark(p) mem[(p) + 2].b32.s0 /* \botmarks<n> */
+#define ETEX_MARK_sa_split_first_mark(p) mem[(p) + 2].b32.s1 /* \splitfirstmarks<n> */
+#define ETEX_MARK_sa_split_bot_mark(p) mem[(p) + 3].b32.s0 /* \splitbotmarks<n> */
+
 typedef unsigned char glue_ord; /* enum: normal .. filll */
 typedef unsigned char group_code;
 typedef int32_t internal_font_number;
