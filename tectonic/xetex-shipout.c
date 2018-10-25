@@ -122,9 +122,14 @@ ship_out(int32_t p)
         end_diagnostic(true);
     }
 
-    if (mem[p + 3].b32.s1 > MAX_HALFWORD || mem[p + 2].b32.s1 > MAX_HALFWORD ||
-        mem[p + 3].b32.s1 + mem[p + 2].b32.s1 + DIMENPAR(v_offset) > MAX_HALFWORD ||
-        mem[p + 1].b32.s1 + DIMENPAR(h_offset) > MAX_HALFWORD)
+    /*662: "Ship box `p` out." */
+    /*663: "Update the values of max_h and max_v; but if the page is too
+     * large, goto done". */
+
+    if (BOX_height(p) > MAX_HALFWORD ||
+        BOX_depth(p) > MAX_HALFWORD ||
+        BOX_height(p) + BOX_depth(p) + DIMENPAR(v_offset) > MAX_HALFWORD ||
+        BOX_width(p) + DIMENPAR(h_offset) > MAX_HALFWORD)
     {
         if (file_line_error_style_p)
             print_file_line();
@@ -145,16 +150,20 @@ ship_out(int32_t p)
         goto done;
     }
 
-    if (mem[p + 3].b32.s1 + mem[p + 2].b32.s1 + DIMENPAR(v_offset) > max_v)
-        max_v = mem[p + 3].b32.s1 + mem[p + 2].b32.s1 + DIMENPAR(v_offset);
+    if (BOX_height(p) + BOX_depth(p) + DIMENPAR(v_offset) > max_v)
+        max_v = BOX_height(p) + BOX_depth(p) + DIMENPAR(v_offset);
 
-    if (mem[p + 1].b32.s1 + DIMENPAR(h_offset) > max_h)
-        max_h = mem[p + 1].b32.s1 + DIMENPAR(h_offset);  /*:663*/
+    if (BOX_width(p) + DIMENPAR(h_offset) > max_h)
+        max_h = BOX_width(p) + DIMENPAR(h_offset);
+
+    /*637: "Initialize variables as ship_out begins." */
 
     dvi_h = 0;
     dvi_v = 0;
     cur_h = DIMENPAR(h_offset);
     dvi_f = FONT_BASE;
+
+    /*1405: "Calculate page dimensions and margins" */
     /* 4736287 = round(0xFFFF * 72.27) ; i.e., 1 inch expressed as a scaled_t */
     cur_h_offset = DIMENPAR(h_offset) + 4736287;
     cur_v_offset = DIMENPAR(v_offset) + 4736287;
@@ -162,22 +171,26 @@ ship_out(int32_t p)
     if (DIMENPAR(pdf_page_width) != 0)
         cur_page_width = DIMENPAR(pdf_page_width);
     else
-        cur_page_width = mem[p + 1].b32.s1 + 2 * cur_h_offset;
+        cur_page_width = BOX_width(p) + 2 * cur_h_offset;
 
     if (DIMENPAR(pdf_page_height) != 0)
         cur_page_height = DIMENPAR(pdf_page_height);
     else
-        cur_page_height = mem[p + 3].b32.s1 + mem[p + 2].b32.s1 + 2 * cur_v_offset; /*:1405*/
+        cur_page_height = BOX_height(p) + BOX_depth(p) + 2 * cur_v_offset;
+
+    /* ... resuming 637 ... open up the DVI file if needed */
 
     if (output_file_name == 0) {
         if (job_name == 0)
             open_log_file();
         pack_job_name(output_file_extension);
-        dvi_file = ttstub_output_open (name_of_file, 0);
+        dvi_file = ttstub_output_open(name_of_file, 0);
         if (dvi_file == NULL)
-            _tt_abort ("cannot open output file \"%s\"", name_of_file);
+            _tt_abort("cannot open output file \"%s\"", name_of_file);
         output_file_name = make_name_string();
     }
+
+    /* First page? Emit preamble items. */
 
     if (total_pages == 0) {
         dvi_out(PRE);
@@ -194,23 +207,24 @@ ship_out(int32_t p)
         dvi_four(INTPAR(mag));
 
         l = strlen(output_comment);
-
         dvi_out(l);
-
-        for (s = 0; s <= l - 1; s++) {
+        for (s = 0; s < l; s++)
             dvi_out(output_comment[s]);
-        }
     }
+
+    /* ... resuming 662 ... Emit per-page preamble. */
 
     page_loc = dvi_offset + dvi_ptr;
 
     dvi_out(BOP);
 
-    for (k = 0; k <= 9; k++)
+    for (k = 0; k < 10; k++)
         dvi_four(COUNT_REG(k));
 
     dvi_four(last_bop);
     last_bop = page_loc;
+
+    /* Generate a PDF pagesize special unilaterally */
 
     old_setting = selector;
     selector = SELECTOR_NEW_STRING;
@@ -231,15 +245,16 @@ ship_out(int32_t p)
     selector = old_setting;
 
     dvi_out(XXX1);
-
     dvi_out(cur_length());
 
-    for (s = str_start[str_ptr - TOO_BIG_CHAR]; s <= pool_ptr - 1; s++)
+    for (s = str_start[str_ptr - TOO_BIG_CHAR]; s < pool_ptr; s++)
         dvi_out(str_pool[s]);
 
     pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
 
-    cur_v = mem[p + 3].b32.s1 + DIMENPAR(v_offset);
+    /* Done with the synthesized special. The meat: emit this page box. */
+
+    cur_v = BOX_height(p) + DIMENPAR(v_offset); /*"Does this need changing for upwards mode???"*/
     temp_ptr = p;
     if (NODE_type(p) == VLIST_NODE)
         vlist_out();
@@ -247,11 +262,12 @@ ship_out(int32_t p)
         hlist_out();
 
     dvi_out(EOP);
-
     total_pages++;
-    cur_s = -1; /*:662 */
+    cur_s = -1;
 
-done: /*1518:*/
+done:
+    /*1518: "Check for LR anomalies at the end of ship_out" */
+
     if (LR_problems > 0) {
         print_ln();
         print_nl_cstr("\\endL or \\endR problem (");
@@ -271,7 +287,7 @@ done: /*1518:*/
         print_char(']');
 
     dead_cycles = 0;
-    ttstub_output_flush (rust_stdout);
+    ttstub_output_flush(rust_stdout);
     flush_node_list(p);
     synctex_teehs();
 }
