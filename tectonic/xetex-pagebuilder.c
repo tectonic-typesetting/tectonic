@@ -3,6 +3,15 @@
    Licensed under the MIT License.
 */
 
+/* Customizations for Tectonic:
+ *
+ * In semantic pagination mode, we don't run the pagebuilder routine. We just
+ * directly invoke the shipout code, which in turn writes out the output vlist
+ * without worrying about pages. We also behave as if holding_inserts is
+ * always true: inserts are kept in the page vlist rather than being
+ * processed.
+ */
+
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 
@@ -75,6 +84,7 @@ fire_up(int32_t c)
     int32_t save_vbadness;
     scaled_t save_vfuzz;
     int32_t save_split_top_skip;
+    bool process_inserts;
 
     /*1048: "Set the value of output_penalty" */
     if (NODE_type(best_page_break) == PENALTY_NODE) {
@@ -87,7 +97,10 @@ fire_up(int32_t c)
     /* ... resuming 1047 ... "We set the values of top_mark, first_mark, and
      * bot_mark. The program uses the fact that `bot_mark != null` implies
      * `first_mark != null`; it also knows that `bot_mark == null` implies
-     * `top_mark = first_mark = null`. */
+     * `top_mark = first_mark = null`." The do_marks() call basically does the
+     * same thing as the code immediately below it, but for all "mark classes"
+     * beyond the default one -- a "mark class" being a concept introduced in
+     * e-TeX. */
 
     if (sa_root[MARK_VAL] != TEX_NULL) {
         if (do_marks(FIRE_UP_INIT, 0, sa_root[MARK_VAL]))
@@ -109,7 +122,7 @@ fire_up(int32_t c)
      * back on the contribution list." */
 
     if (c == best_page_break)
-        best_page_break = TEX_NULL;
+        best_page_break = TEX_NULL; /* "c not yet linked in" */
 
     if (BOX_REG(255) != TEX_NULL) { /*1050:*/
         if (file_line_error_style_p)
@@ -128,8 +141,19 @@ fire_up(int32_t c)
     insert_penalties = 0; /* "this will count the number of insertions held over" */
     save_split_top_skip = GLUEPAR(split_top_skip);
 
-    if (INTPAR(holding_inserts) <= 0) {
-        /*1053: "Prepare all the boxes involved in insertions to act as queues" */
+    /* Tectonic: in semantic pagination mode, we act as if holding_inserts is
+     * always active. */
+
+    process_inserts = (INTPAR(holding_inserts) <= 0) && !semantic_pagination_enabled;
+
+    if (process_inserts) {
+        /*1053: "Prepare all the boxes involved in insertions to act as
+         * queues". Namely: for each insert being tracked, set the
+         * `last_ins_ptr` field of its data structure to the last node in its
+         * associated vlist. If holding_inserts is positive, the inserts are
+         * just kept in the page vlist without any processing, I believe with
+         * the expectation that the output routine will do something clever
+         * with them. */
         r = LLIST_link(PAGE_INS_HEAD);
 
         while (r != PAGE_INS_HEAD) {
@@ -158,8 +182,8 @@ fire_up(int32_t c)
 
     while (p != best_page_break) {
         if (NODE_type(p) == INS_NODE) {
-            if (INTPAR(holding_inserts) <= 0) {
-                /*1055: "Either insert the material specified by noe p into
+            if (process_inserts) {
+                /*1055: "Either insert the material specified by node p into
                  * the appropriate box, or hold it for the next page; also
                  * delete node p from the current page." */
                 r = LLIST_link(PAGE_INS_HEAD);
@@ -329,7 +353,9 @@ fire_up(int32_t c)
         TOKEN_LIST_ref_count(cur_mark[TOP_MARK_CODE])++;
     }
 
-    if (LOCAL(output_routine) != TEX_NULL) {
+    /* Tectonic: in semantic pagination mode, ignore the output routine. */
+
+    if (LOCAL(output_routine) != TEX_NULL && !semantic_pagination_enabled) {
         if (dead_cycles >= INTPAR(max_dead_cycles)) {
             /*1059: "Explain that too many dead cycles have happened in a row." */
             if (file_line_error_style_p)
