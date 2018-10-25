@@ -234,9 +234,8 @@ ship_out(int32_t p)
 
     dvi_out(pool_ptr - str_start[str_ptr - 65536L]);
 
-    for (s = str_start[str_ptr - 65536L]; s <= pool_ptr - 1; s++) {
+    for (s = str_start[str_ptr - 65536L]; s <= pool_ptr - 1; s++)
         dvi_out(str_pool[s]);
-    }
 
     pool_ptr = str_start[str_ptr - 65536L];
 
@@ -276,7 +275,6 @@ done: /*1518:*/
     flush_node_list(p);
     synctex_teehs();
 }
-
 
 
 static void
@@ -545,23 +543,13 @@ hlist_out(void)
                     if (f <= 64) {
                         dvi_out(f + 170);
                     } else if (f <= 256) {
-                        {
-                            dvi_out(FNT1);
-                        }
-                        {
-                            dvi_out(f - 1);
-                        }
+                        dvi_out(FNT1);
+                        dvi_out(f - 1);
                     } else {
 
-                        {
-                            dvi_out((FNT1 + 1));
-                        }
-                        {
-                            dvi_out((f - 1) / 256);
-                        }
-                        {
-                            dvi_out((f - 1) % 256);
-                        }
+                        dvi_out((FNT1 + 1));
+                        dvi_out((f - 1) / 256);
+                        dvi_out((f - 1) % 256);
                     }
                     dvi_f = f;
                 }
@@ -573,9 +561,7 @@ hlist_out(void)
                             if (c >= 128) {
                                 dvi_out(SET1);
                             }
-                            {
-                                dvi_out(c);
-                            }
+                            dvi_out(c);
                             cur_h = cur_h + FONT_CHARACTER_WIDTH(f, c);
                             goto continue_;
                         }
@@ -652,30 +638,18 @@ hlist_out(void)
                                 if (f <= 64) {
                                     dvi_out(f + 170);
                                 } else if (f <= 256) {
-                                    {
-                                        dvi_out(FNT1);
-                                    }
-                                    {
-                                        dvi_out(f - 1);
-                                    }
+                                    dvi_out(FNT1);
+                                    dvi_out(f - 1);
                                 } else {
 
-                                    {
-                                        dvi_out((FNT1 + 1));
-                                    }
-                                    {
-                                        dvi_out((f - 1) / 256);
-                                    }
-                                    {
-                                        dvi_out((f - 1) % 256);
-                                    }
+                                    dvi_out((FNT1 + 1));
+                                    dvi_out((f - 1) / 256);
+                                    dvi_out((f - 1) % 256);
                                 }
                                 dvi_f = f;
                             }
                             if (mem[p].b16.s0 == GLYPH_NODE) {
-                                {
-                                    dvi_out(SET_GLYPHS);
-                                }
+                                dvi_out(SET_GLYPHS);
                                 dvi_four(mem[p + 1].b32.s1);
                                 dvi_two(1);
                                 dvi_four(0);
@@ -686,9 +660,7 @@ hlist_out(void)
 
                                 if (mem[p].b16.s0 == NATIVE_WORD_NODE_AT) {
                                     if ((mem[p + 4].b16.s1 > 0) || (mem[p + 5].ptr != NULL)) {
-                                        {
-                                            dvi_out(SET_TEXT_AND_GLYPHS);
-                                        }
+                                        dvi_out(SET_TEXT_AND_GLYPHS);
                                         len = mem[p + 4].b16.s1;
                                         dvi_two(len);
                                         {
@@ -716,9 +688,7 @@ hlist_out(void)
                                 } else {
 
                                     if (mem[p + 5].ptr != NULL) {
-                                        {
-                                            dvi_out(SET_GLYPHS);
-                                        }
+                                        dvi_out(SET_GLYPHS);
                                         len = make_xdv_glyph_array_data(p);
                                         {
                                             register int32_t for_end;
@@ -968,9 +938,7 @@ hlist_out(void)
                     movement(cur_v - dvi_v, DOWN1);
                     dvi_v = cur_v;
                 }
-                {
-                    dvi_out(SET_RULE);
-                }
+                dvi_out(SET_RULE);
                 dvi_four(rule_ht);
                 dvi_four(rule_wd);
                 cur_v = base_line;
@@ -1140,29 +1108,17 @@ vlist_out(void)
                                 if (f <= 64) {
                                     dvi_out(f + 170);
                                 } else if (f <= 256) {
-                                    {
-                                        dvi_out(FNT1);
-                                    }
-                                    {
-                                        dvi_out(f - 1);
-                                    }
+                                    dvi_out(FNT1);
+                                    dvi_out(f - 1);
                                 } else {
 
-                                    {
-                                        dvi_out((FNT1 + 1));
-                                    }
-                                    {
-                                        dvi_out((f - 1) / 256);
-                                    }
-                                    {
-                                        dvi_out((f - 1) % 256);
-                                    }
+                                    dvi_out((FNT1 + 1));
+                                    dvi_out((f - 1) / 256);
+                                    dvi_out((f - 1) % 256);
                                 }
                                 dvi_f = f;
                             }
-                            {
-                                dvi_out(SET_GLYPHS);
-                            }
+                            dvi_out(SET_GLYPHS);
                             dvi_four(0);
                             dvi_two(1);
                             dvi_four(0);
@@ -1318,9 +1274,7 @@ vlist_out(void)
                     movement(cur_v - dvi_v, DOWN1);
                     dvi_v = cur_v;
                 }
-                {
-                    dvi_out(PUT_RULE);
-                }
+                dvi_out(PUT_RULE);
                 dvi_four(rule_ht);
                 dvi_four(rule_wd);
                 cur_h = left_edge;
@@ -1630,9 +1584,7 @@ static void
 dvi_native_font_def(internal_font_number f)
 {
     int32_t font_def_length, i;
-    {
-        dvi_out(DEFINE_NATIVE_FONT);
-    }
+    dvi_out(DEFINE_NATIVE_FONT);
     dvi_four(f - 1);
     font_def_length = make_font_def(f);
     {
@@ -1658,41 +1610,21 @@ dvi_font_def(internal_font_number f)
     else {
 
         if (f <= 256) {
-            {
-                dvi_out(FNT_DEF1);
-            }
-            {
-                dvi_out(f - 1);
-            }
+            dvi_out(FNT_DEF1);
+            dvi_out(f - 1);
         } else {
 
-            {
-                dvi_out((FNT_DEF1 + 1));
-            }
-            {
-                dvi_out((f - 1) / 256);
-            }
-            {
-                dvi_out((f - 1) % 256);
-            }
+            dvi_out((FNT_DEF1 + 1));
+            dvi_out((f - 1) / 256);
+            dvi_out((f - 1) % 256);
         }
-        {
-            dvi_out(font_check[f].s3);
-        }
-        {
-            dvi_out(font_check[f].s2);
-        }
-        {
-            dvi_out(font_check[f].s1);
-        }
-        {
-            dvi_out(font_check[f].s0);
-        }
+        dvi_out(font_check[f].s3);
+        dvi_out(font_check[f].s2);
+        dvi_out(font_check[f].s1);
+        dvi_out(font_check[f].s0);
         dvi_four(font_size[f]);
         dvi_four(font_dsize[f]);
-        {
-            dvi_out(length(font_area[f]));
-        }
+        dvi_out(length(font_area[f]));
         l = 0;
         k = str_start[(font_name[f]) - 65536L];
         while ((l == 0) && (k < str_start[(font_name[f] + 1) - 65536L])) {
@@ -1703,9 +1635,7 @@ dvi_font_def(internal_font_number f)
         }
         if (l == 0)
             l = length(font_name[f]);
-        {
-            dvi_out(l);
-        }
+        dvi_out(l);
         {
             register int32_t for_end;
             k = str_start[(font_area[f]) - 65536L];
@@ -1945,17 +1875,11 @@ special_out(int32_t p)
             overflow("pool size", pool_size - init_pool_ptr);
     }
     if ((pool_ptr - str_start[str_ptr - 65536L]) < 256) {
-        {
-            dvi_out(XXX1);
-        }
-        {
-            dvi_out((pool_ptr - str_start[str_ptr - 65536L]));
-        }
+        dvi_out(XXX1);
+        dvi_out((pool_ptr - str_start[str_ptr - 65536L]));
     } else {
 
-        {
-            dvi_out(XXX4);
-        }
+        dvi_out(XXX4);
         dvi_four((pool_ptr - str_start[str_ptr - 65536L]));
     }
     {
@@ -2118,17 +2042,11 @@ pic_out(int32_t p)
     print(')');
     selector = old_setting;
     if ((pool_ptr - str_start[str_ptr - 65536L]) < 256) {
-        {
-            dvi_out(XXX1);
-        }
-        {
-            dvi_out((pool_ptr - str_start[str_ptr - 65536L]));
-        }
+        dvi_out(XXX1);
+        dvi_out((pool_ptr - str_start[str_ptr - 65536L]));
     } else {
 
-        {
-            dvi_out(XXX4);
-        }
+        dvi_out(XXX4);
         dvi_four((pool_ptr - str_start[str_ptr - 65536L]));
     }
     {
@@ -2283,7 +2201,6 @@ dvi_four(int32_t x)
     } else {
         x = x + 0x40000000;
         x = x + 0x40000000;
-
         dvi_out((x / 0x1000000) + 128);
     }
 
@@ -2292,7 +2209,6 @@ dvi_four(int32_t x)
 
     x = x % 0x10000;
     dvi_out(x / 0x100);
-
     dvi_out(x % 0x100);
 }
 
@@ -2301,7 +2217,6 @@ static void
 dvi_two(UTF16_code s)
 {
     dvi_out(s / 0x100);
-
     dvi_out(s % 0x100);
 }
 
@@ -2309,10 +2224,8 @@ dvi_two(UTF16_code s)
 static void
 dvi_pop(int32_t l)
 {
-    if ((l == dvi_offset + dvi_ptr) && (dvi_ptr > 0))
+    if (l == dvi_offset + dvi_ptr && dvi_ptr > 0)
         dvi_ptr--;
-    else {
-
+    else
         dvi_out(POP);
-    }
 }
