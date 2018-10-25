@@ -546,8 +546,7 @@ hlist_out(void)
                         dvi_out(FNT1);
                         dvi_out(f - 1);
                     } else {
-
-                        dvi_out((FNT1 + 1));
+                        dvi_out(FNT1 + 1);
                         dvi_out((f - 1) / 256);
                         dvi_out((f - 1) % 256);
                     }
@@ -641,8 +640,7 @@ hlist_out(void)
                                     dvi_out(FNT1);
                                     dvi_out(f - 1);
                                 } else {
-
-                                    dvi_out((FNT1 + 1));
+                                    dvi_out(FNT1 + 1);
                                     dvi_out((f - 1) / 256);
                                     dvi_out((f - 1) % 256);
                                 }
@@ -1112,7 +1110,7 @@ vlist_out(void)
                                     dvi_out(f - 1);
                                 } else {
 
-                                    dvi_out((FNT1 + 1));
+                                    dvi_out(FNT1 + 1);
                                     dvi_out((f - 1) / 256);
                                     dvi_out((f - 1) % 256);
                                 }
@@ -1584,19 +1582,13 @@ static void
 dvi_native_font_def(internal_font_number f)
 {
     int32_t font_def_length, i;
+
     dvi_out(DEFINE_NATIVE_FONT);
     dvi_four(f - 1);
     font_def_length = make_font_def(f);
-    {
-        register int32_t for_end;
-        i = 0;
-        for_end = font_def_length - 1;
-        if (i <= for_end)
-            do {
-                dvi_out(xdv_buffer[i]);
-            }
-            while (i++ < for_end);
-    }
+
+    for (i = 0; i < font_def_length; i++)
+        dvi_out(xdv_buffer[i]);
 }
 
 
@@ -1605,19 +1597,19 @@ dvi_font_def(internal_font_number f)
 {
     pool_pointer k;
     int32_t l;
-    if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG)))
+
+    if (font_area[f] == AAT_FONT_FLAG || font_area[f] == OTGR_FONT_FLAG)
         dvi_native_font_def(f);
     else {
-
         if (f <= 256) {
             dvi_out(FNT_DEF1);
             dvi_out(f - 1);
         } else {
-
-            dvi_out((FNT_DEF1 + 1));
+            dvi_out(FNT_DEF1 + 1);
             dvi_out((f - 1) / 256);
             dvi_out((f - 1) % 256);
         }
+
         dvi_out(font_check[f].s3);
         dvi_out(font_check[f].s2);
         dvi_out(font_check[f].s1);
@@ -1627,15 +1619,19 @@ dvi_font_def(internal_font_number f)
         dvi_out(length(font_area[f]));
         l = 0;
         k = str_start[(font_name[f]) - 65536L];
+
         while ((l == 0) && (k < str_start[(font_name[f] + 1) - 65536L])) {
 
             if (str_pool[k] == ':' )
                 l = k - str_start[(font_name[f]) - 65536L];
             k++;
         }
+
         if (l == 0)
             l = length(font_name[f]);
+
         dvi_out(l);
+
         {
             register int32_t for_end;
             k = str_start[(font_area[f]) - 65536L];
@@ -1646,6 +1642,7 @@ dvi_font_def(internal_font_number f)
                 }
                 while (k++ < for_end);
         }
+
         {
             register int32_t for_end;
             k = str_start[(font_name[f]) - 65536L];
@@ -1831,17 +1828,15 @@ prune_movements(int32_t l)
     int32_t p;
 
     while (down_ptr != TEX_NULL) {
-
         if (mem[down_ptr + 2].b32.s1 < l)
-            goto done;
+            break;
+
         p = down_ptr;
         down_ptr = mem[p].b32.s1;
         free_node(p, MOVEMENT_NODE_SIZE);
     }
 
-done:
     while (right_ptr != TEX_NULL) {
-
         if (mem[right_ptr + 2].b32.s1 < l)
             return;
         p = right_ptr;
@@ -1870,18 +1865,18 @@ special_out(int32_t p)
     selector = SELECTOR_NEW_STRING ;
     show_token_list(mem[mem[p + 1].b32.s1].b32.s1, TEX_NULL, pool_size - pool_ptr);
     selector = old_setting;
-    {
-        if (pool_ptr + 1 > pool_size)
-            overflow("pool size", pool_size - init_pool_ptr);
-    }
-    if ((pool_ptr - str_start[str_ptr - 65536L]) < 256) {
-        dvi_out(XXX1);
-        dvi_out((pool_ptr - str_start[str_ptr - 65536L]));
-    } else {
 
+    if (pool_ptr + 1 > pool_size)
+        overflow("pool size", pool_size - init_pool_ptr);
+
+    if (pool_ptr - str_start[str_ptr - 65536L] < 256) {
+        dvi_out(XXX1);
+        dvi_out(pool_ptr - str_start[str_ptr - 65536L]);
+    } else {
         dvi_out(XXX4);
-        dvi_four((pool_ptr - str_start[str_ptr - 65536L]));
+        dvi_four(pool_ptr - str_start[str_ptr - 65536L]);
     }
+
     {
         register int32_t for_end;
         k = str_start[str_ptr - 65536L];
@@ -1989,16 +1984,19 @@ pic_out(int32_t p)
     unsigned char /*max_selector */ old_setting;
     int32_t i;
     pool_pointer k;
+
     if (cur_h != dvi_h) {
         movement(cur_h - dvi_h, RIGHT1);
         dvi_h = cur_h;
     }
+
     if (cur_v != dvi_v) {
         movement(cur_v - dvi_v, DOWN1);
         dvi_v = cur_v;
     }
+
     old_setting = selector;
-    selector = SELECTOR_NEW_STRING ;
+    selector = SELECTOR_NEW_STRING;
     print_cstr("pdf:image ");
     print_cstr("matrix ");
     print_scaled(mem[p + 5].b32.s0);
@@ -2016,6 +2014,7 @@ pic_out(int32_t p)
     print_cstr("page ");
     print_int(mem[p + 4].b16.s0);
     print(' ');
+
     switch (mem[p + 8].b16.s1) {
     case 1:
         print_cstr("pagebox cropbox ");
@@ -2036,19 +2035,21 @@ pic_out(int32_t p)
         ;
         break;
     }
+
     print('(');
     for (i = 0; i < PIC_NODE_path_len(p); i++)
         print_raw_char(PIC_NODE_path(p)[i], true);
     print(')');
+
     selector = old_setting;
     if ((pool_ptr - str_start[str_ptr - 65536L]) < 256) {
         dvi_out(XXX1);
-        dvi_out((pool_ptr - str_start[str_ptr - 65536L]));
+        dvi_out(pool_ptr - str_start[str_ptr - 65536L]);
     } else {
-
         dvi_out(XXX4);
-        dvi_four((pool_ptr - str_start[str_ptr - 65536L]));
+        dvi_four(pool_ptr - str_start[str_ptr - 65536L]);
     }
+
     {
         register int32_t for_end;
         k = str_start[str_ptr - 65536L];
@@ -2093,11 +2094,9 @@ finalize_dvi_file(void)
         dvi_four(max_h);
 
         dvi_out(max_push / 256);
-
         dvi_out(max_push % 256);
 
         dvi_out((total_pages / 256) % 256);
-
         dvi_out(total_pages % 256);
 
         while (font_ptr > FONT_BASE) {
@@ -2179,16 +2178,17 @@ dvi_swap(void)
         cur_s = -2;
         fatal_error("dvi length exceeds \"7FFFFFFF");
     }
+
     if (dvi_limit == DVI_BUF_SIZE) {
         write_to_dvi(0, HALF_BUF - 1);
         dvi_limit = HALF_BUF;
         dvi_offset = dvi_offset + DVI_BUF_SIZE;
         dvi_ptr = 0;
     } else {
-
         write_to_dvi(HALF_BUF, DVI_BUF_SIZE - 1);
         dvi_limit = DVI_BUF_SIZE;
     }
+
     dvi_gone = dvi_gone + HALF_BUF;
 }
 
