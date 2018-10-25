@@ -597,7 +597,7 @@ primitive(const char* ident, uint16_t c, int32_t o)
 
         cur_val = id_lookup(first, len);
         str_ptr--;
-        pool_ptr = str_start[str_ptr - 65536L];
+        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
         hash[cur_val].s1 = s;
         prim_val = prim_lookup(s);
     } else {
@@ -1273,7 +1273,7 @@ not_found1: /*970:*/
                     } while (u != str_start[(k + 1) - 65536L]);
 
                     str_ptr--;
-                    pool_ptr = str_start[str_ptr - 65536L];
+                    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
                     s = hyph_word[h];
                     hyph_count--;
                     goto found;
@@ -2191,7 +2191,7 @@ store_fmt_file(void)
     print(make_name_string());
 
     str_ptr--;
-    pool_ptr = str_start[str_ptr - 65536L];
+    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
 
     print_nl_cstr("");
     print(format_ident);
@@ -2214,7 +2214,7 @@ store_fmt_file(void)
 
     dump_int(pool_ptr);
     dump_int(str_ptr);
-    dump_things(str_start[TOO_BIG_CHAR - 65536L], str_ptr - 65535L);
+    dump_things(str_start[0], str_ptr - TOO_BIG_CHAR + 1);
     dump_things(str_pool[0], pool_ptr);
 
     print_ln();
@@ -2637,7 +2637,7 @@ load_fmt_file(void)
         max_strings = str_ptr + strings_free;
 
     str_start = xmalloc_array(pool_pointer, max_strings);
-    undump_checked_things(0, pool_ptr, str_start[(TOO_BIG_CHAR) - 65536L], str_ptr - 65535L);
+    undump_checked_things(0, pool_ptr, str_start[0], str_ptr - TOO_BIG_CHAR + 1);
     str_pool = xmalloc_array(packed_UTF16_code, pool_size);
 
     undump_things(str_pool[0], pool_ptr);

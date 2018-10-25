@@ -234,10 +234,10 @@ ship_out(int32_t p)
 
     dvi_out(cur_length());
 
-    for (s = str_start[str_ptr - 65536L]; s <= pool_ptr - 1; s++)
+    for (s = str_start[str_ptr - TOO_BIG_CHAR]; s <= pool_ptr - 1; s++)
         dvi_out(str_pool[s]);
 
-    pool_ptr = str_start[str_ptr - 65536L];
+    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
 
     cur_v = mem[p + 3].b32.s1 + DIMENPAR(v_offset);
     temp_ptr = p;
@@ -444,7 +444,7 @@ hlist_out(void)
                             for_end = (cur_length()) - 1;
                             if (j <= for_end)
                                 do
-                                    NATIVE_NODE_text(q)[j] = str_pool[str_start[str_ptr - 65536L] + j];
+                                    NATIVE_NODE_text(q)[j] = str_pool[str_start[str_ptr - TOO_BIG_CHAR] + j];
                                 while (j++ < for_end);
                         }
                         mem[q + 1].b32.s1 = k;
@@ -469,7 +469,7 @@ hlist_out(void)
                             p = LLIST_link(p);
                         }
                         flush_node_list(r);
-                        pool_ptr = str_start[str_ptr - 65536L];
+                        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
                         p = q;
                     }
                 }
@@ -1879,7 +1879,7 @@ special_out(int32_t p)
 
     {
         register int32_t for_end;
-        k = str_start[str_ptr - 65536L];
+        k = str_start[str_ptr - TOO_BIG_CHAR];
         for_end = pool_ptr - 1;
         if (k <= for_end)
             do {
@@ -1887,7 +1887,7 @@ special_out(int32_t p)
             }
             while (k++ < for_end);
     }
-    pool_ptr = str_start[str_ptr - 65536L];
+    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
     doing_special = false;
 }
 
@@ -1964,14 +1964,14 @@ write_out(int32_t p)
 
         print_nl_cstr("runsystem(");
         for (d = 0; d <= (cur_length()) - 1; d++)
-            print(str_pool[str_start[str_ptr - 65536L] + d]);
+            print(str_pool[str_start[str_ptr - TOO_BIG_CHAR] + d]);
 
         print_cstr(")...");
         print_cstr("disabled");
         print_char('.');
         print_nl_cstr("");
         print_ln();
-        pool_ptr = str_start[str_ptr - 65536L];
+        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
     }
 
     selector = old_setting;
@@ -2049,10 +2049,10 @@ pic_out(int32_t p)
         dvi_four(cur_length());
     }
 
-    for (k = str_start[str_ptr - 65536L]; k < pool_ptr; k++)
+    for (k = str_start[str_ptr - TOO_BIG_CHAR]; k < pool_ptr; k++)
         dvi_out(str_pool[k]);
 
-    pool_ptr = str_start[str_ptr - 65536L]; /* discard the string we just made */
+    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR]; /* discard the string we just made */
 }
 
 

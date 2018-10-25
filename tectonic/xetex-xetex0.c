@@ -3718,7 +3718,7 @@ id_lookup(int32_t j, int32_t l)
 
                 d = cur_length();
 
-                while (pool_ptr > str_start[str_ptr - 65536L]) {
+                while (pool_ptr > str_start[str_ptr - TOO_BIG_CHAR]) {
                     pool_ptr--;
                     str_pool[pool_ptr + l] = str_pool[pool_ptr];
                 }
@@ -9080,7 +9080,7 @@ void pseudo_start(void)
     pseudo_files = /*:1542 */ p;
     {
         str_ptr--;
-        pool_ptr = str_start[str_ptr - 65536L];
+        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
     }
     begin_file_reading();
     line = 0;
@@ -9330,7 +9330,7 @@ conv_toks(void)
         save_scanner_status = scanner_status;
         save_warning_index = warning_index;
         save_def_ref = def_ref;
-        if (str_start[str_ptr - 65536L] < pool_ptr)
+        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
             u = make_string();
         else
             u = 0;
@@ -9347,7 +9347,7 @@ conv_toks(void)
         save_warning_index = warning_index;
         save_def_ref = def_ref;
 
-        if (str_start[str_ptr - 65536L] < pool_ptr)
+        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
             u = make_string();
         else
             u = 0;
@@ -9373,7 +9373,7 @@ conv_toks(void)
 
         if (s == str_ptr - 1) {
             str_ptr--;
-            pool_ptr = str_start[str_ptr - 65536L];
+            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
         }
 
         begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
@@ -10457,7 +10457,7 @@ end_name(void)
         cur_area = EMPTY_STRING;
     } else {
         cur_area = str_ptr;
-        str_start[(str_ptr + 1) - 65536L] = str_start[str_ptr - 65536L] + area_delimiter;
+        str_start[(str_ptr + 1) - 65536L] = str_start[str_ptr - TOO_BIG_CHAR] + area_delimiter;
         str_ptr++;
         temp_str = search_string(cur_area);
 
@@ -10481,7 +10481,7 @@ end_name(void)
         cur_name = slow_make_string();
     } else {
         cur_name = str_ptr;
-        str_start[(str_ptr + 1) - 65536L] = str_start[str_ptr - 65536L] + ext_delimiter - area_delimiter - 1;
+        str_start[(str_ptr + 1) - 65536L] = str_start[str_ptr - TOO_BIG_CHAR] + ext_delimiter - area_delimiter - 1;
         str_ptr++;
 
         cur_ext = make_string();
@@ -10754,7 +10754,7 @@ start_input(const char *primary_input_name)
         if (temp_str > 0) {
             cur_input.name = temp_str;
             str_ptr--;
-            pool_ptr = str_start[str_ptr - 65536L];
+            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
         }
     }
 
@@ -10906,10 +10906,10 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 
         len = apply_mapping(
             font_mapping[f],
-            &str_pool[str_start[str_ptr - 65536L]],
+            &str_pool[str_start[str_ptr - TOO_BIG_CHAR]],
             cur_length()
         );
-        pool_ptr = str_start[str_ptr - 65536L];
+        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
 
         i = 0;
 
@@ -11085,7 +11085,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
                     release_font_engine(font_engine, native_font_type_flag);
                     {
                         str_ptr--;
-                        pool_ptr = str_start[str_ptr - 65536L];
+                        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
                     }
                     return f;
                 }
@@ -15944,7 +15944,7 @@ void new_font(small_number a)
                 if (str_eq_str(font_name[f], make_string())) {
                     {
                         str_ptr--;
-                        pool_ptr = str_start[str_ptr - 65536L];
+                        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
                     }
                     if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
                         if (s > 0) {
@@ -15956,7 +15956,7 @@ void new_font(small_number a)
                 } else {
 
                     str_ptr--;
-                    pool_ptr = str_start[str_ptr - 65536L];
+                    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
                 }
             }
             while (f++ < for_end);
@@ -16041,7 +16041,7 @@ void issue_message(void)
     }
     {
         str_ptr--;
-        pool_ptr = str_start[str_ptr - 65536L];
+        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
     }
 }
 
@@ -18246,7 +18246,7 @@ void flush_str(str_number s)
 {
     if (s == str_ptr - 1) {
         str_ptr--;
-        pool_ptr = str_start[str_ptr - 65536L];
+        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
     }
 }
 
