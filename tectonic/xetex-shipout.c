@@ -2032,7 +2032,6 @@ pic_out(int32_t p)
         print_cstr("pagebox trimbox ");
         break;
     default:
-        ;
         break;
     }
 
@@ -2042,7 +2041,7 @@ pic_out(int32_t p)
     print(')');
 
     selector = old_setting;
-    if ((cur_length()) < 256) {
+    if (cur_length() < 256) {
         dvi_out(XXX1);
         dvi_out(cur_length());
     } else {
@@ -2050,17 +2049,10 @@ pic_out(int32_t p)
         dvi_four(cur_length());
     }
 
-    {
-        register int32_t for_end;
-        k = str_start[str_ptr - 65536L];
-        for_end = pool_ptr - 1;
-        if (k <= for_end)
-            do {
-                dvi_out(str_pool[k]);
-            }
-            while (k++ < for_end);
-    }
-    pool_ptr = str_start[str_ptr - 65536L];
+    for (k = str_start[str_ptr - 65536L]; k < pool_ptr; k++)
+        dvi_out(str_pool[k]);
+
+    pool_ptr = str_start[str_ptr - 65536L]; /* discard the string we just made */
 }
 
 
