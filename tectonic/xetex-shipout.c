@@ -65,6 +65,16 @@ deinitialize_shipout_variables(void)
     dvi_buf = NULL;
 }
 
+
+static inline void
+dvi_out(eight_bits c)
+{
+    dvi_buf[dvi_ptr++] = c;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+}
+
+
 /*660: output the box `p` */
 void
 ship_out(int32_t p)
@@ -170,18 +180,12 @@ ship_out(int32_t p)
     }
 
     if (total_pages == 0) {
-        dvi_buf[dvi_ptr] = PRE;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(PRE);
 
         if (semantic_pagination_enabled)
-            dvi_buf[dvi_ptr] = SPX_ID_BYTE;
+            dvi_out(SPX_ID_BYTE);
         else
-            dvi_buf[dvi_ptr] = XDV_ID_BYTE;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+            dvi_out(XDV_ID_BYTE);
 
         dvi_four(25400000L); /* magic values: conversion ratio for sp */
         dvi_four(473628672L); /* magic values: conversion ratio for sp */
@@ -191,25 +195,16 @@ ship_out(int32_t p)
 
         l = strlen(output_comment);
 
-        dvi_buf[dvi_ptr] = l;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(l);
 
         for (s = 0; s <= l - 1; s++) {
-            dvi_buf[dvi_ptr] = output_comment[s];
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(output_comment[s]);
         }
     }
 
     page_loc = dvi_offset + dvi_ptr;
 
-    dvi_buf[dvi_ptr] = BOP;
-    dvi_ptr++;
-    if (dvi_ptr == dvi_limit)
-        dvi_swap();
+    dvi_out(BOP);
 
     for (k = 0; k <= 9; k++)
         dvi_four(COUNT_REG(k));
@@ -235,21 +230,12 @@ ship_out(int32_t p)
     }
     selector = old_setting;
 
-    dvi_buf[dvi_ptr] = XXX1;
-    dvi_ptr++;
-    if (dvi_ptr == dvi_limit)
-        dvi_swap();
+    dvi_out(XXX1);
 
-    dvi_buf[dvi_ptr] = pool_ptr - str_start[str_ptr - 65536L];
-    dvi_ptr++;
-    if (dvi_ptr == dvi_limit)
-        dvi_swap();
+    dvi_out(pool_ptr - str_start[str_ptr - 65536L]);
 
     for (s = str_start[str_ptr - 65536L]; s <= pool_ptr - 1; s++) {
-        dvi_buf[dvi_ptr] = str_pool[s];
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(str_pool[s]);
     }
 
     pool_ptr = str_start[str_ptr - 65536L];
@@ -261,10 +247,7 @@ ship_out(int32_t p)
     else
         hlist_out();
 
-    dvi_buf[dvi_ptr] = EOP;
-    dvi_ptr++;
-    if (dvi_ptr == dvi_limit)
-        dvi_swap();
+    dvi_out(EOP);
 
     total_pages++;
     cur_s = -1; /*:662 */
@@ -500,10 +483,7 @@ hlist_out(void)
     p = mem[this_box + 5].b32.s1;
     cur_s++;
     if (cur_s > 0) {
-        dvi_buf[dvi_ptr] = PUSH;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(PUSH);
     }
     if (cur_s > max_push)
         max_push = cur_s;
@@ -563,42 +543,24 @@ hlist_out(void)
                         font_used[f] = true;
                     }
                     if (f <= 64) {
-                        dvi_buf[dvi_ptr] = f + 170;
-                        dvi_ptr++;
-                        if (dvi_ptr == dvi_limit)
-                            dvi_swap();
+                        dvi_out(f + 170);
                     } else if (f <= 256) {
                         {
-                            dvi_buf[dvi_ptr] = FNT1;
-                            dvi_ptr++;
-                            if (dvi_ptr == dvi_limit)
-                                dvi_swap();
+                            dvi_out(FNT1);
                         }
                         {
-                            dvi_buf[dvi_ptr] = f - 1;
-                            dvi_ptr++;
-                            if (dvi_ptr == dvi_limit)
-                                dvi_swap();
+                            dvi_out(f - 1);
                         }
                     } else {
 
                         {
-                            dvi_buf[dvi_ptr] = (FNT1 + 1);
-                            dvi_ptr++;
-                            if (dvi_ptr == dvi_limit)
-                                dvi_swap();
+                            dvi_out((FNT1 + 1));
                         }
                         {
-                            dvi_buf[dvi_ptr] = (f - 1) / 256;
-                            dvi_ptr++;
-                            if (dvi_ptr == dvi_limit)
-                                dvi_swap();
+                            dvi_out((f - 1) / 256);
                         }
                         {
-                            dvi_buf[dvi_ptr] = (f - 1) % 256;
-                            dvi_ptr++;
-                            if (dvi_ptr == dvi_limit)
-                                dvi_swap();
+                            dvi_out((f - 1) % 256);
                         }
                     }
                     dvi_f = f;
@@ -609,16 +571,10 @@ hlist_out(void)
 
                         if ((FONT_CHARACTER_INFO(f, c).s3 > 0)) {
                             if (c >= 128) {
-                                dvi_buf[dvi_ptr] = SET1;
-                                dvi_ptr++;
-                                if (dvi_ptr == dvi_limit)
-                                    dvi_swap();
+                                dvi_out(SET1);
                             }
                             {
-                                dvi_buf[dvi_ptr] = c;
-                                dvi_ptr++;
-                                if (dvi_ptr == dvi_limit)
-                                    dvi_swap();
+                                dvi_out(c);
                             }
                             cur_h = cur_h + FONT_CHARACTER_WIDTH(f, c);
                             goto continue_;
@@ -694,52 +650,31 @@ hlist_out(void)
                                     font_used[f] = true;
                                 }
                                 if (f <= 64) {
-                                    dvi_buf[dvi_ptr] = f + 170;
-                                    dvi_ptr++;
-                                    if (dvi_ptr == dvi_limit)
-                                        dvi_swap();
+                                    dvi_out(f + 170);
                                 } else if (f <= 256) {
                                     {
-                                        dvi_buf[dvi_ptr] = FNT1;
-                                        dvi_ptr++;
-                                        if (dvi_ptr == dvi_limit)
-                                            dvi_swap();
+                                        dvi_out(FNT1);
                                     }
                                     {
-                                        dvi_buf[dvi_ptr] = f - 1;
-                                        dvi_ptr++;
-                                        if (dvi_ptr == dvi_limit)
-                                            dvi_swap();
+                                        dvi_out(f - 1);
                                     }
                                 } else {
 
                                     {
-                                        dvi_buf[dvi_ptr] = (FNT1 + 1);
-                                        dvi_ptr++;
-                                        if (dvi_ptr == dvi_limit)
-                                            dvi_swap();
+                                        dvi_out((FNT1 + 1));
                                     }
                                     {
-                                        dvi_buf[dvi_ptr] = (f - 1) / 256;
-                                        dvi_ptr++;
-                                        if (dvi_ptr == dvi_limit)
-                                            dvi_swap();
+                                        dvi_out((f - 1) / 256);
                                     }
                                     {
-                                        dvi_buf[dvi_ptr] = (f - 1) % 256;
-                                        dvi_ptr++;
-                                        if (dvi_ptr == dvi_limit)
-                                            dvi_swap();
+                                        dvi_out((f - 1) % 256);
                                     }
                                 }
                                 dvi_f = f;
                             }
                             if (mem[p].b16.s0 == GLYPH_NODE) {
                                 {
-                                    dvi_buf[dvi_ptr] = SET_GLYPHS;
-                                    dvi_ptr++;
-                                    if (dvi_ptr == dvi_limit)
-                                        dvi_swap();
+                                    dvi_out(SET_GLYPHS);
                                 }
                                 dvi_four(mem[p + 1].b32.s1);
                                 dvi_two(1);
@@ -752,10 +687,7 @@ hlist_out(void)
                                 if (mem[p].b16.s0 == NATIVE_WORD_NODE_AT) {
                                     if ((mem[p + 4].b16.s1 > 0) || (mem[p + 5].ptr != NULL)) {
                                         {
-                                            dvi_buf[dvi_ptr] = SET_TEXT_AND_GLYPHS;
-                                            dvi_ptr++;
-                                            if (dvi_ptr == dvi_limit)
-                                                dvi_swap();
+                                            dvi_out(SET_TEXT_AND_GLYPHS);
                                         }
                                         len = mem[p + 4].b16.s1;
                                         dvi_two(len);
@@ -776,10 +708,7 @@ hlist_out(void)
                                             for_end = len - 1;
                                             if (k <= for_end)
                                                 do {
-                                                    dvi_buf[dvi_ptr] = xdv_buffer[k];
-                                                    dvi_ptr++;
-                                                    if (dvi_ptr == dvi_limit)
-                                                        dvi_swap();
+                                                    dvi_out(xdv_buffer[k]);
                                                 }
                                                 while (k++ < for_end);
                                         }
@@ -788,10 +717,7 @@ hlist_out(void)
 
                                     if (mem[p + 5].ptr != NULL) {
                                         {
-                                            dvi_buf[dvi_ptr] = SET_GLYPHS;
-                                            dvi_ptr++;
-                                            if (dvi_ptr == dvi_limit)
-                                                dvi_swap();
+                                            dvi_out(SET_GLYPHS);
                                         }
                                         len = make_xdv_glyph_array_data(p);
                                         {
@@ -800,10 +726,7 @@ hlist_out(void)
                                             for_end = len - 1;
                                             if (k <= for_end)
                                                 do {
-                                                    dvi_buf[dvi_ptr] = xdv_buffer[k];
-                                                    dvi_ptr++;
-                                                    if (dvi_ptr == dvi_limit)
-                                                        dvi_swap();
+                                                    dvi_out(xdv_buffer[k]);
                                                 }
                                                 while (k++ < for_end);
                                         }
@@ -1046,10 +969,7 @@ hlist_out(void)
                     dvi_v = cur_v;
                 }
                 {
-                    dvi_buf[dvi_ptr] = SET_RULE;
-                    dvi_ptr++;
-                    if (dvi_ptr == dvi_limit)
-                        dvi_swap();
+                    dvi_out(SET_RULE);
                 }
                 dvi_four(rule_ht);
                 dvi_four(rule_wd);
@@ -1122,10 +1042,7 @@ vlist_out(void)
     upwards = (mem[this_box].b16.s0 == 1);
     cur_s++;
     if (cur_s > 0) {
-        dvi_buf[dvi_ptr] = PUSH;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(PUSH);
     }
     if (cur_s > max_push)
         max_push = cur_s;
@@ -1221,51 +1138,30 @@ vlist_out(void)
                                     font_used[f] = true;
                                 }
                                 if (f <= 64) {
-                                    dvi_buf[dvi_ptr] = f + 170;
-                                    dvi_ptr++;
-                                    if (dvi_ptr == dvi_limit)
-                                        dvi_swap();
+                                    dvi_out(f + 170);
                                 } else if (f <= 256) {
                                     {
-                                        dvi_buf[dvi_ptr] = FNT1;
-                                        dvi_ptr++;
-                                        if (dvi_ptr == dvi_limit)
-                                            dvi_swap();
+                                        dvi_out(FNT1);
                                     }
                                     {
-                                        dvi_buf[dvi_ptr] = f - 1;
-                                        dvi_ptr++;
-                                        if (dvi_ptr == dvi_limit)
-                                            dvi_swap();
+                                        dvi_out(f - 1);
                                     }
                                 } else {
 
                                     {
-                                        dvi_buf[dvi_ptr] = (FNT1 + 1);
-                                        dvi_ptr++;
-                                        if (dvi_ptr == dvi_limit)
-                                            dvi_swap();
+                                        dvi_out((FNT1 + 1));
                                     }
                                     {
-                                        dvi_buf[dvi_ptr] = (f - 1) / 256;
-                                        dvi_ptr++;
-                                        if (dvi_ptr == dvi_limit)
-                                            dvi_swap();
+                                        dvi_out((f - 1) / 256);
                                     }
                                     {
-                                        dvi_buf[dvi_ptr] = (f - 1) % 256;
-                                        dvi_ptr++;
-                                        if (dvi_ptr == dvi_limit)
-                                            dvi_swap();
+                                        dvi_out((f - 1) % 256);
                                     }
                                 }
                                 dvi_f = f;
                             }
                             {
-                                dvi_buf[dvi_ptr] = SET_GLYPHS;
-                                dvi_ptr++;
-                                if (dvi_ptr == dvi_limit)
-                                    dvi_swap();
+                                dvi_out(SET_GLYPHS);
                             }
                             dvi_four(0);
                             dvi_two(1);
@@ -1423,10 +1319,7 @@ vlist_out(void)
                     dvi_v = cur_v;
                 }
                 {
-                    dvi_buf[dvi_ptr] = PUT_RULE;
-                    dvi_ptr++;
-                    if (dvi_ptr == dvi_limit)
-                        dvi_swap();
+                    dvi_out(PUT_RULE);
                 }
                 dvi_four(rule_ht);
                 dvi_four(rule_wd);
@@ -1738,10 +1631,7 @@ dvi_native_font_def(internal_font_number f)
 {
     int32_t font_def_length, i;
     {
-        dvi_buf[dvi_ptr] = DEFINE_NATIVE_FONT;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(DEFINE_NATIVE_FONT);
     }
     dvi_four(f - 1);
     font_def_length = make_font_def(f);
@@ -1751,10 +1641,7 @@ dvi_native_font_def(internal_font_number f)
         for_end = font_def_length - 1;
         if (i <= for_end)
             do {
-                dvi_buf[dvi_ptr] = xdv_buffer[i];
-                dvi_ptr++;
-                if (dvi_ptr == dvi_limit)
-                    dvi_swap();
+                dvi_out(xdv_buffer[i]);
             }
             while (i++ < for_end);
     }
@@ -1772,69 +1659,39 @@ dvi_font_def(internal_font_number f)
 
         if (f <= 256) {
             {
-                dvi_buf[dvi_ptr] = FNT_DEF1;
-                dvi_ptr++;
-                if (dvi_ptr == dvi_limit)
-                    dvi_swap();
+                dvi_out(FNT_DEF1);
             }
             {
-                dvi_buf[dvi_ptr] = f - 1;
-                dvi_ptr++;
-                if (dvi_ptr == dvi_limit)
-                    dvi_swap();
+                dvi_out(f - 1);
             }
         } else {
 
             {
-                dvi_buf[dvi_ptr] = (FNT_DEF1 + 1);
-                dvi_ptr++;
-                if (dvi_ptr == dvi_limit)
-                    dvi_swap();
+                dvi_out((FNT_DEF1 + 1));
             }
             {
-                dvi_buf[dvi_ptr] = (f - 1) / 256;
-                dvi_ptr++;
-                if (dvi_ptr == dvi_limit)
-                    dvi_swap();
+                dvi_out((f - 1) / 256);
             }
             {
-                dvi_buf[dvi_ptr] = (f - 1) % 256;
-                dvi_ptr++;
-                if (dvi_ptr == dvi_limit)
-                    dvi_swap();
+                dvi_out((f - 1) % 256);
             }
         }
         {
-            dvi_buf[dvi_ptr] = font_check[f].s3;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(font_check[f].s3);
         }
         {
-            dvi_buf[dvi_ptr] = font_check[f].s2;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(font_check[f].s2);
         }
         {
-            dvi_buf[dvi_ptr] = font_check[f].s1;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(font_check[f].s1);
         }
         {
-            dvi_buf[dvi_ptr] = font_check[f].s0;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(font_check[f].s0);
         }
         dvi_four(font_size[f]);
         dvi_four(font_dsize[f]);
         {
-            dvi_buf[dvi_ptr] = length(font_area[f]);
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(length(font_area[f]));
         }
         l = 0;
         k = str_start[(font_name[f]) - 65536L];
@@ -1847,10 +1704,7 @@ dvi_font_def(internal_font_number f)
         if (l == 0)
             l = length(font_name[f]);
         {
-            dvi_buf[dvi_ptr] = l;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(l);
         }
         {
             register int32_t for_end;
@@ -1858,10 +1712,7 @@ dvi_font_def(internal_font_number f)
             for_end = str_start[(font_area[f] + 1) - 65536L] - 1;
             if (k <= for_end)
                 do {
-                    dvi_buf[dvi_ptr] = str_pool[k];
-                    dvi_ptr++;
-                    if (dvi_ptr == dvi_limit)
-                        dvi_swap();
+                    dvi_out(str_pool[k]);
                 }
                 while (k++ < for_end);
         }
@@ -1871,10 +1722,7 @@ dvi_font_def(internal_font_number f)
             for_end = str_start[(font_name[f]) - 65536L] + l - 1;
             if (k <= for_end)
                 do {
-                    dvi_buf[dvi_ptr] = str_pool[k];
-                    dvi_ptr++;
-                    if (dvi_ptr == dvi_limit)
-                        dvi_swap();
+                    dvi_out(str_pool[k]);
                 }
                 while (k++ < for_end);
         }
@@ -1972,62 +1820,41 @@ not_found:
     mem[q].b32.s0 = MOV_YZ_OK;
 
     if (abs(w) >= 0x800000) {
-        dvi_buf[dvi_ptr] = o + 3;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(o + 3);
         dvi_four(w);
         return;
     }
 
     if (abs(w) >= 0x8000) {
-        dvi_buf[dvi_ptr] = o + 2;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(o + 2);
 
         if (w < 0)
             w = w + 0x1000000;
 
-        dvi_buf[dvi_ptr] = w / 0x10000;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(w / 0x10000);
         w = w % 0x10000;
         goto lab2;
     }
 
     if (abs(w) >= 128) {
-        dvi_buf[dvi_ptr] = o + 1;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(o + 1);
 
         if (w < 0)
             w = w + 0x10000;
         goto lab2;
     }
 
-    dvi_buf[dvi_ptr] = o;
-    dvi_ptr++;
-    if (dvi_ptr == dvi_limit)
-        dvi_swap();
+    dvi_out(o);
 
     if (w < 0)
         w = w + 256;
     goto lab1;
 
 lab2:
-    dvi_buf[dvi_ptr] = w / 256;
-    dvi_ptr++;
-    if (dvi_ptr == dvi_limit)
-        dvi_swap();
+    dvi_out(w / 256);
 
 lab1:
-    dvi_buf[dvi_ptr] = w % 256;
-    dvi_ptr++;
-    if (dvi_ptr == dvi_limit)
-        dvi_swap();
+    dvi_out(w % 256);
 
     return;
 
@@ -2035,10 +1862,7 @@ found: /*629:*/
     mem[q].b32.s0 = mem[p].b32.s0;
 
     if (mem[q].b32.s0 == MOV_Y_HERE) {
-        dvi_buf[dvi_ptr] = o + 4;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(o + 4);
 
         while (mem[q].b32.s1 != p) {
             q = LLIST_link(q);
@@ -2053,10 +1877,7 @@ found: /*629:*/
             }
         }
     } else {
-        dvi_buf[dvi_ptr] = o + 9;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(o + 9);
 
         while (mem[q].b32.s1 != p) {
             q = LLIST_link(q);
@@ -2125,24 +1946,15 @@ special_out(int32_t p)
     }
     if ((pool_ptr - str_start[str_ptr - 65536L]) < 256) {
         {
-            dvi_buf[dvi_ptr] = XXX1;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(XXX1);
         }
         {
-            dvi_buf[dvi_ptr] = (pool_ptr - str_start[str_ptr - 65536L]);
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out((pool_ptr - str_start[str_ptr - 65536L]));
         }
     } else {
 
         {
-            dvi_buf[dvi_ptr] = XXX4;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(XXX4);
         }
         dvi_four((pool_ptr - str_start[str_ptr - 65536L]));
     }
@@ -2152,10 +1964,7 @@ special_out(int32_t p)
         for_end = pool_ptr - 1;
         if (k <= for_end)
             do {
-                dvi_buf[dvi_ptr] = str_pool[k];
-                dvi_ptr++;
-                if (dvi_ptr == dvi_limit)
-                    dvi_swap();
+                dvi_out(str_pool[k]);
             }
             while (k++ < for_end);
     }
@@ -2310,24 +2119,15 @@ pic_out(int32_t p)
     selector = old_setting;
     if ((pool_ptr - str_start[str_ptr - 65536L]) < 256) {
         {
-            dvi_buf[dvi_ptr] = XXX1;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(XXX1);
         }
         {
-            dvi_buf[dvi_ptr] = (pool_ptr - str_start[str_ptr - 65536L]);
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out((pool_ptr - str_start[str_ptr - 65536L]));
         }
     } else {
 
         {
-            dvi_buf[dvi_ptr] = XXX4;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(XXX4);
         }
         dvi_four((pool_ptr - str_start[str_ptr - 65536L]));
     }
@@ -2337,10 +2137,7 @@ pic_out(int32_t p)
         for_end = pool_ptr - 1;
         if (k <= for_end)
             do {
-                dvi_buf[dvi_ptr] = str_pool[k];
-                dvi_ptr++;
-                if (dvi_ptr == dvi_limit)
-                    dvi_swap();
+                dvi_out(str_pool[k]);
             }
             while (k++ < for_end);
     }
@@ -2355,15 +2152,9 @@ finalize_dvi_file(void)
 
     while (cur_s > -1) {
         if (cur_s > 0) {
-            dvi_buf[dvi_ptr] = POP;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(POP);
         } else {
-            dvi_buf[dvi_ptr] = EOP;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(EOP);
             total_pages++;
         }
         cur_s--;
@@ -2372,10 +2163,7 @@ finalize_dvi_file(void)
     if (total_pages == 0)
         print_nl_cstr("No pages of output.");
     else if (cur_s != -2) {
-        dvi_buf[dvi_ptr] = POST;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(POST);
 
         dvi_four(last_bop);
         last_bop = dvi_offset + dvi_ptr - 5;
@@ -2386,25 +2174,13 @@ finalize_dvi_file(void)
         dvi_four(max_v);
         dvi_four(max_h);
 
-        dvi_buf[dvi_ptr] = max_push / 256;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(max_push / 256);
 
-        dvi_buf[dvi_ptr] = max_push % 256;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(max_push % 256);
 
-        dvi_buf[dvi_ptr] = (total_pages / 256) % 256;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out((total_pages / 256) % 256);
 
-        dvi_buf[dvi_ptr] = total_pages % 256;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(total_pages % 256);
 
         while (font_ptr > FONT_BASE) {
             if (font_used[font_ptr])
@@ -2412,28 +2188,19 @@ finalize_dvi_file(void)
             font_ptr--;
         }
 
-        dvi_buf[dvi_ptr] = POST_POST;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(POST_POST);
 
         dvi_four(last_bop);
 
         if (semantic_pagination_enabled)
             dvi_buf[dvi_ptr] = SPX_ID_BYTE;
         else
-            dvi_buf[dvi_ptr] = XDV_ID_BYTE;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+            dvi_out(XDV_ID_BYTE);
 
         k = 4 + (DVI_BUF_SIZE - dvi_ptr) % 4;
 
         while (k > 0) {
-            dvi_buf[dvi_ptr] = 223;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
+            dvi_out(223);
             k--;
         }
 
@@ -2512,51 +2279,30 @@ static void
 dvi_four(int32_t x)
 {
     if (x >= 0) {
-        dvi_buf[dvi_ptr] = x / 0x1000000;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(x / 0x1000000);
     } else {
         x = x + 0x40000000;
         x = x + 0x40000000;
 
-        dvi_buf[dvi_ptr] = (x / 0x1000000) + 128;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out((x / 0x1000000) + 128);
     }
 
     x = x % 0x1000000;
-    dvi_buf[dvi_ptr] = x / 0x10000;
-    dvi_ptr++;
-    if (dvi_ptr == dvi_limit)
-        dvi_swap();
+    dvi_out(x / 0x10000);
 
     x = x % 0x10000;
-    dvi_buf[dvi_ptr] = x / 0x100;
-    dvi_ptr++;
-    if (dvi_ptr == dvi_limit)
-        dvi_swap();
+    dvi_out(x / 0x100);
 
-    dvi_buf[dvi_ptr] = x % 0x100;
-    dvi_ptr++;
-    if (dvi_ptr == dvi_limit)
-        dvi_swap();
+    dvi_out(x % 0x100);
 }
 
 
 static void
 dvi_two(UTF16_code s)
 {
-    dvi_buf[dvi_ptr] = s / 0x100;
-    dvi_ptr++;
-    if (dvi_ptr == dvi_limit)
-        dvi_swap();
+    dvi_out(s / 0x100);
 
-    dvi_buf[dvi_ptr] = s % 0x100;
-    dvi_ptr++;
-    if (dvi_ptr == dvi_limit)
-        dvi_swap();
+    dvi_out(s % 0x100);
 }
 
 
@@ -2567,9 +2313,6 @@ dvi_pop(int32_t l)
         dvi_ptr--;
     else {
 
-        dvi_buf[dvi_ptr] = POP;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
+        dvi_out(POP);
     }
 }
