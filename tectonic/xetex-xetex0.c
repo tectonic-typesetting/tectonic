@@ -641,7 +641,7 @@ void
 print_subsidiary_data(int32_t p, UTF16_code c)
 {
 
-    if (pool_ptr - str_start[str_ptr - 65536L] >= depth_threshold) {
+    if (cur_length() >= depth_threshold) {
         if (mem[p].b32.s1 != EMPTY)
             print_cstr(" []");
     } else {
@@ -771,7 +771,7 @@ show_node_list(int32_t p)
     int32_t i;
     double g;
 
-    if (pool_ptr - str_start[str_ptr - 65536L] > depth_threshold) {
+    if (cur_length() > depth_threshold) {
         if (p > TEX_NULL)
             print_cstr(" []");
         return;
@@ -3716,7 +3716,7 @@ id_lookup(int32_t j, int32_t l)
                 if (pool_ptr + ll > pool_size)
                     overflow("pool size", pool_size - init_pool_ptr);
 
-                d = pool_ptr - str_start[str_ptr - 65536L];
+                d = cur_length();
 
                 while (pool_ptr > str_start[str_ptr - 65536L]) {
                     pool_ptr--;
@@ -3767,7 +3767,7 @@ int32_t prim_lookup(str_number s)
 
         j = str_start[(s) - 65536L];
         if (s == str_ptr)
-            l = (pool_ptr - str_start[str_ptr - 65536L]);
+            l = (cur_length());
         else
             l = length(s);
         h = str_pool[j];
@@ -10429,10 +10429,10 @@ more_name(UTF16_code c)
     str_pool[pool_ptr++] = c;
 
     if (IS_DIR_SEP(c)) {
-        area_delimiter = pool_ptr - str_start[str_ptr - 65536L];
+        area_delimiter = cur_length();
         ext_delimiter = 0;
     } else if (c == '.' ) {
-        ext_delimiter = pool_ptr - str_start[str_ptr - 65536L];
+        ext_delimiter = cur_length();
     }
 
     return true;
@@ -10539,7 +10539,7 @@ make_name_string(void)
     pool_pointer save_area_delimiter, save_ext_delimiter;
     bool save_name_in_progress, save_stop_at_space;
 
-    if (pool_ptr + name_length > pool_size || str_ptr == max_strings || pool_ptr - str_start[str_ptr - 65536L] > 0)
+    if (pool_ptr + name_length > pool_size || str_ptr == max_strings || cur_length() > 0)
         return '?';
 
     make_utf16_name();
@@ -10694,10 +10694,10 @@ start_input(const char *primary_input_name)
             }
 
             if (IS_DIR_SEP(rval)) {
-                area_delimiter = pool_ptr - str_start[str_ptr - 65536L];
+                area_delimiter = cur_length();
                 ext_delimiter = 0;
             } else if (rval == '.' ) {
-                ext_delimiter = pool_ptr - str_start[str_ptr - 65536L];
+                ext_delimiter = cur_length();
             }
         }
 
@@ -10907,7 +10907,7 @@ new_native_character(internal_font_number f, UnicodeScalar c)
         len = apply_mapping(
             font_mapping[f],
             &str_pool[str_start[str_ptr - 65536L]],
-            pool_ptr - str_start[str_ptr - 65536L]
+            cur_length()
         );
         pool_ptr = str_start[str_ptr - 65536L];
 

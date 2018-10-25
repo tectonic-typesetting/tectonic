@@ -232,7 +232,7 @@ ship_out(int32_t p)
 
     dvi_out(XXX1);
 
-    dvi_out(pool_ptr - str_start[str_ptr - 65536L]);
+    dvi_out(cur_length());
 
     for (s = str_start[str_ptr - 65536L]; s <= pool_ptr - 1; s++)
         dvi_out(str_pool[s]);
@@ -436,12 +436,12 @@ hlist_out(void)
                             else
                                 q = LLIST_link(q);
                         }
-                        q = new_native_word_node(mem[r + 4].b16.s2, (pool_ptr - str_start[str_ptr - 65536L]));
+                        q = new_native_word_node(mem[r + 4].b16.s2, (cur_length()));
                         mem[q].b16.s0 = mem[r].b16.s0;
                         {
                             register int32_t for_end;
                             j = 0;
-                            for_end = (pool_ptr - str_start[str_ptr - 65536L]) - 1;
+                            for_end = (cur_length()) - 1;
                             if (j <= for_end)
                                 do
                                     NATIVE_NODE_text(q)[j] = str_pool[str_start[str_ptr - 65536L] + j];
@@ -1869,12 +1869,12 @@ special_out(int32_t p)
     if (pool_ptr + 1 > pool_size)
         overflow("pool size", pool_size - init_pool_ptr);
 
-    if (pool_ptr - str_start[str_ptr - 65536L] < 256) {
+    if (cur_length() < 256) {
         dvi_out(XXX1);
-        dvi_out(pool_ptr - str_start[str_ptr - 65536L]);
+        dvi_out(cur_length());
     } else {
         dvi_out(XXX4);
-        dvi_four(pool_ptr - str_start[str_ptr - 65536L]);
+        dvi_four(cur_length());
     }
 
     {
@@ -1963,7 +1963,7 @@ write_out(int32_t p)
             selector = SELECTOR_TERM_ONLY;
 
         print_nl_cstr("runsystem(");
-        for (d = 0; d <= (pool_ptr - str_start[str_ptr - 65536L]) - 1; d++)
+        for (d = 0; d <= (cur_length()) - 1; d++)
             print(str_pool[str_start[str_ptr - 65536L] + d]);
 
         print_cstr(")...");
@@ -2042,12 +2042,12 @@ pic_out(int32_t p)
     print(')');
 
     selector = old_setting;
-    if ((pool_ptr - str_start[str_ptr - 65536L]) < 256) {
+    if ((cur_length()) < 256) {
         dvi_out(XXX1);
-        dvi_out(pool_ptr - str_start[str_ptr - 65536L]);
+        dvi_out(cur_length());
     } else {
         dvi_out(XXX4);
-        dvi_four(pool_ptr - str_start[str_ptr - 65536L]);
+        dvi_four(cur_length());
     }
 
     {

@@ -1063,19 +1063,28 @@ void finalize_dvi_file(void);
 
 /* Inlines */
 
-static inline bool is_char_node(const int32_t p) {
+static inline bool
+is_char_node(const int32_t p) {
     return p >= hi_mem_min;
 }
 
-static inline bool is_non_discardable_node(const int32_t p) {
+static inline bool
+is_non_discardable_node(const int32_t p) {
     return NODE_type(p) < MATH_NODE;
 }
 
-static inline void print_c_string(const char *str) {
+static inline void
+print_c_string(const char *str) {
     /* Strings printed this way will end up in the .log as well
      * as the terminal output. */
     while (*str)
         print_char(*str++);
+}
+
+static inline pool_pointer
+cur_length(void) {
+    /*41: The length of the current string in the pool */
+    return pool_ptr - str_start[str_ptr - TOO_BIG_CHAR];
 }
 
 
