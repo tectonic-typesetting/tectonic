@@ -2076,87 +2076,89 @@ finalize_dvi_file(void)
             dvi_out(EOP);
             total_pages++;
         }
+
         cur_s--;
     }
 
-    if (total_pages == 0)
+    if (total_pages == 0) {
         print_nl_cstr("No pages of output.");
-    else if (cur_s != -2) {
-        dvi_out(POST);
+        return;
+    }
 
-        dvi_four(last_bop);
-        last_bop = dvi_offset + dvi_ptr - 5;
-        dvi_four(25400000L); /* magic values: conversion ratio for sp */
-        dvi_four(473628672L); /* magic values: conversion ratio for sp */
-        prepare_mag();
-        dvi_four(INTPAR(mag));
-        dvi_four(max_v);
-        dvi_four(max_h);
+    if (cur_s == -2)
+        /* This happens when the DVI gets too big; a message has already been printed */
+        return;
 
-        dvi_out(max_push / 256);
-        dvi_out(max_push % 256);
+    dvi_out(POST);
+    dvi_four(last_bop);
+    last_bop = dvi_offset + dvi_ptr - 5;
+    dvi_four(25400000L); /* magic values: conversion ratio for sp */
+    dvi_four(473628672L); /* magic values: conversion ratio for sp */
+    prepare_mag();
+    dvi_four(INTPAR(mag));
+    dvi_four(max_v);
+    dvi_four(max_h);
+    dvi_out(max_push / 256);
+    dvi_out(max_push % 256);
+    dvi_out((total_pages / 256) % 256);
+    dvi_out(total_pages % 256);
 
-        dvi_out((total_pages / 256) % 256);
-        dvi_out(total_pages % 256);
+    while (font_ptr > FONT_BASE) {
+        if (font_used[font_ptr])
+            dvi_font_def(font_ptr);
+        font_ptr--;
+    }
 
-        while (font_ptr > FONT_BASE) {
-            if (font_used[font_ptr])
-                dvi_font_def(font_ptr);
-            font_ptr--;
-        }
+    dvi_out(POST_POST);
+    dvi_four(last_bop);
 
-        dvi_out(POST_POST);
+    if (semantic_pagination_enabled)
+        dvi_out(SPX_ID_BYTE);
+    else
+        dvi_out(XDV_ID_BYTE);
 
-        dvi_four(last_bop);
+    k = 4 + (DVI_BUF_SIZE - dvi_ptr) % 4;
 
-        if (semantic_pagination_enabled)
-            dvi_buf[dvi_ptr] = SPX_ID_BYTE;
+    while (k > 0) {
+        dvi_out(223);
+        k--;
+    }
+
+    if (dvi_limit == HALF_BUF)
+        write_to_dvi(HALF_BUF, DVI_BUF_SIZE - 1);
+
+    if (dvi_ptr > TEX_INFINITY - dvi_offset) {
+        cur_s = -2;
+        fatal_error("dvi length exceeds 0x7FFFFFFF");
+    }
+
+    if (dvi_ptr > 0)
+        write_to_dvi(0, dvi_ptr - 1);
+
+    k = ttstub_output_close(dvi_file);
+
+    if (k == 0) {
+        print_nl_cstr("Output written on ");
+        print(output_file_name);
+        print_cstr(" (");
+        print_int(total_pages);
+        if (total_pages != 1)
+            print_cstr(" pages");
         else
-            dvi_out(XDV_ID_BYTE);
-
-        k = 4 + (DVI_BUF_SIZE - dvi_ptr) % 4;
-
-        while (k > 0) {
-            dvi_out(223);
-            k--;
-        }
-
-        if (dvi_limit == HALF_BUF)
-            write_to_dvi(HALF_BUF, DVI_BUF_SIZE - 1);
-
-        if (dvi_ptr > TEX_INFINITY - dvi_offset) {
-            cur_s = -2;
-            fatal_error("dvi length exceeds \"7FFFFFFF");
-        }
-
-        if (dvi_ptr > 0)
-            write_to_dvi(0, dvi_ptr - 1);
-
-        k = ttstub_output_close(dvi_file);
-
-        if (k == 0) {
-            print_nl_cstr("Output written on ");
-            print(output_file_name);
-            print_cstr(" (");
-            print_int(total_pages);
-            if (total_pages != 1)
-                print_cstr(" pages");
-            else
-                print_cstr(" page");
-            print_cstr(", ");
-            print_int(dvi_offset + dvi_ptr);
-            print_cstr(" bytes).");
-        } else {
-            print_nl_cstr("Error ");
-            print_int(k);
-            print_cstr(" (");
-            print_c_string(strerror(k));
-            print_cstr(") generating output;");
-            print_nl_cstr("file ");
-            print(output_file_name);
-            print_cstr(" may not be valid.");
-            /* XeTeX adds history = OUTPUT_FAILURE = 4 here; I'm not implementing that. */
-        }
+            print_cstr(" page");
+        print_cstr(", ");
+        print_int(dvi_offset + dvi_ptr);
+        print_cstr(" bytes).");
+    } else {
+        print_nl_cstr("Error ");
+        print_int(k);
+        print_cstr(" (");
+        print_c_string(strerror(k));
+        print_cstr(") generating output;");
+        print_nl_cstr("file ");
+        print(output_file_name);
+        print_cstr(" may not be valid.");
+        /* XeTeX adds history = OUTPUT_FAILURE = 4 here; I'm not implementing that. */
     }
 }
 
@@ -2176,7 +2178,7 @@ dvi_swap(void)
 {
     if (dvi_ptr > (TEX_INFINITY - dvi_offset)) {
         cur_s = -2;
-        fatal_error("dvi length exceeds \"7FFFFFFF");
+        fatal_error("dvi length exceeds 0x7FFFFFFF");
     }
 
     if (dvi_limit == DVI_BUF_SIZE) {
