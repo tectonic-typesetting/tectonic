@@ -1097,6 +1097,9 @@ hlist_out(void)
 }
 
 
+/*651: "When vlist_out is called, its duty is to output the box represented by
+ * the vlist_node pointed to by temp_ptr. The reference point of that box has
+ * coordinates (cur_h, cur_v)." */
 static void
 vlist_out(void)
 {
@@ -1105,7 +1108,7 @@ vlist_out(void)
     scaled_t save_h, save_v;
     int32_t this_box;
     glue_ord g_order;
-    unsigned char /*shrinking */ g_sign;
+    unsigned char g_sign;
     int32_t p;
     int32_t save_loc;
     int32_t leader_box;
@@ -1122,291 +1125,360 @@ vlist_out(void)
     cur_g = 0;
     cur_glue = 0.0;
     this_box = temp_ptr;
-    g_order = mem[this_box + 5].b16.s0;
-    g_sign = mem[this_box + 5].b16.s1;
-    p = mem[this_box + 5].b32.s1;
-    upwards = (mem[this_box].b16.s0 == 1);
+    g_order = BOX_glue_order(this_box);
+    g_sign = BOX_glue_sign(this_box);
+    p = BOX_list_ptr(this_box);
+    upwards = (NODE_subtype(this_box) == 1);
+
     cur_s++;
-    if (cur_s > 0) {
+    if (cur_s > 0)
         dvi_out(PUSH);
-    }
+
     if (cur_s > max_push)
         max_push = cur_s;
+
     save_loc = dvi_offset + dvi_ptr;
     left_edge = cur_h;
     synctex_vlist(this_box);
+
     if (upwards)
-        cur_v = cur_v + mem[this_box + 2].b32.s1;
+        cur_v += BOX_depth(this_box);
     else
-        cur_v = cur_v - mem[this_box + 3].b32.s1;
+        cur_v -= BOX_height(this_box);
+
     top_edge = cur_v;
-    while (p != TEX_NULL) {  /*652: */
 
-        if ((is_char_node(p)))
+    while (p != TEX_NULL) {
+        /*652: "Output node p and move to the next node, maintaining the
+         * condition cur_h = left_edge" */
+
+        if (is_char_node(p))
             confusion("vlistout");
-        else {                  /*653: */
+        else {
+            /*653: "Output the non-char_node p" */
 
-            switch (mem[p].b16.s1) {
-            case 0:
-            case 1:
-                if (mem[p + 5].b32.s1 == TEX_NULL) {
+            switch (NODE_type(p)) {
+            case HLIST_NODE:
+            case VLIST_NODE:
+                /*654: "Output a box in a vlist" */
+                if (BOX_list_ptr(p) == TEX_NULL) {
                     if (upwards)
-                        cur_v = cur_v - mem[p + 2].b32.s1;
+                        cur_v -= BOX_depth(p);
                     else
-                        cur_v = cur_v + mem[p + 3].b32.s1;
+                        cur_v += BOX_height(p);
+
                     if (NODE_type(p) == VLIST_NODE) {
                         synctex_void_vlist(p, this_box);
                     } else {
-
                         synctex_void_hlist(p, this_box);
                     }
-                    if (upwards)
-                        cur_v = cur_v - mem[p + 3].b32.s1;
-                    else
-                        cur_v = cur_v + mem[p + 2].b32.s1;
-                } else {
 
                     if (upwards)
-                        cur_v = cur_v - mem[p + 2].b32.s1;
+                        cur_v -= BOX_height(p);
                     else
-                        cur_v = cur_v + mem[p + 3].b32.s1;
+                        cur_v += BOX_depth(p);
+                } else {
+                    if (upwards)
+                        cur_v -= BOX_depth(p);
+                    else
+                        cur_v += BOX_height(p);
+
                     if (cur_v != dvi_v) {
                         movement(cur_v - dvi_v, DOWN1);
                         dvi_v = cur_v;
                     }
+
                     save_h = dvi_h;
                     save_v = dvi_v;
+
                     if (cur_dir == RIGHT_TO_LEFT)
-                        cur_h = left_edge - mem[p + 4].b32.s1;
+                        cur_h = left_edge - BOX_shift_amount(p);
                     else
-                        cur_h = left_edge + mem[p + 4].b32.s1;
+                        cur_h = left_edge + BOX_shift_amount(p);
+
                     temp_ptr = p;
                     if (NODE_type(p) == VLIST_NODE)
                         vlist_out();
                     else
                         hlist_out();
+
                     dvi_h = save_h;
                     dvi_v = save_v;
+
                     if (upwards)
-                        cur_v = save_v - mem[p + 3].b32.s1;
+                        cur_v = save_v - BOX_height(p);
                     else
-                        cur_v = save_v + mem[p + 2].b32.s1;
+                        cur_v = save_v + BOX_depth(p);
+
                     cur_h = left_edge;
                 }
                 break;
-            case 2:
-                {
-                    rule_ht = mem[p + 3].b32.s1;
-                    rule_dp = mem[p + 2].b32.s1;
-                    rule_wd = mem[p + 1].b32.s1;
-                    goto lab14;
-                }
-                break;
-            case 8:
-                {
-                    switch (mem[p].b16.s0) {
-                    case 42:
-                        {
-                            cur_v = cur_v + mem[p + 3].b32.s1;
-                            cur_h = left_edge;
-                            if (cur_h != dvi_h) {
-                                movement(cur_h - dvi_h, RIGHT1);
-                                dvi_h = cur_h;
-                            }
-                            if (cur_v != dvi_v) {
-                                movement(cur_v - dvi_v, DOWN1);
-                                dvi_v = cur_v;
-                            }
-                            f = mem[p + 4].b16.s2;
-                            if (f != dvi_f) {   /*643: */
-                                if (!font_used[f]) {
-                                    dvi_font_def(f);
-                                    font_used[f] = true;
-                                }
-                                if (f <= 64) {
-                                    dvi_out(f + 170);
-                                } else if (f <= 256) {
-                                    dvi_out(FNT1);
-                                    dvi_out(f - 1);
-                                } else {
 
-                                    dvi_out(FNT1 + 1);
-                                    dvi_out((f - 1) / 256);
-                                    dvi_out((f - 1) % 256);
-                                }
-                                dvi_f = f;
-                            }
-                            dvi_out(SET_GLYPHS);
-                            dvi_four(0);
-                            dvi_two(1);
-                            dvi_four(0);
-                            dvi_four(0);
-                            dvi_two(mem[p + 4].b16.s1);
-                            cur_v = cur_v + mem[p + 2].b32.s1;
-                            cur_h = left_edge;
-                        }
-                        break;
-                    case 43:
-                    case 44:
-                        {
-                            save_h = dvi_h;
-                            save_v = dvi_v;
-                            cur_v = cur_v + mem[p + 3].b32.s1;
-                            pic_out(p);
-                            dvi_h = save_h;
-                            dvi_v = save_v;
-                            cur_v = save_v + mem[p + 2].b32.s1;
-                            cur_h = left_edge;
-                        }
-                        break;
-                    case 6:
-                        {
-                            pdf_last_x_pos = cur_h + cur_h_offset;
-                            pdf_last_y_pos = cur_page_height - cur_v - cur_v_offset;
-                        }
-                        break;
-                    default:
-                        out_what(p);
-                        break;
-                    }
-                }
+            case RULE_NODE:
+                rule_ht = BOX_height(p);
+                rule_dp = BOX_depth(p);
+                rule_wd = BOX_width(p);
+                goto fin_rule;
                 break;
-            case 10:
-                {
-                    g = mem[p + 1].b32.s0;
-                    rule_ht = mem[g + 1].b32.s1 - cur_g;
-                    if (g_sign != NORMAL) {
-                        if (g_sign == STRETCHING) {
-                            if (mem[g].b16.s1 == g_order) {
-                                cur_glue = cur_glue + mem[g + 2].b32.s1;
-                                glue_temp = BOX_glue_set(this_box) * cur_glue;
-                                if (glue_temp > 1000000000.0)
-                                    glue_temp = 1000000000.0;
-                                else if (glue_temp < -1000000000.0)
-                                    glue_temp = -1000000000.0;
-                                cur_g = tex_round(glue_temp);
-                            }
-                        } else if (mem[g].b16.s0 == g_order) {
-                            cur_glue = cur_glue - mem[g + 3].b32.s1;
+
+            case WHATSIT_NODE:
+                /*1403: "Output the whatsit node p in a vlist" */
+                switch (NODE_subtype(p)) {
+                case GLYPH_NODE:
+                    cur_v = cur_v + BOX_height(p);
+                    cur_h = left_edge;
+
+                    if (cur_h != dvi_h) {
+                        movement(cur_h - dvi_h, RIGHT1);
+                        dvi_h = cur_h;
+                    }
+
+                    if (cur_v != dvi_v) {
+                        movement(cur_v - dvi_v, DOWN1);
+                        dvi_v = cur_v;
+                    }
+
+                    f = NATIVE_NODE_font(p);
+
+                    if (f != dvi_f) {
+                        /*643:*/
+                        if (!font_used[f]) {
+                            dvi_font_def(f);
+                            font_used[f] = true;
+                        }
+
+                        if (f <= 64) {
+                            dvi_out(f + 170);
+                        } else if (f <= 256) {
+                            dvi_out(FNT1);
+                            dvi_out(f - 1);
+                        } else {
+                            dvi_out(FNT1 + 1);
+                            dvi_out((f - 1) / 256);
+                            dvi_out((f - 1) % 256);
+                        }
+
+                        dvi_f = f;
+                    }
+
+                    dvi_out(SET_GLYPHS);
+                    dvi_four(0); /* width */
+                    dvi_two(1); /* glyph count */
+                    dvi_four(0); /* x offset as fixed-point */
+                    dvi_four(0); /* y offset as fixed-point */
+                    dvi_two(NATIVE_NODE_glyph(p));
+
+                    cur_v += BOX_depth(p);
+                    cur_h = left_edge;
+                    break;
+
+                case PIC_NODE:
+                case PDF_NODE:
+                    save_h = dvi_h;
+                    save_v = dvi_v;
+                    cur_v = cur_v + BOX_height(p);
+                    pic_out(p);
+                    dvi_h = save_h;
+                    dvi_v = save_v;
+                    cur_v = save_v + BOX_depth(p);
+                    cur_h = left_edge;
+                    break;
+
+                case PDF_SAVE_POS_NODE:
+                    pdf_last_x_pos = cur_h + cur_h_offset;
+                    pdf_last_y_pos = cur_page_height - cur_v - cur_v_offset;
+                    break;
+
+                default:
+                    out_what(p);
+                    break;
+                }
+                break; /* end WHATSIT_NODE case */
+
+            case GLUE_NODE:
+                /*656: "Move down or output leaders" */
+                g = GLUE_NODE_glue_ptr(p);
+                rule_ht = BOX_width(g) - cur_g;
+
+                if (g_sign != NORMAL) {
+                    if (g_sign == STRETCHING) {
+                        if (GLUE_SPEC_stretch_order(g) == g_order) {
+                            cur_glue += GLUE_SPEC_stretch(g);
                             glue_temp = BOX_glue_set(this_box) * cur_glue;
+
                             if (glue_temp > 1000000000.0)
                                 glue_temp = 1000000000.0;
                             else if (glue_temp < -1000000000.0)
                                 glue_temp = -1000000000.0;
+
                             cur_g = tex_round(glue_temp);
                         }
+                    } else if (GLUE_SPEC_shrink_order(g) == g_order) {
+                        cur_glue -= GLUE_SPEC_shrink(g);
+                        glue_temp = BOX_glue_set(this_box) * cur_glue;
+
+                        if (glue_temp > 1000000000.0)
+                            glue_temp = 1000000000.0;
+                        else if (glue_temp < -1000000000.0)
+                            glue_temp = -1000000000.0;
+
+                        cur_g = tex_round(glue_temp);
                     }
-                    rule_ht = rule_ht + cur_g;
-                    if (mem[p].b16.s0 >= A_LEADERS) {  /*657: */
-                        leader_box = mem[p + 1].b32.s1;
-                        if (NODE_type(leader_box) == RULE_NODE) {
-                            rule_wd = mem[leader_box + 1].b32.s1;
-                            rule_dp = 0;
-                            goto lab14;
-                        }
-                        leader_ht = mem[leader_box + 3].b32.s1 + mem[leader_box + 2].b32.s1;
-                        if ((leader_ht > 0) && (rule_ht > 0)) {
-                            rule_ht = rule_ht + 10;
-                            edge = cur_v + rule_ht;
-                            lx = 0;
-                            if (mem[p].b16.s0 == A_LEADERS) {
-                                save_v = cur_v;
-                                cur_v = top_edge + leader_ht * ((cur_v - top_edge) / leader_ht);
-                                if (cur_v < save_v)
-                                    cur_v = cur_v + leader_ht;
-                            } else {
-
-                                lq = rule_ht / leader_ht;
-                                lr = rule_ht % leader_ht;
-                                if (mem[p].b16.s0 == C_LEADERS)
-                                    cur_v = cur_v + (lr / 2);
-                                else {
-
-                                    lx = lr / (lq + 1);
-                                    cur_v = cur_v + ((lr - (lq - 1) * lx) / 2);
-                                }
-                            }
-                            while (cur_v + leader_ht <= edge) { /*659: */
-
-                                if (cur_dir == RIGHT_TO_LEFT)
-                                    cur_h = left_edge - mem[leader_box + 4].b32.s1;
-                                else
-                                    cur_h = left_edge + mem[leader_box + 4].b32.s1;
-                                if (cur_h != dvi_h) {
-                                    movement(cur_h - dvi_h, RIGHT1);
-                                    dvi_h = cur_h;
-                                }
-                                save_h = dvi_h;
-                                cur_v = cur_v + mem[leader_box + 3].b32.s1;
-                                if (cur_v != dvi_v) {
-                                    movement(cur_v - dvi_v, DOWN1);
-                                    dvi_v = cur_v;
-                                }
-                                save_v = dvi_v;
-                                temp_ptr = leader_box;
-                                outer_doing_leaders = doing_leaders;
-                                doing_leaders = true;
-                                if (NODE_type(leader_box) == VLIST_NODE)
-                                    vlist_out();
-                                else
-                                    hlist_out();
-                                doing_leaders = outer_doing_leaders;
-                                dvi_v = save_v;
-                                dvi_h = save_h;
-                                cur_h = left_edge;
-                                cur_v = save_v - mem[leader_box + 3].b32.s1 + leader_ht + lx;
-                            }
-                            cur_v = edge - 10;
-                            goto lab15;
-                        }
-                    }
-                    goto lab13;
                 }
+
+                rule_ht += cur_g;
+
+                if (NODE_subtype(p) >= A_LEADERS) {
+                    /*657: "Output leaders in a vlist, goto fin_rule if a rule
+                     * or next_p if done" */
+
+                    leader_box = GLUE_NODE_leader_ptr(p);
+
+                    if (NODE_type(leader_box) == RULE_NODE) {
+                        rule_wd = BOX_width(leader_box);
+                        rule_dp = 0;
+                        goto fin_rule;
+                    }
+
+                    leader_ht = BOX_height(leader_box) + BOX_depth(leader_box);
+
+                    if (leader_ht > 0 && rule_ht > 0) {
+                        rule_ht += 10; /* "compensate for floating-point rounding" */
+                        edge = cur_v + rule_ht;
+                        lx = 0;
+
+                        /*658: "Let cur_v be the position of the first box,
+                         * and set leader_ht + lx to the spacing between
+                         * corresponding parts of boxes" */
+
+                        if (NODE_subtype(p) == A_LEADERS) {
+                            save_v = cur_v;
+                            cur_v = top_edge + leader_ht * ((cur_v - top_edge) / leader_ht);
+
+                            if (cur_v < save_v)
+                                cur_v = cur_v + leader_ht;
+                        } else {
+                            lq = rule_ht / leader_ht;
+                            lr = rule_ht % leader_ht;
+
+                            if (mem[p].b16.s0 == C_LEADERS)
+                                cur_v = cur_v + (lr / 2);
+                            else {
+                                lx = lr / (lq + 1);
+                                cur_v = cur_v + ((lr - (lq - 1) * lx) / 2);
+                            }
+                        }
+
+                        while (cur_v + leader_ht <= edge) {
+                            /*659: "Output a leader box at cur_v, then advance
+                             * cur_v by leader_ht + lx". "When we reach this
+                             * part of the program, cur_v indicates the top of
+                             * a leader box, not its baseline." */
+
+                            if (cur_dir == RIGHT_TO_LEFT)
+                                cur_h = left_edge - BOX_shift_amount(leader_box);
+                            else
+                                cur_h = left_edge + BOX_shift_amount(leader_box);
+
+                            if (cur_h != dvi_h) {
+                                movement(cur_h - dvi_h, RIGHT1);
+                                dvi_h = cur_h;
+                            }
+
+                            save_h = dvi_h;
+                            cur_v += BOX_height(leader_box);
+
+                            if (cur_v != dvi_v) {
+                                movement(cur_v - dvi_v, DOWN1);
+                                dvi_v = cur_v;
+                            }
+
+                            save_v = dvi_v;
+                            temp_ptr = leader_box;
+                            outer_doing_leaders = doing_leaders;
+                            doing_leaders = true;
+
+                            if (NODE_type(leader_box) == VLIST_NODE)
+                                vlist_out();
+                            else
+                                hlist_out();
+
+                            doing_leaders = outer_doing_leaders;
+                            dvi_v = save_v;
+                            dvi_h = save_h;
+                            cur_h = left_edge;
+                            cur_v = save_v - BOX_height(leader_box) + leader_ht + lx;
+                        }
+
+                        cur_v = edge - 10;
+                        goto next_p;
+                    }
+                }
+
+                goto move_past;
                 break;
-            case 11:
+
+            case KERN_NODE:
                 if (upwards)
-                    cur_v = cur_v - mem[p + 1].b32.s1;
+                    cur_v -= BOX_width(p);
                 else
-                    cur_v = cur_v + mem[p + 1].b32.s1;
+                    cur_v += BOX_width(p);
                 break;
+
             default:
-                ;
                 break;
             }
-            goto lab15;
- lab14:                        /*fin_rule *//*655: */ if (rule_wd == NULL_FLAG)
-                rule_wd = mem[this_box + 1].b32.s1;
-            rule_ht = rule_ht + rule_dp;
+
+            goto next_p;
+
+        fin_rule:
+            /*655: "Output a rule in a vlist, goto next_p */
+            if (rule_wd == NULL_FLAG)
+                rule_wd = BOX_width(this_box);
+
+            rule_ht += rule_dp;
+
             if (upwards)
-                cur_v = cur_v - rule_ht;
+                cur_v -= rule_ht;
             else
-                cur_v = cur_v + rule_ht;
-            if ((rule_ht > 0) && (rule_wd > 0)) {
+                cur_v += rule_ht;
+
+            if (rule_ht > 0 && rule_wd > 0) {
                 if (cur_dir == RIGHT_TO_LEFT)
-                    cur_h = cur_h - rule_wd;
+                    cur_h -= rule_wd;
+
                 if (cur_h != dvi_h) {
                     movement(cur_h - dvi_h, RIGHT1);
                     dvi_h = cur_h;
                 }
+
                 if (cur_v != dvi_v) {
                     movement(cur_v - dvi_v, DOWN1);
                     dvi_v = cur_v;
                 }
+
                 dvi_out(PUT_RULE);
                 dvi_four(rule_ht);
                 dvi_four(rule_wd);
                 cur_h = left_edge;
             }
-            goto lab15;
- lab13:                        /*move_past */ if (upwards)
-                cur_v = cur_v - rule_ht;
+
+            goto next_p;
+
+        move_past:
+            if (upwards)
+                cur_v -= rule_ht;
             else
-                cur_v = cur_v + rule_ht;
+                cur_v += rule_ht;
         }
- lab15:                        /*next_p */ p = LLIST_link(p);
+
+    next_p:
+        p = LLIST_link(p);
     }
+
     synctex_tsilv(this_box);
     prune_movements(save_loc);
+
     if (cur_s > 0)
         dvi_pop(save_loc);
     cur_s--;
