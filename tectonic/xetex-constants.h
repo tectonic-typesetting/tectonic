@@ -411,8 +411,11 @@
 #define SPLIT_FIRST_MARK_CODE 3
 #define SPLIT_BOT_MARK_CODE 4
 
+/* MATH_NODE stuff with L/R typesetting extras */
 #define BEFORE 0
 #define AFTER 1
+#define BEGIN_M_CODE 2
+#define END_M_CODE 3
 #define L_CODE 4
 #define R_CODE 8
 
@@ -871,7 +874,6 @@
 #define STRETCHING 1
 #define VMODE 1
 #define ACC_KERN 2
-#define BEGIN_M_CODE 2
 #define BOTTOM_ACC 2
 #define CLOSED 2
 #define DLIST 2
@@ -881,7 +883,6 @@
 #define SPACE_CODE 2
 #define SUB_BOX 2
 #define DISPLAYOPERATORMINHEIGHT 3
-#define END_M_CODE 3
 #define LEVEL_BOUNDARY 3
 #define MATH_SHIFT 3
 #define SPACE_ADJUSTMENT 3

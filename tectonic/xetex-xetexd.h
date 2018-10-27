@@ -252,6 +252,10 @@ typedef union {
 #define MARK_NODE_ptr(p) mem[(p) + 1].b32.s1 /* "head of the token list for the mark" */
 #define MARK_NODE_class(p) mem[(p) + 1].b32.s0 /* "the mark class" */
 
+/* To check: do these really only apply to MATH_NODEs? */
+#define MATH_NODE_lr_dir(p) (NODE_subtype(p) / R_CODE)
+#define MATH_NODE_end_lr_type(p) (L_CODE * (NODE_subtype(p) / L_CODE) + END_M_CODE)
+
 #define NATIVE_NODE_size(p) mem[(p) + 4].b16.s3
 #define NATIVE_NODE_font(p) mem[(p) + 4].b16.s2
 #define NATIVE_NODE_length(p) mem[(p) + 4].b16.s1 /* number of UTF16 items in the text */

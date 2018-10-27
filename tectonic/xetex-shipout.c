@@ -771,151 +771,180 @@ hlist_out(void)
                     dvi_h = cur_h;
                     break;
 
-                case 43:
-                case 44:
-                {
+                case PIC_NODE:
+                case PDF_NODE:
                     save_h = dvi_h;
                     save_v = dvi_v;
                     cur_v = base_line;
-                    edge = cur_h + mem[p + 1].b32.s1;
+                    edge = cur_h + BOX_width(p);
                     pic_out(p);
                     dvi_h = save_h;
                     dvi_v = save_v;
                     cur_h = edge;
                     cur_v = base_line;
-                }
-                break;
-                case 6:
-                {
+                    break;
+
+                case PDF_SAVE_POS_NODE:
                     pdf_last_x_pos = cur_h + cur_h_offset;
                     pdf_last_y_pos = cur_page_height - cur_v - cur_v_offset;
-                }
-                break;
+                    break;
+
                 default:
                     out_what(p);
                     break;
                 }
-                break;
+                break; /* end of WHATSIT_NODE case */
 
             case GLUE_NODE:
                 /*647: "Move right or output leaders" */
-                {
-                    g = mem[p + 1].b32.s0;
-                    rule_wd = mem[g + 1].b32.s1 - cur_g;
-                    if (g_sign != NORMAL) {
-                        if (g_sign == STRETCHING) {
-                            if (mem[g].b16.s1 == g_order) {
-                                cur_glue = cur_glue + mem[g + 2].b32.s1;
-                                glue_temp = BOX_glue_set(this_box) * cur_glue;
-                                if (glue_temp > 1000000000.0)
-                                    glue_temp = 1000000000.0;
-                                else if (glue_temp < -1000000000.0)
-                                    glue_temp = -1000000000.0;
-                                cur_g = tex_round(glue_temp);
-                            }
-                        } else if (mem[g].b16.s0 == g_order) {
-                            cur_glue = cur_glue - mem[g + 3].b32.s1;
+                g = GLUE_NODE_glue_ptr(p);
+                rule_wd = BOX_width(g) - cur_g;
+
+                if (g_sign != NORMAL) {
+                    if (g_sign == STRETCHING) {
+                        if (GLUE_SPEC_stretch_order(g) == g_order) {
+                            cur_glue += GLUE_SPEC_stretch(g);
                             glue_temp = BOX_glue_set(this_box) * cur_glue;
+
                             if (glue_temp > 1000000000.0)
                                 glue_temp = 1000000000.0;
                             else if (glue_temp < -1000000000.0)
                                 glue_temp = -1000000000.0;
+
                             cur_g = tex_round(glue_temp);
                         }
+                    } else if (GLUE_SPEC_shrink_order(g) == g_order) {
+                        cur_glue -= GLUE_SPEC_shrink(g);
+                        glue_temp = BOX_glue_set(this_box) * cur_glue;
+
+                        if (glue_temp > 1000000000.0)
+                            glue_temp = 1000000000.0;
+                        else if (glue_temp < -1000000000.0)
+                            glue_temp = -1000000000.0;
+
+                        cur_g = tex_round(glue_temp);
                     }
-                    rule_wd = rule_wd + cur_g;
-
-/*1486: */
-                    if ((g_sign == STRETCHING && mem[g].b16.s1 == g_order) ||
-                        (g_sign == SHRINKING && mem[g].b16.s0 == g_order)) {
-                        if (mem[g].b32.s1 == TEX_NULL)
-                            free_node(g, GLUE_SPEC_SIZE);
-                        else
-                            mem[g].b32.s1--;
-
-                        if (mem[p].b16.s0 < A_LEADERS) {
-                            NODE_type(p) = KERN_NODE;
-                            mem[p + 1].b32.s1 = rule_wd;
-                        } else {
-                            g = get_node(GLUE_SPEC_SIZE);
-                            mem[g].b16.s1 = (FILLL + 1);
-                            mem[g].b16.s0 = (FILLL + 1);
-                            mem[g + 1].b32.s1 = rule_wd;
-                            mem[g + 2].b32.s1 = 0;
-                            mem[g + 3].b32.s1 = 0;
-                            mem[p + 1].b32.s0 = g;
-                        }
-                    }
-
-                    if (mem[p].b16.s0 >= A_LEADERS) {  /*648: */
-                        leader_box = mem[p + 1].b32.s1;
-                        if (NODE_type(leader_box) == RULE_NODE) {
-                            rule_ht = mem[leader_box + 3].b32.s1;
-                            rule_dp = mem[leader_box + 2].b32.s1;
-                            goto fin_rule;
-                        }
-                        leader_wd = mem[leader_box + 1].b32.s1;
-                        if ((leader_wd > 0) && (rule_wd > 0)) {
-                            rule_wd = rule_wd + 10;
-                            if (cur_dir == RIGHT_TO_LEFT)
-                                cur_h = cur_h - 10;
-                            edge = cur_h + rule_wd;
-                            lx = 0;
-                            if (mem[p].b16.s0 == A_LEADERS) {
-                                save_h = cur_h;
-                                cur_h = left_edge + leader_wd * ((cur_h - left_edge) / leader_wd);
-                                if (cur_h < save_h)
-                                    cur_h = cur_h + leader_wd;
-                            } else {
-
-                                lq = rule_wd / leader_wd;
-                                lr = rule_wd % leader_wd;
-                                if (mem[p].b16.s0 == C_LEADERS)
-                                    cur_h = cur_h + (lr / 2);
-                                else {
-
-                                    lx = lr / (lq + 1);
-                                    cur_h = cur_h + ((lr - (lq - 1) * lx) / 2);
-                                }
-                            }
-                            while (cur_h + leader_wd <= edge) { /*650: */
-
-                                cur_v = base_line + mem[leader_box + 4].b32.s1;
-                                if (cur_v != dvi_v) {
-                                    movement(cur_v - dvi_v, DOWN1);
-                                    dvi_v = cur_v;
-                                }
-                                save_v = dvi_v;
-                                if (cur_h != dvi_h) {
-                                    movement(cur_h - dvi_h, RIGHT1);
-                                    dvi_h = cur_h;
-                                }
-                                save_h = dvi_h;
-                                temp_ptr = leader_box;
-                                if (cur_dir == RIGHT_TO_LEFT)
-                                    cur_h = cur_h + leader_wd;
-                                outer_doing_leaders = doing_leaders;
-                                doing_leaders = true;
-                                if (NODE_type(leader_box) == VLIST_NODE)
-                                    vlist_out();
-                                else
-                                    hlist_out();
-                                doing_leaders = outer_doing_leaders;
-                                dvi_v = save_v;
-                                dvi_h = save_h;
-                                cur_v = base_line;
-                                cur_h = save_h + leader_wd + lx;
-                            }
-                            if (cur_dir == RIGHT_TO_LEFT)
-                                cur_h = edge;
-                            else
-                                cur_h = edge - 10;
-                            goto next_p;
-                        }
-                    }
-                    goto move_past;
                 }
-                break;
+
+                rule_wd += cur_g;
+
+                /*1486: "Handle a glue node for mixed direction typesetting". */
+
+                if ((g_sign == STRETCHING && GLUE_SPEC_stretch_order(g) == g_order) ||
+                    (g_sign == SHRINKING && GLUE_SPEC_shrink_order(g) == g_order)) {
+                    if (GLUE_SPEC_ref_count(g) == TEX_NULL)
+                        free_node(g, GLUE_SPEC_SIZE);
+                    else
+                        GLUE_SPEC_ref_count(g)--;
+
+                    if (NODE_subtype(p) < A_LEADERS) {
+                        NODE_type(p) = KERN_NODE;
+                        BOX_width(p) = rule_wd;
+                    } else {
+                        g = get_node(GLUE_SPEC_SIZE);
+                        GLUE_SPEC_stretch_order(g) = FILLL + 1; /* "will never match" */
+                        GLUE_SPEC_shrink_order(g) = FILLL + 1;
+                        BOX_width(g) = rule_wd;
+                        GLUE_SPEC_stretch(g) = 0;
+                        GLUE_SPEC_shrink(g) = 0;
+                        GLUE_NODE_glue_ptr(p) = g;
+                    }
+                }
+
+                if (NODE_subtype(p) >= A_LEADERS) {
+                    /*648: "Output leaders into an hlist, goto fin_rule if a
+                     * rule or next_p if done." */
+
+                    leader_box = GLUE_NODE_leader_ptr(p);
+
+                    if (NODE_type(leader_box) == RULE_NODE) {
+                        rule_ht = BOX_height(leader_box);
+                        rule_dp = BOX_depth(leader_box);
+                        goto fin_rule;
+                    }
+
+                    leader_wd = BOX_width(leader_box);
+
+                    if (leader_wd > 0 && rule_wd > 0) {
+                        rule_wd += 10; /* "compensate for floating-point rounding" ?? */
+
+                        if (cur_dir == RIGHT_TO_LEFT)
+                            cur_h -= 10;
+
+                        edge = cur_h + rule_wd;
+                        lx = 0;
+
+                        /*649: "Let cur_h be the position of the first pox,
+                         * and set leader_wd + lx to the spacing between
+                         * corresponding parts of boxes". Additional
+                         * explanator comments in XTTP. */
+
+                        if (NODE_subtype(p) == A_LEADERS) {
+                            save_h = cur_h;
+                            cur_h = left_edge + leader_wd * ((cur_h - left_edge) / leader_wd);
+                            if (cur_h < save_h)
+                                cur_h = cur_h + leader_wd;
+                        } else {
+                            lq = rule_wd / leader_wd;
+                            lr = rule_wd % leader_wd;
+
+                            if (NODE_subtype(p) == C_LEADERS)
+                                cur_h = cur_h + (lr / 2);
+                            else {
+                                lx = lr / (lq + 1);
+                                cur_h = cur_h + ((lr - (lq - 1) * lx) / 2);
+                            }
+                        }
+
+                        while (cur_h + leader_wd <= edge) {
+                            /*650: "Output a leader box at cur_h, then advance cur_h by leader_wd + lx" */
+
+                            cur_v = base_line + BOX_shift_amount(leader_box);
+
+                            if (cur_v != dvi_v) {
+                                movement(cur_v - dvi_v, DOWN1);
+                                dvi_v = cur_v;
+                            }
+
+                            save_v = dvi_v;
+
+                            if (cur_h != dvi_h) {
+                                movement(cur_h - dvi_h, RIGHT1);
+                                dvi_h = cur_h;
+                            }
+
+                            save_h = dvi_h;
+
+                            temp_ptr = leader_box;
+                            if (cur_dir == RIGHT_TO_LEFT)
+                                cur_h += leader_wd;
+
+                            outer_doing_leaders = doing_leaders;
+                            doing_leaders = true;
+
+                            if (NODE_type(leader_box) == VLIST_NODE)
+                                vlist_out();
+                            else
+                                hlist_out();
+
+                            doing_leaders = outer_doing_leaders;
+                            dvi_v = save_v;
+                            dvi_h = save_h;
+                            cur_v = base_line;
+                            cur_h = save_h + leader_wd + lx;
+                        }
+
+                        if (cur_dir == RIGHT_TO_LEFT)
+                            cur_h = edge;
+                        else
+                            cur_h = edge - 10;
+
+                        goto next_p;
+                    }
+                }
+
+                goto move_past;
+                break; /* end GLUE_NODE case */
 
             case MARGIN_KERN_NODE:
                 cur_h += BOX_width(p);
@@ -929,34 +958,40 @@ hlist_out(void)
             case MATH_NODE:
                 synctex_math(p, this_box);
 
-                if (odd(mem[p].b16.s0)) {
-                    if (mem[LR_ptr].b32.s0 == (L_CODE * (mem[p].b16.s0 / L_CODE) + 3)) {
+                /* 1504: "Adjust the LR stack...; if necessary reverse and
+                 * hlist segment and goto reswitch." "Breaking a paragraph
+                 * into lines while TeXXeT is disabled may result in lines
+                 * with unpaired math nodes. Such hlists are silently accepted
+                 * in the absence of text direction directives." */
+
+                if (odd(NODE_subtype(p))) { /* <= this is end_LR(p) */
+                    if (LLIST_info(LR_ptr) == MATH_NODE_end_lr_type(p)) {
                         temp_ptr = LR_ptr;
-                        LR_ptr = mem[temp_ptr].b32.s1;
-                        mem[temp_ptr].b32.s1 = avail;
+                        LR_ptr = LLIST_link(temp_ptr);
+                        LLIST_link(temp_ptr) = avail;
                         avail = temp_ptr;
                     } else {
-                        if (mem[p].b16.s0 > L_CODE)
+                        if (NODE_subtype(p) > L_CODE)
                             LR_problems++;
                     }
                 } else {
                     temp_ptr = get_avail();
-                    mem[temp_ptr].b32.s0 = (L_CODE * (mem[p].b16.s0 / L_CODE) + 3);
-                    mem[temp_ptr].b32.s1 = LR_ptr;
+                    LLIST_info(temp_ptr) = MATH_NODE_end_lr_type(p);
+                    LLIST_link(temp_ptr) = LR_ptr;
                     LR_ptr = temp_ptr;
 
-                    if ((mem[p].b16.s0 / R_CODE) != cur_dir) {
-                        /*1509: */
+                    if (MATH_NODE_lr_dir(p) != cur_dir) {
+                        /*1509: "Reverse an hlist segment and goto reswitch" */
                         save_h = cur_h;
-                        temp_ptr = mem[p].b32.s1;
-                        rule_wd = mem[p + 1].b32.s1;
+                        temp_ptr = LLIST_link(p);
+                        rule_wd = BOX_width(p);
                         free_node(p, MEDIUM_NODE_SIZE);
                         cur_dir = 1 - cur_dir;
                         p = new_edge(cur_dir, rule_wd);
-                        mem[prev_p].b32.s1 = p;
+                        LLIST_link(prev_p) = p;
                         cur_h = cur_h - left_edge + rule_wd;
-                        mem[p].b32.s1 = reverse(this_box, new_edge(1 - cur_dir, 0), &cur_g, &cur_glue);
-                        mem[p + 2].b32.s1 = cur_h;
+                        LLIST_link(p) = reverse(this_box, new_edge(1 - cur_dir, 0), &cur_g, &cur_glue);
+                        EDGE_NODE_edge_dist(p) = cur_h;
                         cur_dir = 1 - cur_dir;
                         cur_h = save_h;
                         goto reswitch;
@@ -964,12 +999,13 @@ hlist_out(void)
                 }
 
                 NODE_type(p) = KERN_NODE;
-                cur_h = cur_h + mem[p + 1].b32.s1;
+                cur_h += BOX_width(p);
                 break;
 
             case LIGATURE_NODE:
-                mem[LIG_TRICK] = mem[p + 1];
-                mem[LIG_TRICK].b32.s1 = mem[p].b32.s1;
+                /* 675: "Make node p look like a char_node and goto reswitch" */
+                mem[LIG_TRICK] = mem[p + 1]; /* = lig_char(p) */
+                LLIST_link(LIG_TRICK) = LLIST_link(p);
                 p = LIG_TRICK;
                 xtx_ligature_present = true;
                 goto reswitch;
@@ -989,7 +1025,7 @@ hlist_out(void)
             goto next_p;
 
         fin_rule:
-            /*646:*/
+            /*646: "Output a rule in an hlist" */
             if (rule_ht == NULL_FLAG)
                 rule_ht = BOX_height(this_box);
 
@@ -1032,23 +1068,24 @@ hlist_out(void)
     synctex_tsilh(this_box);
 
     /*1502: "Finish hlist_out for mixed direction typesetting" */
+    /*1505: "Check for LR anomalies" */
 
-    while (mem[LR_ptr].b32.s0 != BEFORE) {
-        if (mem[LR_ptr].b32.s0 > L_CODE)
-            LR_problems = LR_problems + 10000;
+    while (LLIST_info(LR_ptr) != BEFORE) {
+        if (LLIST_info(LR_ptr) > L_CODE)
+            LR_problems += 10000;
 
         temp_ptr = LR_ptr;
-        LR_ptr = mem[temp_ptr].b32.s1;
-        mem[temp_ptr].b32.s1 = avail;
+        LR_ptr = LLIST_link(temp_ptr);
+        LLIST_link(temp_ptr) = avail;
         avail = temp_ptr;
     }
 
     temp_ptr = LR_ptr;
-    LR_ptr = mem[temp_ptr].b32.s1;
-    mem[temp_ptr].b32.s1 = avail;
+    LR_ptr = LLIST_link(temp_ptr);
+    LLIST_link(temp_ptr) = avail;
     avail = temp_ptr;
 
-    if (mem[this_box].b16.s0 == DLIST)
+    if (BOX_lr_mode(this_box) == DLIST)
         cur_dir = RIGHT_TO_LEFT;
 
     /* ... finishing 639 */
