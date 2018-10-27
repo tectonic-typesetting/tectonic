@@ -10,6 +10,7 @@
 
 #define DVI_BUF_SIZE 16384
 #define HALF_BUF 8192
+#define FNT_NUM_0 171 /* DVI code */
 
 static rust_output_handle_t dvi_file;
 static str_number output_file_name;
@@ -293,6 +294,7 @@ done:
 }
 
 
+/*639: Output an hlist */
 static void
 hlist_out(void)
 {
@@ -301,7 +303,7 @@ hlist_out(void)
     scaled_t save_h, save_v;
     int32_t this_box;
     glue_ord g_order;
-    unsigned char /*shrinking */ g_sign;
+    unsigned char g_sign;
     int32_t p;
     int32_t save_loc;
     int32_t leader_box;
@@ -322,242 +324,305 @@ hlist_out(void)
     cur_g = 0;
     cur_glue = 0.0;
     this_box = temp_ptr;
-    g_order = mem[this_box + 5].b16.s0;
-    g_sign = mem[this_box + 5].b16.s1;
+    g_order = BOX_glue_order(this_box);
+    g_sign = BOX_glue_sign(this_box);
 
     if (INTPAR(xetex_interword_space_shaping) > 1) {
-        p = mem[this_box + 5].b32.s1;
-        prev_p = this_box + 5;
-        while (p != TEX_NULL) {
+        /*640: "Extra stuff for justifiable AAT text..." "Merge sequences of
+         * words using native fonts and inter-word spaces into single
+         * nodes" */
 
-            if (mem[p].b32.s1 != TEX_NULL) {
-                if ((((p) != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
-                      && ((mem[p].b16.s0 == NATIVE_WORD_NODE)
-                          || (mem[p].b16.s0 == NATIVE_WORD_NODE_AT))))
-                    && (font_letter_space[mem[p + 4].b16.s2] == 0)) {
+        p = BOX_list_ptr(this_box);
+        prev_p = this_box + 5; /* this gets the list within the box */
+
+        while (p != TEX_NULL) {
+            if (LLIST_link(p) != TEX_NULL) {
+                if (p != TEX_NULL
+                    && !is_char_node(p)
+                    && NODE_type(p) == WHATSIT_NODE
+                    && (NODE_subtype(p) == NATIVE_WORD_NODE || NODE_subtype(p) == NATIVE_WORD_NODE_AT)
+                    && font_letter_space[NATIVE_NODE_font(p)] == 0
+                ) {
+                    /* "got a word in an AAT font, might be the start of a run" */
                     r = p;
-                    k = mem[r + 4].b16.s1;
-                    q = mem[p].b32.s1;
- lab1236:          /*check_next *//*641: */ while ((q != TEX_NULL) && !(is_char_node(q))
-                                                    && ((NODE_type(q) == PENALTY_NODE)
-                                                        || (NODE_type(q) == INS_NODE)
-                                                        || (NODE_type(q) == MARK_NODE)
-                                                        || (NODE_type(q) == ADJUST_NODE)
-                                                        || ((NODE_type(q) == WHATSIT_NODE)
-                                                            && (mem[q].b16.s0 <= 4))))
-                        q = LLIST_link(q) /*:641 */ ;
-                    if ((q != TEX_NULL) && !(is_char_node(q))) {
-                        if ((NODE_type(q) == GLUE_NODE) && (GLUE_SPEC_shrink_order(q) == NORMAL)) {
-                            if (mem[q + 1].b32.s0 == font_glue[mem[r + 4].b16.s2]) {
+                    k = NATIVE_NODE_length(r);
+                    q = LLIST_link(p);
+
+                check_next:
+                    /*641: "Advance `q` past ignorable nodes." This test is
+                     * mostly `node_is_invisible_to_interword_space`. 641 is
+                     * reused a few times here. */
+
+                    while (q != TEX_NULL
+                           && !is_char_node(q)
+                           && (NODE_type(q) == PENALTY_NODE
+                               || NODE_type(q) == INS_NODE
+                               || NODE_type(q) == MARK_NODE
+                               || NODE_type(q) == ADJUST_NODE
+                               || (NODE_type(q) == WHATSIT_NODE && NODE_subtype(q) <= 4)
+                    ))
+                        q = LLIST_link(q);
+
+                    if (q != TEX_NULL && !is_char_node(q)) {
+                        if (NODE_type(q) == GLUE_NODE && GLUE_SPEC_shrink_order(q) == NORMAL) {
+                            if (GLUE_NODE_glue_ptr(q) == font_glue[NATIVE_NODE_font(r)]) {
+                                /* "Found a normal space; if the next node is
+                                 * another word in the same font, we'll
+                                 * merge." */
+
                                 q = LLIST_link(q);
-                                while ((q != TEX_NULL) && !(is_char_node(q))
-                                       && ((NODE_type(q) == PENALTY_NODE) || (NODE_type(q) == INS_NODE)
-                                           || (NODE_type(q) == MARK_NODE)
-                                           || (NODE_type(q) == ADJUST_NODE)
-                                           || ((NODE_type(q) == WHATSIT_NODE) && (mem[q].b16.s0 <= 4))))
-                                    q = LLIST_link(q) /*:641 */ ;
-                                if ((((q) != TEX_NULL && (!(is_char_node(q)))
-                                      && (NODE_type(q) == WHATSIT_NODE)
-                                      && ((mem[q].b16.s0 == NATIVE_WORD_NODE)
-                                          || (mem[q].b16.s0 == NATIVE_WORD_NODE_AT))))
-                                    && (mem[q + 4].b16.s2 == mem[r + 4].b16.s2)) {
-                                    p = q;
-                                    k = k + 1 + mem[q + 4].b16.s1;
+
+                                while (q != TEX_NULL && !is_char_node(q)
+                                       && (NODE_type(q) == PENALTY_NODE
+                                           || NODE_type(q) == INS_NODE
+                                           || NODE_type(q) == MARK_NODE
+                                           || NODE_type(q) == ADJUST_NODE
+                                           || (NODE_type(q) == WHATSIT_NODE && NODE_subtype(q) <= 4)
+                                           ))
                                     q = LLIST_link(q);
-                                    goto lab1236;
+
+                                if (q != TEX_NULL
+                                    && !is_char_node(q)
+                                    && NODE_type(q) == WHATSIT_NODE
+                                    && (NODE_subtype(q) == NATIVE_WORD_NODE || NODE_subtype(q) == NATIVE_WORD_NODE_AT)
+                                    && (mem[q + 4].b16.s2 == mem[r + 4].b16.s2)
+                                ) {
+                                    p = q;
+                                    k += 1 + NATIVE_NODE_length(q);
+                                    q = LLIST_link(q);
+                                    goto check_next;
                                 }
-                            } else
+                            } else {
                                 q = LLIST_link(q);
-                            if ((q != TEX_NULL) && !(is_char_node(q)) && (NODE_type(q) == KERN_NODE)
-                                && (NODE_subtype(q) == SPACE_ADJUSTMENT)) {
+                            }
+
+                            if (q != TEX_NULL
+                                && !is_char_node(q)
+                                && NODE_type(q) == KERN_NODE
+                                && NODE_subtype(q) == SPACE_ADJUSTMENT
+                            ) {
                                 q = LLIST_link(q);
-                                while ((q != TEX_NULL) && !(is_char_node(q))
-                                       && ((NODE_type(q) == PENALTY_NODE) || (NODE_type(q) == INS_NODE)
-                                           || (NODE_type(q) == MARK_NODE)
-                                           || (NODE_type(q) == ADJUST_NODE)
-                                           || ((NODE_type(q) == WHATSIT_NODE) && (mem[q].b16.s0 <= 4))))
-                                    q = LLIST_link(q) /*:641 */ ;
-                                if ((((q) != TEX_NULL && (!(is_char_node(q)))
-                                      && (NODE_type(q) == WHATSIT_NODE)
-                                      && ((mem[q].b16.s0 == NATIVE_WORD_NODE)
-                                          || (mem[q].b16.s0 == NATIVE_WORD_NODE_AT))))
-                                    && (mem[q + 4].b16.s2 == mem[r + 4].b16.s2)) {
-                                    p = q;
-                                    k = k + 1 + mem[q + 4].b16.s1;
+
+                                while (q != TEX_NULL
+                                       && !is_char_node(q)
+                                       && (NODE_type(q) == PENALTY_NODE
+                                           || NODE_type(q) == INS_NODE
+                                           || NODE_type(q) == MARK_NODE
+                                           || NODE_type(q) == ADJUST_NODE
+                                           || (NODE_type(q) == WHATSIT_NODE && NODE_subtype(q) <= 4)
+                                ))
                                     q = LLIST_link(q);
-                                    goto lab1236;
+
+                                if (q != TEX_NULL
+                                    && !is_char_node(q)
+                                    && NODE_type(q) == WHATSIT_NODE
+                                    && (NODE_subtype(q) == NATIVE_WORD_NODE || NODE_subtype(q) == NATIVE_WORD_NODE_AT)
+                                    && NATIVE_NODE_font(q) == NATIVE_NODE_font(r)
+                                ) {
+                                    p = q;
+                                    k += 1 + NATIVE_NODE_length(q);
+                                    q = LLIST_link(q);
+                                    goto check_next;
                                 }
                             }
-                            goto lab1237;
+                            goto end_node_run;
                         }
-                        if ((((q) != TEX_NULL && (!(is_char_node(q))) && (NODE_type(q) == WHATSIT_NODE)
-                              && ((mem[q].b16.s0 == NATIVE_WORD_NODE)
-                                  || (mem[q].b16.s0 == NATIVE_WORD_NODE_AT))))
-                            && (mem[q + 4].b16.s2 == mem[r + 4].b16.s2)) {
+
+                        if (q != TEX_NULL
+                            && !is_char_node(q)
+                            && NODE_type(q) == WHATSIT_NODE
+                            && (NODE_subtype(q) == NATIVE_WORD_NODE || NODE_subtype(q) == NATIVE_WORD_NODE_AT)
+                            && NATIVE_NODE_font(q) == NATIVE_NODE_font(r)
+                        ) {
                             p = q;
                             q = LLIST_link(q);
-                            goto lab1236;
+                            goto check_next;
                         }
                     }
- lab1237:                      /*end_node_run */ if (p != r) {
-                        {
-                            if (pool_ptr + k > pool_size)
-                                overflow("pool size",
-                                         pool_size - init_pool_ptr);
-                        }
+
+                end_node_run:
+                    /* "Now r points to the first native_word_node of the run,
+                     * and p to the last." */
+
+                    if (p != r) {
+                        if (pool_ptr + k > pool_size)
+                            overflow("pool size", pool_size - init_pool_ptr);
+
                         k = 0;
                         q = r;
-                        while (true) {
 
+                        while (true) {
                             if (NODE_type(q) == WHATSIT_NODE) {
-                                if ((mem[q].b16.s0 == NATIVE_WORD_NODE)
-                                    || (mem[q].b16.s0 == NATIVE_WORD_NODE_AT)) {
-                                    {
-                                        register int32_t for_end;
-                                        j = 0;
-                                        for_end = mem[q + 4].b16.s1 - 1;
-                                        if (j <= for_end)
-                                            do {
-                                                str_pool[pool_ptr] = NATIVE_NODE_text(q)[j];
-                                                pool_ptr++;
-                                            }
-                                            while (j++ < for_end);
+                                if (NODE_subtype(q) == NATIVE_WORD_NODE || NODE_subtype(q) == NATIVE_WORD_NODE_AT) {
+                                    for (j = 0; j < NATIVE_NODE_length(q); j++) {
+                                        str_pool[pool_ptr] = NATIVE_NODE_text(q)[j];
+                                        pool_ptr++;
                                     }
-                                    k = k + mem[q + 1].b32.s1;
+
+                                    k += BOX_width(q);
                                 }
                             } else if (NODE_type(q) == GLUE_NODE) {
-                                {
-                                    str_pool[pool_ptr] = ' ' ;
-                                    pool_ptr++;
-                                }
-                                g = mem[q + 1].b32.s0;
-                                k = k + mem[g + 1].b32.s1;
+                                str_pool[pool_ptr] = ' ';
+                                pool_ptr++;
+                                g = GLUE_NODE_glue_ptr(q);
+                                k += BOX_width(g);
+
                                 if (g_sign != NORMAL) {
                                     if (g_sign == STRETCHING) {
-                                        if (mem[g].b16.s1 == g_order) {
-                                            k = k + tex_round(BOX_glue_set(this_box) * mem[g + 2].b32.s1);
-                                        }
+                                        if (GLUE_SPEC_stretch_order(g) == g_order)
+                                            k += tex_round(BOX_glue_set(this_box) * GLUE_SPEC_stretch(g));
                                     } else {
-
-                                        if (mem[g].b16.s0 == g_order) {
-                                            k = k - tex_round(BOX_glue_set(this_box) * mem[g + 3].b32.s1);
-                                        }
+                                        if (GLUE_SPEC_shrink_order(g) == g_order)
+                                            k -= tex_round(BOX_glue_set(this_box) * GLUE_SPEC_shrink(g));
                                     }
                                 }
                             } else if (NODE_type(q) == KERN_NODE) {
-                                k = k + mem[q + 1].b32.s1;
+                                k += BOX_width(q);
                             }
+
                             if (q == p)
                                 break;
                             else
                                 q = LLIST_link(q);
                         }
-                        q = new_native_word_node(mem[r + 4].b16.s2, (cur_length()));
-                        mem[q].b16.s0 = mem[r].b16.s0;
-                        {
-                            register int32_t for_end;
-                            j = 0;
-                            for_end = (cur_length()) - 1;
-                            if (j <= for_end)
-                                do
-                                    NATIVE_NODE_text(q)[j] = str_pool[str_start[str_ptr - TOO_BIG_CHAR] + j];
-                                while (j++ < for_end);
-                        }
-                        mem[q + 1].b32.s1 = k;
-                        set_justified_native_glyphs(q);
-                        mem[prev_p].b32.s1 = q;
-                        mem[q].b32.s1 = mem[p].b32.s1;
-                        mem[p].b32.s1 = TEX_NULL;
-                        prev_p = r;
-                        p = mem[r].b32.s1;
-                        while (p != TEX_NULL) {
 
-                            if (!(is_char_node(p))
-                                && ((NODE_type(p) == PENALTY_NODE) || (NODE_type(p) == INS_NODE)
-                                    || (NODE_type(p) == MARK_NODE) || (NODE_type(p) == ADJUST_NODE)
-                                    || ((NODE_type(p) == WHATSIT_NODE) && (mem[p].b16.s0 <= 4)))) {
-                                mem[prev_p].b32.s1 = mem[p].b32.s1;
-                                mem[p].b32.s1 = mem[q].b32.s1;
-                                mem[q].b32.s1 = p;
+                        q = new_native_word_node(NATIVE_NODE_font(r), cur_length());
+                        NODE_subtype(q) = NODE_subtype(r);
+
+                        for (j = 0; j < cur_length(); j++)
+                            NATIVE_NODE_text(q)[j] = str_pool[str_start[str_ptr - TOO_BIG_CHAR] + j];
+
+                        /* "Link q into the list in place of r...p" */
+
+                        BOX_width(q) = k;
+                        set_justified_native_glyphs(q);
+                        LLIST_link(prev_p) = q;
+                        LLIST_link(q) = LLIST_link(p);
+                        LLIST_link(p) = TEX_NULL;
+                        prev_p = r;
+                        p = LLIST_link(r);
+
+                        /* "Extract any 'invisible' nodes from the old list
+                         * and insert them after the new node, so we don't
+                         * lose them altogether. Note that the first node
+                         * cannot be one of these, as we always start merging
+                         * at a native_word node." */
+
+                        while (p != TEX_NULL) {
+                            if (!is_char_node(p)
+                                && (NODE_type(p) == PENALTY_NODE
+                                    || NODE_type(p) == INS_NODE
+                                    || NODE_type(p) == MARK_NODE
+                                    || NODE_type(p) == ADJUST_NODE
+                                    || (NODE_type(p) == WHATSIT_NODE && NODE_subtype(p) <= 4))
+                            ) {
+                                LLIST_link(prev_p) = LLIST_link(p);
+                                LLIST_link(p) = LLIST_link(q);
+                                LLIST_link(q) = p;
                                 q = p;
                             }
+
                             prev_p = p;
                             p = LLIST_link(p);
                         }
+
                         flush_node_list(r);
                         pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
                         p = q;
                     }
                 }
+
                 prev_p = p;
             }
+
             p = LLIST_link(p);
         }
     }
-    p = mem[this_box + 5].b32.s1;
+
+    /* ... resuming 639 ... */
+
+    p = BOX_list_ptr(this_box);
     cur_s++;
-    if (cur_s > 0) {
+    if (cur_s > 0)
         dvi_out(PUSH);
-    }
+
     if (cur_s > max_push)
         max_push = cur_s;
+
     save_loc = dvi_offset + dvi_ptr;
     base_line = cur_v;
-    prev_p = this_box + 5;
+    prev_p = this_box + 5; /* this is list_offset, the offset of the box list pointer */
+
+    /*1501: "Initialize hlist_out for mixed direction typesetting" */
 
     temp_ptr = get_avail();
-    mem[temp_ptr].b32.s0 = BEFORE;
-    mem[temp_ptr].b32.s1 = LR_ptr;
+    LLIST_info(temp_ptr) = BEFORE;
+    LLIST_link(temp_ptr) = LR_ptr;
     LR_ptr = temp_ptr;
 
-    if (mem[this_box].b16.s0 == DLIST) {
+    if (BOX_lr_mode(this_box) == DLIST) {
         if (cur_dir == RIGHT_TO_LEFT) {
             cur_dir = LEFT_TO_RIGHT;
-            cur_h = cur_h - mem[this_box + 1].b32.s1;
+            cur_h -= BOX_width(this_box);
         } else {
-            mem[this_box].b16.s0 = 0;
+            BOX_lr_mode(this_box) = 0;
         }
     }
 
-    if (cur_dir == RIGHT_TO_LEFT && mem[this_box].b16.s0 != REVERSED) {
-        /*1508: */
+    if (cur_dir == RIGHT_TO_LEFT && BOX_lr_mode(this_box) != REVERSED) {
+        /*1508: "Reverse the complete hlist and set the subtype to reversed." */
         save_h = cur_h;
         temp_ptr = p;
         p = new_kern(0);
-        mem[p + 2].b32.s0 = 0;
-        mem[prev_p].b32.s1 = p;
+        SYNCTEX_tag(p, MEDIUM_NODE_SIZE) = 0; /* "SyncTeX: do nothing, it is too late" */
+        LLIST_link(prev_p) = p;
         cur_h = 0;
-        mem[p].b32.s1 = reverse(this_box, TEX_NULL, &cur_g, &cur_glue);
-        mem[p + 1].b32.s1 = -(int32_t) cur_h;
+        LLIST_link(p) = reverse(this_box, TEX_NULL, &cur_g, &cur_glue);
+        BOX_width(p) = -cur_h;
         cur_h = save_h;
-        mem[this_box].b16.s0 = REVERSED;
+        BOX_lr_mode(this_box) = REVERSED;
     }
+
+    /* ... resuming 639 ... */
 
     left_edge = cur_h;
     synctex_hlist(this_box);
-    while (p != TEX_NULL) /*642: */
+
+    while (p != TEX_NULL) {
+        /*642: "Output node `p` for `hlist_out` and move to the next node,
+        * maintaining the condition `cur_v = base_line`." ... "We ought to
+        * give special care to the efficiency [here] since it belongs to TeX's
+        * inner loop. When a `char_node` is encountered, we save a little time
+        * by processing several nodes in succession[.] The program uses the
+        * fact that `set_char_0 = 0`. */
+
     reswitch:
-        if ((is_char_node(p))) {
+        if (is_char_node(p)) {
             if (cur_h != dvi_h) {
                 movement(cur_h - dvi_h, RIGHT1);
                 dvi_h = cur_h;
             }
+
             if (cur_v != dvi_v) {
                 movement(cur_v - dvi_v, DOWN1);
                 dvi_v = cur_v;
             }
+
             do {
                 f = CHAR_NODE_font(p);
                 c = CHAR_NODE_character(p);
-                if ((p != LIG_TRICK) && (font_mapping[f] != NULL))
+                if (p != LIG_TRICK && font_mapping[f] != NULL)
                     c = apply_tfm_font_mapping(font_mapping[f], c);
-                if (f != dvi_f) {       /*643: */
+
+                if (f != dvi_f) {
+                    /*643: "Change font dvi_f to f" */
                     if (!font_used[f]) {
                         dvi_font_def(f);
                         font_used[f] = true;
                     }
+
                     if (f <= 64) {
-                        dvi_out(f + 170);
+                        dvi_out(f + FNT_NUM_0 - 1);
                     } else if (f <= 256) {
                         dvi_out(FNT1);
                         dvi_out(f - 1);
@@ -566,188 +631,174 @@ hlist_out(void)
                         dvi_out((f - 1) / 256);
                         dvi_out((f - 1) % 256);
                     }
+
                     dvi_f = f;
                 }
+
                 if (font_ec[f] >= c) {
-
                     if (font_bc[f] <= c) {
-
-                        if ((FONT_CHARACTER_INFO(f, c).s3 > 0)) {
-                            if (c >= 128) {
+                        if (FONT_CHARACTER_INFO(f, c).s3 > 0) { /* if (char_exists(orig_char_info(f)(c))) */
+                            if (c >= 128)
                                 dvi_out(SET1);
-                            }
                             dvi_out(c);
-                            cur_h = cur_h + FONT_CHARACTER_WIDTH(f, c);
-                            goto continue_;
+                            cur_h += FONT_CHARACTER_WIDTH(f, c);
                         }
                     }
                 }
 
-            continue_:
                 prev_p = LLIST_link(prev_p);
                 p = LLIST_link(p);
-            } while (!(!(is_char_node(p))));
+            } while (is_char_node(p));
+
             synctex_current();
             dvi_h = cur_h;
-        } else {                /*644: */
+        } else {
+            /*644: "Output the non-char_node `p` and move to the next node" */
 
-            switch (mem[p].b16.s1) {
-            case 0:
-            case 1:
-                if (mem[p + 5].b32.s1 == TEX_NULL) {
+            switch (NODE_type(p)) {
+            case HLIST_NODE:
+            case VLIST_NODE:
+                if (BOX_list_ptr(p) == TEX_NULL) {
                     if (NODE_type(p) == VLIST_NODE) {
                         synctex_void_vlist(p, this_box);
                     } else {
-
                         synctex_void_hlist(p, this_box);
                     }
-                    cur_h = cur_h + mem[p + 1].b32.s1;
+                    cur_h += BOX_width(p);
                 } else {
-
                     save_h = dvi_h;
                     save_v = dvi_v;
-                    cur_v = base_line + mem[p + 4].b32.s1;
+                    cur_v = base_line + BOX_shift_amount(p);
                     temp_ptr = p;
-                    edge = cur_h + mem[p + 1].b32.s1;
+                    edge = cur_h + BOX_width(p);
+
                     if (cur_dir == RIGHT_TO_LEFT)
                         cur_h = edge;
+
                     if (NODE_type(p) == VLIST_NODE)
                         vlist_out();
                     else
                         hlist_out();
+
                     dvi_h = save_h;
                     dvi_v = save_v;
                     cur_h = edge;
                     cur_v = base_line;
                 }
                 break;
-            case 2:
-                {
-                    rule_ht = mem[p + 3].b32.s1;
-                    rule_dp = mem[p + 2].b32.s1;
-                    rule_wd = mem[p + 1].b32.s1;
-                    goto lab14;
-                }
+
+            case RULE_NODE:
+                rule_ht = BOX_height(p);
+                rule_dp = BOX_depth(p);
+                rule_wd = BOX_width(p);
+                goto fin_rule;
                 break;
-            case 8:
-                {
-                    switch (mem[p].b16.s0) {
-                    case 40:
-                    case 41:
-                    case 42:
-                        {
-                            if (cur_h != dvi_h) {
-                                movement(cur_h - dvi_h, RIGHT1);
-                                dvi_h = cur_h;
-                            }
-                            if (cur_v != dvi_v) {
-                                movement(cur_v - dvi_v, DOWN1);
-                                dvi_v = cur_v;
-                            }
-                            f = mem[p + 4].b16.s2;
-                            if (f != dvi_f) {   /*643: */
-                                if (!font_used[f]) {
-                                    dvi_font_def(f);
-                                    font_used[f] = true;
-                                }
-                                if (f <= 64) {
-                                    dvi_out(f + 170);
-                                } else if (f <= 256) {
-                                    dvi_out(FNT1);
-                                    dvi_out(f - 1);
-                                } else {
-                                    dvi_out(FNT1 + 1);
-                                    dvi_out((f - 1) / 256);
-                                    dvi_out((f - 1) % 256);
-                                }
-                                dvi_f = f;
-                            }
-                            if (mem[p].b16.s0 == GLYPH_NODE) {
-                                dvi_out(SET_GLYPHS);
-                                dvi_four(mem[p + 1].b32.s1);
-                                dvi_two(1);
-                                dvi_four(0);
-                                dvi_four(0);
-                                dvi_two(mem[p + 4].b16.s1);
-                                cur_h = cur_h + mem[p + 1].b32.s1;
-                            } else {
 
-                                if (mem[p].b16.s0 == NATIVE_WORD_NODE_AT) {
-                                    if ((mem[p + 4].b16.s1 > 0) || (mem[p + 5].ptr != NULL)) {
-                                        dvi_out(SET_TEXT_AND_GLYPHS);
-                                        len = mem[p + 4].b16.s1;
-                                        dvi_two(len);
-                                        {
-                                            register int32_t for_end;
-                                            k = 0;
-                                            for_end = len - 1;
-                                            if (k <= for_end)
-                                                do {
-                                                    dvi_two(NATIVE_NODE_text(p)[k]);
-                                                }
-                                                while (k++ < for_end);
-                                        }
-                                        len = make_xdv_glyph_array_data(p);
-                                        {
-                                            register int32_t for_end;
-                                            k = 0;
-                                            for_end = len - 1;
-                                            if (k <= for_end)
-                                                do {
-                                                    dvi_out(xdv_buffer[k]);
-                                                }
-                                                while (k++ < for_end);
-                                        }
-                                    }
-                                } else {
-
-                                    if (mem[p + 5].ptr != NULL) {
-                                        dvi_out(SET_GLYPHS);
-                                        len = make_xdv_glyph_array_data(p);
-                                        {
-                                            register int32_t for_end;
-                                            k = 0;
-                                            for_end = len - 1;
-                                            if (k <= for_end)
-                                                do {
-                                                    dvi_out(xdv_buffer[k]);
-                                                }
-                                                while (k++ < for_end);
-                                        }
-                                    }
-                                }
-                                cur_h = cur_h + mem[p + 1].b32.s1;
-                            }
-                            dvi_h = cur_h;
-                        }
-                        break;
-                    case 43:
-                    case 44:
-                        {
-                            save_h = dvi_h;
-                            save_v = dvi_v;
-                            cur_v = base_line;
-                            edge = cur_h + mem[p + 1].b32.s1;
-                            pic_out(p);
-                            dvi_h = save_h;
-                            dvi_v = save_v;
-                            cur_h = edge;
-                            cur_v = base_line;
-                        }
-                        break;
-                    case 6:
-                        {
-                            pdf_last_x_pos = cur_h + cur_h_offset;
-                            pdf_last_y_pos = cur_page_height - cur_v - cur_v_offset;
-                        }
-                        break;
-                    default:
-                        out_what(p);
-                        break;
+            case WHATSIT_NODE:
+                /*1407: "Output the whatsit node p in an hlist" */
+                switch (NODE_subtype(p)) {
+                case NATIVE_WORD_NODE:
+                case NATIVE_WORD_NODE_AT:
+                case GLYPH_NODE:
+                    if (cur_h != dvi_h) {
+                        movement(cur_h - dvi_h, RIGHT1);
+                        dvi_h = cur_h;
                     }
+
+                    if (cur_v != dvi_v) {
+                        movement(cur_v - dvi_v, DOWN1);
+                        dvi_v = cur_v;
+                    }
+
+                    f = NATIVE_NODE_font(p);
+
+                    if (f != dvi_f) {
+                        if (!font_used[f]) {
+                            dvi_font_def(f);
+                            font_used[f] = true;
+                        }
+
+                        if (f <= 64) {
+                            dvi_out(f + 170);
+                        } else if (f <= 256) {
+                            dvi_out(FNT1);
+                            dvi_out(f - 1);
+                        } else {
+                            dvi_out(FNT1 + 1);
+                            dvi_out((f - 1) / 256);
+                            dvi_out((f - 1) % 256);
+                        }
+
+                        dvi_f = f;
+                    }
+
+                    if (NODE_subtype(p) == GLYPH_NODE) {
+                        dvi_out(SET_GLYPHS);
+                        dvi_four(BOX_width(p));
+                        dvi_two(1); /* glyph count */
+                        dvi_four(0); /* x offset, as fixed-point */
+                        dvi_four(0); /* y offset, as fixed-point */
+                        dvi_two(NATIVE_NODE_glyph(p));
+                        cur_h += BOX_width(p);
+                    } else {
+                        if (NODE_subtype(p) == NATIVE_WORD_NODE_AT) {
+                            if (NATIVE_NODE_length(p) > 0 || NATIVE_NODE_glyph_info_ptr(p) != NULL) {
+                                dvi_out(SET_TEXT_AND_GLYPHS);
+                                len = NATIVE_NODE_length(p);
+                                dvi_two(len);
+
+                                for (k = 0; k < len; k++)
+                                            dvi_two(NATIVE_NODE_text(p)[k]);
+
+                                len = make_xdv_glyph_array_data(p);
+
+                                for (k = 0; k < len; k++)
+                                    dvi_out(xdv_buffer[k]);
+                            }
+                        } else {
+                            if (NATIVE_NODE_glyph_info_ptr(p) != NULL) {
+                                dvi_out(SET_GLYPHS);
+                                len = make_xdv_glyph_array_data(p);
+
+                                for (k = 0; k < len; k++)
+                                    dvi_out(xdv_buffer[k]);
+                            }
+                        }
+
+                        cur_h += BOX_width(p);
+                    }
+
+                    dvi_h = cur_h;
+                    break;
+
+                case 43:
+                case 44:
+                {
+                    save_h = dvi_h;
+                    save_v = dvi_v;
+                    cur_v = base_line;
+                    edge = cur_h + mem[p + 1].b32.s1;
+                    pic_out(p);
+                    dvi_h = save_h;
+                    dvi_v = save_v;
+                    cur_h = edge;
+                    cur_v = base_line;
                 }
                 break;
-            case 10:
+                case 6:
+                {
+                    pdf_last_x_pos = cur_h + cur_h_offset;
+                    pdf_last_y_pos = cur_page_height - cur_v - cur_v_offset;
+                }
+                break;
+                default:
+                    out_what(p);
+                    break;
+                }
+                break;
+
+            case GLUE_NODE:
+                /*647: "Move right or output leaders" */
                 {
                     g = mem[p + 1].b32.s0;
                     rule_wd = mem[g + 1].b32.s1 - cur_g;
@@ -801,7 +852,7 @@ hlist_out(void)
                         if (NODE_type(leader_box) == RULE_NODE) {
                             rule_ht = mem[leader_box + 3].b32.s1;
                             rule_dp = mem[leader_box + 2].b32.s1;
-                            goto lab14;
+                            goto fin_rule;
                         }
                         leader_wd = mem[leader_box + 1].b32.s1;
                         if ((leader_wd > 0) && (rule_wd > 0)) {
@@ -859,26 +910,25 @@ hlist_out(void)
                                 cur_h = edge;
                             else
                                 cur_h = edge - 10;
-                            goto lab15;
+                            goto next_p;
                         }
                     }
-                    goto lab13;
+                    goto move_past;
                 }
                 break;
-            case 40:
-                {
-                    cur_h = cur_h + mem[p + 1].b32.s1;
-                }
+
+            case MARGIN_KERN_NODE:
+                cur_h += BOX_width(p);
                 break;
-            case 11:
-                {
-                    synctex_kern(p, this_box);
-                    cur_h = cur_h + mem[p + 1].b32.s1;
-                }
+
+            case KERN_NODE:
+                synctex_kern(p, this_box);
+                cur_h += BOX_width(p);
                 break;
-            case 9:
+
+            case MATH_NODE:
                 synctex_math(p, this_box);
-/*1504: */
+
                 if (odd(mem[p].b16.s0)) {
                     if (mem[LR_ptr].b32.s0 == (L_CODE * (mem[p].b16.s0 / L_CODE) + 3)) {
                         temp_ptr = LR_ptr;
@@ -916,57 +966,72 @@ hlist_out(void)
                 NODE_type(p) = KERN_NODE;
                 cur_h = cur_h + mem[p + 1].b32.s1;
                 break;
-            case 6:
-                {
-                    mem[LIG_TRICK] = mem[p + 1];
-                    mem[LIG_TRICK].b32.s1 = mem[p].b32.s1;
-                    p = LIG_TRICK;
-                    xtx_ligature_present = true;
-                    goto reswitch;
-                }
+
+            case LIGATURE_NODE:
+                mem[LIG_TRICK] = mem[p + 1];
+                mem[LIG_TRICK].b32.s1 = mem[p].b32.s1;
+                p = LIG_TRICK;
+                xtx_ligature_present = true;
+                goto reswitch;
                 break;
-            case 14:
-                {
-                    cur_h = cur_h + mem[p + 1].b32.s1;
-                    left_edge = cur_h + mem[p + 2].b32.s1;
-                    cur_dir = mem[p].b16.s0;
-                }
+
+            /*1507: "Cases of hlist_out that arise in mixed direction text only" */
+            case EDGE_NODE:
+                cur_h += BOX_width(p);
+                left_edge = cur_h + EDGE_NODE_edge_dist(p);
+                cur_dir = NODE_subtype(p);
                 break;
+
             default:
-                ;
                 break;
             }
-            goto lab15;
- lab14:                        /*fin_rule *//*646: */ if (rule_ht == NULL_FLAG)
-                rule_ht = mem[this_box + 3].b32.s1;
+
+            goto next_p;
+
+        fin_rule:
+            /*646:*/
+            if (rule_ht == NULL_FLAG)
+                rule_ht = BOX_height(this_box);
+
             if (rule_dp == NULL_FLAG)
-                rule_dp = mem[this_box + 2].b32.s1;
-            rule_ht = rule_ht + rule_dp;
-            if ((rule_ht > 0) && (rule_wd > 0)) {
+                rule_dp = BOX_depth(this_box);
+
+            rule_ht += rule_dp;
+
+            if (rule_ht > 0 && rule_wd > 0) {
                 if (cur_h != dvi_h) {
                     movement(cur_h - dvi_h, RIGHT1);
                     dvi_h = cur_h;
                 }
+
                 cur_v = base_line + rule_dp;
+
                 if (cur_v != dvi_v) {
                     movement(cur_v - dvi_v, DOWN1);
                     dvi_v = cur_v;
                 }
+
                 dvi_out(SET_RULE);
                 dvi_four(rule_ht);
                 dvi_four(rule_wd);
                 cur_v = base_line;
-                dvi_h = dvi_h + rule_wd;
+                dvi_h += rule_wd;
             }
- lab13:                        /*move_past */  {
 
-                cur_h = cur_h + rule_wd;
-                synctex_horizontal_rule_or_glue(p, this_box);
-            }
- lab15:                        /*next_p */ prev_p = p;
+            /* ... resuming 644 ... */
+        move_past:
+            cur_h += rule_wd;
+            synctex_horizontal_rule_or_glue(p, this_box);
+
+        next_p:
+            prev_p = p;
             p = LLIST_link(p);
         }
+    }
+
     synctex_tsilh(this_box);
+
+    /*1502: "Finish hlist_out for mixed direction typesetting" */
 
     while (mem[LR_ptr].b32.s0 != BEFORE) {
         if (mem[LR_ptr].b32.s0 > L_CODE)
@@ -983,8 +1048,10 @@ hlist_out(void)
     mem[temp_ptr].b32.s1 = avail;
     avail = temp_ptr;
 
-    if ((mem[this_box].b16.s0) == DLIST)
+    if (mem[this_box].b16.s0 == DLIST)
         cur_dir = RIGHT_TO_LEFT;
+
+    /* ... finishing 639 */
 
     prune_movements(save_loc);
     if (cur_s > 0)

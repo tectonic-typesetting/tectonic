@@ -201,6 +201,7 @@ typedef union {
 #define NODE_type(p) mem[p].b16.s1 /* half of LLIST_info(p) */
 #define NODE_subtype(p) mem[p].b16.s0 /* the other half of LLIST_info(p) */
 
+#define BOX_lr_mode(p) mem[p].b16.s0 /* subtype; records L/R direction mode */
 #define BOX_width(p) mem[(p) + 1].b32.s1 /* a scaled; 1 <=> WEB const `width_offset` */
 #define BOX_depth(p) mem[(p) + 2].b32.s1 /* a scaled; 2 <=> WEB const `depth_offset` */
 #define BOX_height(p) mem[(p) + 3].b32.s1 /* a scaled; 3 <=> WEB const `height_offset` */
@@ -231,6 +232,8 @@ typedef union {
 #define DISCRETIONARY_NODE_pre_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define DISCRETIONARY_NODE_post_break(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
 
+#define EDGE_NODE_edge_dist(p) mem[(p) + 2].b32.s1 /* "new left_edge position relative to cur_h" */
+
 #define GLUE_NODE_glue_ptr(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define GLUE_NODE_leader_ptr(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
 
@@ -252,6 +255,7 @@ typedef union {
 #define NATIVE_NODE_size(p) mem[(p) + 4].b16.s3
 #define NATIVE_NODE_font(p) mem[(p) + 4].b16.s2
 #define NATIVE_NODE_length(p) mem[(p) + 4].b16.s1 /* number of UTF16 items in the text */
+#define NATIVE_NODE_glyph(p) mem[(p) + 4].b16.s1 /* ... or the glyph number, if subtype==GLYPH_NODE */
 #define NATIVE_NODE_glyph_count(p) mem[(p) + 4].b16.s0
 #define NATIVE_NODE_glyph_info_ptr(p) mem[(p) + 5].ptr
 #define NATIVE_NODE_text(p) ((unsigned short *) &mem[(p) + NATIVE_NODE_SIZE])
