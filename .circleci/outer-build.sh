@@ -5,11 +5,18 @@
 set -e -x
 
 buildroot=$HOME
-tarball='https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/VM4ZZ3/NT9HFL'
+
+# This link points to a tarball of a pre-assembled Ubuntu PowerPC chroot
+# that can be run via QEMU. This tarball was generated according to the
+# procedure describe here:
+# https://github.com/tectonic-typesetting/tectonic-ci-support/blob/master/bigendian/README.md .
+# The current version embeds Rust 1.27.0.
+
+tarball='https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/VM4ZZ3/BM5RRE'
 
 # Validate that our little scheme is going to work. Annoyingly
-# $CIRCLE_WORKING_DIRECTORY (passed in as $1 since we're sudo) is defined with
-# a literal `~` in its value.
+# $CIRCLE_WORKING_DIRECTORY (passed in as $1 since we're sudo -- it's stripped
+# out of the environment) is defined with a literal `~` in its value.
 
 work=$(eval echo $1)
 
