@@ -1704,15 +1704,17 @@ done:
 }
 
 
+/*1506: Create a new edge node of subtype `s` and width `w` */
 int32_t
 new_edge(small_number s, scaled_t w)
 {
     int32_t p;
+
     p = get_node(EDGE_NODE_SIZE);
     NODE_type(p) = EDGE_NODE;
-    mem[p].b16.s0 = s;
-    mem[p + 1].b32.s1 = w;
-    mem[p + 2].b32.s1 = 0;
+    NODE_subtype(p) = s;
+    BOX_width(p) = w;
+    EDGE_NODE_edge_dist(p) = 0;
     return p;
 }
 
