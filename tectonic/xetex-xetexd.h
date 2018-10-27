@@ -201,6 +201,7 @@ typedef union {
 #define NODE_type(p) mem[p].b16.s1 /* half of LLIST_info(p) */
 #define NODE_subtype(p) mem[p].b16.s0 /* the other half of LLIST_info(p) */
 
+#define BOX_lr_mode(p) mem[p].b16.s0 /* subtype; records L/R direction mode */
 #define BOX_width(p) mem[(p) + 1].b32.s1 /* a scaled; 1 <=> WEB const `width_offset` */
 #define BOX_depth(p) mem[(p) + 2].b32.s1 /* a scaled; 2 <=> WEB const `depth_offset` */
 #define BOX_height(p) mem[(p) + 3].b32.s1 /* a scaled; 3 <=> WEB const `height_offset` */
@@ -231,6 +232,8 @@ typedef union {
 #define DISCRETIONARY_NODE_pre_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define DISCRETIONARY_NODE_post_break(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
 
+#define EDGE_NODE_edge_dist(p) mem[(p) + 2].b32.s1 /* "new left_edge position relative to cur_h" */
+
 #define GLUE_NODE_glue_ptr(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define GLUE_NODE_leader_ptr(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
 
@@ -246,12 +249,25 @@ typedef union {
 #define LIGATURE_NODE_lig_char(p) mem[(p) + 1].b16.s0 /* WEB: character(lig_char(p)) */
 #define LIGATURE_NODE_lig_ptr(p) mem[(p) + 1].b32.s1 /* WEB: link(lig_char(p)) */
 
+#define MARK_NODE_ptr(p) mem[(p) + 1].b32.s1 /* "head of the token list for the mark" */
+#define MARK_NODE_class(p) mem[(p) + 1].b32.s0 /* "the mark class" */
+
+/* To check: do these really only apply to MATH_NODEs? */
+#define MATH_NODE_lr_dir(p) (NODE_subtype(p) / R_CODE)
+#define MATH_NODE_end_lr_type(p) (L_CODE * (NODE_subtype(p) / L_CODE) + END_M_CODE)
+
 #define NATIVE_NODE_size(p) mem[(p) + 4].b16.s3
 #define NATIVE_NODE_font(p) mem[(p) + 4].b16.s2
 #define NATIVE_NODE_length(p) mem[(p) + 4].b16.s1 /* number of UTF16 items in the text */
+#define NATIVE_NODE_glyph(p) mem[(p) + 4].b16.s1 /* ... or the glyph number, if subtype==GLYPH_NODE */
 #define NATIVE_NODE_glyph_count(p) mem[(p) + 4].b16.s0
 #define NATIVE_NODE_glyph_info_ptr(p) mem[(p) + 5].ptr
 #define NATIVE_NODE_text(p) ((unsigned short *) &mem[(p) + NATIVE_NODE_SIZE])
+
+#define PAGE_INS_NODE_broken_ptr(p) mem[(p) + 1].b32.s1 /* "an insertion for this class will break here if anywhere" */
+#define PAGE_INS_NODE_broken_ins(p) mem[(p) + 1].b32.s0 /* "this insertion might break at broken_ptr" */
+#define PAGE_INS_NODE_last_ins_ptr(p) mem[(p) + 2].b32.s1 /* "the most recent insertion for this subtype" */
+#define PAGE_INS_NODE_best_ins_ptr(p) mem[(p) + 2].b32.s0 /* "the optimum most recent insertion" */
 
 #define PASSIVE_NODE_prev_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define PASSIVE_NODE_next_break(p) PASSIVE_NODE_prev_break(p) /* siggggghhhhh */
@@ -286,6 +302,13 @@ typedef union {
 #define FONT_CHARACTER_WIDTH(f, c) FONT_CHARINFO_WIDTH(f, FONT_CHARACTER_INFO(f, c))
 
 #define TOKEN_LIST_ref_count(p) mem[p].b32.s0
+
+/* e-TeX extended marks stuff ... not sure where to put these */
+#define ETEX_MARK_sa_top_mark(p) mem[(p) + 1].b32.s0 /* \topmarks<n> */
+#define ETEX_MARK_sa_first_mark(p) mem[(p) + 1].b32.s1 /* \firstmarks<n> */
+#define ETEX_MARK_sa_bot_mark(p) mem[(p) + 2].b32.s0 /* \botmarks<n> */
+#define ETEX_MARK_sa_split_first_mark(p) mem[(p) + 2].b32.s1 /* \splitfirstmarks<n> */
+#define ETEX_MARK_sa_split_bot_mark(p) mem[(p) + 3].b32.s0 /* \splitbotmarks<n> */
 
 typedef unsigned char glue_ord; /* enum: normal .. filll */
 typedef unsigned char group_code;
@@ -610,10 +633,6 @@ extern bool trie_not_ready;
 extern scaled_t best_height_plus_depth;
 extern int32_t page_tail;
 extern unsigned char page_contents;
-extern scaled_t page_max_depth;
-extern int32_t best_page_break;
-extern int32_t least_page_cost;
-extern scaled_t best_size;
 extern scaled_t page_so_far[8];
 extern int32_t last_glue;
 extern int32_t last_penalty;
@@ -904,11 +923,7 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d);
 bool do_marks(small_number a, small_number l, int32_t q);
 int32_t vsplit(int32_t n, scaled_t h);
 void print_totals(void);
-void freeze_page_specs(small_number s);
 void box_error(eight_bits n);
-void ensure_vbox(eight_bits n);
-void fire_up(int32_t c);
-void build_page(void);
 void app_space(void);
 void insert_dollar_sign(void);
 void you_cant(void);
@@ -1034,6 +1049,11 @@ void print_roman_int(int32_t n);
 void print_current_string(void);
 void print_scaled(scaled_t s);
 
+/* xetex-pagebuilder */
+
+void initialize_pagebuilder_variables(void);
+void build_page(void);
+
 /* xetex-scaledmath */
 
 int32_t tex_round(double);
@@ -1051,19 +1071,28 @@ void finalize_dvi_file(void);
 
 /* Inlines */
 
-static inline bool is_char_node(const int32_t p) {
+static inline bool
+is_char_node(const int32_t p) {
     return p >= hi_mem_min;
 }
 
-static inline bool is_non_discardable_node(const int32_t p) {
+static inline bool
+is_non_discardable_node(const int32_t p) {
     return NODE_type(p) < MATH_NODE;
 }
 
-static inline void print_c_string(const char *str) {
+static inline void
+print_c_string(const char *str) {
     /* Strings printed this way will end up in the .log as well
      * as the terminal output. */
     while (*str)
         print_char(*str++);
+}
+
+static inline pool_pointer
+cur_length(void) {
+    /*41: The length of the current string in the pool */
+    return pool_ptr - str_start[str_ptr - TOO_BIG_CHAR];
 }
 
 

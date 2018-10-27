@@ -283,19 +283,6 @@ trie_pointer trie_min[65536];
 trie_pointer trie_max;
 bool trie_not_ready;
 scaled_t best_height_plus_depth;
-int32_t page_tail;
-unsigned char page_contents;
-scaled_t page_max_depth;
-int32_t best_page_break;
-int32_t least_page_cost;
-scaled_t best_size;
-scaled_t page_so_far[8];
-int32_t last_glue;
-int32_t last_penalty;
-scaled_t last_kern;
-int32_t last_node_type;
-int32_t insert_penalties;
-bool output_active;
 internal_font_number main_f;
 b16x4 main_i;
 b16x4 main_j;
@@ -350,6 +337,17 @@ int synctex_enabled;
 bool used_tectonic_coda_tokens;
 bool semantic_pagination_enabled;
 bool gave_char_warning_help;
+
+/* These ought to live in xetex-pagebuilder.c but are shared a lot: */
+int32_t page_tail;
+unsigned char page_contents;
+scaled_t page_so_far[8];
+int32_t last_glue;
+int32_t last_penalty;
+scaled_t last_kern;
+int32_t last_node_type;
+int32_t insert_penalties;
+bool output_active;
 
 uint16_t _xeq_level_array[EQTB_SIZE - INT_BASE + 1];
 
@@ -599,7 +597,7 @@ primitive(const char* ident, uint16_t c, int32_t o)
 
         cur_val = id_lookup(first, len);
         str_ptr--;
-        pool_ptr = str_start[str_ptr - 65536L];
+        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
         hash[cur_val].s1 = s;
         prim_val = prim_lookup(s);
     } else {
@@ -1275,7 +1273,7 @@ not_found1: /*970:*/
                     } while (u != str_start[(k + 1) - 65536L]);
 
                     str_ptr--;
-                    pool_ptr = str_start[str_ptr - 65536L];
+                    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
                     s = hyph_word[h];
                     hyph_count--;
                     goto found;
@@ -1753,7 +1751,7 @@ prefixed_command(void)
         } else {
             if (p == LOCAL_BASE + LOCAL__output_routine && !e) {
                 mem[q].b32.s1 = get_avail();
-                q = mem[q].b32.s1;
+                q = LLIST_link(q);
                 mem[q].b32.s0 = (RIGHT_BRACE_TOKEN + 125);
                 q = get_avail();
                 mem[q].b32.s0 = (LEFT_BRACE_TOKEN + 123);
@@ -2193,7 +2191,7 @@ store_fmt_file(void)
     print(make_name_string());
 
     str_ptr--;
-    pool_ptr = str_start[str_ptr - 65536L];
+    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
 
     print_nl_cstr("");
     print(format_ident);
@@ -2216,7 +2214,7 @@ store_fmt_file(void)
 
     dump_int(pool_ptr);
     dump_int(str_ptr);
-    dump_things(str_start[TOO_BIG_CHAR - 65536L], str_ptr - 65535L);
+    dump_things(str_start[0], str_ptr - TOO_BIG_CHAR + 1);
     dump_things(str_pool[0], pool_ptr);
 
     print_ln();
@@ -2258,7 +2256,7 @@ store_fmt_file(void)
     p = avail;
     while (p != TEX_NULL) {
         dyn_used--;
-        p = mem[p].b32.s1;
+        p = LLIST_link(p);
     }
 
     dump_int(var_used);
@@ -2639,7 +2637,7 @@ load_fmt_file(void)
         max_strings = str_ptr + strings_free;
 
     str_start = xmalloc_array(pool_pointer, max_strings);
-    undump_checked_things(0, pool_ptr, str_start[(TOO_BIG_CHAR) - 65536L], str_ptr - 65535L);
+    undump_checked_things(0, pool_ptr, str_start[0], str_ptr - TOO_BIG_CHAR + 1);
     str_pool = xmalloc_array(packed_UTF16_code, pool_size);
 
     undump_things(str_pool[0], pool_ptr);
@@ -3041,7 +3039,7 @@ final_cleanup(void)
         if_line = mem[cond_ptr + 1].b32.s1;
         cur_if = mem[cond_ptr].b16.s0;
         temp_ptr = cond_ptr;
-        cond_ptr = mem[cond_ptr].b32.s1;
+        cond_ptr = LLIST_link(cond_ptr);
         free_node(temp_ptr, IF_NODE_SIZE);
     }
 
@@ -3149,7 +3147,6 @@ initialize_more_variables(void)
     last_penalty = 0;
     last_kern = 0;
     page_so_far[7] = 0;
-    page_max_depth = 0;
 
     for (k = INT_BASE; k <= EQTB_SIZE; k++)
         XEQ_LEVEL(k) = LEVEL_ONE;
@@ -4048,6 +4045,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
 
     /*55:*/
     initialize_math_variables();
+    initialize_pagebuilder_variables();
     initialize_shipout_variables();
 
     selector = SELECTOR_TERM_ONLY;

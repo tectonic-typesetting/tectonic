@@ -158,6 +158,7 @@ fn main() {
         .file("tectonic/xetex-linebreak.c")
         .file("tectonic/xetex-math.c")
         .file("tectonic/xetex-output.c")
+        .file("tectonic/xetex-pagebuilder.c")
         .file("tectonic/xetex-pic.c")
         .file("tectonic/xetex-scaledmath.c")
         .file("tectonic/xetex-shipout.c")

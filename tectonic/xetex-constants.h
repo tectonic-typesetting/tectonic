@@ -411,8 +411,11 @@
 #define SPLIT_FIRST_MARK_CODE 3
 #define SPLIT_BOT_MARK_CODE 4
 
+/* MATH_NODE stuff with L/R typesetting extras */
 #define BEFORE 0
 #define AFTER 1
+#define BEGIN_M_CODE 2
+#define END_M_CODE 3
 #define L_CODE 4
 #define R_CODE 8
 
@@ -821,6 +824,11 @@
 #define XDV_ID_BYTE 7
 #define SPX_ID_BYTE 100
 
+/* page_contents possibilities (EMPTY is overloaded) */
+#define EMPTY 0
+#define INSERTS_ONLY 1
+#define BOX_THERE 2
+
 #define SET1 128
 #define SET_RULE 132
 #define PUT_RULE 137
@@ -844,7 +852,6 @@
 
 #define XETEX_INPUT_MODE_AUTO 0
 #define XETEX_VERSION 0
-#define EMPTY 0
 #define EXACTLY 0
 #define FONT_BASE 0
 #define INSERTING 0
@@ -857,7 +864,6 @@
 #define EXPLICIT 1
 #define FIXED_ACC 1
 #define HYPHENATED 1
-#define INSERTS_ONLY 1
 #define JUST_OPEN 1
 #define MATH_CHAR 1
 #define PRIM_BASE 1
@@ -868,9 +874,7 @@
 #define STRETCHING 1
 #define VMODE 1
 #define ACC_KERN 2
-#define BEGIN_M_CODE 2
 #define BOTTOM_ACC 2
-#define BOX_THERE 2
 #define CLOSED 2
 #define DLIST 2
 #define ETEX_VERSION 2
@@ -879,7 +883,6 @@
 #define SPACE_CODE 2
 #define SUB_BOX 2
 #define DISPLAYOPERATORMINHEIGHT 3
-#define END_M_CODE 3
 #define LEVEL_BOUNDARY 3
 #define MATH_SHIFT 3
 #define SPACE_ADJUSTMENT 3

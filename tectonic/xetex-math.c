@@ -267,7 +267,7 @@ void init_math(void)
                     goto done;
                 }
             not_found:
-                p = mem[p].b32.s1;
+                p = LLIST_link(p);
             } /*1523:*/
         done:
             if (INTPAR(texxet) > 0) {
@@ -457,7 +457,7 @@ void math_radical(void)
 {
     {
         mem[cur_list.tail].b32.s1 = get_node(RADICAL_NOAD_SIZE);
-        cur_list.tail = mem[cur_list.tail].b32.s1;
+        cur_list.tail = LLIST_link(cur_list.tail);
     }
     mem[cur_list.tail].b16.s1 = RADICAL_NOAD;
     mem[cur_list.tail].b16.s0 = NORMAL;
@@ -491,7 +491,7 @@ void math_ac(void)
     }
     {
         mem[cur_list.tail].b32.s1 = get_node(ACCENT_NOAD_SIZE);
-        cur_list.tail = mem[cur_list.tail].b32.s1;
+        cur_list.tail = LLIST_link(cur_list.tail);
     }
     mem[cur_list.tail].b16.s1 = ACCENT_NOAD;
     mem[cur_list.tail].b16.s0 = NORMAL;
@@ -534,7 +534,7 @@ void append_choices(void)
 {
     {
         mem[cur_list.tail].b32.s1 = new_choice();
-        cur_list.tail = mem[cur_list.tail].b32.s1;
+        cur_list.tail = LLIST_link(cur_list.tail);
     }
     save_ptr++;
     save_stack[save_ptr - 1].b32.s1 = 0;
@@ -613,7 +613,7 @@ void sub_sup(void)
     if ((p == TEX_NULL) || (t != EMPTY)) {   /*1212: */
         {
             mem[cur_list.tail].b32.s1 = new_noad();
-            cur_list.tail = mem[cur_list.tail].b32.s1;
+            cur_list.tail = LLIST_link(cur_list.tail);
         }
         p = cur_list.tail + 2 + cur_cmd - 7;
         if (t != EMPTY) {
@@ -768,7 +768,7 @@ void math_left_right(void)
 
             {
                 mem[cur_list.tail].b32.s1 = new_noad();
-                cur_list.tail = mem[cur_list.tail].b32.s1;
+                cur_list.tail = LLIST_link(cur_list.tail);
             }
             mem[cur_list.tail].b16.s1 = INNER_NOAD;
             mem[cur_list.tail + 1].b32.s1 = SUB_MLIST;
@@ -823,7 +823,7 @@ app_display(int32_t j, int32_t b, scaled_t d)
                 p = r;
                 do {
                     q = r;
-                    r = mem[r].b32.s1;
+                    r = LLIST_link(r);
                 } while (!(r == TEX_NULL));
             } else {
 
@@ -1073,7 +1073,7 @@ void after_math(void)
     if (m < 0) {                /*1231: */
         {
             mem[cur_list.tail].b32.s1 = new_math(DIMENPAR(math_surround), BEFORE);
-            cur_list.tail = mem[cur_list.tail].b32.s1;
+            cur_list.tail = LLIST_link(cur_list.tail);
         }
         cur_mlist = p;
         cur_style = TEXT_STYLE;
@@ -1081,10 +1081,10 @@ void after_math(void)
         mlist_to_hlist();
         mem[cur_list.tail].b32.s1 = mem[TEMP_HEAD].b32.s1;
         while (mem[cur_list.tail].b32.s1 != TEX_NULL)
-            cur_list.tail = mem[cur_list.tail].b32.s1;
+            cur_list.tail = LLIST_link(cur_list.tail);
         {
             mem[cur_list.tail].b32.s1 = new_math(DIMENPAR(math_surround), AFTER);
-            cur_list.tail = mem[cur_list.tail].b32.s1;
+            cur_list.tail = LLIST_link(cur_list.tail);
         }
         cur_list.aux.b32.s0 = 1000;
         unsave();
@@ -1165,7 +1165,7 @@ void after_math(void)
         }
         {
             mem[cur_list.tail].b32.s1 = new_penalty(INTPAR(pre_display_penalty));
-            cur_list.tail = mem[cur_list.tail].b32.s1;
+            cur_list.tail = LLIST_link(cur_list.tail);
         }
         if ((d + s <= DIMENPAR(pre_display_size)) || l) {
             g1 = GLUE_PAR__above_display_skip;
@@ -1178,12 +1178,12 @@ void after_math(void)
             app_display(j, a, 0);
             {
                 mem[cur_list.tail].b32.s1 = new_penalty(INF_PENALTY);
-                cur_list.tail = mem[cur_list.tail].b32.s1;
+                cur_list.tail = LLIST_link(cur_list.tail);
             }
         } else {
 
             mem[cur_list.tail].b32.s1 = new_param_glue(g1);
-            cur_list.tail = mem[cur_list.tail].b32.s1;
+            cur_list.tail = LLIST_link(cur_list.tail);
         }
         if (e != 0) {
             r = new_kern(z - w - e - d);
@@ -1203,7 +1203,7 @@ void after_math(void)
         if ((a != TEX_NULL) && (e == 0) && !l) {
             {
                 mem[cur_list.tail].b32.s1 = new_penalty(INF_PENALTY);
-                cur_list.tail = mem[cur_list.tail].b32.s1;
+                cur_list.tail = LLIST_link(cur_list.tail);
             }
             app_display(j, a, z - mem[a + 1].b32.s1);
             g2 = 0;
@@ -1218,11 +1218,11 @@ void after_math(void)
         }
         {
             mem[cur_list.tail].b32.s1 = new_penalty(INTPAR(post_display_penalty));
-            cur_list.tail = mem[cur_list.tail].b32.s1;
+            cur_list.tail = LLIST_link(cur_list.tail);
         }
         if (g2 > 0) {
             mem[cur_list.tail].b32.s1 = new_param_glue(g2);
-            cur_list.tail = mem[cur_list.tail].b32.s1;
+            cur_list.tail = LLIST_link(cur_list.tail);
         }
         flush_node_list(j);
         resume_after_display();
@@ -2439,7 +2439,7 @@ attach_hkern_to_new_hlist(int32_t q, scaled_t delta)
 
         y = mem[q + 1].b32.s1;
         while (mem[y].b32.s1 != TEX_NULL)
-            y = mem[y].b32.s1;
+            y = LLIST_link(y);
         mem[y].b32.s1 = z;
     }
     return mem[q + 1].b32.s1;
@@ -2659,7 +2659,7 @@ make_scripts(int32_t q, scaled_t delta)
 
         p = mem[q + 1].b32.s1;
         while (mem[p].b32.s1 != TEX_NULL)
-            p = mem[p].b32.s1;
+            p = LLIST_link(p);
         mem[p].b32.s1 = x;
     }
 }
@@ -2848,7 +2848,7 @@ mlist_to_hlist(void)
                     z = mem[q].b32.s1;
                     mem[q].b32.s1 = p;
                     while (mem[p].b32.s1 != TEX_NULL)
-                        p = mem[p].b32.s1;
+                        p = LLIST_link(p);
                     mem[p].b32.s1 = z;
                 }
                 goto lab81;
@@ -2992,7 +2992,7 @@ mlist_to_hlist(void)
                 cur_mu = x_over_n(math_quad(cur_size), 18);
             }
         }
- lab81:                        /*done_with_node */ q = mem[q].b32.s1;
+ lab81:                        /*done_with_node */ q = LLIST_link(q);
     }
     if (r_type == BIN_NOAD)
         mem[r].b16.s1 = 16 /*ord_noad *//*:755 */ ;
@@ -3081,7 +3081,7 @@ mlist_to_hlist(void)
             {
                 mem[p].b32.s1 = q;
                 p = q;
-                q = mem[q].b32.s1;
+                q = LLIST_link(q);
                 mem[p].b32.s1 = TEX_NULL;
                 goto done;
             }
@@ -3145,7 +3145,7 @@ mlist_to_hlist(void)
         if (mem[q + 1].b32.s1 != TEX_NULL) {
             mem[p].b32.s1 = mem[q + 1].b32.s1;
             do {
-                p = mem[p].b32.s1;
+                p = LLIST_link(p);
             } while (!(mem[p].b32.s1 == TEX_NULL));
         }
         if (penalties) {
@@ -3169,7 +3169,7 @@ mlist_to_hlist(void)
             t = OPEN_NOAD;
         r_type = t;
  lab83:                        /*delete_q */ r = q;
-        q = mem[q].b32.s1;
+        q = LLIST_link(q);
         free_node(r, s);
     done:
         ;
@@ -3423,7 +3423,7 @@ stack_glyph_into_box(int32_t b, internal_font_number f, int32_t g)
         else {
 
             while (mem[q].b32.s1 != TEX_NULL)
-                q = mem[q].b32.s1;
+                q = LLIST_link(q);
             mem[q].b32.s1 = p;
             if ((mem[b + 3].b32.s1 < mem[p + 3].b32.s1))
                 mem[b + 3].b32.s1 = mem[p + 3].b32.s1;
@@ -3456,7 +3456,7 @@ stack_glue_into_box(int32_t b, scaled_t min, scaled_t max)
         else {
 
             while (mem[q].b32.s1 != TEX_NULL)
-                q = mem[q].b32.s1;
+                q = LLIST_link(q);
             mem[q].b32.s1 = p;
         }
     } else {
@@ -3589,7 +3589,7 @@ build_opentype_assembly(internal_font_number f, void *a, scaled_t s, bool horiz)
             nat = nat + mem[mem[p + 1].b32.s0 + 1].b32.s1;
             str = str + mem[mem[p + 1].b32.s0 + 2].b32.s1;
         }
-        p = mem[p].b32.s1;
+        p = LLIST_link(p);
     }
     o = 0;
     if ((s > nat) && (str > 0)) {
@@ -3632,7 +3632,7 @@ rebox(int32_t b, scaled_t w)
         b = new_glue(12);
         mem[b].b32.s1 = p;
         while (mem[p].b32.s1 != TEX_NULL)
-            p = mem[p].b32.s1;
+            p = LLIST_link(p);
         mem[p].b32.s1 = new_glue(12);
         return hpack(b, w, EXACTLY);
     } else {
