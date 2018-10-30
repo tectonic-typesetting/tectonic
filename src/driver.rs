@@ -1049,4 +1049,17 @@ impl ProcessingSession {
         self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);
         Ok(0)
     }
+
+
+    /// Consume this session and return the current set of files in memory.
+    ///
+    /// This convenience function tries to help with the annoyances of getting
+    /// access to the in-memory file data after the engine has been run.
+    pub fn into_file_data(self) -> HashMap<OsString, Vec<u8>> {
+        // There must be a better way to do this ... Note that you *cannot*
+        // elide the creation of `rebuild`!
+        let mut borrow_map = self.io.mem.files.borrow_mut();
+        let rebuild = borrow_map.drain().collect();
+        rebuild
+    }
 }
