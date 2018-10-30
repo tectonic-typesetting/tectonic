@@ -215,6 +215,7 @@ impl Default for PassSetting {
     fn default() -> PassSetting { PassSetting::Default }
 }
 
+
 /// Different places from which the "primary input" might originate.
 #[derive(Clone, Debug, Eq, PartialEq)]
 enum PrimaryInputMode {
@@ -232,12 +233,34 @@ impl Default for PrimaryInputMode {
     fn default() -> PrimaryInputMode { PrimaryInputMode::Stdin }
 }
 
+
+/// Different places where the output files might land.
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum OutputDestination {
+    /// The "sensible" default. Files will land in the same directory as the
+    /// input file, or the current working directory if the input is something
+    /// without a path (such as standard input).
+    Default,
+
+    /// Files should land in this particular directory.
+    Path(PathBuf),
+
+    /// Files will not be written to disk. The code running the engine should
+    /// examine the memory layer of the I/O stack to obtain the output files.
+    Nowhere,
+}
+
+impl Default for OutputDestination {
+    fn default() -> OutputDestination { OutputDestination::Default }
+}
+
+
 /// A builder-style interface for creating a [`ProcessingSession`].
 #[derive(Default)]
 pub struct ProcessingSessionBuilder {
     primary_input: PrimaryInputMode,
     tex_input_name: Option<String>,
-    output_dir: Option<PathBuf>,
+    output_dest: OutputDestination,
     format_name: Option<String>,
     format_cache_path: Option<PathBuf>,
     output_format: OutputFormat,
@@ -283,10 +306,21 @@ impl ProcessingSessionBuilder {
 
     /// A path to the directory where output files should be created.
     ///
-    /// This will default to the directory containing `primary_input_path`, or the current working
-    /// directory if the primary input is coming from stdin.
+    /// This will default to the directory containing `primary_input_path`, or
+    /// the current working directory if the primary input is coming from
+    /// stdin.
     pub fn output_dir<P: AsRef<Path>>(&mut self, p: P) -> &mut Self {
-        self.output_dir = Some(p.as_ref().to_owned());
+        self.output_dest = OutputDestination::Path(p.as_ref().to_owned());
+        self
+    }
+
+    /// Indicate that output files should not be written to disk.
+    ///
+    /// By default, output files will be written to the directory containing
+    /// `primary_input_path`, or the current working directory if the primary
+    /// input is coming from stdin.
+    pub fn do_not_write_output_files(&mut self) -> &mut Self {
+        self.output_dest = OutputDestination::Nowhere;
         self
     }
 
@@ -378,7 +412,7 @@ impl ProcessingSessionBuilder {
     }
 
     /// Creates a `ProcessingSession`.
-    pub fn create(mut self, status: &mut StatusBackend) -> Result<ProcessingSession> {
+    pub fn create(self, status: &mut StatusBackend) -> Result<ProcessingSession> {
         let mut io = IoSetupBuilder::default();
         io.bundle(self.bundle.expect("a bundle must be specified"))
             .use_genuine_stdout(self.print_stdout);
@@ -386,24 +420,23 @@ impl ProcessingSessionBuilder {
             io.hide_path(p);
         }
 
-        let primary_input_path = match self.primary_input {
+        let (primary_input_path, default_output_path) = match self.primary_input {
             PrimaryInputMode::Path(p) => {
                 io.primary_input_path(&p);
 
                 // Set the filesystem root (that's the directory we'll search
                 // for files in) to be the same directory as the main input
                 // file.
-                if let Some(parent) = p.parent() {
-                    io.filesystem_root(parent);
-                    if self.output_dir.is_none() {
-                        self.output_dir = Some(parent.to_owned());
+                let parent = match p.parent() {
+                    Some(parent) => parent.to_owned(),
+                    None => {
+                        return Err(errmsg!("can't figure out a parent directory for input path \"{}\"",
+                                           p.to_string_lossy()));
                     }
-                } else {
-                    return Err(errmsg!("can't figure out a parent directory for input path \"{}\"",
-                                       p.to_string_lossy()));
-                }
+                };
 
-                Some(p)
+                io.filesystem_root(&parent);
+                (Some(p), parent)
             },
 
             PrimaryInputMode::Stdin => {
@@ -411,23 +444,20 @@ impl ProcessingSessionBuilder {
                 // root, which means we'll default to the current working
                 // directory.
                 io.primary_input_stdin();
-                if self.output_dir.is_none() {
-                    self.output_dir = Some("".into());
-                }
-
-                None
+                (None, "".into())
             },
 
             PrimaryInputMode::Buffer(buf) => {
                 // Same behavior as with stdin.
                 io.primary_input_buffer(buf);
-
-                if self.output_dir.is_none() {
-                    self.output_dir = Some("".into());
-                }
-
-                None
+                (None, "".into())
             }
+        };
+
+        let output_path = match self.output_dest {
+            OutputDestination::Default => Some(default_output_path),
+            OutputDestination::Path(p) => Some(p),
+            OutputDestination::Nowhere => None,
         };
 
         if let Some(ref p) = self.format_cache_path {
@@ -454,7 +484,7 @@ impl ProcessingSessionBuilder {
             tex_pdf_path: pdf_path.into_os_string(),
             output_format: self.output_format,
             makefile_output_path: self.makefile_output_path,
-            output_path: self.output_dir.expect("output_dir must be specified"),
+            output_path: output_path,
             tex_rerun_specification: self.reruns,
             keep_intermediates: self.keep_intermediates,
             keep_logs: self.keep_logs,
@@ -464,12 +494,14 @@ impl ProcessingSessionBuilder {
     }
 }
 
-/// The ProcessingSession struct runs the whole show when we're actually processing a file. It
-/// understands, for example, the need to re-run the TeX engine if the `.aux` file changed.
+/// The ProcessingSession struct runs the whole show when we're actually
+/// processing a file. It understands, for example, the need to re-run the TeX
+/// engine if the `.aux` file changed.
 pub struct ProcessingSession {
-    /// This contains the full I/O setup of the processing session. After running the session, you
-    /// can inspect this to see what I/O was produced. (For example, the memory layer might contain
-    /// some files that were produced by the TeX engine but not actually written to disk.)
+    /// This contains the full I/O setup of the processing session. After
+    /// running the session, you can inspect this to see what I/O was
+    /// produced. (For example, the memory layer might contain some files that
+    /// were produced by the TeX engine but not actually written to disk.)
     pub io: IoSetup,
 
     /// This contains all the I/O events that occurred while processing.
@@ -501,8 +533,11 @@ pub struct ProcessingSession {
     makefile_output_path: Option<PathBuf>,
 
     /// This is the path that the processed file will be saved at. It defaults
-    /// to the path of `primary_input_path` or `.` if STDIN is used.
-    output_path: PathBuf,
+    /// to the path of `primary_input_path` or `.` if STDIN is used. If set to
+    /// None, the output files will not be saved to disk — in which case, the
+    /// caller should access the memory layer of the `io` field to gain access
+    /// to the output files.
+    output_path: Option<PathBuf>,
 
     pass: PassSetting,
     output_format: OutputFormat,
@@ -622,7 +657,15 @@ impl ProcessingSession {
         // Write output files and the first line of our Makefile output.
 
         let mut mf_dest_maybe = match self.makefile_output_path {
-            Some(ref p) => Some(File::create(p)?),
+            Some(ref p) => {
+                if self.output_path.is_none() {
+                    tt_warning!(status, "requested to generate Makefile rules, but no files written to disk!");
+                    None
+                } else {
+                    Some(File::create(p)?)
+                }
+            },
+
             None => None
         };
 
@@ -641,6 +684,9 @@ impl ProcessingSession {
             if let Some(ref pip) = self.primary_input_path {
                 ctry!(mf_dest.write_all(pip.to_string_lossy().as_ref().as_bytes()); "couldn't write to Makefile-rules file");
             }
+
+            // The check above ensures that this is never None.
+            let root = self.output_path.as_ref().unwrap();
 
             for (name, info) in &self.events.0 {
                 if info.input_origin != InputOrigin::Filesystem {
@@ -661,7 +707,7 @@ impl ProcessingSession {
                     continue;
                 }
 
-                ctry!(write!(mf_dest, " \\\n  {}", self.output_path.join(name).display()); "couldn't write to Makefile-rules file");
+                ctry!(write!(mf_dest, " \\\n  {}", root.join(name).display()); "couldn't write to Makefile-rules file");
             }
 
             ctry!(writeln!(mf_dest, ""); "couldn't write to Makefile-rules file");
@@ -675,7 +721,17 @@ impl ProcessingSession {
 
     fn write_files(&mut self, mut mf_dest_maybe: Option<&mut File>, status: &mut
                    TermcolorStatusBackend, only_logs: bool) -> Result<u32> {
+        let root = match self.output_path {
+            Some(ref p) => p,
+
+            None => {
+                // We were told not to write anything!
+                return Ok(0);
+            },
+        };
+
         let mut n_skipped_intermediates = 0;
+
         for (name, contents) in &*self.io.mem.files.borrow() {
             if name == self.io.mem.stdout_key() {
                 continue;
@@ -715,9 +771,7 @@ impl ProcessingSession {
                 continue;
             }
 
-            let real_path = self.output_path.join(name);
-
-
+            let real_path = root.join(name);
             status.note_highlighted("Writing ", &real_path.to_string_lossy(), &format!(" ({} bytes)", contents.len()));
 
             let mut f = File::create(&real_path)?;
@@ -735,6 +789,7 @@ impl ProcessingSession {
                 ctry!(write!(mf_dest, "{} ", real_path.to_string_lossy()); "couldn't write to Makefile-rules file");
             }
         }
+
         Ok(n_skipped_intermediates)
     }
 
