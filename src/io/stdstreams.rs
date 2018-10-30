@@ -83,6 +83,11 @@ pub struct BufferedPrimaryIo {
 }
 
 impl BufferedPrimaryIo {
+    /// Create a new primary-I/O buffer from a type implementing Read.
+    ///
+    /// The stream will be read and buffered in memory — regardless of how
+    /// large it is. This approach is required because Tectonic will generally
+    /// need to make multiple passes over the input file.
     pub fn from_stream<T: Read>(stream: &mut T) -> Result<Self> {
         let mut buf = [0u8; 8192];
         let mut alldata = Vec::<u8>::new();
@@ -102,13 +107,28 @@ impl BufferedPrimaryIo {
         })
     }
 
+    /// Create a new primary-I/O buffer from this processes's standard input.
+    ///
+    /// Standard input will be read and buffered in memory — regardless of how
+    /// large it is. This approach is required because Tectonic will generally
+    /// need to make multiple passes over the input file.
     pub fn from_stdin() -> Result<Self> {
         Self::from_stream(&mut stdin())
     }
 
+    /// Create a new primary-I/O buffer from a string.
+    ///
+    /// The string is converted into bytes as per [`str.as_bytes`].
     pub fn from_text<T: AsRef<str>>(text: T) -> Self {
         BufferedPrimaryIo {
             buffer: SharedByteBuffer::new(text.as_ref().as_bytes().to_owned())
+        }
+    }
+
+    /// Create a new primary-I/O buffer from a byte vector.
+    pub fn from_buffer(buf: Vec<u8>) -> Self {
+        BufferedPrimaryIo {
+            buffer: SharedByteBuffer::new(buf)
         }
     }
 }

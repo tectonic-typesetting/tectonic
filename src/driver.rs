@@ -215,10 +215,27 @@ impl Default for PassSetting {
     fn default() -> PassSetting { PassSetting::Default }
 }
 
+/// Different places from which the "primary input" might originate.
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum PrimaryInputMode {
+    /// This process's standard input.
+    Stdin,
+
+    /// A path on the filesystem.
+    Path(PathBuf),
+
+    /// An in-memory buffer.
+    Buffer(Vec<u8>),
+}
+
+impl Default for PrimaryInputMode {
+    fn default() -> PrimaryInputMode { PrimaryInputMode::Stdin }
+}
+
 /// A builder-style interface for creating a [`ProcessingSession`].
 #[derive(Default)]
 pub struct ProcessingSessionBuilder {
-    primary_input_path: Option<PathBuf>,
+    primary_input: PrimaryInputMode,
     tex_input_name: Option<String>,
     output_dir: Option<PathBuf>,
     format_name: Option<String>,
@@ -240,7 +257,16 @@ impl ProcessingSessionBuilder {
     ///
     /// If a primary input path is not specified, we will default to reading it from stdin.
     pub fn primary_input_path<P: AsRef<Path>>(&mut self, p: P) -> &mut Self {
-        self.primary_input_path = Some(p.as_ref().to_owned());
+        self.primary_input = PrimaryInputMode::Path(p.as_ref().to_owned());
+        self
+    }
+
+    /// Sets the primary input to be a caller-specified buffer.
+    ///
+    /// If neither this nor a primary input path is specified, we will default
+    /// to reading the primary input from stdin.
+    pub fn primary_input_buffer(&mut self, buf: &[u8]) -> &mut Self {
+        self.primary_input = PrimaryInputMode::Buffer(buf.to_owned());
         self
     }
 
@@ -360,28 +386,49 @@ impl ProcessingSessionBuilder {
             io.hide_path(p);
         }
 
-        if let Some(ref p) = self.primary_input_path {
-            io.primary_input_path(p);
+        let primary_input_path = match self.primary_input {
+            PrimaryInputMode::Path(p) => {
+                io.primary_input_path(&p);
 
-            // Set the filesystem root (that's the directory we'll search for files in) to be the
-            // same directory as the main input file.
-            if let Some(parent) = p.parent() {
-                io.filesystem_root(parent);
-                if self.output_dir.is_none() {
-                    self.output_dir = Some(parent.to_owned());
+                // Set the filesystem root (that's the directory we'll search
+                // for files in) to be the same directory as the main input
+                // file.
+                if let Some(parent) = p.parent() {
+                    io.filesystem_root(parent);
+                    if self.output_dir.is_none() {
+                        self.output_dir = Some(parent.to_owned());
+                    }
+                } else {
+                    return Err(errmsg!("can't figure out a parent directory for input path \"{}\"",
+                                       p.to_string_lossy()));
                 }
-            } else {
-                return Err(errmsg!("can't figure out a parent directory for input path \"{}\"",
-                                   p.to_string_lossy()));
+
+                Some(p)
+            },
+
+            PrimaryInputMode::Stdin => {
+                // If the main input file is stdin, we don't set a filesystem
+                // root, which means we'll default to the current working
+                // directory.
+                io.primary_input_stdin();
+                if self.output_dir.is_none() {
+                    self.output_dir = Some("".into());
+                }
+
+                None
+            },
+
+            PrimaryInputMode::Buffer(buf) => {
+                // Same behavior as with stdin.
+                io.primary_input_buffer(buf);
+
+                if self.output_dir.is_none() {
+                    self.output_dir = Some("".into());
+                }
+
+                None
             }
-        } else {
-            // If the main input file is stdin, we don't set a filesystem root, which means we'll
-            // default to the current working directory.
-            io.primary_input_stdin();
-            if self.output_dir.is_none() {
-                self.output_dir = Some("".into());
-            }
-        }
+        };
 
         if let Some(ref p) = self.format_cache_path {
             io.format_cache_path(p);
@@ -399,7 +446,7 @@ impl ProcessingSessionBuilder {
             io: io.create(status)?,
             events: IoEvents::new(),
             pass: self.pass,
-            primary_input_path: self.primary_input_path,
+            primary_input_path: primary_input_path,
             primary_input_tex_path: tex_input_name,
             format_name: self.format_name.unwrap(),
             tex_aux_path: aux_path.into_os_string(),

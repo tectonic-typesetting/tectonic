@@ -89,14 +89,29 @@ impl IoSetup {
     }
 }
 
+
+/// Where does the "primary input" stream come from?
+enum PrimaryInputMode {
+    /// The caller never specified; we'll panic.
+    Undefined,
+
+    /// The process's standard input stream.
+    Stdin,
+
+    /// Somewhere on the filesystem.
+    Path(PathBuf),
+
+    /// An in-memory buffer.
+    Buffer(Vec<u8>),
+}
+
+
 /// The IoSetupBuilder provides a convenient builder interface for specifying
 /// the I/O setup.
-
 pub struct IoSetupBuilder {
-    primary_input_path: Option<PathBuf>,
+    primary_input: PrimaryInputMode,
     filesystem_root: PathBuf,
     format_cache_path: Option<PathBuf>,
-    use_stdin: bool,
     bundle: Option<Box<Bundle>>,
     use_genuine_stdout: bool,
     hidden_input_paths: HashSet<PathBuf>,
@@ -105,10 +120,9 @@ pub struct IoSetupBuilder {
 impl Default for IoSetupBuilder {
     fn default() -> Self {
         IoSetupBuilder {
-            primary_input_path: None,
+            primary_input: PrimaryInputMode::Undefined,
             filesystem_root: PathBuf::new(),
             format_cache_path: None,
-            use_stdin: false,
             bundle: None,
             use_genuine_stdout: false,
             hidden_input_paths: HashSet::new(),
@@ -119,35 +133,32 @@ impl Default for IoSetupBuilder {
 impl IoSetupBuilder {
     /// Sets the path for the primary input (i.e. the main .tex file).
     ///
-    /// This method is mutually exclusive with [`IoSetupBuilder::primary_input_stdin`]: you must
-    /// call *exactly* one out of these two methods, or we will panic.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `primary_input_stdin` was already invoked.
+    /// If other functions that set the primary input mode are called (e.g.
+    /// [`IoSetupBuilder::primary_input_stdin`], the setting will be
+    /// overridden.
     pub fn primary_input_path<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
-        if self.use_stdin {
-            panic!("cannot use both stdin and primary_input_path");
-        }
-
-        self.primary_input_path = Some(path.as_ref().to_owned());
+        self.primary_input = PrimaryInputMode::Path(path.as_ref().to_owned());
         self
     }
 
     /// Configures us to read the primary input (i.e. the main .tex file) from stdin.
     ///
-    /// This method is mutually exclusive with [`IoSetupBuilder::primary_input_path`]: you must
-    /// call *exactly* one out of these two methods, or we will panic.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `primary_input_path` was already invoked.
+    /// If other functions that set the primary input mode are called (e.g.
+    /// [`IoSetupBuilder::primary_input_path`], the setting will be
+    /// overridden.
     pub fn primary_input_stdin(&mut self) -> &mut Self {
-        if self.primary_input_path.is_some() {
-            panic!("cannot use both primary_input_path and stdin");
-        }
+        self.primary_input = PrimaryInputMode::Stdin;
+        self
+    }
 
-        self.use_stdin = true;
+    /// Configures us to read the primary input (i.e. the main .tex file) from
+    /// an in-memory buffer.
+    ///
+    /// If other functions that set the primary input mode are called (e.g.
+    /// [`IoSetupBuilder::primary_input_path`], the setting will be
+    /// overridden.
+    pub fn primary_input_buffer(&mut self, buf: Vec<u8>) -> &mut Self {
+        self.primary_input = PrimaryInputMode::Buffer(buf);
         self
     }
 
@@ -207,12 +218,22 @@ impl IoSetupBuilder {
             None
         };
 
-        let pio: Box<IoProvider> = if self.use_stdin {
-            Box::new(ctry!(BufferedPrimaryIo::from_stdin(); "error reading standard input"))
-        } else if let Some(pip) = self.primary_input_path {
-            Box::new(FilesystemPrimaryInputIo::new(&pip))
-        } else {
-            panic!("no primary input mechanism specified");
+        let pio: Box<IoProvider> = match self.primary_input {
+            PrimaryInputMode::Stdin => {
+                Box::new(ctry!(BufferedPrimaryIo::from_stdin(); "error reading standard input"))
+            },
+
+            PrimaryInputMode::Path(pip) => {
+                Box::new(FilesystemPrimaryInputIo::new(&pip))
+            },
+
+            PrimaryInputMode::Buffer(buf) => {
+                Box::new(BufferedPrimaryIo::from_buffer(buf))
+            },
+
+            PrimaryInputMode::Undefined => {
+                panic!("no primary input mechanism specified");
+            },
         };
 
         Ok(IoSetup {
