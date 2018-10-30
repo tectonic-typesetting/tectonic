@@ -23,7 +23,6 @@ use engines::IoEventBackend;
 use errors::{ErrorKind, Result, ResultExt};
 use io::{Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
 use status::StatusBackend;
-use status::termcolor::TermcolorStatusBackend;
 use {BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
 
 /// Different patterns with which files may have been accessed by the
@@ -558,7 +557,7 @@ impl ProcessingSession {
     /// Assess whether we need to rerun an engine. This is the case if there
     /// was a file that the engine read and then rewrote, and the rewritten
     /// version is different than the version that it read in.
-    fn rerun_needed(&mut self, status: &mut TermcolorStatusBackend) -> Option<String> {
+    fn rerun_needed<S: StatusBackend>(&mut self, status: &mut S) -> Option<String> {
         // TODO: we should probably wire up diagnostics since I expect this
         // stuff could get finicky and we're going to want to be able to
         // figure out why rerun detection is breaking.
@@ -586,7 +585,7 @@ impl ProcessingSession {
     }
 
     #[allow(dead_code)]
-    fn _dump_access_info(&self, status: &mut TermcolorStatusBackend) {
+    fn _dump_access_info<S: StatusBackend>(&self, status: &mut S) {
         for (name, info) in &self.events.0 {
             if info.access_pattern != AccessPattern::Read {
                 use std::string::ToString;
@@ -615,8 +614,7 @@ impl ProcessingSession {
     /// - run BibTeX, if it seems to be required
     /// - repeat the last two steps as often as needed
     /// - write the output files to disk, including a Makefile if it was requested.
-    // TODO: replace the TermcolorStatusBackend with a StatusBackend
-    pub fn run(&mut self, status: &mut TermcolorStatusBackend) -> Result<()> {
+    pub fn run<S: StatusBackend>(&mut self, status: &mut S) -> Result<()> {
         // Do we need to generate the format file?
 
         let generate_format = if self.output_format == OutputFormat::Format {
@@ -719,8 +717,9 @@ impl ProcessingSession {
     }
 
 
-    fn write_files(&mut self, mut mf_dest_maybe: Option<&mut File>, status: &mut
-                   TermcolorStatusBackend, only_logs: bool) -> Result<u32> {
+    fn write_files<S: StatusBackend>(&mut self, mut mf_dest_maybe: Option<&mut File>,
+                                     status: &mut S, only_logs: bool) -> Result<u32>
+    {
         let root = match self.output_path {
             Some(ref p) => p,
 
@@ -795,7 +794,7 @@ impl ProcessingSession {
 
     /// The "default" pass really runs a bunch of sub-passes. It is a "Do What
     /// I Mean" operation.
-    fn default_pass(&mut self, bibtex_first: bool, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    fn default_pass<S: StatusBackend>(&mut self, bibtex_first: bool, status: &mut S) -> Result<i32> {
         // If `bibtex_first` is true, we start by running bibtex, and run
         // proceed with the standard rerun logic. Otherwise, we run TeX,
         // auto-detect whether we need to run bibtex, possibly run it, and
@@ -886,7 +885,7 @@ impl ProcessingSession {
 
 
     /// Use the TeX engine to generate a format file.
-    fn make_format_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    fn make_format_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
         if self.io.bundle.is_none() {
             return Err(ErrorKind::Msg("cannot create formats without using a bundle".to_owned()).into())
         }
@@ -954,7 +953,7 @@ impl ProcessingSession {
 
 
     /// Run one pass of the TeX engine.
-    fn tex_pass(&mut self, rerun_explanation: Option<&str>, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    fn tex_pass<S: StatusBackend>(&mut self, rerun_explanation: Option<&str>, status: &mut S) -> Result<i32> {
         let result = {
             let mut stack = self.io.as_stack();
             if let Some(s) = rerun_explanation {
@@ -997,7 +996,7 @@ impl ProcessingSession {
     }
 
 
-    fn bibtex_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    fn bibtex_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
         let result = {
             let mut stack = self.io.as_stack();
             let mut engine = BibtexEngine::new ();
@@ -1024,7 +1023,7 @@ impl ProcessingSession {
     }
 
 
-    fn xdvipdfmx_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    fn xdvipdfmx_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
         {
             let mut stack = self.io.as_stack();
             let mut engine = XdvipdfmxEngine::new ();
@@ -1038,7 +1037,7 @@ impl ProcessingSession {
     }
 
 
-    fn spx2html_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    fn spx2html_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
         {
             let mut stack = self.io.as_stack();
             let mut engine = Spx2HtmlEngine::new ();
