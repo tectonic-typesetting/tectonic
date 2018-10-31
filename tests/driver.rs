@@ -22,7 +22,11 @@ use tempdir::TempDir;
 mod util;
 
 lazy_static! {
-    static ref LOCK: Mutex<u8> = Mutex::new(0u8);
+    static ref LOCK: Mutex<u8> = {
+        // Hack, one-time test setup:
+        util::set_test_root();
+        Mutex::new(0u8)
+    };
 }
 
 

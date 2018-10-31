@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #[macro_use] extern crate lazy_static;
+extern crate tectonic;
 extern crate tempdir;
 
 use std::env;
@@ -18,7 +19,17 @@ use util::{cargo_dir, ensure_plain_format};
 
 
 lazy_static! {
-    static ref LOCK: Mutex<u8> = Mutex::new(0u8);
+    static ref LOCK: Mutex<u8> = {
+        // Hack, one-time test setup:
+        util::set_test_root();
+        Mutex::new(0u8)
+    };
+
+    static ref TEST_ROOT: PathBuf = {
+        let mut root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        root.push("tests");
+        root
+    };
 }
 
 
@@ -31,6 +42,9 @@ fn get_plain_format_arg() -> String {
     format!("--format={}", path.display())
 }
 
+/// Note the special sauce here — we set the magic environment variable that
+/// tells the Tectonic binary to go into "test mode" and use local test
+/// assets, rather than an actual network bundle.
 fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
     let tectonic = cargo_dir()
         .join("tectonic")
@@ -47,8 +61,9 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
     println!("using cwd {:?}", cwd);
 
     let mut command = Command::new(tectonic);
-    command.args(args);
-    command.current_dir(cwd);
+    command.args(args)
+        .current_dir(cwd)
+        .env(tectonic::test_util::TEST_ROOT_ENV_VAR, TEST_ROOT.as_os_str());
     command
 }
 

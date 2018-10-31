@@ -22,7 +22,11 @@ mod util;
 use util::{ensure_plain_format, test_path, ExpectedInfo};
 
 lazy_static! {
-    static ref LOCK: Mutex<u8> = Mutex::new(0u8);
+    static ref LOCK: Mutex<u8> = {
+        // Hack, one-time test setup:
+        util::set_test_root();
+        Mutex::new(0u8)
+    };
 }
 
 struct TestCase {
@@ -212,6 +216,10 @@ fn unicode_file_name() {
 
 #[test]
 fn file_encoding() {
+    // Need to do this here since we can call test_path before the lazy_static
+    // is initialized.
+    util::set_test_root();
+
     TestCase::new("file_encoding.tex")
         .with_fs(&test_path(&["tex-outputs"]))
         .expect(Ok(TexResult::Warnings))

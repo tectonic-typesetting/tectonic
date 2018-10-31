@@ -27,6 +27,22 @@ use io::Bundle;
 use status::StatusBackend;
 
 
+/// Awesome hack time!!!
+///
+/// This is part of the "test mode" described in the `test_util` module. When
+/// test mode is activated in this module, the `default_bundle()` and
+/// `format_cache_path()` functions return results pointing to the test asset
+/// tree, rather than whatever the user has actually configured.
+static mut CONFIG_TEST_MODE_ACTIVATED: bool = false;
+
+#[doc(hidden)]
+pub fn activate_config_test_mode(forced: bool) {
+    unsafe {
+        CONFIG_TEST_MODE_ACTIVATED = forced;
+    }
+}
+
+
 const DEFAULT_CONFIG: &'static str = r#"[[default_bundles]]
 url = "https://purl.org/net/pkgwpub/tectonic-default"
 "#;
@@ -89,7 +105,7 @@ impl PersistentConfig {
             only_cached,
             status,
         )?;
-        
+
         Ok(Box::new(bundle) as _)
     }
 
@@ -105,9 +121,14 @@ impl PersistentConfig {
         Ok(Box::new(zip_bundle) as _)
     }
 
+
     pub fn default_bundle(&self, only_cached: bool, status: &mut StatusBackend) -> Result<Box<Bundle>> {
         use std::io;
         use hyper::Url;
+
+        if unsafe { CONFIG_TEST_MODE_ACTIVATED } {
+            return Ok(Box::new(::test_util::TestBundle::default()));
+        }
 
         if self.default_bundles.len() != 1 {
             return Err(ErrorKind::Msg("exactly one default_bundle item must be specified (for now)".to_owned()).into());
@@ -127,8 +148,13 @@ impl PersistentConfig {
     		return Ok(Box::new(bundle) as _);
     }
 
+
     pub fn format_cache_path(&self) -> Result<PathBuf> {
-        Ok(app_dir(AppDataType::UserCache, &::APP_INFO, "formats")?)
+        if unsafe { CONFIG_TEST_MODE_ACTIVATED } {
+            return Ok(::test_util::test_path(&[]));
+        } else {
+            Ok(app_dir(AppDataType::UserCache, &::APP_INFO, "formats")?)
+        }
     }
 }
 
