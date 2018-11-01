@@ -12,9 +12,10 @@
 
 use std::io::{Read, Write};
 use std::io::ErrorKind as IoErrorKind;
+use std::ffi::OsStr;
 use std::fs::File;
 use std::path::PathBuf;
-use std::ffi::OsStr;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use app_dirs::{app_dir, app_root, get_app_root, sanitized, AppDataType};
 use toml;
@@ -33,13 +34,11 @@ use status::StatusBackend;
 /// test mode is activated in this module, the `default_bundle()` and
 /// `format_cache_path()` functions return results pointing to the test asset
 /// tree, rather than whatever the user has actually configured.
-static mut CONFIG_TEST_MODE_ACTIVATED: bool = false;
+static CONFIG_TEST_MODE_ACTIVATED: AtomicBool = AtomicBool::new(false);
 
 #[doc(hidden)]
 pub fn activate_config_test_mode(forced: bool) {
-    unsafe {
-        CONFIG_TEST_MODE_ACTIVATED = forced;
-    }
+    CONFIG_TEST_MODE_ACTIVATED.store(forced, Ordering::SeqCst);
 }
 
 
@@ -126,7 +125,7 @@ impl PersistentConfig {
         use std::io;
         use hyper::Url;
 
-        if unsafe { CONFIG_TEST_MODE_ACTIVATED } {
+        if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
             return Ok(Box::new(::test_util::TestBundle::default()));
         }
 
@@ -150,7 +149,7 @@ impl PersistentConfig {
 
 
     pub fn format_cache_path(&self) -> Result<PathBuf> {
-        if unsafe { CONFIG_TEST_MODE_ACTIVATED } {
+        if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
             return Ok(::test_util::test_path(&[]));
         } else {
             Ok(app_dir(AppDataType::UserCache, &::APP_INFO, "formats")?)
