@@ -17,6 +17,7 @@ use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 
 use digest::DigestData;
 use engines::IoEventBackend;
@@ -1055,11 +1056,15 @@ impl ProcessingSession {
     ///
     /// This convenience function tries to help with the annoyances of getting
     /// access to the in-memory file data after the engine has been run.
+    ///
+    /// ### Panics
+    ///
+    /// This will panic if you there are multiple strong references to the
+    /// `files` map. This should only happen if you create and keep a clone of
+    /// the `Rc<>` wrapping it before calling this function.
     pub fn into_file_data(self) -> HashMap<OsString, Vec<u8>> {
-        // There must be a better way to do this ... Note that you *cannot*
-        // elide the creation of `rebuild`!
-        let mut borrow_map = self.io.mem.files.borrow_mut();
-        let rebuild = borrow_map.drain().collect();
-        rebuild
+        Rc::try_unwrap(self.io.mem.files)
+            .expect("multiple strong refs to MemoryIo files")
+            .into_inner()
     }
 }
