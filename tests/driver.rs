@@ -8,11 +8,9 @@
 //! ProcessingSessionBuilder will need to learn how to tell `xdvipdfmx` to
 //! enable the reproducibility options used in the `tex-outputs` test rig.
 
-#[macro_use] extern crate lazy_static;
 extern crate tectonic;
 extern crate tempdir;
 
-use std::sync::Mutex;
 use tectonic::config::PersistentConfig;
 use tectonic::driver::ProcessingSessionBuilder;
 use tectonic::status::ChatterLevel;
@@ -21,20 +19,12 @@ use tempdir::TempDir;
 
 mod util;
 
-lazy_static! {
-    static ref LOCK: Mutex<u8> = {
-        // Hack, one-time test setup:
-        util::set_test_root();
-        Mutex::new(0u8)
-    };
-}
-
 
 // Keep these alphabetized.
 
 #[test]
 fn the_letter_a() {
-    let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
+    util::set_test_root();
 
     let _config = PersistentConfig::default();
 

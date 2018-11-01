@@ -16,11 +16,12 @@ use flate2::{Compression, GzBuilder};
 use flate2::read::{GzDecoder};
 use md5::{Md5, Digest};
 use libc;
+use std::{io, ptr, slice};
+use std::borrow::Cow;
 use std::ffi::{CStr, OsStr, OsString};
 use std::io::{Read, SeekFrom, Write};
 use std::path::Path;
-use std::{io, ptr, slice};
-use std::borrow::Cow;
+use std::sync::Mutex;
 
 use digest::DigestData;
 use errors::{Error, ErrorKind, Result};
@@ -105,6 +106,16 @@ impl IoEventBackend for NoopIoEventBackend { }
 
 
 // Now, the private interfaces for executing various engines implemented in C/C++.
+
+// The C/C++ engines currently maintain global state, which means that we can
+// only run one of them at a time safely in a given process. This mutex
+// ensures that this happens. We use the same lock for all C/C++ engines. It's
+// possible that maybe we could run (e.g.) XeTeX and xdvipdfmx at the same
+// time and they won't stomp on each other's toes, but I don't want to risk
+// it.
+lazy_static! {
+    static ref ENGINE_LOCK: Mutex<u8> = Mutex::new(0u8);
+}
 
 /// During the execution of a C/C++ engine, an ExecutionState structure holds
 /// all of the state relevant on the *Rust* side of things: I/O, essentially.

@@ -97,6 +97,8 @@ impl TexEngine {
                     events: &mut IoEventBackend,
                     status: &mut StatusBackend,
                     format_file_name: &str, input_file_name: &str) -> Result<TexResult> {
+        let _guard = super::ENGINE_LOCK.lock().unwrap(); // until we're thread-safe ...
+
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 

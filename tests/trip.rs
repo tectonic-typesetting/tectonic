@@ -14,11 +14,9 @@
 /// variable to "1", but that's an annoying solution. So, we use a global mutex
 /// to achieve the same effect. Classy.
 
-#[macro_use] extern crate lazy_static;
 extern crate tectonic;
 
 use std::ffi::OsStr;
-use std::sync::Mutex;
 
 use tectonic::engines::NoopIoEventBackend;
 use tectonic::io::{FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
@@ -29,18 +27,10 @@ use tectonic::TexEngine;
 mod util;
 use util::{ExpectedInfo, test_path};
 
-lazy_static! {
-    static ref LOCK: Mutex<u8> = {
-        // Hack, one-time test setup:
-        util::set_test_root();
-        Mutex::new(0u8)
-    };
-}
-
 
 #[test]
 fn trip_test() {
-    let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
+    util::set_test_root();
 
     let mut p = test_path(&["trip", "trip"]);
 
@@ -102,7 +92,7 @@ fn trip_test() {
 
 #[test]
 fn etrip_test() {
-    let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
+    util::set_test_root();
 
     let mut p = test_path(&["trip", "etrip"]);
 

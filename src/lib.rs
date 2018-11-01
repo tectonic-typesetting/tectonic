@@ -55,6 +55,7 @@ extern crate flate2;
 extern crate fs2;
 extern crate hyper;
 extern crate hyper_native_tls;
+#[macro_use] extern crate lazy_static;
 extern crate libc;
 extern crate md5;
 extern crate tempfile;
@@ -121,6 +122,13 @@ const FORMAT_SERIAL: u32 = 28; // keep synchronized with tectonic/xetex-constant
 /// For more sophisticated uses, use the [`driver`] module, which provides a
 /// high-level interface for driving the typesetting engines with much more
 /// control over their behavior.
+///
+/// Note that the current engine implementations use lots of global state, so
+/// they are not thread-safe. This crate uses a global mutex to serialize
+/// invocations of the engines. This means that if you call this function from
+/// multiple threads simultaneously, the bulk of the work will be done in
+/// serial. The aim is to lift this limitation one day, but it will require
+/// extensive work on the underlying C/C++ code.
 pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
     use std::ffi::OsStr;
 
