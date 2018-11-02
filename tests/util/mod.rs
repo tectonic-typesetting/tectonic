@@ -22,21 +22,17 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 
-use self::tectonic::digest::DigestData;
 use self::tectonic::errors::Result;
-use self::tectonic::io::{Bundle, FilesystemIo, InputHandle, IoProvider, OpenResult};
-use self::tectonic::status::StatusBackend;
-
-const TOP: &str = env!("CARGO_MANIFEST_DIR");
+pub use self::tectonic::test_util::{test_path, TestBundle};
 
 
-pub fn test_path(parts: &[&str]) -> PathBuf {
-    let mut path = PathBuf::from(TOP);
-    path.push("tests");
-    path.push(parts.iter().collect::<PathBuf>());
-    path
+/// Set the magic environment variable that enables the testing infrastructure
+/// embedded in the main Tectonic crate. This function is separated out from
+/// the main crate because it embeds `CARGO_MANIFEST_DIR`, which is not
+/// something we want to leak into the binary artifacts we produce.
+pub fn set_test_root() {
+    self::tectonic::test_util::set_test_root_augmented(env!("CARGO_MANIFEST_DIR"));
 }
-
 
 // Duplicated from Cargo's own testing code:
 // https://github.com/rust-lang/cargo/blob/19fdb308/tests/cargotest/support/mod.rs#L305-L318
@@ -180,29 +176,5 @@ impl ExpectedInfo {
             dec.read_to_end(&mut buf).unwrap();
             self.test_data(&buf);
         }
-    }
-}
-
-
-/// Utility for being able to treat the "assets/" directory as a bundle.
-pub struct TestBundle(FilesystemIo);
-
-impl Default for TestBundle {
-    fn default() -> Self {
-        TestBundle(FilesystemIo::new(&test_path(&["assets"]), false, false, HashSet::new()))
-    }
-}
-
-impl IoProvider for TestBundle {
-    // All other functions can default to NotAvailable/error.
-
-    fn input_open_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
-        self.0.input_open_name(name, status)
-    }
-}
-
-impl Bundle for TestBundle {
-    fn get_digest(&mut self, _status: &mut StatusBackend) -> Result<DigestData> {
-        Ok(DigestData::zeros())
     }
 }

@@ -37,6 +37,8 @@ impl XdvipdfmxEngine {
     pub fn process (&mut self, io: &mut IoStack,
                     events: &mut IoEventBackend,
                     status: &mut StatusBackend, dvi: &str, pdf: &str) -> Result<i32> {
+        let _guard = super::ENGINE_LOCK.lock().unwrap(); // until we're thread-safe ...
+
         let cdvi = CString::new(dvi)?;
         let cpdf = CString::new(pdf)?;
 

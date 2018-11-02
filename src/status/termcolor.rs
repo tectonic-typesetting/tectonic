@@ -109,16 +109,6 @@ impl TermcolorStatusBackend {
         }
     }
 
-    pub fn note_highlighted(&mut self, before: &str, highlighted: &str, after: &str) {
-        if self.chatter > ChatterLevel::Minimal {
-            write!(self.stdout, "{}", before).expect("write to stdout failed");
-            self.stdout.set_color(&self.highlight_spec).expect("write to stdout failed");
-            write!(self.stdout, "{}", highlighted).expect("write to stdout failed");
-            self.stdout.reset().expect("write to stdout failed");
-            writeln!(self.stdout, "{}", after).expect("write to stdout failed");
-        }
-    }
-
     pub fn error_styled(&mut self, args: Arguments) {
         self.styled(MessageKind::Error, |s| {
             writeln!(s, "{}", args).expect("write to stderr failed");
@@ -173,6 +163,16 @@ impl StatusBackend for TermcolorStatusBackend {
                     writeln!(s, "{:?}", backtrace).expect("backtrace dump failed");
                 });
             }
+        }
+    }
+
+    fn note_highlighted(&mut self, before: &str, highlighted: &str, after: &str) {
+        if self.chatter > ChatterLevel::Minimal {
+            write!(self.stdout, "{}", before).expect("write to stdout failed");
+            self.stdout.set_color(&self.highlight_spec).expect("write to stdout failed");
+            write!(self.stdout, "{}", highlighted).expect("write to stdout failed");
+            self.stdout.reset().expect("write to stdout failed");
+            writeln!(self.stdout, "{}", after).expect("write to stdout failed");
         }
     }
 }

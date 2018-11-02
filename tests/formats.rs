@@ -15,13 +15,11 @@
 /// to disk, which may be helpful in debugging. There is probably a less gross
 /// way to implement that option.
 
-#[macro_use] extern crate lazy_static;
 extern crate tectonic;
 
 use std::collections::{HashSet, HashMap};
 use std::ffi::{OsStr, OsString};
 use std::str::FromStr;
-use std::sync::Mutex;
 
 use tectonic::digest::DigestData;
 use tectonic::engines::IoEventBackend;
@@ -34,11 +32,6 @@ mod util;
 use util::test_path;
 
 const DEBUG: bool = false; // TODO: this is kind of ugly
-
-
-lazy_static! {
-    static ref LOCK: Mutex<u8> = Mutex::new(0u8);
-}
 
 
 /// A stunted version of cli_driver:FileSummary for examining the format file
@@ -77,7 +70,7 @@ impl IoEventBackend for FormatTestEvents {
 
 
 fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
-    let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
+    util::set_test_root();
 
     let mut p = test_path(&["assets"]);
 

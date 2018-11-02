@@ -1,13 +1,10 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
-#[macro_use]
-extern crate lazy_static;
 extern crate tectonic;
 
 use std::collections::HashSet;
 use std::env;
-use std::sync::Mutex;
 use std::path::Path;
 
 use tectonic::engines::tex::TexResult;
@@ -21,9 +18,6 @@ use tectonic::{TexEngine, XdvipdfmxEngine};
 mod util;
 use util::{ensure_plain_format, test_path, ExpectedInfo};
 
-lazy_static! {
-    static ref LOCK: Mutex<u8> = Mutex::new(0u8);
-}
 
 struct TestCase {
     stem: String,
@@ -74,7 +68,7 @@ impl TestCase {
     }
 
     fn go(&mut self) {
-        let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
+        util::set_test_root();
 
         let expect_xdv = self.expected_result.is_ok();
 
@@ -212,6 +206,9 @@ fn unicode_file_name() {
 
 #[test]
 fn file_encoding() {
+    // Need to do this here since we call test_path unusually early.
+    util::set_test_root();
+
     TestCase::new("file_encoding.tex")
         .with_fs(&test_path(&["tex-outputs"]))
         .expect(Ok(TexResult::Warnings))

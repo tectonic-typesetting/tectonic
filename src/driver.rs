@@ -17,13 +17,13 @@ use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 
 use digest::DigestData;
 use engines::IoEventBackend;
 use errors::{ErrorKind, Result, ResultExt};
 use io::{Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
 use status::StatusBackend;
-use status::termcolor::TermcolorStatusBackend;
 use {BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
 
 /// Different patterns with which files may have been accessed by the
@@ -215,12 +215,52 @@ impl Default for PassSetting {
     fn default() -> PassSetting { PassSetting::Default }
 }
 
+
+/// Different places from which the "primary input" might originate.
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum PrimaryInputMode {
+    /// This process's standard input.
+    Stdin,
+
+    /// A path on the filesystem.
+    Path(PathBuf),
+
+    /// An in-memory buffer.
+    Buffer(Vec<u8>),
+}
+
+impl Default for PrimaryInputMode {
+    fn default() -> PrimaryInputMode { PrimaryInputMode::Stdin }
+}
+
+
+/// Different places where the output files might land.
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum OutputDestination {
+    /// The "sensible" default. Files will land in the same directory as the
+    /// input file, or the current working directory if the input is something
+    /// without a path (such as standard input).
+    Default,
+
+    /// Files should land in this particular directory.
+    Path(PathBuf),
+
+    /// Files will not be written to disk. The code running the engine should
+    /// examine the memory layer of the I/O stack to obtain the output files.
+    Nowhere,
+}
+
+impl Default for OutputDestination {
+    fn default() -> OutputDestination { OutputDestination::Default }
+}
+
+
 /// A builder-style interface for creating a [`ProcessingSession`].
 #[derive(Default)]
 pub struct ProcessingSessionBuilder {
-    primary_input_path: Option<PathBuf>,
+    primary_input: PrimaryInputMode,
     tex_input_name: Option<String>,
-    output_dir: Option<PathBuf>,
+    output_dest: OutputDestination,
     format_name: Option<String>,
     format_cache_path: Option<PathBuf>,
     output_format: OutputFormat,
@@ -240,7 +280,16 @@ impl ProcessingSessionBuilder {
     ///
     /// If a primary input path is not specified, we will default to reading it from stdin.
     pub fn primary_input_path<P: AsRef<Path>>(&mut self, p: P) -> &mut Self {
-        self.primary_input_path = Some(p.as_ref().to_owned());
+        self.primary_input = PrimaryInputMode::Path(p.as_ref().to_owned());
+        self
+    }
+
+    /// Sets the primary input to be a caller-specified buffer.
+    ///
+    /// If neither this nor a primary input path is specified, we will default
+    /// to reading the primary input from stdin.
+    pub fn primary_input_buffer(&mut self, buf: &[u8]) -> &mut Self {
+        self.primary_input = PrimaryInputMode::Buffer(buf.to_owned());
         self
     }
 
@@ -257,10 +306,21 @@ impl ProcessingSessionBuilder {
 
     /// A path to the directory where output files should be created.
     ///
-    /// This will default to the directory containing `primary_input_path`, or the current working
-    /// directory if the primary input is coming from stdin.
+    /// This will default to the directory containing `primary_input_path`, or
+    /// the current working directory if the primary input is coming from
+    /// stdin.
     pub fn output_dir<P: AsRef<Path>>(&mut self, p: P) -> &mut Self {
-        self.output_dir = Some(p.as_ref().to_owned());
+        self.output_dest = OutputDestination::Path(p.as_ref().to_owned());
+        self
+    }
+
+    /// Indicate that output files should not be written to disk.
+    ///
+    /// By default, output files will be written to the directory containing
+    /// `primary_input_path`, or the current working directory if the primary
+    /// input is coming from stdin.
+    pub fn do_not_write_output_files(&mut self) -> &mut Self {
+        self.output_dest = OutputDestination::Nowhere;
         self
     }
 
@@ -352,7 +412,7 @@ impl ProcessingSessionBuilder {
     }
 
     /// Creates a `ProcessingSession`.
-    pub fn create(mut self, status: &mut StatusBackend) -> Result<ProcessingSession> {
+    pub fn create(self, status: &mut StatusBackend) -> Result<ProcessingSession> {
         let mut io = IoSetupBuilder::default();
         io.bundle(self.bundle.expect("a bundle must be specified"))
             .use_genuine_stdout(self.print_stdout);
@@ -360,28 +420,45 @@ impl ProcessingSessionBuilder {
             io.hide_path(p);
         }
 
-        if let Some(ref p) = self.primary_input_path {
-            io.primary_input_path(p);
+        let (primary_input_path, default_output_path) = match self.primary_input {
+            PrimaryInputMode::Path(p) => {
+                io.primary_input_path(&p);
 
-            // Set the filesystem root (that's the directory we'll search for files in) to be the
-            // same directory as the main input file.
-            if let Some(parent) = p.parent() {
-                io.filesystem_root(parent);
-                if self.output_dir.is_none() {
-                    self.output_dir = Some(parent.to_owned());
-                }
-            } else {
-                return Err(errmsg!("can't figure out a parent directory for input path \"{}\"",
-                                   p.to_string_lossy()));
+                // Set the filesystem root (that's the directory we'll search
+                // for files in) to be the same directory as the main input
+                // file.
+                let parent = match p.parent() {
+                    Some(parent) => parent.to_owned(),
+                    None => {
+                        return Err(errmsg!("can't figure out a parent directory for input path \"{}\"",
+                                           p.to_string_lossy()));
+                    }
+                };
+
+                io.filesystem_root(&parent);
+                (Some(p), parent)
+            },
+
+            PrimaryInputMode::Stdin => {
+                // If the main input file is stdin, we don't set a filesystem
+                // root, which means we'll default to the current working
+                // directory.
+                io.primary_input_stdin();
+                (None, "".into())
+            },
+
+            PrimaryInputMode::Buffer(buf) => {
+                // Same behavior as with stdin.
+                io.primary_input_buffer(buf);
+                (None, "".into())
             }
-        } else {
-            // If the main input file is stdin, we don't set a filesystem root, which means we'll
-            // default to the current working directory.
-            io.primary_input_stdin();
-            if self.output_dir.is_none() {
-                self.output_dir = Some("".into());
-            }
-        }
+        };
+
+        let output_path = match self.output_dest {
+            OutputDestination::Default => Some(default_output_path),
+            OutputDestination::Path(p) => Some(p),
+            OutputDestination::Nowhere => None,
+        };
 
         if let Some(ref p) = self.format_cache_path {
             io.format_cache_path(p);
@@ -399,7 +476,7 @@ impl ProcessingSessionBuilder {
             io: io.create(status)?,
             events: IoEvents::new(),
             pass: self.pass,
-            primary_input_path: self.primary_input_path,
+            primary_input_path: primary_input_path,
             primary_input_tex_path: tex_input_name,
             format_name: self.format_name.unwrap(),
             tex_aux_path: aux_path.into_os_string(),
@@ -407,7 +484,7 @@ impl ProcessingSessionBuilder {
             tex_pdf_path: pdf_path.into_os_string(),
             output_format: self.output_format,
             makefile_output_path: self.makefile_output_path,
-            output_path: self.output_dir.expect("output_dir must be specified"),
+            output_path: output_path,
             tex_rerun_specification: self.reruns,
             keep_intermediates: self.keep_intermediates,
             keep_logs: self.keep_logs,
@@ -417,12 +494,14 @@ impl ProcessingSessionBuilder {
     }
 }
 
-/// The ProcessingSession struct runs the whole show when we're actually processing a file. It
-/// understands, for example, the need to re-run the TeX engine if the `.aux` file changed.
+/// The ProcessingSession struct runs the whole show when we're actually
+/// processing a file. It understands, for example, the need to re-run the TeX
+/// engine if the `.aux` file changed.
 pub struct ProcessingSession {
-    /// This contains the full I/O setup of the processing session. After running the session, you
-    /// can inspect this to see what I/O was produced. (For example, the memory layer might contain
-    /// some files that were produced by the TeX engine but not actually written to disk.)
+    /// This contains the full I/O setup of the processing session. After
+    /// running the session, you can inspect this to see what I/O was
+    /// produced. (For example, the memory layer might contain some files that
+    /// were produced by the TeX engine but not actually written to disk.)
     pub io: IoSetup,
 
     /// This contains all the I/O events that occurred while processing.
@@ -454,8 +533,11 @@ pub struct ProcessingSession {
     makefile_output_path: Option<PathBuf>,
 
     /// This is the path that the processed file will be saved at. It defaults
-    /// to the path of `primary_input_path` or `.` if STDIN is used.
-    output_path: PathBuf,
+    /// to the path of `primary_input_path` or `.` if STDIN is used. If set to
+    /// None, the output files will not be saved to disk — in which case, the
+    /// caller should access the memory layer of the `io` field to gain access
+    /// to the output files.
+    output_path: Option<PathBuf>,
 
     pass: PassSetting,
     output_format: OutputFormat,
@@ -476,7 +558,7 @@ impl ProcessingSession {
     /// Assess whether we need to rerun an engine. This is the case if there
     /// was a file that the engine read and then rewrote, and the rewritten
     /// version is different than the version that it read in.
-    fn rerun_needed(&mut self, status: &mut TermcolorStatusBackend) -> Option<String> {
+    fn rerun_needed<S: StatusBackend>(&mut self, status: &mut S) -> Option<String> {
         // TODO: we should probably wire up diagnostics since I expect this
         // stuff could get finicky and we're going to want to be able to
         // figure out why rerun detection is breaking.
@@ -504,7 +586,7 @@ impl ProcessingSession {
     }
 
     #[allow(dead_code)]
-    fn _dump_access_info(&self, status: &mut TermcolorStatusBackend) {
+    fn _dump_access_info<S: StatusBackend>(&self, status: &mut S) {
         for (name, info) in &self.events.0 {
             if info.access_pattern != AccessPattern::Read {
                 use std::string::ToString;
@@ -533,8 +615,7 @@ impl ProcessingSession {
     /// - run BibTeX, if it seems to be required
     /// - repeat the last two steps as often as needed
     /// - write the output files to disk, including a Makefile if it was requested.
-    // TODO: replace the TermcolorStatusBackend with a StatusBackend
-    pub fn run(&mut self, status: &mut TermcolorStatusBackend) -> Result<()> {
+    pub fn run<S: StatusBackend>(&mut self, status: &mut S) -> Result<()> {
         // Do we need to generate the format file?
 
         let generate_format = if self.output_format == OutputFormat::Format {
@@ -575,7 +656,15 @@ impl ProcessingSession {
         // Write output files and the first line of our Makefile output.
 
         let mut mf_dest_maybe = match self.makefile_output_path {
-            Some(ref p) => Some(File::create(p)?),
+            Some(ref p) => {
+                if self.output_path.is_none() {
+                    tt_warning!(status, "requested to generate Makefile rules, but no files written to disk!");
+                    None
+                } else {
+                    Some(File::create(p)?)
+                }
+            },
+
             None => None
         };
 
@@ -594,6 +683,9 @@ impl ProcessingSession {
             if let Some(ref pip) = self.primary_input_path {
                 ctry!(mf_dest.write_all(pip.to_string_lossy().as_ref().as_bytes()); "couldn't write to Makefile-rules file");
             }
+
+            // The check above ensures that this is never None.
+            let root = self.output_path.as_ref().unwrap();
 
             for (name, info) in &self.events.0 {
                 if info.input_origin != InputOrigin::Filesystem {
@@ -614,7 +706,7 @@ impl ProcessingSession {
                     continue;
                 }
 
-                ctry!(write!(mf_dest, " \\\n  {}", self.output_path.join(name).display()); "couldn't write to Makefile-rules file");
+                ctry!(write!(mf_dest, " \\\n  {}", root.join(name).display()); "couldn't write to Makefile-rules file");
             }
 
             ctry!(writeln!(mf_dest, ""); "couldn't write to Makefile-rules file");
@@ -626,9 +718,20 @@ impl ProcessingSession {
     }
 
 
-    fn write_files(&mut self, mut mf_dest_maybe: Option<&mut File>, status: &mut
-                   TermcolorStatusBackend, only_logs: bool) -> Result<u32> {
+    fn write_files<S: StatusBackend>(&mut self, mut mf_dest_maybe: Option<&mut File>,
+                                     status: &mut S, only_logs: bool) -> Result<u32>
+    {
+        let root = match self.output_path {
+            Some(ref p) => p,
+
+            None => {
+                // We were told not to write anything!
+                return Ok(0);
+            },
+        };
+
         let mut n_skipped_intermediates = 0;
+
         for (name, contents) in &*self.io.mem.files.borrow() {
             if name == self.io.mem.stdout_key() {
                 continue;
@@ -668,9 +771,7 @@ impl ProcessingSession {
                 continue;
             }
 
-            let real_path = self.output_path.join(name);
-
-
+            let real_path = root.join(name);
             status.note_highlighted("Writing ", &real_path.to_string_lossy(), &format!(" ({} bytes)", contents.len()));
 
             let mut f = File::create(&real_path)?;
@@ -688,12 +789,13 @@ impl ProcessingSession {
                 ctry!(write!(mf_dest, "{} ", real_path.to_string_lossy()); "couldn't write to Makefile-rules file");
             }
         }
+
         Ok(n_skipped_intermediates)
     }
 
     /// The "default" pass really runs a bunch of sub-passes. It is a "Do What
     /// I Mean" operation.
-    fn default_pass(&mut self, bibtex_first: bool, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    fn default_pass<S: StatusBackend>(&mut self, bibtex_first: bool, status: &mut S) -> Result<i32> {
         // If `bibtex_first` is true, we start by running bibtex, and run
         // proceed with the standard rerun logic. Otherwise, we run TeX,
         // auto-detect whether we need to run bibtex, possibly run it, and
@@ -784,7 +886,7 @@ impl ProcessingSession {
 
 
     /// Use the TeX engine to generate a format file.
-    fn make_format_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    fn make_format_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
         if self.io.bundle.is_none() {
             return Err(ErrorKind::Msg("cannot create formats without using a bundle".to_owned()).into())
         }
@@ -852,7 +954,7 @@ impl ProcessingSession {
 
 
     /// Run one pass of the TeX engine.
-    fn tex_pass(&mut self, rerun_explanation: Option<&str>, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    fn tex_pass<S: StatusBackend>(&mut self, rerun_explanation: Option<&str>, status: &mut S) -> Result<i32> {
         let result = {
             let mut stack = self.io.as_stack();
             if let Some(s) = rerun_explanation {
@@ -895,7 +997,7 @@ impl ProcessingSession {
     }
 
 
-    fn bibtex_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    fn bibtex_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
         let result = {
             let mut stack = self.io.as_stack();
             let mut engine = BibtexEngine::new ();
@@ -922,7 +1024,7 @@ impl ProcessingSession {
     }
 
 
-    fn xdvipdfmx_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    fn xdvipdfmx_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
         {
             let mut stack = self.io.as_stack();
             let mut engine = XdvipdfmxEngine::new ();
@@ -936,7 +1038,7 @@ impl ProcessingSession {
     }
 
 
-    fn spx2html_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    fn spx2html_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
         {
             let mut stack = self.io.as_stack();
             let mut engine = Spx2HtmlEngine::new ();
@@ -947,5 +1049,22 @@ impl ProcessingSession {
 
         self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);
         Ok(0)
+    }
+
+
+    /// Consume this session and return the current set of files in memory.
+    ///
+    /// This convenience function tries to help with the annoyances of getting
+    /// access to the in-memory file data after the engine has been run.
+    ///
+    /// ### Panics
+    ///
+    /// This will panic if you there are multiple strong references to the
+    /// `files` map. This should only happen if you create and keep a clone of
+    /// the `Rc<>` wrapping it before calling this function.
+    pub fn into_file_data(self) -> HashMap<OsString, Vec<u8>> {
+        Rc::try_unwrap(self.io.mem.files)
+            .expect("multiple strong refs to MemoryIo files")
+            .into_inner()
     }
 }

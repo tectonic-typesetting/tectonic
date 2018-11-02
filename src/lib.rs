@@ -27,10 +27,26 @@
 //! - The frontend is just a thin shim over the Tectonic Rust crate, so that
 //!   the full engine can be embedded anywhere you can run Rust code.
 //!
-//! Rust API documentation for Tectonic is currently very incomplete. As a
-//! stopgap, please see [the source to the CLI
-//! frontend](https://github.com/tectonic-typesetting/tectonic/blob/master/src/cli_driver.rs)
-//! for a demonstration of how to run the engine.
+//! The main module of this crate provides an all-in-wonder function for compiling
+//! LaTeX code to a PDF:
+//!
+//! ```
+//! extern crate tectonic;
+//!
+//! let latex = r#"
+//! \documentclass{article}
+//! \begin{document}
+//! Hello, world!
+//! \end{document}
+//! "#;
+//!
+//! # tectonic::test_util::activate_test_mode_augmented(env!("CARGO_MANIFEST_DIR"));
+//! let pdf_data: Vec<u8> = tectonic::latex_to_pdf(latex).expect("processing failed");
+//! println!("Output PDF size is {} bytes", pdf_data.len());
+//! ```
+//!
+//! The [`driver`] module provides a high-level interface for driving the
+//! engines in more realistic circumstances.
 
 extern crate aho_corasick;
 extern crate app_dirs;
@@ -39,6 +55,7 @@ extern crate flate2;
 extern crate fs2;
 extern crate hyper;
 extern crate hyper_native_tls;
+#[macro_use] extern crate lazy_static;
 extern crate libc;
 extern crate md5;
 extern crate tempfile;
@@ -58,6 +75,11 @@ pub mod driver;
 pub mod engines;
 pub mod io;
 
+// Note: this module is intentionally *not* gated by #[cfg(test)] -- see its
+// docstring for details.
+#[doc(hidden)]
+pub mod test_util;
+
 pub use engines::bibtex::BibtexEngine;
 pub use engines::spx2html::Spx2HtmlEngine;
 pub use engines::tex::{TexEngine, TexResult};
@@ -67,3 +89,84 @@ pub use errors::{Error, ErrorKind, Result};
 const APP_INFO: app_dirs::AppInfo = app_dirs::AppInfo {name: "Tectonic", author: "TectonicProject"};
 
 const FORMAT_SERIAL: u32 = 28; // keep synchronized with tectonic/xetex-constants.h!!
+
+
+/// Compile LaTeX text to a PDF.
+///
+/// This function is an all-in-one interface to the main Tectonic workflow. Given
+/// a string representing a LaTeX input file, it will compile it to a PDF and return
+/// a byte vector corresponding to the resulting file:
+///
+/// ```
+/// let latex = r#"
+/// \documentclass{article}
+/// \begin{document}
+/// Hello, world!
+/// \end{document}
+/// "#;
+///
+/// # tectonic::test_util::activate_test_mode_augmented(env!("CARGO_MANIFEST_DIR"));
+/// let pdf_data: Vec<u8> = tectonic::latex_to_pdf(latex).expect("processing failed");
+/// println!("Output PDF size is {} bytes", pdf_data.len());
+/// ```
+///
+/// The compilation uses the default bundle, the location of which is embedded
+/// in the crate or potentially specified in the user’s configuration file.
+/// The current working directory will be searched for any `\\input` files.
+/// Messages aimed at the user are suppressed, but (in the default
+/// configuration) network I/O may occur to pull down needed resource files.
+/// No outputs are written to disk; all supporting files besides the PDF
+/// document are discarded. The XeTeX engine is run multiple times if needed
+/// to get the output file to converge.
+///
+/// For more sophisticated uses, use the [`driver`] module, which provides a
+/// high-level interface for driving the typesetting engines with much more
+/// control over their behavior.
+///
+/// Note that the current engine implementations use lots of global state, so
+/// they are not thread-safe. This crate uses a global mutex to serialize
+/// invocations of the engines. This means that if you call this function from
+/// multiple threads simultaneously, the bulk of the work will be done in
+/// serial. The aim is to lift this limitation one day, but it will require
+/// extensive work on the underlying C/C++ code.
+pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
+    use std::ffi::OsStr;
+
+    let mut status = status::NoopStatusBackend::new();
+
+    let auto_create_config_file = false;
+    let config = ctry!(config::PersistentConfig::open(auto_create_config_file);
+                       "failed to open the default configuration file");
+
+    let only_cached = false;
+    let bundle = ctry!(config.default_bundle(only_cached, &mut status);
+                       "failed to load the default resource bundle");
+
+    let format_cache_path = ctry!(config.format_cache_path();
+                                  "failed to set up the format cache");
+
+    let mut files = {
+        // Looking forward to non-lexical lifetimes!
+        let mut sb = driver::ProcessingSessionBuilder::default();
+        sb
+            .bundle(bundle)
+            .primary_input_buffer(latex.as_ref().as_bytes())
+            .tex_input_name("texput.tex")
+            .format_name("latex")
+            .format_cache_path(format_cache_path)
+            .keep_logs(false)
+            .keep_intermediates(false)
+            .print_stdout(false)
+            .output_format(driver::OutputFormat::Pdf)
+            .do_not_write_output_files();
+
+        let mut sess = ctry!(sb.create(&mut status); "failed to initialize the LaTeX processing session");
+        ctry!(sess.run(&mut status); "the LaTeX engine failed");
+        sess.into_file_data()
+    };
+
+    match files.remove(OsStr::new("texput.pdf")) {
+        Some(data) => Ok(data),
+        None => Err(errmsg!("LaTeX didn't report failure, but no PDF was created (??)")),
+    }
+}

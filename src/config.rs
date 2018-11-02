@@ -12,9 +12,10 @@
 
 use std::io::{Read, Write};
 use std::io::ErrorKind as IoErrorKind;
+use std::ffi::OsStr;
 use std::fs::File;
 use std::path::PathBuf;
-use std::ffi::OsStr;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use app_dirs::{app_dir, app_root, get_app_root, sanitized, AppDataType};
 use toml;
@@ -25,6 +26,20 @@ use io::local_cache::LocalCache;
 use io::zipbundle::ZipBundle;
 use io::Bundle;
 use status::StatusBackend;
+
+
+/// Awesome hack time!!!
+///
+/// This is part of the "test mode" described in the `test_util` module. When
+/// test mode is activated in this module, the `default_bundle()` and
+/// `format_cache_path()` functions return results pointing to the test asset
+/// tree, rather than whatever the user has actually configured.
+static CONFIG_TEST_MODE_ACTIVATED: AtomicBool = AtomicBool::new(false);
+
+#[doc(hidden)]
+pub fn activate_config_test_mode(forced: bool) {
+    CONFIG_TEST_MODE_ACTIVATED.store(forced, Ordering::SeqCst);
+}
 
 
 const DEFAULT_CONFIG: &'static str = r#"[[default_bundles]]
@@ -89,7 +104,7 @@ impl PersistentConfig {
             only_cached,
             status,
         )?;
-        
+
         Ok(Box::new(bundle) as _)
     }
 
@@ -105,9 +120,14 @@ impl PersistentConfig {
         Ok(Box::new(zip_bundle) as _)
     }
 
+
     pub fn default_bundle(&self, only_cached: bool, status: &mut StatusBackend) -> Result<Box<Bundle>> {
         use std::io;
         use hyper::Url;
+
+        if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
+            return Ok(Box::new(::test_util::TestBundle::default()));
+        }
 
         if self.default_bundles.len() != 1 {
             return Err(ErrorKind::Msg("exactly one default_bundle item must be specified (for now)".to_owned()).into());
@@ -127,8 +147,13 @@ impl PersistentConfig {
     		return Ok(Box::new(bundle) as _);
     }
 
+
     pub fn format_cache_path(&self) -> Result<PathBuf> {
-        Ok(app_dir(AppDataType::UserCache, &::APP_INFO, "formats")?)
+        if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
+            return Ok(::test_util::test_path(&[]));
+        } else {
+            Ok(app_dir(AppDataType::UserCache, &::APP_INFO, "formats")?)
+        }
     }
 }
 

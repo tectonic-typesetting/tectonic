@@ -50,7 +50,18 @@ pub enum MessageKind {
 
 
 pub trait StatusBackend {
+    /// Report a message to the status backend.
     fn report(&mut self, kind: MessageKind, args: Arguments, err: Option<&Error>);
+
+    /// Issue a note-level status, idealy highlighting a particular phrase.
+    ///
+    /// This is a bit of a hack. For [`driver::ProcessingSession::run`], I
+    /// like the UX when we issue notes in this style. It's a bit more
+    /// high-level than intended for this trait, but we can provide a nice
+    /// sensible default implementation, so whatever.
+    fn note_highlighted(&mut self, before: &str, highlighted: &str, after: &str) {
+        self.report(MessageKind::Note, format_args!("{}{}{}", before, highlighted, after), None)
+    }
 }
 
 /// Report a formatted informational message to the user.

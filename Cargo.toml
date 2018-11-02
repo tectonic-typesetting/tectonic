@@ -46,6 +46,7 @@ flate2 = "^1.0"
 fs2 = "^0.4"
 hyper = "^0.10"
 hyper-native-tls = "^0.3"
+lazy_static = "^1.1"
 libc = "^0.2"
 tempfile = "^3.0"
 md-5 = "^0.8"
@@ -63,4 +64,3 @@ zip = "^0.4"
 
 [dev-dependencies]
 tempdir = "^0.3"
-lazy_static = "^1.1"

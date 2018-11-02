@@ -222,6 +222,19 @@ fn main() {
         _ => unreachable!()
     };
 
+    // The Tectonic crate comes with a hidden internal "test mode" that forces
+    // it to use a specified set of local files, rather than going to the
+    // bundle -- this makes it so that we can run tests without having to go
+    // to the network or touch the current user's cache.
+    //
+    // This mode is activated by setting a special environment variable. The
+    // following call checks for it and activates the mode if necessary. Note
+    // that this test infrastructure is lightweight, so I don't think it's a
+    // big deal to include the code in the final executable artifacts we
+    // distribute.
+
+    tectonic::test_util::maybe_activate_test_mode();
+
     // I want the CLI program to take as little configuration as possible, but
     // we do need to at least provide a mechanism for storing the default
     // bundle.

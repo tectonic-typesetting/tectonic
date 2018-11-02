@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #[macro_use] extern crate lazy_static;
+extern crate tectonic;
 extern crate tempdir;
 
 use std::env;
@@ -10,7 +11,6 @@ use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 use std::str;
-use std::sync::Mutex;
 use tempdir::TempDir;
 
 mod util;
@@ -18,19 +18,24 @@ use util::{cargo_dir, ensure_plain_format};
 
 
 lazy_static! {
-    static ref LOCK: Mutex<u8> = Mutex::new(0u8);
+    static ref TEST_ROOT: PathBuf = {
+        util::set_test_root();
+
+        let mut root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        root.push("tests");
+        root
+    };
 }
 
 
-/// This function might run the TeX engine inside this process to generate the
-/// plain format, so we must use a global lock since the engine is *way* not
-/// thread-safe. For now.
 fn get_plain_format_arg() -> String {
-    let _guard = LOCK.lock().unwrap();
     let path = ensure_plain_format().expect("couldn't write format file");
     format!("--format={}", path.display())
 }
 
+/// Note the special sauce here — we set the magic environment variable that
+/// tells the Tectonic binary to go into "test mode" and use local test
+/// assets, rather than an actual network bundle.
 fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
     let tectonic = cargo_dir()
         .join("tectonic")
@@ -47,8 +52,9 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
     println!("using cwd {:?}", cwd);
 
     let mut command = Command::new(tectonic);
-    command.args(args);
-    command.current_dir(cwd);
+    command.args(args)
+        .current_dir(cwd)
+        .env(tectonic::test_util::TEST_ROOT_ENV_VAR, TEST_ROOT.as_os_str());
     command
 }
 
@@ -153,6 +159,8 @@ fn help_flag() {
 #[test] // GitHub #31
 fn relative_include() {
     if env::var("RUNNING_COVERAGE").is_ok() { return }
+
+    util::set_test_root();
 
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["subdirectory/relative_include.tex",

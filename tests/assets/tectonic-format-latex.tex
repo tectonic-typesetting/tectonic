@@ -1,0 +1,29 @@
+% Copyright 2018 the Tectonic Project
+% Licensed under the MIT License.
+%
+% HACK ALERT!!!!
+%
+% Most parts of Tectonic default to using the "latex" format because that's
+% what people almost always want. We also sometimes want to show "best
+% practices" examples in the docs that will call for specifying the "latex"
+% format. That's all good, but it does complicate the test suite -- we'd like
+% to be able to run doctests or executable tests without having to actually go
+% ahead and download the core set of LaTeX support files from whatever the
+% current bundle is.
+%
+% This file is a hack to help enable this. It extends the "plain" format with
+% an absolutely minimal set of control sequences necessary to compile fake
+% documents that look like LaTeX. This helps our documentation look more
+% realistic while avoiding making the test suite much more heavyweight.
+
+\input knuth-plain%
+\message{THIS IS A FAKE LATEX FORMAT}%
+
+\def\fmtname{fakelatex}%
+\def\fmtversion{1.0}%
+\def\documentclass#1{}%
+\def\begin#1{}%
+\let\realend=\end%
+\def\end#1{\par\vfill\supereject\realend}%
+
+\dump
