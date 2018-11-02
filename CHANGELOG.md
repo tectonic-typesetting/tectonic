@@ -2,7 +2,10 @@
 
 The following changes will appear in the next release:
 
-- None yet
+- The URL embedded in the code that points to the default bundle has been
+  changed to point to the archive.org domain. Hopefully this will result in
+  more reliable service — there have been problems with SSL certificate
+  updates on purl.org in the past.
 
 
 # 0.1.10 (2018 Sep 28)

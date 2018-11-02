@@ -43,7 +43,7 @@ pub fn activate_config_test_mode(forced: bool) {
 
 
 const DEFAULT_CONFIG: &'static str = r#"[[default_bundles]]
-url = "https://purl.org/net/pkgwpub/tectonic-default"
+url = "https://archive.org/services/purl/net/pkgwpub/tectonic-default"
 "#;
 
 
