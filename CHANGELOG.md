@@ -1,11 +1,46 @@
-# The next version
+# 0.1.11 (2018 Nov 5)
 
-The following changes will appear in the next release:
+This release is mainly about the following change:
 
 - The URL embedded in the code that points to the default bundle has been
   changed to point to the archive.org domain. Hopefully this will result in
   more reliable service — there have been problems with SSL certificate
-  updates on purl.org in the past.
+  updates on purl.org in the past
+  ([#253](https://github.com/tectonic-typesetting/tectonic/pull/253)).
+
+Developer-facing improvements:
+
+- The main crate now provides an all-in-one function,
+  `tectonic::latex_to_pdf()`, that does what it says, using “sensible”
+  defaults. Run a full TeX processing session, end-to-end, in a single
+  function call!
+  ([#252](https://github.com/tectonic-typesetting/tectonic/pull/252))
+- In support of the previous change, the behavior of the Rust code was changed
+  to use a static global
+  [mutex](https://doc.rust-lang.org/std/sync/struct.Mutex.html) to serialize
+  invocations of the C/C++ engine implementations, which currently include
+  massive amounts of global state and thus cannot be run in a multithreaded
+  fashion. The recommended approach used to be for users of the library to
+  provide such a mutex themselves. [@pkgw](https://github.com/pkgw) was
+  initially reluctant to include such a mutex at the crate level since he
+  feared the possibility of weird surprising behavior … but the *real* weird
+  surprising behavior is when you try to run the engine in a multithreaded
+  program and it blows up on you!
+- *Also* in support of the previous change, the framework for running the test
+  suite has been revamped and improved. We can now run doctests that invoke
+  the full engine, and the tests of the executable artifacts now activate a
+  special debug mode that prevents accesses of the network and/or the calling
+  user’s personal resource file cache.
+- The usual work on tidying the C/C++ code, and also more work towards the
+  planned HTML output mode. Activating the experimental “semantic pagination”
+  mode now alters the engine behavior in two key ways: it disables the
+  linebreaker and custom output routines. This breaks processing of all extant
+  documents, but [@pkgw](https://github.com/pkgw) believes that these changes
+  are important steps toward reliable generation of HTML output.
+  ([#237](https://github.com/tectonic-typesetting/tectonic/pull/237),
+  [#239](https://github.com/tectonic-typesetting/tectonic/pull/239),
+  [#245](https://github.com/tectonic-typesetting/tectonic/pull/245),
+  [#250](https://github.com/tectonic-typesetting/tectonic/pull/250))
 
 
 # 0.1.10 (2018 Sep 28)
