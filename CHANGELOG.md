@@ -1,3 +1,9 @@
+# The next release
+
+The following changes will appear in the next release:
+
+- None yet
+
 # 0.1.11 (2018 Nov 5)
 
 This release is mainly about the following change:
