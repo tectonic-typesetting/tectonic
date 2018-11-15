@@ -24,6 +24,12 @@ matrix:
     - os: osx
       osx_image: xcode8.3
       rust: stable
+    # static build
+    - os: linux
+      sudo: required
+      dist: xenial
+      rust: nightly
+      env: IMAGE=x86_64-musl
   allow_failures:
     - rust: nightly
 
@@ -80,8 +86,13 @@ before_script:
 
 script:
   - |
-    cargo build --verbose &&
-    cargo test
+    if [[ -z "$IMAGE" ]]; then
+      cargo build --verbose &&
+      cargo test
+    else
+      ./build-docker-image.sh $IMAGE &&
+      ./run-docker-image.sh $IMAGE
+    fi
 
 after_success: |
   if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
