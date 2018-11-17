@@ -10,15 +10,12 @@
 //! running the command-line client. So we begrudgingly have a *little*
 //! configuration.
 
-use std::io::{Read, Write};
-use std::io::ErrorKind as IoErrorKind;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use app_dirs::{app_dir, app_root, get_app_root, sanitized, AppDataType};
-use toml;
+use app_dirs::{app_dir, sanitized, AppDataType};
 
 use errors::{ErrorKind, Result};
 use io::itarbundle::{HttpITarIoFactory, ITarBundle};
@@ -41,24 +38,23 @@ pub fn activate_config_test_mode(forced: bool) {
     CONFIG_TEST_MODE_ACTIVATED.store(forced, Ordering::SeqCst);
 }
 
-
-const DEFAULT_CONFIG: &'static str = r#"[[default_bundles]]
-url = "https://archive.org/services/purl/net/pkgwpub/tectonic-default"
-"#;
-
-
-#[derive(Deserialize)]
+#[cfg_attr(feature = "serde_derive", derive(Deserialize, Serialize))]
 pub struct PersistentConfig {
     default_bundles: Vec<BundleInfo>,
 }
 
-#[derive(Deserialize)]
+#[cfg_attr(feature = "serde_derive", derive(Deserialize, Serialize))]
 pub struct BundleInfo {
     url: String,
 }
 
 impl PersistentConfig {
+    #[cfg(feature = "config_file")]
     pub fn open(auto_create_config_file: bool) -> Result<PersistentConfig> {
+        use toml;
+        use std::io::{Read, Write};
+        use std::io::ErrorKind as IoErrorKind;
+        use app_dirs::{app_root, get_app_root};
         let mut cfg_path = if auto_create_config_file {
             app_root(AppDataType::UserConfig, &::APP_INFO)?
         } else {
@@ -75,11 +71,12 @@ impl PersistentConfig {
             Err(e) => {
                 if e.kind() == IoErrorKind::NotFound {
                     // Config file didn't exist -- that's OK.
+                    let config = PersistentConfig::default();
                     if auto_create_config_file {
                         let mut f = File::create(&cfg_path)?;
-                        write!(f, "{}", DEFAULT_CONFIG)?;
+                        write!(f, "{}", toml::to_string(&config)?)?;
                     }
-                    toml::from_str(DEFAULT_CONFIG)?
+                    config
                 } else {
                     // Uh oh, unexpected error reading the config file.
                     return Err(e.into());
@@ -88,6 +85,11 @@ impl PersistentConfig {
         };
 
         Ok(config)
+    }
+
+    #[cfg(not(feature = "config_file"))]
+    pub fn open(_auto_create_config_file: bool) -> Result<PersistentConfig> {
+        Ok(PersistentConfig::default())
     }
 
     pub fn make_cached_url_provider(&self, url: &str, only_cached: bool, status: &mut StatusBackend) -> Result<Box<Bundle>> {
@@ -157,9 +159,14 @@ impl PersistentConfig {
     }
 }
 
-
 impl Default for PersistentConfig {
     fn default() -> Self {
-        toml::from_str(DEFAULT_CONFIG).expect("un-parseable built-in default configuration (?!)")
+        PersistentConfig {
+            default_bundles: vec![
+                BundleInfo {
+                    url: String::from("https://archive.org/services/purl/net/pkgwpub/tectonic-default"),
+                }
+            ]
+        }
     }
 }

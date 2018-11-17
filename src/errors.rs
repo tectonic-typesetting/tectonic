@@ -27,6 +27,7 @@ error_chain! {
         ParseInt(num::ParseIntError);
         Persist(tempfile::PersistError);
         TomlDe(toml::de::Error);
+        TomlSer(toml::ser::Error);
         Utf8(str::Utf8Error);
         Xdv(tectonic_xdv::XdvError);
         Zip(ZipError);

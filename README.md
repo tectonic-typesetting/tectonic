@@ -51,3 +51,14 @@ any given time.
 Please see
 [the tectonic-staging README](https://github.com/tectonic-typesetting/tectonic-staging#readme)
 for more information. (Or at least, more words on the topic.)
+
+## Features
+
+Tectonic provides the feature `config_file` that is enabled by default. This
+feature allows reading configuration from
+a [TOML](https://github.com/toml-lang/toml) and uses the `serde` and
+`serde_derive` crates.
+
+The feature `config_file` must be disabled when compiling for musl targets
+because `serde_derive` uses `proc_macro` and `proc_macro` [is
+not](https://github.com/rust-lang/rust/issues/40174) available on musl targets.
