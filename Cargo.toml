@@ -59,8 +59,8 @@ toml = "^0.4"
 zip = "^0.4"
 
 [features]
-default = ["config_file"]
-config_file = ["serde", "serde_derive"]
+default = ["serialization"]
+serialization = ["serde", "serde_derive"]
 
 # freetype-sys = "^0.4"
 # harfbuzz-sys = "^0.1"

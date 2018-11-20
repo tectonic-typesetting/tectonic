@@ -52,13 +52,20 @@ Please see
 [the tectonic-staging README](https://github.com/tectonic-typesetting/tectonic-staging#readme)
 for more information. (Or at least, more words on the topic.)
 
+
 ## Features
 
-Tectonic provides the feature `config_file` that is enabled by default. This
-feature allows reading configuration from
-a [TOML](https://github.com/toml-lang/toml) and uses the `serde` and
-`serde_derive` crates.
+The Tectonic build can be customized with the following features:
 
-The feature `config_file` must be disabled when compiling for musl targets
-because `serde_derive` uses `proc_macro` and `proc_macro` [is
-not](https://github.com/rust-lang/rust/issues/40174) available on musl targets.
+##### serialization (enabled by default)
+
+This feature enables (de)serialization using the [serde](https://serde.rs/)
+crate. At the moment, this is only used to read per-user configuration from a
+[TOML](https://github.com/toml-lang/toml) file. If this feature is disabled,
+the per-user configuration file will be silently ignored.
+
+This functionality is optional because it requires the `serde_derive` crate,
+which in turn uses Rust’s `proc_macro` feature. The `proc_macro` functionality
+[is not available on musl targets](https://github.com/rust-lang/rust/issues/40174),
+and so must be turned off if you wish to build a completely static Tectonic
+executable.

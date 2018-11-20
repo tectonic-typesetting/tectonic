@@ -49,7 +49,16 @@ pub struct BundleInfo {
 }
 
 impl PersistentConfig {
-    #[cfg(feature = "config_file")]
+    #[cfg(feature = "serialization")]
+    /// Open the per-user configuration file.
+    ///
+    /// This file is stored in TOML format. If the configuration file does not
+    /// exist, no error is signaled — instead, a basic default configuration
+    /// is returned. In this case, if `auto_create_config_file` is true, the
+    /// configuration file (and the directory containing it) will be
+    /// automatically created, filling in the default configuration. If it is
+    /// false, the default configuration is returned and the filesystem is not
+    /// modified.
     pub fn open(auto_create_config_file: bool) -> Result<PersistentConfig> {
         use toml;
         use std::io::{Read, Write};
@@ -87,7 +96,14 @@ impl PersistentConfig {
         Ok(config)
     }
 
-    #[cfg(not(feature = "config_file"))]
+    #[cfg(not(feature = "serialization"))]
+    /// Return a default configuration structure.
+    ///
+    /// In most builds of Tectonic, this function reads a per-user
+    /// configuration file and returns it. However, this version of Tectonic
+    /// has been built without the `serde` feature, so it cannot deserialize
+    /// the file. Therefore, this function always returns the default
+    /// configuration.
     pub fn open(_auto_create_config_file: bool) -> Result<PersistentConfig> {
         Ok(PersistentConfig::default())
     }
