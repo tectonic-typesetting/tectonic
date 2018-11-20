@@ -1,4 +1,6 @@
 #!/bin/sh
+# Copyright 2018 The Tectonic Project
+# Licensed under the MIT License.
 
 set -ex
 

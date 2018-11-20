@@ -29,7 +29,7 @@ matrix:
       sudo: required
       dist: xenial
       rust: nightly
-      env: IMAGE=x86_64-musl
+      env: IMAGE=x86_64-alpine-linux-musl
   allow_failures:
     - rust: nightly
 
@@ -90,8 +90,8 @@ script:
       cargo build --verbose &&
       cargo test
     else
-      ./build-docker-image.sh $IMAGE &&
-      ./run-docker-image.sh $IMAGE
+      docker build -t ttci-$IMAGE dist/docker/$IMAGE/ &&
+      docker run -v $(pwd):/tectonic ttci-$IMAGE
     fi
 
 after_success: |

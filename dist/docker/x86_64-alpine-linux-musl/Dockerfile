@@ -1,3 +1,6 @@
+# Copyright 2018 The Tectonic Project
+# Licensed under the MIT License.
+
 FROM alpine:edge
 
 RUN apk update && \
@@ -31,12 +34,9 @@ ENV OPENSSL_DIR=/usr
 ENV CXXSTDLIB=""
 ENV RUSTFLAGS="-L /usr/lib -l static=stdc++ -C target-feature=+crt-static"
 
-# use a patched pkg-config-rs to allow static linking with system libraries
-# rename AES_cbc_encrypt to avoid name conflict with openssl
+# Use a patched pkg-config-rs to allow static linking with system libraries.
+# The --no-default-features flag removes serde-derive as a dep, which doesn't
+# work when linking statically (rust-lang#40147).
 CMD cd /tectonic && \
     echo -e "[patch.crates-io]\npkg-config = { path = \"/pkg-config-rs\" }" >> Cargo.toml && \
-    sed -i -e 's/AES_cbc_encrypt/AES_cbc_encrypt2/g' \
-          ./tectonic/dpx-dpxcrypt.h \
-          ./tectonic/dpx-pdfencrypt.c \
-          ./tectonic/dpx-dpxcrypt.c && \
-    cargo build --release
+    cargo test --release --no-default-features
