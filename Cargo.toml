@@ -51,12 +51,16 @@ libc = "^0.2"
 tempfile = "^3.0"
 md-5 = "^0.8"
 sha2 = "^0.8"
-serde = "^1.0"
-serde_derive = "^1.0"
+serde = { version = "^1.0", optional = true }
+serde_derive = { version = "^1.0", optional = true }
 tectonic_xdv = { path = "xdv", version = "0.1.9-dev" }
 termcolor = "^1.0"
 toml = "^0.4"
 zip = "^0.4"
+
+[features]
+default = ["serialization"]
+serialization = ["serde", "serde_derive"]
 
 # freetype-sys = "^0.4"
 # harfbuzz-sys = "^0.1"
