@@ -1228,10 +1228,10 @@ AES_ecb_encrypt (const unsigned char *key,    size_t  key_len,
 
 /* NULL iv means here "use random IV". */
 void
-AES_cbc_encrypt (const unsigned char *key,    size_t  key_len,
-                 const unsigned char *iv,     int     padding,
-                 const unsigned char *plain,  size_t  plain_len,
-                 unsigned char      **cipher, size_t *cipher_len)
+AES_cbc_encrypt_tectonic (const unsigned char *key,    size_t  key_len,
+                          const unsigned char *iv,     int     padding,
+                          const unsigned char *plain,  size_t  plain_len,
+                          unsigned char      **cipher, size_t *cipher_len)
 {
   AES_CONTEXT *ctx, aes;
   const unsigned char *inptr;

@@ -325,7 +325,7 @@ compute_hash_V5 (unsigned char       *hash,
     Kr = NEW(K1_len * 64, unsigned char);
     for (i = 0; i < 64; i++)
       memcpy(Kr + i * K1_len, K1, K1_len);
-    AES_cbc_encrypt(K, 16, K + 16, 0, Kr, K1_len * 64, &E, &E_len);
+    AES_cbc_encrypt_tectonic(K, 16, K + 16, 0, Kr, K1_len * 64, &E, &E_len);
     free(Kr);
 
     for (i = 0; i < 16; i++)
@@ -392,7 +392,7 @@ compute_owner_password_V5 (struct pdf_sec *p, const char *oplain)
 
   compute_hash_V5(hash, oplain, ksalt, p->U, p->R);
   memset(iv, 0, AES_BLOCKSIZE);
-  AES_cbc_encrypt(hash, 32, iv, 0, p->key, p->key_size, &OE, &OE_len);
+  AES_cbc_encrypt_tectonic(hash, 32, iv, 0, p->key, p->key_size, &OE, &OE_len);
   memcpy(p->OE, OE, 32);
   free(OE);
 }
@@ -417,7 +417,7 @@ compute_user_password_V5 (struct pdf_sec *p, const char *uplain)
 
   compute_hash_V5(hash, uplain, ksalt, NULL, p->R);
   memset(iv, 0, AES_BLOCKSIZE);
-  AES_cbc_encrypt(hash, 32, iv, 0, p->key, p->key_size, &UE, &UE_len);
+  AES_cbc_encrypt_tectonic(hash, 32, iv, 0, p->key, p->key_size, &UE, &UE_len);
   memcpy(p->UE, UE, 32);
   free(UE);
 }
@@ -634,12 +634,12 @@ pdf_encrypt_data (const unsigned char *plain, size_t plain_len,
     break;
   case 4:
     calculate_key(p, key);
-    AES_cbc_encrypt(key, MIN(16, p->key_size + 5), NULL, 1,
-                    plain, plain_len, cipher, cipher_len);
+    AES_cbc_encrypt_tectonic(key, MIN(16, p->key_size + 5), NULL, 1,
+                             plain, plain_len, cipher, cipher_len);
     break;
   case 5:
-    AES_cbc_encrypt(p->key, p->key_size, NULL, 1,
-                    plain, plain_len, cipher, cipher_len);
+    AES_cbc_encrypt_tectonic(p->key, p->key_size, NULL, 1,
+                             plain, plain_len, cipher, cipher_len);
     break;
   default:
     _tt_abort("pdfencrypt: Unexpected V value: %d", p->V);

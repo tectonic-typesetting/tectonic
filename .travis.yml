@@ -24,6 +24,12 @@ matrix:
     - os: osx
       osx_image: xcode8.3
       rust: stable
+    # static build
+    - os: linux
+      sudo: required
+      dist: xenial
+      rust: nightly
+      env: IMAGE=x86_64-alpine-linux-musl
   allow_failures:
     - rust: nightly
 
@@ -80,8 +86,13 @@ before_script:
 
 script:
   - |
-    cargo build --verbose &&
-    cargo test
+    if [[ -z "$IMAGE" ]]; then
+      cargo build --verbose &&
+      cargo test
+    else
+      docker build -t ttci-$IMAGE dist/docker/$IMAGE/ &&
+      docker run -v $(pwd):/tectonic ttci-$IMAGE
+    fi
 
 after_success: |
   if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
