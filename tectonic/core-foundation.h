@@ -15,6 +15,11 @@
 
 #define _DARWIN_USE_64_BIT_INODE 1
 
+/* Some versions of g++ do not define PRId64 and friends unless we #define
+ * this before including inttypes.h. This was apparently an idea that was
+ * proposed for C++11 but didn't make it into the final standard. */
+#define __STDC_FORMAT_MACROS
+
 /* Universal headers */
 
 #include <assert.h>
