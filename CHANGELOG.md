@@ -107,7 +107,7 @@ Developer-facing improvements:
 - Tectonic is now more up-front about the fact that it requires Harfbuzz
   version 1.4 or higher.
 - Much of the code that drives compilation for the CLI tool has been moved
-  into the Tectonic library and mode (more) reusable
+  into the Tectonic library and made (more) reusable
   ([#184](https://github.com/tectonic-typesetting/tectonic/pull/184)). Thanks
   to new contributor [@jneem](https://github.com/jneem) for doing this!
 
