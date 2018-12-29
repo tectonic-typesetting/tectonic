@@ -4,9 +4,8 @@
 
 use std::ffi::OsStr;
 
-use status::StatusBackend;
 use super::{InputHandle, IoProvider, OpenResult, OutputHandle};
-
+use status::StatusBackend;
 
 /// An IoStack is an IoProvider that delegates to an ordered list of
 /// subordinate IoProviders. It also checks the order in which files are read
@@ -17,15 +16,11 @@ pub struct IoStack<'a> {
     items: Vec<&'a mut IoProvider>,
 }
 
-
 impl<'a> IoStack<'a> {
     pub fn new(items: Vec<&'a mut IoProvider>) -> IoStack<'a> {
-        IoStack {
-            items: items,
-        }
+        IoStack { items: items }
     }
 }
-
 
 impl<'a> IoProvider for IoStack<'a> {
     fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
@@ -34,7 +29,7 @@ impl<'a> IoProvider for IoStack<'a> {
 
             match r {
                 OpenResult::NotAvailable => continue,
-                _ => return r
+                _ => return r,
             };
         }
 
@@ -47,20 +42,24 @@ impl<'a> IoProvider for IoStack<'a> {
 
             match r {
                 OpenResult::NotAvailable => continue,
-                _ => return r
+                _ => return r,
             };
         }
 
         OpenResult::NotAvailable
     }
 
-    fn input_open_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_name(
+        &mut self,
+        name: &OsStr,
+        status: &mut StatusBackend,
+    ) -> OpenResult<InputHandle> {
         for item in &mut self.items {
             let r = item.input_open_name(name, status);
 
             match r {
                 OpenResult::NotAvailable => continue,
-                _ => return r
+                _ => return r,
             };
         }
 
@@ -73,20 +72,24 @@ impl<'a> IoProvider for IoStack<'a> {
 
             match r {
                 OpenResult::NotAvailable => continue,
-                _ => return r
+                _ => return r,
             };
         }
 
         OpenResult::NotAvailable
     }
 
-    fn input_open_format(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_format(
+        &mut self,
+        name: &OsStr,
+        status: &mut StatusBackend,
+    ) -> OpenResult<InputHandle> {
         for item in &mut self.items {
             let r = item.input_open_format(name, status);
 
             match r {
                 OpenResult::NotAvailable => continue,
-                _ => return r
+                _ => return r,
             };
         }
 

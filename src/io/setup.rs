@@ -2,9 +2,11 @@ use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
 use errors::Result;
-use io::{Bundle, FilesystemIo, FilesystemPrimaryInputIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo};
-use io::stdstreams::BufferedPrimaryIo;
 use io::format_cache::FormatCache;
+use io::stdstreams::BufferedPrimaryIo;
+use io::{
+    Bundle, FilesystemIo, FilesystemPrimaryInputIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo,
+};
 use status::StatusBackend;
 
 /// An `IoSetup` is essentially a typed, structured version of an [`IoStack`].
@@ -30,7 +32,7 @@ pub struct IoSetup {
 }
 
 impl IoSetup {
-    pub fn as_stack<'a> (&'a mut self) -> IoStack<'a> {
+    pub fn as_stack<'a>(&'a mut self) -> IoStack<'a> {
         let mut providers: Vec<&mut IoProvider> = Vec::new();
 
         if let Some(ref mut p) = self.genuine_stdout {
@@ -64,16 +66,17 @@ impl IoSetup {
     /// You can use the resulting `IoStack` to run the TeX engine with `initex_mode` set to `true`;
     /// then the resulting format file(s) can be read from the memory I/O layer (i.e. `self.mem`).
 
-    pub fn as_stack_for_format<'a> (&'a mut self, format_file_name: &str) -> IoStack<'a> {
+    pub fn as_stack_for_format<'a>(&'a mut self, format_file_name: &str) -> IoStack<'a> {
         let mut providers: Vec<&mut IoProvider> = Vec::new();
 
         if let Some(ref mut p) = self.genuine_stdout {
             providers.push(p);
         }
 
-        self.format_primary = Some(BufferedPrimaryIo::from_text(
-                &format!("\\input {}", format_file_name)
-        ));
+        self.format_primary = Some(BufferedPrimaryIo::from_text(&format!(
+            "\\input {}",
+            format_file_name
+        )));
         providers.push(self.format_primary.as_mut().unwrap());
         providers.push(&mut self.mem);
 
@@ -89,7 +92,6 @@ impl IoSetup {
     }
 }
 
-
 /// Where does the "primary input" stream come from?
 enum PrimaryInputMode {
     /// The caller never specified; we'll panic.
@@ -104,7 +106,6 @@ enum PrimaryInputMode {
     /// An in-memory buffer.
     Buffer(Vec<u8>),
 }
-
 
 /// The IoSetupBuilder provides a convenient builder interface for specifying
 /// the I/O setup.
@@ -221,25 +222,26 @@ impl IoSetupBuilder {
         let pio: Box<IoProvider> = match self.primary_input {
             PrimaryInputMode::Stdin => {
                 Box::new(ctry!(BufferedPrimaryIo::from_stdin(); "error reading standard input"))
-            },
+            }
 
-            PrimaryInputMode::Path(pip) => {
-                Box::new(FilesystemPrimaryInputIo::new(&pip))
-            },
+            PrimaryInputMode::Path(pip) => Box::new(FilesystemPrimaryInputIo::new(&pip)),
 
-            PrimaryInputMode::Buffer(buf) => {
-                Box::new(BufferedPrimaryIo::from_buffer(buf))
-            },
+            PrimaryInputMode::Buffer(buf) => Box::new(BufferedPrimaryIo::from_buffer(buf)),
 
             PrimaryInputMode::Undefined => {
                 panic!("no primary input mechanism specified");
-            },
+            }
         };
 
         Ok(IoSetup {
             primary_input: pio,
             mem: MemoryIo::new(true),
-            filesystem: FilesystemIo::new(&self.filesystem_root, false, true, self.hidden_input_paths),
+            filesystem: FilesystemIo::new(
+                &self.filesystem_root,
+                false,
+                true,
+                self.hidden_input_paths,
+            ),
             format_cache: format_cache,
             bundle: self.bundle,
             genuine_stdout: if self.use_genuine_stdout {

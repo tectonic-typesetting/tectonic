@@ -3,21 +3,19 @@
 // Licensed under the MIT License.
 
 use flate2::read::GzDecoder;
-use hyper::{self, Client, Url};
-use hyper::client::{Response, RedirectPolicy};
+use hyper::client::{RedirectPolicy, Response};
 use hyper::header::{Headers, Range};
 use hyper::status::StatusCode;
+use hyper::{self, Client, Url};
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader, Cursor, Read};
 
+use super::{create_hyper_client, Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
 use errors::{Error, ErrorKind, Result, ResultExt};
-use super::{Bundle, InputHandle, InputOrigin, IoProvider, OpenResult, create_hyper_client};
 use status::StatusBackend;
 
-
 const MAX_HTTP_ATTEMPTS: usize = 4;
-
 
 // A simple way to read chunks out of a big seekable byte stream. You could
 // implement this for io::File pretty trivially but that's not currently
@@ -29,12 +27,10 @@ pub trait RangeRead {
     fn read_range(&mut self, offset: u64, length: usize) -> Result<Self::InnerRead>;
 }
 
-
 pub struct HttpRangeReader {
     url: String,
     client: Client,
 }
-
 
 impl HttpRangeReader {
     pub fn new(url: &str) -> HttpRangeReader {
@@ -46,7 +42,6 @@ impl HttpRangeReader {
         }
     }
 }
-
 
 impl RangeRead for HttpRangeReader {
     type InnerRead = Response;
@@ -69,7 +64,6 @@ impl RangeRead for HttpRangeReader {
     }
 }
 
-
 // The IoProvider. We jump through some hoops so that web-based bundles can
 // be created without immediately connecting to the network.
 
@@ -84,18 +78,17 @@ pub trait ITarIoFactory {
 
 struct FileInfo {
     offset: u64,
-    length: u64
+    length: u64,
 }
 
 pub struct ITarBundle<F: ITarIoFactory> {
     factory: F,
     data: Option<F::DataReader>,
-    index: HashMap<OsString,FileInfo>,
+    index: HashMap<OsString, FileInfo>,
 }
 
-
 impl<F: ITarIoFactory> ITarBundle<F> {
-    fn construct (factory: F) -> ITarBundle<F> {
+    fn construct(factory: F) -> ITarBundle<F> {
         ITarBundle {
             factory: factory,
             data: None,
@@ -124,7 +117,13 @@ impl<F: ITarIoFactory> ITarBundle<F> {
             let name = OsString::from(bits[0]);
             let offset = bits[1].parse::<u64>()?;
             let length = bits[2].parse::<u64>()?;
-            self.index.insert(name, FileInfo { offset: offset, length: length });
+            self.index.insert(
+                name,
+                FileInfo {
+                    offset: offset,
+                    length: length,
+                },
+            );
         }
 
         // ... then, the data reader.
@@ -134,9 +133,12 @@ impl<F: ITarIoFactory> ITarBundle<F> {
     }
 }
 
-
 impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
-    fn input_open_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_name(
+        &mut self,
+        name: &OsStr,
+        status: &mut StatusBackend,
+    ) -> OpenResult<InputHandle> {
         if let Err(e) = self.ensure_loaded(status) {
             return OpenResult::Err(e.into());
         }
@@ -164,13 +166,18 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
         let mut any_failed = false;
 
         for _ in 0..MAX_HTTP_ATTEMPTS {
-            let mut stream = match self.data.as_mut().unwrap().read_range(info.offset, info.length as usize) {
+            let mut stream = match self
+                .data
+                .as_mut()
+                .unwrap()
+                .read_range(info.offset, info.length as usize)
+            {
                 Ok(r) => r,
                 Err(e) => {
                     tt_warning!(status, "failure requesting \"{}\" from network", name.to_string_lossy(); e.into());
                     any_failed = true;
                     continue;
-                },
+                }
             };
 
             if let Err(e) = stream.read_to_end(&mut buf) {
@@ -185,10 +192,15 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
 
         if overall_failed {
             // Note: can't save & reuse the hyper errors since they're not cloneable
-            return OpenResult::Err(ErrorKind::Msg(format!("failed to retrieve \"{}\" from the network; \
-                                                           this most probably is not Tectonic's fault \
-                                                           -- please check your network connection.",
-                                                           name.to_string_lossy())).into());
+            return OpenResult::Err(
+                ErrorKind::Msg(format!(
+                    "failed to retrieve \"{}\" from the network; \
+                     this most probably is not Tectonic's fault \
+                     -- please check your network connection.",
+                    name.to_string_lossy()
+                ))
+                .into(),
+            );
         } else if any_failed {
             tt_note!(status, "download succeeded after retry");
         }
@@ -197,9 +209,7 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
     }
 }
 
-
 impl<F: ITarIoFactory> Bundle for ITarBundle<F> {}
-
 
 pub struct HttpITarIoFactory {
     url: String,
@@ -225,7 +235,8 @@ impl ITarIoFactory for HttpITarIoFactory {
             // it isn't possible to select the index file by appending .index.gz.
             // (This mostly happens because CDNs redirect to the file hash.)
             if let Some(segments) = url.path_segments() {
-                segments.last()
+                segments
+                    .last()
                     .map(|file| file.contains('.'))
                     .unwrap_or(true)
             } else {
@@ -238,9 +249,8 @@ impl ITarIoFactory for HttpITarIoFactory {
         let res = req.send()?;
 
         if !(res.status.is_success() || res.status == StatusCode::Found) {
-            return Err(Error::from(hyper::Error::Status)).chain_err(
-                || format!("couldn\'t probe {}", self.url)
-            );
+            return Err(Error::from(hyper::Error::Status))
+                .chain_err(|| format!("couldn\'t probe {}", self.url));
         }
 
         let final_url = res.url.clone().into_string();
@@ -259,9 +269,8 @@ impl ITarIoFactory for HttpITarIoFactory {
         let req = client.get(&index_url);
         let res = req.send()?;
         if !res.status.is_success() {
-            return Err(Error::from(hyper::Error::Status)).chain_err(
-                || format!("couldn\'t fetch {}", index_url)
-            );
+            return Err(Error::from(hyper::Error::Status))
+                .chain_err(|| format!("couldn\'t fetch {}", index_url));
         }
 
         Ok(GzDecoder::new(res))
@@ -277,7 +286,9 @@ impl ITarIoFactory for HttpITarIoFactory {
 }
 
 impl ITarBundle<HttpITarIoFactory> {
-    pub fn new (url: &str) -> ITarBundle<HttpITarIoFactory> {
-        Self::construct(HttpITarIoFactory { url: url.to_owned() })
+    pub fn new(url: &str) -> ITarBundle<HttpITarIoFactory> {
+        Self::construct(HttpITarIoFactory {
+            url: url.to_owned(),
+        })
     }
 }

@@ -4,20 +4,18 @@
 
 use std::ffi::{CStr, CString};
 
+use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
 use errors::{ErrorKind, Result};
 use io::IoStack;
 use status::StatusBackend;
-use super::{IoEventBackend, ExecutionState, TectonicBridgeApi};
-
 
 pub struct XdvipdfmxEngine {
     enable_compression: bool,
     deterministic_tags: bool,
 }
 
-
 impl XdvipdfmxEngine {
-    pub fn new () -> XdvipdfmxEngine {
+    pub fn new() -> XdvipdfmxEngine {
         XdvipdfmxEngine {
             enable_compression: true,
             deterministic_tags: false,
@@ -34,9 +32,14 @@ impl XdvipdfmxEngine {
         self
     }
 
-    pub fn process (&mut self, io: &mut IoStack,
-                    events: &mut IoEventBackend,
-                    status: &mut StatusBackend, dvi: &str, pdf: &str) -> Result<i32> {
+    pub fn process(
+        &mut self,
+        io: &mut IoStack,
+        events: &mut IoEventBackend,
+        status: &mut StatusBackend,
+        dvi: &str,
+        pdf: &str,
+    ) -> Result<i32> {
         let _guard = super::ENGINE_LOCK.lock().unwrap(); // until we're thread-safe ...
 
         let cdvi = CString::new(dvi)?;
@@ -46,14 +49,19 @@ impl XdvipdfmxEngine {
         let bridge = TectonicBridgeApi::new(&state);
 
         unsafe {
-            match super::dvipdfmx_simple_main(&bridge, cdvi.as_ptr(), cpdf.as_ptr(),
-                                              self.enable_compression, self.deterministic_tags) {
+            match super::dvipdfmx_simple_main(
+                &bridge,
+                cdvi.as_ptr(),
+                cpdf.as_ptr(),
+                self.enable_compression,
+                self.deterministic_tags,
+            ) {
                 99 => {
                     let ptr = super::tt_get_error_message();
                     let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
                     Err(ErrorKind::Msg(msg).into())
-                },
-                x => Ok(x as i32)
+                }
+                x => Ok(x as i32),
             }
         }
     }

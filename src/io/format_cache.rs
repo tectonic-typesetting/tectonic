@@ -5,14 +5,14 @@
 
 //! Code for locally caching compiled format files.
 
-use tempfile;
-use std::ffi::{OsStr};
+use std::ffi::OsStr;
 use std::io::{BufReader, Write};
 use std::path::PathBuf;
+use tempfile;
 
-use digest::{DigestData};
-use errors::{ErrorKind, Result};
 use super::{InputHandle, InputOrigin, IoProvider, OpenResult};
+use digest::DigestData;
+use errors::{ErrorKind, Result};
 use status::StatusBackend;
 
 /// A local cache for compiled format files.
@@ -25,7 +25,6 @@ pub struct FormatCache {
     bundle_digest: DigestData,
     formats_base: PathBuf,
 }
-
 
 impl FormatCache {
     /// Create a new `FormatCache`.
@@ -49,20 +48,31 @@ impl FormatCache {
         let stem = match name.to_str().and_then(|s| s.splitn(2, '.').next()) {
             Some(s) => s,
             None => {
-                return Err(ErrorKind::Msg(format!("incomprehensible format file name \"{}\"",
-                                                  name.to_string_lossy())).into());
+                return Err(ErrorKind::Msg(format!(
+                    "incomprehensible format file name \"{}\"",
+                    name.to_string_lossy()
+                ))
+                .into());
             }
         };
 
         let mut p = self.formats_base.clone();
-        p.push(format!("{}-{}-{}.fmt", self.bundle_digest.to_string(), stem, ::FORMAT_SERIAL));
+        p.push(format!(
+            "{}-{}-{}.fmt",
+            self.bundle_digest.to_string(),
+            stem,
+            ::FORMAT_SERIAL
+        ));
         Ok(p)
     }
 }
 
-
 impl IoProvider for FormatCache {
-    fn input_open_format(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_format(
+        &mut self,
+        name: &OsStr,
+        _status: &mut StatusBackend,
+    ) -> OpenResult<InputHandle> {
         let path = match self.path_for_format(name) {
             Ok(p) => p,
             Err(e) => return OpenResult::Err(e.into()),
@@ -74,9 +84,12 @@ impl IoProvider for FormatCache {
             OpenResult::Err(e) => return OpenResult::Err(e),
         };
 
-        OpenResult::Ok(InputHandle::new(name, BufReader::new(f), InputOrigin::Other))
+        OpenResult::Ok(InputHandle::new(
+            name,
+            BufReader::new(f),
+            InputOrigin::Other,
+        ))
     }
-
 
     fn write_format(&mut self, name: &str, data: &[u8], _status: &mut StatusBackend) -> Result<()> {
         let final_path = self.path_for_format(OsStr::new(name))?;

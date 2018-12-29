@@ -4,8 +4,8 @@
 
 //! Helpers to tidy up the computation of digests in various places.
 
-pub use sha2::Sha256 as DigestComputer;
 pub use sha2::Digest;
+pub use sha2::Sha256 as DigestComputer;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
@@ -23,7 +23,6 @@ pub fn bytes_to_hex(bytes: &[u8]) -> String {
         .concat()
 }
 
-
 pub fn hex_to_bytes(text: &str, dest: &mut [u8]) -> Result<()> {
     let n = dest.len();
     let text_len = text.len();
@@ -33,12 +32,11 @@ pub fn hex_to_bytes(text: &str, dest: &mut [u8]) -> Result<()> {
     }
 
     for i in 0..n {
-        dest[i] = u8::from_str_radix(&text[i*2..(i+1)*2], 16)?;
+        dest[i] = u8::from_str_radix(&text[i * 2..(i + 1) * 2], 16)?;
     }
 
     Ok(())
 }
-
 
 // The specific implementation we're using: SHA256.
 
@@ -49,8 +47,7 @@ pub fn create() -> DigestComputer {
     Default::default()
 }
 
-
-#[derive(Copy,Clone,Debug,Eq,PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct DigestData([u8; N_BYTES]);
 
 impl DigestData {
@@ -75,7 +72,6 @@ impl DigestData {
         p.push(bytes_to_hex(&self.0[1..]));
         Ok(p)
     }
-
 }
 
 impl ToString for DigestData {

@@ -11,19 +11,21 @@ extern crate sha2;
 
 use std::path::PathBuf;
 
-
 // No fontconfig on MacOS:
 #[cfg(target_os = "macos")]
 const LIBS: &'static str = "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 #[cfg(not(target_os = "macos"))]
-const LIBS: &'static str = "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
-
+const LIBS: &'static str =
+    "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 fn main() {
     // We (have to) rerun the search again below to emit the metadata at the right time.
 
-    let deps = pkg_config::Config::new().cargo_metadata(false).probe(LIBS).unwrap();
+    let deps = pkg_config::Config::new()
+        .cargo_metadata(false)
+        .probe(LIBS)
+        .unwrap();
 
     // Actually I'm not 100% sure that I can't compile the C and C++ code
     // into one library, but who cares?
@@ -53,7 +55,6 @@ fn main() {
         "-Wswitch-bool",
         "-Wundef",
         "-Wwrite-strings",
-
         // TODO: Fix existing warnings before enabling these:
         // "-Wbad-function-cast",
         // "-Wcast-align",
@@ -64,19 +65,17 @@ fn main() {
         // "-Wsuggest-attribute=noreturn",
         // "-Wsuggest-attribute=pure",
         // "-Wunreachable-code-aggresive",
-
         "-Wno-unused-parameter",
         "-Wno-implicit-fallthrough",
         "-Wno-sign-compare",
-        "-std=gnu11"
+        "-std=gnu11",
     ];
 
     for flag in &cflags {
         ccfg.flag_if_supported(flag);
     }
 
-    ccfg
-        .file("tectonic/bibtex.c")
+    ccfg.file("tectonic/bibtex.c")
         .file("tectonic/core-bridge.c")
         .file("tectonic/core-memory.c")
         .file("tectonic/dpx-agl.c")
@@ -188,7 +187,6 @@ fn main() {
         "-Wshadow",
         "-Wswitch-bool",
         "-Wundef",
-
         // TODO: Fix existing warnings before enabling these:
         // "-Wdouble-promotion",
         // "-Wcast-align",
@@ -198,7 +196,6 @@ fn main() {
         // "-Wsuggest-attribute=const",
         // "-Wsuggest-attribute=pure",
         // "-Wunreachable-code-aggresive",
-
         "-Wno-unused-parameter",
         "-Wno-implicit-fallthrough",
     ];
@@ -257,7 +254,10 @@ fn main() {
     // Now that we've emitted the info for our own libraries, we can emit the
     // info for their dependents.
 
-    pkg_config::Config::new().cargo_metadata(true).probe(LIBS).unwrap();
+    pkg_config::Config::new()
+        .cargo_metadata(true)
+        .probe(LIBS)
+        .unwrap();
 
     // Tell cargo to rerun build.rs only if files in the tectonic/ directory have changed.
     for file in PathBuf::from("tectonic").read_dir().unwrap() {

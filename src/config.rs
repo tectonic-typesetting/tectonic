@@ -24,7 +24,6 @@ use io::zipbundle::ZipBundle;
 use io::Bundle;
 use status::StatusBackend;
 
-
 /// Awesome hack time!!!
 ///
 /// This is part of the "test mode" described in the `test_util` module. When
@@ -60,10 +59,10 @@ impl PersistentConfig {
     /// false, the default configuration is returned and the filesystem is not
     /// modified.
     pub fn open(auto_create_config_file: bool) -> Result<PersistentConfig> {
-        use toml;
-        use std::io::{Read, Write};
-        use std::io::ErrorKind as IoErrorKind;
         use app_dirs::{app_root, get_app_root};
+        use std::io::ErrorKind as IoErrorKind;
+        use std::io::{Read, Write};
+        use toml;
         let mut cfg_path = if auto_create_config_file {
             app_root(AppDataType::UserConfig, &::APP_INFO)?
         } else {
@@ -76,7 +75,7 @@ impl PersistentConfig {
                 let mut buf = Vec::<u8>::new();
                 f.read_to_end(&mut buf)?;
                 toml::from_slice(&buf)?
-            },
+            }
             Err(e) => {
                 if e.kind() == IoErrorKind::NotFound {
                     // Config file didn't exist -- that's OK.
@@ -90,7 +89,7 @@ impl PersistentConfig {
                     // Uh oh, unexpected error reading the config file.
                     return Err(e.into());
                 }
-            },
+            }
         };
 
         Ok(config)
@@ -108,7 +107,12 @@ impl PersistentConfig {
         Ok(PersistentConfig::default())
     }
 
-    pub fn make_cached_url_provider(&self, url: &str, only_cached: bool, status: &mut StatusBackend) -> Result<Box<Bundle>> {
+    pub fn make_cached_url_provider(
+        &self,
+        url: &str,
+        only_cached: bool,
+        status: &mut StatusBackend,
+    ) -> Result<Box<Bundle>> {
         let itb = ITarBundle::<HttpITarIoFactory>::new(url);
 
         let mut url2digest_path = app_dir(AppDataType::UserCache, &::APP_INFO, "urls")?;
@@ -138,33 +142,40 @@ impl PersistentConfig {
         Ok(Box::new(zip_bundle) as _)
     }
 
-
-    pub fn default_bundle(&self, only_cached: bool, status: &mut StatusBackend) -> Result<Box<Bundle>> {
-        use std::io;
+    pub fn default_bundle(
+        &self,
+        only_cached: bool,
+        status: &mut StatusBackend,
+    ) -> Result<Box<Bundle>> {
         use hyper::Url;
+        use std::io;
 
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
             return Ok(Box::new(::test_util::TestBundle::default()));
         }
 
         if self.default_bundles.len() != 1 {
-            return Err(ErrorKind::Msg("exactly one default_bundle item must be specified (for now)".to_owned()).into());
+            return Err(ErrorKind::Msg(
+                "exactly one default_bundle item must be specified (for now)".to_owned(),
+            )
+            .into());
         }
 
         let url = Url::parse(&self.default_bundles[0].url)
             .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "failed to parse url"))?;
         if url.scheme() == "file" {
             // load the local zip file.
-            let file_path = url.to_file_path()
-                .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "failed to parse local path"))?;
+            let file_path = url.to_file_path().map_err(|_| {
+                io::Error::new(io::ErrorKind::InvalidInput, "failed to parse local path")
+            })?;
             let zip_bundle = self.make_local_file_provider(file_path.as_os_str(), status)?;
 
             return Ok(Box::new(zip_bundle) as _);
         }
-        let bundle = self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, status)?;
-    		return Ok(Box::new(bundle) as _);
+        let bundle =
+            self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, status)?;
+        return Ok(Box::new(bundle) as _);
     }
-
 
     pub fn format_cache_path(&self) -> Result<PathBuf> {
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
@@ -178,11 +189,9 @@ impl PersistentConfig {
 impl Default for PersistentConfig {
     fn default() -> Self {
         PersistentConfig {
-            default_bundles: vec![
-                BundleInfo {
-                    url: String::from("https://archive.org/services/purl/net/pkgwpub/tectonic-default"),
-                }
-            ]
+            default_bundles: vec![BundleInfo {
+                url: String::from("https://archive.org/services/purl/net/pkgwpub/tectonic-default"),
+            }],
         }
     }
 }

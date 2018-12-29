@@ -50,25 +50,32 @@
 
 extern crate aho_corasick;
 extern crate app_dirs;
-#[macro_use] extern crate error_chain;
+#[macro_use]
+extern crate error_chain;
 extern crate flate2;
 extern crate fs2;
 extern crate hyper;
 extern crate hyper_native_tls;
-#[macro_use] extern crate lazy_static;
+#[macro_use]
+extern crate lazy_static;
 extern crate libc;
 extern crate md5;
 extern crate tempfile;
-#[cfg(feature = "serde_derive")] #[macro_use] extern crate serde_derive;
-#[cfg(feature = "serde")] extern crate serde;
+#[cfg(feature = "serde_derive")]
+#[macro_use]
+extern crate serde_derive;
+#[cfg(feature = "serde")]
+extern crate serde;
 extern crate sha2;
 extern crate tectonic_xdv;
 extern crate termcolor;
 extern crate toml;
 extern crate zip;
 
-#[macro_use] pub mod status;
-#[macro_use] pub mod errors;
+#[macro_use]
+pub mod status;
+#[macro_use]
+pub mod errors;
 pub mod config;
 pub mod digest;
 pub mod driver;
@@ -86,10 +93,12 @@ pub use engines::tex::{TexEngine, TexResult};
 pub use engines::xdvipdfmx::XdvipdfmxEngine;
 pub use errors::{Error, ErrorKind, Result};
 
-const APP_INFO: app_dirs::AppInfo = app_dirs::AppInfo {name: "Tectonic", author: "TectonicProject"};
+const APP_INFO: app_dirs::AppInfo = app_dirs::AppInfo {
+    name: "Tectonic",
+    author: "TectonicProject",
+};
 
 const FORMAT_SERIAL: u32 = 28; // keep synchronized with tectonic/xetex-constants.h!!
-
 
 /// Compile LaTeX text to a PDF.
 ///
@@ -148,8 +157,7 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
     let mut files = {
         // Looking forward to non-lexical lifetimes!
         let mut sb = driver::ProcessingSessionBuilder::default();
-        sb
-            .bundle(bundle)
+        sb.bundle(bundle)
             .primary_input_buffer(latex.as_ref().as_bytes())
             .tex_input_name("texput.tex")
             .format_name("latex")
@@ -160,13 +168,16 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
             .output_format(driver::OutputFormat::Pdf)
             .do_not_write_output_files();
 
-        let mut sess = ctry!(sb.create(&mut status); "failed to initialize the LaTeX processing session");
+        let mut sess =
+            ctry!(sb.create(&mut status); "failed to initialize the LaTeX processing session");
         ctry!(sess.run(&mut status); "the LaTeX engine failed");
         sess.into_file_data()
     };
 
     match files.remove(OsStr::new("texput.pdf")) {
         Some(data) => Ok(data),
-        None => Err(errmsg!("LaTeX didn't report failure, but no PDF was created (??)")),
+        None => Err(errmsg!(
+            "LaTeX didn't report failure, but no PDF was created (??)"
+        )),
     }
 }

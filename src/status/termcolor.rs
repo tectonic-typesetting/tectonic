@@ -10,9 +10,8 @@ use std::io::Write;
 
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
-use errors::Error;
 use super::{ChatterLevel, MessageKind, StatusBackend};
-
+use errors::Error;
 
 pub struct TermcolorStatusBackend {
     chatter: ChatterLevel,
@@ -23,7 +22,6 @@ pub struct TermcolorStatusBackend {
     warning_spec: ColorSpec,
     error_spec: ColorSpec,
 }
-
 
 impl TermcolorStatusBackend {
     pub fn new(chatter: ChatterLevel) -> TermcolorStatusBackend {
@@ -50,7 +48,10 @@ impl TermcolorStatusBackend {
         }
     }
 
-    fn styled<F>(&mut self, kind: MessageKind, f: F) where F: FnOnce(&mut StandardStream) {
+    fn styled<F>(&mut self, kind: MessageKind, f: F)
+    where
+        F: FnOnce(&mut StandardStream),
+    {
         if kind == MessageKind::Note && self.chatter <= ChatterLevel::Minimal {
             return;
         }
@@ -66,7 +67,10 @@ impl TermcolorStatusBackend {
         stream.reset().expect("failed to clear color");
     }
 
-    fn with_stream<F>(&mut self, kind: MessageKind, f: F) where F: FnOnce(&mut StandardStream) {
+    fn with_stream<F>(&mut self, kind: MessageKind, f: F)
+    where
+        F: FnOnce(&mut StandardStream),
+    {
         if kind == MessageKind::Note && self.chatter <= ChatterLevel::Minimal {
             return;
         }
@@ -98,7 +102,6 @@ impl TermcolorStatusBackend {
         });
     }
 
-
     // Helpers for the CLI program that aren't needed by the internal bits,
     // so we put them here to minimize the cross-section of the StatusBackend
     // trait.
@@ -124,7 +127,11 @@ impl TermcolorStatusBackend {
         }
 
         if let Some(backtrace) = err.backtrace() {
-            self.generic_message(MessageKind::Error, Some("debugging:"), format_args!("backtrace follows:"));
+            self.generic_message(
+                MessageKind::Error,
+                Some("debugging:"),
+                format_args!("backtrace follows:"),
+            );
             self.with_stream(MessageKind::Error, |s| {
                 writeln!(s, "{:?}", backtrace).expect("backtrace dump failed");
             });
@@ -132,7 +139,9 @@ impl TermcolorStatusBackend {
     }
 
     pub fn dump_to_stderr(&mut self, output: &[u8]) {
-        self.stderr.write_all(output).expect("write to stderr failed");
+        self.stderr
+            .write_all(output)
+            .expect("write to stderr failed");
     }
 }
 
@@ -146,7 +155,6 @@ macro_rules! tt_error_styled {
         $dest.error_styled(format_args!($( $fmt_args ),*))
     };
 }
-
 
 impl StatusBackend for TermcolorStatusBackend {
     fn report(&mut self, kind: MessageKind, args: Arguments, err: Option<&Error>) {
@@ -169,7 +177,9 @@ impl StatusBackend for TermcolorStatusBackend {
     fn note_highlighted(&mut self, before: &str, highlighted: &str, after: &str) {
         if self.chatter > ChatterLevel::Minimal {
             write!(self.stdout, "{}", before).expect("write to stdout failed");
-            self.stdout.set_color(&self.highlight_spec).expect("write to stdout failed");
+            self.stdout
+                .set_color(&self.highlight_spec)
+                .expect("write to stdout failed");
             write!(self.stdout, "{}", highlighted).expect("write to stdout failed");
             self.stdout.reset().expect("write to stdout failed");
             writeln!(self.stdout, "{}", after).expect("write to stdout failed");

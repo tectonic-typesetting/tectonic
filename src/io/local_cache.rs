@@ -3,20 +3,19 @@
 // Licensed under the MIT License.
 
 use fs2::FileExt;
-use tempfile;
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::fs::{self, File};
-use std::io::{BufRead, BufReader, Read, Write};
 use std::io::ErrorKind as IoErrorKind;
+use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use tempfile;
 
+use super::{try_open_file, Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
 use digest::{self, Digest, DigestData};
 use errors::{ErrorKind, Result};
-use super::{try_open_file, Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
 use status::StatusBackend;
-
 
 struct LocalCacheItem {
     _length: u64,
@@ -30,15 +29,18 @@ pub struct LocalCache<B: Bundle> {
     checked_digest: bool,
     manifest_path: PathBuf,
     data_path: PathBuf,
-    contents: HashMap<OsString,LocalCacheItem>,
+    contents: HashMap<OsString, LocalCacheItem>,
     only_cached: bool,
 }
 
-
 impl<B: Bundle> LocalCache<B> {
     pub fn new(
-        mut backend: B, digest: &Path, manifest_base: &Path,
-        data: &Path, only_cached: bool, status: &mut StatusBackend
+        mut backend: B,
+        digest: &Path,
+        manifest_base: &Path,
+        data: &Path,
+        only_cached: bool,
+        status: &mut StatusBackend,
     ) -> Result<LocalCache<B>> {
         // If the `digest` file exists, we assume that it is valid; this is
         // *essential* so that we can use a URL as our default IoProvider
@@ -49,9 +51,10 @@ impl<B: Bundle> LocalCache<B> {
             Ok(f) => {
                 let mut text = String::new();
                 f.take(64).read_to_string(&mut text)?;
-                let cached_digest = ctry!(DigestData::from_str(&text); "corrupted SHA256 digest cache");
+                let cached_digest =
+                    ctry!(DigestData::from_str(&text); "corrupted SHA256 digest cache");
                 (text, cached_digest, false)
-            },
+            }
 
             Err(e) => {
                 if e.kind() != IoErrorKind::NotFound {
@@ -60,7 +63,8 @@ impl<B: Bundle> LocalCache<B> {
                 }
 
                 // Digest file just doesn't exist. We need to query the backend for it.
-                let cached_digest = ctry!(backend.get_digest(status); "could not get backend summary digest");
+                let cached_digest =
+                    ctry!(backend.get_digest(status); "could not get backend summary digest");
                 let text = cached_digest.to_string();
                 (text, cached_digest, true)
             }
@@ -85,8 +89,10 @@ impl<B: Bundle> LocalCache<B> {
         let mut contents = HashMap::new();
 
         match try_open_file(&manifest_path) {
-            OpenResult::NotAvailable => {},
-            OpenResult::Err(e) => { return Err(e.into()); },
+            OpenResult::NotAvailable => {}
+            OpenResult::Err(e) => {
+                return Err(e.into());
+            }
             OpenResult::Ok(mfile) => {
                 // Note that the lock is released when the file is closed,
                 // which is good since BufReader::new() and BufReader::lines()
@@ -102,18 +108,17 @@ impl<B: Bundle> LocalCache<B> {
                     let line = res?;
                     let mut bits = line.rsplitn(3, ' ');
 
-
-                    let (original_name, length, digest) = match (bits.next(), bits.next(),
-                                                                 bits.next(), bits.next()) {
-                        (Some(s), Some(t), Some(r), None) => (r, t, s),
-                        _ => continue,
-                    };
+                    let (original_name, length, digest) =
+                        match (bits.next(), bits.next(), bits.next(), bits.next()) {
+                            (Some(s), Some(t), Some(r), None) => (r, t, s),
+                            _ => continue,
+                        };
 
                     let name = OsString::from(original_name);
 
                     let length = match length.parse::<u64>() {
                         Ok(l) => l,
-                        Err(_) => continue
+                        Err(_) => continue,
                     };
 
                     let digest = if digest == "-" {
@@ -129,7 +134,13 @@ impl<B: Bundle> LocalCache<B> {
                         }
                     };
 
-                    contents.insert(name, LocalCacheItem { _length: length, digest: digest });
+                    contents.insert(
+                        name,
+                        LocalCacheItem {
+                            _length: length,
+                            digest: digest,
+                        },
+                    );
                 }
             }
         }
@@ -148,8 +159,12 @@ impl<B: Bundle> LocalCache<B> {
         })
     }
 
-
-    fn record_cache_result(&mut self, name: &OsStr, length: u64, digest: Option<DigestData>) -> Result<()> {
+    fn record_cache_result(
+        &mut self,
+        name: &OsStr,
+        length: u64,
+        digest: Option<DigestData>,
+    ) -> Result<()> {
         let digest_text = match digest {
             Some(ref d) => d.to_string(),
             None => "-".to_owned(),
@@ -173,7 +188,13 @@ impl<B: Bundle> LocalCache<B> {
                 writeln!(man, "{} {} {}", name_utf8, length, digest_text)?;
             }
         }
-        self.contents.insert(name.to_owned(), LocalCacheItem { _length: length, digest: digest });
+        self.contents.insert(
+            name.to_owned(),
+            LocalCacheItem {
+                _length: length,
+                digest: digest,
+            },
+        );
         Ok(())
     }
 
@@ -187,16 +208,22 @@ impl<B: Bundle> LocalCache<B> {
             return Ok(());
         }
 
-        let dtext = match self.backend.input_open_name(OsStr::new("SHA256SUM"), status) {
+        let dtext = match self
+            .backend
+            .input_open_name(OsStr::new("SHA256SUM"), status)
+        {
             OpenResult::Ok(h) => {
                 let mut text = String::new();
                 ctry!(h.take(64).read_to_string(&mut text); "error reading {}", self.digest_path.to_string_lossy());
                 text
-            },
+            }
             OpenResult::NotAvailable => {
                 // Broken or un-cacheable backend.
-                return Err(ErrorKind::Msg("backend does not provide needed SHA256SUM file".to_owned()).into());
-            },
+                return Err(ErrorKind::Msg(
+                    "backend does not provide needed SHA256SUM file".to_owned(),
+                )
+                .into());
+            }
             OpenResult::Err(e) => {
                 return Err(e.into());
             }
@@ -212,14 +239,16 @@ impl<B: Bundle> LocalCache<B> {
                               self.digest_path.to_string_lossy());
             ctry!(writeln!(f, "{}", current_digest.to_string()); "couldn\'t write to {}",
                   self.digest_path.to_string_lossy());
-            return Err(ErrorKind::Msg("backend digest changed; rerun to use updated information".to_owned()).into());
+            return Err(ErrorKind::Msg(
+                "backend digest changed; rerun to use updated information".to_owned(),
+            )
+            .into());
         }
 
         // Phew, the backend hasn't changed. Don't check again.
         self.checked_digest = true;
         Ok(())
     }
-
 
     fn path_for_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<PathBuf> {
         if let Some(info) = self.contents.get(name) {
@@ -252,7 +281,7 @@ impl<B: Bundle> LocalCache<B> {
         // touch nonexistent files. If we didn't maintain the negative cache,
         // we'd have to touch the network for virtually every compilation.
 
-        let mut stream = match self.backend.input_open_name (name, status) {
+        let mut stream = match self.backend.input_open_name(name, status) {
             OpenResult::Ok(s) => s,
             OpenResult::Err(e) => return OpenResult::Err(e),
             OpenResult::NotAvailable => {
@@ -269,29 +298,30 @@ impl<B: Bundle> LocalCache<B> {
         let mut digest_builder = digest::create();
         let mut length = 0;
 
-	let mut temp_dest = match tempfile::Builder::new()
-	    .prefix("download_")
-	    .rand_bytes(6)
-	    .tempfile_in(&self.data_path) {
-		Ok(f) => f,
-                Err(e) => return OpenResult::Err(e.into()),
-	    };
+        let mut temp_dest = match tempfile::Builder::new()
+            .prefix("download_")
+            .rand_bytes(6)
+            .tempfile_in(&self.data_path)
+        {
+            Ok(f) => f,
+            Err(e) => return OpenResult::Err(e.into()),
+        };
 
-	let mut buf = [0u8; 8192];
+        let mut buf = [0u8; 8192];
 
-	while let Ok(nbytes) = stream.read(&mut buf) {
-	    if nbytes == 0 {
-		break;
-	    }
+        while let Ok(nbytes) = stream.read(&mut buf) {
+            if nbytes == 0 {
+                break;
+            }
 
-	    length += nbytes;
-	    let chunk = &buf[..nbytes];
+            length += nbytes;
+            let chunk = &buf[..nbytes];
 
-	    digest_builder.input(chunk);
-	    if let Err(e) = temp_dest.write_all(chunk) {
-		return OpenResult::Err(e.into());
-	    }
-	}
+            digest_builder.input(chunk);
+            if let Err(e) = temp_dest.write_all(chunk) {
+                return OpenResult::Err(e.into());
+            }
+        }
 
         let digest = DigestData::from(digest_builder);
 
@@ -309,7 +339,7 @@ impl<B: Bundle> LocalCache<B> {
         // subject to the race once.
 
         if !final_path.exists() {
-	    if let Err(e) = temp_dest.persist(&final_path) {
+            if let Err(e) = temp_dest.persist(&final_path) {
                 return OpenResult::Err(e.error.into());
             }
 
@@ -321,7 +351,8 @@ impl<B: Bundle> LocalCache<B> {
                 Err(e) => {
                     return OpenResult::Err(e.into());
                 }
-            }.permissions();
+            }
+            .permissions();
             perms.set_readonly(true);
 
             if let Err(e) = fs::set_permissions(&final_path, perms) {
@@ -341,9 +372,12 @@ impl<B: Bundle> LocalCache<B> {
     }
 }
 
-
 impl<B: Bundle> IoProvider for LocalCache<B> {
-    fn input_open_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_name(
+        &mut self,
+        name: &OsStr,
+        status: &mut StatusBackend,
+    ) -> OpenResult<InputHandle> {
         let path = match self.path_for_name(name, status) {
             OpenResult::Ok(p) => p,
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
@@ -352,13 +386,16 @@ impl<B: Bundle> IoProvider for LocalCache<B> {
 
         let f = match File::open(&path) {
             Ok(f) => f,
-            Err(e) => return OpenResult::Err(e.into())
+            Err(e) => return OpenResult::Err(e.into()),
         };
 
-        OpenResult::Ok(InputHandle::new(name, BufReader::new(f), InputOrigin::Other))
+        OpenResult::Ok(InputHandle::new(
+            name,
+            BufReader::new(f),
+            InputOrigin::Other,
+        ))
     }
 }
-
 
 impl<B: Bundle> Bundle for LocalCache<B> {
     fn get_digest(&mut self, _status: &mut StatusBackend) -> Result<DigestData> {

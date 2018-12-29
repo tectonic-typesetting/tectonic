@@ -12,22 +12,21 @@
 //! substantial private API that defines the interface between Tectonic's Rust
 //! code and the C/C++ code that the backends are (currently) implemented in.
 
+use flate2::read::GzDecoder;
 use flate2::{Compression, GzBuilder};
-use flate2::read::{GzDecoder};
-use md5::{Md5, Digest};
 use libc;
-use std::{io, ptr, slice};
+use md5::{Digest, Md5};
 use std::borrow::Cow;
 use std::ffi::{CStr, OsStr, OsString};
 use std::io::{Read, SeekFrom, Write};
 use std::path::Path;
 use std::sync::Mutex;
+use std::{io, ptr, slice};
 
 use digest::DigestData;
 use errors::{Error, ErrorKind, Result};
-use io::{InputOrigin, IoProvider, InputFeatures, InputHandle, OpenResult, OutputHandle};
+use io::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
 use status::StatusBackend;
-
 
 // Public sub-modules and reexports.
 
@@ -41,15 +40,14 @@ pub use self::spx2html::Spx2HtmlEngine;
 pub use self::tex::TexEngine;
 pub use self::xdvipdfmx::XdvipdfmxEngine;
 
-
 #[cfg(unix)]
 fn osstr_from_cstr(s: &CStr) -> Cow<OsStr> {
-	use std::os::unix::ffi::OsStrExt;
-	Cow::Borrowed(OsStr::from_bytes(s.to_bytes()))
+    use std::os::unix::ffi::OsStrExt;
+    Cow::Borrowed(OsStr::from_bytes(s.to_bytes()))
 }
 #[cfg(windows)]
 fn osstr_from_cstr(s: &CStr) -> Cow<OsStr> {
-	Cow::Owned(OsString::from(s.to_string_lossy().to_owned().to_string()))
+    Cow::Owned(OsString::from(s.to_string_lossy().to_owned().to_string()))
 }
 
 // Now, the public API.
@@ -94,16 +92,16 @@ pub trait IoEventBackend {
     fn input_closed(&mut self, _name: OsString, _digest: Option<DigestData>) {}
 }
 
-
 /// This struct implements the IoEventBackend trait but does nothing.
 pub struct NoopIoEventBackend {}
 
 impl NoopIoEventBackend {
-    pub fn new() -> NoopIoEventBackend { NoopIoEventBackend {} }
+    pub fn new() -> NoopIoEventBackend {
+        NoopIoEventBackend {}
+    }
 }
 
-impl IoEventBackend for NoopIoEventBackend { }
-
+impl IoEventBackend for NoopIoEventBackend {}
 
 // Now, the private interfaces for executing various engines implemented in C/C++.
 
@@ -122,7 +120,7 @@ lazy_static! {
 /// The methods on ExecutionState pretty much all work to implement for the
 /// "bridge" API (C/C++ => Rust) defined below.
 
-struct ExecutionState<'a, I: 'a + IoProvider>  {
+struct ExecutionState<'a, I: 'a + IoProvider> {
     io: &'a mut I,
     events: &'a mut IoEventBackend,
     status: &'a mut StatusBackend,
@@ -130,10 +128,12 @@ struct ExecutionState<'a, I: 'a + IoProvider>  {
     output_handles: Vec<Box<OutputHandle>>,
 }
 
-
 impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
-    pub fn new (io: &'a mut I, events: &'a mut IoEventBackend,
-                status: &'a mut StatusBackend) -> ExecutionState<'a, I> {
+    pub fn new(
+        io: &'a mut I,
+        events: &'a mut IoEventBackend,
+        status: &'a mut StatusBackend,
+    ) -> ExecutionState<'a, I> {
         ExecutionState {
             io: io,
             events: events,
@@ -145,7 +145,11 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 
     // Helpers.
 
-    fn input_open_name_format(&mut self, name: &OsStr, format: FileFormat) -> OpenResult<InputHandle> {
+    fn input_open_name_format(
+        &mut self,
+        name: &OsStr,
+        format: FileFormat,
+    ) -> OpenResult<InputHandle> {
         let r = if let FileFormat::Format = format {
             self.io.input_open_format(name, self.status)
         } else {
@@ -156,9 +160,11 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 
         match r {
             OpenResult::NotAvailable if path.extension().is_some() =>
-                // Do not change the extension if provided.
-                return OpenResult::NotAvailable,
-            OpenResult::NotAvailable => {},
+            // Do not change the extension if provided.
+            {
+                return OpenResult::NotAvailable
+            }
+            OpenResult::NotAvailable => {}
             r => return r,
         }
 
@@ -173,18 +179,24 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             ext.set_extension(e);
 
             if let FileFormat::Format = format {
-                if let r @ OpenResult::Ok(_) = self.io.input_open_format(ext.as_ref(), self.status) {
-                    return r
+                if let r @ OpenResult::Ok(_) = self.io.input_open_format(ext.as_ref(), self.status)
+                {
+                    return r;
                 }
-            } else if let r @ OpenResult::Ok(_) = self.io.input_open_name(ext.as_ref(), self.status) {
-                return r
+            } else if let r @ OpenResult::Ok(_) = self.io.input_open_name(ext.as_ref(), self.status)
+            {
+                return r;
             }
         }
         OpenResult::NotAvailable
     }
 
-    fn input_open_name_format_gz(&mut self, name: &OsStr, format: FileFormat,
-                                 is_gz: bool) -> OpenResult<InputHandle> {
+    fn input_open_name_format_gz(
+        &mut self,
+        name: &OsStr,
+        format: FileFormat,
+        is_gz: bool,
+    ) -> OpenResult<InputHandle> {
         let base = self.input_open_name_format(name, format);
 
         if !is_gz {
@@ -197,8 +209,8 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                 let dr = GzDecoder::new(ih.into_inner());
 
                 OpenResult::Ok(InputHandle::new(name, dr, origin))
-            },
-            _ => base
+            }
+            _ => base,
         }
     }
 
@@ -220,12 +232,12 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                 // gets annoying. So we'll let this particular failure mode be
                 // silent.
                 return true;
-            },
+            }
             OpenResult::Err(e) => {
                 tt_error!(self.status, "error trying to open file \"{}\" for MD5 calculation",
                           name.to_string_lossy(); e.into());
                 return true;
-            },
+            }
         };
 
         self.events.input_opened(ih.name(), ih.origin());
@@ -238,7 +250,9 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 
         loop {
             let nread = match ih.read(&mut buf) {
-                Ok(0) => { break; },
+                Ok(0) => {
+                    break;
+                }
                 Ok(n) => n,
                 Err(e) => {
                     tt_error!(self.status, "error reading file \"{}\" for MD5 calculation",
@@ -269,18 +283,21 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             OpenResult::NotAvailable => return ptr::null(),
             OpenResult::Err(e) => {
                 tt_warning!(self.status, "open of output {} failed", name.to_string_lossy(); e);
-                return ptr::null()
+                return ptr::null();
             }
         };
 
         if is_gz {
             let name = oh.name().to_os_string();
-            oh = OutputHandle::new(&name, GzBuilder::new().write(oh.into_inner(), Compression::default()));
+            oh = OutputHandle::new(
+                &name,
+                GzBuilder::new().write(oh.into_inner(), Compression::default()),
+            );
         }
 
         self.events.output_opened(oh.name());
         self.output_handles.push(Box::new(oh));
-        &*self.output_handles[self.output_handles.len()-1]
+        &*self.output_handles[self.output_handles.len() - 1]
     }
 
     fn output_open_stdout(&mut self) -> *const OutputHandle {
@@ -289,13 +306,13 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             OpenResult::NotAvailable => return ptr::null(),
             OpenResult::Err(e) => {
                 tt_warning!(self.status, "open of stdout failed"; e);
-                return ptr::null()
+                return ptr::null();
             }
         };
 
         self.events.stdout_opened();
         self.output_handles.push(Box::new(oh));
-        &*self.output_handles[self.output_handles.len()-1]
+        &*self.output_handles[self.output_handles.len() - 1]
     }
 
     fn output_write(&mut self, handle: *mut OutputHandle, buf: &[u8]) -> bool {
@@ -352,17 +369,17 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             OpenResult::NotAvailable => {
                 self.events.input_not_available(name);
                 return ptr::null();
-            },
+            }
             OpenResult::Err(e) => {
                 tt_warning!(self.status, "open of input {} failed", name.to_string_lossy(); e);
                 return ptr::null();
-            },
+            }
         };
 
         // the file name may have had an extension added, so we use ih.name() here:
         self.events.input_opened(ih.name(), ih.origin());
         self.input_handles.push(Box::new(ih));
-        &*self.input_handles[self.input_handles.len()-1]
+        &*self.input_handles[self.input_handles.len() - 1]
     }
 
     fn input_open_primary(&mut self) -> *const InputHandle {
@@ -371,16 +388,16 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             OpenResult::NotAvailable => {
                 tt_error!(self.status, "primary input not available (?!)");
                 return ptr::null();
-            },
+            }
             OpenResult::Err(e) => {
                 tt_error!(self.status, "open of primary input failed"; e);
                 return ptr::null();
-            },
+            }
         };
 
         self.events.primary_input_opened(ih.origin());
         self.input_handles.push(Box::new(ih));
-        &*self.input_handles[self.input_handles.len()-1]
+        &*self.input_handles[self.input_handles.len() - 1]
     }
 
     fn input_get_size(&mut self, handle: *mut InputHandle) -> usize {
@@ -428,12 +445,15 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             }
         }
         // TODO: Handle the error better. This indicates a bug in the engine.
-        tt_error!(self.status, "serious internal bug: unexpected handle in input close: {:?}", handle);
+        tt_error!(
+            self.status,
+            "serious internal bug: unexpected handle in input close: {:?}",
+            handle
+        );
 
         true
     }
 }
-
 
 // Now, here' the actual C API. There are two parts to this: the functions in
 // the backing C/C++ code that *we* call, and the API bridge -- a struct of
@@ -463,37 +483,55 @@ struct TectonicBridgeApi {
     input_close: *const libc::c_void,
 }
 
-extern {
+extern "C" {
     fn tt_get_error_message() -> *const libc::c_char;
     fn tt_xetex_set_int_variable(var_name: *const libc::c_char, value: libc::c_int) -> libc::c_int;
     //fn tt_xetex_set_string_variable(var_name: *const libc::c_char, value: *const libc::c_char) -> libc::c_int;
-    fn tex_simple_main(api: *const TectonicBridgeApi, dump_name: *const libc::c_char, input_file_name: *const libc::c_char) -> libc::c_int;
-    fn dvipdfmx_simple_main(api: *const TectonicBridgeApi,
-                            dviname: *const libc::c_char,
-                            pdfname: *const libc::c_char,
-                            enable_compression: bool,
-                            deterministic_tags: bool) -> libc::c_int;
-    fn bibtex_simple_main(api: *const TectonicBridgeApi, aux_file_name: *const libc::c_char) -> libc::c_int;
+    fn tex_simple_main(
+        api: *const TectonicBridgeApi,
+        dump_name: *const libc::c_char,
+        input_file_name: *const libc::c_char,
+    ) -> libc::c_int;
+    fn dvipdfmx_simple_main(
+        api: *const TectonicBridgeApi,
+        dviname: *const libc::c_char,
+        pdfname: *const libc::c_char,
+        enable_compression: bool,
+        deterministic_tags: bool,
+    ) -> libc::c_int;
+    fn bibtex_simple_main(
+        api: *const TectonicBridgeApi,
+        aux_file_name: *const libc::c_char,
+    ) -> libc::c_int;
 }
-
 
 // Entry points for the C/C++ API functions.
 
-extern fn issue_warning<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const libc::c_char) {
+extern "C" fn issue_warning<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    text: *const libc::c_char,
+) {
     let es = unsafe { &mut *es };
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_warning!(es.status, "{}", rtext.to_string_lossy());
 }
 
-extern fn issue_error<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const libc::c_char) {
+extern "C" fn issue_error<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    text: *const libc::c_char,
+) {
     let es = unsafe { &mut *es };
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_error!(es.status, "{}", rtext.to_string_lossy());
 }
 
-extern fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, path: *const libc::c_char, digest: *mut u8) -> libc::c_int {
+extern "C" fn get_file_md5<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    path: *const libc::c_char,
+    digest: *mut u8,
+) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rpath = osstr_from_cstr(unsafe { CStr::from_ptr(path) });
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
@@ -505,7 +543,12 @@ extern fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, p
     }
 }
 
-extern fn get_data_md5<'a, I: 'a + IoProvider>(_es: *mut ExecutionState<'a, I>, data: *const u8, len: libc::size_t, digest: *mut u8) -> libc::c_int {
+extern "C" fn get_data_md5<'a, I: 'a + IoProvider>(
+    _es: *mut ExecutionState<'a, I>,
+    data: *const u8,
+    len: libc::size_t,
+    digest: *mut u8,
+) -> libc::c_int {
     //let es = unsafe { &mut *es };
     let rdata = unsafe { slice::from_raw_parts(data, len) };
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
@@ -518,7 +561,11 @@ extern fn get_data_md5<'a, I: 'a + IoProvider>(_es: *mut ExecutionState<'a, I>, 
     0
 }
 
-extern fn output_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const libc::c_char, is_gz: libc::c_int) -> *const libc::c_void {
+extern "C" fn output_open<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    name: *const libc::c_char,
+    is_gz: libc::c_int,
+) -> *const libc::c_void {
     let es = unsafe { &mut *es };
     let rname = osstr_from_cstr(&unsafe { CStr::from_ptr(name) });
     let ris_gz = is_gz != 0;
@@ -526,13 +573,19 @@ extern fn output_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, na
     es.output_open(&rname, ris_gz) as *const _
 }
 
-extern fn output_open_stdout<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, ) -> *const libc::c_void {
+extern "C" fn output_open_stdout<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+) -> *const libc::c_void {
     let es = unsafe { &mut *es };
 
     es.output_open_stdout() as *const _
 }
 
-extern fn output_putc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, c: libc::c_int) -> libc::c_int {
+extern "C" fn output_putc<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    handle: *mut libc::c_void,
+    c: libc::c_int,
+) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut OutputHandle;
     let rc = c as u8;
@@ -544,7 +597,12 @@ extern fn output_putc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, ha
     }
 }
 
-extern fn output_write<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, data: *const u8, len: libc::size_t) -> libc::size_t {
+extern "C" fn output_write<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    handle: *mut libc::c_void,
+    data: *const u8,
+    len: libc::size_t,
+) -> libc::size_t {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut OutputHandle;
     let rdata = unsafe { slice::from_raw_parts(data, len) };
@@ -558,7 +616,10 @@ extern fn output_write<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, h
     }
 }
 
-extern fn output_flush<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
+extern "C" fn output_flush<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    handle: *mut libc::c_void,
+) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut OutputHandle;
 
@@ -569,7 +630,10 @@ extern fn output_flush<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, h
     }
 }
 
-extern fn output_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
+extern "C" fn output_close<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    handle: *mut libc::c_void,
+) -> libc::c_int {
     let es = unsafe { &mut *es };
 
     if handle == 0 as *mut _ {
@@ -585,35 +649,48 @@ extern fn output_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, h
     }
 }
 
-
-extern fn input_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const libc::c_char, format: libc::c_int, is_gz: libc::c_int) -> *const libc::c_void {
+extern "C" fn input_open<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    name: *const libc::c_char,
+    format: libc::c_int,
+    is_gz: libc::c_int,
+) -> *const libc::c_void {
     let es = unsafe { &mut *es };
     let rname = osstr_from_cstr(unsafe { CStr::from_ptr(name) });
     let rformat = c_format_to_rust(format);
     let ris_gz = is_gz != 0;
 
     match rformat {
-        Some(fmt) => {
-            es.input_open(&rname, fmt, ris_gz) as *const _
-        },
-        None => ptr::null()
+        Some(fmt) => es.input_open(&rname, fmt, ris_gz) as *const _,
+        None => ptr::null(),
     }
 }
 
-extern fn input_open_primary<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>) -> *const libc::c_void {
+extern "C" fn input_open_primary<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+) -> *const libc::c_void {
     let es = unsafe { &mut *es };
 
     es.input_open_primary() as *const _
 }
 
-extern fn input_get_size<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::size_t {
+extern "C" fn input_get_size<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    handle: *mut libc::c_void,
+) -> libc::size_t {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
     es.input_get_size(rhandle)
 }
 
-extern fn input_seek<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, offset: libc::ssize_t, whence: libc::c_int, internal_error: *mut libc::c_int) -> libc::size_t {
+extern "C" fn input_seek<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    handle: *mut libc::c_void,
+    offset: libc::ssize_t,
+    whence: libc::c_int,
+    internal_error: *mut libc::c_int,
+) -> libc::size_t {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
@@ -622,12 +699,15 @@ extern fn input_seek<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, han
         libc::SEEK_CUR => SeekFrom::Current(offset as i64),
         libc::SEEK_END => SeekFrom::End(offset as i64),
         _ => {
-                tt_error!(es.status, "serious internal bug: unexpected \"whence\" parameter to fseek() wrapper: {}",
-                            whence);
-                unsafe {
-                    *internal_error = 1;
-                }
-                return 0;
+            tt_error!(
+                es.status,
+                "serious internal bug: unexpected \"whence\" parameter to fseek() wrapper: {}",
+                whence
+            );
+            unsafe {
+                *internal_error = 1;
+            }
+            return 0;
         }
     };
 
@@ -641,7 +721,10 @@ extern fn input_seek<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, han
     }
 }
 
-extern fn input_getc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
+extern "C" fn input_getc<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    handle: *mut libc::c_void,
+) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
@@ -650,7 +733,9 @@ extern fn input_getc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, han
 
     match es.input_getc(rhandle) {
         Ok(b) => b as libc::c_int,
-        Err(Error(ErrorKind::Io(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => libc::EOF,
+        Err(Error(ErrorKind::Io(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => {
+            libc::EOF
+        }
         Err(e) => {
             tt_warning!(es.status, "getc failed"; e);
             -1
@@ -658,7 +743,11 @@ extern fn input_getc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, han
     }
 }
 
-extern fn input_ungetc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, ch: libc::c_int) -> libc::c_int {
+extern "C" fn input_ungetc<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    handle: *mut libc::c_void,
+    ch: libc::c_int,
+) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
@@ -671,7 +760,12 @@ extern fn input_ungetc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, h
     }
 }
 
-extern fn input_read<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, data: *mut u8, len: libc::size_t) -> libc::ssize_t {
+extern "C" fn input_read<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    handle: *mut libc::c_void,
+    data: *mut u8,
+    len: libc::size_t,
+) -> libc::ssize_t {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
     let rdata = unsafe { slice::from_raw_parts_mut(data, len) };
@@ -685,7 +779,10 @@ extern fn input_read<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, han
     }
 }
 
-extern fn input_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
+extern "C" fn input_close<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    handle: *mut libc::c_void,
+) -> libc::c_int {
     let es = unsafe { &mut *es };
 
     if handle == 0 as *mut _ {
@@ -700,7 +797,6 @@ extern fn input_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, ha
         0
     }
 }
-
 
 // All of these entry points are used to populate the bridge API struct:
 
@@ -730,12 +826,11 @@ impl TectonicBridgeApi {
     }
 }
 
-
 // Finally, some support -- several of the C API functions pass arguments that
 // are "file format" enumerations. This code bridges the two. See the
 // `tt_input_format_type` enum in <tectonic/core-bridge.h>.
 
-#[derive(Clone,Copy,Debug)]
+#[derive(Clone, Copy, Debug)]
 enum FileFormat {
     AFM,
     Bib,
@@ -760,7 +855,7 @@ enum FileFormat {
     Vf,
 }
 
-fn format_to_extension (format: FileFormat) -> Vec<&'static str> {
+fn format_to_extension(format: FileFormat) -> Vec<&'static str> {
     match format {
         FileFormat::AFM => vec!["afm"],
         FileFormat::Bib => vec!["bib"],
@@ -786,7 +881,7 @@ fn format_to_extension (format: FileFormat) -> Vec<&'static str> {
     }
 }
 
-fn c_format_to_rust (format: libc::c_int) -> Option<FileFormat> {
+fn c_format_to_rust(format: libc::c_int) -> Option<FileFormat> {
     match format {
         1 => Some(FileFormat::Pk),
         3 => Some(FileFormat::TFM),
@@ -810,6 +905,6 @@ fn c_format_to_rust (format: libc::c_int) -> Option<FileFormat> {
         45 => Some(FileFormat::Cmap),
         46 => Some(FileFormat::Sfd),
         47 => Some(FileFormat::OpenType),
-        _ => None
+        _ => None,
     }
 }

@@ -18,7 +18,6 @@ use tectonic::{TexEngine, XdvipdfmxEngine};
 mod util;
 use util::{ensure_plain_format, test_path, ExpectedInfo};
 
-
 struct TestCase {
     stem: String,
     expected_result: Result<TexResult>,

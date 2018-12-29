@@ -45,11 +45,9 @@ use errors::Result;
 use io::{Bundle, FilesystemIo, InputHandle, IoProvider, OpenResult};
 use status::StatusBackend;
 
-
 /// The name of the environment variable that the test code will consult to
 /// figure out where to find the testing resource files.
 pub const TEST_ROOT_ENV_VAR: &str = "TECTONIC_INTERNAL_TEST_ROOT";
-
 
 /// Set `TEST_ROOT_ENV_VAR` in the current process to the specified value,
 /// with a path element "tests" appended. If the variable was previously
@@ -64,7 +62,6 @@ pub fn set_test_root_augmented<V: AsRef<OsStr>>(root: V) {
     env::set_var(TEST_ROOT_ENV_VAR, root);
 }
 
-
 /// Activate this crate's "test mode", if-and-only-if the magic testing
 /// environment variable has been set. This allows testing of the Tectonic
 /// executable in a transparent way — notably, we avoid embedding the build
@@ -77,7 +74,6 @@ pub fn maybe_activate_test_mode() {
 
     ::config::activate_config_test_mode(true);
 }
-
 
 /// A combination of the two above functions. Set the "test root" variable,
 /// making it such that the testing infrastructure in this module can work;
@@ -92,32 +88,40 @@ pub fn activate_test_mode_augmented<V: AsRef<OsStr>>(root: V) {
     maybe_activate_test_mode();
 }
 
-
 /// Obtain a path to a testing resource file. The environment variable whose
 /// name is stored in the constant `TEST_ROOT_ENV_VAR` must be set to an
 /// appropriate directory. (Note: `TEST_ROOT_ENV_VAR` is a constant giving the
 /// *name* of the relevant variable — not the name of the variable itself!)
 pub fn test_path(parts: &[&str]) -> PathBuf {
-    let mut path = PathBuf::from(env::var_os(TEST_ROOT_ENV_VAR)
-                                 .expect("Tectonic testing infrastructure cannot be used without \
-                                          setting the magic test-root environment variable"));
+    let mut path = PathBuf::from(env::var_os(TEST_ROOT_ENV_VAR).expect(
+        "Tectonic testing infrastructure cannot be used without \
+         setting the magic test-root environment variable",
+    ));
     path.push(parts.iter().collect::<PathBuf>());
     path
 }
-
 
 /// Utility for being able to treat the "assets/" directory as a bundle.
 pub struct TestBundle(FilesystemIo);
 
 impl Default for TestBundle {
     fn default() -> Self {
-        TestBundle(FilesystemIo::new(&test_path(&["assets"]), false, false, HashSet::new()))
+        TestBundle(FilesystemIo::new(
+            &test_path(&["assets"]),
+            false,
+            false,
+            HashSet::new(),
+        ))
     }
 }
 
 impl IoProvider for TestBundle {
     // All other functions can default to NotAvailable/error.
-    fn input_open_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_name(
+        &mut self,
+        name: &OsStr,
+        status: &mut StatusBackend,
+    ) -> OpenResult<InputHandle> {
         self.0.input_open_name(name, status)
     }
 }

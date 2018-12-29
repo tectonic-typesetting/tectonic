@@ -9,34 +9,34 @@ use std::path::Path;
 use zip::result::ZipError;
 use zip::ZipArchive;
 
-use errors::Result;
 use super::{Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
+use errors::Result;
 use status::StatusBackend;
 
-
 pub struct ZipBundle<R: Read + Seek> {
-    zip: ZipArchive<R>
+    zip: ZipArchive<R>,
 }
 
-
 impl<R: Read + Seek> ZipBundle<R> {
-    pub fn new (reader: R) -> Result<ZipBundle<R>> {
+    pub fn new(reader: R) -> Result<ZipBundle<R>> {
         Ok(ZipBundle {
-            zip: ZipArchive::new(reader)?
+            zip: ZipArchive::new(reader)?,
         })
     }
 }
 
-
 impl ZipBundle<File> {
-    pub fn open (path: &Path) -> Result<ZipBundle<File>> {
+    pub fn open(path: &Path) -> Result<ZipBundle<File>> {
         Self::new(File::open(path)?)
     }
 }
 
-
 impl<R: Read + Seek> IoProvider for ZipBundle<R> {
-    fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_name(
+        &mut self,
+        name: &OsStr,
+        _status: &mut StatusBackend,
+    ) -> OpenResult<InputHandle> {
         // We need to be able to look at other items in the Zip file while
         // reading this one, so the only path forward is to read the entire
         // contents into a buffer right now. RAM is cheap these days.
@@ -46,10 +46,10 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
 
         let namestr = match name.to_str() {
             Some(s) => s,
-            None => return OpenResult::NotAvailable
+            None => return OpenResult::NotAvailable,
         };
 
-        let mut zipitem = match self.zip.by_name (namestr) {
+        let mut zipitem = match self.zip.by_name(namestr) {
             Ok(f) => f,
             Err(e) => {
                 return match e {
@@ -69,6 +69,5 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
         OpenResult::Ok(InputHandle::new(name, Cursor::new(buf), InputOrigin::Other))
     }
 }
-
 
 impl<R: Read + Seek> Bundle for ZipBundle<R> {}
