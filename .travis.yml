@@ -82,11 +82,13 @@ before_script:
       export OPENSSL_LIB_DIR=$(brew --prefix openssl)/lib &&
       export DEP_OPENSSL_INCLUDE=$(brew --prefix openssl)/include &&
       export PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig
-    fi
+    fi &&
+    rustup component add rustfmt
 
 script:
   - |
     if [[ -z "$IMAGE" ]]; then
+      cargo fmt --all -- --check &&
       cargo build --verbose &&
       cargo test
     else
