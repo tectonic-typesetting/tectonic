@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Tectonic
+Comment=Tectonic is a modernized, complete, self-contained TeX/LaTeX engine, powered by XeTeX and TeXLive.
+TryExec=tectonic
+Exec=tectonic %F
+Icon=tectonic
+MimeType=image/svg+xml;
+
