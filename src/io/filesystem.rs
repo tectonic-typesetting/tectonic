@@ -145,7 +145,7 @@ impl IoProvider for FilesystemIo {
                     OpenResult::NotAvailable
                 } else {
                     OpenResult::Err(e.into())
-                }
+                };
             }
         };
 

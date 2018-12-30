@@ -162,7 +162,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             OpenResult::NotAvailable if path.extension().is_some() =>
             // Do not change the extension if provided.
             {
-                return OpenResult::NotAvailable
+                return OpenResult::NotAvailable;
             }
             OpenResult::NotAvailable => {}
             r => return r,

@@ -56,7 +56,7 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
                     ZipError::Io(sube) => OpenResult::Err(sube.into()),
                     ZipError::FileNotFound => OpenResult::NotAvailable,
                     _ => OpenResult::Err(e.into()),
-                }
+                };
             }
         };
 
