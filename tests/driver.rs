@@ -13,12 +13,11 @@ extern crate tempdir;
 
 use tectonic::config::PersistentConfig;
 use tectonic::driver::ProcessingSessionBuilder;
-use tectonic::status::ChatterLevel;
 use tectonic::status::termcolor::TermcolorStatusBackend;
+use tectonic::status::ChatterLevel;
 use tempdir::TempDir;
 
 mod util;
-
 
 // Keep these alphabetized.
 
@@ -48,6 +47,7 @@ fn the_letter_a() {
         .create(&mut status)
         .expect("couldn't create processing session");
 
-    session.run(&mut status)
+    session
+        .run(&mut status)
         .expect("failed to execute processing session");
 }

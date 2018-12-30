@@ -9,23 +9,25 @@ use std::ffi::OsStr;
 use std::io::Write;
 use tectonic_xdv::{FileType, XdvEvents, XdvParser};
 
+use super::IoEventBackend;
 use errors::{Error, Result};
 use io::{IoProvider, IoStack, OpenResult, OutputHandle};
 use status::StatusBackend;
-use super::IoEventBackend;
 
-
-pub struct Spx2HtmlEngine {
-}
-
+pub struct Spx2HtmlEngine {}
 
 impl Spx2HtmlEngine {
     pub fn new() -> Spx2HtmlEngine {
         Spx2HtmlEngine {}
     }
 
-    pub fn process(&mut self, io: &mut IoStack, events: &mut IoEventBackend,
-                   status: &mut StatusBackend, spx: &str) -> Result<()> {
+    pub fn process(
+        &mut self,
+        io: &mut IoStack,
+        events: &mut IoEventBackend,
+        status: &mut StatusBackend,
+        spx: &str,
+    ) -> Result<()> {
         let mut input = io.input_open_name(OsStr::new(spx), status).must_exist()?;
         events.input_opened(input.name(), input.origin());
 
@@ -55,7 +57,6 @@ impl Spx2HtmlEngine {
     }
 }
 
-
 struct State<'a, 'b: 'a> {
     outname: String,
     io: &'a mut IoStack<'b>,
@@ -67,8 +68,12 @@ struct State<'a, 'b: 'a> {
 }
 
 impl<'a, 'b: 'a> State<'a, 'b> {
-    pub fn new(outname: String, io: &'a mut IoStack<'b>,
-               events: &'a mut IoEventBackend, status: &'a mut StatusBackend) -> Self {
+    pub fn new(
+        outname: String,
+        io: &'a mut IoStack<'b>,
+        events: &'a mut IoEventBackend,
+        status: &'a mut StatusBackend,
+    ) -> Self {
         Self {
             outname: outname,
             io: io,
@@ -107,17 +112,15 @@ impl<'a, 'b: 'a> XdvEvents for State<'a, 'b> {
             return Err(errmsg!("file should be SPX format but got {}", filetype));
         }
 
-        self.cur_output = Some(
-            match self.io.output_open_name(OsStr::new(&self.outname)) {
-                OpenResult::Ok(h) => h,
-                OpenResult::NotAvailable => {
-                    return Err(errmsg!("no way to write output file \"{}\"", self.outname));
-                },
-                OpenResult::Err(e) => {
-                    return Err(e.into());
-                },
+        self.cur_output = Some(match self.io.output_open_name(OsStr::new(&self.outname)) {
+            OpenResult::Ok(h) => h,
+            OpenResult::NotAvailable => {
+                return Err(errmsg!("no way to write output file \"{}\"", self.outname));
             }
-        );
+            OpenResult::Err(e) => {
+                return Err(e.into());
+            }
+        });
 
         self.events.output_opened(OsStr::new(&self.outname));
 
@@ -129,7 +132,10 @@ impl<'a, 'b: 'a> XdvEvents for State<'a, 'b> {
             Some(ref mut h) => h,
             None => {
                 if !self.warned_lost_chars {
-                    tt_warning!(self.status, "losing characters in SPX file: no current output");
+                    tt_warning!(
+                        self.status,
+                        "losing characters in SPX file: no current output"
+                    );
                     self.warned_lost_chars = true;
                 }
 

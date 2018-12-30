@@ -13,20 +13,18 @@
 /// multithreading can be disabled by setting the RUST_TEST_THREADS environment
 /// variable to "1", but that's an annoying solution. So, we use a global mutex
 /// to achieve the same effect. Classy.
-
 extern crate tectonic;
 
 use std::ffi::OsStr;
 
 use tectonic::engines::NoopIoEventBackend;
-use tectonic::io::{FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
 use tectonic::io::testing::SingleInputFileIo;
+use tectonic::io::{FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
 use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
 
 mod util;
-use util::{ExpectedInfo, test_path};
-
+use util::{test_path, ExpectedInfo};
 
 #[test]
 fn trip_test() {
@@ -55,30 +53,34 @@ fn trip_test() {
 
     // First engine pass -- make the format file.
     {
-        let mut io = IoStack::new(vec![
-            &mut mem as &mut IoProvider,
-            &mut tex,
-            &mut tfm,
-        ]);
+        let mut io = IoStack::new(vec![&mut mem as &mut IoProvider, &mut tex, &mut tfm]);
         TexEngine::new()
             .halt_on_error_mode(false)
             .initex_mode(true)
-            .process(&mut io, &mut NoopIoEventBackend::new(),
-                      &mut NoopStatusBackend::new(), "INITEX", "trip").unwrap();
+            .process(
+                &mut io,
+                &mut NoopIoEventBackend::new(),
+                &mut NoopStatusBackend::new(),
+                "INITEX",
+                "trip",
+            )
+            .unwrap();
     }
 
     // Second pass -- process it
     {
-        let mut io = IoStack::new(vec![
-            &mut mem as &mut IoProvider,
-            &mut tex,
-            &mut tfm,
-        ]);
+        let mut io = IoStack::new(vec![&mut mem as &mut IoProvider, &mut tex, &mut tfm]);
         TexEngine::new()
             .halt_on_error_mode(false)
             .initex_mode(false)
-            .process(&mut io, &mut NoopIoEventBackend::new(),
-                      &mut NoopStatusBackend::new(), "trip.fmt", "trip").unwrap();
+            .process(
+                &mut io,
+                &mut NoopIoEventBackend::new(),
+                &mut NoopStatusBackend::new(),
+                "trip.fmt",
+                "trip",
+            )
+            .unwrap();
     }
 
     // Check that outputs match expectations.
@@ -88,7 +90,6 @@ fn trip_test() {
     expected_os.test_from_collection(files);
     expected_fot.test_data(files.get(OsStr::new("")).unwrap());
 }
-
 
 #[test]
 fn etrip_test() {
@@ -117,30 +118,34 @@ fn etrip_test() {
 
     // First engine pass -- make the format file.
     {
-        let mut io = IoStack::new(vec![
-            &mut mem as &mut IoProvider,
-            &mut tex,
-            &mut tfm,
-        ]);
+        let mut io = IoStack::new(vec![&mut mem as &mut IoProvider, &mut tex, &mut tfm]);
         TexEngine::new()
             .halt_on_error_mode(false)
             .initex_mode(true)
-            .process(&mut io, &mut NoopIoEventBackend::new(),
-                      &mut NoopStatusBackend::new(), "INITEX", "etrip").unwrap();
+            .process(
+                &mut io,
+                &mut NoopIoEventBackend::new(),
+                &mut NoopStatusBackend::new(),
+                "INITEX",
+                "etrip",
+            )
+            .unwrap();
     }
 
     // Second pass -- process it
     {
-        let mut io = IoStack::new(vec![
-            &mut mem,
-            &mut tex,
-            &mut tfm,
-        ]);
+        let mut io = IoStack::new(vec![&mut mem, &mut tex, &mut tfm]);
         TexEngine::new()
             .halt_on_error_mode(false)
             .initex_mode(false)
-            .process(&mut io, &mut NoopIoEventBackend::new(),
-                      &mut NoopStatusBackend::new(), "etrip.fmt", "etrip").unwrap();
+            .process(
+                &mut io,
+                &mut NoopIoEventBackend::new(),
+                &mut NoopStatusBackend::new(),
+                "etrip.fmt",
+                "etrip",
+            )
+            .unwrap();
     }
 
     // Check that outputs match expectations.

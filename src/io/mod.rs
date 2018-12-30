@@ -5,9 +5,9 @@
 //! Tectonic’s pluggable I/O backend.
 
 use flate2::read::GzDecoder;
-use hyper_native_tls::NativeTlsClient;
 use hyper::net::HttpsConnector;
 use hyper::Client;
+use hyper_native_tls::NativeTlsClient;
 use std::borrow::Cow;
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
@@ -30,19 +30,16 @@ pub mod stack;
 pub mod stdstreams;
 pub mod zipbundle;
 
-
-
 pub trait InputFeatures: Read {
     fn get_size(&mut self) -> Result<usize>;
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64>;
 }
 
-
 /// What kind of source an input file ultimately came from. We keep track of
 /// this in order to be able to emit Makefile-style dependencies for input
 /// files. Right now, we only provide enough options to achieve this goal; we
 /// could add more.
-#[derive(Clone,Copy,Debug,Eq,PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum InputOrigin {
     /// This file lives on the filesystem and might change under us. (That is
     /// it is not a cached bundle file.)
@@ -54,7 +51,6 @@ pub enum InputOrigin {
     /// This file is none of the above.
     Other,
 }
-
 
 /// Input handles are basically Read objects with a few extras. We don't
 /// require the standard io::Seek because we need to provide a dummy
@@ -90,9 +86,12 @@ pub struct InputHandle {
     ungetc_char: Option<u8>,
 }
 
-
 impl InputHandle {
-    pub fn new<T: 'static + InputFeatures>(name: &OsStr, inner: T, origin: InputOrigin) -> InputHandle {
+    pub fn new<T: 'static + InputFeatures>(
+        name: &OsStr,
+        inner: T,
+        origin: InputOrigin,
+    ) -> InputHandle {
         InputHandle {
             name: name.to_os_string(),
             inner: Box::new(inner),
@@ -149,14 +148,16 @@ impl InputHandle {
             return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "EOF in getc").into());
         }
 
-
         Ok(byte[0])
     }
 
     /// Here's the `ungetc()` emulation.
     pub fn ungetc(&mut self, byte: u8) -> Result<()> {
         if self.ungetc_char.is_some() {
-            return Err(ErrorKind::Msg("internal problem: cannot ungetc() more than once in a row".into()).into());
+            return Err(ErrorKind::Msg(
+                "internal problem: cannot ungetc() more than once in a row".into(),
+            )
+            .into());
         }
 
         self.ungetc_char = Some(byte);
@@ -201,7 +202,7 @@ impl InputFeatures for InputHandle {
             SeekFrom::Current(0) => {
                 // Noop. This must *not* clear the ungetc buffer for our
                 // current PDF startxref/xref parsing code to work.
-            },
+            }
             _ => {
                 self.did_unhandled_seek = true;
                 self.ungetc_char = None;
@@ -211,13 +212,11 @@ impl InputFeatures for InputHandle {
     }
 }
 
-
 pub struct OutputHandle {
     name: OsString,
     inner: Box<Write>,
     digest: digest::DigestComputer,
 }
-
 
 impl OutputHandle {
     pub fn new<T: 'static + Write>(name: &OsStr, inner: T) -> OutputHandle {
@@ -257,7 +256,6 @@ impl Write for OutputHandle {
     }
 }
 
-
 // An Io provider is a source of handles. One wrinkle is that it's good to be
 // able to distinguish between unavailability of a given name and error
 // accessing it. We take file paths as OsStrs, although since we parse input
@@ -268,9 +266,8 @@ impl Write for OutputHandle {
 pub enum OpenResult<T> {
     Ok(T),
     NotAvailable,
-    Err(Error)
+    Err(Error),
 }
-
 
 impl<T> OpenResult<T> {
     pub fn unwrap(self) -> T {
@@ -296,11 +293,12 @@ impl<T> OpenResult<T> {
         match self {
             OpenResult::Ok(t) => Ok(t),
             OpenResult::Err(e) => Err(e),
-            OpenResult::NotAvailable => Err(io::Error::new(io::ErrorKind::NotFound, "not found").into()),
+            OpenResult::NotAvailable => {
+                Err(io::Error::new(io::ErrorKind::NotFound, "not found").into())
+            }
         }
     }
 }
-
 
 /// A hack to allow casting of Bundles to IoProviders.
 ///
@@ -330,7 +328,11 @@ pub trait IoProvider: AsIoProviderMut {
         OpenResult::NotAvailable
     }
 
-    fn input_open_name(&mut self, _name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_name(
+        &mut self,
+        _name: &OsStr,
+        _status: &mut StatusBackend,
+    ) -> OpenResult<InputHandle> {
         OpenResult::NotAvailable
     }
 
@@ -348,14 +350,23 @@ pub trait IoProvider: AsIoProviderMut {
     /// specially: namely, to munge the filename to one that includes the
     /// current version of the Tectonic engine, since the format contents
     /// depend sensitively on the engine internals.
-    fn input_open_format(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_format(
+        &mut self,
+        name: &OsStr,
+        status: &mut StatusBackend,
+    ) -> OpenResult<InputHandle> {
         self.input_open_name(name, status)
     }
 
     /// Save an a format dump in some way that this provider may be able to
     /// recover in the future. This awkward interface is needed for to write
     /// formats with their special munged file names.
-    fn write_format(&mut self, _name: &str, _data: &[u8], _status: &mut StatusBackend) -> Result<()> {
+    fn write_format(
+        &mut self,
+        _name: &str,
+        _data: &[u8],
+        _status: &mut StatusBackend,
+    ) -> Result<()> {
         Err(ErrorKind::Msg("this I/O layer cannot save format files".to_owned()).into())
     }
 }
@@ -369,7 +380,11 @@ impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
         (**self).output_open_stdout()
     }
 
-    fn input_open_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_name(
+        &mut self,
+        name: &OsStr,
+        status: &mut StatusBackend,
+    ) -> OpenResult<InputHandle> {
         (**self).input_open_name(name, status)
     }
 
@@ -377,7 +392,11 @@ impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
         (**self).input_open_primary(status)
     }
 
-    fn input_open_format(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_format(
+        &mut self,
+        name: &OsStr,
+        status: &mut StatusBackend,
+    ) -> OpenResult<InputHandle> {
         (**self).input_open_format(name, status)
     }
 
@@ -385,7 +404,6 @@ impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
         (**self).write_format(name, data, status)
     }
 }
-
 
 /// A special IoProvider that can make TeX format files.
 ///
@@ -412,12 +430,15 @@ pub trait Bundle: IoProvider {
                 let mut text = String::new();
                 h.take(64).read_to_string(&mut text)?;
                 text
-            },
+            }
 
             OpenResult::NotAvailable => {
                 // Broken or un-cacheable backend.
-                return Err(ErrorKind::Msg("itar-format bundle does not provide needed SHA256SUM file".to_owned()).into());
-            },
+                return Err(ErrorKind::Msg(
+                    "itar-format bundle does not provide needed SHA256SUM file".to_owned(),
+                )
+                .into());
+            }
 
             OpenResult::Err(e) => {
                 return Err(e.into());
@@ -434,7 +455,6 @@ impl<B: Bundle + ?Sized> Bundle for Box<B> {
     }
 }
 
-
 // Some generically helpful InputFeatures impls
 
 impl<R: Read> InputFeatures for GzDecoder<R> {
@@ -447,7 +467,6 @@ impl<R: Read> InputFeatures for GzDecoder<R> {
     }
 }
 
-
 impl InputFeatures for Cursor<Vec<u8>> {
     fn get_size(&mut self) -> Result<usize> {
         Ok(self.get_ref().len())
@@ -458,15 +477,13 @@ impl InputFeatures for Cursor<Vec<u8>> {
     }
 }
 
-
 // Reexports
 
 pub use self::filesystem::{FilesystemIo, FilesystemPrimaryInputIo};
-pub use self::stdstreams::GenuineStdoutIo;
 pub use self::memory::MemoryIo;
-pub use self::stack::IoStack;
 pub use self::setup::{IoSetup, IoSetupBuilder};
-
+pub use self::stack::IoStack;
+pub use self::stdstreams::GenuineStdoutIo;
 
 // Helpful.
 
@@ -481,7 +498,7 @@ pub fn try_open_file<P: AsRef<Path>>(path: P) -> OpenResult<File> {
             } else {
                 OpenResult::Err(e.into())
             }
-        },
+        }
     }
 }
 
@@ -553,7 +570,11 @@ fn try_normalize_tex_path(path: &str) -> Option<String> {
 /// TODO: This function should operate on `&str` someday, but we need to transition the internals
 /// away from `OsStr/OsString` before that can happen.
 fn normalize_tex_path(path: &OsStr) -> Cow<OsStr> {
-    if let Some(t) = path.to_str().and_then(try_normalize_tex_path).map(OsString::from) {
+    if let Some(t) = path
+        .to_str()
+        .and_then(try_normalize_tex_path)
+        .map(OsString::from)
+    {
         Cow::Owned(t)
     } else {
         Cow::Borrowed(path)
@@ -571,14 +592,14 @@ pub fn create_hyper_client() -> Client {
 // #[cfg(test)] but things break if I do that.
 
 pub mod testing {
+    use super::*;
     use std::ffi::{OsStr, OsString};
     use std::fs::File;
     use std::path::{Path, PathBuf};
-    use super::*;
 
     pub struct SingleInputFileIo {
         name: OsString,
-        full_path: PathBuf
+        full_path: PathBuf,
     }
 
     impl SingleInputFileIo {
@@ -601,9 +622,17 @@ pub mod testing {
             OpenResult::NotAvailable
         }
 
-        fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
+        fn input_open_name(
+            &mut self,
+            name: &OsStr,
+            _status: &mut StatusBackend,
+        ) -> OpenResult<InputHandle> {
             if name == self.name {
-                OpenResult::Ok(InputHandle::new(name, File::open(&self.full_path).unwrap(), InputOrigin::Filesystem))
+                OpenResult::Ok(InputHandle::new(
+                    name,
+                    File::open(&self.full_path).unwrap(),
+                    InputOrigin::Filesystem,
+                ))
             } else {
                 OpenResult::NotAvailable
             }
@@ -627,23 +656,40 @@ mod tests {
         assert_eq!(try_normalize_tex_path("././/./"), Some(".".into()));
         assert_eq!(try_normalize_tex_path("/././/."), Some("/".into()));
 
-        assert_eq!(try_normalize_tex_path("my/path/file.txt"),
-                   Some("my/path/file.txt".into()));
+        assert_eq!(
+            try_normalize_tex_path("my/path/file.txt"),
+            Some("my/path/file.txt".into())
+        );
         // preserve spaces
-        assert_eq!(try_normalize_tex_path("  my/pa  th/file .txt "),
-                   Some("  my/pa  th/file .txt ".into()));
-        assert_eq!(try_normalize_tex_path("/my/path/file.txt"),
-                   Some("/my/path/file.txt".into()));
-        assert_eq!(try_normalize_tex_path("./my///path/././file.txt"),
-                   Some("my/path/file.txt".into()));
-        assert_eq!(try_normalize_tex_path("./../my/../../../file.txt"),
-                   Some("../../../file.txt".into()));
-        assert_eq!(try_normalize_tex_path("././my//../path/../here/file.txt"),
-                   Some("here/file.txt".into()));
-        assert_eq!(try_normalize_tex_path("./my/.././/path/../../here//file.txt"),
-                   Some("../here/file.txt".into()));
+        assert_eq!(
+            try_normalize_tex_path("  my/pa  th/file .txt "),
+            Some("  my/pa  th/file .txt ".into())
+        );
+        assert_eq!(
+            try_normalize_tex_path("/my/path/file.txt"),
+            Some("/my/path/file.txt".into())
+        );
+        assert_eq!(
+            try_normalize_tex_path("./my///path/././file.txt"),
+            Some("my/path/file.txt".into())
+        );
+        assert_eq!(
+            try_normalize_tex_path("./../my/../../../file.txt"),
+            Some("../../../file.txt".into())
+        );
+        assert_eq!(
+            try_normalize_tex_path("././my//../path/../here/file.txt"),
+            Some("here/file.txt".into())
+        );
+        assert_eq!(
+            try_normalize_tex_path("./my/.././/path/../../here//file.txt"),
+            Some("../here/file.txt".into())
+        );
 
         assert_eq!(try_normalize_tex_path("/my/../../file.txt"), None);
-        assert_eq!(try_normalize_tex_path("/my/./.././path//../../file.txt"), None);
+        assert_eq!(
+            try_normalize_tex_path("/my/./.././path//../../file.txt"),
+            None
+        );
     }
 }

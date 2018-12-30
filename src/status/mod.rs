@@ -4,13 +4,13 @@
 
 //! A framework for showing status messages to the user.
 
-#[macro_use] pub mod termcolor;
+#[macro_use]
+pub mod termcolor;
 
 use std::cmp;
 use std::fmt::Arguments;
 
 use errors::Error;
-
 
 #[repr(usize)]
 #[derive(Clone, Copy, Eq, Debug)]
@@ -40,14 +40,12 @@ impl Ord for ChatterLevel {
     }
 }
 
-
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum MessageKind {
     Note,
     Warning,
     Error,
 }
-
 
 pub trait StatusBackend {
     /// Report a message to the status backend.
@@ -60,7 +58,11 @@ pub trait StatusBackend {
     /// high-level than intended for this trait, but we can provide a nice
     /// sensible default implementation, so whatever.
     fn note_highlighted(&mut self, before: &str, highlighted: &str, after: &str) {
-        self.report(MessageKind::Note, format_args!("{}{}{}", before, highlighted, after), None)
+        self.report(
+            MessageKind::Note,
+            format_args!("{}{}{}", before, highlighted, after),
+            None,
+        )
     }
 }
 
@@ -107,12 +109,11 @@ macro_rules! tt_error {
     };
 }
 
-
-pub struct NoopStatusBackend { }
+pub struct NoopStatusBackend {}
 
 impl NoopStatusBackend {
     pub fn new() -> NoopStatusBackend {
-        NoopStatusBackend { }
+        NoopStatusBackend {}
     }
 }
 

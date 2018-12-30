@@ -8,11 +8,12 @@ use std::ffi::{OsStr, OsString};
 use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
 use std::rc::Rc;
 
+use super::{
+    normalize_tex_path, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult,
+    OutputHandle,
+};
 use errors::Result;
 use status::StatusBackend;
-use super::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle,
-            normalize_tex_path};
-
 
 // MemoryIo is an IoProvider that stores "files" in in-memory buffers.
 //
@@ -28,22 +29,27 @@ struct MemoryIoItem {
     state: Cursor<Vec<u8>>,
 }
 
-
 impl MemoryIoItem {
-    pub fn new(files: &Rc<RefCell<HashMap<OsString, Vec<u8>>>>, name: &OsStr, truncate: bool) -> MemoryIoItem {
+    pub fn new(
+        files: &Rc<RefCell<HashMap<OsString, Vec<u8>>>>,
+        name: &OsStr,
+        truncate: bool,
+    ) -> MemoryIoItem {
         let cur = match files.borrow_mut().remove(name) {
-            Some(data) => if truncate {
-                Vec::new()
-            } else {
-                data
-            },
+            Some(data) => {
+                if truncate {
+                    Vec::new()
+                } else {
+                    data
+                }
+            }
             None => Vec::new(),
         };
 
         MemoryIoItem {
             files: files.clone(),
             name: name.to_os_string(),
-            state: Cursor::new(cur)
+            state: Cursor::new(cur),
         }
     }
 }
@@ -90,7 +96,6 @@ impl Drop for MemoryIoItem {
     }
 }
 
-
 pub struct MemoryIo {
     pub files: Rc<RefCell<HashMap<OsString, Vec<u8>>>>,
     stdout_allowed: bool,
@@ -109,7 +114,7 @@ impl MemoryIo {
         mfiles.insert(name.to_os_string(), data);
     }
 
-    pub fn stdout_key(& self) -> &OsStr {
+    pub fn stdout_key(&self) -> &OsStr {
         OsStr::new("")
     }
 }
@@ -122,7 +127,10 @@ impl IoProvider for MemoryIo {
 
         let name = normalize_tex_path(name);
 
-        OpenResult::Ok(OutputHandle::new(&name, MemoryIoItem::new(&self.files, &name, true)))
+        OpenResult::Ok(OutputHandle::new(
+            &name,
+            MemoryIoItem::new(&self.files, &name, true),
+        ))
     }
 
     fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
@@ -130,10 +138,17 @@ impl IoProvider for MemoryIo {
             return OpenResult::NotAvailable;
         }
 
-        OpenResult::Ok(OutputHandle::new(self.stdout_key(), MemoryIoItem::new(&self.files, self.stdout_key(), true)))
+        OpenResult::Ok(OutputHandle::new(
+            self.stdout_key(),
+            MemoryIoItem::new(&self.files, self.stdout_key(), true),
+        ))
     }
 
-    fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_name(
+        &mut self,
+        name: &OsStr,
+        _status: &mut StatusBackend,
+    ) -> OpenResult<InputHandle> {
         if name.is_empty() {
             return OpenResult::NotAvailable;
         }
@@ -141,21 +156,22 @@ impl IoProvider for MemoryIo {
         let name = normalize_tex_path(name);
 
         if self.files.borrow().contains_key(&*name) {
-            OpenResult::Ok(InputHandle::new(&name,
-                                            MemoryIoItem::new(&self.files, &name, false),
-                                            InputOrigin::Other))
+            OpenResult::Ok(InputHandle::new(
+                &name,
+                MemoryIoItem::new(&self.files, &name, false),
+                InputOrigin::Other,
+            ))
         } else {
             OpenResult::NotAvailable
         }
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::{BufRead, BufReader};
     use status::NoopStatusBackend;
+    use std::io::{BufRead, BufReader};
 
     /// Early versions had a bug where files were not truncated when opened
     /// for writing, which led to junk after the intended EOF when the engine
@@ -169,7 +185,7 @@ mod tests {
         // Write a line to a file, then (implicitly) close it.
         {
             let mut h = mem.output_open_name(name).unwrap();
-            writeln!(h,"0123456789").unwrap();
+            writeln!(h, "0123456789").unwrap();
         }
 
         // Reopen the file for input, then close it.
@@ -189,7 +205,7 @@ mod tests {
         // Now open for output and write a shorter line.
         {
             let mut h = mem.output_open_name(name).unwrap();
-            writeln!(h,"0123").unwrap();
+            writeln!(h, "0123").unwrap();
         }
 
         // Open for input one last time; file should now have been truncated.

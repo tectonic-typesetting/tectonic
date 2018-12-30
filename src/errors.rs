@@ -6,9 +6,9 @@
 
 use app_dirs;
 use hyper;
-use std::{convert, ffi, io, num, str};
-use std::result::Result as StdResult;
 use std::io::Write;
+use std::result::Result as StdResult;
+use std::{convert, ffi, io, num, str};
 use tectonic_xdv;
 use tempfile;
 use toml;
@@ -61,7 +61,6 @@ error_chain! {
     }
 }
 
-
 /// Use string formatting to create an `Error` of kind
 /// `errors::ErrorKind::Msg`.
 #[macro_export]
@@ -70,7 +69,6 @@ macro_rules! errmsg {
         $crate::errors::ErrorKind::Msg(format!($( $fmt_args ),*)).into()
     };
 }
-
 
 /// “Chained try” — like `try!`, but with the ability to add context to the error message.
 #[macro_export]
@@ -86,7 +84,6 @@ impl convert::From<Error> for io::Error {
         io::Error::new(io::ErrorKind::Other, format!("{}", err))
     }
 }
-
 
 impl Error {
     /// Write the information contained in this object to standard error in a
@@ -114,7 +111,6 @@ impl Error {
         }
     }
 }
-
 
 /// The DefinitelySame trait is a helper trait implemented because Errors do
 /// not generically implement PartialEq. This is a bit of a drag for testing
@@ -148,7 +144,7 @@ impl DefinitelySame for ErrorKind {
                 s == o
             } else {
                 false
-            }
+            };
         }
 
         false
@@ -162,18 +158,22 @@ impl DefinitelySame for Error {
     }
 }
 
-impl<T: DefinitelySame, E: DefinitelySame> DefinitelySame for StdResult<T,E> {
+impl<T: DefinitelySame, E: DefinitelySame> DefinitelySame for StdResult<T, E> {
     fn definitely_same(&self, other: &Self) -> bool {
         match *self {
-            Ok(ref st) => if let Ok(ref ot) = *other {
-                st.definitely_same(ot)
-            } else {
-                false
-            },
-            Err(ref se) => if let Err(ref oe) = *other {
-                se.definitely_same(oe)
-            } else {
-                false
+            Ok(ref st) => {
+                if let Ok(ref ot) = *other {
+                    st.definitely_same(ot)
+                } else {
+                    false
+                }
+            }
+            Err(ref se) => {
+                if let Err(ref oe) = *other {
+                    se.definitely_same(oe)
+                } else {
+                    false
+                }
             }
         }
     }

@@ -25,7 +25,6 @@ use std::path::{Path, PathBuf};
 use self::tectonic::errors::Result;
 pub use self::tectonic::test_util::{test_path, TestBundle};
 
-
 /// Set the magic environment variable that enables the testing infrastructure
 /// embedded in the main Tectonic crate. This function is separated out from
 /// the main crate because it embeds `CARGO_MANIFEST_DIR`, which is not
@@ -40,19 +39,16 @@ pub fn cargo_dir() -> PathBuf {
     env::var_os("CARGO_BIN_PATH")
         .map(PathBuf::from)
         .or_else(|| {
-            env::current_exe()
-                .ok()
-                .map(|mut path| {
-                         path.pop();
-                         if path.ends_with("deps") {
-                             path.pop();
-                         }
-                         path
-                     })
+            env::current_exe().ok().map(|mut path| {
+                path.pop();
+                if path.ends_with("deps") {
+                    path.pop();
+                }
+                path
+            })
         })
         .unwrap_or_else(|| panic!("CARGO_BIN_PATH wasn't set. Cannot continue running test"))
 }
-
 
 /// Generate a plain.fmt file using local files only -- a variety of tests
 /// need such a file to exist.
@@ -61,10 +57,12 @@ pub fn cargo_dir() -> PathBuf {
 /// the moment we just let everybody write and overwrite the file, but we
 /// could use a locking scheme to get smarter about this.
 pub fn ensure_plain_format() -> Result<PathBuf> {
-    use self::tectonic::TexEngine;
-    use self::tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo, try_open_file};
     use self::tectonic::engines::NoopIoEventBackend;
+    use self::tectonic::io::{
+        try_open_file, FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo,
+    };
     use self::tectonic::status::NoopStatusBackend;
+    use self::tectonic::TexEngine;
 
     let fmt_path = test_path(&["plain.fmt"]);
 
@@ -79,17 +77,18 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
         let mut fs_primary = FilesystemPrimaryInputIo::new(&assets_dir);
 
         {
-            let mut io = IoStack::new(vec![
-                &mut mem,
-                &mut fs_primary,
-                &mut fs_support,
-            ]);
+            let mut io = IoStack::new(vec![&mut mem, &mut fs_primary, &mut fs_support]);
 
             TexEngine::new()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
-                .process(&mut io, &mut NoopIoEventBackend::new(),
-                          &mut NoopStatusBackend::new(), "UNUSED.fmt", "plain.tex")?;
+                .process(
+                    &mut io,
+                    &mut NoopIoEventBackend::new(),
+                    &mut NoopStatusBackend::new(),
+                    "UNUSED.fmt",
+                    "plain.tex",
+                )?;
         }
 
         let mut temp_fmt = tempfile::Builder::new()
@@ -103,7 +102,6 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
     Ok(fmt_path)
 }
 
-
 /// Convenience structure for comparing expected and actual output in various
 /// tests.
 pub struct ExpectedInfo {
@@ -115,13 +113,20 @@ pub struct ExpectedInfo {
 impl ExpectedInfo {
     pub fn read<P: AsRef<Path>>(path: P) -> Self {
         let path = path.as_ref();
-        let name = path.file_name().expect(&format!("coudn't get file_name of {:?}", path)).to_owned();
+        let name = path
+            .file_name()
+            .expect(&format!("coudn't get file_name of {:?}", path))
+            .to_owned();
 
         let mut f = File::open(path).expect(&format!("failed to open {:?}", path));
         let mut contents = Vec::new();
         f.read_to_end(&mut contents).unwrap();
 
-        ExpectedInfo { name: name, contents: contents, gzipped: false }
+        ExpectedInfo {
+            name: name,
+            contents: contents,
+            gzipped: false,
+        }
     }
 
     pub fn read_with_extension(pbase: &mut PathBuf, extension: &str) -> Self {
@@ -137,7 +142,11 @@ impl ExpectedInfo {
         let mut contents = Vec::new();
         dec.read_to_end(&mut contents).unwrap();
 
-        ExpectedInfo { name: name, contents: contents, gzipped: true }
+        ExpectedInfo {
+            name: name,
+            contents: contents,
+            gzipped: true,
+        }
     }
 
     pub fn test_data(&self, observed: &Vec<u8>) {
@@ -151,16 +160,31 @@ impl ExpectedInfo {
         {
             let mut n = self.name.clone();
             n.push(".expected");
-            let mut f = File::create(&n).expect(&format!("failed to create {} for test failure diagnosis", n.to_string_lossy()));
-            f.write_all(&self.contents).expect(&format!("failed to write {} for test failure diagnosis", n.to_string_lossy()));
+            let mut f = File::create(&n).expect(&format!(
+                "failed to create {} for test failure diagnosis",
+                n.to_string_lossy()
+            ));
+            f.write_all(&self.contents).expect(&format!(
+                "failed to write {} for test failure diagnosis",
+                n.to_string_lossy()
+            ));
         }
         {
             let mut n = self.name.clone();
             n.push(".observed");
-            let mut f = File::create(&n).expect(&format!("failed to create {} for test failure diagnosis", n.to_string_lossy()));
-            f.write_all(observed).expect(&format!("failed to write {} for test failure diagnosis", n.to_string_lossy()));
+            let mut f = File::create(&n).expect(&format!(
+                "failed to create {} for test failure diagnosis",
+                n.to_string_lossy()
+            ));
+            f.write_all(observed).expect(&format!(
+                "failed to write {} for test failure diagnosis",
+                n.to_string_lossy()
+            ));
         }
-        panic!("difference in {}; contents saved to disk", self.name.to_string_lossy());
+        panic!(
+            "difference in {}; contents saved to disk",
+            self.name.to_string_lossy()
+        );
     }
 
     pub fn test_from_collection(&self, files: &HashMap<OsString, Vec<u8>>) {
@@ -168,7 +192,11 @@ impl ExpectedInfo {
             if let Some(data) = files.get(&self.name) {
                 self.test_data(data)
             } else {
-                panic!("{:?} not in {:?}", self.name, files.keys().collect::<Vec<_>>())
+                panic!(
+                    "{:?} not in {:?}",
+                    self.name,
+                    files.keys().collect::<Vec<_>>()
+                )
             }
         } else {
             let mut buf = Vec::new();

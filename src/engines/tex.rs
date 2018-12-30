@@ -4,13 +4,12 @@
 
 use std::ffi::{CStr, CString};
 
+use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
 use errors::{DefinitelySame, ErrorKind, Result};
 use io::IoStack;
 use status::StatusBackend;
-use super::{IoEventBackend, ExecutionState, TectonicBridgeApi};
 
-
-#[derive(Clone,Copy,Debug,Eq,PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum TexResult {
     // The Errors possibility should only occur if halt_on_error_p is false --
     // otherwise, errors get upgraded to fatals. The fourth TeX "history"
@@ -32,7 +31,6 @@ impl DefinitelySame for TexResult {
 pub struct TexEngine {
     // One day, the engine will hold its own state. For the time being,
     // though, it's just a proxy for the global constants in the C code.
-
     halt_on_error: bool,
     initex_mode: bool,
     synctex_enabled: bool,
@@ -51,11 +49,11 @@ impl Default for TexEngine {
 }
 
 impl TexEngine {
-    pub fn new () -> TexEngine {
+    pub fn new() -> TexEngine {
         TexEngine::default()
     }
 
-    pub fn halt_on_error_mode (&mut self, halt_on_error: bool) -> &mut Self {
+    pub fn halt_on_error_mode(&mut self, halt_on_error: bool) -> &mut Self {
         self.halt_on_error = halt_on_error;
         self
     }
@@ -63,13 +61,13 @@ impl TexEngine {
     /// Configure the engine to run in "initex" mode, in which it generates a
     /// "format" file that serializes the engine state rather than a PDF
     /// document.
-    pub fn initex_mode (&mut self, initex: bool) -> &mut Self {
+    pub fn initex_mode(&mut self, initex: bool) -> &mut Self {
         self.initex_mode = initex;
         self
     }
 
     /// Configure the engine to produce SyncTeX data.
-    pub fn synctex (&mut self, synctex_enabled: bool) -> &mut Self {
+    pub fn synctex(&mut self, synctex_enabled: bool) -> &mut Self {
         self.synctex_enabled = synctex_enabled;
         self
     }
@@ -84,7 +82,7 @@ impl TexEngine {
     /// rendering.
     ///
     /// This is an essential component of the HTML output process.
-    pub fn semantic_pagination (&mut self, enabled: bool) -> &mut Self {
+    pub fn semantic_pagination(&mut self, enabled: bool) -> &mut Self {
         self.semantic_pagination_enabled = enabled;
         self
     }
@@ -93,10 +91,14 @@ impl TexEngine {
     // since the global pointer that stashes the ExecutionState must have a
     // complete type.
 
-    pub fn process (&mut self, io: &mut IoStack,
-                    events: &mut IoEventBackend,
-                    status: &mut StatusBackend,
-                    format_file_name: &str, input_file_name: &str) -> Result<TexResult> {
+    pub fn process(
+        &mut self,
+        io: &mut IoStack,
+        events: &mut IoEventBackend,
+        status: &mut StatusBackend,
+        format_file_name: &str,
+        input_file_name: &str,
+    ) -> Result<TexResult> {
         let _guard = super::ENGINE_LOCK.lock().unwrap(); // until we're thread-safe ...
 
         let cformat = CString::new(format_file_name)?;
@@ -107,13 +109,25 @@ impl TexEngine {
 
         // initialize globals
         let v = if self.halt_on_error { 1 } else { 0 };
-        unsafe { super::tt_xetex_set_int_variable(b"halt_on_error_p\0".as_ptr() as _, v); }
+        unsafe {
+            super::tt_xetex_set_int_variable(b"halt_on_error_p\0".as_ptr() as _, v);
+        }
         let v = if self.initex_mode { 1 } else { 0 };
-        unsafe { super::tt_xetex_set_int_variable(b"in_initex_mode\0".as_ptr() as _, v); }
+        unsafe {
+            super::tt_xetex_set_int_variable(b"in_initex_mode\0".as_ptr() as _, v);
+        }
         let v = if self.synctex_enabled { 1 } else { 0 };
-        unsafe { super::tt_xetex_set_int_variable(b"synctex_enabled\0".as_ptr() as _, v); }
-        let v = if self.semantic_pagination_enabled { 1 } else { 0 };
-        unsafe { super::tt_xetex_set_int_variable(b"semantic_pagination_enabled\0".as_ptr() as _, v); }
+        unsafe {
+            super::tt_xetex_set_int_variable(b"synctex_enabled\0".as_ptr() as _, v);
+        }
+        let v = if self.semantic_pagination_enabled {
+            1
+        } else {
+            0
+        };
+        unsafe {
+            super::tt_xetex_set_int_variable(b"semantic_pagination_enabled\0".as_ptr() as _, v);
+        }
 
         unsafe {
             match super::tex_simple_main(&bridge, cformat.as_ptr(), cinput.as_ptr()) {
@@ -124,8 +138,12 @@ impl TexEngine {
                     let ptr = super::tt_get_error_message();
                     let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
                     Err(ErrorKind::Msg(msg).into())
-                },
-                x => Err(ErrorKind::Msg(format!("internal error: unexpected 'history' value {}", x)).into())
+                }
+                x => Err(ErrorKind::Msg(format!(
+                    "internal error: unexpected 'history' value {}",
+                    x
+                ))
+                .into()),
             }
         }
     }

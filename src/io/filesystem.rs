@@ -9,10 +9,11 @@ use std::fs::File;
 use std::io::{self, BufReader, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 
+use super::{
+    try_open_file, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle,
+};
 use errors::{ErrorKind, Result};
 use status::StatusBackend;
-use super::{try_open_file, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
-
 
 /// FilesystemPrimaryInputIo is an I/O provider that provides the TeX "primary input"
 /// file off of the filesystem. This can *pretty much* be achieved with
@@ -31,11 +32,10 @@ pub struct FilesystemPrimaryInputIo {
 impl FilesystemPrimaryInputIo {
     pub fn new<P: AsRef<Path>>(path: P) -> FilesystemPrimaryInputIo {
         FilesystemPrimaryInputIo {
-            path: path.as_ref().to_owned()
+            path: path.as_ref().to_owned(),
         }
     }
 }
-
 
 impl IoProvider for FilesystemPrimaryInputIo {
     fn input_open_primary(&mut self, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
@@ -45,10 +45,13 @@ impl IoProvider for FilesystemPrimaryInputIo {
             OpenResult::Err(e) => return OpenResult::Err(e),
         };
 
-        OpenResult::Ok(InputHandle::new(OsStr::new(""), BufReader::new(f), InputOrigin::Filesystem))
+        OpenResult::Ok(InputHandle::new(
+            OsStr::new(""),
+            BufReader::new(f),
+            InputOrigin::Filesystem,
+        ))
     }
 }
-
 
 /// FilesystemIo is an I/O provider that reads, and optionally writes, files
 /// from a given root directory. NOTE: no effort is made to contain I/O within
@@ -63,8 +66,12 @@ pub struct FilesystemIo {
 }
 
 impl FilesystemIo {
-    pub fn new(root: &Path, writes_allowed: bool, absolute_allowed: bool,
-                  hidden_input_paths: HashSet<PathBuf>) -> FilesystemIo {
+    pub fn new(
+        root: &Path,
+        writes_allowed: bool,
+        absolute_allowed: bool,
+        hidden_input_paths: HashSet<PathBuf>,
+    ) -> FilesystemIo {
         FilesystemIo {
             root: PathBuf::from(root),
             writes_allowed: writes_allowed,
@@ -87,7 +94,6 @@ impl FilesystemIo {
     }
 }
 
-
 impl IoProvider for FilesystemIo {
     fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         if !self.writes_allowed {
@@ -96,12 +102,12 @@ impl IoProvider for FilesystemIo {
 
         let path = match self.construct_path(name) {
             Ok(p) => p,
-            Err(e) => return OpenResult::Err(e.into())
+            Err(e) => return OpenResult::Err(e.into()),
         };
 
-        let f = match File::create (path) {
+        let f = match File::create(path) {
             Ok(f) => f,
-            Err(e) => return OpenResult::Err(e.into())
+            Err(e) => return OpenResult::Err(e.into()),
         };
 
         OpenResult::Ok(OutputHandle::new(name, f))
@@ -112,35 +118,44 @@ impl IoProvider for FilesystemIo {
         OpenResult::NotAvailable
     }
 
-    fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_name(
+        &mut self,
+        name: &OsStr,
+        _status: &mut StatusBackend,
+    ) -> OpenResult<InputHandle> {
         let path = match self.construct_path(name) {
             Ok(p) => p,
-            Err(e) => return OpenResult::Err(e.into())
+            Err(e) => return OpenResult::Err(e.into()),
         };
 
         if self.hidden_input_paths.contains(&path) {
             return OpenResult::NotAvailable;
         }
 
-        let f = match File::open (path) {
+        let f = match File::open(path) {
             Ok(f) => f,
-            Err(e) => return if e.kind() == io::ErrorKind::NotFound {
-                OpenResult::NotAvailable
-            } else if let Some(libc::ENOTDIR) = e.raw_os_error () {
-                // xdvipdfmx has a code path that basically tries to open a
-                // font path assuming that it is a directory, which causes an
-                // ENOTDIR to happen (i.e., it tries the equivalent of
-                // open("/etc/passwd/subdir"). This circumstance is harmless.
-                OpenResult::NotAvailable
-            } else {
-                OpenResult::Err(e.into())
+            Err(e) => {
+                return if e.kind() == io::ErrorKind::NotFound {
+                    OpenResult::NotAvailable
+                } else if let Some(libc::ENOTDIR) = e.raw_os_error() {
+                    // xdvipdfmx has a code path that basically tries to open a
+                    // font path assuming that it is a directory, which causes an
+                    // ENOTDIR to happen (i.e., it tries the equivalent of
+                    // open("/etc/passwd/subdir"). This circumstance is harmless.
+                    OpenResult::NotAvailable
+                } else {
+                    OpenResult::Err(e.into())
+                };
             }
         };
 
-        OpenResult::Ok(InputHandle::new(name, BufReader::new(f), InputOrigin::Filesystem))
+        OpenResult::Ok(InputHandle::new(
+            name,
+            BufReader::new(f),
+            InputOrigin::Filesystem,
+        ))
     }
 }
-
 
 impl InputFeatures for File {
     fn get_size(&mut self) -> Result<usize> {
@@ -151,7 +166,6 @@ impl InputFeatures for File {
         Ok(self.seek(pos)?)
     }
 }
-
 
 impl InputFeatures for BufReader<File> {
     fn get_size(&mut self) -> Result<usize> {

@@ -6,23 +6,20 @@ use std::ffi::OsStr;
 use std::io::{stdin, stdout, Cursor, Read, Seek, SeekFrom};
 use std::rc::Rc;
 
+use super::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
 use errors::Result;
 use status::StatusBackend;
-use super::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
-
 
 /// GenuineStdoutIo provides a mechanism for the "stdout" output to actually
 /// go to the process's stdout.
-#[derive(Clone,Copy,Debug,Eq,PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct GenuineStdoutIo {}
-
 
 impl GenuineStdoutIo {
     pub fn new() -> GenuineStdoutIo {
         GenuineStdoutIo {}
     }
 }
-
 
 impl IoProvider for GenuineStdoutIo {
     fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
@@ -31,12 +28,11 @@ impl IoProvider for GenuineStdoutIo {
     }
 }
 
-
 /// This helper type is needed to get full InputFeatures functionality on a
 /// shared, ref-counted Vec<u8>: we're not allowed to implement AsRef<[u8]> on
 /// Rc<Vec<u8>> since none of the types or traits come from the Tectonic
 /// crate.
-#[derive(Clone,Debug,Eq,PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 struct SharedByteBuffer(Rc<Vec<u8>>);
 
 impl SharedByteBuffer {
@@ -61,7 +57,6 @@ impl InputFeatures for Cursor<SharedByteBuffer> {
     }
 }
 
-
 /// BufferedPrimaryIo provides a mechanism for the TeX "primary input"
 /// to come from stdin. Because Tectonic makes multiple passes through the
 /// input by default, we have to buffer it in memory so that the input can be
@@ -77,7 +72,7 @@ impl InputFeatures for Cursor<SharedByteBuffer> {
 /// TODO: it also would be nicer to actually stream through stdin at pace on
 /// the first pass rather than slurping it all into memory upon construction,
 /// but once more we're being lazy.
-#[derive(Clone,Debug,Eq,PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct BufferedPrimaryIo {
     buffer: SharedByteBuffer,
 }
@@ -121,21 +116,24 @@ impl BufferedPrimaryIo {
     /// The string is converted into bytes as per [`str.as_bytes`].
     pub fn from_text<T: AsRef<str>>(text: T) -> Self {
         BufferedPrimaryIo {
-            buffer: SharedByteBuffer::new(text.as_ref().as_bytes().to_owned())
+            buffer: SharedByteBuffer::new(text.as_ref().as_bytes().to_owned()),
         }
     }
 
     /// Create a new primary-I/O buffer from a byte vector.
     pub fn from_buffer(buf: Vec<u8>) -> Self {
         BufferedPrimaryIo {
-            buffer: SharedByteBuffer::new(buf)
+            buffer: SharedByteBuffer::new(buf),
         }
     }
 }
 
-
 impl IoProvider for BufferedPrimaryIo {
     fn input_open_primary(&mut self, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
-        OpenResult::Ok(InputHandle::new(OsStr::new(""), Cursor::new(self.buffer.clone()), InputOrigin::Other))
+        OpenResult::Ok(InputHandle::new(
+            OsStr::new(""),
+            Cursor::new(self.buffer.clone()),
+            InputOrigin::Other,
+        ))
     }
 }

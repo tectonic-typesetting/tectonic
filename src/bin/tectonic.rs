@@ -3,11 +3,13 @@
 // Licensed under the MIT License.
 
 extern crate aho_corasick;
-#[macro_use] extern crate clap;
-#[macro_use] extern crate tectonic;
+#[macro_use]
+extern crate clap;
+#[macro_use]
+extern crate tectonic;
 extern crate termcolor;
 
-use clap::{Arg, ArgMatches, App};
+use clap::{App, Arg, ArgMatches};
 use std::fs::File;
 use std::path::Path;
 use std::process;
@@ -16,14 +18,18 @@ use tectonic::config::PersistentConfig;
 use tectonic::driver::{OutputFormat, PassSetting, ProcessingSessionBuilder};
 use tectonic::errors::{ErrorKind, Result};
 use tectonic::io::zipbundle::ZipBundle;
-use tectonic::status::{ChatterLevel, StatusBackend};
 use tectonic::status::termcolor::TermcolorStatusBackend;
+use tectonic::status::{ChatterLevel, StatusBackend};
 
-
-fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatusBackend) -> Result<()> {
+fn inner(
+    args: ArgMatches,
+    config: PersistentConfig,
+    status: &mut TermcolorStatusBackend,
+) -> Result<()> {
     let mut sess_builder = ProcessingSessionBuilder::default();
     let format_path = args.value_of("format").unwrap();
-    sess_builder.format_name(format_path)
+    sess_builder
+        .format_name(format_path)
         .keep_logs(args.is_present("keep_logs"))
         .keep_intermediates(args.is_present("keep_intermediates"))
         .format_cache_path(config.format_cache_path()?)
@@ -35,7 +41,7 @@ fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatu
         "xdv" => OutputFormat::Xdv,
         "pdf" => OutputFormat::Pdf,
         "format" => OutputFormat::Format,
-        _ => unreachable!()
+        _ => unreachable!(),
     };
     sess_builder.output_format(output_format);
 
@@ -43,7 +49,7 @@ fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatu
         "default" => PassSetting::Default,
         "bibtex_first" => PassSetting::BibtexFirst,
         "tex" => PassSetting::Tex,
-        _ => unreachable!()
+        _ => unreachable!(),
     };
     sess_builder.pass(pass);
 
@@ -62,7 +68,10 @@ fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatu
         // Don't provide an input path to the ProcessingSession, so it will default to stdin.
         sess_builder.tex_input_name("texput.tex");
         sess_builder.output_dir(Path::new(""));
-        tt_note!(status, "reading from standard input; outputs will appear under the base name \"texput\"");
+        tt_note!(
+            status,
+            "reading from standard input; outputs will appear under the base name \"texput\""
+        );
     } else {
         let input_path = Path::new(input_path);
         sess_builder.primary_input_path(input_path);
@@ -70,26 +79,32 @@ fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatu
         if let Some(fname) = input_path.file_name() {
             sess_builder.tex_input_name(&fname.to_string_lossy());
         } else {
-            return Err(errmsg!("can't figure out a basename for input path \"{}\"",
-                               input_path.to_string_lossy()));
+            return Err(errmsg!(
+                "can't figure out a basename for input path \"{}\"",
+                input_path.to_string_lossy()
+            ));
         };
 
         if let Some(par) = input_path.parent() {
             sess_builder.output_dir(par);
         } else {
-            return Err(errmsg!("can't figure out a parent directory for input path \"{}\"",
-                               input_path.to_string_lossy()));
+            return Err(errmsg!(
+                "can't figure out a parent directory for input path \"{}\"",
+                input_path.to_string_lossy()
+            ));
         }
     }
 
     if let Some(dir) = args.value_of_os("outdir") {
         let output_dir = Path::new(dir);
         if !output_dir.is_dir() {
-            return Err(errmsg!("output directory \"{}\" does not exist", output_dir.display()));
+            return Err(errmsg!(
+                "output directory \"{}\" does not exist",
+                output_dir.display()
+            ));
         }
         sess_builder.output_dir(output_dir);
     }
-
 
     // Set up the rest of I/O.
 
@@ -109,7 +124,11 @@ fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatu
         let zb = ctry!(ZipBundle::<File>::open(Path::new(&p)); "error opening bundle");
         sess_builder.bundle(Box::new(zb));
     } else if let Some(u) = args.value_of("web_bundle") {
-        sess_builder.bundle(Box::new(config.make_cached_url_provider(&u, only_cached, status)?));
+        sess_builder.bundle(Box::new(config.make_cached_url_provider(
+            &u,
+            only_cached,
+            status,
+        )?));
     } else {
         sess_builder.bundle(config.default_bundle(only_cached, status)?);
     }
@@ -119,18 +138,21 @@ fn inner(args: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatu
 
     if let Err(ref e) = result {
         if let &ErrorKind::EngineError(ref engine) = e.kind() {
-                if let Some(output) = sess.io.mem.files.borrow().get(sess.io.mem.stdout_key()) {
-                    tt_error!(status, "something bad happened inside {}; its output follows:\n", engine);
-                    tt_error_styled!(status, "===============================================================================");
-                    status.dump_to_stderr(&output);
-                    tt_error_styled!(status, "===============================================================================");
-                    tt_error_styled!(status, "");
+            if let Some(output) = sess.io.mem.files.borrow().get(sess.io.mem.stdout_key()) {
+                tt_error!(
+                    status,
+                    "something bad happened inside {}; its output follows:\n",
+                    engine
+                );
+                tt_error_styled!(status, "===============================================================================");
+                status.dump_to_stderr(&output);
+                tt_error_styled!(status, "===============================================================================");
+                tt_error_styled!(status, "");
             }
         }
     }
     result
 }
-
 
 fn main() {
     let matches = App::new("Tectonic")
@@ -219,7 +241,7 @@ fn main() {
     let chatter = match matches.value_of("chatter_level").unwrap() {
         "default" => ChatterLevel::Normal,
         "minimal" => ChatterLevel::Minimal,
-        _ => unreachable!()
+        _ => unreachable!(),
     };
 
     // The Tectonic crate comes with a hidden internal "test mode" that forces
@@ -261,7 +283,10 @@ fn main() {
 
     // For now ...
 
-    tt_note!(status, "this is a BETA release; ask questions and report bugs at https://tectonic.newton.cx/");
+    tt_note!(
+        status,
+        "this is a BETA release; ask questions and report bugs at https://tectonic.newton.cx/"
+    );
 
     // Now that we've got colorized output, we're to pass off to the inner
     // function ... all so that we can print out the word "error:" in red.

@@ -11,7 +11,7 @@
 //! For an example of how to use this module, see `cli_driver.rs`, which contains tectonic's main
 //! CLI program.
 
-use aho_corasick::{Automaton, AcAutomaton};
+use aho_corasick::{AcAutomaton, Automaton};
 use std::collections::{HashMap, HashSet};
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
@@ -29,7 +29,7 @@ use {BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
 /// Different patterns with which files may have been accessed by the
 /// underlying engines. Once a file is marked as ReadThenWritten or
 /// WrittenThenRead, its pattern does not evolve further.
-#[derive(Clone,Copy,Debug,Eq,PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum AccessPattern {
     /// This file is only ever read.
     Read,
@@ -50,12 +50,11 @@ pub enum AccessPattern {
     WrittenThenRead,
 }
 
-
 /// A summary of the I/O that happened on a file. We record its access
 /// pattern; where it came from, if it was used as an input; the cryptographic
 /// digest of the file when it was last read; and the cryptographic digest of
 /// the file as it was last written.
-#[derive(Clone,Debug,Eq,PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FileSummary {
     access_pattern: AccessPattern,
 
@@ -94,7 +93,9 @@ impl FileSummary {
 pub struct IoEvents(pub HashMap<OsString, FileSummary>);
 
 impl IoEvents {
-    fn new() -> IoEvents { IoEvents(HashMap::new()) }
+    fn new() -> IoEvents {
+        IoEvents(HashMap::new())
+    }
 }
 
 impl IoEventBackend for IoEvents {
@@ -107,7 +108,10 @@ impl IoEventBackend for IoEvents {
             return;
         }
 
-        self.0.insert(name.to_os_string(), FileSummary::new(AccessPattern::Written, InputOrigin::NotInput));
+        self.0.insert(
+            name.to_os_string(),
+            FileSummary::new(AccessPattern::Written, InputOrigin::NotInput),
+        );
     }
 
     fn stdout_opened(&mut self) {
@@ -122,11 +126,17 @@ impl IoEventBackend for IoEvents {
             return;
         }
 
-        self.0.insert(OsString::from(""), FileSummary::new(AccessPattern::Written, InputOrigin::NotInput));
+        self.0.insert(
+            OsString::from(""),
+            FileSummary::new(AccessPattern::Written, InputOrigin::NotInput),
+        );
     }
 
     fn output_closed(&mut self, name: OsString, digest: DigestData) {
-        let summ = self.0.get_mut(&name).expect("closing file that wasn't opened?");
+        let summ = self
+            .0
+            .get_mut(&name)
+            .expect("closing file that wasn't opened?");
         summ.write_digest = Some(digest);
     }
 
@@ -162,13 +172,19 @@ impl IoEventBackend for IoEvents {
             return;
         }
 
-        self.0.insert(name.to_os_string(), FileSummary::new(AccessPattern::Read, origin));
+        self.0.insert(
+            name.to_os_string(),
+            FileSummary::new(AccessPattern::Read, origin),
+        );
     }
 
     //fn primary_input_opened(&mut self, _origin: InputOrigin) {}
 
     fn input_closed(&mut self, name: OsString, digest: Option<DigestData>) {
-        let summ = self.0.get_mut(&name).expect("closing file that wasn't opened?");
+        let summ = self
+            .0
+            .get_mut(&name)
+            .expect("closing file that wasn't opened?");
 
         // It's what was in the file the *first* time that it was read that
         // matters, so don't replace the read digest if it's already got one.
@@ -179,9 +195,8 @@ impl IoEventBackend for IoEvents {
     }
 }
 
-
 /// The different types of output files that tectonic knows how to produce.
-#[derive(Clone,Copy,Debug,Eq,PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum OutputFormat {
     /// A '.aux' file.
     Aux,
@@ -196,12 +211,14 @@ pub enum OutputFormat {
 }
 
 impl Default for OutputFormat {
-    fn default() -> OutputFormat { OutputFormat::Pdf }
+    fn default() -> OutputFormat {
+        OutputFormat::Pdf
+    }
 }
 
 /// The different types of "passes" that [`ProcessingSession`] knows how to run. See
 /// [`ProcessingSession::run`] for more details.
-#[derive(Clone,Copy,Debug,Eq,PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PassSetting {
     /// The default pass, which repeatedly runs TeX and BibTeX until it doesn't need to any more.
     Default,
@@ -212,9 +229,10 @@ pub enum PassSetting {
 }
 
 impl Default for PassSetting {
-    fn default() -> PassSetting { PassSetting::Default }
+    fn default() -> PassSetting {
+        PassSetting::Default
+    }
 }
-
 
 /// Different places from which the "primary input" might originate.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -230,9 +248,10 @@ enum PrimaryInputMode {
 }
 
 impl Default for PrimaryInputMode {
-    fn default() -> PrimaryInputMode { PrimaryInputMode::Stdin }
+    fn default() -> PrimaryInputMode {
+        PrimaryInputMode::Stdin
+    }
 }
-
 
 /// Different places where the output files might land.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -251,9 +270,10 @@ enum OutputDestination {
 }
 
 impl Default for OutputDestination {
-    fn default() -> OutputDestination { OutputDestination::Default }
+    fn default() -> OutputDestination {
+        OutputDestination::Default
+    }
 }
-
 
 /// A builder-style interface for creating a [`ProcessingSession`].
 #[derive(Default)]
@@ -430,14 +450,16 @@ impl ProcessingSessionBuilder {
                 let parent = match p.parent() {
                     Some(parent) => parent.to_owned(),
                     None => {
-                        return Err(errmsg!("can't figure out a parent directory for input path \"{}\"",
-                                           p.to_string_lossy()));
+                        return Err(errmsg!(
+                            "can't figure out a parent directory for input path \"{}\"",
+                            p.to_string_lossy()
+                        ));
                     }
                 };
 
                 io.filesystem_root(&parent);
                 (Some(p), parent)
-            },
+            }
 
             PrimaryInputMode::Stdin => {
                 // If the main input file is stdin, we don't set a filesystem
@@ -445,7 +467,7 @@ impl ProcessingSessionBuilder {
                 // directory.
                 io.primary_input_stdin();
                 (None, "".into())
-            },
+            }
 
             PrimaryInputMode::Buffer(buf) => {
                 // Same behavior as with stdin.
@@ -464,11 +486,17 @@ impl ProcessingSessionBuilder {
             io.format_cache_path(p);
         }
 
-        let tex_input_name = self.tex_input_name.expect("tex_input_name must be specified");
+        let tex_input_name = self
+            .tex_input_name
+            .expect("tex_input_name must be specified");
         let mut aux_path = PathBuf::from(tex_input_name.clone());
         aux_path.set_extension("aux");
         let mut xdv_path = aux_path.clone();
-        xdv_path.set_extension(if self.output_format == OutputFormat::Html { "spx" } else { "xdv" });
+        xdv_path.set_extension(if self.output_format == OutputFormat::Html {
+            "spx"
+        } else {
+            "xdv"
+        });
         let mut pdf_path = aux_path.clone();
         pdf_path.set_extension("pdf");
 
@@ -548,10 +576,9 @@ pub struct ProcessingSession {
     synctex_enabled: bool,
 }
 
-
 const DEFAULT_MAX_TEX_PASSES: usize = 6;
 const ALWAYS_INTERMEDIATE_EXTENSIONS: &'static [&'static str] = &[
-    ".snm", ".toc",     // generated by Beamer
+    ".snm", ".toc", // generated by Beamer
 ];
 
 impl ProcessingSession {
@@ -570,8 +597,11 @@ impl ProcessingSession {
                     (&None, &Some(_)) => true,
                     (_, _) => {
                         // Other cases shouldn't happen.
-                        tt_warning!(status, "internal consistency problem when checking if {} changed",
-                                    name.to_string_lossy());
+                        tt_warning!(
+                            status,
+                            "internal consistency problem when checking if {} changed",
+                            name.to_string_lossy()
+                        );
                         true
                     }
                 };
@@ -592,15 +622,20 @@ impl ProcessingSession {
                 use std::string::ToString;
                 let r = match info.read_digest {
                     Some(ref d) => d.to_string(),
-                    None => "-".into()
+                    None => "-".into(),
                 };
                 let w = match info.write_digest {
                     Some(ref d) => d.to_string(),
-                    None => "-".into()
+                    None => "-".into(),
                 };
-                tt_note!(status, "ACCESS: {} {:?} {:?} {:?}",
-                         name.to_string_lossy(),
-                         info.access_pattern, r, w);
+                tt_note!(
+                    status,
+                    "ACCESS: {} {:?} {:?} {:?}",
+                    name.to_string_lossy(),
+                    info.access_pattern,
+                    r,
+                    w
+                );
             }
         }
     }
@@ -630,8 +665,9 @@ impl ProcessingSession {
                 OpenResult::Ok(_) => false,
                 OpenResult::NotAvailable => true,
                 OpenResult::Err(e) => {
-                    return Err(e).chain_err(|| format!("could not open format file {}", self.format_name));
-                },
+                    return Err(e)
+                        .chain_err(|| format!("could not open format file {}", self.format_name));
+                }
             }
         };
 
@@ -658,21 +694,27 @@ impl ProcessingSession {
         let mut mf_dest_maybe = match self.makefile_output_path {
             Some(ref p) => {
                 if self.output_path.is_none() {
-                    tt_warning!(status, "requested to generate Makefile rules, but no files written to disk!");
+                    tt_warning!(
+                        status,
+                        "requested to generate Makefile rules, but no files written to disk!"
+                    );
                     None
                 } else {
                     Some(File::create(p)?)
                 }
-            },
+            }
 
-            None => None
+            None => None,
         };
 
         let n_skipped_intermediates = self.write_files(mf_dest_maybe.as_mut(), status, false)?;
 
         if n_skipped_intermediates > 0 {
-            status.note_highlighted("Skipped writing ", &format!("{}", n_skipped_intermediates),
-                                    " intermediate files (use --keep-intermediates to keep them)");
+            status.note_highlighted(
+                "Skipped writing ",
+                &format!("{}", n_skipped_intermediates),
+                " intermediate files (use --keep-intermediates to keep them)",
+            );
         }
 
         // Finish Makefile rules, maybe.
@@ -702,7 +744,11 @@ impl ProcessingSession {
                     // two-stage compilation involving the .aux file, the
                     // latter case is what arises unless --keep-intermediates
                     // is specified.
-                    tt_warning!(status, "omitting circular Makefile dependency for {}", name.to_string_lossy());
+                    tt_warning!(
+                        status,
+                        "omitting circular Makefile dependency for {}",
+                        name.to_string_lossy()
+                    );
                     continue;
                 }
 
@@ -717,17 +763,19 @@ impl ProcessingSession {
         Ok(())
     }
 
-
-    fn write_files<S: StatusBackend>(&mut self, mut mf_dest_maybe: Option<&mut File>,
-                                     status: &mut S, only_logs: bool) -> Result<u32>
-    {
+    fn write_files<S: StatusBackend>(
+        &mut self,
+        mut mf_dest_maybe: Option<&mut File>,
+        status: &mut S,
+        only_logs: bool,
+    ) -> Result<u32> {
         let root = match self.output_path {
             Some(ref p) => p,
 
             None => {
                 // We were told not to write anything!
                 return Ok(0);
-            },
+            }
         };
 
         let mut n_skipped_intermediates = 0;
@@ -749,9 +797,12 @@ impl ProcessingSession {
                 if !sname.ends_with(".aux") {
                     continue;
                 }
-            } else if !self.keep_intermediates &&
-                (summ.access_pattern != AccessPattern::Written
-                       || ALWAYS_INTERMEDIATE_EXTENSIONS.iter().any(|ext| sname.ends_with(ext))) {
+            } else if !self.keep_intermediates
+                && (summ.access_pattern != AccessPattern::Written
+                    || ALWAYS_INTERMEDIATE_EXTENSIONS
+                        .iter()
+                        .any(|ext| sname.ends_with(ext)))
+            {
                 n_skipped_intermediates += 1;
                 continue;
             }
@@ -772,7 +823,11 @@ impl ProcessingSession {
             }
 
             let real_path = root.join(name);
-            status.note_highlighted("Writing ", &real_path.to_string_lossy(), &format!(" ({} bytes)", contents.len()));
+            status.note_highlighted(
+                "Writing ",
+                &real_path.to_string_lossy(),
+                &format!(" ({} bytes)", contents.len()),
+            );
 
             let mut f = File::create(&real_path)?;
             f.write_all(contents)?;
@@ -795,7 +850,11 @@ impl ProcessingSession {
 
     /// The "default" pass really runs a bunch of sub-passes. It is a "Do What
     /// I Mean" operation.
-    fn default_pass<S: StatusBackend>(&mut self, bibtex_first: bool, status: &mut S) -> Result<i32> {
+    fn default_pass<S: StatusBackend>(
+        &mut self,
+        bibtex_first: bool,
+        status: &mut S,
+    ) -> Result<i32> {
         // If `bibtex_first` is true, we start by running bibtex, and run
         // proceed with the standard rerun logic. Otherwise, we run TeX,
         // auto-detect whether we need to run bibtex, possibly run it, and
@@ -844,7 +903,7 @@ impl ProcessingSession {
                         } else {
                             format!("\"{}\" changed", s)
                         }
-                    },
+                    }
                     None => {
                         break;
                     }
@@ -867,7 +926,11 @@ impl ProcessingSession {
                 rerun_result = self.rerun_needed(status);
 
                 if rerun_result.is_some() && i == DEFAULT_MAX_TEX_PASSES - 1 {
-                    tt_warning!(status, "TeX rerun seems needed, but stopping at {} passes", DEFAULT_MAX_TEX_PASSES);
+                    tt_warning!(
+                        status,
+                        "TeX rerun seems needed, but stopping at {} passes",
+                        DEFAULT_MAX_TEX_PASSES
+                    );
                     break;
                 }
             }
@@ -884,42 +947,52 @@ impl ProcessingSession {
         Ok(0)
     }
 
-
     /// Use the TeX engine to generate a format file.
     fn make_format_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
         if self.io.bundle.is_none() {
-            return Err(ErrorKind::Msg("cannot create formats without using a bundle".to_owned()).into())
+            return Err(
+                ErrorKind::Msg("cannot create formats without using a bundle".to_owned()).into(),
+            );
         }
 
         if self.io.format_cache.is_none() {
-            return Err(ErrorKind::Msg("cannot create formats without having a place to save them".to_owned()).into())
+            return Err(ErrorKind::Msg(
+                "cannot create formats without having a place to save them".to_owned(),
+            )
+            .into());
         }
 
         // PathBuf.file_stem() doesn't do what we want since it only strips
         // one extension. As of 1.17, the compiler needs a type annotation for
         // some reason, which is why we use the `r` variable.
-        let r: Result<&str> = self.format_name.splitn(2, '.').next().ok_or_else(
-            || ErrorKind::Msg(format!("incomprehensible format file name \"{}\"", self.format_name)).into()
-        );
+        let r: Result<&str> = self.format_name.splitn(2, '.').next().ok_or_else(|| {
+            ErrorKind::Msg(format!(
+                "incomprehensible format file name \"{}\"",
+                self.format_name
+            ))
+            .into()
+        });
         let stem = r?;
 
         let result = {
-            let mut stack = self.io.as_stack_for_format(&format!("tectonic-format-{}.tex", stem));
+            let mut stack = self
+                .io
+                .as_stack_for_format(&format!("tectonic-format-{}.tex", stem));
             TexEngine::new()
-                    .halt_on_error_mode(true)
-                    .initex_mode(true)
-                    .process(&mut stack, &mut self.events, status, "UNUSED.fmt", "texput")
+                .halt_on_error_mode(true)
+                .initex_mode(true)
+                .process(&mut stack, &mut self.events, status, "UNUSED.fmt", "texput")
         };
 
         match result {
-            Ok(TexResult::Spotless) => {},
+            Ok(TexResult::Spotless) => {}
             Ok(TexResult::Warnings) => {
                 tt_warning!(status, "warnings were issued by the TeX engine; use --print and/or --keep-logs for details.");
-            },
+            }
             Ok(TexResult::Errors) => {
                 tt_error!(status, "errors were issued by the TeX engine; use --print and/or --keep-logs for details.");
                 return Err(ErrorKind::Msg("unhandled TeX engine error".to_owned()).into());
-            },
+            }
             Err(e) => {
                 return Err(e.chain_err(|| ErrorKind::EngineError("TeX")));
             }
@@ -952,9 +1025,12 @@ impl ProcessingSession {
         Ok(0)
     }
 
-
     /// Run one pass of the TeX engine.
-    fn tex_pass<S: StatusBackend>(&mut self, rerun_explanation: Option<&str>, status: &mut S) -> Result<i32> {
+    fn tex_pass<S: StatusBackend>(
+        &mut self,
+        rerun_explanation: Option<&str>,
+        status: &mut S,
+    ) -> Result<i32> {
         let result = {
             let mut stack = self.io.as_stack();
             if let Some(s) = rerun_explanation {
@@ -968,26 +1044,35 @@ impl ProcessingSession {
                 .initex_mode(self.output_format == OutputFormat::Format)
                 .synctex(self.synctex_enabled)
                 .semantic_pagination(self.output_format == OutputFormat::Html)
-                .process(&mut stack, &mut self.events, status, &self.format_name, &self.primary_input_tex_path)
+                .process(
+                    &mut stack,
+                    &mut self.events,
+                    status,
+                    &self.format_name,
+                    &self.primary_input_tex_path,
+                )
         };
 
         match result {
-            Ok(TexResult::Spotless) => {},
+            Ok(TexResult::Spotless) => {}
             Ok(TexResult::Warnings) => {
                 if !self.noted_tex_warnings {
                     tt_note!(status, "warnings were issued by the TeX engine; use --print and/or --keep-logs for details.");
                     self.noted_tex_warnings = true;
                 }
-            },
+            }
             Ok(TexResult::Errors) => {
                 if !self.noted_tex_warnings {
                     // Weakness: if a first pass produces warnings and a
                     // second pass produces ignored errors, we won't say so.
-                    tt_warning!(status, "errors were issued by the TeX engine, but were ignored; \
-                                         use --print and/or --keep-logs for details.");
+                    tt_warning!(
+                        status,
+                        "errors were issued by the TeX engine, but were ignored; \
+                         use --print and/or --keep-logs for details."
+                    );
                     self.noted_tex_warnings = true;
                 }
-            },
+            }
             Err(e) => {
                 return Err(e.chain_err(|| ErrorKind::EngineError("TeX")));
             }
@@ -996,25 +1081,34 @@ impl ProcessingSession {
         Ok(0)
     }
 
-
     fn bibtex_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
         let result = {
             let mut stack = self.io.as_stack();
-            let mut engine = BibtexEngine::new ();
+            let mut engine = BibtexEngine::new();
             status.note_highlighted("Running ", "BibTeX", " ...");
-            engine.process(&mut stack, &mut self.events, status,
-                           &self.tex_aux_path.to_str().unwrap())
+            engine.process(
+                &mut stack,
+                &mut self.events,
+                status,
+                &self.tex_aux_path.to_str().unwrap(),
+            )
         };
 
         match result {
-            Ok(TexResult::Spotless) => {},
+            Ok(TexResult::Spotless) => {}
             Ok(TexResult::Warnings) => {
-                tt_note!(status, "warnings were issued by BibTeX; use --print and/or --keep-logs for details.");
-            },
+                tt_note!(
+                    status,
+                    "warnings were issued by BibTeX; use --print and/or --keep-logs for details."
+                );
+            }
             Ok(TexResult::Errors) => {
-                tt_warning!(status, "errors were issued by BibTeX, but were ignored; \
-                                          use --print and/or --keep-logs for details.");
-            },
+                tt_warning!(
+                    status,
+                    "errors were issued by BibTeX, but were ignored; \
+                     use --print and/or --keep-logs for details."
+                );
+            }
             Err(e) => {
                 return Err(e.chain_err(|| ErrorKind::EngineError("BibTeX")));
             }
@@ -1023,34 +1117,40 @@ impl ProcessingSession {
         Ok(0)
     }
 
-
     fn xdvipdfmx_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
         {
             let mut stack = self.io.as_stack();
-            let mut engine = XdvipdfmxEngine::new ();
+            let mut engine = XdvipdfmxEngine::new();
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
-            engine.process(&mut stack, &mut self.events, status,
-                           &self.tex_xdv_path.to_str().unwrap(), &self.tex_pdf_path.to_str().unwrap())?;
+            engine.process(
+                &mut stack,
+                &mut self.events,
+                status,
+                &self.tex_xdv_path.to_str().unwrap(),
+                &self.tex_pdf_path.to_str().unwrap(),
+            )?;
         }
 
         self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);
         Ok(0)
     }
-
 
     fn spx2html_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
         {
             let mut stack = self.io.as_stack();
-            let mut engine = Spx2HtmlEngine::new ();
+            let mut engine = Spx2HtmlEngine::new();
             status.note_highlighted("Running ", "spx2html", " ...");
-            engine.process(&mut stack, &mut self.events, status,
-                           &self.tex_xdv_path.to_str().unwrap())?;
+            engine.process(
+                &mut stack,
+                &mut self.events,
+                status,
+                &self.tex_xdv_path.to_str().unwrap(),
+            )?;
         }
 
         self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);
         Ok(0)
     }
-
 
     /// Consume this session and return the current set of files in memory.
     ///
