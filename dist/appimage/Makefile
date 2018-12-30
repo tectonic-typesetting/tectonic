@@ -14,6 +14,7 @@ all: Tectonic-x86_64.AppImage
 
 %.AppImage: linuxdeploy-x86_64.AppImage $(EXECUTABLE).always
 	mkdir -p $(APPDIR)
+	rm -rf $(APPDIR)/usr/bin # pre-existing executables don't get updated!
 	$(MAKEFILEDIR)/linuxdeploy-x86_64.AppImage \
 		--icon-file=$(MAKEFILEDIR)/tectonic.svg \
 		--desktop-file=$(MAKEFILEDIR)/tectonic.desktop \
