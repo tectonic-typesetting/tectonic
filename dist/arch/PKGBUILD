@@ -1,5 +1,6 @@
-# Maintainer: Daniel M. Capella <polycitizen@gmail.com>
-# Maintainer: Jan Tojnar <jtojnar@gmail.com>
+# Maintainer: tectonic-deploy <sasha+tectonic@hackafe.net>
+# Maintainer: Daniel M. Capella <polyzen@archlinux.org>
+# Contributor: Jan Tojnar <jtojnar@gmail.com>
 
 # The master version of this file is maintained here:
 #
