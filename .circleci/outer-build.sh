@@ -10,9 +10,9 @@ buildroot=$HOME
 # that can be run via QEMU. This tarball was generated according to the
 # procedure describe here:
 # https://github.com/tectonic-typesetting/tectonic-ci-support/blob/master/bigendian/README.md .
-# The current version embeds Rust 1.27.0.
+# The current version embeds Rust 1.31.1.
 
-tarball='https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/VM4ZZ3/BM5RRE'
+tarball='https://github.com/tectonic-typesetting/tectonic-ci-support/releases/download/production/tectonic-buildenv-ppc.tar.gz'
 
 # Validate that our little scheme is going to work. Annoyingly
 # $CIRCLE_WORKING_DIRECTORY (passed in as $1 since we're sudo -- it's stripped
