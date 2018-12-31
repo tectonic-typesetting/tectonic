@@ -2,4 +2,3 @@
 /tests/plain.fmt
 /tests/00*00-latex-*.fmt
 /tests/00*00-plain-*.fmt
-/dist/appimage/*.AppImage
