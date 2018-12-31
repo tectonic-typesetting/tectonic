@@ -19,9 +19,8 @@ EOF
 
 rustc --crate-type=bin -o check-bigendian check-bigendian.rs
 
-# We have to build and test in --release mode because currently (1.24.0)
-# PowerPC Rust has a crashing bug in debuginfo generation:
-# https://github.com/rust-lang/rust/issues/41253 .
+# I've read that QEMU has trouble with multithreading, so we try hard to
+# serialize everything we do.
 
-cargo build --release
-cargo test --release
+cargo build -j=1
+RUST_TEST_THREADS=1 cargo test -j=1
