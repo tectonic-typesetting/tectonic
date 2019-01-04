@@ -98,11 +98,21 @@ script:
 
 after_success: |
   if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
+    # If we're on the "main" build matrix option (linux/stable), do coverage ...
     sudo apt-get install -y kcov &&
     cargo install cargo-kcov &&
     cargo test --no-run &&
     env RUNNING_COVERAGE=1 cargo kcov --no-clean-rebuild &&
-    bash <(curl -s https://codecov.io/bash)
+    bash <(curl -s https://codecov.io/bash) &&
+    # If this is also a push to master, upload an AppImage into the "continuous" release
+    if [ "$TRAVIS_BRANCH" = master -a "$TRAVIS_EVENT_TYPE" = push ]; then
+      repo_info=$(echo "$TRAVIS_REPO_SLUG" |sed -e 's,/,|,g') &&
+      TECTONIC_APPIMAGE_TAG=continuous \
+      UPDATE_INFORMATION="gh-releases-zsync|$repo_info|continuous|tectonic-*.AppImage.zsync" \
+        dist/appimage/build.sh &&
+      wget https://github.com/probonopd/uploadtool/raw/master/upload.sh &&
+      bash ./upload.sh dist/appimage/tectonic-*.AppImage*
+    fi
   fi
 
 before_deploy:
