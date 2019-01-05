@@ -1,5 +1,5 @@
 # .travis.yml -- Travis CI specification file.
-# Copyright 2016-2018 the Tectonic Project
+# Copyright 2016-2019 the Tectonic Project
 # Licensed under the MIT License.
 
 language: rust
@@ -8,23 +8,27 @@ cache: cargo
 
 matrix:
   include:
+    # Linux, Rust stable: the "main" build; we do code coverage, AppImage generation, etc.
     - os: linux
       sudo: required
       dist: xenial
       rust: stable
       env: RUSTFLAGS="-C link-dead-code"
+    # Linux, Rust beta: just a smoke test
     - os: linux
       sudo: required
       dist: xenial
       rust: beta
+    # Linux, Rust nightly: not even a smoke test; failure is allowed
     - os: linux
       sudo: required
       dist: xenial
       rust: nightly
+    # MacOS, Rust stable: just a smoke test
     - os: osx
       osx_image: xcode8.3
       rust: stable
-    # static build
+    # Static build for Linux; Rust nightly required
     - os: linux
       sudo: required
       dist: xenial
@@ -44,84 +48,5 @@ addons:
       - openssl
       - zlib1g-dev
 
-# At the moment, Travis' Xenial images have an auto-update daemon that can
-# lock the apt/dpkg system under us. See
-# https://github.com/travis-ci/travis-cookbooks/issues/952 and
-# https://unix.stackexchange.com/questions/315502/how-to-disable-apt-daily-service-on-ubuntu-cloud-vm-image
-# . We adopt the workaround from the StackExchange post.
-
-before_install:
-  - |
-    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      brew update
-    else
-      sudo systemctl stop apt-daily.timer &&
-      sudo systemctl stop apt-daily.service &&
-      sudo systemctl kill --kill-who=all apt-daily.service &&
-      while ! (systemctl list-units --all apt-daily.service | fgrep -q dead) ; do
-        sleep 1
-      done &&
-      sudo add-apt-repository -y ppa:k-peter/tectonic-ci &&
-      sudo apt-get update
-    fi
-
-install:
-  - |
-    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      brew install graphite2 &&
-      brew install harfbuzz --with-graphite2 &&
-      brew install --force openssl
-    else
-      sudo apt-get install -y libharfbuzz-dev
-    fi
-
-before_script:
-  - |
-    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      export OPENSSL_INCLUDE_DIR=$(brew --prefix openssl)/include &&
-      export OPENSSL_LIB_DIR=$(brew --prefix openssl)/lib &&
-      export DEP_OPENSSL_INCLUDE=$(brew --prefix openssl)/include &&
-      export PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig
-    fi &&
-    rustup component add rustfmt
-
-script:
-  - |
-    if [[ -z "$IMAGE" ]]; then
-      cargo fmt --all -- --check &&
-      cargo build --verbose &&
-      cargo test
-    else
-      docker build -t ttci-$IMAGE dist/docker/$IMAGE/ &&
-      docker run -v $(pwd):/tectonic ttci-$IMAGE
-    fi
-
-after_success: |
-  if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
-    # If we're on the "main" build matrix option (linux/stable), do coverage ...
-    sudo apt-get install -y kcov &&
-    cargo install cargo-kcov &&
-    cargo test --no-run &&
-    env RUNNING_COVERAGE=1 cargo kcov --no-clean-rebuild &&
-    bash <(curl -s https://codecov.io/bash) &&
-    # If this is also a push to master, upload an AppImage into the "continuous" release
-    if [ "$TRAVIS_BRANCH" = master -a "$TRAVIS_EVENT_TYPE" = push ]; then
-      repo_info=$(echo "$TRAVIS_REPO_SLUG" |sed -e 's,/,|,g') &&
-      TECTONIC_APPIMAGE_TAG=continuous \
-      UPDATE_INFORMATION="gh-releases-zsync|$repo_info|continuous|tectonic-*.AppImage.zsync" \
-        dist/appimage/build.sh &&
-      wget https://github.com/probonopd/uploadtool/raw/master/upload.sh &&
-      bash ./upload.sh dist/appimage/tectonic-*.AppImage*
-    fi
-  fi
-
-before_deploy:
-  - openssl aes-256-cbc -K $encrypted_bc40b17e21fa_key -iv $encrypted_bc40b17e21fa_iv
-    -in dist/deploy_key.enc -out /tmp/deploy_key -d
-  - chmod 600 /tmp/deploy_key
-
-deploy:
-  provider: script
-  script: bash dist/arch/deploy.sh
-  on:
-    tags: true
+install: true
+script: bash dist/travis.sh
