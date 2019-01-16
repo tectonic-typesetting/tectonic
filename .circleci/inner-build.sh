@@ -1,5 +1,5 @@
 #! /bin/bash
-# Copyright 2018 the Tectonic Project
+# Copyright 2018-2019 the Tectonic Project
 # Licensed under the MIT License.
 
 set -e -x
@@ -22,5 +22,6 @@ rustc --crate-type=bin -o check-bigendian check-bigendian.rs
 # I've read that QEMU has trouble with multithreading, so we try hard to
 # serialize everything we do.
 
+export RUSTFLAGS="-C codegen-units=1"
 cargo build -j=1
 RUST_TEST_THREADS=1 cargo test -j=1
