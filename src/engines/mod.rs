@@ -554,22 +554,22 @@ extern "C" {
 
 // Entry points for the C/C++ API functions.
 
-extern "C" fn issue_warning<'a>(es: *mut ExecutionState<'a>, text: *const libc::c_char) {
+extern "C" fn issue_warning(es: *mut ExecutionState, text: *const libc::c_char) {
     let es = unsafe { &mut *es };
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_warning!(es.status, "{}", rtext.to_string_lossy());
 }
 
-extern "C" fn issue_error<'a>(es: *mut ExecutionState<'a>, text: *const libc::c_char) {
+extern "C" fn issue_error(es: *mut ExecutionState, text: *const libc::c_char) {
     let es = unsafe { &mut *es };
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_error!(es.status, "{}", rtext.to_string_lossy());
 }
 
-extern "C" fn get_file_md5<'a>(
-    es: *mut ExecutionState<'a>,
+extern "C" fn get_file_md5(
+    es: *mut ExecutionState,
     path: *const libc::c_char,
     digest: *mut libc::c_char,
 ) -> libc::c_int {
@@ -584,8 +584,8 @@ extern "C" fn get_file_md5<'a>(
     }
 }
 
-extern "C" fn get_data_md5<'a>(
-    _es: *mut ExecutionState<'a>,
+extern "C" fn get_data_md5(
+    _es: *mut ExecutionState,
     data: *const libc::c_char,
     len: libc::size_t,
     digest: *mut libc::c_char,
@@ -602,8 +602,8 @@ extern "C" fn get_data_md5<'a>(
     0
 }
 
-extern "C" fn output_open<'a>(
-    es: *mut ExecutionState<'a>,
+extern "C" fn output_open(
+    es: *mut ExecutionState,
     name: *const libc::c_char,
     is_gz: libc::c_int,
 ) -> *mut OutputHandle {
@@ -614,14 +614,14 @@ extern "C" fn output_open<'a>(
     es.output_open(&rname, ris_gz)
 }
 
-extern "C" fn output_open_stdout<'a>(es: *mut ExecutionState<'a>) -> *mut OutputHandle {
+extern "C" fn output_open_stdout(es: *mut ExecutionState) -> *mut OutputHandle {
     let es = unsafe { &mut *es };
 
     es.output_open_stdout()
 }
 
-extern "C" fn output_putc<'a>(
-    es: *mut ExecutionState<'a>,
+extern "C" fn output_putc(
+    es: *mut ExecutionState,
     handle: *mut OutputHandle,
     c: libc::c_int,
 ) -> libc::c_int {
@@ -635,8 +635,8 @@ extern "C" fn output_putc<'a>(
     }
 }
 
-extern "C" fn output_write<'a>(
-    es: *mut ExecutionState<'a>,
+extern "C" fn output_write(
+    es: *mut ExecutionState,
     handle: *mut OutputHandle,
     data: *const libc::c_char,
     len: libc::size_t,
@@ -653,8 +653,8 @@ extern "C" fn output_write<'a>(
     }
 }
 
-extern "C" fn output_flush<'a>(
-    es: *mut ExecutionState<'a>,
+extern "C" fn output_flush(
+    es: *mut ExecutionState,
     handle: *mut OutputHandle,
 ) -> libc::c_int {
     let es = unsafe { &mut *es };
@@ -666,13 +666,13 @@ extern "C" fn output_flush<'a>(
     }
 }
 
-extern "C" fn output_close<'a>(
-    es: *mut ExecutionState<'a>,
+extern "C" fn output_close(
+    es: *mut ExecutionState,
     handle: *mut OutputHandle,
 ) -> libc::c_int {
     let es = unsafe { &mut *es };
 
-    if handle == 0 as *mut _ {
+    if handle == ptr::null_mut() {
         return 0; // This is/was the behavior of close_file() in C.
     }
 
@@ -683,8 +683,8 @@ extern "C" fn output_close<'a>(
     }
 }
 
-extern "C" fn input_open<'a>(
-    es: *mut ExecutionState<'a>,
+extern "C" fn input_open(
+    es: *mut ExecutionState,
     name: *const libc::c_char,
     format: libc::c_int,
     is_gz: libc::c_int,
@@ -700,14 +700,14 @@ extern "C" fn input_open<'a>(
     }
 }
 
-extern "C" fn input_open_primary<'a>(es: *mut ExecutionState<'a>) -> *mut InputHandle {
+extern "C" fn input_open_primary(es: *mut ExecutionState) -> *mut InputHandle {
     let es = unsafe { &mut *es };
 
     es.input_open_primary()
 }
 
-extern "C" fn input_get_size<'a>(
-    es: *mut ExecutionState<'a>,
+extern "C" fn input_get_size(
+    es: *mut ExecutionState,
     handle: *mut InputHandle,
 ) -> libc::size_t {
     let es = unsafe { &mut *es };
@@ -715,8 +715,8 @@ extern "C" fn input_get_size<'a>(
     es.input_get_size(handle)
 }
 
-extern "C" fn input_seek<'a>(
-    es: *mut ExecutionState<'a>,
+extern "C" fn input_seek(
+    es: *mut ExecutionState,
     handle: *mut InputHandle,
     offset: libc::ssize_t,
     whence: libc::c_int,
@@ -751,7 +751,7 @@ extern "C" fn input_seek<'a>(
     }
 }
 
-extern "C" fn input_getc<'a>(es: *mut ExecutionState<'a>, handle: *mut InputHandle) -> libc::c_int {
+extern "C" fn input_getc(es: *mut ExecutionState, handle: *mut InputHandle) -> libc::c_int {
     let es = unsafe { &mut *es };
 
     // If we couldn't fill the whole (1-byte) buffer, that's boring old EOF.
@@ -769,8 +769,8 @@ extern "C" fn input_getc<'a>(es: *mut ExecutionState<'a>, handle: *mut InputHand
     }
 }
 
-extern "C" fn input_ungetc<'a>(
-    es: *mut ExecutionState<'a>,
+extern "C" fn input_ungetc(
+    es: *mut ExecutionState,
     handle: *mut InputHandle,
     ch: libc::c_int,
 ) -> libc::c_int {
@@ -785,8 +785,8 @@ extern "C" fn input_ungetc<'a>(
     }
 }
 
-extern "C" fn input_read<'a>(
-    es: *mut ExecutionState<'a>,
+extern "C" fn input_read(
+    es: *mut ExecutionState,
     handle: *mut InputHandle,
     data: *mut libc::c_char,
     len: libc::size_t,
@@ -803,13 +803,13 @@ extern "C" fn input_read<'a>(
     }
 }
 
-extern "C" fn input_close<'a>(
-    es: *mut ExecutionState<'a>,
+extern "C" fn input_close(
+    es: *mut ExecutionState,
     handle: *mut InputHandle,
 ) -> libc::c_int {
     let es = unsafe { &mut *es };
 
-    if handle == 0 as *mut _ {
+    if handle == ptr::null_mut() {
         return 0; // This is/was the behavior of close_file() in C.
     }
 
