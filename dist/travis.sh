@@ -104,8 +104,7 @@ travis_end_fold continuous_abort
 travis_start_fold pre_build "Pre-build setup for OS = $TRAVIS_OS_NAME"
 if [[ "$TRAVIS_OS_NAME" == osx ]]; then
     brew update
-    brew install graphite2
-    brew install harfbuzz --with-graphite2
+    brew install harfbuzz
     brew install --force openssl
 
     export OPENSSL_INCLUDE_DIR=$(brew --prefix openssl)/include
