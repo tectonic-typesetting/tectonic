@@ -653,10 +653,7 @@ extern "C" fn output_write(
     }
 }
 
-extern "C" fn output_flush(
-    es: *mut ExecutionState,
-    handle: *mut OutputHandle,
-) -> libc::c_int {
+extern "C" fn output_flush(es: *mut ExecutionState, handle: *mut OutputHandle) -> libc::c_int {
     let es = unsafe { &mut *es };
 
     if es.output_flush(handle) {
@@ -666,10 +663,7 @@ extern "C" fn output_flush(
     }
 }
 
-extern "C" fn output_close(
-    es: *mut ExecutionState,
-    handle: *mut OutputHandle,
-) -> libc::c_int {
+extern "C" fn output_close(es: *mut ExecutionState, handle: *mut OutputHandle) -> libc::c_int {
     let es = unsafe { &mut *es };
 
     if handle == ptr::null_mut() {
@@ -706,10 +700,7 @@ extern "C" fn input_open_primary(es: *mut ExecutionState) -> *mut InputHandle {
     es.input_open_primary()
 }
 
-extern "C" fn input_get_size(
-    es: *mut ExecutionState,
-    handle: *mut InputHandle,
-) -> libc::size_t {
+extern "C" fn input_get_size(es: *mut ExecutionState, handle: *mut InputHandle) -> libc::size_t {
     let es = unsafe { &mut *es };
 
     es.input_get_size(handle)
@@ -803,10 +794,7 @@ extern "C" fn input_read(
     }
 }
 
-extern "C" fn input_close(
-    es: *mut ExecutionState,
-    handle: *mut InputHandle,
-) -> libc::c_int {
+extern "C" fn input_close(es: *mut ExecutionState, handle: *mut InputHandle) -> libc::c_int {
     let es = unsafe { &mut *es };
 
     if handle == ptr::null_mut() {

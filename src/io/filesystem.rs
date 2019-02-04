@@ -74,9 +74,9 @@ impl FilesystemIo {
     ) -> FilesystemIo {
         FilesystemIo {
             root: PathBuf::from(root),
-            writes_allowed: writes_allowed,
-            absolute_allowed: absolute_allowed,
-            hidden_input_paths: hidden_input_paths,
+            writes_allowed,
+            absolute_allowed,
+            hidden_input_paths,
         }
     }
 

@@ -96,7 +96,7 @@ impl InputHandle {
             name: name.to_os_string(),
             inner: Box::new(inner),
             digest: Default::default(),
-            origin: origin,
+            origin,
             ever_read: false,
             did_unhandled_seek: false,
             ungetc_char: None,

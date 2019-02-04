@@ -75,10 +75,10 @@ impl<'a, 'b: 'a> State<'a, 'b> {
         status: &'a mut StatusBackend,
     ) -> Self {
         Self {
-            outname: outname,
-            io: io,
-            events: events,
-            status: status,
+            outname,
+            io,
+            events,
+            status,
             cur_output: None,
             warned_lost_chars: false,
             buf: Vec::new(),
@@ -153,7 +153,7 @@ impl<'a, 'b: 'a> XdvEvents for State<'a, 'b> {
 
         if self.buf.len() > 0 {
             self.buf.push(0x0a); // newline
-            dest.write(&self.buf)?;
+            dest.write_all(&self.buf)?;
         }
 
         Ok(())

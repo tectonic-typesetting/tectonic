@@ -39,24 +39,24 @@ pub enum XdvError {
 
 impl Display for XdvError {
     fn fmt(&self, f: &mut Formatter) -> Result<(), FmtError> {
-        match self {
-            &XdvError::Malformed(offset) => {
+        match *self {
+            XdvError::Malformed(offset) => {
                 write!(f, "unexpected XDV data at byte offset {}", offset)
             }
-            &XdvError::IllegalOpcode(opcode, offset) => {
+            XdvError::IllegalOpcode(opcode, offset) => {
                 write!(f, "illegal XDV opcode {} at byte offset {}", opcode, offset)
             }
-            &XdvError::UnexpectedEndOfStream => write!(f, "stream ended unexpectedly soon"),
+            XdvError::UnexpectedEndOfStream => write!(f, "stream ended unexpectedly soon"),
         }
     }
 }
 
 impl error::Error for XdvError {
     fn description(&self) -> &str {
-        match self {
-            &XdvError::Malformed(_) => "malformed XDV data",
-            &XdvError::IllegalOpcode(_, _) => "illegal XDV opcode",
-            &XdvError::UnexpectedEndOfStream => "stream ended unexpectedly soon",
+        match *self {
+            XdvError::Malformed(_) => "malformed XDV data",
+            XdvError::IllegalOpcode(_, _) => "illegal XDV opcode",
+            XdvError::UnexpectedEndOfStream => "stream ended unexpectedly soon",
         }
     }
 
@@ -162,9 +162,9 @@ impl Display for FileType {
         write!(
             f,
             "{}",
-            match self {
-                &FileType::Xdv => "XDV",
-                &FileType::Spx => "SPX",
+            match *self {
+                FileType::Xdv => "XDV",
+                FileType::Spx => "SPX",
             }
         )
     }
@@ -196,7 +196,7 @@ impl<T: XdvEvents> XdvParser<T> {
     /// encountered in the file.
     pub fn new(events: T) -> Self {
         XdvParser {
-            events: events,
+            events,
             filetype: FileType::Xdv,
             state: ParserState::Preamble,
             stack: Vec::new(),
@@ -246,7 +246,7 @@ impl<T: XdvEvents> XdvParser<T> {
                 use std::ptr;
                 let ptr = buf.as_mut_ptr();
                 unsafe {
-                    ptr::copy(ptr.offset(n_consumed as isize), ptr, n_saved_bytes);
+                    ptr::copy(ptr.add(n_consumed), ptr, n_saved_bytes);
                 }
             }
 
@@ -405,7 +405,7 @@ impl<T: XdvEvents> XdvParser<T> {
                 }
             }
 
-            if char_run_ended && self.cur_char_run.len() > 0 {
+            if char_run_ended && !self.cur_char_run.is_empty() {
                 self.events.handle_char_run(&self.cur_char_run)?;
                 self.cur_char_run.clear();
             }
@@ -428,8 +428,8 @@ impl<T: XdvEvents> XdvParser<T> {
             }
         };
 
-        cursor.assert_u32(25400000)?; // dimensions unit numerator
-        cursor.assert_u32(473628672)?; // dimensions unit denominator
+        cursor.assert_u32(25_400_000)?; // dimensions unit numerator
+        cursor.assert_u32(473_628_672)?; // dimensions unit denominator
         cursor.get_u32()?; // 'mag' factor
         let n_comment = cursor.get_u8()?;
         self.events
@@ -523,8 +523,8 @@ impl<T: XdvEvents> XdvParser<T> {
 
         let mut counters = [0i32; 10];
 
-        for i in 0..10 {
-            counters[i] = cursor.get_i32()?;
+        for counter in &mut counters {
+            *counter = cursor.get_i32()?;
         }
 
         let previous_bop = cursor.get_i32()?; // previous beginning-of-page marker
@@ -819,8 +819,8 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         cursor.get_u32()?; // last_bop
-        cursor.assert_u32(25400000)?; // dimensions unit numerator
-        cursor.assert_u32(473628672)?; // dimensions unit denominator
+        cursor.assert_u32(25_400_000)?; // dimensions unit numerator
+        cursor.assert_u32(473_628_672)?; // dimensions unit denominator
         cursor.get_u32()?; // 'mag' factor
         cursor.get_u32()?; // largest height+depth of tallest page
         cursor.get_u32()?; // largest width of widest page
@@ -914,10 +914,10 @@ struct Cursor<'a, T: XdvEvents> {
 impl<'a, T: XdvEvents> Cursor<'a, T> {
     pub fn new(buf: &'a [u8], global_offset: u64) -> Self {
         Cursor {
-            buf: buf,
+            buf,
             checkpoint: 0,
             offset: 0,
-            global_offset: global_offset,
+            global_offset,
             _events: PhantomData,
         }
     }
@@ -941,7 +941,7 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
     }
 
     pub fn get_u8(&mut self) -> InternalResult<u8, T::Error> {
-        if self.buf.len() < 1 {
+        if self.buf.is_empty() {
             return Err(InternalError::NeedMoreData);
         }
 
@@ -960,7 +960,7 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
     }
 
     pub fn get_i8(&mut self) -> InternalResult<i8, T::Error> {
-        if self.buf.len() < 1 {
+        if self.buf.is_empty() {
             return Err(InternalError::NeedMoreData);
         }
 

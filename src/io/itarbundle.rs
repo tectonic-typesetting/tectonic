@@ -38,7 +38,7 @@ impl HttpRangeReader {
 
         HttpRangeReader {
             url: url.to_owned(),
-            client: client,
+            client,
         }
     }
 }
@@ -90,7 +90,7 @@ pub struct ITarBundle<F: ITarIoFactory> {
 impl<F: ITarIoFactory> ITarBundle<F> {
     fn construct(factory: F) -> ITarBundle<F> {
         ITarBundle {
-            factory: factory,
+            factory,
             data: None,
             index: HashMap::new(),
         }
@@ -117,13 +117,7 @@ impl<F: ITarIoFactory> ITarBundle<F> {
             let name = OsString::from(bits[0]);
             let offset = bits[1].parse::<u64>()?;
             let length = bits[2].parse::<u64>()?;
-            self.index.insert(
-                name,
-                FileInfo {
-                    offset: offset,
-                    length: length,
-                },
-            );
+            self.index.insert(name, FileInfo { offset, length });
         }
 
         // ... then, the data reader.
