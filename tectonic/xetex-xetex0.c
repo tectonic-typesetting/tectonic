@@ -678,18 +678,17 @@ print_subsidiary_data(int32_t p, UTF16_code c)
 
 void print_style(int32_t c)
 {
-    // DISPLAY_STYLE matches style 0 and 1, etc
-    switch (c ^ (c & 1)) {
-    case DISPLAY_STYLE:
+    switch (c / 2) {
+    case DISPLAY_STYLE / 2:
         print_esc_cstr("displaystyle");
         break;
-    case TEXT_STYLE:
+    case TEXT_STYLE / 2:
         print_esc_cstr("textstyle");
         break;
-    case SCRIPT_STYLE:
+    case SCRIPT_STYLE / 2:
         print_esc_cstr("scriptstyle");
         break;
-    case SCRIPT_SCRIPT_STYLE:
+    case SCRIPT_SCRIPT_STYLE / 2:
         print_esc_cstr("scriptscriptstyle");
         break;
     default:
