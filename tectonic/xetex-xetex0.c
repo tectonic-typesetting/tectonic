@@ -679,16 +679,16 @@ print_subsidiary_data(int32_t p, UTF16_code c)
 void print_style(int32_t c)
 {
     switch (c / 2) {
-    case 0:
+    case DISPLAY_STYLE / 2:
         print_esc_cstr("displaystyle");
         break;
-    case 1:
+    case TEXT_STYLE / 2:
         print_esc_cstr("textstyle");
         break;
-    case 2:
+    case SCRIPT_STYLE / 2:
         print_esc_cstr("scriptstyle");
         break;
-    case 3:
+    case SCRIPT_SCRIPT_STYLE / 2:
         print_esc_cstr("scriptscriptstyle");
         break;
     default:
@@ -3824,55 +3824,55 @@ found:
 void print_group(bool e)
 {
     switch (cur_group) {
-    case 0:
+    case BOTTOM_LEVEL:
         print_cstr("bottom level");
         return;
-    case 1:
-    case 14:
+    case SIMPLE_GROUP:
+    case SEMI_SIMPLE_GROUP:
         {
             if (cur_group == SEMI_SIMPLE_GROUP)
                 print_cstr("semi ");
             print_cstr("simple");
         }
         break;
-    case 2:
-    case 3:
+    case HBOX_GROUP:
+    case ADJUSTED_HBOX_GROUP:
         {
             if (cur_group == ADJUSTED_HBOX_GROUP)
                 print_cstr("adjusted ");
             print_cstr("hbox");
         }
         break;
-    case 4:
+    case VBOX_GROUP:
         print_cstr("vbox");
         break;
-    case 5:
+    case VTOP_GROUP:
         print_cstr("vtop");
         break;
-    case 6:
-    case 7:
+    case ALIGN_GROUP:
+    case NO_ALIGN_GROUP:
         {
             if (cur_group == NO_ALIGN_GROUP)
                 print_cstr("no ");
             print_cstr("align");
         }
         break;
-    case 8:
+    case OUTPUT_GROUP:
         print_cstr("output");
         break;
-    case 10:
+    case DISC_GROUP:
         print_cstr("disc");
         break;
-    case 11:
+    case INSERT_GROUP:
         print_cstr("insert");
         break;
-    case 12:
+    case VCENTER_GROUP:
         print_cstr("vcenter");
         break;
-    case 9:
-    case 13:
-    case 15:
-    case 16:
+    case MATH_GROUP:
+    case MATH_CHOICE_GROUP:
+    case MATH_SHIFT_GROUP:
+    case MATH_LEFT_GROUP:
         {
             print_cstr("math");
             if (cur_group == MATH_CHOICE_GROUP)
@@ -11679,11 +11679,6 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     font_bc[f] = bc;
     font_ec[f] = ec;
     font_glue[f] = TEX_NULL;
-    char_base[f] = char_base[f];
-    width_base[f] = width_base[f];
-    lig_kern_base[f] = lig_kern_base[f];
-    kern_base[f] = kern_base[f];
-    exten_base[f] = exten_base[f];
     param_base[f]--;
     fmem_ptr = fmem_ptr + lf;
     font_ptr = f;

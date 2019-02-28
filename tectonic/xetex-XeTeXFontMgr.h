@@ -72,11 +72,11 @@ public:
 
     double                          getDesignSize(XeTeXFont font);
 
-    char                            getReqEngine() const { return sReqEngine; };
+    char                            getReqEngine() const { return sReqEngine; }
         // return the requested rendering technology for the most recent findFont
         // or 0 if no specific technology was requested
 
-    void                            setReqEngine(char reqEngine) const { sReqEngine = reqEngine; };
+    void                            setReqEngine(char reqEngine) const { sReqEngine = reqEngine; }
 
 protected:
     static XeTeXFontMgr*            sFontManager;
