@@ -39,7 +39,8 @@ XeTeX, but the expression of those changes in source form may well change
 greatly over time.
 
 In this repository, the Git submodule `reference_sources` links to the
-[“staging repository”](../tectonic-staging.git) that tracks the XeTeX source
+[“staging repository”](https://github.com/tectonic-typesetting/tectonic-staging)
+that tracks the XeTeX source
 code that we use as a reference. In particular, the version of the reference
 code in the submodule is the most recent code whose semantics are *guaranteed*
 to be expressed in Tectonic, to the best of our efforts. You don’t need to
