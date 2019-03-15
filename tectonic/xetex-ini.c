@@ -174,7 +174,6 @@ bool name_in_progress;
 str_number job_name;
 bool log_opened;
 const char* output_file_extension;
-rust_output_handle_t dvi_file;
 str_number texmf_log_name;
 memory_word *font_info;
 font_index fmem_ptr;
@@ -354,7 +353,7 @@ uint16_t _xeq_level_array[EQTB_SIZE - INT_BASE + 1];
 #define NEG_TRIE_OP_SIZE -35111L
 #define MAX_TRIE_OP 65535L
 
-int32_t _trie_op_hash_array[TRIE_OP_SIZE - NEG_TRIE_OP_SIZE + 1];
+static int32_t _trie_op_hash_array[TRIE_OP_SIZE - NEG_TRIE_OP_SIZE + 1];
 #define TRIE_OP_HASH(i) _trie_op_hash_array[(i) - NEG_TRIE_OP_SIZE]
 
 static b32x2 *yhash;
