@@ -34,8 +34,8 @@ impl FormatCache {
     /// a local cache directory.
     pub fn new(bundle_digest: DigestData, formats_base: PathBuf) -> FormatCache {
         FormatCache {
-            bundle_digest: bundle_digest,
-            formats_base: formats_base,
+            bundle_digest,
+            formats_base,
         }
     }
 

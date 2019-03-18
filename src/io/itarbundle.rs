@@ -34,11 +34,9 @@ pub struct HttpRangeReader {
 
 impl HttpRangeReader {
     pub fn new(url: &str) -> HttpRangeReader {
-        let client = create_hyper_client();
-
         HttpRangeReader {
             url: url.to_owned(),
-            client: client,
+            client: create_hyper_client(),
         }
     }
 }
@@ -90,7 +88,7 @@ pub struct ITarBundle<F: ITarIoFactory> {
 impl<F: ITarIoFactory> ITarBundle<F> {
     fn construct(factory: F) -> ITarBundle<F> {
         ITarBundle {
-            factory: factory,
+            factory,
             data: None,
             index: HashMap::new(),
         }
@@ -114,14 +112,11 @@ impl<F: ITarIoFactory> ITarBundle<F> {
                 continue; // TODO: preserve the warning info or something!
             }
 
-            let name = OsString::from(bits[0]);
-            let offset = bits[1].parse::<u64>()?;
-            let length = bits[2].parse::<u64>()?;
             self.index.insert(
-                name,
+                OsString::from(bits[0]),
                 FileInfo {
-                    offset: offset,
-                    length: length,
+                    offset: bits[1].parse::<u64>()?,
+                    length: bits[2].parse::<u64>()?,
                 },
             );
         }

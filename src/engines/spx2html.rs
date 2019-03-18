@@ -75,10 +75,10 @@ impl<'a, 'b: 'a> State<'a, 'b> {
         status: &'a mut StatusBackend,
     ) -> Self {
         Self {
-            outname: outname,
-            io: io,
-            events: events,
-            status: status,
+            outname,
+            io,
+            events,
+            status,
             cur_output: None,
             warned_lost_chars: false,
             buf: Vec::new(),

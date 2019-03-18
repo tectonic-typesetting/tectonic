@@ -105,7 +105,7 @@ impl MemoryIo {
     pub fn new(stdout_allowed: bool) -> MemoryIo {
         MemoryIo {
             files: Rc::new(RefCell::new(HashMap::new())),
-            stdout_allowed: stdout_allowed,
+            stdout_allowed,
         }
     }
 

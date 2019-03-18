@@ -38,13 +38,13 @@ impl TermcolorStatusBackend {
         error_spec.set_fg(Some(Color::Red)).set_bold(true);
 
         TermcolorStatusBackend {
-            chatter: chatter,
+            chatter,
             stdout: StandardStream::stdout(ColorChoice::Auto),
             stderr: StandardStream::stderr(ColorChoice::Auto),
-            note_spec: note_spec,
-            highlight_spec: highlight_spec,
-            warning_spec: warning_spec,
-            error_spec: error_spec,
+            note_spec,
+            highlight_spec,
+            warning_spec,
+            error_spec,
         }
     }
 
