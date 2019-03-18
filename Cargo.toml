@@ -54,7 +54,7 @@ sha2 = "^0.8"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 tectonic_xdv = { path = "xdv", version = "0.1.9-dev" }
 termcolor = "^1.0"
-toml = "^0.4"
+toml = "^0.5"
 zip = "^0.5"
 
 [features]
