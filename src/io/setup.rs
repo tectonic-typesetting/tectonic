@@ -242,7 +242,7 @@ impl IoSetupBuilder {
                 true,
                 self.hidden_input_paths,
             ),
-            format_cache: format_cache,
+            format_cache,
             bundle: self.bundle,
             genuine_stdout: if self.use_genuine_stdout {
                 Some(GenuineStdoutIo::new())

@@ -18,7 +18,7 @@ pub struct IoStack<'a> {
 
 impl<'a> IoStack<'a> {
     pub fn new(items: Vec<&'a mut IoProvider>) -> IoStack<'a> {
-        IoStack { items: items }
+        IoStack { items }
     }
 }
 

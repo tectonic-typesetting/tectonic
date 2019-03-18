@@ -138,7 +138,7 @@ impl<B: Bundle> LocalCache<B> {
                         name,
                         LocalCacheItem {
                             _length: length,
-                            digest: digest,
+                            digest,
                         },
                     );
                 }
@@ -148,14 +148,14 @@ impl<B: Bundle> LocalCache<B> {
         // All set.
 
         Ok(LocalCache {
-            backend: backend,
+            backend,
             digest_path: digest.to_owned(),
-            cached_digest: cached_digest,
-            checked_digest: checked_digest,
-            manifest_path: manifest_path,
+            cached_digest,
+            checked_digest,
+            manifest_path,
             data_path: data.to_owned(),
-            contents: contents,
-            only_cached: only_cached,
+            contents,
+            only_cached,
         })
     }
 
@@ -192,7 +192,7 @@ impl<B: Bundle> LocalCache<B> {
             name.to_owned(),
             LocalCacheItem {
                 _length: length,
-                digest: digest,
+                digest,
             },
         );
         Ok(())

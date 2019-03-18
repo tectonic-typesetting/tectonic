@@ -79,8 +79,8 @@ pub struct FileSummary {
 impl FileSummary {
     fn new(access_pattern: AccessPattern, input_origin: InputOrigin) -> FileSummary {
         FileSummary {
-            access_pattern: access_pattern,
-            input_origin: input_origin,
+            access_pattern,
+            input_origin,
             read_digest: None,
             write_digest: None,
             got_written_to_disk: false,
@@ -504,7 +504,7 @@ impl ProcessingSessionBuilder {
             io: io.create(status)?,
             events: IoEvents::new(),
             pass: self.pass,
-            primary_input_path: primary_input_path,
+            primary_input_path,
             primary_input_tex_path: tex_input_name,
             format_name: self.format_name.unwrap(),
             tex_aux_path: aux_path.into_os_string(),
@@ -512,7 +512,7 @@ impl ProcessingSessionBuilder {
             tex_pdf_path: pdf_path.into_os_string(),
             output_format: self.output_format,
             makefile_output_path: self.makefile_output_path,
-            output_path: output_path,
+            output_path,
             tex_rerun_specification: self.reruns,
             keep_intermediates: self.keep_intermediates,
             keep_logs: self.keep_logs,

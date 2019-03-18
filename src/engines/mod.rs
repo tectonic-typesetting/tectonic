@@ -135,9 +135,9 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         status: &'a mut StatusBackend,
     ) -> ExecutionState<'a, I> {
         ExecutionState {
-            io: io,
-            events: events,
-            status: status,
+            io,
+            events,
+            status,
             output_handles: Vec::new(),
             input_handles: Vec::new(),
         }
