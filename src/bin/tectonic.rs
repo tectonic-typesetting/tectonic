@@ -136,8 +136,8 @@ fn inner(
     let mut sess = sess_builder.create(status)?;
     let result = sess.run(status);
 
-    if let Err(ref e) = result {
-        if let &ErrorKind::EngineError(ref engine) = e.kind() {
+    if let Err(e) = &result {
+        if let ErrorKind::EngineError(engine) = e.kind() {
             if let Some(output) = sess.io.mem.files.borrow().get(sess.io.mem.stdout_key()) {
                 tt_error!(
                     status,
