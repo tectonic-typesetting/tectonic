@@ -153,7 +153,7 @@ impl<'a, 'b: 'a> XdvEvents for State<'a, 'b> {
 
         if self.buf.len() > 0 {
             self.buf.push(0x0a); // newline
-            dest.write(&self.buf)?;
+            dest.write_all(&self.buf)?;
         }
 
         Ok(())
