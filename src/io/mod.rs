@@ -441,7 +441,7 @@ pub trait Bundle: IoProvider {
             }
 
             OpenResult::Err(e) => {
-                return Err(e.into());
+                return Err(e);
             }
         };
 

@@ -75,7 +75,7 @@ impl IoProvider for FormatCache {
     ) -> OpenResult<InputHandle> {
         let path = match self.path_for_format(name) {
             Ok(p) => p,
-            Err(e) => return OpenResult::Err(e.into()),
+            Err(e) => return OpenResult::Err(e),
         };
 
         let f = match super::try_open_file(&path) {

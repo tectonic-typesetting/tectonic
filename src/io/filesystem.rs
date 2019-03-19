@@ -102,7 +102,7 @@ impl IoProvider for FilesystemIo {
 
         let path = match self.construct_path(name) {
             Ok(p) => p,
-            Err(e) => return OpenResult::Err(e.into()),
+            Err(e) => return OpenResult::Err(e),
         };
 
         let f = match File::create(path) {
@@ -125,7 +125,7 @@ impl IoProvider for FilesystemIo {
     ) -> OpenResult<InputHandle> {
         let path = match self.construct_path(name) {
             Ok(p) => p,
-            Err(e) => return OpenResult::Err(e.into()),
+            Err(e) => return OpenResult::Err(e),
         };
 
         if self.hidden_input_paths.contains(&path) {

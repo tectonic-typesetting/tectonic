@@ -235,7 +235,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             }
             OpenResult::Err(e) => {
                 tt_error!(self.status, "error trying to open file \"{}\" for MD5 calculation",
-                          name.to_string_lossy(); e.into());
+                          name.to_string_lossy(); e);
                 return true;
             }
         };

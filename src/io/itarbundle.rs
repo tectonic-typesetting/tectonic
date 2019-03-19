@@ -135,7 +135,7 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
         status: &mut StatusBackend,
     ) -> OpenResult<InputHandle> {
         if let Err(e) = self.ensure_loaded(status) {
-            return OpenResult::Err(e.into());
+            return OpenResult::Err(e);
         }
 
         // In principle it'd be cool to return a handle right to the HTTP
@@ -169,7 +169,7 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
             {
                 Ok(r) => r,
                 Err(e) => {
-                    tt_warning!(status, "failure requesting \"{}\" from network", name.to_string_lossy(); e.into());
+                    tt_warning!(status, "failure requesting \"{}\" from network", name.to_string_lossy(); e);
                     any_failed = true;
                     continue;
                 }
