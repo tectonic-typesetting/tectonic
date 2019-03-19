@@ -176,12 +176,12 @@ impl PersistentConfig {
         }
         let bundle =
             self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, status)?;
-        return Ok(Box::new(bundle) as _);
+        Ok(Box::new(bundle) as _)
     }
 
     pub fn format_cache_path(&self) -> Result<PathBuf> {
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
-            return Ok(::test_util::test_path(&[]));
+            Ok(::test_util::test_path(&[]))
         } else {
             Ok(app_dir(AppDataType::UserCache, &::APP_INFO, "formats")?)
         }
