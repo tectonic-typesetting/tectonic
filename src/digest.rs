@@ -41,7 +41,7 @@ pub fn hex_to_bytes(text: &str, dest: &mut [u8]) -> Result<()> {
 // The specific implementation we're using: SHA256.
 
 const N_BYTES: usize = 32;
-pub const DIGEST_NAME: &'static str = "SHA256SUM";
+pub const DIGEST_NAME: &str = "SHA256SUM";
 
 pub fn create() -> DigestComputer {
     Default::default()
