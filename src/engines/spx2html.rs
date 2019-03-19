@@ -118,7 +118,7 @@ impl<'a, 'b: 'a> XdvEvents for State<'a, 'b> {
                 return Err(errmsg!("no way to write output file \"{}\"", self.outname));
             }
             OpenResult::Err(e) => {
-                return Err(e.into());
+                return Err(e);
             }
         });
 
