@@ -418,7 +418,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 
     fn input_read(&mut self, handle: *mut InputHandle, buf: &mut [u8]) -> Result<()> {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
-        Ok(rhandle.read_exact(buf)?)
+        rhandle.read_exact(buf).map_err(Error::from)
     }
 
     fn input_getc(&mut self, handle: *mut InputHandle) -> Result<u8> {
