@@ -151,7 +151,7 @@ impl<'a, 'b: 'a> XdvEvents for State<'a, 'b> {
             }
         }
 
-        if self.buf.len() > 0 {
+        if !self.buf.is_empty() {
             self.buf.push(0x0a); // newline
             dest.write(&self.buf)?;
         }
