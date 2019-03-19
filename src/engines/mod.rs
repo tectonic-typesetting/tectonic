@@ -636,7 +636,7 @@ extern "C" fn output_close<'a, I: 'a + IoProvider>(
 ) -> libc::c_int {
     let es = unsafe { &mut *es };
 
-    if handle == 0 as *mut _ {
+    if handle.is_null() {
         return 0; // This is/was the behavior of close_file() in C.
     }
 
@@ -785,7 +785,7 @@ extern "C" fn input_close<'a, I: 'a + IoProvider>(
 ) -> libc::c_int {
     let es = unsafe { &mut *es };
 
-    if handle == 0 as *mut _ {
+    if handle.is_null() {
         return 0; // This is/was the behavior of close_file() in C.
     }
 
