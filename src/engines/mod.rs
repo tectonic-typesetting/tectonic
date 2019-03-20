@@ -733,7 +733,7 @@ extern "C" fn input_getc<'a, I: 'a + IoProvider>(
     // No need to complain. Fun match statement here.
 
     match es.input_getc(rhandle) {
-        Ok(b) => b as libc::c_int,
+        Ok(b) => libc::c_int::from(b),
         Err(Error(ErrorKind::Io(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => {
             libc::EOF
         }
