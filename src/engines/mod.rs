@@ -93,11 +93,12 @@ pub trait IoEventBackend {
 }
 
 /// This struct implements the IoEventBackend trait but does nothing.
+#[derive(Default)]
 pub struct NoopIoEventBackend {}
 
 impl NoopIoEventBackend {
     pub fn new() -> NoopIoEventBackend {
-        NoopIoEventBackend {}
+        Default::default()
     }
 }
 

@@ -12,12 +12,12 @@ use status::StatusBackend;
 
 /// GenuineStdoutIo provides a mechanism for the "stdout" output to actually
 /// go to the process's stdout.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct GenuineStdoutIo {}
 
 impl GenuineStdoutIo {
     pub fn new() -> GenuineStdoutIo {
-        GenuineStdoutIo {}
+        Default::default()
     }
 }
 

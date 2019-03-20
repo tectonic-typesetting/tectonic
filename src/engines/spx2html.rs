@@ -14,11 +14,12 @@ use errors::{Error, Result};
 use io::{IoProvider, IoStack, OpenResult, OutputHandle};
 use status::StatusBackend;
 
+#[derive(Default)]
 pub struct Spx2HtmlEngine {}
 
 impl Spx2HtmlEngine {
     pub fn new() -> Spx2HtmlEngine {
-        Spx2HtmlEngine {}
+        Default::default()
     }
 
     pub fn process(
