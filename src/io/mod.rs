@@ -279,7 +279,7 @@ impl<T> OpenResult<T> {
 
     /// Returns true if this result is of the NotAvailable variant.
     pub fn is_not_available(&self) -> bool {
-        if let &OpenResult::NotAvailable = self {
+        if let OpenResult::NotAvailable = *self {
             true
         } else {
             false
