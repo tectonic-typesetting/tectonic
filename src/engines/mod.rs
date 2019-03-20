@@ -124,7 +124,9 @@ struct ExecutionState<'a, I: 'a + IoProvider> {
     io: &'a mut I,
     events: &'a mut IoEventBackend,
     status: &'a mut StatusBackend,
+    #[allow(clippy::vec_box)]
     input_handles: Vec<Box<InputHandle>>,
+    #[allow(clippy::vec_box)]
     output_handles: Vec<Box<OutputHandle>>,
 }
 
