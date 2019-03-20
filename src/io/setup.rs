@@ -32,7 +32,7 @@ pub struct IoSetup {
 }
 
 impl IoSetup {
-    pub fn as_stack<'a>(&'a mut self) -> IoStack<'a> {
+    pub fn as_stack(&mut self) -> IoStack {
         let mut providers: Vec<&mut IoProvider> = Vec::new();
 
         if let Some(ref mut p) = self.genuine_stdout {
