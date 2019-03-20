@@ -109,11 +109,12 @@ macro_rules! tt_error {
     };
 }
 
+#[derive(Default)]
 pub struct NoopStatusBackend {}
 
 impl NoopStatusBackend {
     pub fn new() -> NoopStatusBackend {
-        NoopStatusBackend {}
+        Default::default()
     }
 }
 
