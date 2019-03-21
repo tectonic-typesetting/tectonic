@@ -28,6 +28,7 @@ lazy_static! {
 }
 
 fn get_plain_format_arg() -> String {
+    util::set_test_root();
     let path = ensure_plain_format().expect("couldn't write format file");
     format!("--format={}", path.display())
 }
@@ -177,8 +178,6 @@ fn relative_include() {
     if env::var("RUNNING_COVERAGE").is_ok() {
         return;
     }
-
-    util::set_test_root();
 
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&[
