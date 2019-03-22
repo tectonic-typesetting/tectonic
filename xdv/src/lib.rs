@@ -524,8 +524,8 @@ impl<T: XdvEvents> XdvParser<T> {
 
         let mut counters = [0i32; 10];
 
-        for i in 0..10 {
-            counters[i] = cursor.get_i32()?;
+        for counter in &mut counters {
+            *counter = cursor.get_i32()?;
         }
 
         let previous_bop = cursor.get_i32()?; // previous beginning-of-page marker
