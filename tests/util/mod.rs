@@ -123,8 +123,8 @@ impl ExpectedInfo {
         f.read_to_end(&mut contents).unwrap();
 
         ExpectedInfo {
-            name: name,
-            contents: contents,
+            name,
+            contents,
             gzipped: false,
         }
     }
@@ -143,8 +143,8 @@ impl ExpectedInfo {
         dec.read_to_end(&mut contents).unwrap();
 
         ExpectedInfo {
-            name: name,
-            contents: contents,
+            name,
+            contents,
             gzipped: true,
         }
     }
