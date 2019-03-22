@@ -405,7 +405,7 @@ impl<T: XdvEvents> XdvParser<T> {
                 }
             }
 
-            if char_run_ended && self.cur_char_run.len() > 0 {
+            if char_run_ended && !self.cur_char_run.is_empty() {
                 self.events.handle_char_run(&self.cur_char_run)?;
                 self.cur_char_run.clear();
             }
@@ -941,7 +941,7 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
     }
 
     pub fn get_u8(&mut self) -> InternalResult<u8, T::Error> {
-        if self.buf.len() < 1 {
+        if self.buf.is_empty() {
             return Err(InternalError::NeedMoreData);
         }
 
@@ -960,7 +960,7 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
     }
 
     pub fn get_i8(&mut self) -> InternalResult<i8, T::Error> {
-        if self.buf.len() < 1 {
+        if self.buf.is_empty() {
             return Err(InternalError::NeedMoreData);
         }
 
