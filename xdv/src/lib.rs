@@ -428,8 +428,8 @@ impl<T: XdvEvents> XdvParser<T> {
             }
         };
 
-        cursor.assert_u32(25400000)?; // dimensions unit numerator
-        cursor.assert_u32(473628672)?; // dimensions unit denominator
+        cursor.assert_u32(25_400_000)?; // dimensions unit numerator
+        cursor.assert_u32(473_628_672)?; // dimensions unit denominator
         cursor.get_u32()?; // 'mag' factor
         let n_comment = cursor.get_u8()?;
         self.events
@@ -819,8 +819,8 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         cursor.get_u32()?; // last_bop
-        cursor.assert_u32(25400000)?; // dimensions unit numerator
-        cursor.assert_u32(473628672)?; // dimensions unit denominator
+        cursor.assert_u32(25_400_000)?; // dimensions unit numerator
+        cursor.assert_u32(473_628_672)?; // dimensions unit denominator
         cursor.get_u32()?; // 'mag' factor
         cursor.get_u32()?; // largest height+depth of tallest page
         cursor.get_u32()?; // largest width of widest page
@@ -845,7 +845,7 @@ impl<T: XdvEvents> XdvParser<T> {
             FileType::Xdv => IdByte::Xdv,
             FileType::Spx => IdByte::Spx,
         } as u8)?;
-        cursor.assert_u32(0xDFDFDFDF)?; // at least four 0xDF's
+        cursor.assert_u32(0xDFDF_DFDF)?; // at least four 0xDF's
 
         self.state = ParserState::Finished;
         Ok(())
