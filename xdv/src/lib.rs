@@ -196,7 +196,7 @@ impl<T: XdvEvents> XdvParser<T> {
     /// encountered in the file.
     pub fn new(events: T) -> Self {
         XdvParser {
-            events: events,
+            events,
             filetype: FileType::Xdv,
             state: ParserState::Preamble,
             stack: Vec::new(),
@@ -914,10 +914,10 @@ struct Cursor<'a, T: XdvEvents> {
 impl<'a, T: XdvEvents> Cursor<'a, T> {
     pub fn new(buf: &'a [u8], global_offset: u64) -> Self {
         Cursor {
-            buf: buf,
+            buf,
             checkpoint: 0,
             offset: 0,
-            global_offset: global_offset,
+            global_offset,
             _events: PhantomData,
         }
     }
