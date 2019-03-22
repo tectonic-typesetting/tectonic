@@ -148,6 +148,16 @@ if $is_main_build ; then
 fi
 travis_end_fold check_rustfmt
 
+rustup component add clippy
+
+# Check that the code is properly clippy'd.
+
+travis_start_fold check_clippy "Maybe check clippy? ($is_main_build)"
+if $is_main_build ; then
+    cargo clippy --all-targets --all-features -- -D warnings
+fi
+travis_end_fold check_clippy
+
 # OK, the biggie: does it compile and pass the test suite?
 
 travis_start_fold build_and_test "Build and test"
