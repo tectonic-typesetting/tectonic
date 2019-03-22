@@ -39,24 +39,24 @@ pub enum XdvError {
 
 impl Display for XdvError {
     fn fmt(&self, f: &mut Formatter) -> Result<(), FmtError> {
-        match self {
-            &XdvError::Malformed(offset) => {
+        match *self {
+            XdvError::Malformed(offset) => {
                 write!(f, "unexpected XDV data at byte offset {}", offset)
             }
-            &XdvError::IllegalOpcode(opcode, offset) => {
+            XdvError::IllegalOpcode(opcode, offset) => {
                 write!(f, "illegal XDV opcode {} at byte offset {}", opcode, offset)
             }
-            &XdvError::UnexpectedEndOfStream => write!(f, "stream ended unexpectedly soon"),
+            XdvError::UnexpectedEndOfStream => write!(f, "stream ended unexpectedly soon"),
         }
     }
 }
 
 impl error::Error for XdvError {
     fn description(&self) -> &str {
-        match self {
-            &XdvError::Malformed(_) => "malformed XDV data",
-            &XdvError::IllegalOpcode(_, _) => "illegal XDV opcode",
-            &XdvError::UnexpectedEndOfStream => "stream ended unexpectedly soon",
+        match *self {
+            XdvError::Malformed(_) => "malformed XDV data",
+            XdvError::IllegalOpcode(_, _) => "illegal XDV opcode",
+            XdvError::UnexpectedEndOfStream => "stream ended unexpectedly soon",
         }
     }
 
@@ -162,9 +162,9 @@ impl Display for FileType {
         write!(
             f,
             "{}",
-            match self {
-                &FileType::Xdv => "XDV",
-                &FileType::Spx => "SPX",
+            match *self {
+                FileType::Xdv => "XDV",
+                FileType::Spx => "SPX",
             }
         )
     }
