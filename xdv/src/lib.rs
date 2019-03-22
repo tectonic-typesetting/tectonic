@@ -708,7 +708,7 @@ impl<T: XdvEvents> XdvParser<T> {
             return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
-        self.cur_font_num = Some((opcode - Opcode::SetFontNumber0 as u8) as i32);
+        self.cur_font_num = Some(i32::from(opcode - Opcode::SetFontNumber0 as u8));
         Ok(())
     }
 
@@ -733,7 +733,7 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         let char_num = opcode - Opcode::SetCharNumber0 as u8;
-        self.cur_char_run.push(char_num as i32);
+        self.cur_char_run.push(i32::from(char_num));
         Ok(())
     }
 
@@ -1028,9 +1028,9 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
 
     pub fn get_compact_u32(&mut self, size_marker: u8) -> InternalResult<u32, T::Error> {
         match size_marker {
-            0 => Ok(self.get_u8()? as u32),
-            1 => Ok(self.get_u16()? as u32),
-            2 => Ok(self.get_u24()? as u32),
+            0 => Ok(u32::from(self.get_u8()?)),
+            1 => Ok(u32::from(self.get_u16()?)),
+            2 => Ok(self.get_u24()?),
             3 => self.get_u32(),
             _ => Err(XdvError::Malformed(self.global_offset()).into_internal()),
         }
@@ -1058,9 +1058,9 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
     /// This variation lets small values be signed (used by right, down, etc).
     pub fn get_compact_i32_smneg(&mut self, size_marker: u8) -> InternalResult<i32, T::Error> {
         match size_marker {
-            0 => Ok(self.get_i8()? as i32),
-            1 => Ok(self.get_i16()? as i32),
-            2 => Ok(self.get_i24()? as i32),
+            0 => Ok(i32::from(self.get_i8()?)),
+            1 => Ok(i32::from(self.get_i16()?)),
+            2 => Ok(self.get_i24()?),
             3 => self.get_i32(),
             _ => Err(XdvError::Malformed(self.global_offset()).into_internal()),
         }
@@ -1069,8 +1069,8 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
     /// This variation has unsigned small values (used by fnt_def).
     pub fn get_compact_i32_smpos(&mut self, size_marker: u8) -> InternalResult<i32, T::Error> {
         match size_marker {
-            0 => Ok(self.get_u8()? as i32),
-            1 => Ok(self.get_u16()? as i32),
+            0 => Ok(i32::from(self.get_u8()?)),
+            1 => Ok(i32::from(self.get_u16()?)),
             2 => Ok(self.get_u24()? as i32),
             3 => self.get_i32(),
             _ => Err(XdvError::Malformed(self.global_offset()).into_internal()),
