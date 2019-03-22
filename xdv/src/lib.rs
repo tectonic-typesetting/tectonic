@@ -246,7 +246,7 @@ impl<T: XdvEvents> XdvParser<T> {
                 use std::ptr;
                 let ptr = buf.as_mut_ptr();
                 unsafe {
-                    ptr::copy(ptr.offset(n_consumed as isize), ptr, n_saved_bytes);
+                    ptr::copy(ptr.add(n_consumed), ptr, n_saved_bytes);
                 }
             }
 
