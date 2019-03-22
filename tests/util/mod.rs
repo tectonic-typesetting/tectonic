@@ -149,8 +149,8 @@ impl ExpectedInfo {
         }
     }
 
-    pub fn test_data(&self, observed: &Vec<u8>) {
-        if &self.contents == observed {
+    pub fn test_data(&self, observed: &[u8]) {
+        if self.contents == observed {
             return;
         }
 
