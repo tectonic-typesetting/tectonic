@@ -39,24 +39,24 @@ pub enum XdvError {
 
 impl Display for XdvError {
     fn fmt(&self, f: &mut Formatter) -> Result<(), FmtError> {
-        match self {
-            &XdvError::Malformed(offset) => {
+        match *self {
+            XdvError::Malformed(offset) => {
                 write!(f, "unexpected XDV data at byte offset {}", offset)
             }
-            &XdvError::IllegalOpcode(opcode, offset) => {
+            XdvError::IllegalOpcode(opcode, offset) => {
                 write!(f, "illegal XDV opcode {} at byte offset {}", opcode, offset)
             }
-            &XdvError::UnexpectedEndOfStream => write!(f, "stream ended unexpectedly soon"),
+            XdvError::UnexpectedEndOfStream => write!(f, "stream ended unexpectedly soon"),
         }
     }
 }
 
 impl error::Error for XdvError {
     fn description(&self) -> &str {
-        match self {
-            &XdvError::Malformed(_) => "malformed XDV data",
-            &XdvError::IllegalOpcode(_, _) => "illegal XDV opcode",
-            &XdvError::UnexpectedEndOfStream => "stream ended unexpectedly soon",
+        match *self {
+            XdvError::Malformed(_) => "malformed XDV data",
+            XdvError::IllegalOpcode(_, _) => "illegal XDV opcode",
+            XdvError::UnexpectedEndOfStream => "stream ended unexpectedly soon",
         }
     }
 
@@ -162,9 +162,9 @@ impl Display for FileType {
         write!(
             f,
             "{}",
-            match self {
-                &FileType::Xdv => "XDV",
-                &FileType::Spx => "SPX",
+            match *self {
+                FileType::Xdv => "XDV",
+                FileType::Spx => "SPX",
             }
         )
     }
@@ -196,7 +196,7 @@ impl<T: XdvEvents> XdvParser<T> {
     /// encountered in the file.
     pub fn new(events: T) -> Self {
         XdvParser {
-            events: events,
+            events,
             filetype: FileType::Xdv,
             state: ParserState::Preamble,
             stack: Vec::new(),
@@ -246,7 +246,7 @@ impl<T: XdvEvents> XdvParser<T> {
                 use std::ptr;
                 let ptr = buf.as_mut_ptr();
                 unsafe {
-                    ptr::copy(ptr.offset(n_consumed as isize), ptr, n_saved_bytes);
+                    ptr::copy(ptr.add(n_consumed), ptr, n_saved_bytes);
                 }
             }
 
@@ -275,6 +275,7 @@ impl<T: XdvEvents> XdvParser<T> {
     /// not the same as the buffer size, some of the existing bytes must be
     /// re-fed to the parser. If the returned value is 0, you need a bigger
     /// buffer in order to be able to parse the next directive.
+    #[allow(clippy::cyclomatic_complexity)]
     pub fn parse(&mut self, chunk: &[u8]) -> Result<usize, T::Error> {
         let mut cursor = Cursor::new(chunk, self.offset);
 
@@ -405,7 +406,7 @@ impl<T: XdvEvents> XdvParser<T> {
                 }
             }
 
-            if char_run_ended && self.cur_char_run.len() > 0 {
+            if char_run_ended && !self.cur_char_run.is_empty() {
                 self.events.handle_char_run(&self.cur_char_run)?;
                 self.cur_char_run.clear();
             }
@@ -428,8 +429,8 @@ impl<T: XdvEvents> XdvParser<T> {
             }
         };
 
-        cursor.assert_u32(25400000)?; // dimensions unit numerator
-        cursor.assert_u32(473628672)?; // dimensions unit denominator
+        cursor.assert_u32(25_400_000)?; // dimensions unit numerator
+        cursor.assert_u32(473_628_672)?; // dimensions unit denominator
         cursor.get_u32()?; // 'mag' factor
         let n_comment = cursor.get_u8()?;
         self.events
@@ -523,8 +524,8 @@ impl<T: XdvEvents> XdvParser<T> {
 
         let mut counters = [0i32; 10];
 
-        for i in 0..10 {
-            counters[i] = cursor.get_i32()?;
+        for counter in &mut counters {
+            *counter = cursor.get_i32()?;
         }
 
         let previous_bop = cursor.get_i32()?; // previous beginning-of-page marker
@@ -707,7 +708,7 @@ impl<T: XdvEvents> XdvParser<T> {
             return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
-        self.cur_font_num = Some((opcode - Opcode::SetFontNumber0 as u8) as i32);
+        self.cur_font_num = Some(i32::from(opcode - Opcode::SetFontNumber0 as u8));
         Ok(())
     }
 
@@ -732,7 +733,7 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         let char_num = opcode - Opcode::SetCharNumber0 as u8;
-        self.cur_char_run.push(char_num as i32);
+        self.cur_char_run.push(i32::from(char_num));
         Ok(())
     }
 
@@ -819,8 +820,8 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         cursor.get_u32()?; // last_bop
-        cursor.assert_u32(25400000)?; // dimensions unit numerator
-        cursor.assert_u32(473628672)?; // dimensions unit denominator
+        cursor.assert_u32(25_400_000)?; // dimensions unit numerator
+        cursor.assert_u32(473_628_672)?; // dimensions unit denominator
         cursor.get_u32()?; // 'mag' factor
         cursor.get_u32()?; // largest height+depth of tallest page
         cursor.get_u32()?; // largest width of widest page
@@ -845,7 +846,7 @@ impl<T: XdvEvents> XdvParser<T> {
             FileType::Xdv => IdByte::Xdv,
             FileType::Spx => IdByte::Spx,
         } as u8)?;
-        cursor.assert_u32(0xDFDFDFDF)?; // at least four 0xDF's
+        cursor.assert_u32(0xDFDF_DFDF)?; // at least four 0xDF's
 
         self.state = ParserState::Finished;
         Ok(())
@@ -914,10 +915,10 @@ struct Cursor<'a, T: XdvEvents> {
 impl<'a, T: XdvEvents> Cursor<'a, T> {
     pub fn new(buf: &'a [u8], global_offset: u64) -> Self {
         Cursor {
-            buf: buf,
+            buf,
             checkpoint: 0,
             offset: 0,
-            global_offset: global_offset,
+            global_offset,
             _events: PhantomData,
         }
     }
@@ -941,7 +942,7 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
     }
 
     pub fn get_u8(&mut self) -> InternalResult<u8, T::Error> {
-        if self.buf.len() < 1 {
+        if self.buf.is_empty() {
             return Err(InternalError::NeedMoreData);
         }
 
@@ -960,7 +961,7 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
     }
 
     pub fn get_i8(&mut self) -> InternalResult<i8, T::Error> {
-        if self.buf.len() < 1 {
+        if self.buf.is_empty() {
             return Err(InternalError::NeedMoreData);
         }
 
@@ -1027,9 +1028,9 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
 
     pub fn get_compact_u32(&mut self, size_marker: u8) -> InternalResult<u32, T::Error> {
         match size_marker {
-            0 => Ok(self.get_u8()? as u32),
-            1 => Ok(self.get_u16()? as u32),
-            2 => Ok(self.get_u24()? as u32),
+            0 => Ok(u32::from(self.get_u8()?)),
+            1 => Ok(u32::from(self.get_u16()?)),
+            2 => Ok(self.get_u24()?),
             3 => self.get_u32(),
             _ => Err(XdvError::Malformed(self.global_offset()).into_internal()),
         }
@@ -1057,9 +1058,9 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
     /// This variation lets small values be signed (used by right, down, etc).
     pub fn get_compact_i32_smneg(&mut self, size_marker: u8) -> InternalResult<i32, T::Error> {
         match size_marker {
-            0 => Ok(self.get_i8()? as i32),
-            1 => Ok(self.get_i16()? as i32),
-            2 => Ok(self.get_i24()? as i32),
+            0 => Ok(i32::from(self.get_i8()?)),
+            1 => Ok(i32::from(self.get_i16()?)),
+            2 => Ok(self.get_i24()?),
             3 => self.get_i32(),
             _ => Err(XdvError::Malformed(self.global_offset()).into_internal()),
         }
@@ -1068,8 +1069,8 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
     /// This variation has unsigned small values (used by fnt_def).
     pub fn get_compact_i32_smpos(&mut self, size_marker: u8) -> InternalResult<i32, T::Error> {
         match size_marker {
-            0 => Ok(self.get_u8()? as i32),
-            1 => Ok(self.get_u16()? as i32),
+            0 => Ok(i32::from(self.get_u8()?)),
+            1 => Ok(i32::from(self.get_u16()?)),
             2 => Ok(self.get_u24()? as i32),
             3 => self.get_i32(),
             _ => Err(XdvError::Malformed(self.global_offset()).into_internal()),

@@ -41,12 +41,11 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
         .join("tectonic")
         .with_extension(env::consts::EXE_EXTENSION);
 
-    match fs::metadata(&tectonic) {
-        Ok(_) => {}
-        Err(_) => panic!(
+    if fs::metadata(&tectonic).is_err() {
+        panic!(
             "tectonic binary not found at {:?}. Do you need to run `cargo build`?",
             tectonic
-        ),
+        )
     }
     println!("using tectonic binary at {:?}", tectonic);
     println!("using cwd {:?}", cwd);
