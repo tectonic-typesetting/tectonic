@@ -4,6 +4,12 @@
 
 //! Tectonic error types and support code.
 
+// Silence warnings due to `error-chain` using `Error::cause` instead of `Error::source`. The
+// former was [deprecated in Rust 1.33](https://github.com/rust-lang/rust/pull/53533). The fix for
+// `error-chain` is in <https://github.com/rust-lang-nursery/error-chain/pull/255> and will
+// hopefully show up in a future version.
+#![allow(deprecated)]
+
 use app_dirs;
 use hyper;
 use std::io::Write;
