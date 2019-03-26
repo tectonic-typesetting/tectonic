@@ -47,6 +47,10 @@ addons:
       - libssl-dev
       - openssl
       - zlib1g-dev
+  homebrew:
+    packages:
+      - harfbuzz
+      - openssl
 
 install: true
 script: bash dist/travis.sh
