@@ -1215,6 +1215,7 @@ otf_create_ToUnicode_stream (const char *font_name,
 
     cmap_name = NEW(strlen(font_name)+strlen("-UTF16")+5, char);
     sprintf(cmap_name, "%s,%03d-UTF16", normalized_font_name, ttc_index);
+    free(normalized_font_name);
 
     res_id = pdf_findresource("CMap", cmap_name);
     if (res_id >= 0) {
