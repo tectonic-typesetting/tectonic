@@ -175,7 +175,7 @@ protected:
     void            prependToList(std::list<std::string>* list, const char* str);
     void            addToMaps(PlatformFontRef platformFont, const NameCollection* names);
 
-    const OpSizeRec* getOpSize(XeTeXFont font);
+    OpSizeRec *getOpSize(XeTeXFont font);
 
     virtual void    getOpSizeRecAndStyleFlags(Font* theFont);
     virtual void    searchForHostPlatformFonts(const std::string& name) = 0;

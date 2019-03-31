@@ -457,40 +457,46 @@ XeTeXFontMgr::bestMatchFromFamily(const Family* fam, int wt, int wd, int slant) 
     return bestMatch;
 }
 
-const XeTeXFontMgr::OpSizeRec*
+
+XeTeXFontMgr::OpSizeRec*
 XeTeXFontMgr::getOpSize(XeTeXFont font)
 {
-    hb_font_t* hbFont = ((XeTeXFontInst*)font)->getHbFont();
-    if (hbFont != NULL) {
-        hb_face_t* face = hb_font_get_face(hbFont);
-        OpSizeRec* pSizeRec = (OpSizeRec*) xmalloc(sizeof(OpSizeRec));
+    hb_font_t *hbFont = ((XeTeXFontInst *) font)->getHbFont();
 
-        bool ok = hb_ot_layout_get_size_params(face,
-                &pSizeRec->designSize,
-                &pSizeRec->subFamilyID,
-                &pSizeRec->nameCode,
-                &pSizeRec->minSize,
-                &pSizeRec->maxSize);
-
-        if (ok)
-            return pSizeRec;
-
-        free(pSizeRec);
+    if (hbFont == NULL)
         return NULL;
-    }
 
+    hb_face_t *face = hb_font_get_face(hbFont);
+    OpSizeRec *pSizeRec = (OpSizeRec*) xmalloc(sizeof(OpSizeRec));
+
+    bool ok = hb_ot_layout_get_size_params(face,
+                                           &pSizeRec->designSize,
+                                           &pSizeRec->subFamilyID,
+                                           &pSizeRec->nameCode,
+                                           &pSizeRec->minSize,
+                                           &pSizeRec->maxSize);
+
+    if (ok)
+        return pSizeRec;
+
+    free(pSizeRec);
     return NULL;
 }
+
 
 double
 XeTeXFontMgr::getDesignSize(XeTeXFont font)
 {
-    const OpSizeRec* pSizeRec = getOpSize(font);
-    if (pSizeRec != NULL)
-        return pSizeRec->designSize / 10.0;
-    else
+    OpSizeRec* pSizeRec = getOpSize(font);
+
+    if (pSizeRec == NULL)
         return 10.0;
+
+    double result = pSizeRec->designSize / 10.0;
+    free(pSizeRec);
+    return result;
 }
+
 
 void
 XeTeXFontMgr::getOpSizeRecAndStyleFlags(Font* theFont)
@@ -498,19 +504,25 @@ XeTeXFontMgr::getOpSizeRecAndStyleFlags(Font* theFont)
     XeTeXFont font = createFont(theFont->fontRef, 655360);
     XeTeXFontInst* fontInst = (XeTeXFontInst*) font;
     if (font != 0) {
-        const OpSizeRec* pSizeRec = getOpSize(font);
+        OpSizeRec* pSizeRec = getOpSize(font);
+
         if (pSizeRec != NULL) {
             theFont->opSizeInfo.designSize = pSizeRec->designSize;
             if (pSizeRec->subFamilyID == 0
                 && pSizeRec->nameCode == 0
                 && pSizeRec->minSize == 0
-                && pSizeRec->maxSize == 0)
+                && pSizeRec->maxSize == 0) {
+                free(pSizeRec);
                 goto done_size; // feature is valid, but no 'size' range
+            }
+
             theFont->opSizeInfo.subFamilyID = pSizeRec->subFamilyID;
             theFont->opSizeInfo.nameCode = pSizeRec->nameCode;
             theFont->opSizeInfo.minSize = pSizeRec->minSize;
             theFont->opSizeInfo.maxSize = pSizeRec->maxSize;
+            free(pSizeRec);
         }
+
     done_size:
 
         const TT_OS2* os2Table = (TT_OS2*) fontInst->getFontTable(ft_sfnt_os2);
