@@ -85,6 +85,8 @@ XeTeXFontInst::XeTeXFontInst(const char* pathname, int index, float pointSize, i
     , m_filename(NULL)
     , m_index(0)
     , m_ftFace(0)
+    , m_backingData(NULL)
+    , m_backingData2(NULL)
     , m_hbFont(NULL)
 {
     if (pathname != NULL)
@@ -98,6 +100,8 @@ XeTeXFontInst::~XeTeXFontInst()
         m_ftFace = 0;
     }
     hb_font_destroy(m_hbFont);
+    free(m_backingData);
+    free(m_backingData2);
     free(m_filename);
 }
 
@@ -326,13 +330,13 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
     }
 
     size_t sz = ttstub_input_get_size (handle);
-    FT_Byte *data = (FT_Byte *) xmalloc (sz);
-    ssize_t r = ttstub_input_read (handle, (char *) data, sz);
+    m_backingData = (FT_Byte *) xmalloc (sz);
+    ssize_t r = ttstub_input_read (handle, (char *) m_backingData, sz);
     if (r < 0 || (size_t) r != sz)
         _tt_abort("failed to read font file");
     ttstub_input_close(handle);
 
-    error = FT_New_Memory_Face(gFreeTypeLibrary, data, sz, index, &m_ftFace);
+    error = FT_New_Memory_Face(gFreeTypeLibrary, m_backingData, sz, index, &m_ftFace);
 
     if (!FT_IS_SCALABLE(m_ftFace)) {
         status = 1;
@@ -356,19 +360,18 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
 
         if (afm_handle != NULL) {
             sz = ttstub_input_get_size (afm_handle);
-            data = (FT_Byte *) xmalloc (sz);
-            r = ttstub_input_read (afm_handle, (char *) data, sz);
+            m_backingData2 = (FT_Byte *) xmalloc (sz);
+            r = ttstub_input_read (afm_handle, (char *) m_backingData2, sz);
             if (r < 0 || (size_t) r != sz)
                 _tt_abort("failed to read AFM file");
             ttstub_input_close(afm_handle);
 
             FT_Open_Args open_args;
             open_args.flags = FT_OPEN_MEMORY;
-            open_args.memory_base = data;
+            open_args.memory_base = m_backingData2;
             open_args.memory_size = sz;
 
             FT_Attach_Stream(m_ftFace, &open_args);
-            // TBD: memory management of `data`?
         }
     }
 
