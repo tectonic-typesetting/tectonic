@@ -353,16 +353,20 @@ int32_t new_disc(void)
     return p;
 }
 
-void copy_native_glyph_info(int32_t src, int32_t dest)
+
+void
+copy_native_glyph_info(int32_t src, int32_t dest)
 {
     int32_t glyph_count;
-    if (mem[src + 5].ptr != NULL) {
-        glyph_count = mem[src + 4].b16.s0;
-        mem[dest + 5].ptr = xmalloc_array(char, glyph_count * NATIVE_GLYPH_INFO_SIZE);
-        memcpy(mem[dest + 5].ptr, mem[src + 5].ptr, glyph_count * NATIVE_GLYPH_INFO_SIZE);
-        mem[dest + 4].b16.s0 = glyph_count;
+
+    if (NATIVE_NODE_glyph_info_ptr(src) != NULL) {
+        glyph_count = NATIVE_NODE_glyph_count(src);
+        NATIVE_NODE_glyph_info_ptr(dest) = xmalloc_array(char, glyph_count * NATIVE_GLYPH_INFO_SIZE);
+        memcpy(NATIVE_NODE_glyph_info_ptr(dest), NATIVE_NODE_glyph_info_ptr(src), glyph_count * NATIVE_GLYPH_INFO_SIZE);
+        NATIVE_NODE_glyph_count(dest) = glyph_count;
     }
 }
+
 
 int32_t new_math(scaled_t w, small_number s)
 {
@@ -1327,9 +1331,9 @@ flush_node_list(int32_t p)
                     break;
                 case NATIVE_WORD_NODE:
                 case NATIVE_WORD_NODE_AT:
-                    if (mem[p + 5].ptr != NULL) {
-                        mem[p + 5].ptr = mfree(mem[p + 5].ptr);
-                        mem[p + 4].b16.s0 = 0;
+                    if (NATIVE_NODE_glyph_info_ptr(p) != NULL) {
+                        NATIVE_NODE_glyph_info_ptr(p) = mfree(NATIVE_NODE_glyph_info_ptr(p));
+                        NATIVE_NODE_glyph_count(p) = 0;
                     }
                     free_node(p, NATIVE_NODE_size(p));
                     break;
@@ -1532,8 +1536,8 @@ copy_node_list(int32_t p)
                         mem[r + words] = mem[p + words];
                     }
 
-                    mem[r + 5].ptr = NULL;
-                    mem[r + 4].b16.s0 = 0;
+                    NATIVE_NODE_glyph_info_ptr(r) = NULL;
+                    NATIVE_NODE_glyph_count(r) = 0;
                     copy_native_glyph_info(p, r);
                     break;
                 case GLYPH_NODE:
@@ -10866,9 +10870,9 @@ new_native_word_node(internal_font_number f, int32_t n)
     NODE_type(q) = WHATSIT_NODE;
 
     if (INTPAR(xetex_generate_actual_text) > 0)
-        mem[q].b16.s0 = NATIVE_WORD_NODE_AT;
+        NODE_subtype(q) = NATIVE_WORD_NODE_AT;
     else
-        mem[q].b16.s0 = NATIVE_WORD_NODE;
+        NODE_subtype(q) = NATIVE_WORD_NODE;
 
     NATIVE_NODE_size(q) = l;
     NATIVE_NODE_font(q) = f;
@@ -11781,10 +11785,10 @@ scaled_t char_pw(int32_t p, small_number side)
         last_rightmost_char = TEX_NULL;
     if (p == TEX_NULL)
         return 0;
-    if ((((p) != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
-          && ((mem[p].b16.s0 == NATIVE_WORD_NODE) || (mem[p].b16.s0 == NATIVE_WORD_NODE_AT))))) {
-        if (mem[p + 5].ptr != NULL) {
-            f = mem[p + 4].b16.s2;
+    if (((p != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
+          && (NODE_subtype(p) == NATIVE_WORD_NODE || NODE_subtype(p) == NATIVE_WORD_NODE_AT)))) {
+        if (NATIVE_NODE_glyph_info_ptr(p) != NULL) {
+            f = NATIVE_NODE_font(p);
             return round_xn_over_d(font_info[QUAD_CODE + param_base[f]].b32.s1, get_native_word_cp(p, side), 1000);
         } else {
             return 0;
