@@ -20,25 +20,19 @@ char *name_of_input_file = NULL;
 rust_input_handle_t
 tt_xetex_open_input (int filefmt)
 {
-    char *fname = NULL;
     rust_input_handle_t handle;
-
-    name_of_input_file = mfree(name_of_input_file);
-
-    fname = name_of_file;
 
     if (filefmt == TTIF_TECTONIC_PRIMARY)
         handle = ttstub_input_open_primary ();
     else
-        handle = ttstub_input_open (fname, (tt_input_format_type) filefmt, 0);
+        handle = ttstub_input_open (name_of_file, (tt_input_format_type) filefmt, 0);
 
     if (handle == NULL)
         return NULL;
 
-    name_of_input_file = xstrdup(fname);
-    name_length = strlen(fname);
-    name_of_file = xmalloc(name_length + 1);
-    strcpy(name_of_file, fname);
+    name_length = strlen(name_of_file);
+    free(name_of_input_file);
+    name_of_input_file = xstrdup(name_of_file);
     return handle;
 }
 
