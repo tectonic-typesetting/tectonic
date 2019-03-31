@@ -10748,7 +10748,7 @@ start_input(const char *primary_input_name)
      * kpathsea land, `fullnameoffile` is the resolved filename returned from
      * kpathsea; in Tectonic, it is the same as `name_of_file`. */
 
-    full_source_filename_stack[in_open] = make_full_name_string();
+    full_source_filename_stack[in_open] = maketexstring(fullnameoffile);
     if (cur_input.name == str_ptr - 1) {
         temp_str = search_string(cur_input.name);
         if (temp_str > 0) {

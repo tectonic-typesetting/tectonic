@@ -345,7 +345,6 @@ typedef struct {
 void getmd5sum(int32_t s, bool file);
 void get_date_and_time (int32_t *, int32_t *, int32_t *, int32_t *);
 
-str_number make_full_name_string(void);
 char *gettexstring(str_number);
 bool is_new_source(str_number, int);
 pool_pointer make_src_special(str_number, int);
