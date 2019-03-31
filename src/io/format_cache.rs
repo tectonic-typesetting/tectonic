@@ -34,8 +34,8 @@ impl FormatCache {
     /// a local cache directory.
     pub fn new(bundle_digest: DigestData, formats_base: PathBuf) -> FormatCache {
         FormatCache {
-            bundle_digest: bundle_digest,
-            formats_base: formats_base,
+            bundle_digest,
+            formats_base,
         }
     }
 
@@ -75,7 +75,7 @@ impl IoProvider for FormatCache {
     ) -> OpenResult<InputHandle> {
         let path = match self.path_for_format(name) {
             Ok(p) => p,
-            Err(e) => return OpenResult::Err(e.into()),
+            Err(e) => return OpenResult::Err(e),
         };
 
         let f = match super::try_open_file(&path) {

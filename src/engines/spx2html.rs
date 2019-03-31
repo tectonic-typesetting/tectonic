@@ -14,11 +14,12 @@ use errors::{Error, Result};
 use io::{IoProvider, IoStack, OpenResult, OutputHandle};
 use status::StatusBackend;
 
+#[derive(Default)]
 pub struct Spx2HtmlEngine {}
 
 impl Spx2HtmlEngine {
     pub fn new() -> Spx2HtmlEngine {
-        Spx2HtmlEngine {}
+        Default::default()
     }
 
     pub fn process(
@@ -75,10 +76,10 @@ impl<'a, 'b: 'a> State<'a, 'b> {
         status: &'a mut StatusBackend,
     ) -> Self {
         Self {
-            outname: outname,
-            io: io,
-            events: events,
-            status: status,
+            outname,
+            io,
+            events,
+            status,
             cur_output: None,
             warned_lost_chars: false,
             buf: Vec::new(),
@@ -118,7 +119,7 @@ impl<'a, 'b: 'a> XdvEvents for State<'a, 'b> {
                 return Err(errmsg!("no way to write output file \"{}\"", self.outname));
             }
             OpenResult::Err(e) => {
-                return Err(e.into());
+                return Err(e);
             }
         });
 
@@ -151,9 +152,9 @@ impl<'a, 'b: 'a> XdvEvents for State<'a, 'b> {
             }
         }
 
-        if self.buf.len() > 0 {
+        if !self.buf.is_empty() {
             self.buf.push(0x0a); // newline
-            dest.write(&self.buf)?;
+            dest.write_all(&self.buf)?;
         }
 
         Ok(())

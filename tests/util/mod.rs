@@ -115,16 +115,16 @@ impl ExpectedInfo {
         let path = path.as_ref();
         let name = path
             .file_name()
-            .expect(&format!("coudn't get file_name of {:?}", path))
+            .unwrap_or_else(|| panic!("couldn't get file name of {:?}", path))
             .to_owned();
 
-        let mut f = File::open(path).expect(&format!("failed to open {:?}", path));
+        let mut f = File::open(path).unwrap_or_else(|_| panic!("failed to open {:?}", path));
         let mut contents = Vec::new();
         f.read_to_end(&mut contents).unwrap();
 
         ExpectedInfo {
-            name: name,
-            contents: contents,
+            name,
+            contents,
             gzipped: false,
         }
     }
@@ -143,14 +143,14 @@ impl ExpectedInfo {
         dec.read_to_end(&mut contents).unwrap();
 
         ExpectedInfo {
-            name: name,
-            contents: contents,
+            name,
+            contents,
             gzipped: true,
         }
     }
 
-    pub fn test_data(&self, observed: &Vec<u8>) {
-        if &self.contents == observed {
+    pub fn test_data(&self, observed: &[u8]) {
+        if self.contents == observed {
             return;
         }
 
@@ -160,26 +160,34 @@ impl ExpectedInfo {
         {
             let mut n = self.name.clone();
             n.push(".expected");
-            let mut f = File::create(&n).expect(&format!(
-                "failed to create {} for test failure diagnosis",
-                n.to_string_lossy()
-            ));
-            f.write_all(&self.contents).expect(&format!(
-                "failed to write {} for test failure diagnosis",
-                n.to_string_lossy()
-            ));
+            let mut f = File::create(&n).unwrap_or_else(|_| {
+                panic!(
+                    "failed to create {} for test failure diagnosis",
+                    n.to_string_lossy()
+                )
+            });
+            f.write_all(&self.contents).unwrap_or_else(|_| {
+                panic!(
+                    "failed to write {} for test failure diagnosis",
+                    n.to_string_lossy()
+                )
+            });
         }
         {
             let mut n = self.name.clone();
             n.push(".observed");
-            let mut f = File::create(&n).expect(&format!(
-                "failed to create {} for test failure diagnosis",
-                n.to_string_lossy()
-            ));
-            f.write_all(observed).expect(&format!(
-                "failed to write {} for test failure diagnosis",
-                n.to_string_lossy()
-            ));
+            let mut f = File::create(&n).unwrap_or_else(|_| {
+                panic!(
+                    "failed to create {} for test failure diagnosis",
+                    n.to_string_lossy()
+                )
+            });
+            f.write_all(observed).unwrap_or_else(|_| {
+                panic!(
+                    "failed to write {} for test failure diagnosis",
+                    n.to_string_lossy()
+                )
+            });
         }
         panic!(
             "difference in {}; contents saved to disk",

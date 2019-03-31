@@ -84,9 +84,9 @@ public:
     }
     hb_font_t *getHbFont() const { return m_hbFont; }
     void setLayoutDirVertical(bool vertical);
-    bool getLayoutDirVertical() const { return m_vertical; };
+    bool getLayoutDirVertical() const { return m_vertical; }
 
-    float getPointSize() const { return m_pointSize; };
+    float getPointSize() const { return m_pointSize; }
     float getAscent() const { return m_ascent; }
     float getDescent() const { return m_descent; }
     float getCapHeight() const { return m_capHeight; }

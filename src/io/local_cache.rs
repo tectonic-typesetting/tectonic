@@ -91,7 +91,7 @@ impl<B: Bundle> LocalCache<B> {
         match try_open_file(&manifest_path) {
             OpenResult::NotAvailable => {}
             OpenResult::Err(e) => {
-                return Err(e.into());
+                return Err(e);
             }
             OpenResult::Ok(mfile) => {
                 // Note that the lock is released when the file is closed,
@@ -138,7 +138,7 @@ impl<B: Bundle> LocalCache<B> {
                         name,
                         LocalCacheItem {
                             _length: length,
-                            digest: digest,
+                            digest,
                         },
                     );
                 }
@@ -148,14 +148,14 @@ impl<B: Bundle> LocalCache<B> {
         // All set.
 
         Ok(LocalCache {
-            backend: backend,
+            backend,
             digest_path: digest.to_owned(),
-            cached_digest: cached_digest,
-            checked_digest: checked_digest,
-            manifest_path: manifest_path,
+            cached_digest,
+            checked_digest,
+            manifest_path,
             data_path: data.to_owned(),
-            contents: contents,
-            only_cached: only_cached,
+            contents,
+            only_cached,
         })
     }
 
@@ -192,7 +192,7 @@ impl<B: Bundle> LocalCache<B> {
             name.to_owned(),
             LocalCacheItem {
                 _length: length,
-                digest: digest,
+                digest,
             },
         );
         Ok(())
@@ -225,7 +225,7 @@ impl<B: Bundle> LocalCache<B> {
                 .into());
             }
             OpenResult::Err(e) => {
-                return Err(e.into());
+                return Err(e);
             }
         };
 
@@ -256,7 +256,7 @@ impl<B: Bundle> LocalCache<B> {
                 None => OpenResult::NotAvailable,
                 Some(ref d) => match d.create_two_part_path(&self.data_path) {
                     Ok(p) => OpenResult::Ok(p),
-                    Err(e) => OpenResult::Err(e.into()),
+                    Err(e) => OpenResult::Err(e),
                 },
             };
         }
@@ -286,7 +286,7 @@ impl<B: Bundle> LocalCache<B> {
             OpenResult::Err(e) => return OpenResult::Err(e),
             OpenResult::NotAvailable => {
                 if let Err(e) = self.record_cache_result(name, 0, None) {
-                    return OpenResult::Err(e.into());
+                    return OpenResult::Err(e);
                 }
                 return OpenResult::NotAvailable;
             }
@@ -329,7 +329,7 @@ impl<B: Bundle> LocalCache<B> {
 
         let final_path = match digest.create_two_part_path(&self.data_path) {
             Ok(p) => p,
-            Err(e) => return OpenResult::Err(e.into()),
+            Err(e) => return OpenResult::Err(e),
         };
 
         // Perform a racy check for the destination existing, because this
@@ -365,7 +365,7 @@ impl<B: Bundle> LocalCache<B> {
         // not so efficient, but whatever.
 
         if let Err(e) = self.record_cache_result(name, length as u64, Some(digest)) {
-            return OpenResult::Err(e.into());
+            return OpenResult::Err(e);
         }
 
         OpenResult::Ok(final_path)

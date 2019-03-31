@@ -66,3 +66,9 @@ impl XdvipdfmxEngine {
         }
     }
 }
+
+impl Default for XdvipdfmxEngine {
+    fn default() -> Self {
+        XdvipdfmxEngine::new()
+    }
+}

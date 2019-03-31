@@ -34,11 +34,9 @@ pub struct HttpRangeReader {
 
 impl HttpRangeReader {
     pub fn new(url: &str) -> HttpRangeReader {
-        let client = create_hyper_client();
-
         HttpRangeReader {
             url: url.to_owned(),
-            client: client,
+            client: create_hyper_client(),
         }
     }
 }
@@ -90,7 +88,7 @@ pub struct ITarBundle<F: ITarIoFactory> {
 impl<F: ITarIoFactory> ITarBundle<F> {
     fn construct(factory: F) -> ITarBundle<F> {
         ITarBundle {
-            factory: factory,
+            factory,
             data: None,
             index: HashMap::new(),
         }
@@ -114,14 +112,11 @@ impl<F: ITarIoFactory> ITarBundle<F> {
                 continue; // TODO: preserve the warning info or something!
             }
 
-            let name = OsString::from(bits[0]);
-            let offset = bits[1].parse::<u64>()?;
-            let length = bits[2].parse::<u64>()?;
             self.index.insert(
-                name,
+                OsString::from(bits[0]),
                 FileInfo {
-                    offset: offset,
-                    length: length,
+                    offset: bits[1].parse::<u64>()?,
+                    length: bits[2].parse::<u64>()?,
                 },
             );
         }
@@ -140,7 +135,7 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
         status: &mut StatusBackend,
     ) -> OpenResult<InputHandle> {
         if let Err(e) = self.ensure_loaded(status) {
-            return OpenResult::Err(e.into());
+            return OpenResult::Err(e);
         }
 
         // In principle it'd be cool to return a handle right to the HTTP
@@ -174,7 +169,7 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
             {
                 Ok(r) => r,
                 Err(e) => {
-                    tt_warning!(status, "failure requesting \"{}\" from network", name.to_string_lossy(); e.into());
+                    tt_warning!(status, "failure requesting \"{}\" from network", name.to_string_lossy(); e);
                     any_failed = true;
                     continue;
                 }

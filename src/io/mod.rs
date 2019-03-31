@@ -96,7 +96,7 @@ impl InputHandle {
             name: name.to_os_string(),
             inner: Box::new(inner),
             digest: Default::default(),
-            origin: origin,
+            origin,
             ever_read: false,
             did_unhandled_seek: false,
             ungetc_char: None,
@@ -279,7 +279,7 @@ impl<T> OpenResult<T> {
 
     /// Returns true if this result is of the NotAvailable variant.
     pub fn is_not_available(&self) -> bool {
-        if let &OpenResult::NotAvailable = self {
+        if let OpenResult::NotAvailable = *self {
             true
         } else {
             false
@@ -441,7 +441,7 @@ pub trait Bundle: IoProvider {
             }
 
             OpenResult::Err(e) => {
-                return Err(e.into());
+                return Err(e);
             }
         };
 

@@ -122,11 +122,18 @@ pdf_font_open_truetype (pdf_font *font)
         length = tt_get_ps_fontname(sfont, fontname, 255);
         if (length < 1) {
             length = MIN(strlen(ident), 255);
+/* Suppress some warnings on GCC. Clang supports the same warning control
+ * #pragmas (and #defines __GNUC__!), but not these particular warnings, which
+ * leads to a meta-warning if they're left unguarded. */
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 #pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
             strncpy(fontname, ident, length);
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
+#endif
         }
         fontname[length] = '\0';
         for (n = 0; n < length; n++) {

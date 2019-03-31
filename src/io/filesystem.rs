@@ -74,9 +74,9 @@ impl FilesystemIo {
     ) -> FilesystemIo {
         FilesystemIo {
             root: PathBuf::from(root),
-            writes_allowed: writes_allowed,
-            absolute_allowed: absolute_allowed,
-            hidden_input_paths: hidden_input_paths,
+            writes_allowed,
+            absolute_allowed,
+            hidden_input_paths,
         }
     }
 
@@ -102,7 +102,7 @@ impl IoProvider for FilesystemIo {
 
         let path = match self.construct_path(name) {
             Ok(p) => p,
-            Err(e) => return OpenResult::Err(e.into()),
+            Err(e) => return OpenResult::Err(e),
         };
 
         let f = match File::create(path) {
@@ -125,7 +125,7 @@ impl IoProvider for FilesystemIo {
     ) -> OpenResult<InputHandle> {
         let path = match self.construct_path(name) {
             Ok(p) => p,
-            Err(e) => return OpenResult::Err(e.into()),
+            Err(e) => return OpenResult::Err(e),
         };
 
         if self.hidden_input_paths.contains(&path) {

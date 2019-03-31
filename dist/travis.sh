@@ -22,6 +22,7 @@ set -e
 
 # Helpful context.
 
+echo "TRAVIS_ALLOW_FAILURE: $TRAVIS_ALLOW_FAILURE"
 echo "TRAVIS_BRANCH: $TRAVIS_BRANCH"
 echo "TRAVIS_BUILD_ID: $TRAVIS_BUILD_ID"
 echo "TRAVIS_COMMIT: $TRAVIS_COMMIT"
@@ -103,10 +104,6 @@ travis_end_fold continuous_abort
 
 travis_start_fold pre_build "Pre-build setup for OS = $TRAVIS_OS_NAME"
 if [[ "$TRAVIS_OS_NAME" == osx ]]; then
-    brew update
-    brew install harfbuzz
-    brew install --force openssl
-
     export OPENSSL_INCLUDE_DIR=$(brew --prefix openssl)/include
     export OPENSSL_LIB_DIR=$(brew --prefix openssl)/lib
     export DEP_OPENSSL_INCLUDE=$(brew --prefix openssl)/include
@@ -136,17 +133,17 @@ elif [[ "$TRAVIS_OS_NAME" == linux ]] ; then
     fi
 fi
 
-rustup component add rustfmt
-
 travis_end_fold pre_build
 
-# Check that the code is properly rustfmt'd.
+# Check that the code is properly rustfmt'd and clippy'd.
 
-travis_start_fold check_rustfmt "Maybe check rustfmt? ($is_main_build)"
+travis_start_fold check_rustfmt_clippy "Maybe rustfmt and clippy? ($is_main_build)"
 if $is_main_build ; then
+    rustup component add rustfmt clippy
     cargo fmt --all -- --check
+    cargo clippy --all --all-targets --all-features -- --deny warnings
 fi
-travis_end_fold check_rustfmt
+travis_end_fold check_rustfmt_clippy
 
 # OK, the biggie: does it compile and pass the test suite?
 

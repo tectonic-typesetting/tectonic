@@ -2728,74 +2728,64 @@ mlist_to_hlist(void)
     reswitch:
         delta = 0;
         switch (mem[q].b16.s1) {
-        case 18:
+        case BIN_NOAD:
             switch (r_type) {
-            case 18:
-            case 17:
-            case 19:
-            case 20:
-            case 22:
-            case 30:
-                {
-                    mem[q].b16.s1 = ORD_NOAD;
-                    goto reswitch;
-                }
-                break;
+            case BIN_NOAD:
+            case OP_NOAD:
+            case REL_NOAD:
+            case OPEN_NOAD:
+            case PUNCT_NOAD:
+            case LEFT_NOAD:
+                mem[q].b16.s1 = ORD_NOAD;
+                goto reswitch;
             default:
-                ;
                 break;
             }
             break;
-        case 19:
-        case 21:
-        case 22:
-        case 31:
+        case REL_NOAD:
+        case CLOSE_NOAD:
+        case PUNCT_NOAD:
+        case RIGHT_NOAD:
             {
                 if (r_type == BIN_NOAD)
-                    mem[r].b16.s1 = 16 /*ord_noad *//*:755 */ ;
+                    mem[r].b16.s1 = ORD_NOAD /*:755 */ ;
                 if (mem[q].b16.s1 == RIGHT_NOAD)
                     goto lab80;
             }
             break;
-        case 30:
+        case LEFT_NOAD:
             goto lab80;
             break;
-        case 25:
-            {
-                make_fraction(q);
+        case FRACTION_NOAD:
+            make_fraction(q);
+            goto lab82;
+        case OP_NOAD:
+            delta = make_op(q);
+            if (mem[q].b16.s0 == LIMITS)
                 goto lab82;
-            }
             break;
-        case 17:
-            {
-                delta = make_op(q);
-                if (mem[q].b16.s0 == LIMITS)
-                    goto lab82;
-            }
-            break;
-        case 16:
+        case ORD_NOAD:
             make_ord(q);
             break;
-        case 20:
-        case 23:
-            ;
+        case OPEN_NOAD:
+        case INNER_NOAD:
             break;
-        case 24:
+        case RADICAL_NOAD:
             make_radical(q);
             break;
-        case 27:
+        case OVER_NOAD:
             make_over(q);
             break;
-        case 26:
+        case UNDER_NOAD:
             make_under(q);
             break;
-        case 28:
+        case ACCENT_NOAD:
             make_math_accent(q);
             break;
-        case 29:
+        case VCENTER_NOAD:
             make_vcenter(q);
             break;
-        case 14:
+        case STYLE_NODE:
             {
                 cur_style = mem[q].b16.s0;
                 {
@@ -2808,7 +2798,7 @@ mlist_to_hlist(void)
                 goto lab81;
             }
             break;
-        case 15:
+        case CHOICE_NODE:
             {
                 switch (cur_style / 2) {
                 case 0:
@@ -2854,24 +2844,20 @@ mlist_to_hlist(void)
                 goto lab81;
             }
             break;
-        case 3:
-        case 4:
-        case 5:
-        case 8:
-        case 12:
-        case 7:
+        case INS_NODE:
+        case MARK_NODE:
+        case ADJUST_NODE:
+        case WHATSIT_NODE:
+        case PENALTY_NODE:
+        case DISC_NODE:
             goto lab81;
-            break;
-        case 2:
-            {
-                if (mem[q + 3].b32.s1 > max_h)
-                    max_h = mem[q + 3].b32.s1;
-                if (mem[q + 2].b32.s1 > max_d)
-                    max_d = mem[q + 2].b32.s1;
-                goto lab81;
-            }
-            break;
-        case 10:
+        case RULE_NODE:
+            if (mem[q + 3].b32.s1 > max_h)
+                max_h = mem[q + 3].b32.s1;
+            if (mem[q + 2].b32.s1 > max_d)
+                max_d = mem[q + 2].b32.s1;
+            goto lab81;
+        case GLUE_NODE:
             {
                 if (mem[q].b16.s0 == MU_GLUE) {
                     x = mem[q + 1].b32.s0;
@@ -2893,7 +2879,7 @@ mlist_to_hlist(void)
                 goto lab81;
             }
             break;
-        case 11:
+        case KERN_NODE:
             {
                 math_kern(q, cur_mu);
                 goto lab81;
@@ -3014,48 +3000,45 @@ mlist_to_hlist(void)
         s = NOAD_SIZE;
         pen = INF_PENALTY;
         switch (mem[q].b16.s1) {
-        case 17:
-        case 20:
-        case 21:
-        case 22:
-        case 23:
+        case OP_NOAD:
+        case OPEN_NOAD:
+        case CLOSE_NOAD:
+        case PUNCT_NOAD:
+        case INNER_NOAD:
             t = mem[q].b16.s1;
             break;
-        case 18:
+        case BIN_NOAD:
             {
                 t = BIN_NOAD;
                 pen = INTPAR(bin_op_penalty);
             }
             break;
-        case 19:
+        case REL_NOAD:
             {
                 t = REL_NOAD;
                 pen = INTPAR(rel_penalty);
             }
             break;
-        case 16:
-        case 29:
-        case 27:
-        case 26:
-            ;
+        case ORD_NOAD:
+        case VCENTER_NOAD:
+        case OVER_NOAD:
+        case UNDER_NOAD:
             break;
-        case 24:
+        case RADICAL_NOAD:
             s = RADICAL_NOAD_SIZE;
             break;
-        case 28:
+        case ACCENT_NOAD:
             s = ACCENT_NOAD_SIZE;
             break;
-        case 25:
-            {
-                t = INNER_NOAD;
-                s = FRACTION_NOAD_SIZE;
-            }
+        case FRACTION_NOAD:
+            t = INNER_NOAD;
+            s = FRACTION_NOAD_SIZE;
             break;
-        case 30:
-        case 31:
+        case LEFT_NOAD:
+        case RIGHT_NOAD:
             t = make_left_right(q, style, max_d, max_h);
             break;
-        case 14:
+        case STYLE_NODE:
             {
                 cur_style = mem[q].b16.s0;
                 s = STYLE_NODE_SIZE;
@@ -3069,15 +3052,15 @@ mlist_to_hlist(void)
                 goto lab83;
             }
             break;
-        case 8:
-        case 12:
-        case 2:
-        case 7:
-        case 5:
-        case 3:
-        case 4:
-        case 10:
-        case 11:
+        case WHATSIT_NODE:
+        case PENALTY_NODE:
+        case RULE_NODE:
+        case DISC_NODE:
+        case ADJUST_NODE:
+        case INS_NODE:
+        case MARK_NODE:
+        case GLUE_NODE:
+        case KERN_NODE:
             {
                 mem[p].b32.s1 = q;
                 p = q;

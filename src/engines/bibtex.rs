@@ -10,11 +10,12 @@ use errors::{ErrorKind, Result};
 use io::IoStack;
 use status::StatusBackend;
 
+#[derive(Default)]
 pub struct BibtexEngine {}
 
 impl BibtexEngine {
     pub fn new() -> BibtexEngine {
-        BibtexEngine {}
+        Default::default()
     }
 
     pub fn process(

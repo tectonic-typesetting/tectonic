@@ -93,11 +93,12 @@ pub trait IoEventBackend {
 }
 
 /// This struct implements the IoEventBackend trait but does nothing.
+#[derive(Default)]
 pub struct NoopIoEventBackend {}
 
 impl NoopIoEventBackend {
     pub fn new() -> NoopIoEventBackend {
-        NoopIoEventBackend {}
+        Default::default()
     }
 }
 
@@ -124,7 +125,9 @@ struct ExecutionState<'a, I: 'a + IoProvider> {
     io: &'a mut I,
     events: &'a mut IoEventBackend,
     status: &'a mut StatusBackend,
+    #[allow(clippy::vec_box)]
     input_handles: Vec<Box<InputHandle>>,
+    #[allow(clippy::vec_box)]
     output_handles: Vec<Box<OutputHandle>>,
 }
 
@@ -135,9 +138,9 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         status: &'a mut StatusBackend,
     ) -> ExecutionState<'a, I> {
         ExecutionState {
-            io: io,
-            events: events,
-            status: status,
+            io,
+            events,
+            status,
             output_handles: Vec::new(),
             input_handles: Vec::new(),
         }
@@ -235,7 +238,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             }
             OpenResult::Err(e) => {
                 tt_error!(self.status, "error trying to open file \"{}\" for MD5 calculation",
-                          name.to_string_lossy(); e.into());
+                          name.to_string_lossy(); e);
                 return true;
             }
         };
@@ -418,7 +421,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 
     fn input_read(&mut self, handle: *mut InputHandle, buf: &mut [u8]) -> Result<()> {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
-        Ok(rhandle.read_exact(buf)?)
+        rhandle.read_exact(buf).map_err(Error::from)
     }
 
     fn input_getc(&mut self, handle: *mut InputHandle) -> Result<u8> {
@@ -636,7 +639,7 @@ extern "C" fn output_close<'a, I: 'a + IoProvider>(
 ) -> libc::c_int {
     let es = unsafe { &mut *es };
 
-    if handle == 0 as *mut _ {
+    if handle.is_null() {
         return 0; // This is/was the behavior of close_file() in C.
     }
 
@@ -732,7 +735,7 @@ extern "C" fn input_getc<'a, I: 'a + IoProvider>(
     // No need to complain. Fun match statement here.
 
     match es.input_getc(rhandle) {
-        Ok(b) => b as libc::c_int,
+        Ok(b) => libc::c_int::from(b),
         Err(Error(ErrorKind::Io(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => {
             libc::EOF
         }
@@ -785,7 +788,7 @@ extern "C" fn input_close<'a, I: 'a + IoProvider>(
 ) -> libc::c_int {
     let es = unsafe { &mut *es };
 
-    if handle == 0 as *mut _ {
+    if handle.is_null() {
         return 0; // This is/was the behavior of close_file() in C.
     }
 

@@ -32,7 +32,7 @@ pub struct IoSetup {
 }
 
 impl IoSetup {
-    pub fn as_stack<'a>(&'a mut self) -> IoStack<'a> {
+    pub fn as_stack(&mut self) -> IoStack {
         let mut providers: Vec<&mut IoProvider> = Vec::new();
 
         if let Some(ref mut p) = self.genuine_stdout {
@@ -242,7 +242,7 @@ impl IoSetupBuilder {
                 true,
                 self.hidden_input_paths,
             ),
-            format_cache: format_cache,
+            format_cache,
             bundle: self.bundle,
             genuine_stdout: if self.use_genuine_stdout {
                 Some(GenuineStdoutIo::new())
