@@ -1,5 +1,5 @@
 /* tectonic/xetex-io.c: low-level input/output functions tied to the XeTeX engine
-   Copyright 2016-2018 The Tectonic Project
+   Copyright 2016-2019 The Tectonic Project
    Licensed under the MIT License.
 */
 
@@ -13,9 +13,8 @@
 #include <unicode/ubrk.h>
 #include <unicode/ucnv.h>
 
-/* Define some variables. */
-/* For "file:line:error" style error messages. */
-char *fullnameoffile; /* Defaults to NULL.  */
+
+char *name_of_input_file = NULL;
 
 
 rust_input_handle_t
@@ -24,7 +23,7 @@ tt_xetex_open_input (int filefmt)
     char *fname = NULL;
     rust_input_handle_t handle;
 
-    fullnameoffile = mfree(fullnameoffile);
+    name_of_input_file = mfree(name_of_input_file);
 
     fname = name_of_file;
 
@@ -36,7 +35,7 @@ tt_xetex_open_input (int filefmt)
     if (handle == NULL)
         return NULL;
 
-    fullnameoffile = xstrdup(fname);
+    name_of_input_file = xstrdup(fname);
     name_length = strlen(fname);
     name_of_file = xmalloc(name_length + 1);
     strcpy(name_of_file, fname);
