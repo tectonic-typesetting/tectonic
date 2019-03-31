@@ -379,7 +379,6 @@ extern int32_t pool_size;
 extern int32_t pool_free;
 extern int32_t font_mem_size;
 extern int32_t font_max;
-extern int32_t font_k;
 extern int32_t hyph_size;
 extern int32_t trie_size;
 extern int32_t buf_size;

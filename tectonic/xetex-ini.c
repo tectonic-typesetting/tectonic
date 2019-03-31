@@ -30,7 +30,6 @@ int32_t pool_size;
 int32_t pool_free;
 int32_t font_mem_size;
 int32_t font_max;
-int32_t font_k;
 int32_t hyph_size;
 int32_t trie_size;
 int32_t buf_size;
@@ -3904,6 +3903,8 @@ get_strings_started(void)
 tt_history_t
 tt_run_engine(char *dump_name, char *input_file_name)
 {
+    int32_t font_k;
+
     /* Miscellaneous initializations that were mostly originally done in the
      * main() driver routines. */
 
