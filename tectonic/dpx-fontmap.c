@@ -1062,6 +1062,7 @@ pdf_insert_native_fontmap_record (const char *path, uint32_t index,
         mrec->opt.flags |= FONTMAP_OPT_VERT;
 
     fill_in_defaults(mrec, fontmap_key);
+    free(fontmap_key);
 
     mrec->opt.extend = extend   / 65536.0;
     mrec->opt.slant  = slant    / 65536.0;
