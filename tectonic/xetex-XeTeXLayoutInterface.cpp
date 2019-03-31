@@ -158,6 +158,12 @@ terminate_font_manager()
     XeTeXFontMgr::Terminate();
 }
 
+void
+destroy_font_manager()
+{
+    XeTeXFontMgr::Destroy();
+}
+
 XeTeXFont
 createFont(PlatformFontRef fontRef, Fixed pointSize)
 {
@@ -782,6 +788,11 @@ layoutChars(XeTeXLayoutEngine engine, uint16_t chars[], int32_t offset, int32_t 
 
     shape_plan = hb_shape_plan_create_cached(hbFace, &segment_props, engine->features, engine->nFeatures, engine->ShaperList);
     res = hb_shape_plan_execute(shape_plan, hbFont, engine->hbBuffer, engine->features, engine->nFeatures);
+
+    if (engine->shaper != NULL) {
+        free(engine->shaper);
+        engine->shaper = NULL;
+    }
 
     if (res) {
         engine->shaper = strdup(hb_shape_plan_get_shaper(shape_plan));

@@ -2807,7 +2807,7 @@ load_fmt_file(void)
     font_ptr = x;
 
     font_mapping = xmalloc_array(void *, font_max);
-    font_layout_engine = xmalloc_array(void *, font_max);
+    font_layout_engine = xcalloc_array(void *, font_max);
     font_flags = xmalloc_array(char, font_max);
     font_letter_space = xmalloc_array(scaled_t, font_max);
     font_check = xmalloc_array(b16x4, font_max);
@@ -4374,6 +4374,15 @@ tt_run_engine(char *dump_name, char *input_file_name)
     free(TEX_format_default);
     free(font_used);
     deinitialize_shipout_variables();
+
+    destroy_font_manager();
+
+    for (font_k = 0; font_k < font_max; font_k++) {
+        if (font_layout_engine[font_k] != NULL) {
+            release_font_engine(font_layout_engine[font_k], font_area[font_k]);
+            font_layout_engine[font_k] = NULL;
+        }
+    }
 
     // Free the big allocated arrays
     free(buffer);

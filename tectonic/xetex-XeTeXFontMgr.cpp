@@ -87,6 +87,17 @@ XeTeXFontMgr::Terminate()
     }
 }
 
+void
+XeTeXFontMgr::Destroy()
+{
+    // Here we actually fully destroy the font manager.
+
+    if (sFontManager != NULL) {
+        delete sFontManager;
+        sFontManager = NULL;
+    }
+}
+
 PlatformFontRef
 XeTeXFontMgr::findFont(const char* name, char* variant, double ptSize)
     // ptSize is in TeX points, or negative for 'scaled' factor
@@ -644,4 +655,3 @@ void
 XeTeXFontMgr::terminate()
 {
 }
-

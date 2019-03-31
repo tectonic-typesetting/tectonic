@@ -335,6 +335,9 @@ XeTeXFontMgr_FC::initialize()
 void
 XeTeXFontMgr_FC::terminate()
 {
+    FcFontSetDestroy(allFonts);
+    allFonts = NULL;
+
     if (macRomanConv != NULL) {
         ucnv_close(macRomanConv);
         macRomanConv = NULL;
@@ -360,4 +363,3 @@ XeTeXFontMgr_FC::getPlatformFontDesc(PlatformFontRef font) const
         path = "[unknown]";
     return path;
 }
-

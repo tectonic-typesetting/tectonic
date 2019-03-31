@@ -43,6 +43,7 @@ int getCachedGlyphBBox(uint16_t fontID, uint16_t glyphID, GlyphBBox* bbox);
 void cacheGlyphBBox(uint16_t fontID, uint16_t glyphID, const GlyphBBox* bbox);
 
 void terminate_font_manager(void);
+void destroy_font_manager(void);
 
 XeTeXFont createFont(PlatformFontRef fontRef, Fixed pointSize);
 XeTeXFont createFontFromFile(const char* filename, int index, Fixed pointSize);
