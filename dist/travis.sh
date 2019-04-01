@@ -18,10 +18,50 @@
 #
 # So, it's complicated.
 
+# Exit immediately if a command exits with a non-zero status.
 set -e
+
+echo ""
+
+# We use `travis_fold` commands to hide chunks of the Travis-CI log. Follow the
+# usage documentation below and put `travis_fold_start`/`travis_fold_end` pairs
+# _inside_ `if` blocks to reduce the log noise. (For example, after `set -x`,
+# `if` statements print out as `+ false`, which is not very useful.)
+
+# Usage: travis_fold_start <fold-name> <title> [<verbose>]
+#
+#   Start a fold with a name and title and (optionally) enable Bash verbose
+#   logging.
+#
+#   <fold-name>  string to use with travis_fold_end to close the fold
+#   <title>      string that appears alone when the fold is closed
+#   <verbose>    (optional) if non-empty, enables Bash verbose echoing
+#
+function travis_fold_start() {
+    echo "travis_fold:start:$1"
+    echo -e "\033[33;1m$2\033[0m"
+    if [ -n "$3" ]; then
+        set -x
+    fi
+}
+
+# Usage: travis_fold_end <fold-name>
+#
+#   End a fold started with the given name and disable Bash verbose logging in
+#   case it was enabled by `travis_fold_start`.
+#
+#   <fold-name>  string that should have been used with travis_fold_start to
+#                open the fold
+#
+function travis_fold_end() {
+    set +x
+    echo ""
+    echo "travis_fold:end:$1"
+}
 
 # Helpful context.
 
+travis_fold_start env "Environment variables"
 echo "TRAVIS_ALLOW_FAILURE: $TRAVIS_ALLOW_FAILURE"
 echo "TRAVIS_BRANCH: $TRAVIS_BRANCH"
 echo "TRAVIS_BUILD_ID: $TRAVIS_BUILD_ID"
@@ -72,42 +112,27 @@ else
     is_release_build=false
 fi
 echo "is_release_build: $is_release_build"
-
-# Start being verbose. We use Travis "fold" commands to provide a bit more
-# context, partially because in `set -x` mode the "if" statements just print
-# out as `+ false`.
-
-function travis_start_fold() {
-    echo -e "\ntravis_fold:start:$1\033[33;1m$2\033[0m"
-    set -x
-}
-
-function travis_end_fold() {
-    set +x
-    echo -e "\ntravis_fold:end:$1\r"
-}
-
-echo ""
+travis_fold_end env
 
 # The special tag "continuous" is used to maintain a GitHub "release" that
 # tracks `master`. If we've been triggered for that, that means that something
 # *else* was triggered that caused the continuous deployment code to fire.
 # So we should do nothing.
 
-travis_start_fold continuous_abort "Abort if special continuous release tag?"
 if [[ "$TRAVIS_TAG" == continuous ]] ; then
+    echo -e "\033[34;1mThis is a 'continuous' release. Exiting.\033[0m"
     exit 0
 fi
-travis_end_fold continuous_abort
 
-# Pre-build setup.
+# Install dependencies
 
-travis_start_fold pre_build "Pre-build setup for OS = $TRAVIS_OS_NAME"
 if [[ "$TRAVIS_OS_NAME" == osx ]]; then
+    travis_fold_start install_deps "Install dependencies" verbose
     export OPENSSL_INCLUDE_DIR=$(brew --prefix openssl)/include
     export OPENSSL_LIB_DIR=$(brew --prefix openssl)/lib
     export DEP_OPENSSL_INCLUDE=$(brew --prefix openssl)/include
     export PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig
+    travis_fold_end install_deps
 elif [[ "$TRAVIS_OS_NAME" == linux ]] ; then
     if $is_docker_build ; then
         : # Don't need the deps here; all the action is in the container.
@@ -119,6 +144,7 @@ elif [[ "$TRAVIS_OS_NAME" == linux ]] ; then
         # https://unix.stackexchange.com/questions/315502/how-to-disable-apt-daily-service-on-ubuntu-cloud-vm-image
         # . We adopt the workaround from the StackExchange post.
 
+        travis_fold_start install_deps "Install dependencies" verbose
         sudo systemctl stop apt-daily.timer
         sudo systemctl stop apt-daily.service
         sudo systemctl kill --kill-who=all apt-daily.service
@@ -130,47 +156,55 @@ elif [[ "$TRAVIS_OS_NAME" == linux ]] ; then
         sudo add-apt-repository -y ppa:k-peter/tectonic-ci
         sudo apt-get update
         sudo apt-get install -y libharfbuzz-dev
+        travis_fold_end install_deps
     fi
 fi
 
-travis_end_fold pre_build
-
 # Check that the code is properly rustfmt'd and clippy'd.
 
-travis_start_fold check_rustfmt_clippy "Maybe rustfmt and clippy? ($is_main_build)"
 if $is_main_build ; then
-    rustup component add rustfmt clippy
+    travis_fold_start cargo_fmt "cargo fmt" verbose
+    rustup component add rustfmt
     cargo fmt --all -- --check
+    travis_fold_end cargo_fmt
+    travis_fold_start cargo_clippy "cargo clippy" verbose
+    rustup component add clippy
     cargo clippy --all --all-targets --all-features -- --deny warnings
+    travis_fold_end cargo_clippy
 fi
-travis_end_fold check_rustfmt_clippy
 
 # OK, the biggie: does it compile and pass the test suite?
 
-travis_start_fold build_and_test "Build and test"
 if $is_docker_build ; then
+    travis_fold_start docker_build "docker build" verbose
     docker build -t ttci-$IMAGE dist/docker/$IMAGE/
+    travis_fold_end docker_build
+    travis_fold_start docker_test "docker test" verbose
     docker run -v $(pwd):/tectonic ttci-$IMAGE
+    travis_fold_end docker_test
 else
+    travis_fold_start cargo_build "cargo build" verbose
     cargo build --verbose
+    travis_fold_end cargo_build
+    travis_fold_start cargo_test "cargo test" verbose
     cargo test
+    travis_fold_end cargo_test
 fi
-travis_end_fold build_and_test
 
 # OK! If we got this far, we think we made a functional set of (debug-mode)
 # Tectonic artifacts for this build matrix element.
 
 # The main build is equipped to test code coverage.
 
-travis_start_fold coverage "Maybe analyze code coverage? ($is_main_build)"
 if $is_main_build ; then
+    travis_fold_start cargo_kcov "cargo kcov" verbose
     sudo apt-get install -y kcov
     cargo install --force cargo-kcov
     cargo test --no-run
     env RUNNING_COVERAGE=1 cargo kcov --no-clean-rebuild
     bash <(curl -s https://codecov.io/bash)
+    travis_fold_end cargo_kcov
 fi
-travis_end_fold coverage
 
 # If we're a "continuous deployment" build, we should push up artifacts for
 # the "continuous" pseudo-release. Right now, all we do is make an AppImage
@@ -179,9 +213,9 @@ travis_end_fold coverage
 # the build matrix to contribute various artifacts, we're going to need to
 # take a different tactic.
 
-travis_start_fold continuous_deployment "Maybe continuous deployment activities? ($is_continuous_deployment_build)"
 if $is_continuous_deployment_build; then
     if $is_main_build; then
+        travis_fold_start continuous "Continuous deployment" verbose
         # Careful! For the code coverage, we use "-C link-dead-code", which we
         # don't want for release artifacts. (Which are built with `cargo build
         # --release` inside dist/appimage/build.sh.) But if we ever add other
@@ -195,18 +229,18 @@ if $is_continuous_deployment_build; then
         UPDATE_INFORMATION="gh-releases-zsync|$repo_info|continuous|tectonic-*.AppImage.zsync" \
             dist/appimage/build.sh
         bash ./upload.sh dist/appimage/tectonic-*.AppImage*
+        travis_fold_end continuous
     fi
 
     # TODO: Do something with the Linux static build?
 fi
-travis_end_fold continuous_deployment
 
 # If we're a release build, we should create and upload official release
 # artifacts, etc.
 
-travis_start_fold release "Maybe release activities? ($is_release_build)"
 if $is_release_build; then
     if $is_main_build; then
+        travis_fold_start release "Release deployment" verbose
         # Careful! See the warning above.
         unset RUSTFLAGS
 
@@ -220,8 +254,8 @@ if $is_release_build; then
                 -in dist/deploy_key.enc -out /tmp/deploy_key -d
         chmod 600 /tmp/deploy_key
         bash dist/arch/deploy.sh
+        travis_fold_end release
     fi
 
     # TODO: Do something with the Linux static build?
 fi
-travis_end_fold release
