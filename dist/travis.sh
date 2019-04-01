@@ -23,6 +23,18 @@ set -e
 
 echo ""
 
+# We use `travis_retry` [1] to deal with transient network errors for commands
+# that download things (e.g. apt-get, wget).
+#
+# Notes:
+# * `cargo` does retry. [2]
+# * `rustup` does not retry [3], but it may be coming soon. [4]
+#
+# [1] https://docs.travis-ci.com/user/common-build-problems/#timeouts-installing-dependencies
+# [2] https://github.com/rust-lang/cargo/pull/2396
+# [3] https://github.com/rust-lang/rustup.rs/issues/1667
+# [4] https://github.com/rust-lang/rustup.rs/pull/1722
+
 # We use `travis_fold` commands to hide chunks of the Travis-CI log. Follow the
 # usage documentation below and put `travis_fold_start`/`travis_fold_end` pairs
 # _inside_ `if` blocks to reduce the log noise. (For example, after `set -x`,
@@ -153,9 +165,9 @@ elif [[ "$TRAVIS_OS_NAME" == linux ]] ; then
             sleep 1
         done
 
-        sudo add-apt-repository -y ppa:k-peter/tectonic-ci
-        sudo apt-get update
-        sudo apt-get install -y libharfbuzz-dev
+        travis_retry sudo add-apt-repository -y ppa:k-peter/tectonic-ci
+        travis_retry sudo apt-get update
+        travis_retry sudo apt-get install -y libharfbuzz-dev
         travis_fold_end install_deps
     fi
 fi
@@ -164,11 +176,11 @@ fi
 
 if $is_main_build ; then
     travis_fold_start cargo_fmt "cargo fmt" verbose
-    rustup component add rustfmt
+    travis_retry rustup component add rustfmt
     cargo fmt --all -- --check
     travis_fold_end cargo_fmt
     travis_fold_start cargo_clippy "cargo clippy" verbose
-    rustup component add clippy
+    travis_retry rustup component add clippy
     cargo clippy --all --all-targets --all-features -- --deny warnings
     travis_fold_end cargo_clippy
 fi
@@ -198,7 +210,7 @@ fi
 
 if $is_main_build ; then
     travis_fold_start cargo_kcov "cargo kcov" verbose
-    sudo apt-get install -y kcov
+    travis_retry sudo apt-get install -y kcov
     cargo install --force cargo-kcov
     cargo test --no-run
     env RUNNING_COVERAGE=1 cargo kcov --no-clean-rebuild
@@ -223,7 +235,7 @@ if $is_continuous_deployment_build; then
         unset RUSTFLAGS
 
         # Upload an AppImage into the "continuous" release
-        wget https://github.com/probonopd/uploadtool/raw/master/upload.sh
+        travis_retry wget https://github.com/probonopd/uploadtool/raw/master/upload.sh
         repo_info=$(echo "$TRAVIS_REPO_SLUG" |sed -e 's,/,|,g')
         TECTONIC_APPIMAGE_TAG=continuous \
         UPDATE_INFORMATION="gh-releases-zsync|$repo_info|continuous|tectonic-*.AppImage.zsync" \
@@ -245,7 +257,7 @@ if $is_release_build; then
         unset RUSTFLAGS
 
         # Create an AppImage release artifact. (UNTESTED as of 0.1.11!)
-        wget https://github.com/probonopd/uploadtool/raw/master/upload.sh
+        travis_retry wget https://github.com/probonopd/uploadtool/raw/master/upload.sh
         dist/appimage/build.sh
         bash ./upload.sh dist/appimage/tectonic-*.AppImage*
 
