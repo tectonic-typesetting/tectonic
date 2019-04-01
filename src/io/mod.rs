@@ -5,9 +5,6 @@
 //! Tectonic’s pluggable I/O backend.
 
 use flate2::read::GzDecoder;
-use hyper::net::HttpsConnector;
-use hyper::Client;
-use hyper_native_tls::NativeTlsClient;
 use std::borrow::Cow;
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
@@ -22,7 +19,6 @@ use crate::status::StatusBackend;
 
 pub mod filesystem;
 pub mod format_cache;
-//pub mod hyper_seekable; -- Not currently used, but nice code to keep around.
 pub mod itarbundle;
 pub mod local_cache;
 pub mod memory;
@@ -583,13 +579,6 @@ fn normalize_tex_path(path: &OsStr) -> Cow<OsStr> {
     } else {
         Cow::Borrowed(path)
     }
-}
-
-// Creates an hyper client capable of HTTPS-connections.
-pub fn create_hyper_client() -> Client {
-    let ssl = NativeTlsClient::new().unwrap();
-    let connector = HttpsConnector::new(ssl);
-    Client::with_connector(connector)
 }
 
 // Helper for testing. FIXME: I want this to be conditionally compiled with

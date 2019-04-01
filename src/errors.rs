@@ -12,7 +12,7 @@
 
 use app_dirs;
 use error_chain::error_chain;
-use hyper;
+use reqwest::StatusCode;
 use std::io::Write;
 use std::result::Result as StdResult;
 use std::{convert, ffi, io, num, str};
@@ -28,11 +28,11 @@ error_chain! {
 
     foreign_links {
         AppDirs(app_dirs::AppDirsError);
-        Hyper(hyper::Error);
         Io(io::Error);
         Nul(ffi::NulError);
         ParseInt(num::ParseIntError);
         Persist(tempfile::PersistError);
+        Reqwest(reqwest::Error);
         TomlDe(toml::de::Error);
         TomlSer(toml::ser::Error);
         Utf8(str::Utf8Error);
@@ -64,6 +64,11 @@ error_chain! {
         EngineError(engine: &'static str) {
             description("some engine had an unrecoverable error")
             display("the {} engine had an unrecoverable error", engine)
+        }
+
+        UnexpectedHttpResponse(url: String, status: StatusCode) {
+            description("unexpected HTTP response to URL")
+            display("unexpected HTTP response to URL {}: {}", url, status)
         }
     }
 }

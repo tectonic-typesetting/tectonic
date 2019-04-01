@@ -1,21 +1,19 @@
 // src/io/itarbundle.rs -- I/O on files in an indexed tar file "bundle"
-// Copyright 2017-2018 the Tectonic Project
+// Copyright 2017-2019 the Tectonic Project
 // Licensed under the MIT License.
 
 use flate2::read::GzDecoder;
-use hyper::client::{RedirectPolicy, Response};
-use hyper::header::{Headers, Range};
-use hyper::status::StatusCode;
-use hyper::{self, Client, Url};
+use reqwest::{header, Client, RedirectPolicy, Response, StatusCode};
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader, Cursor, Read};
 
-use super::{create_hyper_client, Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
+use super::{Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
 use crate::errors::{Error, ErrorKind, Result, ResultExt};
 use crate::status::StatusBackend;
 use crate::{tt_note, tt_warning};
 
+const MAX_HTTP_REDIRECTS_ALLOWED: usize = 10;
 const MAX_HTTP_ATTEMPTS: usize = 4;
 
 // A simple way to read chunks out of a big seekable byte stream. You could
@@ -37,7 +35,7 @@ impl HttpRangeReader {
     pub fn new(url: &str) -> HttpRangeReader {
         HttpRangeReader {
             url: url.to_owned(),
-            client: create_hyper_client(),
+            client: Client::new(),
         }
     }
 }
@@ -48,15 +46,23 @@ impl RangeRead for HttpRangeReader {
     fn read_range(&mut self, offset: u64, length: usize) -> Result<Response> {
         let end_inclusive = offset + length as u64 - 1;
 
-        let mut headers = Headers::new();
-        headers.set(Range::bytes(offset, end_inclusive));
+        // We're creating a string for an HTTP range header value here. We'd prefer to do this in a
+        // more type-safe fashion. For example, we could use the `headers` crate; however, it
+        // relies on `proc-macro2`, which cannot be statically linked on the musl platform.
+        let range_value = format!("bytes={}-{}", offset, end_inclusive);
 
-        let req = self.client.get(&self.url).headers(headers);
-        let res = req.send()?;
+        let res = self
+            .client
+            .get(&self.url)
+            .header(header::RANGE, range_value)
+            .send()?;
 
-        if res.status != StatusCode::PartialContent {
-            // FIXME: this loses the actual status code! Should report it.
-            return Err(hyper::Error::Status.into());
+        if res.status() != StatusCode::PARTIAL_CONTENT {
+            return Err(Error::from(ErrorKind::UnexpectedHttpResponse(
+                self.url.clone(),
+                res.status(),
+            )))
+            .chain_err(|| format!("read range expected {}", StatusCode::PARTIAL_CONTENT));
         }
 
         Ok(res)
@@ -187,7 +193,6 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
         }
 
         if overall_failed {
-            // Note: can't save & reuse the hyper errors since they're not cloneable
             return OpenResult::Err(
                 ErrorKind::Msg(format!(
                     "failed to retrieve \"{}\" from the network; \
@@ -223,33 +228,43 @@ impl ITarIoFactory for HttpITarIoFactory {
         // we didn't do this separately, the index file would have to be the
         // one with the redirect setup, which would be confusing and annoying.
 
-        let mut probe_client = create_hyper_client();
-        fn url_redirection_policy(url: &Url) -> bool {
+        let redirect_policy = RedirectPolicy::custom(|attempt| {
             // In the process of resolving the file url it might be neccesary
             // to stop at a certain level of redirection. This might be required
             // because some hosts might redirect to a version of the url where
             // it isn't possible to select the index file by appending .index.gz.
             // (This mostly happens because CDNs redirect to the file hash.)
-            if let Some(segments) = url.path_segments() {
-                segments
+            if attempt.previous().len() >= MAX_HTTP_REDIRECTS_ALLOWED {
+                attempt.too_many_redirects()
+            } else if let Some(segments) = attempt.url().clone().path_segments() {
+                let follow = segments
                     .last()
                     .map(|file| file.contains('.'))
-                    .unwrap_or(true)
+                    .unwrap_or(true);
+                if follow {
+                    attempt.follow()
+                } else {
+                    attempt.stop()
+                }
             } else {
-                true
+                attempt.follow()
             }
+        });
+        let res = Client::builder()
+            .redirect(redirect_policy)
+            .build()?
+            .head(&self.url)
+            .send()?;
+
+        if !(res.status().is_success() || res.status() == StatusCode::FOUND) {
+            return Err(Error::from(ErrorKind::UnexpectedHttpResponse(
+                self.url.clone(),
+                res.status(),
+            )))
+            .chain_err(|| "couldn\'t probe".to_string());
         }
-        probe_client.set_redirect_policy(RedirectPolicy::FollowIf(url_redirection_policy));
 
-        let req = probe_client.head(&self.url);
-        let res = req.send()?;
-
-        if !(res.status.is_success() || res.status == StatusCode::Found) {
-            return Err(Error::from(hyper::Error::Status))
-                .chain_err(|| format!("couldn\'t probe {}", self.url));
-        }
-
-        let final_url = res.url.clone().into_string();
+        let final_url = res.url().clone().into_string();
 
         if final_url != self.url {
             tt_note!(status, "resolved to {}", final_url);
@@ -261,12 +276,13 @@ impl ITarIoFactory for HttpITarIoFactory {
         let mut index_url = self.url.clone();
         index_url.push_str(".index.gz");
 
-        let client = create_hyper_client();
-        let req = client.get(&index_url);
-        let res = req.send()?;
-        if !res.status.is_success() {
-            return Err(Error::from(hyper::Error::Status))
-                .chain_err(|| format!("couldn\'t fetch {}", index_url));
+        let res = Client::new().get(&index_url).send()?;
+        if !res.status().is_success() {
+            return Err(Error::from(ErrorKind::UnexpectedHttpResponse(
+                index_url.clone(),
+                res.status(),
+            )))
+            .chain_err(|| "couldn\'t fetch".to_string());
         }
 
         Ok(GzDecoder::new(res))

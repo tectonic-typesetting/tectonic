@@ -148,7 +148,7 @@ impl PersistentConfig {
         only_cached: bool,
         status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
-        use hyper::Url;
+        use reqwest::Url;
         use std::io;
 
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
