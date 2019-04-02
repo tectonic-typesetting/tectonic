@@ -38,7 +38,7 @@ regex = "^1.1"
 sha2 = "^0.8"
 
 [dependencies]
-aho-corasick = "^0.6"
+aho-corasick = "^0.7"
 app_dirs = "^1.1"
 clap = "^2.29"
 error-chain = "^0.12"
