@@ -11,7 +11,7 @@
 //! For an example of how to use this module, see `cli_driver.rs`, which contains tectonic's main
 //! CLI program.
 
-use aho_corasick::{AcAutomaton, Automaton};
+use aho_corasick::AhoCorasick;
 use std::collections::{HashMap, HashSet};
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
@@ -870,8 +870,8 @@ impl ProcessingSession {
                 if let Some(auxdata) = self.io.mem.files.borrow().get(&self.tex_aux_path) {
                     // It's way overkill to use aho-corasick for a single string, but rust doesn't
                     // have a good default story for searching in a Vec<u8>.
-                    let cite_aut = AcAutomaton::new(vec!["\\bibdata"]);
-                    cite_aut.find(auxdata).next().is_some()
+                    let cite_aut = AhoCorasick::new(vec!["\\bibdata"]);
+                    cite_aut.find(auxdata).is_some()
                 } else {
                     false
                 }
