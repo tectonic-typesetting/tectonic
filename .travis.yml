@@ -53,4 +53,4 @@ addons:
       - openssl
 
 install: true
-script: bash dist/travis.sh
+script: source dist/travis.sh
