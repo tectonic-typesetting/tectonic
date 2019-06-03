@@ -23,6 +23,7 @@ use tectonic::io::{FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
 use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
 
+#[path = "util/mod.rs"]
 mod util;
 use util::{test_path, ExpectedInfo};
 

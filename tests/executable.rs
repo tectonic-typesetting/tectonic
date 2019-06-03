@@ -14,6 +14,7 @@ use std::process::{Command, Output, Stdio};
 use std::str;
 use tempfile::TempDir;
 
+#[path = "util/mod.rs"]
 mod util;
 use util::{cargo_dir, ensure_plain_format};
 
