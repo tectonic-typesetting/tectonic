@@ -4,7 +4,7 @@
 #[macro_use]
 extern crate lazy_static;
 extern crate tectonic;
-extern crate tempdir;
+extern crate tempfile;
 
 use std::env;
 use std::fs::{self, File};
@@ -12,8 +12,9 @@ use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 use std::str;
-use tempdir::TempDir;
+use tempfile::TempDir;
 
+#[path = "util/mod.rs"]
 mod util;
 use util::{cargo_dir, ensure_plain_format};
 
@@ -80,7 +81,10 @@ fn run_tectonic_with_stdin(cwd: &Path, args: &[&str], stdin: &str) -> Output {
 }
 
 fn setup_and_copy_files(files: &[&str]) -> TempDir {
-    let tempdir = TempDir::new("tectonic_executable_test").unwrap();
+    let tempdir = tempfile::Builder::new()
+        .prefix("tectonic_executable_test")
+        .tempdir()
+        .unwrap();
     let executable_test_dir =
         PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()).join("tests/executable");
 

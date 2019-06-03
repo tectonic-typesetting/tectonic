@@ -15,6 +15,7 @@ use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoProvider, IoStack, 
 use tectonic::status::NoopStatusBackend;
 use tectonic::{TexEngine, XdvipdfmxEngine};
 
+#[path = "util/mod.rs"]
 mod util;
 use util::{ensure_plain_format, test_path, ExpectedInfo};
 

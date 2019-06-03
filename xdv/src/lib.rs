@@ -275,7 +275,7 @@ impl<T: XdvEvents> XdvParser<T> {
     /// not the same as the buffer size, some of the existing bytes must be
     /// re-fed to the parser. If the returned value is 0, you need a bigger
     /// buffer in order to be able to parse the next directive.
-    #[allow(clippy::cyclomatic_complexity)]
+    #[allow(clippy::cognitive_complexity)]
     pub fn parse(&mut self, chunk: &[u8]) -> Result<usize, T::Error> {
         let mut cursor = Cursor::new(chunk, self.offset);
 

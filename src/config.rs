@@ -64,7 +64,6 @@ impl PersistentConfig {
         use app_dirs::{app_root, get_app_root};
         use std::io::ErrorKind as IoErrorKind;
         use std::io::{Read, Write};
-        use toml;
         let mut cfg_path = if auto_create_config_file {
             app_root(AppDataType::UserConfig, &::APP_INFO)?
         } else {

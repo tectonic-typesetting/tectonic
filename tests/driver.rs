@@ -9,13 +9,12 @@
 //! enable the reproducibility options used in the `tex-outputs` test rig.
 
 extern crate tectonic;
-extern crate tempdir;
+extern crate tempfile;
 
 use tectonic::config::PersistentConfig;
 use tectonic::driver::ProcessingSessionBuilder;
 use tectonic::status::termcolor::TermcolorStatusBackend;
 use tectonic::status::ChatterLevel;
-use tempdir::TempDir;
 
 mod util;
 
@@ -32,7 +31,10 @@ fn the_letter_a() {
 
     let bundle = util::TestBundle::default();
 
-    let tempdir = TempDir::new("tectonic_driver_test").unwrap();
+    let tempdir = tempfile::Builder::new()
+        .prefix("tectonic_driver_test")
+        .tempdir()
+        .unwrap();
 
     let mut pbuilder = ProcessingSessionBuilder::default();
     pbuilder
