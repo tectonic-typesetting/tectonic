@@ -619,7 +619,6 @@ impl ProcessingSession {
     fn _dump_access_info<S: StatusBackend>(&self, status: &mut S) {
         for (name, info) in &self.events.0 {
             if info.access_pattern != AccessPattern::Read {
-                use std::string::ToString;
                 let r = match info.read_digest {
                     Some(ref d) => d.to_string(),
                     None => "-".into(),
