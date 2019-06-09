@@ -10,7 +10,7 @@ pub mod termcolor;
 use std::cmp;
 use std::fmt::Arguments;
 
-use errors::Error;
+use crate::errors::Error;
 
 #[repr(usize)]
 #[derive(Clone, Copy, Eq, Debug)]

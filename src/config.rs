@@ -19,12 +19,12 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use app_dirs::{app_dir, sanitized, AppDataType};
 
-use errors::{ErrorKind, Result};
-use io::itarbundle::{HttpITarIoFactory, ITarBundle};
-use io::local_cache::LocalCache;
-use io::zipbundle::ZipBundle;
-use io::Bundle;
-use status::StatusBackend;
+use crate::errors::{ErrorKind, Result};
+use crate::io::itarbundle::{HttpITarIoFactory, ITarBundle};
+use crate::io::local_cache::LocalCache;
+use crate::io::zipbundle::ZipBundle;
+use crate::io::Bundle;
+use crate::status::StatusBackend;
 
 /// Awesome hack time!!!
 ///
@@ -65,9 +65,9 @@ impl PersistentConfig {
         use std::io::ErrorKind as IoErrorKind;
         use std::io::{Read, Write};
         let mut cfg_path = if auto_create_config_file {
-            app_root(AppDataType::UserConfig, &::APP_INFO)?
+            app_root(AppDataType::UserConfig, &crate::APP_INFO)?
         } else {
-            get_app_root(AppDataType::UserConfig, &::APP_INFO)?
+            get_app_root(AppDataType::UserConfig, &crate::APP_INFO)?
         };
         cfg_path.push("config.toml");
 
@@ -116,14 +116,14 @@ impl PersistentConfig {
     ) -> Result<Box<dyn Bundle>> {
         let itb = ITarBundle::<HttpITarIoFactory>::new(url);
 
-        let mut url2digest_path = app_dir(AppDataType::UserCache, &::APP_INFO, "urls")?;
+        let mut url2digest_path = app_dir(AppDataType::UserCache, &crate::APP_INFO, "urls")?;
         url2digest_path.push(sanitized(url));
 
         let bundle = LocalCache::<ITarBundle<HttpITarIoFactory>>::new(
             itb,
             &url2digest_path,
-            &app_dir(AppDataType::UserCache, &::APP_INFO, "manifests")?,
-            &app_dir(AppDataType::UserCache, &::APP_INFO, "files")?,
+            &app_dir(AppDataType::UserCache, &crate::APP_INFO, "manifests")?,
+            &app_dir(AppDataType::UserCache, &crate::APP_INFO, "files")?,
             only_cached,
             status,
         )?;
@@ -152,7 +152,7 @@ impl PersistentConfig {
         use std::io;
 
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
-            return Ok(Box::new(::test_util::TestBundle::default()));
+            return Ok(Box::new(crate::test_util::TestBundle::default()));
         }
 
         if self.default_bundles.len() != 1 {
@@ -180,9 +180,13 @@ impl PersistentConfig {
 
     pub fn format_cache_path(&self) -> Result<PathBuf> {
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
-            Ok(::test_util::test_path(&[]))
+            Ok(crate::test_util::test_path(&[]))
         } else {
-            Ok(app_dir(AppDataType::UserCache, &::APP_INFO, "formats")?)
+            Ok(app_dir(
+                AppDataType::UserCache,
+                &crate::APP_INFO,
+                "formats",
+            )?)
         }
     }
 }

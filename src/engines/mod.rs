@@ -23,10 +23,10 @@ use std::path::Path;
 use std::sync::Mutex;
 use std::{io, ptr, slice};
 
-use digest::DigestData;
-use errors::{Error, ErrorKind, Result};
-use io::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
-use status::StatusBackend;
+use crate::digest::DigestData;
+use crate::errors::{Error, ErrorKind, Result};
+use crate::io::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
+use crate::status::StatusBackend;
 
 // Public sub-modules and reexports.
 

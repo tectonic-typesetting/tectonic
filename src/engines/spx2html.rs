@@ -10,9 +10,9 @@ use std::io::Write;
 use tectonic_xdv::{FileType, XdvEvents, XdvParser};
 
 use super::IoEventBackend;
-use errors::{Error, Result};
-use io::{IoProvider, IoStack, OpenResult, OutputHandle};
-use status::StatusBackend;
+use crate::errors::{Error, Result};
+use crate::io::{IoProvider, IoStack, OpenResult, OutputHandle};
+use crate::status::StatusBackend;
 
 #[derive(Default)]
 pub struct Spx2HtmlEngine {}

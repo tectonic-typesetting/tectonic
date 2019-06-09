@@ -1,13 +1,13 @@
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
-use errors::Result;
-use io::format_cache::FormatCache;
-use io::stdstreams::BufferedPrimaryIo;
-use io::{
+use crate::errors::Result;
+use crate::io::format_cache::FormatCache;
+use crate::io::stdstreams::BufferedPrimaryIo;
+use crate::io::{
     Bundle, FilesystemIo, FilesystemPrimaryInputIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo,
 };
-use status::StatusBackend;
+use crate::status::StatusBackend;
 
 /// An `IoSetup` is essentially a typed, structured version of an [`IoStack`].
 ///

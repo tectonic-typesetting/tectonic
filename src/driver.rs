@@ -19,12 +19,12 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-use digest::DigestData;
-use engines::IoEventBackend;
-use errors::{ErrorKind, Result, ResultExt};
-use io::{Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
-use status::StatusBackend;
-use {BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
+use crate::digest::DigestData;
+use crate::engines::IoEventBackend;
+use crate::errors::{ErrorKind, Result, ResultExt};
+use crate::io::{Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
+use crate::status::StatusBackend;
+use crate::{BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
 
 /// Different patterns with which files may have been accessed by the
 /// underlying engines. Once a file is marked as ReadThenWritten or

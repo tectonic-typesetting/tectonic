@@ -5,9 +5,9 @@
 use std::ffi::{CStr, CString};
 
 use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
-use errors::{DefinitelySame, ErrorKind, Result};
-use io::IoStack;
-use status::StatusBackend;
+use crate::errors::{DefinitelySame, ErrorKind, Result};
+use crate::io::IoStack;
+use crate::status::StatusBackend;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum TexResult {

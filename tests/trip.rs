@@ -25,7 +25,7 @@ use tectonic::TexEngine;
 
 #[path = "util/mod.rs"]
 mod util;
-use util::{test_path, ExpectedInfo};
+use crate::util::{test_path, ExpectedInfo};
 
 #[test]
 fn trip_test() {

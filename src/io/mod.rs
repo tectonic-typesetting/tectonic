@@ -15,9 +15,9 @@ use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
 use std::path::Path;
 use std::str::FromStr;
 
-use digest::{self, Digest, DigestData};
-use errors::{Error, ErrorKind, Result};
-use status::StatusBackend;
+use crate::digest::{self, Digest, DigestData};
+use crate::errors::{Error, ErrorKind, Result};
+use crate::status::StatusBackend;
 
 pub mod filesystem;
 pub mod format_cache;

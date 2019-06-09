@@ -16,7 +16,7 @@ use tempfile::TempDir;
 
 #[path = "util/mod.rs"]
 mod util;
-use util::{cargo_dir, ensure_plain_format};
+use crate::util::{cargo_dir, ensure_plain_format};
 
 lazy_static! {
     static ref TEST_ROOT: PathBuf = {

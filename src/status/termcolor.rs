@@ -11,7 +11,7 @@ use std::io::Write;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 use super::{ChatterLevel, MessageKind, StatusBackend};
-use errors::Error;
+use crate::errors::Error;
 
 pub struct TermcolorStatusBackend {
     chatter: ChatterLevel,

@@ -12,8 +12,8 @@ use std::path::{Path, PathBuf};
 use super::{
     try_open_file, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle,
 };
-use errors::{ErrorKind, Result};
-use status::StatusBackend;
+use crate::errors::{ErrorKind, Result};
+use crate::status::StatusBackend;
 
 /// FilesystemPrimaryInputIo is an I/O provider that provides the TeX "primary input"
 /// file off of the filesystem. This can *pretty much* be achieved with

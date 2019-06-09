@@ -17,7 +17,7 @@ use tectonic::{TexEngine, XdvipdfmxEngine};
 
 #[path = "util/mod.rs"]
 mod util;
-use util::{ensure_plain_format, test_path, ExpectedInfo};
+use crate::util::{ensure_plain_format, test_path, ExpectedInfo};
 
 struct TestCase {
     stem: String,

@@ -5,9 +5,9 @@
 use std::ffi::{CStr, CString};
 
 use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
-use errors::{ErrorKind, Result};
-use io::IoStack;
-use status::StatusBackend;
+use crate::errors::{ErrorKind, Result};
+use crate::io::IoStack;
+use crate::status::StatusBackend;
 
 pub struct XdvipdfmxEngine {
     enable_compression: bool,

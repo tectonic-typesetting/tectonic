@@ -5,7 +5,7 @@
 use std::ffi::OsStr;
 
 use super::{InputHandle, IoProvider, OpenResult, OutputHandle};
-use status::StatusBackend;
+use crate::status::StatusBackend;
 
 /// An IoStack is an IoProvider that delegates to an ordered list of
 /// subordinate IoProviders. It also checks the order in which files are read

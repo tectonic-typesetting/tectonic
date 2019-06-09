@@ -11,9 +11,9 @@ use std::path::PathBuf;
 use tempfile;
 
 use super::{InputHandle, InputOrigin, IoProvider, OpenResult};
-use digest::DigestData;
-use errors::{ErrorKind, Result};
-use status::StatusBackend;
+use crate::digest::DigestData;
+use crate::errors::{ErrorKind, Result};
+use crate::status::StatusBackend;
 
 /// A local cache for compiled format files.
 ///
@@ -61,7 +61,7 @@ impl FormatCache {
             "{}-{}-{}.fmt",
             self.bundle_digest.to_string(),
             stem,
-            ::FORMAT_SERIAL
+            crate::FORMAT_SERIAL
         ));
         Ok(p)
     }

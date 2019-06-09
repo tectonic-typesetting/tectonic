@@ -10,8 +10,8 @@ use zip::result::ZipError;
 use zip::ZipArchive;
 
 use super::{Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
-use errors::Result;
-use status::StatusBackend;
+use crate::errors::Result;
+use crate::status::StatusBackend;
 
 pub struct ZipBundle<R: Read + Seek> {
     zip: ZipArchive<R>,

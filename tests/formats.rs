@@ -28,7 +28,7 @@ use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
 
 mod util;
-use util::test_path;
+use crate::util::test_path;
 
 const DEBUG: bool = false; // TODO: this is kind of ugly
 

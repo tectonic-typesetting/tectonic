@@ -13,9 +13,9 @@ use std::str::FromStr;
 use tempfile;
 
 use super::{try_open_file, Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
-use digest::{self, Digest, DigestData};
-use errors::{ErrorKind, Result};
-use status::StatusBackend;
+use crate::digest::{self, Digest, DigestData};
+use crate::errors::{ErrorKind, Result};
+use crate::status::StatusBackend;
 
 struct LocalCacheItem {
     _length: u64,

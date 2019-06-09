@@ -12,8 +12,8 @@ use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader, Cursor, Read};
 
 use super::{create_hyper_client, Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
-use errors::{Error, ErrorKind, Result, ResultExt};
-use status::StatusBackend;
+use crate::errors::{Error, ErrorKind, Result, ResultExt};
+use crate::status::StatusBackend;
 
 const MAX_HTTP_ATTEMPTS: usize = 4;
 

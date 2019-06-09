@@ -7,8 +7,8 @@ use std::io::{stdin, stdout, Cursor, Read, Seek, SeekFrom};
 use std::rc::Rc;
 
 use super::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
-use errors::Result;
-use status::StatusBackend;
+use crate::errors::Result;
+use crate::status::StatusBackend;
 
 /// GenuineStdoutIo provides a mechanism for the "stdout" output to actually
 /// go to the process's stdout.

@@ -84,11 +84,11 @@ pub mod io;
 #[doc(hidden)]
 pub mod test_util;
 
-pub use engines::bibtex::BibtexEngine;
-pub use engines::spx2html::Spx2HtmlEngine;
-pub use engines::tex::{TexEngine, TexResult};
-pub use engines::xdvipdfmx::XdvipdfmxEngine;
-pub use errors::{Error, ErrorKind, Result};
+pub use crate::engines::bibtex::BibtexEngine;
+pub use crate::engines::spx2html::Spx2HtmlEngine;
+pub use crate::engines::tex::{TexEngine, TexResult};
+pub use crate::engines::xdvipdfmx::XdvipdfmxEngine;
+pub use crate::errors::{Error, ErrorKind, Result};
 
 const APP_INFO: app_dirs::AppInfo = app_dirs::AppInfo {
     name: "Tectonic",

@@ -6,9 +6,9 @@ use std::ffi::{CStr, CString};
 
 use super::tex::TexResult;
 use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
-use errors::{ErrorKind, Result};
-use io::IoStack;
-use status::StatusBackend;
+use crate::errors::{ErrorKind, Result};
+use crate::io::IoStack;
+use crate::status::StatusBackend;
 
 #[derive(Default)]
 pub struct BibtexEngine {}
