@@ -123,8 +123,8 @@ lazy_static! {
 
 struct ExecutionState<'a, I: 'a + IoProvider> {
     io: &'a mut I,
-    events: &'a mut IoEventBackend,
-    status: &'a mut StatusBackend,
+    events: &'a mut dyn IoEventBackend,
+    status: &'a mut dyn StatusBackend,
     #[allow(clippy::vec_box)]
     input_handles: Vec<Box<InputHandle>>,
     #[allow(clippy::vec_box)]
@@ -134,8 +134,8 @@ struct ExecutionState<'a, I: 'a + IoProvider> {
 impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
     pub fn new(
         io: &'a mut I,
-        events: &'a mut IoEventBackend,
-        status: &'a mut StatusBackend,
+        events: &'a mut dyn IoEventBackend,
+        status: &'a mut dyn StatusBackend,
     ) -> ExecutionState<'a, I> {
         ExecutionState {
             io,

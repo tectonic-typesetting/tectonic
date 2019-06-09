@@ -112,8 +112,8 @@ impl PersistentConfig {
         &self,
         url: &str,
         only_cached: bool,
-        status: &mut StatusBackend,
-    ) -> Result<Box<Bundle>> {
+        status: &mut dyn StatusBackend,
+    ) -> Result<Box<dyn Bundle>> {
         let itb = ITarBundle::<HttpITarIoFactory>::new(url);
 
         let mut url2digest_path = app_dir(AppDataType::UserCache, &::APP_INFO, "urls")?;
@@ -134,8 +134,8 @@ impl PersistentConfig {
     pub fn make_local_file_provider(
         &self,
         file_path: &OsStr,
-        _status: &mut StatusBackend,
-    ) -> Result<Box<Bundle>> {
+        _status: &mut dyn StatusBackend,
+    ) -> Result<Box<dyn Bundle>> {
         use std::path::Path;
 
         let zip_bundle = ZipBundle::<File>::open(Path::new(file_path))?;
@@ -146,8 +146,8 @@ impl PersistentConfig {
     pub fn default_bundle(
         &self,
         only_cached: bool,
-        status: &mut StatusBackend,
-    ) -> Result<Box<Bundle>> {
+        status: &mut dyn StatusBackend,
+    ) -> Result<Box<dyn Bundle>> {
         use hyper::Url;
         use std::io;
 

@@ -40,7 +40,7 @@ impl<B: Bundle> LocalCache<B> {
         manifest_base: &Path,
         data: &Path,
         only_cached: bool,
-        status: &mut StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> Result<LocalCache<B>> {
         // If the `digest` file exists, we assume that it is valid; this is
         // *essential* so that we can use a URL as our default IoProvider
@@ -203,7 +203,7 @@ impl<B: Bundle> LocalCache<B> {
     /// error out but set things up so that things should succeed if the
     /// program is re-run. Exactly the lame TeX user experience that I've been
     /// trying to avoid!
-    fn check_digest(&mut self, status: &mut StatusBackend) -> Result<()> {
+    fn check_digest(&mut self, status: &mut dyn StatusBackend) -> Result<()> {
         if self.checked_digest {
             return Ok(());
         }
@@ -250,7 +250,11 @@ impl<B: Bundle> LocalCache<B> {
         Ok(())
     }
 
-    fn path_for_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<PathBuf> {
+    fn path_for_name(
+        &mut self,
+        name: &OsStr,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<PathBuf> {
         if let Some(info) = self.contents.get(name) {
             return match info.digest {
                 None => OpenResult::NotAvailable,
@@ -376,7 +380,7 @@ impl<B: Bundle> IoProvider for LocalCache<B> {
     fn input_open_name(
         &mut self,
         name: &OsStr,
-        status: &mut StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         let path = match self.path_for_name(name, status) {
             OpenResult::Ok(p) => p,
@@ -398,7 +402,7 @@ impl<B: Bundle> IoProvider for LocalCache<B> {
 }
 
 impl<B: Bundle> Bundle for LocalCache<B> {
-    fn get_digest(&mut self, _status: &mut StatusBackend) -> Result<DigestData> {
+    fn get_digest(&mut self, _status: &mut dyn StatusBackend) -> Result<DigestData> {
         Ok(self.cached_digest)
     }
 }

@@ -71,7 +71,7 @@ impl IoProvider for FormatCache {
     fn input_open_format(
         &mut self,
         name: &OsStr,
-        _status: &mut StatusBackend,
+        _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         let path = match self.path_for_format(name) {
             Ok(p) => p,
@@ -91,7 +91,12 @@ impl IoProvider for FormatCache {
         ))
     }
 
-    fn write_format(&mut self, name: &str, data: &[u8], _status: &mut StatusBackend) -> Result<()> {
+    fn write_format(
+        &mut self,
+        name: &str,
+        data: &[u8],
+        _status: &mut dyn StatusBackend,
+    ) -> Result<()> {
         let final_path = self.path_for_format(OsStr::new(name))?;
         let mut temp_dest = tempfile::Builder::new()
             .prefix("format_")

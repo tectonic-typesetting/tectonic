@@ -38,7 +38,7 @@ impl FilesystemPrimaryInputIo {
 }
 
 impl IoProvider for FilesystemPrimaryInputIo {
-    fn input_open_primary(&mut self, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_primary(&mut self, _status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
         let f = match try_open_file(&self.path) {
             OpenResult::Ok(f) => f,
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
@@ -121,7 +121,7 @@ impl IoProvider for FilesystemIo {
     fn input_open_name(
         &mut self,
         name: &OsStr,
-        _status: &mut StatusBackend,
+        _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         let path = match self.construct_path(name) {
             Ok(p) => p,

@@ -13,11 +13,11 @@ use status::StatusBackend;
 /// need to run multiple passes of the TeX engine.
 
 pub struct IoStack<'a> {
-    items: Vec<&'a mut IoProvider>,
+    items: Vec<&'a mut dyn IoProvider>,
 }
 
 impl<'a> IoStack<'a> {
-    pub fn new(items: Vec<&'a mut IoProvider>) -> IoStack<'a> {
+    pub fn new(items: Vec<&'a mut dyn IoProvider>) -> IoStack<'a> {
         IoStack { items }
     }
 }
@@ -52,7 +52,7 @@ impl<'a> IoProvider for IoStack<'a> {
     fn input_open_name(
         &mut self,
         name: &OsStr,
-        status: &mut StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         for item in &mut self.items {
             let r = item.input_open_name(name, status);
@@ -66,7 +66,7 @@ impl<'a> IoProvider for IoStack<'a> {
         OpenResult::NotAvailable
     }
 
-    fn input_open_primary(&mut self, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
         for item in &mut self.items {
             let r = item.input_open_primary(status);
 
@@ -82,7 +82,7 @@ impl<'a> IoProvider for IoStack<'a> {
     fn input_open_format(
         &mut self,
         name: &OsStr,
-        status: &mut StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         for item in &mut self.items {
             let r = item.input_open_format(name, status);

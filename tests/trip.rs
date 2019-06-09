@@ -54,7 +54,7 @@ fn trip_test() {
 
     // First engine pass -- make the format file.
     {
-        let mut io = IoStack::new(vec![&mut mem as &mut IoProvider, &mut tex, &mut tfm]);
+        let mut io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
         TexEngine::new()
             .halt_on_error_mode(false)
             .initex_mode(true)
@@ -70,7 +70,7 @@ fn trip_test() {
 
     // Second pass -- process it
     {
-        let mut io = IoStack::new(vec![&mut mem as &mut IoProvider, &mut tex, &mut tfm]);
+        let mut io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
         TexEngine::new()
             .halt_on_error_mode(false)
             .initex_mode(false)
@@ -119,7 +119,7 @@ fn etrip_test() {
 
     // First engine pass -- make the format file.
     {
-        let mut io = IoStack::new(vec![&mut mem as &mut IoProvider, &mut tex, &mut tfm]);
+        let mut io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
         TexEngine::new()
             .halt_on_error_mode(false)
             .initex_mode(true)

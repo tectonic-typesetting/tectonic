@@ -21,8 +21,8 @@ impl BibtexEngine {
     pub fn process(
         &mut self,
         io: &mut IoStack,
-        events: &mut IoEventBackend,
-        status: &mut StatusBackend,
+        events: &mut dyn IoEventBackend,
+        status: &mut dyn StatusBackend,
         aux: &str,
     ) -> Result<TexResult> {
         let _guard = super::ENGINE_LOCK.lock().unwrap(); // until we're thread-safe ...

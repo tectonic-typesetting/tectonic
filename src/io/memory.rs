@@ -147,7 +147,7 @@ impl IoProvider for MemoryIo {
     fn input_open_name(
         &mut self,
         name: &OsStr,
-        _status: &mut StatusBackend,
+        _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         if name.is_empty() {
             return OpenResult::NotAvailable;

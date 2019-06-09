@@ -22,8 +22,8 @@ use status::StatusBackend;
 /// created in memory, and you can examine them by poking at the `mem` field.
 
 pub struct IoSetup {
-    primary_input: Box<IoProvider>,
-    pub bundle: Option<Box<Bundle>>,
+    primary_input: Box<dyn IoProvider>,
+    pub bundle: Option<Box<dyn Bundle>>,
     pub mem: MemoryIo,
     filesystem: FilesystemIo,
     pub format_cache: Option<FormatCache>,
@@ -33,7 +33,7 @@ pub struct IoSetup {
 
 impl IoSetup {
     pub fn as_stack(&mut self) -> IoStack {
-        let mut providers: Vec<&mut IoProvider> = Vec::new();
+        let mut providers: Vec<&mut dyn IoProvider> = Vec::new();
 
         if let Some(ref mut p) = self.genuine_stdout {
             providers.push(p);
@@ -67,7 +67,7 @@ impl IoSetup {
     /// then the resulting format file(s) can be read from the memory I/O layer (i.e. `self.mem`).
 
     pub fn as_stack_for_format<'a>(&'a mut self, format_file_name: &str) -> IoStack<'a> {
-        let mut providers: Vec<&mut IoProvider> = Vec::new();
+        let mut providers: Vec<&mut dyn IoProvider> = Vec::new();
 
         if let Some(ref mut p) = self.genuine_stdout {
             providers.push(p);
@@ -113,7 +113,7 @@ pub struct IoSetupBuilder {
     primary_input: PrimaryInputMode,
     filesystem_root: PathBuf,
     format_cache_path: Option<PathBuf>,
-    bundle: Option<Box<Bundle>>,
+    bundle: Option<Box<dyn Bundle>>,
     use_genuine_stdout: bool,
     hidden_input_paths: HashSet<PathBuf>,
 }
@@ -210,7 +210,7 @@ impl IoSetupBuilder {
     /// # Panics
     ///
     /// Panics if no primary input mechanism was specified.
-    pub fn create(mut self, status: &mut StatusBackend) -> Result<IoSetup> {
+    pub fn create(mut self, status: &mut dyn StatusBackend) -> Result<IoSetup> {
         let format_cache = if let Some(ref mut b) = self.bundle {
             let default_path = self.filesystem_root.clone(); // unwrap_or_else() causes borrowck issues
             let format_cache_path = self.format_cache_path.unwrap_or(default_path);
@@ -219,7 +219,7 @@ impl IoSetupBuilder {
             None
         };
 
-        let pio: Box<IoProvider> = match self.primary_input {
+        let pio: Box<dyn IoProvider> = match self.primary_input {
             PrimaryInputMode::Stdin => {
                 Box::new(ctry!(BufferedPrimaryIo::from_stdin(); "error reading standard input"))
             }

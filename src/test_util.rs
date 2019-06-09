@@ -120,14 +120,14 @@ impl IoProvider for TestBundle {
     fn input_open_name(
         &mut self,
         name: &OsStr,
-        status: &mut StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         self.0.input_open_name(name, status)
     }
 }
 
 impl Bundle for TestBundle {
-    fn get_digest(&mut self, _status: &mut StatusBackend) -> Result<DigestData> {
+    fn get_digest(&mut self, _status: &mut dyn StatusBackend) -> Result<DigestData> {
         Ok(DigestData::zeros())
     }
 }

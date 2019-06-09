@@ -129,7 +129,7 @@ impl BufferedPrimaryIo {
 }
 
 impl IoProvider for BufferedPrimaryIo {
-    fn input_open_primary(&mut self, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_primary(&mut self, _status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
         OpenResult::Ok(InputHandle::new(
             OsStr::new(""),
             Cursor::new(self.buffer.clone()),

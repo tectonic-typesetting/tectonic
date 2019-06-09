@@ -35,7 +35,7 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
     fn input_open_name(
         &mut self,
         name: &OsStr,
-        _status: &mut StatusBackend,
+        _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         // We need to be able to look at other items in the Zip file while
         // reading this one, so the only path forward is to read the entire

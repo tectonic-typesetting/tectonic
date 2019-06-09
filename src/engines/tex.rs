@@ -94,8 +94,8 @@ impl TexEngine {
     pub fn process(
         &mut self,
         io: &mut IoStack,
-        events: &mut IoEventBackend,
-        status: &mut StatusBackend,
+        events: &mut dyn IoEventBackend,
+        status: &mut dyn StatusBackend,
         format_file_name: &str,
         input_file_name: &str,
     ) -> Result<TexResult> {

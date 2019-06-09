@@ -35,8 +35,8 @@ impl XdvipdfmxEngine {
     pub fn process(
         &mut self,
         io: &mut IoStack,
-        events: &mut IoEventBackend,
-        status: &mut StatusBackend,
+        events: &mut dyn IoEventBackend,
+        status: &mut dyn StatusBackend,
         dvi: &str,
         pdf: &str,
     ) -> Result<i32> {
