@@ -11,7 +11,7 @@
 #![allow(dead_code)]
 
 
-use self::flate2::read::GzDecoder;
+use ::flate2::read::GzDecoder;
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::ffi::{OsStr, OsString};
@@ -19,15 +19,15 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 
-use self::tectonic::errors::Result;
-pub use self::tectonic::test_util::{test_path, TestBundle};
+use ::tectonic::errors::Result;
+pub use ::tectonic::test_util::{test_path, TestBundle};
 
 /// Set the magic environment variable that enables the testing infrastructure
 /// embedded in the main Tectonic crate. This function is separated out from
 /// the main crate because it embeds `CARGO_MANIFEST_DIR`, which is not
 /// something we want to leak into the binary artifacts we produce.
 pub fn set_test_root() {
-    self::tectonic::test_util::set_test_root_augmented(env!("CARGO_MANIFEST_DIR"));
+    ::tectonic::test_util::set_test_root_augmented(env!("CARGO_MANIFEST_DIR"));
 }
 
 // Duplicated from Cargo's own testing code:
@@ -54,12 +54,12 @@ pub fn cargo_dir() -> PathBuf {
 /// the moment we just let everybody write and overwrite the file, but we
 /// could use a locking scheme to get smarter about this.
 pub fn ensure_plain_format() -> Result<PathBuf> {
-    use self::tectonic::engines::NoopIoEventBackend;
-    use self::tectonic::io::{
+    use ::tectonic::engines::NoopIoEventBackend;
+    use ::tectonic::io::{
         try_open_file, FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo,
     };
-    use self::tectonic::status::NoopStatusBackend;
-    use self::tectonic::TexEngine;
+    use ::tectonic::status::NoopStatusBackend;
+    use ::tectonic::TexEngine;
 
     let fmt_path = test_path(&["plain.fmt"]);
 
