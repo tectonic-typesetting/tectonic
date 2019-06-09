@@ -13,6 +13,7 @@ use super::IoEventBackend;
 use crate::errors::{Error, Result};
 use crate::io::{IoProvider, IoStack, OpenResult, OutputHandle};
 use crate::status::StatusBackend;
+use crate::{errmsg, tt_warning};
 
 #[derive(Default)]
 pub struct Spx2HtmlEngine {}

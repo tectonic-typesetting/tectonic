@@ -14,6 +14,7 @@ use std::io::{BufRead, BufReader, Cursor, Read};
 use super::{create_hyper_client, Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
 use crate::errors::{Error, ErrorKind, Result, ResultExt};
 use crate::status::StatusBackend;
+use crate::{tt_note, tt_warning};
 
 const MAX_HTTP_ATTEMPTS: usize = 4;
 

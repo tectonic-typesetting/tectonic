@@ -13,8 +13,6 @@
 /// multithreading can be disabled by setting the RUST_TEST_THREADS environment
 /// variable to "1", but that's an annoying solution. So, we use a global mutex
 /// to achieve the same effect. Classy.
-extern crate tectonic;
-
 use std::ffi::OsStr;
 
 use tectonic::engines::NoopIoEventBackend;

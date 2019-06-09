@@ -3,11 +3,7 @@
 
 //! Parse an XDV/SPX file and dump some stats about its contents.
 
-#[macro_use]
-extern crate clap;
-extern crate tectonic_xdv;
-
-use clap::{App, Arg};
+use clap::{crate_version, App, Arg};
 use std::fmt::{Display, Error as FmtError, Formatter};
 use std::fs::File;
 use std::io;

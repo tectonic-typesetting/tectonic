@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
+use crate::ctry;
 use crate::errors::Result;
 use crate::io::format_cache::FormatCache;
 use crate::io::stdstreams::BufferedPrimaryIo;

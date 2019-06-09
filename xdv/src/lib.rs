@@ -13,8 +13,6 @@
 //! expresses output that is not paginated for print — this is what Tectonic
 //! uses to produce its HTML output.
 
-extern crate byteorder;
-
 use byteorder::{BigEndian, ByteOrder};
 use std::error;
 use std::fmt::{Debug, Display, Error as FmtError, Formatter};

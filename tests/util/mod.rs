@@ -10,9 +10,6 @@
 // using this testing setup...
 #![allow(dead_code)]
 
-extern crate flate2;
-extern crate tectonic;
-extern crate tempfile;
 
 use self::flate2::read::GzDecoder;
 use std::collections::{HashMap, HashSet};

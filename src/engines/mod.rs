@@ -14,6 +14,7 @@
 
 use flate2::read::GzDecoder;
 use flate2::{Compression, GzBuilder};
+use lazy_static::lazy_static;
 use libc;
 use md5::{Digest, Md5};
 use std::borrow::Cow;
@@ -27,6 +28,7 @@ use crate::digest::DigestData;
 use crate::errors::{Error, ErrorKind, Result};
 use crate::io::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
 use crate::status::StatusBackend;
+use crate::{tt_error, tt_warning};
 
 // Public sub-modules and reexports.
 

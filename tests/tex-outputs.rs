@@ -1,8 +1,6 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
-extern crate tectonic;
-
 use std::collections::HashSet;
 use std::env;
 use std::path::Path;

@@ -4,7 +4,6 @@
 
 //! A framework for showing status messages to the user.
 
-#[macro_use]
 pub mod termcolor;
 
 use std::cmp;

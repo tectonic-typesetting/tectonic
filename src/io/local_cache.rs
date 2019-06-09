@@ -16,6 +16,7 @@ use super::{try_open_file, Bundle, InputHandle, InputOrigin, IoProvider, OpenRes
 use crate::digest::{self, Digest, DigestData};
 use crate::errors::{ErrorKind, Result};
 use crate::status::StatusBackend;
+use crate::{ctry, tt_warning};
 
 struct LocalCacheItem {
     _length: u64,

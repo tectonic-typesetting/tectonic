@@ -1,10 +1,7 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
-#[macro_use]
-extern crate lazy_static;
-extern crate tectonic;
-extern crate tempfile;
+use lazy_static::lazy_static;
 
 use std::env;
 use std::fs::{self, File};

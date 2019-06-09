@@ -15,6 +15,7 @@ use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
 use std::path::Path;
 use std::str::FromStr;
 
+use crate::ctry;
 use crate::digest::{self, Digest, DigestData};
 use crate::errors::{Error, ErrorKind, Result};
 use crate::status::StatusBackend;

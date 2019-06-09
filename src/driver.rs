@@ -24,6 +24,7 @@ use crate::engines::IoEventBackend;
 use crate::errors::{ErrorKind, Result, ResultExt};
 use crate::io::{Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
 use crate::status::StatusBackend;
+use crate::{ctry, errmsg, tt_error, tt_note, tt_warning};
 use crate::{BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
 
 /// Different patterns with which files may have been accessed by the
