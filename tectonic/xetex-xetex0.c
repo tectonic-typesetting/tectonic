@@ -10964,9 +10964,6 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 
 void font_feature_warning(const void *featureNameP, int32_t featLen, const void *settingNameP, int32_t setLen)
 {
-
-    int32_t i;
-
     begin_diagnostic();
     print_nl_cstr("Unknown ");
     if (setLen > 0) {
@@ -10977,20 +10974,14 @@ void font_feature_warning(const void *featureNameP, int32_t featLen, const void 
     print_cstr("feature `");
     print_utf8_str(featureNameP, featLen);
     print_cstr("' in font `");
-    i = 1;
-    while (name_of_file[i] != 0) {
+    for (int32_t i = 0; name_of_file[i] != 0; i++)
         print_raw_char(name_of_file[i], true);
-        i++;
-    }
     print_cstr("'.");
     end_diagnostic(false);
 }
 
 void font_mapping_warning(const void *mappingNameP, int32_t mappingNameLen, int32_t warningType)
 {
-
-    int32_t i;
-
     begin_diagnostic();
     if (warningType == 0)
         print_nl_cstr("Loaded mapping `");
@@ -10998,11 +10989,10 @@ void font_mapping_warning(const void *mappingNameP, int32_t mappingNameLen, int3
         print_nl_cstr("Font mapping `");
     print_utf8_str(mappingNameP, mappingNameLen);
     print_cstr("' for font `");
-    i = 1;
-    while (name_of_file[i] != 0) {
+
+    for (int32_t i = 0; name_of_file[i] != 0; i++)
         print_raw_char(name_of_file[i], true);
-        i++;
-    }
+
     switch (warningType) {
     case 1:
         print_cstr("' not found.");
@@ -11022,16 +11012,12 @@ void font_mapping_warning(const void *mappingNameP, int32_t mappingNameLen, int3
 
 void graphite_warning(void)
 {
-
-    int32_t i;
-
     begin_diagnostic();
     print_nl_cstr("Font `");
-    i = 1;
-    while (name_of_file[i] != 0) {
+
+    for (int32_t i = 0; name_of_file[i] != 0; i++)
         print_raw_char(name_of_file[i], true);
-        i++;
-    }
+
     print_cstr("' does not support Graphite. Trying OpenType layout instead.");
     end_diagnostic(false);
 }
@@ -11062,7 +11048,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     if (pool_ptr + name_length > pool_size)
         overflow("pool size", pool_size - init_pool_ptr);
 
-    for (k = 1; k <= name_length; k++)
+    for (k = 0; k < name_length; k++)
         str_pool[pool_ptr++] = name_of_file[k];
 
     full_name = make_string();
