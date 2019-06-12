@@ -2509,7 +2509,7 @@ pack_buffered_name(small_number n, int32_t a, int32_t b)
     free(name_of_file);
     name_of_file = xmalloc_array(UTF8_code, format_default_length + 1);
 
-    strcpy(name_of_file, TEX_format_default + 1);
+    strcpy(name_of_file, TEX_format_default);
     name_length = strlen(name_of_file);
 }
 
@@ -3912,13 +3912,10 @@ tt_run_engine(char *dump_name, char *input_file_name)
 
     rust_stdout = ttstub_output_open_stdout ();
 
-    /* TEX_format_default must get a leading space character for Pascal
-     * style string magic. */
     size_t len = strlen (dump_name);
-    TEX_format_default = xmalloc (len + 2);
-    TEX_format_default[0] = ' ';
-    strcpy (TEX_format_default + 1, dump_name);
-    format_default_length = len + 1;
+    TEX_format_default = xmalloc (len + 1);
+    strcpy (TEX_format_default, dump_name);
+    format_default_length = len;
 
     /* Not sure why these get custom initializations. */
 
