@@ -1,8 +1,6 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
-extern crate tectonic;
-
 use std::collections::HashSet;
 use std::env;
 use std::path::Path;
@@ -17,14 +15,14 @@ use tectonic::{TexEngine, XdvipdfmxEngine};
 
 #[path = "util/mod.rs"]
 mod util;
-use util::{ensure_plain_format, test_path, ExpectedInfo};
+use crate::util::{ensure_plain_format, test_path, ExpectedInfo};
 
 struct TestCase {
     stem: String,
     expected_result: Result<TexResult>,
     check_synctex: bool,
     check_pdf: bool,
-    extra_io: Vec<Box<IoProvider>>,
+    extra_io: Vec<Box<dyn IoProvider>>,
 }
 
 impl TestCase {
@@ -104,7 +102,8 @@ impl TestCase {
 
         // Run the engine(s)!
         let res = {
-            let mut io_list: Vec<&mut IoProvider> = vec![&mut mem, &mut tex, &mut fmt, &mut assets];
+            let mut io_list: Vec<&mut dyn IoProvider> =
+                vec![&mut mem, &mut tex, &mut fmt, &mut assets];
             for io in &mut self.extra_io {
                 io_list.push(&mut **io);
             }

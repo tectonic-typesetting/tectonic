@@ -10,9 +10,10 @@ use std::io::Write;
 use tectonic_xdv::{FileType, XdvEvents, XdvParser};
 
 use super::IoEventBackend;
-use errors::{Error, Result};
-use io::{IoProvider, IoStack, OpenResult, OutputHandle};
-use status::StatusBackend;
+use crate::errors::{Error, Result};
+use crate::io::{IoProvider, IoStack, OpenResult, OutputHandle};
+use crate::status::StatusBackend;
+use crate::{errmsg, tt_warning};
 
 #[derive(Default)]
 pub struct Spx2HtmlEngine {}
@@ -25,8 +26,8 @@ impl Spx2HtmlEngine {
     pub fn process(
         &mut self,
         io: &mut IoStack,
-        events: &mut IoEventBackend,
-        status: &mut StatusBackend,
+        events: &mut dyn IoEventBackend,
+        status: &mut dyn StatusBackend,
         spx: &str,
     ) -> Result<()> {
         let mut input = io.input_open_name(OsStr::new(spx), status).must_exist()?;
@@ -61,8 +62,8 @@ impl Spx2HtmlEngine {
 struct State<'a, 'b: 'a> {
     outname: String,
     io: &'a mut IoStack<'b>,
-    events: &'a mut IoEventBackend,
-    status: &'a mut StatusBackend,
+    events: &'a mut dyn IoEventBackend,
+    status: &'a mut dyn StatusBackend,
     cur_output: Option<OutputHandle>,
     warned_lost_chars: bool,
     buf: Vec<u8>,
@@ -72,8 +73,8 @@ impl<'a, 'b: 'a> State<'a, 'b> {
     pub fn new(
         outname: String,
         io: &'a mut IoStack<'b>,
-        events: &'a mut IoEventBackend,
-        status: &'a mut StatusBackend,
+        events: &'a mut dyn IoEventBackend,
+        status: &'a mut dyn StatusBackend,
     ) -> Self {
         Self {
             outname,

@@ -12,8 +12,8 @@ use super::{
     normalize_tex_path, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult,
     OutputHandle,
 };
-use errors::Result;
-use status::StatusBackend;
+use crate::errors::Result;
+use crate::status::StatusBackend;
 
 // MemoryIo is an IoProvider that stores "files" in in-memory buffers.
 //
@@ -147,7 +147,7 @@ impl IoProvider for MemoryIo {
     fn input_open_name(
         &mut self,
         name: &OsStr,
-        _status: &mut StatusBackend,
+        _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         if name.is_empty() {
             return OpenResult::NotAvailable;
@@ -170,7 +170,7 @@ impl IoProvider for MemoryIo {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use status::NoopStatusBackend;
+    use crate::status::NoopStatusBackend;
     use std::io::{BufRead, BufReader};
 
     /// Early versions had a bug where files were not truncated when opened

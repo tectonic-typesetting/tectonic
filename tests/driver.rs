@@ -8,9 +8,6 @@
 //! ProcessingSessionBuilder will need to learn how to tell `xdvipdfmx` to
 //! enable the reproducibility options used in the `tex-outputs` test rig.
 
-extern crate tectonic;
-extern crate tempfile;
-
 use tectonic::config::PersistentConfig;
 use tectonic::driver::ProcessingSessionBuilder;
 use tectonic::status::termcolor::TermcolorStatusBackend;

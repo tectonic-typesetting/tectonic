@@ -11,9 +11,9 @@ use std::path::PathBuf;
 use tempfile;
 
 use super::{InputHandle, InputOrigin, IoProvider, OpenResult};
-use digest::DigestData;
-use errors::{ErrorKind, Result};
-use status::StatusBackend;
+use crate::digest::DigestData;
+use crate::errors::{ErrorKind, Result};
+use crate::status::StatusBackend;
 
 /// A local cache for compiled format files.
 ///
@@ -61,7 +61,7 @@ impl FormatCache {
             "{}-{}-{}.fmt",
             self.bundle_digest.to_string(),
             stem,
-            ::FORMAT_SERIAL
+            crate::FORMAT_SERIAL
         ));
         Ok(p)
     }
@@ -71,7 +71,7 @@ impl IoProvider for FormatCache {
     fn input_open_format(
         &mut self,
         name: &OsStr,
-        _status: &mut StatusBackend,
+        _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         let path = match self.path_for_format(name) {
             Ok(p) => p,
@@ -91,7 +91,12 @@ impl IoProvider for FormatCache {
         ))
     }
 
-    fn write_format(&mut self, name: &str, data: &[u8], _status: &mut StatusBackend) -> Result<()> {
+    fn write_format(
+        &mut self,
+        name: &str,
+        data: &[u8],
+        _status: &mut dyn StatusBackend,
+    ) -> Result<()> {
         let final_path = self.path_for_format(OsStr::new(name))?;
         let mut temp_dest = tempfile::Builder::new()
             .prefix("format_")

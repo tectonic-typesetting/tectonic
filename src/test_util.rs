@@ -40,10 +40,10 @@ use std::env;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 
-use digest::DigestData;
-use errors::Result;
-use io::{Bundle, FilesystemIo, InputHandle, IoProvider, OpenResult};
-use status::StatusBackend;
+use crate::digest::DigestData;
+use crate::errors::Result;
+use crate::io::{Bundle, FilesystemIo, InputHandle, IoProvider, OpenResult};
+use crate::status::StatusBackend;
 
 /// The name of the environment variable that the test code will consult to
 /// figure out where to find the testing resource files.
@@ -72,7 +72,7 @@ pub fn maybe_activate_test_mode() {
         return;
     }
 
-    ::config::activate_config_test_mode(true);
+    crate::config::activate_config_test_mode(true);
 }
 
 /// A combination of the two above functions. Set the "test root" variable,
@@ -120,14 +120,14 @@ impl IoProvider for TestBundle {
     fn input_open_name(
         &mut self,
         name: &OsStr,
-        status: &mut StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         self.0.input_open_name(name, status)
     }
 }
 
 impl Bundle for TestBundle {
-    fn get_digest(&mut self, _status: &mut StatusBackend) -> Result<DigestData> {
+    fn get_digest(&mut self, _status: &mut dyn StatusBackend) -> Result<DigestData> {
         Ok(DigestData::zeros())
     }
 }

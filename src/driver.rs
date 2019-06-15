@@ -19,12 +19,13 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-use digest::DigestData;
-use engines::IoEventBackend;
-use errors::{ErrorKind, Result, ResultExt};
-use io::{Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
-use status::StatusBackend;
-use {BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
+use crate::digest::DigestData;
+use crate::engines::IoEventBackend;
+use crate::errors::{ErrorKind, Result, ResultExt};
+use crate::io::{Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
+use crate::status::StatusBackend;
+use crate::{ctry, errmsg, tt_error, tt_note, tt_warning};
+use crate::{BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
 
 /// Different patterns with which files may have been accessed by the
 /// underlying engines. Once a file is marked as ReadThenWritten or
@@ -289,7 +290,7 @@ pub struct ProcessingSessionBuilder {
     pass: PassSetting,
     reruns: Option<usize>,
     print_stdout: bool,
-    bundle: Option<Box<Bundle>>,
+    bundle: Option<Box<dyn Bundle>>,
     keep_intermediates: bool,
     keep_logs: bool,
     synctex: bool,
@@ -408,7 +409,7 @@ impl ProcessingSessionBuilder {
 
     /// Sets the bundle, which the various engines will use for finding style files, font files,
     /// etc.
-    pub fn bundle(&mut self, b: Box<Bundle>) -> &mut Self {
+    pub fn bundle(&mut self, b: Box<dyn Bundle>) -> &mut Self {
         self.bundle = Some(b);
         self
     }
@@ -432,7 +433,7 @@ impl ProcessingSessionBuilder {
     }
 
     /// Creates a `ProcessingSession`.
-    pub fn create(self, status: &mut StatusBackend) -> Result<ProcessingSession> {
+    pub fn create(self, status: &mut dyn StatusBackend) -> Result<ProcessingSession> {
         let mut io = IoSetupBuilder::default();
         io.bundle(self.bundle.expect("a bundle must be specified"))
             .use_genuine_stdout(self.print_stdout);

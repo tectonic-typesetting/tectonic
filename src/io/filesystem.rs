@@ -12,8 +12,8 @@ use std::path::{Path, PathBuf};
 use super::{
     try_open_file, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle,
 };
-use errors::{ErrorKind, Result};
-use status::StatusBackend;
+use crate::errors::{ErrorKind, Result};
+use crate::status::StatusBackend;
 
 /// FilesystemPrimaryInputIo is an I/O provider that provides the TeX "primary input"
 /// file off of the filesystem. This can *pretty much* be achieved with
@@ -38,7 +38,7 @@ impl FilesystemPrimaryInputIo {
 }
 
 impl IoProvider for FilesystemPrimaryInputIo {
-    fn input_open_primary(&mut self, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_primary(&mut self, _status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
         let f = match try_open_file(&self.path) {
             OpenResult::Ok(f) => f,
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
@@ -121,7 +121,7 @@ impl IoProvider for FilesystemIo {
     fn input_open_name(
         &mut self,
         name: &OsStr,
-        _status: &mut StatusBackend,
+        _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         let path = match self.construct_path(name) {
             Ok(p) => p,

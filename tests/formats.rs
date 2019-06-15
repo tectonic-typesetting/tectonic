@@ -14,8 +14,6 @@
 /// Temporarily set the constant DEBUG to true to dump out the generated files
 /// to disk, which may be helpful in debugging. There is probably a less gross
 /// way to implement that option.
-extern crate tectonic;
-
 use std::collections::{HashMap, HashSet};
 use std::ffi::{OsStr, OsString};
 use std::str::FromStr;
@@ -28,7 +26,7 @@ use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
 
 mod util;
-use util::test_path;
+use crate::util::test_path;
 
 const DEBUG: bool = false; // TODO: this is kind of ugly
 

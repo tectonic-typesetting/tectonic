@@ -2,12 +2,8 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
-extern crate aho_corasick;
-#[macro_use]
-extern crate clap;
-#[macro_use]
-extern crate tectonic;
-extern crate termcolor;
+use clap::crate_version;
+use tectonic;
 
 use clap::{App, Arg, ArgMatches};
 use std::fs::File;
@@ -20,6 +16,8 @@ use tectonic::errors::{ErrorKind, Result};
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::status::termcolor::TermcolorStatusBackend;
 use tectonic::status::{ChatterLevel, StatusBackend};
+
+use tectonic::{ctry, errmsg, tt_error, tt_error_styled, tt_note};
 
 fn inner(
     args: ArgMatches,

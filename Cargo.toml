@@ -19,6 +19,7 @@ readme = "README.md"
 keywords = ["tex", "latex", "typesetting", "font"]
 categories = ["command-line-interface", "parser-implementations", "rendering", "science", "text-processing"]
 license = "MIT"
+edition = "2018"
 
 [badges]
 travis-ci = { repository = "tectonic-typesetting/tectonic" }

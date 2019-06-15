@@ -11,6 +11,7 @@
 #![allow(deprecated)]
 
 use app_dirs;
+use error_chain::error_chain;
 use hyper;
 use std::io::Write;
 use std::result::Result as StdResult;

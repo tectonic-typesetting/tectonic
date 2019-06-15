@@ -12,8 +12,9 @@ use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader, Cursor, Read};
 
 use super::{create_hyper_client, Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
-use errors::{Error, ErrorKind, Result, ResultExt};
-use status::StatusBackend;
+use crate::errors::{Error, ErrorKind, Result, ResultExt};
+use crate::status::StatusBackend;
+use crate::{tt_note, tt_warning};
 
 const MAX_HTTP_ATTEMPTS: usize = 4;
 
@@ -69,9 +70,9 @@ pub trait ITarIoFactory {
     type IndexReader: Read;
     type DataReader: RangeRead;
 
-    fn get_index(&mut self, status: &mut StatusBackend) -> Result<Self::IndexReader>;
+    fn get_index(&mut self, status: &mut dyn StatusBackend) -> Result<Self::IndexReader>;
     fn get_data(&self) -> Result<Self::DataReader>;
-    fn report_fetch(&self, name: &OsStr, status: &mut StatusBackend);
+    fn report_fetch(&self, name: &OsStr, status: &mut dyn StatusBackend);
 }
 
 struct FileInfo {
@@ -94,7 +95,7 @@ impl<F: ITarIoFactory> ITarBundle<F> {
         }
     }
 
-    fn ensure_loaded(&mut self, status: &mut StatusBackend) -> Result<()> {
+    fn ensure_loaded(&mut self, status: &mut dyn StatusBackend) -> Result<()> {
         if self.data.is_some() {
             return Ok(());
         }
@@ -132,7 +133,7 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
     fn input_open_name(
         &mut self,
         name: &OsStr,
-        status: &mut StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         if let Err(e) = self.ensure_loaded(status) {
             return OpenResult::Err(e);
@@ -214,7 +215,7 @@ impl ITarIoFactory for HttpITarIoFactory {
     type IndexReader = GzDecoder<Response>;
     type DataReader = HttpRangeReader;
 
-    fn get_index(&mut self, status: &mut StatusBackend) -> Result<GzDecoder<Response>> {
+    fn get_index(&mut self, status: &mut dyn StatusBackend) -> Result<GzDecoder<Response>> {
         tt_note!(status, "indexing {}", self.url);
 
         // First, we actually do a HEAD request on the URL for the data file.
@@ -275,7 +276,7 @@ impl ITarIoFactory for HttpITarIoFactory {
         Ok(HttpRangeReader::new(&self.url))
     }
 
-    fn report_fetch(&self, name: &OsStr, status: &mut StatusBackend) {
+    fn report_fetch(&self, name: &OsStr, status: &mut dyn StatusBackend) {
         tt_note!(status, "downloading {}", name.to_string_lossy());
     }
 }

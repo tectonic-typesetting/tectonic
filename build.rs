@@ -4,10 +4,8 @@
 //
 // TODO: this surely needs to become much smarter and more flexible.
 
-extern crate cc;
-extern crate pkg_config;
-extern crate regex;
-extern crate sha2;
+use cc;
+use pkg_config;
 
 use std::path::PathBuf;
 

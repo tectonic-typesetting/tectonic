@@ -15,9 +15,10 @@ use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
 use std::path::Path;
 use std::str::FromStr;
 
-use digest::{self, Digest, DigestData};
-use errors::{Error, ErrorKind, Result};
-use status::StatusBackend;
+use crate::ctry;
+use crate::digest::{self, Digest, DigestData};
+use crate::errors::{Error, ErrorKind, Result};
+use crate::status::StatusBackend;
 
 pub mod filesystem;
 pub mod format_cache;
@@ -78,7 +79,7 @@ pub enum InputOrigin {
 
 pub struct InputHandle {
     name: OsString,
-    inner: Box<InputFeatures>,
+    inner: Box<dyn InputFeatures>,
     digest: digest::DigestComputer,
     origin: InputOrigin,
     ever_read: bool,
@@ -113,7 +114,7 @@ impl InputHandle {
 
     /// Consumes the object and returns the underlying readable handle that
     /// it references.
-    pub fn into_inner(self) -> Box<InputFeatures> {
+    pub fn into_inner(self) -> Box<dyn InputFeatures> {
         self.inner
     }
 
@@ -214,7 +215,7 @@ impl InputFeatures for InputHandle {
 
 pub struct OutputHandle {
     name: OsString,
-    inner: Box<Write>,
+    inner: Box<dyn Write>,
     digest: digest::DigestComputer,
 }
 
@@ -233,7 +234,7 @@ impl OutputHandle {
 
     /// Consumes the object and returns the underlying writable handle that
     /// it references.
-    pub fn into_inner(self) -> Box<Write> {
+    pub fn into_inner(self) -> Box<dyn Write> {
         self.inner
     }
 
@@ -307,11 +308,11 @@ impl<T> OpenResult<T> {
 /// following pattern is the least-bad way to achieve the necessary upcasting.
 pub trait AsIoProviderMut {
     /// Represent this value as an IoProvider trait object.
-    fn as_ioprovider_mut(&mut self) -> &mut IoProvider;
+    fn as_ioprovider_mut(&mut self) -> &mut dyn IoProvider;
 }
 
 impl<T: IoProvider> AsIoProviderMut for T {
-    fn as_ioprovider_mut(&mut self) -> &mut IoProvider {
+    fn as_ioprovider_mut(&mut self) -> &mut dyn IoProvider {
         self
     }
 }
@@ -329,7 +330,7 @@ pub trait IoProvider: AsIoProviderMut {
     fn input_open_name(
         &mut self,
         _name: &OsStr,
-        _status: &mut StatusBackend,
+        _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         OpenResult::NotAvailable
     }
@@ -339,7 +340,7 @@ pub trait IoProvider: AsIoProviderMut {
     /// filesystem and the input is a file on the filesystem, this function
     /// isn't necesssarily that important, but those conditions don't always
     /// hold.
-    fn input_open_primary(&mut self, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_primary(&mut self, _status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
         OpenResult::NotAvailable
     }
 
@@ -351,7 +352,7 @@ pub trait IoProvider: AsIoProviderMut {
     fn input_open_format(
         &mut self,
         name: &OsStr,
-        status: &mut StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         self.input_open_name(name, status)
     }
@@ -363,7 +364,7 @@ pub trait IoProvider: AsIoProviderMut {
         &mut self,
         _name: &str,
         _data: &[u8],
-        _status: &mut StatusBackend,
+        _status: &mut dyn StatusBackend,
     ) -> Result<()> {
         Err(ErrorKind::Msg("this I/O layer cannot save format files".to_owned()).into())
     }
@@ -381,24 +382,29 @@ impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
     fn input_open_name(
         &mut self,
         name: &OsStr,
-        status: &mut StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         (**self).input_open_name(name, status)
     }
 
-    fn input_open_primary(&mut self, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
         (**self).input_open_primary(status)
     }
 
     fn input_open_format(
         &mut self,
         name: &OsStr,
-        status: &mut StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         (**self).input_open_format(name, status)
     }
 
-    fn write_format(&mut self, name: &str, data: &[u8], status: &mut StatusBackend) -> Result<()> {
+    fn write_format(
+        &mut self,
+        name: &str,
+        data: &[u8],
+        status: &mut dyn StatusBackend,
+    ) -> Result<()> {
         (**self).write_format(name, data, status)
     }
 }
@@ -422,7 +428,7 @@ pub trait Bundle: IoProvider {
     /// The default implementation gets the digest from a file name
     /// `SHA256SUM`, which is expected to contain the digest in hex-encoded
     /// format.
-    fn get_digest(&mut self, status: &mut StatusBackend) -> Result<DigestData> {
+    fn get_digest(&mut self, status: &mut dyn StatusBackend) -> Result<DigestData> {
         let digest_text = match self.input_open_name(OsStr::new(digest::DIGEST_NAME), status) {
             OpenResult::Ok(h) => {
                 let mut text = String::new();
@@ -448,7 +454,7 @@ pub trait Bundle: IoProvider {
 }
 
 impl<B: Bundle + ?Sized> Bundle for Box<B> {
-    fn get_digest(&mut self, status: &mut StatusBackend) -> Result<DigestData> {
+    fn get_digest(&mut self, status: &mut dyn StatusBackend) -> Result<DigestData> {
         (**self).get_digest(status)
     }
 }
@@ -623,7 +629,7 @@ pub mod testing {
         fn input_open_name(
             &mut self,
             name: &OsStr,
-            _status: &mut StatusBackend,
+            _status: &mut dyn StatusBackend,
         ) -> OpenResult<InputHandle> {
             if name == self.name {
                 OpenResult::Ok(InputHandle::new(

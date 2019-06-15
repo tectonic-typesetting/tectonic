@@ -14,6 +14,7 @@
 
 use flate2::read::GzDecoder;
 use flate2::{Compression, GzBuilder};
+use lazy_static::lazy_static;
 use libc;
 use md5::{Digest, Md5};
 use std::borrow::Cow;
@@ -23,10 +24,11 @@ use std::path::Path;
 use std::sync::Mutex;
 use std::{io, ptr, slice};
 
-use digest::DigestData;
-use errors::{Error, ErrorKind, Result};
-use io::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
-use status::StatusBackend;
+use crate::digest::DigestData;
+use crate::errors::{Error, ErrorKind, Result};
+use crate::io::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
+use crate::status::StatusBackend;
+use crate::{tt_error, tt_warning};
 
 // Public sub-modules and reexports.
 
@@ -123,8 +125,8 @@ lazy_static! {
 
 struct ExecutionState<'a, I: 'a + IoProvider> {
     io: &'a mut I,
-    events: &'a mut IoEventBackend,
-    status: &'a mut StatusBackend,
+    events: &'a mut dyn IoEventBackend,
+    status: &'a mut dyn StatusBackend,
     #[allow(clippy::vec_box)]
     input_handles: Vec<Box<InputHandle>>,
     #[allow(clippy::vec_box)]
@@ -134,8 +136,8 @@ struct ExecutionState<'a, I: 'a + IoProvider> {
 impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
     pub fn new(
         io: &'a mut I,
-        events: &'a mut IoEventBackend,
-        status: &'a mut StatusBackend,
+        events: &'a mut dyn IoEventBackend,
+        status: &'a mut dyn StatusBackend,
     ) -> ExecutionState<'a, I> {
         ExecutionState {
             io,

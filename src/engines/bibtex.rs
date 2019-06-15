@@ -6,9 +6,9 @@ use std::ffi::{CStr, CString};
 
 use super::tex::TexResult;
 use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
-use errors::{ErrorKind, Result};
-use io::IoStack;
-use status::StatusBackend;
+use crate::errors::{ErrorKind, Result};
+use crate::io::IoStack;
+use crate::status::StatusBackend;
 
 #[derive(Default)]
 pub struct BibtexEngine {}
@@ -21,8 +21,8 @@ impl BibtexEngine {
     pub fn process(
         &mut self,
         io: &mut IoStack,
-        events: &mut IoEventBackend,
-        status: &mut StatusBackend,
+        events: &mut dyn IoEventBackend,
+        status: &mut dyn StatusBackend,
         aux: &str,
     ) -> Result<TexResult> {
         let _guard = super::ENGINE_LOCK.lock().unwrap(); // until we're thread-safe ...

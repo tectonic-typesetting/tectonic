@@ -1,10 +1,7 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
-#[macro_use]
-extern crate lazy_static;
-extern crate tectonic;
-extern crate tempfile;
+use lazy_static::lazy_static;
 
 use std::env;
 use std::fs::{self, File};
@@ -16,7 +13,7 @@ use tempfile::TempDir;
 
 #[path = "util/mod.rs"]
 mod util;
-use util::{cargo_dir, ensure_plain_format};
+use crate::util::{cargo_dir, ensure_plain_format};
 
 lazy_static! {
     static ref TEST_ROOT: PathBuf = {

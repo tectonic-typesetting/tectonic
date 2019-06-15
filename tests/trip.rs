@@ -13,8 +13,6 @@
 /// multithreading can be disabled by setting the RUST_TEST_THREADS environment
 /// variable to "1", but that's an annoying solution. So, we use a global mutex
 /// to achieve the same effect. Classy.
-extern crate tectonic;
-
 use std::ffi::OsStr;
 
 use tectonic::engines::NoopIoEventBackend;
@@ -25,7 +23,7 @@ use tectonic::TexEngine;
 
 #[path = "util/mod.rs"]
 mod util;
-use util::{test_path, ExpectedInfo};
+use crate::util::{test_path, ExpectedInfo};
 
 #[test]
 fn trip_test() {
@@ -54,7 +52,7 @@ fn trip_test() {
 
     // First engine pass -- make the format file.
     {
-        let mut io = IoStack::new(vec![&mut mem as &mut IoProvider, &mut tex, &mut tfm]);
+        let mut io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
         TexEngine::new()
             .halt_on_error_mode(false)
             .initex_mode(true)
@@ -70,7 +68,7 @@ fn trip_test() {
 
     // Second pass -- process it
     {
-        let mut io = IoStack::new(vec![&mut mem as &mut IoProvider, &mut tex, &mut tfm]);
+        let mut io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
         TexEngine::new()
             .halt_on_error_mode(false)
             .initex_mode(false)
@@ -119,7 +117,7 @@ fn etrip_test() {
 
     // First engine pass -- make the format file.
     {
-        let mut io = IoStack::new(vec![&mut mem as &mut IoProvider, &mut tex, &mut tfm]);
+        let mut io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
         TexEngine::new()
             .halt_on_error_mode(false)
             .initex_mode(true)
