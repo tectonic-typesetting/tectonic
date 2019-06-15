@@ -1,4 +1,4 @@
-# Copyright 2018 The Tectonic Project
+# Copyright 2018-2019 The Tectonic Project
 # Licensed under the MIT License.
 
 FROM alpine:edge
@@ -18,6 +18,7 @@ RUN apk update && \
         harfbuzz-static \
         icu-dev \
         icu-static \
+        libpng-static \
         openssl-dev \
         zlib-dev
 
