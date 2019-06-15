@@ -353,16 +353,20 @@ int32_t new_disc(void)
     return p;
 }
 
-void copy_native_glyph_info(int32_t src, int32_t dest)
+
+void
+copy_native_glyph_info(int32_t src, int32_t dest)
 {
     int32_t glyph_count;
-    if (mem[src + 5].ptr != NULL) {
-        glyph_count = mem[src + 4].b16.s0;
-        mem[dest + 5].ptr = xmalloc_array(char, glyph_count * NATIVE_GLYPH_INFO_SIZE);
-        memcpy(mem[dest + 5].ptr, mem[src + 5].ptr, glyph_count * NATIVE_GLYPH_INFO_SIZE);
-        mem[dest + 4].b16.s0 = glyph_count;
+
+    if (NATIVE_NODE_glyph_info_ptr(src) != NULL) {
+        glyph_count = NATIVE_NODE_glyph_count(src);
+        NATIVE_NODE_glyph_info_ptr(dest) = xmalloc_array(char, glyph_count * NATIVE_GLYPH_INFO_SIZE);
+        memcpy(NATIVE_NODE_glyph_info_ptr(dest), NATIVE_NODE_glyph_info_ptr(src), glyph_count * NATIVE_GLYPH_INFO_SIZE);
+        NATIVE_NODE_glyph_count(dest) = glyph_count;
     }
 }
+
 
 int32_t new_math(scaled_t w, small_number s)
 {
@@ -1327,9 +1331,9 @@ flush_node_list(int32_t p)
                     break;
                 case NATIVE_WORD_NODE:
                 case NATIVE_WORD_NODE_AT:
-                    if (mem[p + 5].ptr != NULL) {
-                        mem[p + 5].ptr = mfree(mem[p + 5].ptr);
-                        mem[p + 4].b16.s0 = 0;
+                    if (NATIVE_NODE_glyph_info_ptr(p) != NULL) {
+                        NATIVE_NODE_glyph_info_ptr(p) = mfree(NATIVE_NODE_glyph_info_ptr(p));
+                        NATIVE_NODE_glyph_count(p) = 0;
                     }
                     free_node(p, NATIVE_NODE_size(p));
                     break;
@@ -1532,8 +1536,8 @@ copy_node_list(int32_t p)
                         mem[r + words] = mem[p + words];
                     }
 
-                    mem[r + 5].ptr = NULL;
-                    mem[r + 4].b16.s0 = 0;
+                    NATIVE_NODE_glyph_info_ptr(r) = NULL;
+                    NATIVE_NODE_glyph_count(r) = 0;
                     copy_native_glyph_info(p, r);
                     break;
                 case GLYPH_NODE:
@@ -10744,11 +10748,9 @@ start_input(const char *primary_input_name)
     cur_input.name = make_name_string();
     source_filename_stack[in_open] = cur_input.name;
 
-    /* *This* variant is a TeX string made out of `fullnameoffile`. In
-     * kpathsea land, `fullnameoffile` is the resolved filename returned from
-     * kpathsea; in Tectonic, it is the same as `name_of_file`. */
+    /* *This* variant is a TeX string made out of `name_of_input_file`. */
 
-    full_source_filename_stack[in_open] = make_full_name_string();
+    full_source_filename_stack[in_open] = maketexstring(name_of_input_file);
     if (cur_input.name == str_ptr - 1) {
         temp_str = search_string(cur_input.name);
         if (temp_str > 0) {
@@ -10868,9 +10870,9 @@ new_native_word_node(internal_font_number f, int32_t n)
     NODE_type(q) = WHATSIT_NODE;
 
     if (INTPAR(xetex_generate_actual_text) > 0)
-        mem[q].b16.s0 = NATIVE_WORD_NODE_AT;
+        NODE_subtype(q) = NATIVE_WORD_NODE_AT;
     else
-        mem[q].b16.s0 = NATIVE_WORD_NODE;
+        NODE_subtype(q) = NATIVE_WORD_NODE;
 
     NATIVE_NODE_size(q) = l;
     NATIVE_NODE_font(q) = f;
@@ -11034,103 +11036,87 @@ void graphite_warning(void)
     end_diagnostic(false);
 }
 
-internal_font_number load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
-{
 
-    /*done */
-#define first_math_fontdimen ( 10 )
+internal_font_number
+load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
+{
     int32_t k, num_font_dimens;
-    void *font_engine;
+    void *font_engine; /* "really a CFDictionaryRef or XeTeXLayoutEngine" */
     scaled_t actual_size;
     int32_t p;
     scaled_t ascent, descent, font_slant, x_ht, cap_ht;
     internal_font_number f;
     str_number full_name;
+
     font_engine = find_native_font(name_of_file, s);
     if (!font_engine)
         return FONT_BASE;
+
     if (s >= 0)
         actual_size = s;
-    else {
-
-        if ((s != -1000))
-            actual_size = xn_over_d(loaded_font_design_size, -(int32_t) s, 1000);
-        else
-            actual_size = loaded_font_design_size;
-    }
-    {
-        if (pool_ptr + name_length > pool_size)
-            overflow("pool size", pool_size - init_pool_ptr);
-    }
-    {
-        register int32_t for_end;
-        k = 1;
-        for_end = name_length;
-        if (k <= for_end)
-            do {
-                str_pool[pool_ptr] = name_of_file[k];
-                pool_ptr++;
-            }
-            while (k++ < for_end);
-    }
-    full_name = make_string();
-    {
-        register int32_t for_end;
-        f = (FONT_BASE + 1);
-        for_end = font_ptr;
-        if (f <= for_end)
-            do
-                if ((font_area[f] == native_font_type_flag) && str_eq_str(font_name[f], full_name)
-                    && (font_size[f] == actual_size)) {
-                    release_font_engine(font_engine, native_font_type_flag);
-                    {
-                        str_ptr--;
-                        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
-                    }
-                    return f;
-                }
-            while (f++ < for_end) ;
-    }
-    if ((native_font_type_flag == OTGR_FONT_FLAG) && isOpenTypeMathFont(font_engine))
-        num_font_dimens = first_math_fontdimen + 55;
+    else if (s != -1000)
+        actual_size = xn_over_d(loaded_font_design_size, -(int32_t) s, 1000);
     else
-        num_font_dimens = 8;
-    if ((font_ptr == font_max) || (fmem_ptr + num_font_dimens > font_mem_size)) {
-        {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Font ");
-            }
-            sprint_cs(u);
-            print_char('=');
-            if (file_name_quote_char != 0)
-                print_char(file_name_quote_char);
-            print_file_name(nom, aire, cur_ext);
-            if (file_name_quote_char != 0)
-                print_char(file_name_quote_char);
-            if (s >= 0) {
-                print_cstr(" at ");
-                print_scaled(s);
-                print_cstr("pt");
-            } else if (s != -1000) {
-                print_cstr(" scaled ");
-                print_int(-(int32_t) s);
-            }
-            print_cstr(" not loaded: Not enough room left");
-            {
-                help_ptr = 4;
-                help_line[3] = "I'm afraid I won't be able to make use of this font,";
-                help_line[2] = "because my memory for character-size data is too small.";
-                help_line[1] = "If you're really stuck, ask a wizard to enlarge me.";
-                help_line[0] = "Or maybe try `I\\font<same font id>=<name of loaded font>'.";
-            }
-            error();
-            return FONT_BASE;
+        actual_size = loaded_font_design_size;
+
+    if (pool_ptr + name_length > pool_size)
+        overflow("pool size", pool_size - init_pool_ptr);
+
+    for (k = 1; k <= name_length; k++)
+        str_pool[pool_ptr++] = name_of_file[k];
+
+    full_name = make_string();
+
+    for (f = FONT_BASE + 1; f <= font_ptr; f++) {
+        if (font_area[f] == native_font_type_flag && str_eq_str(font_name[f], full_name) && font_size[f] == actual_size) {
+            release_font_engine(font_engine, native_font_type_flag);
+
+            str_ptr--;
+            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+
+            return f;
         }
     }
+
+    if (native_font_type_flag == OTGR_FONT_FLAG && isOpenTypeMathFont(font_engine))
+        num_font_dimens = 65; /* = first_math_fontdimen (=10) + lastMathConstant (= radicalDegreeBottomRaisePercent = 55) */
+    else
+        num_font_dimens = 8;
+
+    if (font_ptr == font_max || fmem_ptr + num_font_dimens > font_mem_size) {
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl_cstr("! ");
+
+        print_cstr("Font ");
+        sprint_cs(u);
+        print_char('=');
+        if (file_name_quote_char != 0)
+            print_char(file_name_quote_char);
+        print_file_name(nom, aire, cur_ext);
+        if (file_name_quote_char != 0)
+            print_char(file_name_quote_char);
+        if (s >= 0) {
+            print_cstr(" at ");
+            print_scaled(s);
+            print_cstr("pt");
+        } else if (s != -1000) {
+            print_cstr(" scaled ");
+            print_int(-(int32_t) s);
+        }
+        print_cstr(" not loaded: Not enough room left");
+
+        help_ptr = 4;
+        help_line[3] = "I'm afraid I won't be able to make use of this font,";
+        help_line[2] = "because my memory for character-size data is too small.";
+        help_line[1] = "If you're really stuck, ask a wizard to enlarge me.";
+        help_line[0] = "Or maybe try `I\\font<same font id>=<name of loaded font>'.";
+
+        error();
+        return FONT_BASE;
+    }
+
     font_ptr++;
     font_area[font_ptr] = native_font_type_flag;
     font_name[font_ptr] = full_name;
@@ -11141,14 +11127,12 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     font_glue[font_ptr] = TEX_NULL;
     font_dsize[font_ptr] = loaded_font_design_size;
     font_size[font_ptr] = actual_size;
-    if (native_font_type_flag == AAT_FONT_FLAG) {
-        aat_get_font_metrics(font_engine, &ascent, &descent, &x_ht, &cap_ht,
-                             &font_slant);
-    } else {
 
-        ot_get_font_metrics(font_engine, &ascent, &descent, &x_ht, &cap_ht,
-                            &font_slant);
-    }
+    if (native_font_type_flag == AAT_FONT_FLAG)
+        aat_get_font_metrics(font_engine, &ascent, &descent, &x_ht, &cap_ht, &font_slant);
+    else
+        ot_get_font_metrics(font_engine, &ascent, &descent, &x_ht, &cap_ht, &font_slant);
+
     height_base[font_ptr] = ascent;
     depth_base[font_ptr] = -(int32_t) descent;
     font_params[font_ptr] = num_font_dimens;
@@ -11161,44 +11145,33 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     font_layout_engine[font_ptr] = font_engine;
     font_mapping[font_ptr] = 0;
     font_letter_space[font_ptr] = loaded_font_letter_space;
+
+    /* "measure the width of the space character and set up font parameters" */
     p = new_native_character(font_ptr, ' ' );
-    s = mem[p + 1].b32.s1 + loaded_font_letter_space;
+    s = BOX_width(p) + loaded_font_letter_space;
     free_node(p, NATIVE_NODE_size(p));
-    font_info[fmem_ptr].b32.s1 = font_slant;
-    fmem_ptr++;
-    font_info[fmem_ptr].b32.s1 = s;
-    fmem_ptr++;
-    font_info[fmem_ptr].b32.s1 = s / 2;
-    fmem_ptr++;
-    font_info[fmem_ptr].b32.s1 = s / 3;
-    fmem_ptr++;
-    font_info[fmem_ptr].b32.s1 = x_ht;
-    fmem_ptr++;
-    font_info[fmem_ptr].b32.s1 = font_size[font_ptr];
-    fmem_ptr++;
-    font_info[fmem_ptr].b32.s1 = s / 3;
-    fmem_ptr++;
-    font_info[fmem_ptr].b32.s1 = cap_ht;
-    fmem_ptr++;
-    if (num_font_dimens == first_math_fontdimen + 55) {
-        font_info[fmem_ptr].b32.s1 = num_font_dimens;
-        fmem_ptr++;
-        {
-            register int32_t for_end;
-            k = 0;
-            for_end = LASTMATHCONSTANT;
-            if (k <= for_end)
-                do {
-                    font_info[fmem_ptr].b32.s1 = get_ot_math_constant(font_ptr, k);
-                    fmem_ptr++;
-                }
-                while (k++ < for_end);
-        }
+
+    font_info[fmem_ptr++].b32.s1 = font_slant;
+    font_info[fmem_ptr++].b32.s1 = s;
+    font_info[fmem_ptr++].b32.s1 = s / 2; /* space_stretch */
+    font_info[fmem_ptr++].b32.s1 = s / 3; /* space_shrink */
+    font_info[fmem_ptr++].b32.s1 = x_ht;
+    font_info[fmem_ptr++].b32.s1 = font_size[font_ptr]; /* quad */
+    font_info[fmem_ptr++].b32.s1 = s / 3; /* extra_space */
+    font_info[fmem_ptr++].b32.s1 = cap_ht;
+
+    if (num_font_dimens == 65) {
+        font_info[fmem_ptr++].b32.s1 = num_font_dimens;
+
+        for (k = 0; k <= 55; k++) /* 55 = lastMathConstant */
+            font_info[fmem_ptr++].b32.s1 = get_ot_math_constant(font_ptr, k);
     }
+
     font_mapping[font_ptr] = loaded_font_mapping;
     font_flags[font_ptr] = loaded_font_flags;
     return font_ptr;
 }
+
 
 void do_locale_linebreaks(int32_t s, int32_t len)
 {
@@ -11812,10 +11785,10 @@ scaled_t char_pw(int32_t p, small_number side)
         last_rightmost_char = TEX_NULL;
     if (p == TEX_NULL)
         return 0;
-    if ((((p) != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
-          && ((mem[p].b16.s0 == NATIVE_WORD_NODE) || (mem[p].b16.s0 == NATIVE_WORD_NODE_AT))))) {
-        if (mem[p + 5].ptr != NULL) {
-            f = mem[p + 4].b16.s2;
+    if (((p != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
+          && (NODE_subtype(p) == NATIVE_WORD_NODE || NODE_subtype(p) == NATIVE_WORD_NODE_AT)))) {
+        if (NATIVE_NODE_glyph_info_ptr(p) != NULL) {
+            f = NATIVE_NODE_font(p);
             return round_xn_over_d(font_info[QUAD_CODE + param_base[f]].b32.s1, get_native_word_cp(p, side), 1000);
         } else {
             return 0;

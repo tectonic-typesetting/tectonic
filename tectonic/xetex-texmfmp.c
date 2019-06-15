@@ -75,13 +75,6 @@ maketexstring(const char *s)
 }
 
 
-str_number
-make_full_name_string(void)
-{
-  return maketexstring(fullnameoffile);
-}
-
-
 char *
 gettexstring (str_number s)
 {

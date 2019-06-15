@@ -64,6 +64,7 @@ protected:
     uint32_t m_index; // face index
 
     FT_Face m_ftFace;
+    FT_Byte *m_backingData, *m_backingData2;
     hb_font_t* m_hbFont;
 
 public:

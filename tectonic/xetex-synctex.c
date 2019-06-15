@@ -133,10 +133,10 @@ get_current_name (void)
      * that since it ends up adding dependencies on a bunch of functions I
      * don't want to have to deal with. */
 
-    if (!fullnameoffile)
+    if (!name_of_input_file)
         return xstrdup("");
 
-    return xstrdup(fullnameoffile);
+    return xstrdup(name_of_input_file);
 }
 
 

@@ -345,7 +345,6 @@ typedef struct {
 void getmd5sum(int32_t s, bool file);
 void get_date_and_time (int32_t *, int32_t *, int32_t *, int32_t *);
 
-str_number make_full_name_string(void);
 char *gettexstring(str_number);
 bool is_new_source(str_number, int);
 pool_pointer make_src_special(str_number, int);
@@ -379,7 +378,6 @@ extern int32_t pool_size;
 extern int32_t pool_free;
 extern int32_t font_mem_size;
 extern int32_t font_max;
-extern int32_t font_k;
 extern int32_t hyph_size;
 extern int32_t trie_size;
 extern int32_t buf_size;
