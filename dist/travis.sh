@@ -192,7 +192,7 @@ if $is_docker_build ; then
     docker build -t ttci-$IMAGE dist/docker/$IMAGE/
     travis_fold_end docker_build
     travis_fold_start docker_test "docker test" verbose
-    docker run -v $(pwd):/tectonic ttci-$IMAGE
+    docker run -v $(pwd):/alpine/home/rust/src ttci-$IMAGE
     travis_fold_end docker_test
 else
     travis_fold_start cargo_build "cargo build" verbose

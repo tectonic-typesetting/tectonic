@@ -28,11 +28,10 @@ matrix:
     - os: osx
       osx_image: xcode8.3
       rust: stable
-    # Static build for Linux; Rust nightly required
+    # Static build for Linux/x86_64
     - os: linux
       sudo: required
       dist: xenial
-      rust: nightly
       env: IMAGE=x86_64-alpine-linux-musl
   allow_failures:
     - rust: nightly
