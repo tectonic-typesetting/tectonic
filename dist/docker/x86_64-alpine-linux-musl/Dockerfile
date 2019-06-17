@@ -3,6 +3,8 @@
 
 FROM ubuntu:18.04
 
+ARG uid=1000
+
 ADD setup_priv.sh /
 RUN sh /setup_priv.sh
 

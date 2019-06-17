@@ -189,7 +189,7 @@ fi
 
 if $is_docker_build ; then
     travis_fold_start docker_build "docker build" verbose
-    docker build -t ttci-$IMAGE dist/docker/$IMAGE/
+    docker build --build-arg=uid=$(id -u) -t ttci-$IMAGE dist/docker/$IMAGE/
     travis_fold_end docker_build
     travis_fold_start docker_test "docker test" verbose
     docker run -v $(pwd):/alpine/home/rust/src ttci-$IMAGE

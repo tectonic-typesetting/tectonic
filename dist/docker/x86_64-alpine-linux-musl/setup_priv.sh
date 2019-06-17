@@ -44,7 +44,8 @@ rm -f alpine-chroot-install
 
 /alpine/enter-chroot sh -c "apk update && apk add $alpine_pkgs"
 
-useradd rust --user-group --create-home --home-dir /alpine/home/rust --shell /bin/bash --groups sudo
-/alpine/enter-chroot sh -c "adduser -h /home/rust -H -D rust"
+useradd rust --user-group --create-home --home-dir /alpine/home/rust \
+        --shell /bin/bash --groups sudo --uid $uid
+/alpine/enter-chroot sh -c "adduser -h /home/rust -H -D rust -u $uid"
 
 rm -f "$0"  # self-destruct
