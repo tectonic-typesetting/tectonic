@@ -1,0 +1,5 @@
+[build]
+target = "x86_64-unknown-linux-musl"
+
+[target.x86_64-unknown-linux-musl]
+linker = "/alpine/home/rust/linkwrapper.sh"

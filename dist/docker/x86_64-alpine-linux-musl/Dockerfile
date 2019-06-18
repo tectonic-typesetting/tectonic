@@ -1,43 +1,31 @@
 # Copyright 2018-2019 The Tectonic Project
 # Licensed under the MIT License.
 
-FROM alpine:edge
+FROM ubuntu:18.04
 
-RUN apk update && \
-    apk add \
-        g++ \
-        git \
-        rust \
-        cargo \
-        fontconfig-dev \
-        freetype-static \
-        glib-static \
-        graphite2-dev \
-        graphite2-static \
-        harfbuzz-dev \
-        harfbuzz-static \
-        icu-dev \
-        icu-static \
-        libpng-static \
-        openssl-dev \
-        zlib-dev
+ARG uid=1000
 
-ADD pkg-config-rs.sh /
-RUN /pkg-config-rs.sh
+ADD setup_priv.sh /
+RUN sh /setup_priv.sh
 
-ENV PKG_CONFIG_ALL_STATIC=1
-ENV OPENSSL_STATIC=1
-ENV OPENSSL_DIR=/usr
+ADD sudoers /etc/sudoers.d/nopasswd
+USER rust
+ENV PATH=/alpine/home/rust/.cargo/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-# cc-rs does not support static linking stdc++,
-# so we omit linking information on build.rs by setting CXXSTDLIB=''
-# and specify static linking in RUSTFLAGS
-ENV CXXSTDLIB=""
-ENV RUSTFLAGS="-L /usr/lib -l static=stdc++ -C target-feature=+crt-static"
+ADD setup_unpriv.sh /
+ADD toolwrapper.sh /alpine/home/rust/
+ADD linkwrapper.sh /alpine/home/rust/
+RUN sh /setup_unpriv.sh
 
-# Use a patched pkg-config-rs to allow static linking with system libraries.
-# The --no-default-features flag removes serde-derive as a dep, which doesn't
-# work when linking statically (rust-lang#40147).
-CMD cd /tectonic && \
-    echo -e "[patch.crates-io]\npkg-config = { path = \"/pkg-config-rs\" }" >> Cargo.toml && \
-    cargo test --release --no-default-features
+# With the following customizations, we can just "docker run -v
+# $tectonic:/alpine/home/rust/src $image cargo ..." and The Right Thing should
+# happen:
+
+ADD cargo-config.toml /alpine/home/rust/.cargo/config
+ENV RUSTFLAGS="-L /alpine/usr/lib -l static=expat -l static=uuid -l static=stdc++ -C target-feature=+crt-static"
+ENV TARGET_CC="x86_64-unknown-linux-musl-cc"
+ENV TARGET_CXX="x86_64-unknown-linux-musl-g++"
+ENV PKG_CONFIG_ALLOW_CROSS=1
+
+WORKDIR /alpine/home/rust/src
+CMD ["cargo", "test", "--release", "--all"]
