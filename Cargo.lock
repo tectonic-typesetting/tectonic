@@ -487,7 +487,7 @@ dependencies = [
 [[package]]
 name = "harfbuzz-sys"
 version = "0.3.2"
-source = "git+https://github.com/ratmice/rust-harfbuzz.git#d18b1a61d8d5cf637fc8da9702ad6d232361d343"
+source = "git+https://github.com/ratmice/rust-harfbuzz.git#4a94c641b54f99e4471bef83bacc22140bff042a"
 dependencies = [
  "cmake 0.1.40 (registry+https://github.com/rust-lang/crates.io-index)",
  "core-graphics 0.17.3 (registry+https://github.com/rust-lang/crates.io-index)",
