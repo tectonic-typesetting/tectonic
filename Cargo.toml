@@ -57,6 +57,8 @@ tectonic_xdv = { path = "xdv", version = "0.1.9-dev" }
 termcolor = "^1.0"
 toml = "^0.5"
 zip = "^0.5"
+harfbuzz-sys = { git = "https://github.com/ratmice/rust-harfbuzz.git" }
+graphite2-sys = { git = "https://github.com/ratmice/graphite2-sys-rust.git" }
 
 [features]
 default = ["serialization"]
@@ -66,7 +68,6 @@ default = ["serialization"]
 serialization = ["serde"]
 
 # freetype-sys = "^0.4"
-# harfbuzz-sys = "^0.1"
 # libz-sys = "^1.0"
 
 [dev-dependencies]

@@ -7,15 +7,15 @@
 use cc;
 use pkg_config;
 
+use std::env;
 use std::path::PathBuf;
 
 // No fontconfig on MacOS:
 #[cfg(target_os = "macos")]
-const LIBS: &'static str = "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
+const LIBS: &'static str = "icu-uc freetype2 libpng zlib";
 
 #[cfg(not(target_os = "macos"))]
-const LIBS: &'static str =
-    "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
+const LIBS: &'static str = "fontconfig icu-uc freetype2 libpng zlib";
 
 fn main() {
     // We (have to) rerun the search again below to emit the metadata at the right time.
@@ -168,6 +168,26 @@ fn main() {
         .define("ZLIB_CONST", "1")
         .include(".");
 
+    // Get the include paths from harfbuzz-sys or pkg-config.
+    if let Some(path) = &env::var_os("DEP_HARFBUZZ_INCLUDE") {
+        // This comes from a static build in harfbuzz-sys.
+        ccfg.include(path);
+    } else if let Ok(lib) = pkg_config::probe_library("harfbuzz") {
+        // These come from pkg-config.
+        for path in lib.include_paths {
+            ccfg.include(path);
+        }
+    }
+
+    // Get the include paths from `graphite2-sys` (static build), `pkg-config`, or `vcpkg`.
+    if let Some(path) = &env::var_os("DEP_GRAPHITE2_INCLUDE") {
+        ccfg.include(path);
+    } else if let Ok(lib) = pkg_config::probe_library("graphite2") {
+        for path in lib.include_paths {
+            ccfg.include(path);
+        }
+    }
+
     let cppflags = [
         "-std=c++14",
         "-Wall",
@@ -212,6 +232,26 @@ fn main() {
         .file("tectonic/xetex-XeTeXOTMath.cpp")
         .include(".");
 
+    // Get the include paths from harfbuzz-sys or pkg-config.
+    if let Some(path) = &env::var_os("DEP_HARFBUZZ_INCLUDE") {
+        // This comes from a static build in harfbuzz-sys.
+        cppcfg.include(path);
+    } else if let Ok(lib) = pkg_config::probe_library("harfbuzz") {
+        // These come from pkg-config.
+        for path in lib.include_paths {
+            cppcfg.include(path);
+        }
+    }
+
+    // Get the include paths from `graphite2-sys` (static build), `pkg-config`, or `vcpkg`.
+    if let Some(path) = &env::var_os("DEP_GRAPHITE2_INCLUDE") {
+        cppcfg.include(path);
+    } else if let Ok(lib) = pkg_config::probe_library("graphite2") {
+        for path in lib.include_paths {
+            cppcfg.include(path);
+        }
+    }
+
     for p in deps.include_paths {
         ccfg.include(&p);
         cppcfg.include(&p);
@@ -236,6 +276,10 @@ fn main() {
 
     if cfg!(not(target_os = "macos")) {
         // At the moment we use Fontconfig on both Linux and Windows.
+        println!("cargo:rustc-link-lib=static=harfbuzz");
+        println!("cargo:rustc-link-lib=static=harfbuzz-icu");
+        println!("cargo:rustc-link-lib=static=graphite2");
+
         cppcfg.file("tectonic/xetex-XeTeXFontMgr_FC.cpp");
     }
 
@@ -246,6 +290,18 @@ fn main() {
 
     // OK, back to generic build rules.
 
+    ccfg.flag(
+        &env::var_os("DEP_HARFBUZZ_LINK_FLAGS")
+            .unwrap()
+            .into_string()
+            .unwrap(),
+    );
+    ccfg.flag(
+        &env::var_os("DEP_HARFBUZZ_LIBDIR_FLAGS")
+            .unwrap()
+            .into_string()
+            .unwrap(),
+    );
     ccfg.compile("libtectonic_c.a");
     cppcfg.compile("libtectonic_cpp.a");
 
