@@ -3,7 +3,7 @@
 // Licensed under the MIT License.
 
 use flate2::read::GzDecoder;
-use reqwest::{header, Client, RedirectPolicy, Response, StatusCode};
+use reqwest::{header::HeaderMap, Client, RedirectPolicy, Response, StatusCode};
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader, Cursor, Read};
@@ -46,16 +46,11 @@ impl RangeRead for HttpRangeReader {
     fn read_range(&mut self, offset: u64, length: usize) -> Result<Response> {
         let end_inclusive = offset + length as u64 - 1;
 
-        // We're creating a string for an HTTP range header value here. We'd prefer to do this in a
-        // more type-safe fashion. For example, we could use the `headers` crate; however, it
-        // relies on `proc-macro2`, which cannot be statically linked on the musl platform.
-        let range_value = format!("bytes={}-{}", offset, end_inclusive);
+        let mut headers = HeaderMap::new();
+        use headers::HeaderMapExt;
+        headers.typed_insert(headers::Range::bytes(offset..=end_inclusive).unwrap());
 
-        let res = self
-            .client
-            .get(&self.url)
-            .header(header::RANGE, range_value)
-            .send()?;
+        let res = self.client.get(&self.url).headers(headers).send()?;
 
         if res.status() != StatusCode::PARTIAL_CONTENT {
             return Err(Error::from(ErrorKind::UnexpectedHttpResponse(
