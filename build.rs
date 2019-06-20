@@ -169,23 +169,28 @@ fn main() {
         .include(".");
 
     // Get the include paths from harfbuzz-sys or pkg-config.
-    if let Some(path) = &env::var_os("DEP_HARFBUZZ_INCLUDE") {
-        // This comes from a static build in harfbuzz-sys.
-        ccfg.include(path);
-    } else if let Ok(lib) = pkg_config::probe_library("harfbuzz") {
-        // These come from pkg-config.
-        for path in lib.include_paths {
-            ccfg.include(path);
+    if let Some(Ok(incdirs)) =
+        &env::var_os("DEP_HARFBUZZ_INCLUDE_DIRS").map(std::ffi::OsString::into_string)
+    {
+        // This comes from a pkg-config build in harfbuzz-sys.
+        // where it doesn't have the liberty of asking for only one include dir.
+        // I guess we could serde jason an env var or something to get
+        // rid of the : splitting
+        // The OsString -> String -> OsString route here is a bit ugly too.
+        let dirs = incdirs.split(":");
+        for dir in dirs {
+            ccfg.include(dir);
+            cppcfg.include(dir);
         }
+    } else if let Some(incdir) = &env::var_os("DEP_HARFBUZZ_INCLUDE") {
+        // This comes from a static build in harfbuzz-sys.
+        ccfg.include(incdir);
+        cppcfg.include(incdir);
     }
 
-    // Get the include paths from `graphite2-sys` (static build), `pkg-config`, or `vcpkg`.
-    if let Some(path) = &env::var_os("DEP_GRAPHITE2_INCLUDE") {
-        ccfg.include(path);
-    } else if let Ok(lib) = pkg_config::probe_library("graphite2") {
-        for path in lib.include_paths {
-            ccfg.include(path);
-        }
+    if let Some(incdir) = &env::var_os("DEP_GRAPHITE2_INCLUDE") {
+        ccfg.include(incdir);
+        cppcfg.include(incdir);
     }
 
     let cppflags = [
@@ -232,26 +237,6 @@ fn main() {
         .file("tectonic/xetex-XeTeXOTMath.cpp")
         .include(".");
 
-    // Get the include paths from harfbuzz-sys or pkg-config.
-    if let Some(path) = &env::var_os("DEP_HARFBUZZ_INCLUDE") {
-        // This comes from a static build in harfbuzz-sys.
-        cppcfg.include(path);
-    } else if let Ok(lib) = pkg_config::probe_library("harfbuzz") {
-        // These come from pkg-config.
-        for path in lib.include_paths {
-            cppcfg.include(path);
-        }
-    }
-
-    // Get the include paths from `graphite2-sys` (static build), `pkg-config`, or `vcpkg`.
-    if let Some(path) = &env::var_os("DEP_GRAPHITE2_INCLUDE") {
-        cppcfg.include(path);
-    } else if let Ok(lib) = pkg_config::probe_library("graphite2") {
-        for path in lib.include_paths {
-            cppcfg.include(path);
-        }
-    }
-
     for p in deps.include_paths {
         ccfg.include(&p);
         cppcfg.include(&p);
@@ -276,10 +261,6 @@ fn main() {
 
     if cfg!(not(target_os = "macos")) {
         // At the moment we use Fontconfig on both Linux and Windows.
-        println!("cargo:rustc-link-lib=static=harfbuzz");
-        println!("cargo:rustc-link-lib=static=harfbuzz-icu");
-        println!("cargo:rustc-link-lib=static=graphite2");
-
         cppcfg.file("tectonic/xetex-XeTeXFontMgr_FC.cpp");
     }
 
@@ -302,8 +283,25 @@ fn main() {
             .into_string()
             .unwrap(),
     );
+    cppcfg.flag(
+        &env::var_os("DEP_HARFBUZZ_LINK_FLAGS")
+            .unwrap()
+            .into_string()
+            .unwrap(),
+    );
+    cppcfg.flag(
+        &env::var_os("DEP_HARFBUZZ_LIBDIR_FLAGS")
+            .unwrap()
+            .into_string()
+            .unwrap(),
+    );
+
     ccfg.compile("libtectonic_c.a");
     cppcfg.compile("libtectonic_cpp.a");
+
+    println!("cargo:rustc-link-lib=dylib=harfbuzz");
+    println!("cargo:rustc-link-lib=dylib=harfbuzz-icu");
+    println!("cargo:rustc-link-lib=dylib=graphite2");
 
     // Now that we've emitted the info for our own libraries, we can emit the
     // info for their dependents.
