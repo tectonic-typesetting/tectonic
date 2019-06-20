@@ -265,31 +265,6 @@ fn main() {
 
     // OK, back to generic build rules.
 
-    ccfg.flag(
-        &env::var_os("DEP_HARFBUZZ_LINK_FLAGS")
-            .unwrap()
-            .into_string()
-            .unwrap(),
-    );
-    ccfg.flag(
-        &env::var_os("DEP_HARFBUZZ_LIBDIR_FLAGS")
-            .unwrap()
-            .into_string()
-            .unwrap(),
-    );
-    cppcfg.flag(
-        &env::var_os("DEP_HARFBUZZ_LINK_FLAGS")
-            .unwrap()
-            .into_string()
-            .unwrap(),
-    );
-    cppcfg.flag(
-        &env::var_os("DEP_HARFBUZZ_LIBDIR_FLAGS")
-            .unwrap()
-            .into_string()
-            .unwrap(),
-    );
-
     ccfg.compile("libtectonic_c.a");
     cppcfg.compile("libtectonic_cpp.a");
 
