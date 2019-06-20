@@ -169,17 +169,11 @@ fn main() {
         .include(".");
 
     // Get the include paths from harfbuzz-sys or pkg-config.
-    if let Some(Ok(incdirs)) =
-        &env::var_os("DEP_HARFBUZZ_INCLUDE_DIRS").map(std::ffi::OsString::into_string)
-    {
-        // This comes from a pkg-config build in harfbuzz-sys.
-        // where it doesn't have the liberty of asking for only one include dir.
-        // I guess we could serde jason an env var or something to get
-        // rid of the : splitting
-        // The OsString -> String -> OsString route here is a bit ugly too.
-        let dirs = incdirs.split(":");
+    if let Ok(ser_incdirs) = &env::var("DEP_HARFBUZZ_INCLUDE_DIRS") {
+        let dirs: Vec<std::path::PathBuf> =
+            serde_json::from_str(&base64::decode(ser_incdirs).unwrap()).unwrap();
         for dir in dirs {
-            ccfg.include(dir);
+            ccfg.include(dir.clone());
             cppcfg.include(dir);
         }
     } else if let Some(incdir) = &env::var_os("DEP_HARFBUZZ_INCLUDE") {

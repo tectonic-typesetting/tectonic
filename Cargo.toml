@@ -37,6 +37,8 @@ cc = "^1.0"
 pkg-config = "^0.3"  # note: sync dist/docker/*/pkg-config-rs.sh with the version in Cargo.lock
 regex = "^1.1"
 sha2 = "^0.8"
+serde_json = "^1.0"
+base64 = "^0.1"
 
 [dependencies]
 aho-corasick = "^0.7"
