@@ -39,9 +39,9 @@ authorization from the copyright holders.
 
 #include <graphite2/Font.h>
 #include <graphite2/Segment.h>
-#include <hb-graphite2.h>
-#include <hb-icu.h>
-#include <hb-ot.h>
+#include <harfbuzz/hb-graphite2.h>
+#include <harfbuzz/hb-icu.h>
+#include <harfbuzz/hb-ot.h>
 
 #include "xetex-web.h"
 

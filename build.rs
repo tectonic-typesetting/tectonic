@@ -6,24 +6,57 @@
 
 use cc;
 use pkg_config;
+use vcpkg;
 
+use std::env;
 use std::path::PathBuf;
 
 // No fontconfig on MacOS:
 #[cfg(target_os = "macos")]
 const LIBS: &'static str = "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
+#[cfg(target_os = "macos")]
+const VCPKG_LIBS: &[&'static str] = &["harfbuzz", "freetype", "graphite2"];
+
 #[cfg(not(target_os = "macos"))]
 const LIBS: &'static str =
     "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
-fn main() {
-    // We (have to) rerun the search again below to emit the metadata at the right time.
+#[cfg(not(target_os = "macos"))]
+const VCPKG_LIBS: &[&'static str] = &["fontconfig", "harfbuzz", "freetype", "graphite2"];
+// Need a way to check that the vcpkg harfbuzz port has graphite2 and icu options enabled.
 
-    let deps = pkg_config::Config::new()
-        .cargo_metadata(false)
-        .probe(LIBS)
-        .unwrap();
+fn load_vcpkg_deps(include_paths: &mut Vec<PathBuf>) {
+    for dep in VCPKG_LIBS {
+        let library = vcpkg::find_package(dep).expect("failed to load package from vcpkg");
+        include_paths.extend(library.include_paths.iter().cloned());
+    }
+}
+
+fn main() {
+    let target = env::var("TARGET").unwrap();
+    let rustflags = env::var("RUSTFLAGS").unwrap_or(String::new());
+
+    let use_vcpkg = env::var("TECTONIC_VCPKG").is_ok();
+    let mut deps = None;
+    let mut vcpkg_includes = vec![];
+    if use_vcpkg {
+        load_vcpkg_deps(&mut vcpkg_includes);
+        eprintln!("{:?}", vcpkg_includes);
+
+        if target.contains("-linux-") {
+            // add icudata to the end of the list of libs as vcpkg-rs does not
+            // order individual libraries as a single pass linker requires
+            println!("cargo:rustc-link-lib=icudata");
+        }
+    } else {
+        // We (have to) rerun the search again below to emit the metadata at the right time.
+        let deps_library = pkg_config::Config::new()
+            .cargo_metadata(false)
+            .probe(LIBS)
+            .unwrap();
+        deps = Some(deps_library);
+    }
 
     // Actually I'm not 100% sure that I can't compile the C and C++ code
     // into one library, but who cares?
@@ -212,9 +245,16 @@ fn main() {
         .file("tectonic/xetex-XeTeXOTMath.cpp")
         .include(".");
 
-    for p in deps.include_paths {
-        ccfg.include(&p);
-        cppcfg.include(&p);
+    if let Some(deps) = &deps {
+        for p in &deps.include_paths {
+            ccfg.include(p);
+            cppcfg.include(p);
+        }
+    } else {
+        for p in &vcpkg_includes {
+            ccfg.include(p);
+            cppcfg.include(p);
+        }
     }
 
     // Platform-specific adjustments:
@@ -244,6 +284,15 @@ fn main() {
         cppcfg.define("WORDS_BIGENDIAN", "1");
     }
 
+    if target.contains("-msvc") {
+        ccfg.flag("/EHsc");
+        cppcfg.flag("/EHsc");
+        if rustflags.contains("+crt-static") {
+            ccfg.define("GRAPHITE2_STATIC", None);
+            cppcfg.define("GRAPHITE2_STATIC", None);
+        }
+    }
+
     // OK, back to generic build rules.
 
     ccfg.compile("libtectonic_c.a");
@@ -252,10 +301,12 @@ fn main() {
     // Now that we've emitted the info for our own libraries, we can emit the
     // info for their dependents.
 
-    pkg_config::Config::new()
-        .cargo_metadata(true)
-        .probe(LIBS)
-        .unwrap();
+    if let Some(_deps) = &deps {
+        pkg_config::Config::new()
+            .cargo_metadata(true)
+            .probe(LIBS)
+            .unwrap();
+    }
 
     // Tell cargo to rerun build.rs only if files in the tectonic/ directory have changed.
     for file in PathBuf::from("tectonic").read_dir().unwrap() {
