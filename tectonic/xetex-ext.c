@@ -795,7 +795,7 @@ find_native_font(char* uname, int32_t scaled_size)
             if (varString != NULL)
                 name_length += strlen(varString) + 1;
             free(name_of_file);
-            name_of_file = xmalloc(name_length + 3); /* +1 would be correct here (trailing \0). +3 is kept for Pascal-like access patterns. */
+            name_of_file = xmalloc(name_length + 1);
             strcpy(name_of_file, fullName);
 
             if (scaled_size < 0) {

@@ -647,7 +647,7 @@ sam_wrong_file_name_print(void)
 {
     ttstub_puts (standard_output, "I couldn't open file name `");
 
-    name_ptr = 1;
+    name_ptr = 0;
     while (name_ptr <= name_length)
         ttstub_output_putc (standard_output, name_of_file[name_ptr++]);
 
@@ -1205,31 +1205,29 @@ static void start_name(str_number file_name)
     pool_pointer p_ptr;
     free(name_of_file);
     name_of_file = xmalloc_array(ASCII_code, (str_start[file_name + 1] - str_start[file_name]) + 1);
-    name_ptr = 1;
+    name_ptr = 0;
     p_ptr = str_start[file_name];
     while ((p_ptr < str_start[file_name + 1])) {
-
         name_of_file[name_ptr] = str_pool[p_ptr];
-        name_ptr = name_ptr + 1;
-        p_ptr = p_ptr + 1;
+        name_ptr++;
+        p_ptr++;
     }
     name_length = (str_start[file_name + 1] - str_start[file_name]);
-    name_of_file[name_length + 1] = 0;
+    name_of_file[name_length] = 0;
 }
 
 static void add_extension(str_number ext)
 {
     pool_pointer p_ptr;
-    name_ptr = name_length + 1;
+    name_ptr = name_length;
     p_ptr = str_start[ext];
     while ((p_ptr < str_start[ext + 1])) {
-
         name_of_file[name_ptr] = str_pool[p_ptr];
-        name_ptr = name_ptr + 1;
-        p_ptr = p_ptr + 1;
+        name_ptr++;
+        p_ptr++;
     }
-    name_length = name_length + (str_start[ext + 1] - str_start[ext]);
-    name_of_file[name_length + 1] = 0;
+    name_length += str_start[ext + 1] - str_start[ext];
+    name_of_file[name_length] = 0;
 }
 
 static str_number make_string(void)
@@ -5091,37 +5089,37 @@ static int
 get_the_top_level_aux_file_name(const char *aux_file_name)
 {
     name_of_file = xmalloc_array(ASCII_code, strlen(aux_file_name) + 1);
-    strcpy((char *) name_of_file + 1, aux_file_name);
-    aux_name_length = strlen((char *) name_of_file + 1);
+    strcpy((char *) name_of_file, aux_file_name);
+    aux_name_length = strlen((char *) name_of_file);
     aux_name_length -= 4; /* strip off the (assumed) ".aux" for subsequent futzing */
     name_length = aux_name_length;
 
     /* this code used to auto-add the .aux extension if needed; we don't */
 
     aux_ptr = 0;
-    if ((aux_file[aux_ptr] = peekable_open ((char *) name_of_file + 1, TTIF_TEX)) == NULL) {
+    if ((aux_file[aux_ptr] = peekable_open ((char *) name_of_file, TTIF_TEX)) == NULL) {
         sam_wrong_file_name_print();
         return 1;
     }
 
     add_extension(s_log_extension);
-    if ((log_file = ttstub_output_open((char *) name_of_file + 1, 0)) == NULL) {
+    if ((log_file = ttstub_output_open((char *) name_of_file, 0)) == NULL) {
         sam_wrong_file_name_print();
         return 1;
     }
 
     name_length = aux_name_length;
     add_extension(s_bbl_extension);
-    if ((bbl_file = ttstub_output_open((char *) name_of_file + 1, 0)) == NULL) {
+    if ((bbl_file = ttstub_output_open((char *) name_of_file, 0)) == NULL) {
         sam_wrong_file_name_print();
         return 1;
     }
 
     name_length = aux_name_length;
     add_extension(s_aux_extension);
-    name_ptr = 1;
-    while (name_ptr <= name_length) {
-        buffer[name_ptr] = name_of_file[name_ptr];
+    name_ptr = 0;
+    while (name_ptr < name_length) {
+        buffer[name_ptr + 1] = name_of_file[name_ptr]; // preserve pascal-style string semantics
         name_ptr = name_ptr + 1;
     }
 
@@ -5192,7 +5190,7 @@ static void aux_bib_data_command(void)
                 return;
             }
             start_name(bib_list[bib_ptr]);
-            if ((bib_file[bib_ptr] = peekable_open ((char *) name_of_file + 1, TTIF_BIB)) == NULL) {
+            if ((bib_file[bib_ptr] = peekable_open ((char *) name_of_file, TTIF_BIB)) == NULL) {
                 puts_log("I couldn't open database file ");
                 print_bib_name();
                 aux_err_print();
@@ -5244,7 +5242,7 @@ static void aux_bib_style_command(void)
             longjmp(error_jmpbuf, 1);
         }
         start_name(bst_str);
-        if ((bst_file = peekable_open ((char *) name_of_file + 1, TTIF_BST)) == NULL) {
+        if ((bst_file = peekable_open ((char *) name_of_file, TTIF_BST)) == NULL) {
             puts_log("I couldn't open style file ");
             print_bst_name();
             bst_str = 0;
@@ -5403,9 +5401,9 @@ static void aux_input_command(void)
         }
         {
             start_name(aux_list[aux_ptr]);
-            name_ptr = name_length + 1;
+            name_ptr = name_length;
             name_of_file[name_ptr] = 0;
-            if ((aux_file[aux_ptr] = peekable_open ((char *) name_of_file + 1, TTIF_TEX)) == NULL) {
+            if ((aux_file[aux_ptr] = peekable_open ((char *) name_of_file, TTIF_TEX)) == NULL) {
                 puts_log("I couldn't open auxiliary file ");
                 print_aux_name();
                 aux_ptr = aux_ptr - 1;
