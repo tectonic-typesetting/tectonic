@@ -187,6 +187,11 @@ fn pdfoutput() {
 }
 
 #[test]
+fn pdfimages() {
+    TestCase::new("png_formats").check_pdf(true).go()
+}
+
+#[test]
 fn redbox_png() {
     TestCase::new("redbox_png").check_pdf(true).go()
 }
