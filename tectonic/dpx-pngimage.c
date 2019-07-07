@@ -211,7 +211,10 @@ png_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
     } else if (bpc < 8) {
         /* Instruct libpng to scale each pixel color to a full byte while
            reading even though there's only 1/2/4 bits of color associated. */
-        png_set_packing(png_ptr);
+        if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+            png_set_expand_gray_1_2_4_to_8(png_ptr);
+        else
+            png_set_packing(png_ptr);
         bpc = 8;
     }
     /* Ask libpng to gamma-correct.
