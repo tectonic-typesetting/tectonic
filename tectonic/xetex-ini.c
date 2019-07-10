@@ -3213,6 +3213,7 @@ initialize_more_variables(void)
     cur_tail = TEX_NULL;
     cur_pre_head = TEX_NULL;
     cur_pre_tail = TEX_NULL;
+    cur_f = 0;
     max_hyph_char = TOO_BIG_LANG;
 
     for (z = 0; z <= hyph_size; z++) {

@@ -1744,7 +1744,7 @@ static void pre_def_certain_strings(void)
 static bool scan1(ASCII_code char1)
 {
     buf_ptr1 = buf_ptr2;
-    while (((buffer[buf_ptr2] != char1) && (buf_ptr2 < last)))
+    while ((buf_ptr2 < last) && (buffer[buf_ptr2] != char1))
         buf_ptr2 = buf_ptr2 + 1;
     
     return buf_ptr2 < last;
@@ -1753,7 +1753,7 @@ static bool scan1(ASCII_code char1)
 static bool scan1_white(ASCII_code char1)
 {
     buf_ptr1 = buf_ptr2;
-    while (((lex_class[buffer[buf_ptr2]] != 1 /*white_space */ ) && (buffer[buf_ptr2] != char1) && (buf_ptr2 < last)))
+    while ((buf_ptr2 < last) && (lex_class[buffer[buf_ptr2]] != 1 /*white_space */ ) && (buffer[buf_ptr2] != char1))
         buf_ptr2 = buf_ptr2 + 1;
     return buf_ptr2 < last;
 }
@@ -1761,7 +1761,7 @@ static bool scan1_white(ASCII_code char1)
 static bool scan2(ASCII_code char1, ASCII_code char2)
 {
     buf_ptr1 = buf_ptr2;
-    while (((buffer[buf_ptr2] != char1) && (buffer[buf_ptr2] != char2) && (buf_ptr2 < last)))
+    while ((buf_ptr2 < last) &&   (buffer[buf_ptr2] != char1) && (buffer[buf_ptr2] != char2))
         buf_ptr2 = buf_ptr2 + 1;
     return buf_ptr2 < last;
 }
@@ -1769,8 +1769,8 @@ static bool scan2(ASCII_code char1, ASCII_code char2)
 static bool scan2_white(ASCII_code char1, ASCII_code char2)
 {
     buf_ptr1 = buf_ptr2;
-    while (((buffer[buf_ptr2] != char1) && (buffer[buf_ptr2] != char2)
-            && (lex_class[buffer[buf_ptr2]] != 1 /*white_space */ ) && (buf_ptr2 < last)))
+    while ((buf_ptr2 < last) && (buffer[buf_ptr2] != char1) && (buffer[buf_ptr2] != char2)
+            && (lex_class[buffer[buf_ptr2]] != 1 /*white_space */ ))
         buf_ptr2 = buf_ptr2 + 1;
     return buf_ptr2 < last;
 }
@@ -1778,8 +1778,7 @@ static bool scan2_white(ASCII_code char1, ASCII_code char2)
 static bool scan3(ASCII_code char1, ASCII_code char2, ASCII_code char3)
 {
     buf_ptr1 = buf_ptr2;
-    while (((buffer[buf_ptr2] != char1) && (buffer[buf_ptr2] != char2) && (buffer[buf_ptr2] != char3)
-            && (buf_ptr2 < last)))
+    while ((buf_ptr2 < last) && (buffer[buf_ptr2] != char1) && (buffer[buf_ptr2] != char2) && (buffer[buf_ptr2] != char3))
         buf_ptr2 = buf_ptr2 + 1;
     return buf_ptr2 < last;
 }
@@ -1787,7 +1786,7 @@ static bool scan3(ASCII_code char1, ASCII_code char2, ASCII_code char3)
 static bool scan_alpha(void)
 {
     buf_ptr1 = buf_ptr2;
-    while (((lex_class[buffer[buf_ptr2]] == 2 /*alpha */ ) && (buf_ptr2 < last)))
+    while ((buf_ptr2 < last) && (lex_class[buffer[buf_ptr2]] == 2 /*alpha */ ))
         buf_ptr2 = buf_ptr2 + 1;
     return (buf_ptr2 - buf_ptr1) != 0;
 }
@@ -1796,7 +1795,7 @@ static void scan_identifier(ASCII_code char1, ASCII_code char2, ASCII_code char3
 {
     buf_ptr1 = buf_ptr2;
     if (lex_class[buffer[buf_ptr2]] != 3 /*numeric */ )
-        while (((id_class[buffer[buf_ptr2]] == 1 /*legal_id_char */ ) && (buf_ptr2 < last)))
+        while ((buf_ptr2 < last) && (id_class[buffer[buf_ptr2]] == 1 /*legal_id_char */ ))
             buf_ptr2 = buf_ptr2 + 1;
     if ((buf_ptr2 - buf_ptr1) == 0)
         scan_result = 0 /*id_null */ ;
@@ -1812,7 +1811,7 @@ static bool scan_nonneg_integer(void)
 {
     buf_ptr1 = buf_ptr2;
     token_value = 0;
-    while (((lex_class[buffer[buf_ptr2]] == 3 /*numeric */ ) && (buf_ptr2 < last))) {
+    while ((buf_ptr2 < last) && (lex_class[buffer[buf_ptr2]] == 3 /*numeric */ )) {
 
         token_value = token_value * 10 + (buffer[buf_ptr2] - 48);
         buf_ptr2 = buf_ptr2 + 1;
@@ -1830,7 +1829,7 @@ static bool scan_integer(void)
     } else
         sign_length = 0;
     token_value = 0;
-    while (((lex_class[buffer[buf_ptr2]] == 3 /*numeric */ ) && (buf_ptr2 < last))) {
+    while ((buf_ptr2 < last) && (lex_class[buffer[buf_ptr2]] == 3 /*numeric */ )) {
 
         token_value = token_value * 10 + (buffer[buf_ptr2] - 48);
         buf_ptr2 = buf_ptr2 + 1;
@@ -1843,7 +1842,7 @@ static bool scan_integer(void)
 
 static bool scan_white_space(void)
 {
-    while (((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) && (buf_ptr2 < last)))
+    while ((buf_ptr2 < last) && (lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ))
         buf_ptr2 = buf_ptr2 + 1;
     return buf_ptr2 < last;
 }
@@ -1934,8 +1933,8 @@ static void scan_fn_def(hash_loc fn_hash_loc)
                     fn_type[literal_loc] = 2 /*int_literal */ ;
                     ilk_info[literal_loc] = token_value;
                 }
-                if (((lex_class[buffer[buf_ptr2]] != 1 /*white_space */ ) && (buf_ptr2 < last)
-                     && (buffer[buf_ptr2] != 125 /*right_brace */ ) && (buffer[buf_ptr2] != 37 /*comment */ ))) {
+                if ((buf_ptr2 < last) && (lex_class[buffer[buf_ptr2]] != 1 /*white_space */ )
+                     && (buffer[buf_ptr2] != 125 /*right_brace */ ) && (buffer[buf_ptr2] != 37 /*comment */ )) {
                     skip_illegal_stuff_after_token_print();
                     goto lab25;
                 }
@@ -1961,8 +1960,8 @@ static void scan_fn_def(hash_loc fn_hash_loc)
                 literal_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 0 /*text_ilk */ , true);
                 fn_type[literal_loc] = 3 /*str_literal */ ;
                 buf_ptr2 = buf_ptr2 + 1;
-                if (((lex_class[buffer[buf_ptr2]] != 1 /*white_space */ ) && (buf_ptr2 < last)
-                     && (buffer[buf_ptr2] != 125 /*right_brace */ ) && (buffer[buf_ptr2] != 37 /*comment */ ))) {
+                if ((buf_ptr2 < last) && (lex_class[buffer[buf_ptr2]] != 1 /*white_space */ )
+                     && (buffer[buf_ptr2] != 125 /*right_brace */ ) && (buffer[buf_ptr2] != 37 /*comment */ )) {
                     skip_illegal_stuff_after_token_print();
                     goto lab25;
                 }
@@ -2455,7 +2454,7 @@ static bool scan_a_field_token_and_eat_white(void)
                     tmp_end_ptr = str_start[ilk_info[macro_name_loc] + 1];
                     if (ex_buf_ptr == 0) {
 
-                        if ((lex_class[str_pool[tmp_ptr]] == 1 /*white_space */ ) && (tmp_ptr < tmp_end_ptr)) {
+                        if ((tmp_ptr < tmp_end_ptr) && (lex_class[str_pool[tmp_ptr]] == 1 /*white_space */ )) {
                             {
                                 if (ex_buf_ptr == buf_size) {
                                     bib_field_too_long_print();
@@ -2467,7 +2466,7 @@ static bool scan_a_field_token_and_eat_white(void)
                                 }
                             }
                             tmp_ptr = tmp_ptr + 1;
-                            while (((lex_class[str_pool[tmp_ptr]] == 1 /*white_space */ ) && (tmp_ptr < tmp_end_ptr)))
+                            while ((tmp_ptr < tmp_end_ptr) && (lex_class[str_pool[tmp_ptr]] == 1 /*white_space */ ))
                                 tmp_ptr = tmp_ptr + 1;
                         }
                     }
@@ -2963,9 +2962,8 @@ static void figure_out_the_formatted_name(void)
                                                         }
                                                     }
                                                     goto loop_exit;
-                                                } else
-                                                    if (((sv_buffer[name_bf_ptr] == 123 /*left_brace */ )
-                                                         && (name_bf_ptr + 1 < name_bf_xptr))) {
+                                                } else if ((name_bf_ptr + 1 < name_bf_xptr)
+                                                        && (sv_buffer[name_bf_ptr] == 123 /*left_brace */ )) {
 
                                                     if (sv_buffer[name_bf_ptr + 1] == 92 /*backslash */ ) {   /*417: */
                                                         if (ex_buf_ptr + 2 > buf_size)
