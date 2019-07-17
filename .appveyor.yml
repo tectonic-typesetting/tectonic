@@ -4,21 +4,17 @@
 ## Operating System (VM environment) ##
 
 # Rust needs at least Visual Studio 2013 Appveyor OS for MSVC targets.
-os: Visual Studio 2015
+os: Visual Studio 2017
 
 ## Build Matrix ##
 environment:
   matrix:
-
 ### MSVC Targets ###
-  # Stable 64-bit MSVC
-  # - channel: stable
-  #   toolchain: stable-x86_64-pc-windows-msvc
-  #   target: x86_64-pc-windows-msvc
-  #   target_env: msvc
-  #   mingw_subdir: mingw64
-  #   mingw_target: x86_64-w64-mingw32
-  #   mingw_package_prefix: mingw-w64-x86_64
+    # Stable 64-bit MSVC
+    - target: x86_64-pc-windows-msvc
+      channel: stable
+      toolchain: stable-x86_64-pc-windows-msvc
+      target_env: msvc
   # Stable 32-bit MSVC
   # - channel: stable
   #   toolchain: stable-i686-pc-windows-msvc
@@ -29,10 +25,10 @@ environment:
   #   mingw_package_prefix: mingw-w64-i686
 
 ### GNU Targets ###
-  # Stable 64-bit GNU
-    - channel: stable
+    # Stable 64-bit GNU
+    - target: x86_64-pc-windows-gnu
+      channel: stable
       toolchain: stable-x86_64-pc-windows-msvc
-      target: x86_64-pc-windows-gnu
       target_env: gnu
       mingw_subdir: mingw64
       mingw_target: x86_64-w64-mingw32
@@ -72,10 +68,16 @@ install:
   - appveyor-retry appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
   - rustup-init -yv --default-toolchain %channel%-msvc --default-host %target%
   - set PATH=%PATH%;%USERPROFILE%\.cargo\bin
-  - set PATH=C:\msys64\%mingw_subdir%\bin;C:\msys64\usr\bin;%PATH%
+  - if "%target_env%" == "gnu" set PATH=C:\msys64\%mingw_subdir%\bin;C:\msys64\usr\bin;%PATH%
   - rustup target add %target%
   - rustup component add rust-src
-  - pacman -S --noconfirm "%mingw_package_prefix%-fontconfig" "%mingw_package_prefix%-freetype" "%mingw_package_prefix%-icu"
+  - if "%target_env%" == "gnu" pacman -S --noconfirm "%mingw_package_prefix%-fontconfig" "%mingw_package_prefix%-freetype" "%mingw_package_prefix%-icu"
+  - if "%target_env%" == "msvc" git clone https://github.com/microsoft/vcpkg %USERPROFILE%\vcpkg
+  - if "%target_env%" == "msvc" call %USERPROFILE%\vcpkg\bootstrap-vcpkg.bat
+  - if "%target_env%" == "msvc" %USERPROFILE%\vcpkg\vcpkg install --triplet x64-windows-static fontconfig freetype harfbuzz[icu,graphite2]
+  - if "%target_env%" == "msvc" set VCPKG_ROOT=%USERPROFILE%\vcpkg
+  - if "%target_env%" == "msvc" set TECTONIC_VCPKG=1
+  - if "%target_env%" == "msvc" set RUSTFLAGS=-Ctarget-feature=+crt-static
   - rustc -vV
   - cargo -vV
 
