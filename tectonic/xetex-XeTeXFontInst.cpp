@@ -106,19 +106,19 @@ XeTeXFontInst::~XeTeXFontInst()
 }
 
 /* HarfBuzz font functions */
-
 static hb_bool_t
-_get_glyph(hb_font_t*, void *font_data, hb_codepoint_t ch, hb_codepoint_t vs, hb_codepoint_t *gid, void*)
+_get_nominal_glyph(hb_font_t*, void *font_data, hb_codepoint_t ch, hb_codepoint_t *gid, void*)
 {
     FT_Face face = (FT_Face) font_data;
-    *gid = 0;
+    *gid = FT_Get_Char_Index (face, ch);
+    return *gid != 0;
+}
 
-    if (vs)
-        *gid = FT_Face_GetCharVariantIndex (face, ch, vs);
-
-    if (*gid == 0)
-        *gid = FT_Get_Char_Index (face, ch);
-
+static hb_bool_t
+_get_variation_glyph(hb_font_t*, void *font_data, hb_codepoint_t ch, hb_codepoint_t vs, hb_codepoint_t *gid, void*)
+{
+    FT_Face face = (FT_Face) font_data;
+    *gid = FT_Face_GetCharVariantIndex (face, ch, vs);
     return *gid != 0;
 }
 
@@ -265,7 +265,8 @@ _get_font_funcs(void)
 {
     static hb_font_funcs_t* funcs = hb_font_funcs_create();
 
-    hb_font_funcs_set_glyph_func                (funcs, _get_glyph, NULL, NULL);
+    hb_font_funcs_set_nominal_glyph_func        (funcs, _get_nominal_glyph, NULL, NULL);
+    hb_font_funcs_set_variation_glyph_func      (funcs, _get_variation_glyph, NULL, NULL);
     hb_font_funcs_set_glyph_h_advance_func      (funcs, _get_glyph_h_advance, NULL, NULL);
     hb_font_funcs_set_glyph_v_advance_func      (funcs, _get_glyph_v_advance, NULL, NULL);
     hb_font_funcs_set_glyph_h_origin_func       (funcs, _get_glyph_h_origin, NULL, NULL);
