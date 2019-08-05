@@ -35,7 +35,7 @@ crate-type = ["rlib"]
 [build-dependencies]
 cc = "^1.0"
 pkg-config = "^0.3"  # note: sync dist/docker/*/pkg-config-rs.sh with the version in Cargo.lock
-regex = "^1.1"
+regex = "^1.2"
 sha2 = "^0.8"
 
 [dependencies]
