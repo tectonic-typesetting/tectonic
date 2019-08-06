@@ -1,5 +1,5 @@
 #! /bin/bash
-# Copyright 2018 the Tectonic Project
+# Copyright 2018-2019 the Tectonic Project
 # Licensed under the MIT License
 
 set -e -x
@@ -10,7 +10,7 @@ buildroot=$HOME
 # that can be run via QEMU. This tarball was generated according to the
 # procedure describe here:
 # https://github.com/tectonic-typesetting/tectonic-ci-support/blob/master/bigendian/README.md .
-# The current version embeds Rust 1.31.1.
+# The current version embeds Rust 1.36.0.
 
 tarball='https://github.com/tectonic-typesetting/tectonic-ci-support/releases/download/production/tectonic-buildenv-ppc.tar.gz'
 
