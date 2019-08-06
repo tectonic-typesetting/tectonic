@@ -36,6 +36,13 @@ matrix:
   allow_failures:
     - rust: nightly
 
+# Don't CI branches besides master. Pull requests still get CI'd -- but
+# when a PR comes in on a branch in the same repo, this prevents it from
+# being CI'd twice.
+branches:
+  only:
+    - master
+
 addons:
   apt:
     packages:
