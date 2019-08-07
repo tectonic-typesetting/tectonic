@@ -24,14 +24,18 @@ cd /
 
 export TERM=dumb
 apt-get update
+# use curl for rust's installer so it is quieter
+# needed until we can configure the options passed to the installer
+# https://github.com/rust-lang/rustup.rs/issues/1928
 apt-get install -y \
         build-essential \
         sudo \
-        wget
+        wget \
+        curl
 apt-get clean
 rm -rf /var/lib/apt/lists/*
 
-wget https://raw.githubusercontent.com/alpinelinux/alpine-chroot-install/v0.10.0/alpine-chroot-install
+wget -q --progress=dot https://raw.githubusercontent.com/alpinelinux/alpine-chroot-install/v0.10.0/alpine-chroot-install
 echo 'dcceb34aa63767579f533a7f2e733c4d662b0d1b  alpine-chroot-install' |sha1sum -c
 
 # This command will error out when it attempts to bind-mount things like /proc
