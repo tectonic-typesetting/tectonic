@@ -8,7 +8,7 @@ platform="x86_64-unknown-linux-musl"
 
 cd
 
-wget -O rustup.sh https://sh.rustup.rs
+wget -q --progress=dot -O rustup.sh https://sh.rustup.rs
 sh rustup.sh -y --default-toolchain stable
 rm -f rustup.sh
 
