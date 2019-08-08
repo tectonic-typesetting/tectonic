@@ -70,3 +70,7 @@ which in turn uses Rust’s `proc_macro` feature. The `proc_macro` functionality
 [is not available on musl targets](https://github.com/rust-lang/rust/issues/40174),
 and so must be turned off if you wish to build a completely static Tectonic
 executable.
+
+## Documentation System
+Per [this rust subreddit discussion](https://www.reddit.com/r/rust/comments/7eohmt/whats_the_best_practice_for_documenting_a_rust/), [Doxidize](https://steveklabnik.github.io/doxidize/index.html) seems like it could suit us well.
+
