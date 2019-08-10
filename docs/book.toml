@@ -1,0 +1,5 @@
+[book]
+authors = ["Tectonic Contributers"]
+language = "en"
+multilingual = false
+src = "src"
