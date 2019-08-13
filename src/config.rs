@@ -17,13 +17,12 @@ use std::fs::File;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use app_dirs::{app_dir, sanitized, AppDataType};
-
+use crate::app_dirs;
 use crate::errors::{ErrorKind, Result};
+use crate::io::Bundle;
 use crate::io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use crate::io::local_cache::LocalCache;
 use crate::io::zipbundle::ZipBundle;
-use crate::io::Bundle;
 use crate::status::StatusBackend;
 
 /// Awesome hack time!!!
@@ -61,13 +60,12 @@ impl PersistentConfig {
     /// false, the default configuration is returned and the filesystem is not
     /// modified.
     pub fn open(auto_create_config_file: bool) -> Result<PersistentConfig> {
-        use app_dirs::{app_root, get_app_root};
         use std::io::ErrorKind as IoErrorKind;
         use std::io::{Read, Write};
         let mut cfg_path = if auto_create_config_file {
-            app_root(AppDataType::UserConfig, &crate::APP_INFO)?
+            app_dirs::user_config()?
         } else {
-            get_app_root(AppDataType::UserConfig, &crate::APP_INFO)?
+            app_dirs::get_user_config()?
         };
         cfg_path.push("config.toml");
 
@@ -116,14 +114,14 @@ impl PersistentConfig {
     ) -> Result<Box<dyn Bundle>> {
         let itb = ITarBundle::<HttpITarIoFactory>::new(url);
 
-        let mut url2digest_path = app_dir(AppDataType::UserCache, &crate::APP_INFO, "urls")?;
-        url2digest_path.push(sanitized(url));
+        let mut url2digest_path = app_dirs::user_cache_dir("urls")?;
+        url2digest_path.push(app_dirs::sanitized(url));
 
         let bundle = LocalCache::<ITarBundle<HttpITarIoFactory>>::new(
             itb,
             &url2digest_path,
-            &app_dir(AppDataType::UserCache, &crate::APP_INFO, "manifests")?,
-            &app_dir(AppDataType::UserCache, &crate::APP_INFO, "files")?,
+            &app_dirs::user_cache_dir("manifests")?,
+            &app_dirs::user_cache_dir("files")?,
             only_cached,
             status,
         )?;
@@ -182,11 +180,7 @@ impl PersistentConfig {
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
             Ok(crate::test_util::test_path(&[]))
         } else {
-            Ok(app_dir(
-                AppDataType::UserCache,
-                &crate::APP_INFO,
-                "formats",
-            )?)
+            Ok(app_dirs::user_cache_dir("formats")?)
         }
     }
 }

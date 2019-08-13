@@ -48,6 +48,7 @@
 //! The [`driver`] module provides a high-level interface for driving the
 //! engines in more realistic circumstances.
 
+mod app_dirs;
 pub mod config;
 pub mod digest;
 pub mod driver;
@@ -66,11 +67,6 @@ pub use crate::engines::spx2html::Spx2HtmlEngine;
 pub use crate::engines::tex::{TexEngine, TexResult};
 pub use crate::engines::xdvipdfmx::XdvipdfmxEngine;
 pub use crate::errors::{Error, ErrorKind, Result};
-
-const APP_INFO: app_dirs::AppInfo = app_dirs::AppInfo {
-    name: "Tectonic",
-    author: "TectonicProject",
-};
 
 const FORMAT_SERIAL: u32 = 28; // keep synchronized with tectonic/xetex-constants.h!!
 
