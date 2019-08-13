@@ -43,7 +43,7 @@ aho-corasick = "^0.7"
 app_dirs = "^1.1"
 clap = "^2.33"
 error-chain = "^0.12"
-flate2 = "^1.0"
+flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
 fs2 = "^0.4"
 headers = "^0.2"
 lazy_static = "^1.2"
@@ -56,7 +56,7 @@ serde = { version = "^1.0", features = ["derive"], optional = true }
 tectonic_xdv = { path = "xdv", version = "0.1.9-dev" }
 termcolor = "^1.0"
 toml = "^0.5"
-zip = "^0.5"
+zip = { version = "^0.5", default-features = false, features = ["deflate"] }
 
 [features]
 default = ["serialization"]
