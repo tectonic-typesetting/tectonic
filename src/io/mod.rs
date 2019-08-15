@@ -17,10 +17,9 @@ use crate::digest::{self, Digest, DigestData};
 use crate::errors::{Error, ErrorKind, Result};
 use crate::status::StatusBackend;
 
+pub mod cached_itarbundle;
 pub mod filesystem;
 pub mod format_cache;
-pub mod itarbundle;
-pub mod local_cache;
 pub mod memory;
 pub mod setup;
 pub mod stack;

@@ -285,7 +285,7 @@ fn test_full_session() {
         run("tests/tex-outputs/redbox_png.tex");
     });
 
-    check_req_count(&requests, TectonicRequest::Index, 2);
+    check_req_count(&requests, TectonicRequest::Index, 1);
     check_req_count(
         &requests,
         TectonicRequest::File(tectonic::digest::DIGEST_NAME.into()),
@@ -350,7 +350,7 @@ fn test_cached_url_provider() {
                 OpenResult::Ok(_) => {}
                 _ => panic!("Failed to open plain.tex"),
             }
-            // this should perform a digest check
+            // in index, should check digest and download the file
             match cache.input_open_name(OsStr::new("other.tex"), &mut status) {
                 OpenResult::Ok(_) => {}
                 _ => panic!("Failed to open other.tex"),
@@ -361,7 +361,7 @@ fn test_cached_url_provider() {
                 .make_cached_url_provider(&url, false, Some(tempdir.path()), &mut status)
                 .unwrap();
 
-            // this should fail gracefully
+            // not in index
             match cache.input_open_name(OsStr::new("my-favourite-file.tex"), &mut status) {
                 OpenResult::NotAvailable => {}
                 _ => panic!("'my-favourite-file.tex' file exists?"),
@@ -369,11 +369,11 @@ fn test_cached_url_provider() {
         }
     });
 
-    check_req_count(&requests, TectonicRequest::Index, 3);
+    check_req_count(&requests, TectonicRequest::Index, 1);
     check_req_count(
         &requests,
         TectonicRequest::File(tectonic::digest::DIGEST_NAME.into()),
-        3,
+        2,
     );
     // This files should be cached.
     check_req_count(&requests, TectonicRequest::File("plain.tex".into()), 1);
@@ -385,10 +385,13 @@ fn test_bundle_update() {
     let tempdir = tempfile::tempdir().unwrap();
     let tar_index = {
         let mut builder = TarIndexBuilder::new();
-        builder.push("plain.tex", b"test").push(
-            tectonic::digest::DIGEST_NAME,
-            b"0000000000000000000000000000000000000000000000000000000000000000",
-        );
+        builder
+            .push("only-first.tex", b"test")
+            .push("file-in-both.tex", b"in both")
+            .push(
+                tectonic::digest::DIGEST_NAME,
+                b"0000000000000000000000000000000000000000000000000000000000000000",
+            );
         builder.finish()
     };
 
@@ -398,25 +401,28 @@ fn test_bundle_update() {
         let config = PersistentConfig::default();
 
         {
-            // Run with default tar index.
+            // Run with first tar index.
             {
                 let mut cache = config
                     .make_cached_url_provider(&url, false, Some(tempdir.path()), &mut status)
                     .unwrap();
 
-                match cache.input_open_name(OsStr::new("plain.tex"), &mut status) {
+                match cache.input_open_name(OsStr::new("only-first.tex"), &mut status) {
                     OpenResult::Ok(_) => {}
-                    _ => panic!("Failed to open plain.tex"),
+                    _ => panic!("Failed to open only-first.tex"),
                 }
             }
 
             // Set a tar index with a different digest.
             let tar_index = {
                 let mut builder = TarIndexBuilder::new();
-                builder.push("some_file.tex", b"test").push(
-                    tectonic::digest::DIGEST_NAME,
-                    b"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-                );
+                builder
+                    .push("only-second.tex", b"test")
+                    .push("file-in-both.tex", b"in both")
+                    .push(
+                        tectonic::digest::DIGEST_NAME,
+                        b"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                    );
                 builder.finish()
             };
             service.set_tar_index(tar_index);
@@ -433,12 +439,19 @@ fn test_bundle_update() {
                         .unwrap();
 
                     // This should be cached even thought the bundle does not contain it.
-                    match cache.input_open_name(OsStr::new("plain.tex"), &mut status) {
+                    match cache.input_open_name(OsStr::new("only-first.tex"), &mut status) {
                         OpenResult::Ok(_) => {}
-                        _ => panic!("Failed to open plain.tex"),
+                        _ => panic!("Failed to open only-first.tex"),
                     }
 
-                    match cache.input_open_name(OsStr::new("some_file.tex"), &mut status) {
+                    // Not in index of the first bundle and therefore no digest check.
+                    match cache.input_open_name(OsStr::new("only-second.tex"), &mut status) {
+                        OpenResult::NotAvailable => {}
+                        _ => panic!("File should not be in the first bundle"),
+                    }
+                    // File in the first bundle and the second bundle, but not cached yet. Should
+                    // trigger a digest check.
+                    match cache.input_open_name(OsStr::new("file-in-both.tex"), &mut status) {
                         OpenResult::Err(_) => {}
                         _ => panic!("Bundle digest changed but no error"),
                     }
