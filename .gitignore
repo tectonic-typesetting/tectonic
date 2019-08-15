@@ -2,3 +2,6 @@
 /tests/plain.fmt
 /tests/00*00-latex-*.fmt
 /tests/00*00-plain-*.fmt
+
+# ignore mdbook compiled output (HTML)
+docs/book/*
