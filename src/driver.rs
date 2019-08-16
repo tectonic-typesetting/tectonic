@@ -8,7 +8,7 @@
 //! struct is [`ProcessingSession`], which knows how to run (and re-run if
 //! necessary) the various engines in the right order.
 //!
-//! For an example of how to use this module, see `cli_driver.rs`, which contains tectonic's main
+//! For an example of how to use this module, see `src/bin/tectonic.rs`, which contains tectonic's main
 //! CLI program.
 
 use aho_corasick::AhoCorasick;
