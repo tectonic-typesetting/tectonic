@@ -17,5 +17,5 @@ pub fn get_user_config() -> Result<PathBuf, AppDirsError> {
 }
 
 pub fn user_cache_dir(path: &str) -> Result<PathBuf, AppDirsError> {
-    app_dirs::get_app_dir(AppDataType::UserCache, &APP_INFO, path)
+    app_dirs::app_dir(AppDataType::UserCache, &APP_INFO, path)
 }
