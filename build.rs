@@ -1,35 +1,137 @@
 // build.rs -- build helper script for Tectonic.
-// Copyright 2016-2018 the Tectonic Project
+// Copyright 2016-2019 the Tectonic Project
 // Licensed under the MIT License.
-//
-// TODO: this surely needs to become much smarter and more flexible.
 
+/// The Tectonic build script. Not only do we have internal C/C++ code, we
+/// also depend on several external C/C++ libraries, so there's a lot to do
+/// here. It would be great to streamline things.
+///
+/// TODO: this surely needs to become much smarter and more flexible.
 use cc;
 use pkg_config;
 use vcpkg;
 
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+
+#[cfg(not(target_os = "macos"))]
+const PKGCONFIG_LIBS: &'static str =
+    "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 // No fontconfig on MacOS:
 #[cfg(target_os = "macos")]
-const LIBS: &'static str = "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
+const PKGCONFIG_LIBS: &'static str =
+    "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
+
+/// Build-script state when using pkg-config as the backend.
+#[derive(Debug)]
+struct PkgConfigState {
+    libs: pkg_config::Library,
+}
+
+// Need a way to check that the vcpkg harfbuzz port has graphite2 and icu options enabled.
+#[cfg(not(target_os = "macos"))]
+const VCPKG_LIBS: &[&'static str] = &["fontconfig", "harfbuzz", "freetype", "graphite2"];
 
 #[cfg(target_os = "macos")]
 const VCPKG_LIBS: &[&'static str] = &["harfbuzz", "freetype", "graphite2"];
 
-#[cfg(not(target_os = "macos"))]
-const LIBS: &'static str =
-    "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
+/// Build-script state when using vcpkg as the backend.
+#[derive(Clone, Debug)]
+struct VcPkgState {
+    include_paths: Vec<PathBuf>,
+}
 
-#[cfg(not(target_os = "macos"))]
-const VCPKG_LIBS: &[&'static str] = &["fontconfig", "harfbuzz", "freetype", "graphite2"];
-// Need a way to check that the vcpkg harfbuzz port has graphite2 and icu options enabled.
+/// State for discovering and managing our dependencies, which may vary
+/// depending on the framework that we're using to discover them.
+///
+/// The basic gameplan is that we probe our dependencies to check that they're
+/// available and pull out the C/C++ include directories; then we emit info
+/// for building our C/C++ libraries; then we emit info for our dependencies.
+/// Building stuff pretty much always requires some level of hackery, though,
+/// so we don't try to be purist about the details.
+#[derive(Debug)]
+enum DepState {
+    /// pkg-config
+    PkgConfig(PkgConfigState),
 
-fn load_vcpkg_deps(include_paths: &mut Vec<PathBuf>) {
-    for dep in VCPKG_LIBS {
-        let library = vcpkg::find_package(dep).expect("failed to load package from vcpkg");
-        include_paths.extend(library.include_paths.iter().cloned());
+    /// vcpkg
+    VcPkg(VcPkgState),
+}
+
+impl DepState {
+    /// Probe for our dependent libraries using pkg-config.
+    fn new_pkg_config() -> Self {
+        let libs = pkg_config::Config::new()
+            .cargo_metadata(false)
+            .probe(PKGCONFIG_LIBS)
+            .unwrap();
+        DepState::PkgConfig(PkgConfigState { libs })
+    }
+
+    /// Probe for our dependent libraries using vcpkg.
+    fn new_vcpkg() -> Self {
+        let mut include_paths = vec![];
+
+        for dep in VCPKG_LIBS {
+            let library = vcpkg::find_package(dep)
+                .expect(&format!("failed to load package {} from vcpkg", dep));
+            include_paths.extend(library.include_paths.iter().cloned());
+        }
+
+        DepState::VcPkg(VcPkgState { include_paths })
+    }
+
+    /// Invoke a callback for each C/C++ include directory injected by our
+    /// dependencies.
+    fn foreach_include_path<F>(&self, mut f: F)
+    where
+        F: FnMut(&Path),
+    {
+        match self {
+            &DepState::PkgConfig(ref s) => {
+                for p in &s.libs.include_paths {
+                    f(p);
+                }
+            }
+
+            &DepState::VcPkg(ref s) => {
+                for p in &s.include_paths {
+                    f(p);
+                }
+            }
+        }
+    }
+
+    /// This function is called after we've emitted the cargo compilation info
+    /// for our own libraries. Now we can emit any special information
+    /// relating to our dependencies, which may depend on the dep-finding
+    /// backend or the target.
+    fn emit_late_extras(&self, target: &str) {
+        match self {
+            &DepState::PkgConfig(_) => {
+                pkg_config::Config::new()
+                    .cargo_metadata(true)
+                    .probe(PKGCONFIG_LIBS)
+                    .unwrap();
+            }
+
+            &DepState::VcPkg(_) => {
+                if target.contains("-linux-") {
+                    // add icudata to the end of the list of libs as vcpkg-rs
+                    // does not order individual libraries as a single pass
+                    // linker requires.
+                    println!("cargo:rustc-link-lib=icudata");
+                }
+            }
+        }
+    }
+}
+
+/// The default dependency-finding backend is pkg-config.
+impl Default for DepState {
+    fn default() -> Self {
+        DepState::new_pkg_config()
     }
 }
 
@@ -37,26 +139,20 @@ fn main() {
     let target = env::var("TARGET").unwrap();
     let rustflags = env::var("RUSTFLAGS").unwrap_or(String::new());
 
-    let use_vcpkg = env::var("TECTONIC_VCPKG").is_ok();
-    let mut deps = None;
-    let mut vcpkg_includes = vec![];
-    if use_vcpkg {
-        load_vcpkg_deps(&mut vcpkg_includes);
-        eprintln!("{:?}", vcpkg_includes);
+    // OK, how are we finding our dependencies?
 
-        if target.contains("-linux-") {
-            // add icudata to the end of the list of libs as vcpkg-rs does not
-            // order individual libraries as a single pass linker requires
-            println!("cargo:rustc-link-lib=icudata");
+    println!("cargo:rerun-if-env-changed=TECTONIC_DEP_BACKEND");
+
+    let dep_state = if let Ok(dep_backend_str) = env::var("TECTONIC_DEP_BACKEND") {
+        match dep_backend_str.as_ref() {
+            "pkg-config" => DepState::new_pkg_config(),
+            "vcpkg" => DepState::new_vcpkg(),
+            "default" => DepState::default(),
+            other => panic!("unrecognized TECTONIC_DEP_BACKEND setting {:?}", other),
         }
     } else {
-        // We (have to) rerun the search again below to emit the metadata at the right time.
-        let deps_library = pkg_config::Config::new()
-            .cargo_metadata(false)
-            .probe(LIBS)
-            .unwrap();
-        deps = Some(deps_library);
-    }
+        DepState::default()
+    };
 
     // Actually I'm not 100% sure that I can't compile the C and C++ code
     // into one library, but who cares?
@@ -245,17 +341,10 @@ fn main() {
         .file("tectonic/xetex-XeTeXOTMath.cpp")
         .include(".");
 
-    if let Some(deps) = &deps {
-        for p in &deps.include_paths {
-            ccfg.include(p);
-            cppcfg.include(p);
-        }
-    } else {
-        for p in &vcpkg_includes {
-            ccfg.include(p);
-            cppcfg.include(p);
-        }
-    }
+    dep_state.foreach_include_path(|p| {
+        ccfg.include(p);
+        cppcfg.include(p);
+    });
 
     // Platform-specific adjustments:
 
@@ -298,15 +387,7 @@ fn main() {
     ccfg.compile("libtectonic_c.a");
     cppcfg.compile("libtectonic_cpp.a");
 
-    // Now that we've emitted the info for our own libraries, we can emit the
-    // info for their dependents.
-
-    if let Some(_deps) = &deps {
-        pkg_config::Config::new()
-            .cargo_metadata(true)
-            .probe(LIBS)
-            .unwrap();
-    }
+    dep_state.emit_late_extras(&target);
 
     // Tell cargo to rerun build.rs only if files in the tectonic/ directory have changed.
     for file in PathBuf::from("tectonic").read_dir().unwrap() {

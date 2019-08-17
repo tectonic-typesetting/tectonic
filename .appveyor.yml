@@ -76,7 +76,7 @@ install:
   - if "%target_env%" == "msvc" call %USERPROFILE%\vcpkg\bootstrap-vcpkg.bat
   - if "%target_env%" == "msvc" %USERPROFILE%\vcpkg\vcpkg install --triplet x64-windows-static fontconfig freetype harfbuzz[icu,graphite2]
   - if "%target_env%" == "msvc" set VCPKG_ROOT=%USERPROFILE%\vcpkg
-  - if "%target_env%" == "msvc" set TECTONIC_VCPKG=1
+  - if "%target_env%" == "msvc" set TECTONIC_DEP_BACKEND=vcpkg
   - if "%target_env%" == "msvc" set RUSTFLAGS=-Ctarget-feature=+crt-static
   - rustc -vV
   - cargo -vV
