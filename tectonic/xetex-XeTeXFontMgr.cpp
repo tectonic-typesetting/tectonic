@@ -40,7 +40,7 @@ authorization from the copyright holders.
 #endif
 #include "xetex-XeTeXFontInst.h"
 
-#include <hb-ot.h>
+#include <harfbuzz/hb-ot.h>
 
 // see cpascal.h
 #define printcstring(STR)        \

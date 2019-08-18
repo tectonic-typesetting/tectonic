@@ -1,5 +1,8 @@
-use std::path::PathBuf;
+// Copyright 2019 the Tectonic Project
+// Licensed under the MIT License.
+
 use app_dirs::{AppDataType, AppDirsError};
+use std::path::PathBuf;
 
 pub use app_dirs::sanitized;
 

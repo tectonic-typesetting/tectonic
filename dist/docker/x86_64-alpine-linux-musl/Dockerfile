@@ -22,7 +22,7 @@ RUN sh /setup_unpriv.sh
 # happen:
 
 ADD cargo-config.toml /alpine/home/rust/.cargo/config
-ENV RUSTFLAGS="-L /alpine/usr/lib -l static=expat -l static=uuid -l static=stdc++ -C target-feature=+crt-static"
+ENV RUSTFLAGS="-L /alpine/usr/lib -l static=expat -l static=bz2 -l static=uuid -l static=stdc++ -C target-feature=+crt-static"
 ENV TARGET_CC="x86_64-unknown-linux-musl-cc"
 ENV TARGET_CXX="x86_64-unknown-linux-musl-g++"
 ENV PKG_CONFIG_ALLOW_CROSS=1
