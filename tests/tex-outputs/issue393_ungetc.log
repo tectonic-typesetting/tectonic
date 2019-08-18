@@ -1,0 +1,12 @@
+**
+(issue393_ungetc.tex
+Overfull \vbox (161.76743pt too high) has occurred while \output is active
+\vbox(643.20255+0.0)x614.29498
+.\XeTeXpdffile( issue393_ungetc_trigger.pdf"
+.\glue(\topskip) 10.0
+.\hbox(0.0+0.0)x469.75499
+.\glue 0.0 plus 1.0fill
+
+
+[1] )
+Output written on issue393_ungetc.xdv (1 page, 284 bytes).

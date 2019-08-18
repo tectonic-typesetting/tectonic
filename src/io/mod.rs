@@ -205,7 +205,21 @@ impl InputFeatures for InputHandle {
                 self.ungetc_char = None;
             }
         }
-        self.inner.try_seek(pos)
+
+        let mut offset = self.inner.try_seek(pos)?;
+
+        // If there was an ungetc, the effective position in the stream is one
+        // byte before that of the underlying handle. Some of the code does
+        // noop seeks to get the current offset for various file parsing
+        // needs, so it's important that we return the right value. It should
+        // never happen that the underlying stream thinks that the offset is
+        // zero after we've ungetc'ed -- famous last words?
+
+        if self.ungetc_char.is_some() {
+            offset -= 1;
+        }
+
+        Ok(offset)
     }
 }
 

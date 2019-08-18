@@ -159,6 +159,15 @@ impl TestCase {
 
 // Keep these alphabetized.
 
+/// An issue triggered by a bug in how the I/O subsystem reported file offsets
+/// after an ungetc() call.
+#[test]
+fn issue393_ungetc() {
+    TestCase::new("issue393_ungetc")
+        .expect(Ok(TexResult::Warnings))
+        .go()
+}
+
 #[test]
 fn md5_of_hello() {
     TestCase::new("md5_of_hello").check_pdf(true).go()
