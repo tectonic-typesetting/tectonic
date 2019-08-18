@@ -19,10 +19,10 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use crate::app_dirs;
 use crate::errors::{ErrorKind, Result};
-use crate::io::Bundle;
 use crate::io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use crate::io::local_cache::LocalCache;
 use crate::io::zipbundle::ZipBundle;
+use crate::io::Bundle;
 use crate::status::StatusBackend;
 
 /// Awesome hack time!!!
