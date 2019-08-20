@@ -1937,20 +1937,12 @@ TECkit_CreateConverter(
 	TECkit_Status	status = kStatus_NoError;
 	Converter*	cnv = 0;
 	*converter = 0;
-	try {
-		cnv = new Converter(mapping, mappingSize, mapForward, inputForm, outputForm);
-		status = cnv->creationStatus();
-		if (status == kStatus_NoError)
-			*converter = (TECkit_Converter)cnv;
-		else
-			delete cnv;
-	}
-	catch (Converter::Exception e) {
-		status = e.errorCode;
-	}
-	catch (...) {
-		status = kStatus_Exception;
-	}
+	cnv = new Converter(mapping, mappingSize, mapForward, inputForm, outputForm);
+	status = cnv->creationStatus();
+	if (status == kStatus_NoError)
+		*converter = (TECkit_Converter)cnv;
+	else
+		delete cnv;
 	return status;
 }
 

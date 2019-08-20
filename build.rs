@@ -325,6 +325,8 @@ fn main() {
         // "-Wunreachable-code-aggresive",
         "-Wno-unused-parameter",
         "-Wno-implicit-fallthrough",
+        "-fno-exceptions",
+        "-fno-rtti",
     ];
 
     for flag in &cppflags {
