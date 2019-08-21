@@ -30,7 +30,7 @@ use crate::util::test_path;
 
 const DEBUG: bool = false; // TODO: this is kind of ugly
 
-/// A stunted version of cli_driver:FileSummary for examining the format file
+/// A stunted version of driver::FileSummary for examining the format file
 /// SHA256 sum.
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct FileSummary {
