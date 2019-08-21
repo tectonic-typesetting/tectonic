@@ -171,15 +171,6 @@ public:
 	void				GetFlags(UInt32& sourceFlags, UInt32& targetFlags) const;
 	bool				GetNamePtr(UInt16 inNameID, const Byte*& outNamePtr, UInt32& outNameLen) const;
 
-	class Exception
-	{
-	public:
-						Exception(UInt32 errCode)
-							: errorCode(errCode)
-							{ }
-		UInt32			errorCode;
-	};
-
 	long				creationStatus() const
 							{ return status; }
 
