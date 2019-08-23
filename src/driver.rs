@@ -11,7 +11,6 @@
 //! For an example of how to use this module, see `src/bin/tectonic.rs`, which contains tectonic's main
 //! CLI program.
 
-use aho_corasick::AhoCorasick;
 use std::collections::{HashMap, HashSet};
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
@@ -866,18 +865,7 @@ impl ProcessingSession {
         } else {
             self.tex_pass(None, status)?;
 
-            let use_bibtex = {
-                if let Some(auxdata) = self.io.mem.files.borrow().get(&self.tex_aux_path) {
-                    // It's way overkill to use aho-corasick for a single string, but rust doesn't
-                    // have a good default story for searching in a Vec<u8>.
-                    let cite_aut = AhoCorasick::new(vec!["\\bibdata"]);
-                    cite_aut.find(auxdata).is_some()
-                } else {
-                    false
-                }
-            };
-
-            if use_bibtex {
+            if self.use_bibtex() {
                 self.bibtex_pass(status)?;
                 Some(String::new())
             } else {
@@ -945,6 +933,22 @@ impl ProcessingSession {
         }
 
         Ok(0)
+    }
+
+    fn use_bibtex(&self) -> bool {
+        const BIBDATA: &[u8] = b"\\bibdata";
+
+        self.io
+            .mem
+            .files
+            .borrow()
+            .get(&self.tex_aux_path)
+            .map(|data| {
+                // We used to use aho-corasick crate here, but it was removed to reduce the code
+                // size.
+                data.windows(BIBDATA.len()).any(|s| s == BIBDATA)
+            })
+            .unwrap_or(false)
     }
 
     /// Use the TeX engine to generate a format file.

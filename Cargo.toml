@@ -40,7 +40,6 @@ sha2 = "^0.8"
 vcpkg = "0.2.7"
 
 [dependencies]
-aho-corasick = "^0.7"
 app_dirs = "^1.1"
 clap = "^2.33"
 error-chain = "^0.12"
