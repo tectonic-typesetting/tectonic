@@ -218,8 +218,18 @@ if $is_main_build ; then
     travis_fold_end cargo_kcov
 fi
 
-# If we're a "continuous deployment" build, we should push up artifacts for
-# the "continuous" pseudo-release. Right now, all we do is make an AppImage
+# We also build the docs/ mdbook for the main build.
+
+if $is_main_build ; then
+    travis_fold_start docs_mdbook "mdbook build docs" verbose
+    dist/build-mdbook.sh docs
+    travis_fold_end docs_mdbook
+fi
+
+# If we're a "continuous deployment" build, we should push out various artifacts.
+#
+# We maintain a "continuous" pseudo-release on GitHub for binary artifacts
+# that people might want to download. Right now, all we do is make an AppImage
 # for the main build. I believe that the upload script that we use deletes the
 # "continuous" release every time it runs, so if we want different elements of
 # the build matrix to contribute various artifacts, we're going to need to
@@ -241,6 +251,14 @@ if $is_continuous_deployment_build; then
         UPDATE_INFORMATION="gh-releases-zsync|$repo_info|continuous|tectonic-*.AppImage.zsync" \
             dist/appimage/build.sh
         bash ./upload.sh dist/appimage/tectonic-*.AppImage*
+
+        # Deploy the docs book
+        dist/force-push-tree.sh \
+            docs/book \
+            https://github.com/tectonic-typesetting/book.git \
+            latest \
+            "docs mdbook @ $TRAVIS_COMMIT"
+
         travis_fold_end continuous
     fi
 
