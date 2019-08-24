@@ -187,6 +187,8 @@ fi
 
 # OK, the biggie: does it compile and pass the test suite?
 
+export RUST_BACKTRACE=1
+
 if $is_docker_build ; then
     travis_fold_start docker_build "docker build" verbose
     docker build --build-arg=uid=$(id -u) -t ttci-$IMAGE dist/docker/$IMAGE/
