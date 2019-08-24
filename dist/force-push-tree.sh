@@ -24,7 +24,6 @@
 # magical.
 
 set -e
-set -x # TEMP DEBUG
 
 # Parameters
 

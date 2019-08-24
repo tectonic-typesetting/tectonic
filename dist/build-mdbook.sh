@@ -12,7 +12,6 @@
 # $1 - path to the mdbook directory in this project, relative to PWD
 
 set -e
-set -x # TEMP DEBUG
 
 # Parameters
 

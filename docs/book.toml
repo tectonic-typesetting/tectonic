@@ -1,10 +1,11 @@
 [book]
 title = "The Tectonic Typesetting System"
-authors = ["Tectonic Contributers"]
-description = "a book documenting the tectonic project for developers"
+authors = ["Tectonic Contributors"]
+description = "A manual for the Tectonic typesetting system"
 language = "en"
 multilingual = false
 src = "src"
+
 [output.html]
 # see lively issue: https://github.com/rust-lang-nursery/mdBook/issues/847
 google-analytics = false
