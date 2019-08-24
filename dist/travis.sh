@@ -120,10 +120,12 @@ if [[ "$TRAVIS_BRANCH" == master && "$TRAVIS_EVENT_TYPE" == push && "$TRAVIS_TAG
     # above, so this seems to be a tagged release. As above, this variable can
     # be true with $is_main_build being false.
     is_release_build=true
+    release_version="$(echo "$TRAVIS_TAG" |sed -e 's/^v//')"
 else
     is_release_build=false
+    release_version=none
 fi
-echo "is_release_build: $is_release_build"
+echo "is_release_build: $is_release_build ($release_version)"
 travis_fold_end env
 
 # The special tag "continuous" is used to maintain a GitHub "release" that
@@ -285,6 +287,13 @@ if $is_release_build; then
         chmod 600 /tmp/deploy_key
         bash dist/arch/deploy.sh
         travis_fold_end release
+
+        # Deploy the docs book (UNTESTED as of 0.1.11!)
+        dist/force-push-tree.sh \
+            docs/book \
+            https://github.com/tectonic-typesetting/book.git \
+            "$release_version" \
+            "docs mdbook @ v$release_version"
     fi
 
     # TODO: Do something with the Linux static build?
