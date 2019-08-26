@@ -1012,7 +1012,7 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.9.19"
+version = "0.9.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "base64 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1247,7 +1247,7 @@ dependencies = [
  "md-5 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pkg-config 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "reqwest 0.9.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "reqwest 0.9.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.99 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha2 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "tectonic_xdv 0.1.9-dev",
@@ -1739,7 +1739,7 @@ dependencies = [
 "checksum regex 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "88c3d9193984285d544df4a30c23a4e62ead42edf70a4452ceb76dac1ce05c26"
 "checksum regex-syntax 0.6.11 (registry+https://github.com/rust-lang/crates.io-index)" = "b143cceb2ca5e56d5671988ef8b15615733e7ee16cd348e064333b251b89343f"
 "checksum remove_dir_all 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "4a83fa3702a688b9359eccba92d153ac33fd2e8462f9e0e3fdf155239ea7792e"
-"checksum reqwest 0.9.19 (registry+https://github.com/rust-lang/crates.io-index)" = "1d0777154c2c3eb54f5c480db01de845652d941e47191277cc673634c3853939"
+"checksum reqwest 0.9.20 (registry+https://github.com/rust-lang/crates.io-index)" = "0f6d896143a583047512e59ac54a215cb203c29cc941917343edea3be8df9c78"
 "checksum rustc-demangle 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)" = "4c691c0e608126e00913e33f0ccf3727d5fc84573623b8d65b2df340b5201783"
 "checksum rustc_version 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "138e3e0acb6c9fb258b19b67cb8abd63c00679d2851805ea151465464fe9030a"
 "checksum ryu 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c92464b447c0ee8c4fb3824ecc8383b81717b9f1e74ba2e72540aef7b9f82997"
