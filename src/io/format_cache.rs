@@ -84,7 +84,7 @@ impl IoProvider for FormatCache {
             OpenResult::Err(e) => return OpenResult::Err(e),
         };
 
-        OpenResult::Ok(InputHandle::new(
+        OpenResult::Ok(InputHandle::new_read_only(
             name,
             BufReader::new(f),
             InputOrigin::Other,
