@@ -343,7 +343,7 @@ typedef struct {
 /* Functions originating in texmfmp.c */
 
 void getmd5sum(int32_t s, bool file);
-void get_date_and_time (int32_t *, int32_t *, int32_t *, int32_t *);
+void get_date_and_time (time_t, int32_t *, int32_t *, int32_t *, int32_t *);
 
 char *gettexstring(str_number);
 bool is_new_source(str_number, int);
@@ -1095,7 +1095,7 @@ cur_length(void) {
 
 
 /* Tectonic related functions */
-tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
+tt_history_t tt_run_engine(char *dump_name, char *input_file_name, time_t build_date);
 
 
 /* formerly xetex.h: */

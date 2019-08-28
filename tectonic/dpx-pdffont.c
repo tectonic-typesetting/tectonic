@@ -80,47 +80,6 @@ pdf_font_set_dpi (int font_dpi)
   PKFont_set_dpi(font_dpi);
 }
 
-
-/* If an environment variable SOURCE_DATE_EPOCH is correctly defined like
- * SOURCE_DATE_EPOCH=1456304492, then returns this value, to be used as the
- * 'current time', otherwise returns INVALID_EPOCH_VALUE (= (time_t)-1).
- * In the case of Microsoft Visual Studio 2010, the value should be less
- * than 32535291600.
- */
-
-time_t
-get_unique_time_if_given(void)
-{
-  int64_t epoch;
-  char *endptr;
-  time_t ret = INVALID_EPOCH_VALUE;
-  int got_it;
-
-#ifdef _WIN32
-  /* A getenv() API exists on Windows but it has different semantics than
-   * GetEnvironmentVariable() that break the test suite. */
-  char source_date_epoch[256];
-  DWORD rv;
-
-  rv = GetEnvironmentVariable("SOURCE_DATE_EPOCH", source_date_epoch, 256);
-  got_it = (rv != 0) && (rv < 256);
-#else
-  const char *source_date_epoch;
-
-  source_date_epoch = getenv("SOURCE_DATE_EPOCH");
-  got_it = (source_date_epoch != NULL);
-#endif
-
-  if (got_it) {
-    errno = 0;
-    epoch = strtoll(source_date_epoch, &endptr, 10);
-    if (!(*endptr != '\0' || errno != 0)) {
-      ret = (time_t) epoch;
-    }
-  }
-  return ret;
-}
-
 /* If we're using deterministic "unique" tags, `state` is a counter
  * incremented every time we generate a tag. If we're emulating stock
  * xdvipdfmx behavior, it is a boolean flag indicating whether we need to seed
@@ -144,6 +103,7 @@ pdf_font_set_deterministic_unique_tags(int value)
 void
 pdf_font_make_uniqueTag (char *tag)
 {
+  // TODO: remove randomized tag emulation
   int    i;
   char   ch;
 
@@ -156,11 +116,7 @@ pdf_font_make_uniqueTag (char *tag)
   /* below, stock xdvipdfmx behavior: randomized tags */
 
   if (unique_tag_state) {
-    time_t current_time;
-    current_time = get_unique_time_if_given();
-    if (current_time == INVALID_EPOCH_VALUE)
-      current_time = time(NULL);
-    srand(current_time);
+    srand(0);
     unique_tag_state = 0;
   }
 

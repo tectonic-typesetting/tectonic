@@ -18,6 +18,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::str::FromStr;
+use std::time::SystemTime;
 
 use crate::digest::DigestData;
 use crate::engines::IoEventBackend;
@@ -323,6 +324,7 @@ pub struct ProcessingSessionBuilder {
     keep_intermediates: bool,
     keep_logs: bool,
     synctex: bool,
+    build_date: Option<SystemTime>,
 }
 
 impl ProcessingSessionBuilder {
@@ -461,6 +463,13 @@ impl ProcessingSessionBuilder {
         self
     }
 
+    /// Sets the date and time of the processing session.
+    /// See `TexEngine::build_date` for mor information.
+    pub fn build_date(&mut self, date: SystemTime) -> &mut Self {
+        self.build_date = Some(date);
+        self
+    }
+
     /// Creates a `ProcessingSession`.
     pub fn create(self, status: &mut dyn StatusBackend) -> Result<ProcessingSession> {
         let mut io = IoSetupBuilder::default();
@@ -548,6 +557,7 @@ impl ProcessingSessionBuilder {
             keep_logs: self.keep_logs,
             noted_tex_warnings: false,
             synctex_enabled: self.synctex,
+            build_date: self.build_date.unwrap_or(SystemTime::UNIX_EPOCH),
         })
     }
 }
@@ -604,6 +614,9 @@ pub struct ProcessingSession {
     keep_logs: bool,
     noted_tex_warnings: bool,
     synctex_enabled: bool,
+
+    /// See `TexEngine::with_date` and `XdvipdfmxEngine::with_date`.
+    build_date: SystemTime,
 }
 
 const DEFAULT_MAX_TEX_PASSES: usize = 6;
@@ -1078,6 +1091,7 @@ impl ProcessingSession {
                 .initex_mode(self.output_format == OutputFormat::Format)
                 .synctex(self.synctex_enabled)
                 .semantic_pagination(self.output_format == OutputFormat::Html)
+                .build_date(self.build_date)
                 .process(
                     &mut stack,
                     &mut self.events,
@@ -1154,7 +1168,7 @@ impl ProcessingSession {
     fn xdvipdfmx_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
         {
             let mut stack = self.io.as_stack();
-            let mut engine = XdvipdfmxEngine::new();
+            let mut engine = XdvipdfmxEngine::new().with_date(self.build_date);
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
             engine.process(
                 &mut stack,

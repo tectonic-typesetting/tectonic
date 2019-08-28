@@ -6,10 +6,12 @@ use tectonic;
 
 use structopt::StructOpt;
 
+use std::env;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process;
 use std::str::FromStr;
+use std::time;
 
 use tectonic::config::PersistentConfig;
 use tectonic::driver::{OutputFormat, PassSetting, ProcessingSessionBuilder};
@@ -177,6 +179,18 @@ fn inner(
     } else {
         sess_builder.bundle(config.default_bundle(only_cached, status)?);
     }
+
+    let build_date_str = env::var("SOURCE_DATE_EPOCH").ok();
+    let build_date = match build_date_str {
+        Some(s) => {
+            let epoch = u64::from_str_radix(&s, 10).expect("invalid build date (not a number)");
+            time::SystemTime::UNIX_EPOCH
+                .checked_add(time::Duration::from_secs(epoch))
+                .expect("time overflow")
+        }
+        None => time::SystemTime::now(),
+    };
+    sess_builder.build_date(build_date);
 
     let mut sess = sess_builder.create(status)?;
     let result = sess.run(status);

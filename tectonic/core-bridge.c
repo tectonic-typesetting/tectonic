@@ -52,7 +52,7 @@ tt_get_error_message(void)
  * setjmp aborts and error message extraction. */
 
 int
-tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name)
+tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name, time_t build_date)
 {
     int rv;
 
@@ -63,14 +63,14 @@ tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name)
         return HISTORY_FATAL_ERROR;
     }
 
-    rv = tt_run_engine(dump_name, input_file_name);
+    rv = tt_run_engine(dump_name, input_file_name, build_date);
     tectonic_global_bridge = NULL;
     return rv;
 }
 
 
 int
-dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname, bool compress, bool deterministic_tags)
+dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname, bool compress, bool deterministic_tags, time_t build_date)
 {
     int rv;
 
@@ -81,7 +81,7 @@ dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname, bool co
         return 99;
     }
 
-    rv = dvipdfmx_main(pdfname, dviname, NULL, 0, false, compress, deterministic_tags, false, 0);
+    rv = dvipdfmx_main(pdfname, dviname, NULL, 0, false, compress, deterministic_tags, false, 0, build_date);
     tectonic_global_bridge = NULL;
 
     return rv;

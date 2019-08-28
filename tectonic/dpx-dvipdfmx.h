@@ -33,6 +33,7 @@
 
 extern int is_xdv;
 extern int translate_origin;
+extern time_t source_date_epoch;
 
 int extractbb(int argc, char *argv[]);
 int dvipdfmx_main(
@@ -44,6 +45,7 @@ int dvipdfmx_main(
   bool compress,
   bool deterministic_tags,
   bool quiet,
-  unsigned int verbose);
+  unsigned int verbose,
+  time_t build_date);
 
 #endif /* _DVIPDFMX_H_ */
