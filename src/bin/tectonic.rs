@@ -125,6 +125,7 @@ fn inner(
         sess_builder.bundle(Box::new(config.make_cached_url_provider(
             &u,
             only_cached,
+            None,
             status,
         )?));
     } else {

@@ -70,4 +70,8 @@ serialization = ["serde"]
 # libz-sys = "^1.0"
 
 [dev-dependencies]
+futures = "0.1"
+headers = "0.2"
+hyper = "0.12"
 tempfile = "^3.1"
+tokio = "0.1.22"

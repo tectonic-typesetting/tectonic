@@ -10,14 +10,16 @@
 //! running the command-line client. So we begrudgingly have a *little*
 //! configuration.
 
+use error_chain::bail;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ffi::OsStr;
-use std::fs::File;
-use std::path::PathBuf;
+use std::fs::{self, File};
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use crate::app_dirs;
+use crate::ctry;
 use crate::errors::{ErrorKind, Result};
 use crate::io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use crate::io::local_cache::LocalCache;
@@ -110,18 +112,19 @@ impl PersistentConfig {
         &self,
         url: &str,
         only_cached: bool,
+        custom_cache_root: Option<&Path>,
         status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
         let itb = ITarBundle::<HttpITarIoFactory>::new(url);
 
-        let mut url2digest_path = app_dirs::user_cache_dir("urls")?;
+        let mut url2digest_path = cache_dir("urls", custom_cache_root)?;
         url2digest_path.push(app_dirs::sanitized(url));
 
         let bundle = LocalCache::<ITarBundle<HttpITarIoFactory>>::new(
             itb,
             &url2digest_path,
-            &app_dirs::user_cache_dir("manifests")?,
-            &app_dirs::user_cache_dir("files")?,
+            &cache_dir("manifests", custom_cache_root)?,
+            &cache_dir("files", custom_cache_root)?,
             only_cached,
             status,
         )?;
@@ -134,8 +137,6 @@ impl PersistentConfig {
         file_path: &OsStr,
         _status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
-        use std::path::Path;
-
         let zip_bundle = ZipBundle::<File>::open(Path::new(file_path))?;
 
         Ok(Box::new(zip_bundle) as _)
@@ -172,7 +173,7 @@ impl PersistentConfig {
             return Ok(Box::new(zip_bundle) as _);
         }
         let bundle =
-            self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, status)?;
+            self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, None, status)?;
         Ok(Box::new(bundle) as _)
     }
 
@@ -192,5 +193,18 @@ impl Default for PersistentConfig {
                 url: String::from("https://archive.org/services/purl/net/pkgwpub/tectonic-default"),
             }],
         }
+    }
+}
+
+fn cache_dir(path: &str, custom_cache_root: Option<&Path>) -> Result<PathBuf> {
+    if let Some(root) = custom_cache_root {
+        if !root.is_dir() {
+            bail!("Custom cache path {} is not a directory", root.display());
+        }
+        let full_path = root.join(path);
+        ctry!(fs::create_dir_all(&full_path); "failed to create directory {}", full_path.display());
+        Ok(full_path)
+    } else {
+        app_dirs::user_cache_dir(path)
     }
 }
