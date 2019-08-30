@@ -10,19 +10,16 @@
 //! running the command-line client. So we begrudgingly have a *little*
 //! configuration.
 
-use error_chain::bail;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ffi::OsStr;
-use std::fs::{self, File};
+use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use crate::app_dirs;
-use crate::ctry;
 use crate::errors::{ErrorKind, Result};
-use crate::io::itarbundle::{HttpITarIoFactory, ITarBundle};
-use crate::io::local_cache::LocalCache;
+use crate::io::cached_itarbundle::CachedITarBundle;
 use crate::io::zipbundle::ZipBundle;
 use crate::io::Bundle;
 use crate::status::StatusBackend;
@@ -115,19 +112,7 @@ impl PersistentConfig {
         custom_cache_root: Option<&Path>,
         status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
-        let itb = ITarBundle::<HttpITarIoFactory>::new(url);
-
-        let mut url2digest_path = cache_dir("urls", custom_cache_root)?;
-        url2digest_path.push(app_dirs::sanitized(url));
-
-        let bundle = LocalCache::<ITarBundle<HttpITarIoFactory>>::new(
-            itb,
-            &url2digest_path,
-            &cache_dir("manifests", custom_cache_root)?,
-            &cache_dir("files", custom_cache_root)?,
-            only_cached,
-            status,
-        )?;
+        let bundle = CachedITarBundle::new(url, only_cached, custom_cache_root, status)?;
 
         Ok(Box::new(bundle) as _)
     }
@@ -193,18 +178,5 @@ impl Default for PersistentConfig {
                 url: String::from("https://archive.org/services/purl/net/pkgwpub/tectonic-default"),
             }],
         }
-    }
-}
-
-fn cache_dir(path: &str, custom_cache_root: Option<&Path>) -> Result<PathBuf> {
-    if let Some(root) = custom_cache_root {
-        if !root.is_dir() {
-            bail!("Custom cache path {} is not a directory", root.display());
-        }
-        let full_path = root.join(path);
-        ctry!(fs::create_dir_all(&full_path); "failed to create directory {}", full_path.display());
-        Ok(full_path)
-    } else {
-        app_dirs::user_cache_dir(path)
     }
 }

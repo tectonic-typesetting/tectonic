@@ -42,6 +42,7 @@ pub fn hex_to_bytes(text: &str, dest: &mut [u8]) -> Result<()> {
 
 const N_BYTES: usize = 32;
 pub const DIGEST_NAME: &str = "SHA256SUM";
+pub const DIGEST_LEN: usize = 64;
 
 pub fn create() -> DigestComputer {
     Default::default()
