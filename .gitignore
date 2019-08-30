@@ -2,6 +2,7 @@
 /tests/plain.fmt
 /tests/00*00-latex-*.fmt
 /tests/00*00-plain-*.fmt
+/tests/xenia/paper.pdf
 
 # ignore mdbook compiled output (HTML)
 docs/book/*
