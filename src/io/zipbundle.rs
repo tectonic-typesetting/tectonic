@@ -66,7 +66,11 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
             return OpenResult::Err(e.into());
         }
 
-        OpenResult::Ok(InputHandle::new(name, Cursor::new(buf), InputOrigin::Other))
+        OpenResult::Ok(InputHandle::new_read_only(
+            name,
+            Cursor::new(buf),
+            InputOrigin::Other,
+        ))
     }
 }
 

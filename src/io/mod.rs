@@ -71,10 +71,12 @@ pub enum InputOrigin {
 /// computation. The `ExecutionState` code then has further pieces that track
 /// access to nonexistent files, which we treat as being equivalent to an
 /// existing empty file for these purposes.
-
 pub struct InputHandle {
     name: OsString,
     inner: Box<dyn InputFeatures>,
+    /// Indicates that the file cannot be written to (provided by a read-only IoProvider) and
+    /// therefore it is useless to compute the digest.
+    read_only: bool,
     digest: digest::DigestComputer,
     origin: InputOrigin,
     ever_read: bool,
@@ -91,6 +93,24 @@ impl InputHandle {
         InputHandle {
             name: name.to_os_string(),
             inner: Box::new(inner),
+            read_only: false,
+            digest: Default::default(),
+            origin,
+            ever_read: false,
+            did_unhandled_seek: false,
+            ungetc_char: None,
+        }
+    }
+
+    pub fn new_read_only<T: 'static + InputFeatures>(
+        name: &OsStr,
+        inner: T,
+        origin: InputOrigin,
+    ) -> InputHandle {
+        InputHandle {
+            name: name.to_os_string(),
+            inner: Box::new(inner),
+            read_only: true,
             digest: Default::default(),
             origin,
             ever_read: false,
@@ -114,13 +134,13 @@ impl InputHandle {
     }
 
     /// Consumes the object and returns the SHA256 sum of the content that was
-    /// written. No digest is returned if there was ever a seek on the input
+    /// read. No digest is returned if there was ever a seek on the input
     /// stream, since in that case the results will not be reliable. We also
     /// return None if the stream was never read, which is another common
     /// TeX access pattern: files are opened, immediately closed, and then
-    /// opened again.
+    /// opened again. Finally, no digest is returned if the file is marked read-only.
     pub fn into_name_digest(self) -> (OsString, Option<DigestData>) {
-        if self.did_unhandled_seek || !self.ever_read {
+        if self.did_unhandled_seek || !self.ever_read || self.read_only {
             (self.name, None)
         } else {
             (self.name, Some(DigestData::from(self.digest)))
@@ -174,7 +194,9 @@ impl Read for InputHandle {
 
         self.ever_read = true;
         let n = self.inner.read(buf)?;
-        self.digest.input(&buf[..n]);
+        if !self.read_only {
+            self.digest.input(&buf[..n]);
+        }
         Ok(n)
     }
 }
