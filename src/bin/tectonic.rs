@@ -2,12 +2,14 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
-use clap::crate_version;
 use tectonic;
 
+use structopt::StructOpt;
+
+use clap::crate_version;
 use clap::{App, Arg, ArgMatches};
 use std::fs::File;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process;
 
 use tectonic::config::PersistentConfig;
@@ -19,6 +21,26 @@ use tectonic::status::{ChatterLevel, StatusBackend};
 
 use tectonic::{ctry, errmsg, tt_error, tt_error_styled, tt_note};
 
+#[derive(Debug, StructOpt)]
+#[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
+struct Opt {
+    /// The name of the "format" file used to initialize the TeX engine
+    #[structopt(long, short, name = "PATH", default_value = "latex")]
+    format: String,
+    /// Use this Zip-format bundle file to find resource files instead of the default
+    #[structopt(
+        takes_value(true),
+        parse(from_os_str),
+        long,
+        short,
+        name = "zip_file_path"
+    )]
+    bundle: PathBuf,
+    /// Use this URL find resource files instead of the default
+    #[structopt(takes_value(true), long, short, name = "url")]
+    web_bundle: String,
+    // TODO add URL validation
+}
 fn inner(
     args: ArgMatches,
     config: PersistentConfig,
@@ -154,6 +176,8 @@ fn inner(
 }
 
 fn main() {
+    let opt = Opt::from_args();
+    println!("{:?}", opt);
     let matches = App::new("Tectonic")
         .version(crate_version!())
         .about("Process a (La)TeX document")

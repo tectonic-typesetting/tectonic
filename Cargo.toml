@@ -42,6 +42,7 @@ vcpkg = "0.2.7"
 [dependencies]
 app_dirs = "^1.1"
 clap = "^2.33"
+structopt = "0.3"
 error-chain = "^0.12"
 flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
 fs2 = "^0.4"
