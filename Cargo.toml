@@ -26,7 +26,7 @@ travis-ci = { repository = "tectonic-typesetting/tectonic" }
 codecov = { repository = "tectonic-typesetting/tectonic", service = "github" }
 
 [workspace]
-members = ["xdv"]
+members = ["engine", "xdv"]
 
 [lib]
 name = "tectonic"
@@ -53,6 +53,7 @@ md-5 = "^0.8"
 reqwest = "^0.9"
 sha2 = "^0.8"
 serde = { version = "^1.0", features = ["derive"], optional = true }
+tectonic_engine = { path = "engine", version = "0.0.1-dev" }
 tectonic_xdv = { path = "xdv", version = "0.1.9-dev" }
 termcolor = "^1.0"
 toml = "^0.5"

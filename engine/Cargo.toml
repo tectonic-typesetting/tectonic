@@ -1,0 +1,20 @@
+# Copyright 2018 the Tectonic Project
+# Licensed under the MIT License.
+
+[package]
+name = "tectonic_engine"
+version = "0.0.1-dev"
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+Core layout engine of XeTeX and Tectonic.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+
+[dependencies]
+c2rust-bitfields = "0.3"
+libc = "0.2"
