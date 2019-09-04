@@ -6,8 +6,7 @@ use tectonic;
 
 use structopt::StructOpt;
 
-use clap::crate_version;
-use clap::{App, Arg, ArgMatches};
+use clap::ArgMatches;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process;
@@ -24,6 +23,9 @@ use tectonic::{ctry, errmsg, tt_error, tt_error_styled, tt_note};
 #[derive(Debug, StructOpt)]
 #[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
 struct Opt {
+    /// The file to process, or "-" to process the standard input stream"
+    #[structopt(name = "INPUT", parse(from_os_str))]
+    input: PathBuf,
     /// The name of the "format" file used to initialize the TeX engine
     #[structopt(long, short, name = "PATH", default_value = "latex")]
     format: String,
@@ -35,11 +37,38 @@ struct Opt {
         short,
         name = "zip_file_path"
     )]
-    bundle: PathBuf,
+    bundle: Option<PathBuf>,
     /// Use this URL find resource files instead of the default
     #[structopt(takes_value(true), long, short, name = "url")]
-    web_bundle: String,
     // TODO add URL validation
+    web_bundle: Option<String>,
+    /// How much chatter to print when running
+    #[structopt(long = "chatter", short, name = "LEVEL", default_value = "default", possible_values(&["default", "minimal"]))]
+    chatter_level: String,
+    /// Use only resource files cached locally
+    #[structopt(short = "C")]
+    only_cached: bool,
+    /// The kind of output to generate
+    #[structopt(short, name = "format", default_value = "pdf", possible_values(&["pdf", "html", "xdv", "aux", "format"]))]
+    outfmt: String,
+    /// Write Makefile-format rules expressing the dependencies of this run to <DEST_PATH>
+    #[structopt(long, name = "DEST_PATH")]
+    makefile_rules: Option<String>,
+    /// Which engines to run
+    #[structopt(long, default_value = "default", possible_values(&["default", "tex", "bibtex_first"]))]
+    pass: String,
+    /// Rerun the TeX engine exactly this many times after the first
+    #[structopt(name = "count", long = "reruns", short = "r")]
+    reruns: Option<f64>,
+    /// Keep the intermediate files generated during processing
+    #[structopt(short,long)]
+    keep_intermediates: bool,
+    /// Keep the log files generated during processing
+    #[structopt(long)]
+    keep_logs: bool,
+    /// Generate SyncTeX data
+    #[structopt(long)]
+    synctex: bool,
 }
 fn inner(
     args: ArgMatches,
@@ -177,95 +206,16 @@ fn inner(
 
 fn main() {
     let opt = Opt::from_args();
-    println!("{:?}", opt);
-    let matches = App::new("Tectonic")
-        .version(crate_version!())
-        .about("Process a (La)TeX document")
-        .arg(Arg::with_name("format")
-             .long("format")
-             .value_name("PATH")
-             .help("The name of the \"format\" file used to initialize the TeX engine")
-             .default_value("latex"))
-        .arg(Arg::with_name("bundle")
-             .long("bundle")
-             .short("b")
-             .value_name("PATH")
-             .help("Use this Zip-format bundle file to find resource files instead of the default")
-             .takes_value(true))
-        .arg(Arg::with_name("web_bundle")
-             .long("web-bundle")
-             .short("w")
-             .value_name("URL")
-             .help("Use this URL find resource files instead of the default")
-             .takes_value(true))
-        .arg(Arg::with_name("only_cached")
-             .short("C")
-             .long("only-cached")
-             .help("Use only resource files cached locally"))
-        .arg(Arg::with_name("outfmt")
-             .long("outfmt")
-             .value_name("FORMAT")
-             .help("The kind of output to generate")
-             .possible_values(&["pdf", "html", "xdv", "aux", "format"])
-             .default_value("pdf"))
-        .arg(Arg::with_name("makefile_rules")
-             .long("makefile-rules")
-             .value_name("PATH")
-             .help("Write Makefile-format rules expressing the dependencies of this run to <PATH>"))
-        .arg(Arg::with_name("pass")
-             .long("pass")
-             .value_name("PASS")
-             .help("Which engines to run")
-             .possible_values(&["default", "tex", "bibtex_first"])
-             .default_value("default"))
-        .arg(Arg::with_name("reruns")
-             .long("reruns")
-             .short("r")
-             .value_name("COUNT")
-             .help("Rerun the TeX engine exactly this many times after the first"))
-        .arg(Arg::with_name("keep_intermediates")
-             .short("k")
-             .long("keep-intermediates")
-             .help("Keep the intermediate files generated during processing"))
-        .arg(Arg::with_name("keep_logs")
-             .long("keep-logs")
-             .help("Keep the log files generated during processing"))
-        .arg(Arg::with_name("synctex")
-             .long("synctex")
-             .help("Generate SyncTeX data"))
-        .arg(Arg::with_name("hide")
-             .long("hide")
-             .value_name("PATH")
-             .multiple(true)
-             .number_of_values(1)
-             .help("Tell the engine that no file at <PATH> exists, if it tries to read it"))
-        .arg(Arg::with_name("print_stdout")
-             .long("print")
-             .short("p")
-             .help("Print the engine's chatter during processing"))
-        .arg(Arg::with_name("chatter_level")
-             .long("chatter")
-             .short("c")
-             .value_name("LEVEL")
-             .help("How much chatter to print when running")
-             .possible_values(&["default", "minimal"])
-             .default_value("default"))
-        .arg(Arg::with_name("outdir")
-             .long("outdir")
-             .short("o")
-             .value_name("OUTDIR")
-             .help("The directory in which to place output files [default: the directory containing INPUT]"))
-        .arg(Arg::with_name("INPUT")
-             .help("The file to process, or \"-\" to process the standard input stream")
-             .required(true)
-             .index(1))
-        .get_matches ();
-
-    let chatter = match matches.value_of("chatter_level").unwrap() {
-        "default" => ChatterLevel::Normal,
-        "minimal" => ChatterLevel::Minimal,
+    // TODO avoid matching and use enums
+    // in structopt definition
+    let def = "default";
+    let minimal = "minimal";
+    let chatter = match &opt.chatter_level {
+        def => ChatterLevel::Normal,
+        minimal => ChatterLevel::Minimal,
         _ => unreachable!(),
     };
+    println!("{:?}", opt);
 
     // The Tectonic crate comes with a hidden internal "test mode" that forces
     // it to use a specified set of local files, rather than going to the
@@ -315,8 +265,10 @@ fn main() {
     // function ... all so that we can print out the word "error:" in red.
     // This code parallels various bits of the `error_chain` crate.
 
+    /*
     if let Err(ref e) = inner(matches, config, &mut status) {
         status.bare_error(e);
         process::exit(1)
     }
+    */
 }
