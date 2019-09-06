@@ -6,16 +6,20 @@
 
 pub mod termcolor;
 
+use clap::arg_enum;
 use std::cmp;
 use std::fmt::Arguments;
+use structopt::StructOpt;
 
 use crate::errors::Error;
 
-#[repr(usize)]
-#[derive(Clone, Copy, Eq, Debug)]
-pub enum ChatterLevel {
-    Minimal = 0,
-    Normal,
+arg_enum! {
+    #[repr(usize)]
+    #[derive(Clone, Copy, Eq, Debug, StructOpt)]
+    pub enum ChatterLevel {
+        Minimal = 0,
+        Normal,
+    }
 }
 
 impl PartialEq for ChatterLevel {

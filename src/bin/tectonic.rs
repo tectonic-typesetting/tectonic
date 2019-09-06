@@ -42,8 +42,8 @@ struct Opt {
     // TODO add URL validation
     web_bundle: Option<String>,
     /// How much chatter to print when running
-    #[structopt(long = "chatter", short, name = "LEVEL", default_value = "default", possible_values(&["default", "minimal"]))]
-    chatter_level: String,
+    #[structopt(long = "chatter", short, name = "LEVEL", default_value = "normal", possible_values = &ChatterLevel::variants(), case_insensitive = true)]
+    chatter_level: ChatterLevel,
     /// Use only resource files cached locally
     #[structopt(short = "C")]
     only_cached: bool,
@@ -78,11 +78,7 @@ struct Opt {
     #[structopt(name = "OUTDIR", short, parse(from_os_str))]
     outdir: Option<PathBuf>,
 }
-fn inner(
-    args: Opt,
-    config: PersistentConfig,
-    status: &mut TermcolorStatusBackend,
-) -> Result<()> {
+fn inner(args: Opt, config: PersistentConfig, status: &mut TermcolorStatusBackend) -> Result<()> {
     let mut sess_builder = ProcessingSessionBuilder::default();
     let format_path = args.format;
     sess_builder
@@ -214,15 +210,6 @@ fn inner(
 
 fn main() {
     let args = Opt::from_args();
-    // TODO avoid matching and use enums
-    // in structopt definition
-    let def = "default";
-    let minimal = "minimal";
-    let chatter = match &args.chatter_level {
-        def => ChatterLevel::Normal,
-        minimal => ChatterLevel::Minimal,
-        _ => unreachable!(),
-    };
 
     // The Tectonic crate comes with a hidden internal "test mode" that forces
     // it to use a specified set of local files, rather than going to the
@@ -259,7 +246,7 @@ fn main() {
     // something I'd be relatively OK with since it'd only affect the progam
     // UI, not the processing results).
 
-    let mut status = TermcolorStatusBackend::new(chatter);
+    let mut status = TermcolorStatusBackend::new(args.chatter_level);
 
     // For now ...
 
