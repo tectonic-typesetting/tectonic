@@ -6,7 +6,6 @@ use tectonic;
 
 use structopt::StructOpt;
 
-use clap::ArgMatches;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process;
@@ -80,20 +79,20 @@ struct Opt {
     outdir: Option<PathBuf>,
 }
 fn inner(
-    args: ArgMatches,
+    args: Opt,
     config: PersistentConfig,
     status: &mut TermcolorStatusBackend,
 ) -> Result<()> {
     let mut sess_builder = ProcessingSessionBuilder::default();
-    let format_path = args.value_of("format").unwrap();
+    let format_path = args.format;
     sess_builder
-        .format_name(format_path)
-        .keep_logs(args.is_present("keep_logs"))
-        .keep_intermediates(args.is_present("keep_intermediates"))
+        .format_name(&format_path)
+        .keep_logs(args.keep_logs)
+        .keep_intermediates(args.keep_intermediates)
         .format_cache_path(config.format_cache_path()?)
-        .synctex(args.is_present("synctex"));
+        .synctex(args.synctex);
 
-    let output_format = match args.value_of("outfmt").unwrap() {
+    let output_format = match &args.outfmt {
         "aux" => OutputFormat::Aux,
         "html" => OutputFormat::Html,
         "xdv" => OutputFormat::Xdv,
@@ -103,7 +102,7 @@ fn inner(
     };
     sess_builder.output_format(output_format);
 
-    let pass = match args.value_of("pass").unwrap() {
+    let pass = match args.pass {
         "default" => PassSetting::Default,
         "bibtex_first" => PassSetting::BibtexFirst,
         "tex" => PassSetting::Tex,
@@ -111,7 +110,7 @@ fn inner(
     };
     sess_builder.pass(pass);
 
-    if let Some(s) = args.value_of("reruns") {
+    if let Some(s) = args.reruns {
         sess_builder.reruns(usize::from_str_radix(s, 10)?);
     }
 
@@ -214,12 +213,12 @@ fn inner(
 }
 
 fn main() {
-    let opt = Opt::from_args();
+    let args = Opt::from_args();
     // TODO avoid matching and use enums
     // in structopt definition
     let def = "default";
     let minimal = "minimal";
-    let chatter = match &opt.chatter_level {
+    let chatter = match &args.chatter_level {
         def => ChatterLevel::Normal,
         minimal => ChatterLevel::Minimal,
         _ => unreachable!(),
@@ -273,10 +272,8 @@ fn main() {
     // function ... all so that we can print out the word "error:" in red.
     // This code parallels various bits of the `error_chain` crate.
 
-    /*
-    if let Err(ref e) = inner(matches, config, &mut status) {
+    if let Err(ref e) = inner(args, config, &mut status) {
         status.bare_error(e);
         process::exit(1)
     }
-    */
 }
