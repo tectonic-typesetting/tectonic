@@ -49,7 +49,7 @@ struct Opt {
     #[structopt(short = "C")]
     only_cached: bool,
     /// The kind of output to generate
-    #[structopt(short, name = "format", default_value = "pdf", possible_values(&["pdf", "html", "xdv", "aux", "format"]))]
+    #[structopt(long, name = "format", default_value = "pdf", possible_values(&["pdf", "html", "xdv", "aux", "format"]))]
     outfmt: String,
     /// Write Makefile-format rules expressing the dependencies of this run to <DEST_PATH>
     #[structopt(long, name = "DEST_PATH")]
@@ -61,7 +61,7 @@ struct Opt {
     #[structopt(name = "count", long = "reruns", short = "r")]
     reruns: Option<f64>,
     /// Keep the intermediate files generated during processing
-    #[structopt(short,long)]
+    #[structopt(short, long)]
     keep_intermediates: bool,
     /// Keep the log files generated during processing
     #[structopt(long)]
@@ -69,6 +69,15 @@ struct Opt {
     /// Generate SyncTeX data
     #[structopt(long)]
     synctex: bool,
+    /// Tell the engine that no file at <HIDE_PATH> exists, if it tries to read it
+    #[structopt(long, name = "hide_path")]
+    hide: Option<Vec<PathBuf>>,
+    /// Print the engine's chatter during processing
+    #[structopt(long = "print", short)]
+    print_stdout: bool,
+    /// The directory in which to place output files [default: the directory containing INPUT]
+    #[structopt(name = "OUTDIR", short, parse(from_os_str))]
+    outdir: Option<PathBuf>,
 }
 fn inner(
     args: ArgMatches,
@@ -215,7 +224,6 @@ fn main() {
         minimal => ChatterLevel::Minimal,
         _ => unreachable!(),
     };
-    println!("{:?}", opt);
 
     // The Tectonic crate comes with a hidden internal "test mode" that forces
     // it to use a specified set of local files, rather than going to the
