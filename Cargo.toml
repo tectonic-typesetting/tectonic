@@ -6,7 +6,6 @@
 name = "tectonic"
 version = "0.1.12-dev"
 authors = ["Peter Williams <peter@newton.cx>"]
-build = "build.rs"
 description = """
 A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
 extension to the classic “Web2C” implementation of TeX and uses the TeXLive distribution
@@ -31,13 +30,6 @@ members = ["engine", "xdv"]
 [lib]
 name = "tectonic"
 crate-type = ["rlib"]
-
-[build-dependencies]
-cc = "^1.0"
-pkg-config = "^0.3"  # note: sync dist/docker/*/pkg-config-rs.sh with the version in Cargo.lock
-regex = "^1.1"
-sha2 = "^0.8"
-vcpkg = "0.2.7"
 
 [dependencies]
 app_dirs = "^1.1"

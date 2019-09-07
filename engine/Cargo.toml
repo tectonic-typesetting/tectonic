@@ -8,12 +8,20 @@ authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Core layout engine of XeTeX and Tectonic.
 """
+build = "build.rs"
 homepage = "https://tectonic-typesetting.github.io/"
 documentation = "https://docs.rs/tectonic"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
 edition = "2018"
+
+[build-dependencies]
+cc = "^1.0"
+pkg-config = "^0.3"  # note: sync dist/docker/*/pkg-config-rs.sh with the version in Cargo.lock
+regex = "^1.1"
+sha2 = "^0.8"
+vcpkg = "0.2.7"
 
 [dependencies]
 c2rust-bitfields = "0.3"
