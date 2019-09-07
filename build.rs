@@ -202,8 +202,7 @@ fn main() {
         ccfg.flag_if_supported(flag);
     }
 
-    ccfg
-        .define("HAVE_ZLIB", "1")
+    ccfg.define("HAVE_ZLIB", "1")
         .define("HAVE_ZLIB_COMPRESS2", "1")
         .define("ZLIB_CONST", "1")
         .include(".");

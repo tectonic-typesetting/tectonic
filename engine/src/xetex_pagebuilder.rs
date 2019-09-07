@@ -5,7 +5,7 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-#![feature(const_raw_ptr_to_usize_cast)]
+
 extern crate libc;
 extern "C" {
     /* Needed here for UFILE */

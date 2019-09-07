@@ -5,7 +5,7 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-#![feature(const_raw_ptr_to_usize_cast, extern_types)]
+
 extern crate libc;
 extern "C" {
     /* A deeper object hierarchy will be considered as (illegal) loop. */

@@ -5,7 +5,7 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-#![feature(ptr_wrapping_offset_from)]
+
 extern crate libc;
 extern "C" {
     #[no_mangle]

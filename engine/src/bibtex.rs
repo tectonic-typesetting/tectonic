@@ -5,7 +5,7 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-#![feature(c_variadic, const_raw_ptr_to_usize_cast)]
+
 extern crate libc;
 extern "C" {
     /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API

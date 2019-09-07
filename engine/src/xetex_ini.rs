@@ -5,7 +5,7 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-#![feature(const_raw_ptr_to_usize_cast)]
+
 extern crate libc;
 extern "C" {
     #[no_mangle]
@@ -2713,8 +2713,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                             u += 1;
                             v += 1;
                             if !(u
-                                != *str_start
-                                    .offset(((k + 1i32) as libc::c_long - 65536) as isize))
+                                != *str_start.offset(((k + 1i32) as libc::c_long - 65536) as isize))
                             {
                                 current_block = 8732226822098929438;
                                 break;
@@ -5651,8 +5650,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                     fmt_in,
                                 );
                                 if !(x < 0i32) {
-                                    if x as libc::c_long > 2097151 - strings_free as libc::c_long
-                                    {
+                                    if x as libc::c_long > 2097151 - strings_free as libc::c_long {
                                         _tt_abort(
                                             b"must increase sup_strings\x00" as *const u8
                                                 as *const libc::c_char,

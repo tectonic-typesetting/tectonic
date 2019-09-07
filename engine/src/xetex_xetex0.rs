@@ -5,7 +5,7 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-#![feature(const_raw_ptr_to_usize_cast, extern_types)]
+
 extern crate libc;
 extern "C" {
     pub type XeTeXLayoutEngine_rec;
@@ -2030,13 +2030,13 @@ pub unsafe extern "C" fn print_delimiter(mut p: int32_t) {
     let mut a: int32_t = 0;
     a = (((*mem.offset(p as isize)).b16.s3 as libc::c_int % 256i32 * 256i32) as libc::c_long
         + ((*mem.offset(p as isize)).b16.s2 as libc::c_long
-            + ((*mem.offset(p as isize)).b16.s3 as libc::c_int / 256i32) as libc::c_long
-                * 65536)) as int32_t;
+            + ((*mem.offset(p as isize)).b16.s3 as libc::c_int / 256i32) as libc::c_long * 65536))
+        as int32_t;
     a = ((a * 4096i32 + (*mem.offset(p as isize)).b16.s1 as libc::c_int % 256i32 * 256i32)
         as libc::c_long
         + ((*mem.offset(p as isize)).b16.s0 as libc::c_long
-            + ((*mem.offset(p as isize)).b16.s1 as libc::c_int / 256i32) as libc::c_long
-                * 65536)) as int32_t;
+            + ((*mem.offset(p as isize)).b16.s1 as libc::c_int / 256i32) as libc::c_long * 65536))
+        as int32_t;
     if a < 0i32 {
         print_int(a);
     } else {
@@ -3240,8 +3240,7 @@ pub unsafe extern "C" fn show_activities() {
                 if (*nest.offset(p as isize)).prev_graf != 0x830000i32 {
                     print_cstr(b" (language\x00" as *const u8 as *const libc::c_char);
                     print_int(
-                        ((*nest.offset(p as isize)).prev_graf as libc::c_long % 65536)
-                            as int32_t,
+                        ((*nest.offset(p as isize)).prev_graf as libc::c_long % 65536) as int32_t,
                     );
                     print_cstr(b":hyphenmin\x00" as *const u8 as *const libc::c_char);
                     print_int((*nest.offset(p as isize)).prev_graf / 0x400000i32);
@@ -9978,8 +9977,7 @@ pub unsafe extern "C" fn expand() {
                         j += 1;
                         p = (*mem.offset(p as isize)).b32.s1
                     }
-                    if j > first + 1i32 || *buffer.offset(first as isize) as libc::c_long > 65535
-                    {
+                    if j > first + 1i32 || *buffer.offset(first as isize) as libc::c_long > 65535 {
                         no_new_control_sequence = 0i32 != 0;
                         cur_cs = id_lookup(first, j - first);
                         no_new_control_sequence = 1i32 != 0
@@ -13789,8 +13787,7 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                 if cur_val >= 16384i32 {
                                     arith_error = 1i32 != 0
                                 } else {
-                                    cur_val = (cur_val as libc::c_long * 65536
-                                        + f as libc::c_long)
+                                    cur_val = (cur_val as libc::c_long * 65536 + f as libc::c_long)
                                         as int32_t
                                 }
                             }
@@ -15456,7 +15453,8 @@ pub unsafe extern "C" fn read_toks(mut n: int32_t, mut r: int32_t, mut j: int32_
         cur_input.name = m as libc::c_int + 1i32;
         if read_open[m as usize] as libc::c_int == 2i32 {
             /*503:*/
-            _tt_abort(b"terminal input forbidden\x00" as *const u8 as *const libc::c_char); /*505:*/
+            _tt_abort(b"terminal input forbidden\x00" as *const u8 as *const libc::c_char);
+        /*505:*/
         } else {
             if read_open[m as usize] as libc::c_int == 1i32 {
                 /*504:*/
@@ -17196,12 +17194,12 @@ pub unsafe extern "C" fn new_native_character(
                 );
             }
             *str_pool.offset(pool_ptr as isize) =
-                ((c as libc::c_long - 65536) / 1024i32 as libc::c_long
-                    + 0xd800i32 as libc::c_long) as packed_UTF16_code;
+                ((c as libc::c_long - 65536) / 1024i32 as libc::c_long + 0xd800i32 as libc::c_long)
+                    as packed_UTF16_code;
             pool_ptr += 1;
             *str_pool.offset(pool_ptr as isize) =
-                ((c as libc::c_long - 65536) % 1024i32 as libc::c_long
-                    + 0xdc00i32 as libc::c_long) as packed_UTF16_code;
+                ((c as libc::c_long - 65536) % 1024i32 as libc::c_long + 0xdc00i32 as libc::c_long)
+                    as packed_UTF16_code;
             pool_ptr += 1
         } else {
             if pool_ptr + 1i32 > pool_size {

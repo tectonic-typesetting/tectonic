@@ -5,7 +5,7 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-#![feature(extern_types, label_break_value)]
+
 extern crate libc;
 extern "C" {
     pub type pst_obj;

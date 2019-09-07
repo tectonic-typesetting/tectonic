@@ -5,7 +5,7 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-#![feature(const_raw_ptr_to_usize_cast)]
+
 extern crate libc;
 extern "C" {
     #[no_mangle]
@@ -136,8 +136,7 @@ pub unsafe extern "C" fn str_eq_buf(mut s: str_number, mut k: int32_t) -> bool {
         if *buffer.offset(k as isize) as libc::c_long >= 65536 {
             if *str_pool.offset(j as isize) as libc::c_long
                 != 55296
-                    + (*buffer.offset(k as isize) as libc::c_long - 65536)
-                        / 1024 as libc::c_long
+                    + (*buffer.offset(k as isize) as libc::c_long - 65536) / 1024 as libc::c_long
             {
                 return 0i32 != 0;
             } else {
@@ -186,8 +185,7 @@ pub unsafe extern "C" fn str_eq_str(mut s: str_number, mut t: str_number) -> boo
             {
                 return 0i32 != 0;
             }
-        } else if *str_pool
-            .offset(*str_start.offset((s as libc::c_long - 65536) as isize) as isize)
+        } else if *str_pool.offset(*str_start.offset((s as libc::c_long - 65536) as isize) as isize)
             as libc::c_int
             != *str_pool.offset(*str_start.offset((t as libc::c_long - 65536) as isize) as isize)
                 as libc::c_int

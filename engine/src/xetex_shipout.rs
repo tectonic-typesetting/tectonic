@@ -5,7 +5,7 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-#![feature(const_raw_ptr_to_usize_cast)]
+
 extern crate libc;
 extern "C" {
     #[no_mangle]
@@ -3480,9 +3480,8 @@ unsafe extern "C" fn dvi_font_def(mut f: internal_font_number) {
         l = 0i32;
         k = *str_start.offset((*font_name.offset(f as isize) as libc::c_long - 65536) as isize);
         while l == 0i32
-            && k < *str_start.offset(
-                ((*font_name.offset(f as isize) + 1i32) as libc::c_long - 65536) as isize,
-            )
+            && k < *str_start
+                .offset(((*font_name.offset(f as isize) + 1i32) as libc::c_long - 65536) as isize)
         {
             if *str_pool.offset(k as isize) as libc::c_int == ':' as i32 {
                 l = k - *str_start
@@ -3511,10 +3510,9 @@ unsafe extern "C" fn dvi_font_def(mut f: internal_font_number) {
         }
         let mut for_end_0: int32_t = 0;
         k = *str_start.offset((*font_name.offset(f as isize) as libc::c_long - 65536) as isize);
-        for_end_0 = *str_start
-            .offset((*font_name.offset(f as isize) as libc::c_long - 65536) as isize)
-            + l
-            - 1i32;
+        for_end_0 =
+            *str_start.offset((*font_name.offset(f as isize) as libc::c_long - 65536) as isize) + l
+                - 1i32;
         if k <= for_end_0 {
             loop {
                 dvi_out(*str_pool.offset(k as isize) as eight_bits);

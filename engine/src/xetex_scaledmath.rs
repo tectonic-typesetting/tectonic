@@ -123,8 +123,7 @@ pub unsafe extern "C" fn xn_over_d(mut x: scaled_t, mut n: int32_t, mut d: int32
         positive = 0i32 != 0
     }
     t = (x as libc::c_long % 32768 * n as libc::c_long) as int32_t;
-    u = (x as libc::c_long / 32768 * n as libc::c_long + t as libc::c_long / 32768)
-        as int32_t;
+    u = (x as libc::c_long / 32768 * n as libc::c_long + t as libc::c_long / 32768) as int32_t;
     v = ((u % d) as libc::c_long * 32768 + t as libc::c_long % 32768) as int32_t;
     if (u / d) as libc::c_long >= 32768 {
         arith_error = 1i32 != 0
@@ -156,8 +155,7 @@ pub unsafe extern "C" fn round_xn_over_d(
         positive = 0i32 != 0
     }
     t = (x as libc::c_long % 32768 * n as libc::c_long) as int32_t;
-    u = (x as libc::c_long / 32768 * n as libc::c_long + t as libc::c_long / 32768)
-        as int32_t;
+    u = (x as libc::c_long / 32768 * n as libc::c_long + t as libc::c_long / 32768) as int32_t;
     v = ((u % d) as libc::c_long * 32768 + t as libc::c_long % 32768) as int32_t;
     if (u / d) as libc::c_long >= 32768 {
         arith_error = 1i32 != 0

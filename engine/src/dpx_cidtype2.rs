@@ -5,10 +5,6 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-#![feature(const_raw_ptr_to_usize_cast,
-           extern_types,
-           label_break_value,
-           ptr_wrapping_offset_from)]
 extern crate libc;
 extern "C" {
     pub type pdf_obj;
