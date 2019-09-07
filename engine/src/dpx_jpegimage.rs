@@ -1194,11 +1194,11 @@ unsafe extern "C" fn JPEG_copy_stream(
         length = ttstub_input_read(
             handle,
             work_buffer.as_mut_ptr(),
-            (if (1024i32 as libc::c_ulong) < total_size.wrapping_sub(pos) {
+            if (1024i32 as libc::c_ulong) < total_size.wrapping_sub(pos) {
                 1024i32 as libc::c_ulong
             } else {
                 total_size.wrapping_sub(pos)
-            }),
+            },
         ) as libc::c_int;
         if !(length > 0i32) {
             break;

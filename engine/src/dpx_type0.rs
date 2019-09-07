@@ -862,7 +862,7 @@ pub unsafe extern "C" fn Type0Font_cache_find(
             /*
              * Need used_chars to write W, W2.
              */
-            parent_id = CIDFont_get_parent_id(cidfont, (if wmode != 0 { 0i32 } else { 1i32 }));
+            parent_id = CIDFont_get_parent_id(cidfont, if wmode != 0 { 0i32 } else { 1i32 });
             if parent_id < 0i32 {
                 (*font).used_chars = new_used_chars2()
             } else {
