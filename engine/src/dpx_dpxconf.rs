@@ -21,7 +21,7 @@ extern "C" {
 pub type __off_t = libc::c_long;
 pub type __off64_t = libc::c_long;
 pub type size_t = libc::c_ulong;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct paper {
     pub name: *const libc::c_char,
@@ -29,7 +29,7 @@ pub struct paper {
     pub psheight: libc::c_double,
 }
 pub type FILE = _IO_FILE;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
     pub _flags: libc::c_int,
@@ -64,9 +64,10 @@ pub struct _IO_FILE {
 }
 pub type _IO_lock_t = ();
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char,
-                               mut s2: *const libc::c_char) -> bool {
-    if !s1.is_null() && !s2.is_null() { return strcmp(s1, s2) == 0i32 }
+unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+    if !s1.is_null() && !s2.is_null() {
+        return strcmp(s1, s2) == 0i32;
+    }
     return 0i32 != 0;
 }
 /* This is DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
@@ -91,184 +92,220 @@ unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char,
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub static mut paperspecs: [paper; 22] =
-    [{
-         let mut init =
-             paper{name: b"letter\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 612.00f64,
-                   psheight: 792.00f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"legal\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 612.00f64,
-                   psheight: 1008.00f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"ledger\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 1224.00f64,
-                   psheight: 792.00f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"tabloid\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 792.00f64,
-                   psheight: 1224.00f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"a6\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 297.638f64,
-                   psheight: 419.528f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"a5\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 419.528f64,
-                   psheight: 595.276f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"a4\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 595.276f64,
-                   psheight: 841.890f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"a3\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 841.890f64,
-                   psheight: 1190.550f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"b6\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 364.25f64,
-                   psheight: 515.91f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"b5\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 515.91f64,
-                   psheight: 728.50f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"b4\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 728.50f64,
-                   psheight: 1031.81f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"b3\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 1031.81f64,
-                   psheight: 1457.00f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"b5var\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 515.91f64,
-                   psheight: 651.97f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"jisb6\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 364.25f64,
-                   psheight: 515.91f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"jisb5\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 515.91f64,
-                   psheight: 728.50f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"jisb4\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 728.50f64,
-                   psheight: 1031.81f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"jisb3\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 1031.81f64,
-                   psheight: 1457.00f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"isob6\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 354.331f64,
-                   psheight: 498.898f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"isob5\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 498.898f64,
-                   psheight: 708.661f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"isob4\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 708.661f64,
-                   psheight: 1000.630f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: b"isob3\x00" as *const u8 as *const libc::c_char,
-                   pswidth: 1000.630f64,
-                   psheight: 1417.320f64,};
-         init
-     },
-     {
-         let mut init =
-             paper{name: 0 as *const libc::c_char,
-                   pswidth: 0i32 as libc::c_double,
-                   psheight: 0i32 as libc::c_double,};
-         init
-     }];
+pub static mut paperspecs: [paper; 22] = [
+    {
+        let mut init = paper {
+            name: b"letter\x00" as *const u8 as *const libc::c_char,
+            pswidth: 612.00f64,
+            psheight: 792.00f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"legal\x00" as *const u8 as *const libc::c_char,
+            pswidth: 612.00f64,
+            psheight: 1008.00f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"ledger\x00" as *const u8 as *const libc::c_char,
+            pswidth: 1224.00f64,
+            psheight: 792.00f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"tabloid\x00" as *const u8 as *const libc::c_char,
+            pswidth: 792.00f64,
+            psheight: 1224.00f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"a6\x00" as *const u8 as *const libc::c_char,
+            pswidth: 297.638f64,
+            psheight: 419.528f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"a5\x00" as *const u8 as *const libc::c_char,
+            pswidth: 419.528f64,
+            psheight: 595.276f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"a4\x00" as *const u8 as *const libc::c_char,
+            pswidth: 595.276f64,
+            psheight: 841.890f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"a3\x00" as *const u8 as *const libc::c_char,
+            pswidth: 841.890f64,
+            psheight: 1190.550f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"b6\x00" as *const u8 as *const libc::c_char,
+            pswidth: 364.25f64,
+            psheight: 515.91f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"b5\x00" as *const u8 as *const libc::c_char,
+            pswidth: 515.91f64,
+            psheight: 728.50f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"b4\x00" as *const u8 as *const libc::c_char,
+            pswidth: 728.50f64,
+            psheight: 1031.81f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"b3\x00" as *const u8 as *const libc::c_char,
+            pswidth: 1031.81f64,
+            psheight: 1457.00f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"b5var\x00" as *const u8 as *const libc::c_char,
+            pswidth: 515.91f64,
+            psheight: 651.97f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"jisb6\x00" as *const u8 as *const libc::c_char,
+            pswidth: 364.25f64,
+            psheight: 515.91f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"jisb5\x00" as *const u8 as *const libc::c_char,
+            pswidth: 515.91f64,
+            psheight: 728.50f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"jisb4\x00" as *const u8 as *const libc::c_char,
+            pswidth: 728.50f64,
+            psheight: 1031.81f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"jisb3\x00" as *const u8 as *const libc::c_char,
+            pswidth: 1031.81f64,
+            psheight: 1457.00f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"isob6\x00" as *const u8 as *const libc::c_char,
+            pswidth: 354.331f64,
+            psheight: 498.898f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"isob5\x00" as *const u8 as *const libc::c_char,
+            pswidth: 498.898f64,
+            psheight: 708.661f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"isob4\x00" as *const u8 as *const libc::c_char,
+            pswidth: 708.661f64,
+            psheight: 1000.630f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: b"isob3\x00" as *const u8 as *const libc::c_char,
+            pswidth: 1000.630f64,
+            psheight: 1417.320f64,
+        };
+        init
+    },
+    {
+        let mut init = paper {
+            name: 0 as *const libc::c_char,
+            pswidth: 0i32 as libc::c_double,
+            psheight: 0i32 as libc::c_double,
+        };
+        init
+    },
+];
 #[no_mangle]
-pub unsafe extern "C" fn paperinfo(mut ppformat: *const libc::c_char)
- -> *const paper {
+pub unsafe extern "C" fn paperinfo(mut ppformat: *const libc::c_char) -> *const paper {
     let mut ppinfo: *const paper = 0 as *const paper;
-    if ppformat.is_null() { return 0 as *const paper }
-    ppinfo = &*paperspecs.as_ptr().offset(0) as *const paper;
-    while !ppinfo.is_null() &&
-              !(if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
-                    (*ppinfo).name
-                } else { 0 as *const libc::c_char }).is_null() {
-        if streq_ptr(ppformat, (*ppinfo).name) { break ; }
-        ppinfo =
-            if !ppinfo.offset(1).is_null() &&
-                   !(*ppinfo.offset(1)).name.is_null() {
-                ppinfo.offset(1)
-            } else { 0 as *const paper }
+    if ppformat.is_null() {
+        return 0 as *const paper;
     }
-    return if !ppinfo.is_null() &&
-                  !(if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
-                        (*ppinfo).name
-                    } else { 0 as *const libc::c_char }).is_null() {
-               ppinfo
-           } else { 0 as *const paper };
+    ppinfo = &*paperspecs.as_ptr().offset(0) as *const paper;
+    while !ppinfo.is_null()
+        && !(if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
+            (*ppinfo).name
+        } else {
+            0 as *const libc::c_char
+        })
+        .is_null()
+    {
+        if streq_ptr(ppformat, (*ppinfo).name) {
+            break;
+        }
+        ppinfo = if !ppinfo.offset(1).is_null() && !(*ppinfo.offset(1)).name.is_null() {
+            ppinfo.offset(1)
+        } else {
+            0 as *const paper
+        }
+    }
+    return if !ppinfo.is_null()
+        && !(if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
+            (*ppinfo).name
+        } else {
+            0 as *const libc::c_char
+        })
+        .is_null()
+    {
+        ppinfo
+    } else {
+        0 as *const paper
+    };
 }
 /* This is DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
 
@@ -297,31 +334,43 @@ pub unsafe extern "C" fn paperinfo(mut ppformat: *const libc::c_char)
 pub unsafe extern "C" fn dumppaperinfo() {
     let mut ppinfo: *const paper = 0 as *const paper;
     ppinfo = &*paperspecs.as_ptr().offset(0) as *const paper;
-    while !ppinfo.is_null() &&
-              !(if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
-                    (*ppinfo).name
-                } else { 0 as *const libc::c_char }).is_null() {
+    while !ppinfo.is_null()
+        && !(if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
+            (*ppinfo).name
+        } else {
+            0 as *const libc::c_char
+        })
+        .is_null()
+    {
         let mut wd: libc::c_double = 0.;
         let mut ht: libc::c_double = 0.;
-        wd =
+        wd = if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
+            (*ppinfo).pswidth
+        } else {
+            0.0f64
+        };
+        ht = if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
+            (*ppinfo).psheight
+        } else {
+            0.0f64
+        };
+        fprintf(
+            stdout,
+            b"%s: %.2f %.2f (%.2fmm %.2fmm)\n\x00" as *const u8 as *const libc::c_char,
             if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
-                (*ppinfo).pswidth
-            } else { 0.0f64 };
-        ht =
-            if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
-                (*ppinfo).psheight
-            } else { 0.0f64 };
-        fprintf(stdout,
-                b"%s: %.2f %.2f (%.2fmm %.2fmm)\n\x00" as *const u8 as
-                    *const libc::c_char,
-                if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
-                    (*ppinfo).name
-                } else { 0 as *const libc::c_char }, wd, ht,
-                25.4f64 * wd / 72.0f64, 25.4f64 * ht / 72.0f64);
-        ppinfo =
-            if !ppinfo.offset(1).is_null() &&
-                   !(*ppinfo.offset(1)).name.is_null() {
-                ppinfo.offset(1)
-            } else { 0 as *const paper }
-    };
+                (*ppinfo).name
+            } else {
+                0 as *const libc::c_char
+            },
+            wd,
+            ht,
+            25.4f64 * wd / 72.0f64,
+            25.4f64 * ht / 72.0f64,
+        );
+        ppinfo = if !ppinfo.offset(1).is_null() && !(*ppinfo.offset(1)).name.is_null() {
+            ppinfo.offset(1)
+        } else {
+            0 as *const paper
+        }
+    }
 }

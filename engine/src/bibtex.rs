@@ -9,69 +9,77 @@
 extern crate libc;
 extern "C" {
     /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
-   Copyright 2016-2018 the Tectonic Project
-   Licensed under the MIT License.
-*/
+       Copyright 2016-2018 the Tectonic Project
+       Licensed under the MIT License.
+    */
     /* Both XeTeX and bibtex use this enum: */
     /* The weird enum values are historical and could be rationalized. But it is
- * good to write them explicitly since they must be kept in sync with
- * `src/engines/mod.rs`.
- */
+     * good to write them explicitly since they must be kept in sync with
+     * `src/engines/mod.rs`.
+     */
     /* quasi-hack to get the primary input */
     /* Bridge API. Keep synchronized with src/engines/mod.rs. */
     /* These functions are not meant to be used in the C/C++ code. They define the
- * API that we expose to the Rust side of things. */
+     * API that we expose to the Rust side of things. */
     /* The internal, C/C++ interface: */
     /* Global symbols that route through the global API variable. Hopefully we
- * will one day eliminate all of the global state and get rid of all of
- * these. */
+     * will one day eliminate all of the global state and get rid of all of
+     * these. */
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
     fn ttstub_input_getc(handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
-    fn ttstub_input_open(path: *const libc::c_char,
-                         format: tt_input_format_type, is_gz: libc::c_int)
-     -> rust_input_handle_t;
+    fn ttstub_input_open(
+        path: *const libc::c_char,
+        format: tt_input_format_type,
+        is_gz: libc::c_int,
+    ) -> rust_input_handle_t;
     #[no_mangle]
     fn ttstub_output_close(handle: rust_output_handle_t) -> libc::c_int;
     #[no_mangle]
-    fn ttstub_output_write(handle: rust_output_handle_t,
-                           data: *const libc::c_char, len: size_t) -> size_t;
+    fn ttstub_output_write(
+        handle: rust_output_handle_t,
+        data: *const libc::c_char,
+        len: size_t,
+    ) -> size_t;
     #[no_mangle]
-    fn ttstub_output_putc(handle: rust_output_handle_t, c: libc::c_int)
-     -> libc::c_int;
+    fn ttstub_output_putc(handle: rust_output_handle_t, c: libc::c_int) -> libc::c_int;
     #[no_mangle]
     fn ttstub_output_open_stdout() -> rust_output_handle_t;
     #[no_mangle]
-    fn ttstub_output_open(path: *const libc::c_char, is_gz: libc::c_int)
-     -> rust_output_handle_t;
+    fn ttstub_output_open(path: *const libc::c_char, is_gz: libc::c_int) -> rust_output_handle_t;
     #[no_mangle]
     fn strlen(_: *const libc::c_char) -> libc::c_ulong;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char)
-     -> *mut libc::c_char;
+    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
-    fn xrealloc(old_address: *mut libc::c_void, new_size: size_t)
-     -> *mut libc::c_void;
+    fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
     #[no_mangle]
-    fn snprintf(_: *mut libc::c_char, _: libc::c_ulong,
-                _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn snprintf(
+        _: *mut libc::c_char,
+        _: libc::c_ulong,
+        _: *const libc::c_char,
+        _: ...
+    ) -> libc::c_int;
     #[no_mangle]
-    fn vsnprintf(_: *mut libc::c_char, _: libc::c_ulong,
-                 _: *const libc::c_char, _: ::std::ffi::VaList)
-     -> libc::c_int;
+    fn vsnprintf(
+        _: *mut libc::c_char,
+        _: libc::c_ulong,
+        _: *const libc::c_char,
+        _: ::std::ffi::VaList,
+    ) -> libc::c_int;
     #[no_mangle]
     fn _setjmp(_: *mut __jmp_buf_tag) -> libc::c_int;
     #[no_mangle]
     fn longjmp(_: *mut __jmp_buf_tag, _: libc::c_int) -> !;
 }
 pub type __builtin_va_list = [__va_list_tag; 1];
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct __va_list_tag {
     pub gp_offset: libc::c_uint,
@@ -83,7 +91,7 @@ pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
 pub type va_list = __builtin_va_list;
 pub type size_t = libc::c_ulong;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct __sigset_t {
     pub __val: [libc::c_ulong; 16],
@@ -122,7 +130,7 @@ pub type str_number = int32_t;
 /*22: */
 pub type ASCII_code = libc::c_uchar;
 pub type pool_pointer = int32_t;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct __jmp_buf_tag {
     pub __jmpbuf: __jmp_buf,
@@ -132,7 +140,7 @@ pub struct __jmp_buf_tag {
 pub type __jmp_buf = [libc::c_long; 8];
 pub type jmp_buf = [__jmp_buf_tag; 1];
 pub type bib_number = int32_t;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct peekable_input_t {
     pub handle: rust_input_handle_t,
@@ -160,45 +168,48 @@ pub type aux_number = int32_t;
 pub type pds_len = libc::c_uchar;
 pub type pds_type = *const libc::c_char;
 pub type blt_in_range = int32_t;
-unsafe extern "C" fn peekable_open(mut path: *const libc::c_char,
-                                   mut format: tt_input_format_type)
- -> *mut peekable_input_t {
+unsafe extern "C" fn peekable_open(
+    mut path: *const libc::c_char,
+    mut format: tt_input_format_type,
+) -> *mut peekable_input_t {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut peekable: *mut peekable_input_t = 0 as *mut peekable_input_t;
     handle = ttstub_input_open(path, format, 0i32);
-    if handle.is_null() { return 0 as *mut peekable_input_t }
-    peekable =
-        xmalloc((1i32 as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<peekable_input_t>()
-                                                     as libc::c_ulong)) as
-            *mut peekable_input_t;
+    if handle.is_null() {
+        return 0 as *mut peekable_input_t;
+    }
+    peekable = xmalloc(
+        (1i32 as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<peekable_input_t>() as libc::c_ulong),
+    ) as *mut peekable_input_t;
     (*peekable).handle = handle;
     (*peekable).peek_char = -1i32;
     (*peekable).saw_eof = 0i32 != 0;
     return peekable;
 }
-unsafe extern "C" fn peekable_close(mut peekable: *mut peekable_input_t)
- -> libc::c_int {
+unsafe extern "C" fn peekable_close(mut peekable: *mut peekable_input_t) -> libc::c_int {
     let mut rv: libc::c_int = 0;
-    if peekable.is_null() { return 0i32 }
+    if peekable.is_null() {
+        return 0i32;
+    }
     rv = ttstub_input_close((*peekable).handle);
     free(peekable as *mut libc::c_void);
     return rv;
 }
-unsafe extern "C" fn peekable_getc(mut peekable: *mut peekable_input_t)
- -> libc::c_int {
+unsafe extern "C" fn peekable_getc(mut peekable: *mut peekable_input_t) -> libc::c_int {
     let mut rv: libc::c_int = 0;
     if (*peekable).peek_char != -1i32 {
         rv = (*peekable).peek_char;
         (*peekable).peek_char = -1i32;
-        return rv
+        return rv;
     }
     rv = ttstub_input_getc((*peekable).handle);
-    if rv == -1i32 { (*peekable).saw_eof = 1i32 != 0 }
+    if rv == -1i32 {
+        (*peekable).saw_eof = 1i32 != 0
+    }
     return rv;
 }
-unsafe extern "C" fn peekable_ungetc(mut peekable: *mut peekable_input_t,
-                                     mut c: libc::c_int) {
+unsafe extern "C" fn peekable_ungetc(mut peekable: *mut peekable_input_t, mut c: libc::c_int) {
     /*last_lex */
     /*last_fn_class */
     /*last_ilk */
@@ -208,35 +219,45 @@ unsafe extern "C" fn peekable_ungetc(mut peekable: *mut peekable_input_t,
     (*peekable).peek_char = c;
 }
 /* eofeoln.c, adapted for Rusty I/O */
-unsafe extern "C" fn tectonic_eof(mut peekable: *mut peekable_input_t)
- -> bool {
+unsafe extern "C" fn tectonic_eof(mut peekable: *mut peekable_input_t) -> bool {
     /* Check for EOF following Pascal semantics. */
     let mut c: libc::c_int = 0;
-    if peekable.is_null() { return 1i32 != 0 }
-    if (*peekable).saw_eof { return 1i32 != 0 }
+    if peekable.is_null() {
+        return 1i32 != 0;
+    }
+    if (*peekable).saw_eof {
+        return 1i32 != 0;
+    }
     c = peekable_getc(peekable);
-    if c == -1i32 { return 1i32 != 0 }
+    if c == -1i32 {
+        return 1i32 != 0;
+    }
     peekable_ungetc(peekable, c);
     return 0i32 != 0;
 }
 unsafe extern "C" fn eoln(mut peekable: *mut peekable_input_t) -> bool {
     let mut c: libc::c_int = 0;
-    if (*peekable).saw_eof { return 1i32 != 0 }
+    if (*peekable).saw_eof {
+        return 1i32 != 0;
+    }
     c = peekable_getc(peekable);
-    if c != -1i32 { peekable_ungetc(peekable, c); }
+    if c != -1i32 {
+        peekable_ungetc(peekable, c);
+    }
     return c == '\n' as i32 || c == '\r' as i32 || c == -1i32;
 }
 /* end eofeoln.c */
-static mut error_jmpbuf: jmp_buf =
-    [__jmp_buf_tag{__jmpbuf: [0; 8],
-                   __mask_was_saved: 0,
-                   __saved_mask: __sigset_t{__val: [0; 16],},}; 1];
-static mut recover_jmpbuf: jmp_buf =
-    [__jmp_buf_tag{__jmpbuf: [0; 8],
-                   __mask_was_saved: 0,
-                   __saved_mask: __sigset_t{__val: [0; 16],},}; 1];
-static mut standard_output: rust_output_handle_t =
-    0 as *const libc::c_void as *mut libc::c_void;
+static mut error_jmpbuf: jmp_buf = [__jmp_buf_tag {
+    __jmpbuf: [0; 8],
+    __mask_was_saved: 0,
+    __saved_mask: __sigset_t { __val: [0; 16] },
+}; 1];
+static mut recover_jmpbuf: jmp_buf = [__jmp_buf_tag {
+    __jmpbuf: [0; 8],
+    __mask_was_saved: 0,
+    __saved_mask: __sigset_t { __val: [0; 16] },
+}; 1];
+static mut standard_output: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
 static mut pool_size: int32_t = 0;
 static mut max_bib_files: int32_t = 0;
 static mut max_cites: int32_t = 0;
@@ -260,8 +281,7 @@ static mut lex_class: [lex_type; 256] = [0; 256];
 static mut id_class: [id_type; 256] = [0; 256];
 static mut char_width: [int32_t; 256] = [0; 256];
 static mut string_width: int32_t = 0;
-static mut name_of_file: *mut ASCII_code =
-    0 as *const ASCII_code as *mut ASCII_code;
+static mut name_of_file: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
 static mut name_length: int32_t = 0;
 static mut name_ptr: int32_t = 0;
 static mut buf_size: int32_t = 0;
@@ -272,18 +292,14 @@ static mut sv_ptr1: buf_pointer = 0;
 static mut sv_ptr2: buf_pointer = 0;
 static mut tmp_ptr: int32_t = 0;
 static mut tmp_end_ptr: int32_t = 0;
-static mut str_pool: *mut ASCII_code =
-    0 as *const ASCII_code as *mut ASCII_code;
-static mut str_start: *mut pool_pointer =
-    0 as *const pool_pointer as *mut pool_pointer;
+static mut str_pool: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
+static mut str_start: *mut pool_pointer = 0 as *const pool_pointer as *mut pool_pointer;
 static mut pool_ptr: pool_pointer = 0;
 static mut str_ptr: str_number = 0;
 static mut p_ptr1: pool_pointer = 0;
 static mut p_ptr2: pool_pointer = 0;
-static mut hash_next: *mut hash_pointer =
-    0 as *const hash_pointer as *mut hash_pointer;
-static mut hash_text: *mut str_number =
-    0 as *const str_number as *mut str_number;
+static mut hash_next: *mut hash_pointer = 0 as *const hash_pointer as *mut hash_pointer;
+static mut hash_text: *mut str_number = 0 as *const str_number as *mut str_number;
 static mut hash_ilk: *mut str_ilk = 0 as *const str_ilk as *mut str_ilk;
 static mut ilk_info: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 static mut hash_used: int32_t = 0;
@@ -310,12 +326,9 @@ static mut aux_list: [str_number; 21] = [0; 21];
 static mut aux_ptr: aux_number = 0;
 static mut aux_ln_stack: [int32_t; 21] = [0; 21];
 static mut top_lev_str: str_number = 0;
-static mut log_file: rust_output_handle_t =
-    0 as *const libc::c_void as *mut libc::c_void;
-static mut bbl_file: rust_output_handle_t =
-    0 as *const libc::c_void as *mut libc::c_void;
-static mut bib_list: *mut str_number =
-    0 as *const str_number as *mut str_number;
+static mut log_file: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
+static mut bbl_file: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
+static mut bib_list: *mut str_number = 0 as *const str_number as *mut str_number;
 static mut bib_ptr: bib_number = 0;
 static mut num_bib_files: bib_number = 0;
 static mut bib_seen: bool = false;
@@ -323,10 +336,8 @@ static mut bib_file: *mut *mut peekable_input_t =
     0 as *const *mut peekable_input_t as *mut *mut peekable_input_t;
 static mut bst_seen: bool = false;
 static mut bst_str: str_number = 0;
-static mut bst_file: *mut peekable_input_t =
-    0 as *const peekable_input_t as *mut peekable_input_t;
-static mut cite_list: *mut str_number =
-    0 as *const str_number as *mut str_number;
+static mut bst_file: *mut peekable_input_t = 0 as *const peekable_input_t as *mut peekable_input_t;
+static mut cite_list: *mut str_number = 0 as *const str_number as *mut str_number;
 static mut cite_ptr: cite_number = 0;
 static mut entry_cite_ptr: cite_number = 0;
 static mut num_cites: cite_number = 0;
@@ -346,20 +357,16 @@ static mut macro_name_loc: hash_loc = 0;
 static mut macro_def_loc: hash_loc = 0;
 static mut fn_type: *mut fn_class = 0 as *const fn_class as *mut fn_class;
 static mut wiz_def_ptr: wiz_fn_loc = 0;
-static mut wiz_functions: *mut hash_ptr2 =
-    0 as *const hash_ptr2 as *mut hash_ptr2;
+static mut wiz_functions: *mut hash_ptr2 = 0 as *const hash_ptr2 as *mut hash_ptr2;
 static mut int_ent_ptr: int_ent_loc = 0;
 static mut entry_ints: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 static mut num_ent_ints: int_ent_loc = 0;
 static mut str_ent_ptr: str_ent_loc = 0;
-static mut entry_strs: *mut ASCII_code =
-    0 as *const ASCII_code as *mut ASCII_code;
+static mut entry_strs: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
 static mut num_ent_strs: str_ent_loc = 0;
 static mut str_glb_ptr: int32_t = 0;
-static mut glb_str_ptr: *mut str_number =
-    0 as *const str_number as *mut str_number;
-static mut global_strs: *mut ASCII_code =
-    0 as *const ASCII_code as *mut ASCII_code;
+static mut glb_str_ptr: *mut str_number = 0 as *const str_number as *mut str_number;
+static mut global_strs: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
 static mut glb_str_end: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 static mut num_glb_strs: int32_t = 0;
 static mut field_ptr: field_loc = 0;
@@ -367,8 +374,7 @@ static mut field_parent_ptr: field_loc = 0;
 static mut field_end_ptr: field_loc = 0;
 static mut cite_parent_ptr: cite_number = 0;
 static mut cite_xptr: cite_number = 0;
-static mut field_info: *mut str_number =
-    0 as *const str_number as *mut str_number;
+static mut field_info: *mut str_number = 0 as *const str_number as *mut str_number;
 static mut num_fields: field_loc = 0;
 static mut num_pre_defined_fields: field_loc = 0;
 static mut crossref_num: field_loc = 0;
@@ -380,8 +386,7 @@ static mut read_completed: bool = false;
 static mut impl_fn_num: int32_t = 0;
 static mut bib_line_num: int32_t = 0;
 static mut entry_type_loc: hash_loc = 0;
-static mut type_list: *mut hash_ptr2 =
-    0 as *const hash_ptr2 as *mut hash_ptr2;
+static mut type_list: *mut hash_ptr2 = 0 as *const hash_ptr2 as *mut hash_ptr2;
 static mut type_exists: bool = false;
 static mut entry_exists: *mut bool = 0 as *const bool as *mut bool;
 static mut store_entry: bool = false;
@@ -393,15 +398,13 @@ static mut right_outer_delim: ASCII_code = 0;
 static mut right_str_delim: ASCII_code = 0;
 static mut at_bib_command: bool = false;
 static mut cur_macro_loc: hash_loc = 0;
-static mut cite_info: *mut str_number =
-    0 as *const str_number as *mut str_number;
+static mut cite_info: *mut str_number = 0 as *const str_number as *mut str_number;
 static mut cite_hash_found: bool = false;
 static mut preamble_ptr: bib_number = 0;
 static mut num_preamble_strings: bib_number = 0;
 static mut bib_brace_level: int32_t = 0;
 static mut lit_stack: *mut int32_t = 0 as *const int32_t as *mut int32_t;
-static mut lit_stk_type: *mut stk_type =
-    0 as *const stk_type as *mut stk_type;
+static mut lit_stk_type: *mut stk_type = 0 as *const stk_type as *mut stk_type;
 static mut lit_stk_ptr: lit_stk_loc = 0;
 static mut cmd_str_ptr: str_number = 0;
 static mut ent_chr_ptr: int32_t = 0;
@@ -456,8 +459,7 @@ static mut b_write: hash_loc = 0;
 static mut b_default: hash_loc = 0;
 static mut s_null: str_number = 0;
 static mut s_default: str_number = 0;
-static mut s_preamble: *mut str_number =
-    0 as *const str_number as *mut str_number;
+static mut s_preamble: *mut str_number = 0 as *const str_number as *mut str_number;
 static mut pop_lit1: int32_t = 0;
 static mut pop_lit2: int32_t = 0;
 static mut pop_lit3: int32_t = 0;
@@ -481,10 +483,8 @@ static mut name_bf_ptr: buf_pointer = 0;
 static mut name_bf_xptr: buf_pointer = 0;
 static mut name_bf_yptr: buf_pointer = 0;
 static mut nm_brace_level: int32_t = 0;
-static mut name_tok: *mut buf_pointer =
-    0 as *const buf_pointer as *mut buf_pointer;
-static mut name_sep_char: *mut ASCII_code =
-    0 as *const ASCII_code as *mut ASCII_code;
+static mut name_tok: *mut buf_pointer = 0 as *const buf_pointer as *mut buf_pointer;
+static mut name_sep_char: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
 static mut num_tokens: buf_pointer = 0;
 static mut token_starting: bool = false;
 static mut alpha_found: bool = false;
@@ -520,59 +520,52 @@ unsafe extern "C" fn puts_log(mut s: *const libc::c_char) {
     ttstub_output_write(log_file, s, len);
     ttstub_output_write(standard_output, s, len);
 }
-unsafe extern "C" fn ttstub_puts(mut handle: rust_output_handle_t,
-                                 mut s: *const libc::c_char) {
+unsafe extern "C" fn ttstub_puts(mut handle: rust_output_handle_t, mut s: *const libc::c_char) {
     ttstub_output_write(handle, s, strlen(s));
 }
-static mut fmt_buf: [libc::c_char; 1024] =
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+static mut fmt_buf: [libc::c_char; 1024] = [
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+];
 unsafe extern "C" fn printf_log(mut fmt: *const libc::c_char, mut args: ...) {
     let mut ap: ::std::ffi::VaListImpl;
     ap = args.clone();
-    vsnprintf(fmt_buf.as_mut_ptr(), 1024i32 as libc::c_ulong, fmt,
-              ap.as_va_list());
+    vsnprintf(
+        fmt_buf.as_mut_ptr(),
+        1024i32 as libc::c_ulong,
+        fmt,
+        ap.as_va_list(),
+    );
     puts_log(fmt_buf.as_mut_ptr());
 }
 unsafe extern "C" fn mark_warning() {
@@ -587,109 +580,103 @@ unsafe extern "C" fn mark_error() {
     if (history as libc::c_int) < HISTORY_ERROR_ISSUED as libc::c_int {
         history = HISTORY_ERROR_ISSUED as libc::c_int as libc::c_uchar;
         err_count = 1i32
-    } else { err_count += 1 };
+    } else {
+        err_count += 1
+    };
 }
 unsafe extern "C" fn mark_fatal() {
     history = HISTORY_FATAL_ERROR as libc::c_int as libc::c_uchar;
 }
 unsafe extern "C" fn print_overflow() {
-    puts_log(b"Sorry---you\'ve exceeded BibTeX\'s \x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"Sorry---you\'ve exceeded BibTeX\'s \x00" as *const u8 as *const libc::c_char);
     mark_fatal();
 }
 unsafe extern "C" fn print_confusion() {
-    puts_log(b"---this can\'t happen\n\x00" as *const u8 as
-                 *const libc::c_char);
-    puts_log(b"*Please notify the BibTeX maintainer*\n\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"---this can\'t happen\n\x00" as *const u8 as *const libc::c_char);
+    puts_log(b"*Please notify the BibTeX maintainer*\n\x00" as *const u8 as *const libc::c_char);
     mark_fatal();
 }
 unsafe extern "C" fn buffer_overflow() {
-    buffer =
-        xrealloc(buffer as *mut libc::c_void,
-                 ((buf_size + 20000i32 + 1i32) as
-                      libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                      as libc::c_ulong)) as
-            *mut ASCII_code;
-    sv_buffer =
-        xrealloc(sv_buffer as *mut libc::c_void,
-                 ((buf_size + 20000i32 + 1i32) as
-                      libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                      as libc::c_ulong)) as
-            *mut ASCII_code;
-    ex_buf =
-        xrealloc(ex_buf as *mut libc::c_void,
-                 ((buf_size + 20000i32 + 1i32) as
-                      libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                      as libc::c_ulong)) as
-            *mut ASCII_code;
-    out_buf =
-        xrealloc(out_buf as *mut libc::c_void,
-                 ((buf_size + 20000i32 + 1i32) as
-                      libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                      as libc::c_ulong)) as
-            *mut ASCII_code;
-    name_tok =
-        xrealloc(name_tok as *mut libc::c_void,
-                 ((buf_size + 20000i32 + 1i32) as
-                      libc::c_ulong).wrapping_mul(::std::mem::size_of::<buf_pointer>()
-                                                      as libc::c_ulong)) as
-            *mut buf_pointer;
-    name_sep_char =
-        xrealloc(name_sep_char as *mut libc::c_void,
-                 ((buf_size + 20000i32 + 1i32) as
-                      libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                      as libc::c_ulong)) as
-            *mut ASCII_code;
+    buffer = xrealloc(
+        buffer as *mut libc::c_void,
+        ((buf_size + 20000i32 + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as *mut ASCII_code;
+    sv_buffer = xrealloc(
+        sv_buffer as *mut libc::c_void,
+        ((buf_size + 20000i32 + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as *mut ASCII_code;
+    ex_buf = xrealloc(
+        ex_buf as *mut libc::c_void,
+        ((buf_size + 20000i32 + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as *mut ASCII_code;
+    out_buf = xrealloc(
+        out_buf as *mut libc::c_void,
+        ((buf_size + 20000i32 + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as *mut ASCII_code;
+    name_tok = xrealloc(
+        name_tok as *mut libc::c_void,
+        ((buf_size + 20000i32 + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<buf_pointer>() as libc::c_ulong),
+    ) as *mut buf_pointer;
+    name_sep_char = xrealloc(
+        name_sep_char as *mut libc::c_void,
+        ((buf_size + 20000i32 + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as *mut ASCII_code;
     buf_size = buf_size + 20000i32;
 }
 unsafe extern "C" fn input_ln(mut peekable: *mut peekable_input_t) -> bool {
     last = 0i32;
-    if tectonic_eof(peekable) { return 0i32 != 0 }
+    if tectonic_eof(peekable) {
+        return 0i32 != 0;
+    }
     while !eoln(peekable) {
-        if last >= buf_size { buffer_overflow(); }
+        if last >= buf_size {
+            buffer_overflow();
+        }
         *buffer.offset(last as isize) = peekable_getc(peekable) as ASCII_code;
         last += 1
     }
     peekable_getc(peekable);
     while last > 0i32 {
-        if !(lex_class[*buffer.offset((last - 1i32) as isize) as usize] as
-                 libc::c_int == 1i32) {
-            break ;
+        if !(lex_class[*buffer.offset((last - 1i32) as isize) as usize] as libc::c_int == 1i32) {
+            break;
         }
         /*white_space */
         last -= 1
     }
     return 1i32 != 0;
 }
-unsafe extern "C" fn out_pool_str(mut handle: rust_output_handle_t,
-                                  mut s: str_number) {
+unsafe extern "C" fn out_pool_str(mut handle: rust_output_handle_t, mut s: str_number) {
     let mut i: pool_pointer = 0;
     if s < 0i32 || s >= str_ptr + 3i32 || s >= max_strings {
-        printf_log(b"Illegal string number:%ld\x00" as *const u8 as
-                       *const libc::c_char, s as libc::c_long);
+        printf_log(
+            b"Illegal string number:%ld\x00" as *const u8 as *const libc::c_char,
+            s as libc::c_long,
+        );
         print_confusion();
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
     i = *str_start.offset(s as isize);
     while i < *str_start.offset((s + 1i32) as isize) {
-        ttstub_output_putc(handle,
-                           *str_pool.offset(i as isize) as libc::c_int);
+        ttstub_output_putc(handle, *str_pool.offset(i as isize) as libc::c_int);
         i += 1
-    };
+    }
 }
 unsafe extern "C" fn print_a_pool_str(mut s: str_number) {
     out_pool_str(standard_output, s);
     out_pool_str(log_file, s);
 }
 unsafe extern "C" fn pool_overflow() {
-    str_pool =
-        xrealloc(str_pool as *mut libc::c_void,
-                 ((pool_size as libc::c_long + 65000i64 +
-                       1i32 as libc::c_long) as
-                      libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                      as libc::c_ulong)) as
-            *mut ASCII_code;
+    str_pool = xrealloc(
+        str_pool as *mut libc::c_void,
+        ((pool_size as libc::c_long + 65000i64 + 1i32 as libc::c_long) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as *mut ASCII_code;
     pool_size = (pool_size as libc::c_long + 65000i64) as int32_t;
 }
 unsafe extern "C" fn out_token(mut handle: rust_output_handle_t) {
@@ -697,9 +684,8 @@ unsafe extern "C" fn out_token(mut handle: rust_output_handle_t) {
     while i < buf_ptr2 {
         let fresh0 = i;
         i = i + 1;
-        ttstub_output_putc(handle,
-                           *buffer.offset(fresh0 as isize) as libc::c_int);
-    };
+        ttstub_output_putc(handle, *buffer.offset(fresh0 as isize) as libc::c_int);
+    }
 }
 unsafe extern "C" fn print_a_token() {
     out_token(standard_output);
@@ -710,60 +696,66 @@ unsafe extern "C" fn print_bad_input_line() {
     puts_log(b" : \x00" as *const u8 as *const libc::c_char);
     bf_ptr = 0i32;
     while bf_ptr < buf_ptr2 {
-        if lex_class[*buffer.offset(bf_ptr as isize) as usize] as libc::c_int
-               == 1i32 {
+        if lex_class[*buffer.offset(bf_ptr as isize) as usize] as libc::c_int == 1i32 {
             /*white_space */
             putc_log(' ' as i32);
-        } else { putc_log(*buffer.offset(bf_ptr as isize) as libc::c_int); }
+        } else {
+            putc_log(*buffer.offset(bf_ptr as isize) as libc::c_int);
+        }
         bf_ptr += 1
     }
     putc_log('\n' as i32);
     puts_log(b" : \x00" as *const u8 as *const libc::c_char);
     bf_ptr = 0i32;
-    loop  {
+    loop {
         let fresh1 = bf_ptr;
         bf_ptr = bf_ptr + 1;
-        if !(fresh1 < buf_ptr2) { break ; }
+        if !(fresh1 < buf_ptr2) {
+            break;
+        }
         putc_log(' ' as i32);
     }
     bf_ptr = buf_ptr2;
     while bf_ptr < last {
-        if lex_class[*buffer.offset(bf_ptr as isize) as usize] as libc::c_int
-               == 1i32 {
+        if lex_class[*buffer.offset(bf_ptr as isize) as usize] as libc::c_int == 1i32 {
             /*white_space */
             putc_log(' ' as i32);
-        } else { putc_log(*buffer.offset(bf_ptr as isize) as libc::c_int); }
+        } else {
+            putc_log(*buffer.offset(bf_ptr as isize) as libc::c_int);
+        }
         bf_ptr += 1
     }
     putc_log('\n' as i32);
     bf_ptr = 0i32;
-    while bf_ptr < buf_ptr2 &&
-              lex_class[*buffer.offset(bf_ptr as isize) as usize] as
-                  libc::c_int == 1i32 {
+    while bf_ptr < buf_ptr2
+        && lex_class[*buffer.offset(bf_ptr as isize) as usize] as libc::c_int == 1i32
+    {
         /*white_space */
         bf_ptr += 1
     } /*empty */
     if bf_ptr == buf_ptr2 {
-        puts_log(b"(Error may have been on previous line)\n\x00" as *const u8
-                     as *const libc::c_char); /*any_value */
+        puts_log(
+            b"(Error may have been on previous line)\n\x00" as *const u8 as *const libc::c_char,
+        ); /*any_value */
     }
     mark_error();
 }
 unsafe extern "C" fn print_skipping_whatever_remains() {
-    puts_log(b"I\'m skipping whatever remains of this \x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"I\'m skipping whatever remains of this \x00" as *const u8 as *const libc::c_char);
 }
 unsafe extern "C" fn sam_wrong_file_name_print() {
-    ttstub_puts(standard_output,
-                b"I couldn\'t open file name `\x00" as *const u8 as
-                    *const libc::c_char);
+    ttstub_puts(
+        standard_output,
+        b"I couldn\'t open file name `\x00" as *const u8 as *const libc::c_char,
+    );
     name_ptr = 0i32;
     while name_ptr <= name_length {
         let fresh2 = name_ptr;
         name_ptr = name_ptr + 1;
-        ttstub_output_putc(standard_output,
-                           *name_of_file.offset(fresh2 as isize) as
-                               libc::c_int);
+        ttstub_output_putc(
+            standard_output,
+            *name_of_file.offset(fresh2 as isize) as libc::c_int,
+        );
     }
     ttstub_output_putc(standard_output, '\'' as i32);
     ttstub_output_putc(standard_output, '\n' as i32);
@@ -777,23 +769,26 @@ unsafe extern "C" fn log_pr_aux_name() {
     ttstub_output_putc(log_file, '\n' as i32);
 }
 unsafe extern "C" fn aux_err_print() {
-    printf_log(b"---line %ld of file \x00" as *const u8 as
-                   *const libc::c_char,
-               aux_ln_stack[aux_ptr as usize] as libc::c_long);
+    printf_log(
+        b"---line %ld of file \x00" as *const u8 as *const libc::c_char,
+        aux_ln_stack[aux_ptr as usize] as libc::c_long,
+    );
     print_aux_name();
     print_bad_input_line();
     print_skipping_whatever_remains();
     puts_log(b"command\n\x00" as *const u8 as *const libc::c_char);
 }
 unsafe extern "C" fn aux_err_illegal_another_print(mut cmd_num: int32_t) {
-    puts_log(b"Illegal, another \\bib\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"Illegal, another \\bib\x00" as *const u8 as *const libc::c_char);
     match cmd_num {
-        0 => { puts_log(b"data\x00" as *const u8 as *const libc::c_char); }
-        1 => { puts_log(b"style\x00" as *const u8 as *const libc::c_char); }
+        0 => {
+            puts_log(b"data\x00" as *const u8 as *const libc::c_char);
+        }
+        1 => {
+            puts_log(b"style\x00" as *const u8 as *const libc::c_char);
+        }
         _ => {
-            puts_log(b"Illegal auxiliary-file command\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"Illegal auxiliary-file command\x00" as *const u8 as *const libc::c_char);
             print_confusion();
             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
         }
@@ -807,8 +802,7 @@ unsafe extern "C" fn aux_err_stuff_after_right_brace_print() {
     puts_log(b"Stuff after \"}\"\x00" as *const u8 as *const libc::c_char);
 }
 unsafe extern "C" fn aux_err_white_space_in_argument_print() {
-    puts_log(b"White space in argument\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"White space in argument\x00" as *const u8 as *const libc::c_char);
 }
 unsafe extern "C" fn print_bib_name() {
     print_a_pool_str(*bib_list.offset(bib_ptr as isize));
@@ -837,30 +831,26 @@ unsafe extern "C" fn hash_cite_confusion() {
 }
 unsafe extern "C" fn check_cite_overflow(mut last_cite: cite_number) {
     if last_cite == max_cites {
-        cite_list =
-            xrealloc(cite_list as *mut libc::c_void,
-                     ((max_cites + 750i32 + 1i32) as
-                          libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                          as libc::c_ulong))
-                as *mut str_number;
-        type_list =
-            xrealloc(type_list as *mut libc::c_void,
-                     ((max_cites + 750i32 + 1i32) as
-                          libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_ptr2>()
-                                                          as libc::c_ulong))
-                as *mut hash_ptr2;
-        entry_exists =
-            xrealloc(entry_exists as *mut libc::c_void,
-                     ((max_cites + 750i32 + 1i32) as
-                          libc::c_ulong).wrapping_mul(::std::mem::size_of::<bool>()
-                                                          as libc::c_ulong))
-                as *mut bool;
-        cite_info =
-            xrealloc(cite_info as *mut libc::c_void,
-                     ((max_cites + 750i32 + 1i32) as
-                          libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                          as libc::c_ulong))
-                as *mut str_number;
+        cite_list = xrealloc(
+            cite_list as *mut libc::c_void,
+            ((max_cites + 750i32 + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+        ) as *mut str_number;
+        type_list = xrealloc(
+            type_list as *mut libc::c_void,
+            ((max_cites + 750i32 + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as libc::c_ulong),
+        ) as *mut hash_ptr2;
+        entry_exists = xrealloc(
+            entry_exists as *mut libc::c_void,
+            ((max_cites + 750i32 + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<bool>() as libc::c_ulong),
+        ) as *mut bool;
+        cite_info = xrealloc(
+            cite_info as *mut libc::c_void,
+            ((max_cites + 750i32 + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+        ) as *mut str_number;
         max_cites = max_cites + 750i32;
         while last_cite < max_cites {
             *type_list.offset(last_cite as isize) = 0i32;
@@ -873,14 +863,15 @@ unsafe extern "C" fn aux_end1_err_print() {
     puts_log(b"I found no \x00" as *const u8 as *const libc::c_char);
 }
 unsafe extern "C" fn aux_end2_err_print() {
-    puts_log(b"---while reading file \x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"---while reading file \x00" as *const u8 as *const libc::c_char);
     print_aux_name();
     mark_error();
 }
 unsafe extern "C" fn bst_ln_num_print() {
-    printf_log(b"--line %ld of file \x00" as *const u8 as *const libc::c_char,
-               bst_line_num as libc::c_long);
+    printf_log(
+        b"--line %ld of file \x00" as *const u8 as *const libc::c_char,
+        bst_line_num as libc::c_long,
+    );
     print_bst_name();
 }
 unsafe extern "C" fn bst_err_print_and_look_for_blank_line() {
@@ -890,18 +881,21 @@ unsafe extern "C" fn bst_err_print_and_look_for_blank_line() {
     while last != 0i32 {
         if !input_ln(bst_file) {
             longjmp(recover_jmpbuf.as_mut_ptr(), 1i32);
-        } else { bst_line_num = bst_line_num + 1i32 }
+        } else {
+            bst_line_num = bst_line_num + 1i32
+        }
     }
     buf_ptr2 = last;
 }
-unsafe extern "C" fn bst_warn_print() { bst_ln_num_print(); mark_warning(); }
+unsafe extern "C" fn bst_warn_print() {
+    bst_ln_num_print();
+    mark_warning();
+}
 unsafe extern "C" fn eat_bst_print() {
-    puts_log(b"Illegal end of style file in command: \x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"Illegal end of style file in command: \x00" as *const u8 as *const libc::c_char);
 }
 unsafe extern "C" fn unknwn_function_class_confusion() {
-    puts_log(b"Unknown function class\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"Unknown function class\x00" as *const u8 as *const libc::c_char);
     print_confusion();
     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
 }
@@ -911,77 +905,77 @@ unsafe extern "C" fn print_fn_class(mut fn_loc_0: hash_loc) {
             puts_log(b"built-in\x00" as *const u8 as *const libc::c_char);
         }
         1 => {
-            puts_log(b"wizard-defined\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"wizard-defined\x00" as *const u8 as *const libc::c_char);
         }
         2 => {
-            puts_log(b"integer-literal\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"integer-literal\x00" as *const u8 as *const libc::c_char);
         }
         3 => {
-            puts_log(b"string-literal\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"string-literal\x00" as *const u8 as *const libc::c_char);
         }
-        4 => { puts_log(b"field\x00" as *const u8 as *const libc::c_char); }
+        4 => {
+            puts_log(b"field\x00" as *const u8 as *const libc::c_char);
+        }
         5 => {
-            puts_log(b"integer-entry-variable\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"integer-entry-variable\x00" as *const u8 as *const libc::c_char);
         }
         6 => {
-            puts_log(b"string-entry-variable\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"string-entry-variable\x00" as *const u8 as *const libc::c_char);
         }
         7 => {
-            puts_log(b"integer-global-variable\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"integer-global-variable\x00" as *const u8 as *const libc::c_char);
         }
         8 => {
-            puts_log(b"string-global-variable\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"string-global-variable\x00" as *const u8 as *const libc::c_char);
         }
-        _ => { unknwn_function_class_confusion(); }
+        _ => {
+            unknwn_function_class_confusion();
+        }
     };
 }
 /*:159*/
 /*160: */
 unsafe extern "C" fn id_scanning_confusion() {
-    puts_log(b"Identifier scanning error\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"Identifier scanning error\x00" as *const u8 as *const libc::c_char);
     print_confusion();
     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
 }
 unsafe extern "C" fn bst_id_print() {
     if scan_result as libc::c_int == 0i32 {
         /*id_null */
-        printf_log(b"\"%c\" begins identifier, command: \x00" as *const u8 as
-                       *const libc::c_char,
-                   *buffer.offset(buf_ptr2 as isize) as libc::c_int);
+        printf_log(
+            b"\"%c\" begins identifier, command: \x00" as *const u8 as *const libc::c_char,
+            *buffer.offset(buf_ptr2 as isize) as libc::c_int,
+        );
     } else if scan_result as libc::c_int == 2i32 {
         /*other_char_adjacent */
-        printf_log(b"\"%c\" immediately follows identifier, command: \x00" as
-                       *const u8 as *const libc::c_char,
-                   *buffer.offset(buf_ptr2 as isize) as libc::c_int);
-    } else { id_scanning_confusion(); };
+        printf_log(
+            b"\"%c\" immediately follows identifier, command: \x00" as *const u8
+                as *const libc::c_char,
+            *buffer.offset(buf_ptr2 as isize) as libc::c_int,
+        );
+    } else {
+        id_scanning_confusion();
+    };
 }
 unsafe extern "C" fn bst_left_brace_print() {
-    puts_log(b"\"{\" is missing in command: \x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"\"{\" is missing in command: \x00" as *const u8 as *const libc::c_char);
 }
 unsafe extern "C" fn bst_right_brace_print() {
-    puts_log(b"\"}\" is missing in command: \x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"\"}\" is missing in command: \x00" as *const u8 as *const libc::c_char);
 }
 unsafe extern "C" fn already_seen_function_print(mut seen_fn_loc: hash_loc) {
     print_a_pool_str(*hash_text.offset(seen_fn_loc as isize));
-    puts_log(b" is already a type \"\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b" is already a type \"\x00" as *const u8 as *const libc::c_char);
     print_fn_class(seen_fn_loc);
     puts_log(b"\" function name\n\x00" as *const u8 as *const libc::c_char);
     bst_err_print_and_look_for_blank_line();
 }
 unsafe extern "C" fn bib_ln_num_print() {
-    printf_log(b"--line %ld of file\x00" as *const u8 as *const libc::c_char,
-               bib_line_num as libc::c_long);
+    printf_log(
+        b"--line %ld of file\x00" as *const u8 as *const libc::c_char,
+        bib_line_num as libc::c_long,
+    );
     print_bib_name();
 }
 unsafe extern "C" fn bib_err_print() {
@@ -991,50 +985,55 @@ unsafe extern "C" fn bib_err_print() {
     print_skipping_whatever_remains();
     if at_bib_command {
         puts_log(b"command\n\x00" as *const u8 as *const libc::c_char);
-    } else { puts_log(b"entry\n\x00" as *const u8 as *const libc::c_char); };
+    } else {
+        puts_log(b"entry\n\x00" as *const u8 as *const libc::c_char);
+    };
 }
-unsafe extern "C" fn bib_warn_print() { bib_ln_num_print(); mark_warning(); }
+unsafe extern "C" fn bib_warn_print() {
+    bib_ln_num_print();
+    mark_warning();
+}
 unsafe extern "C" fn check_field_overflow(mut total_fields: int32_t) {
     let mut f_ptr: field_loc = 0;
     let mut start_fields: field_loc = 0;
     if total_fields > max_fields {
         start_fields = max_fields;
-        field_info =
-            xrealloc(field_info as *mut libc::c_void,
-                     ((total_fields + 17250i32 + 1i32) as
-                          libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                          as libc::c_ulong))
-                as *mut str_number;
+        field_info = xrealloc(
+            field_info as *mut libc::c_void,
+            ((total_fields + 17250i32 + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+        ) as *mut str_number;
         max_fields = total_fields + 17250i32;
         let mut for_end: int32_t = 0;
         f_ptr = start_fields;
         for_end = max_fields - 1i32;
         if f_ptr <= for_end {
-            loop  {
+            loop {
                 *field_info.offset(f_ptr as isize) = 0i32;
                 let fresh3 = f_ptr;
                 f_ptr = f_ptr + 1;
-                if !(fresh3 < for_end) { break ; }
+                if !(fresh3 < for_end) {
+                    break;
+                }
                 /*missing */
             }
         }
     };
 }
 unsafe extern "C" fn eat_bib_print() {
-    puts_log(b"Illegal end of database file\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"Illegal end of database file\x00" as *const u8 as *const libc::c_char);
     bib_err_print();
 }
-unsafe extern "C" fn bib_one_of_two_print(mut char1: ASCII_code,
-                                          mut char2: ASCII_code) {
-    printf_log(b"I was expecting a `%c\' or a `%c\'\x00" as *const u8 as
-                   *const libc::c_char, char1 as libc::c_int,
-               char2 as libc::c_int);
+unsafe extern "C" fn bib_one_of_two_print(mut char1: ASCII_code, mut char2: ASCII_code) {
+    printf_log(
+        b"I was expecting a `%c\' or a `%c\'\x00" as *const u8 as *const libc::c_char,
+        char1 as libc::c_int,
+        char2 as libc::c_int,
+    );
     bib_err_print();
 }
 unsafe extern "C" fn bib_equals_sign_print() {
-    printf_log(b"I was expecting an \"=\"\x00" as *const u8 as
-                   *const libc::c_char);
+    printf_log(b"I was expecting an \"=\"\x00" as *const u8 as *const libc::c_char);
     bib_err_print();
 }
 unsafe extern "C" fn bib_unbalanced_braces_print() {
@@ -1042,13 +1041,14 @@ unsafe extern "C" fn bib_unbalanced_braces_print() {
     bib_err_print();
 }
 unsafe extern "C" fn bib_field_too_long_print() {
-    printf_log(b"Your field is more than %ld characters\x00" as *const u8 as
-                   *const libc::c_char, buf_size as libc::c_long);
+    printf_log(
+        b"Your field is more than %ld characters\x00" as *const u8 as *const libc::c_char,
+        buf_size as libc::c_long,
+    );
     bib_err_print();
 }
 unsafe extern "C" fn macro_warn_print() {
-    puts_log(b"Warning--string name \"\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"Warning--string name \"\x00" as *const u8 as *const libc::c_char);
     print_a_token();
     puts_log(b"\" is \x00" as *const u8 as *const libc::c_char);
 }
@@ -1058,20 +1058,21 @@ unsafe extern "C" fn bib_id_print() {
         puts_log(b"You\'re missing \x00" as *const u8 as *const libc::c_char);
     } else if scan_result as libc::c_int == 2i32 {
         /*other_char_adjacent */
-        printf_log(b"\"%c\" immediately follows \x00" as *const u8 as
-                       *const libc::c_char,
-                   *buffer.offset(buf_ptr2 as isize) as libc::c_int);
-    } else { id_scanning_confusion(); };
+        printf_log(
+            b"\"%c\" immediately follows \x00" as *const u8 as *const libc::c_char,
+            *buffer.offset(buf_ptr2 as isize) as libc::c_int,
+        );
+    } else {
+        id_scanning_confusion();
+    };
 }
 unsafe extern "C" fn bib_cmd_confusion() {
-    puts_log(b"Unknown database-file command\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"Unknown database-file command\x00" as *const u8 as *const libc::c_char);
     print_confusion();
     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
 }
 unsafe extern "C" fn cite_key_disappeared_confusion() {
-    puts_log(b"A cite key disappeared\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"A cite key disappeared\x00" as *const u8 as *const libc::c_char);
     print_confusion();
     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
 }
@@ -1084,16 +1085,15 @@ unsafe extern "C" fn bad_cross_reference_print(mut s: str_number) {
     print_a_pool_str(s);
 }
 unsafe extern "C" fn nonexistent_cross_reference_error() {
-    puts_log(b"A bad cross reference-\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"A bad cross reference-\x00" as *const u8 as *const libc::c_char);
     bad_cross_reference_print(*field_info.offset(field_ptr as isize));
-    puts_log(b"\", which doesn\'t exist\n\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"\", which doesn\'t exist\n\x00" as *const u8 as *const libc::c_char);
     mark_error();
 }
 unsafe extern "C" fn print_missing_entry(mut s: str_number) {
-    puts_log(b"Warning--I didn\'t find a database entry for \"\x00" as
-                 *const u8 as *const libc::c_char);
+    puts_log(
+        b"Warning--I didn\'t find a database entry for \"\x00" as *const u8 as *const libc::c_char,
+    );
     print_a_pool_str(s);
     putc_log('\"' as i32);
     putc_log('\n' as i32);
@@ -1119,8 +1119,7 @@ unsafe extern "C" fn bst_mild_ex_warn_print() {
     bst_warn_print();
 }
 unsafe extern "C" fn bst_cant_mess_with_entries_print() {
-    puts_log(b"You can\'t mess with entries here\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"You can\'t mess with entries here\x00" as *const u8 as *const libc::c_char);
     bst_ex_warn_print();
 }
 unsafe extern "C" fn illegl_literal_confusion() {
@@ -1133,67 +1132,86 @@ unsafe extern "C" fn unknwn_literal_confusion() {
     print_confusion();
     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
 }
-unsafe extern "C" fn print_stk_lit(mut stk_lt: int32_t,
-                                   mut stk_tp: stk_type) {
+unsafe extern "C" fn print_stk_lit(mut stk_lt: int32_t, mut stk_tp: stk_type) {
     match stk_tp as libc::c_int {
         0 => {
-            printf_log(b"%ld is an integer literal\x00" as *const u8 as
-                           *const libc::c_char, stk_lt as libc::c_long);
+            printf_log(
+                b"%ld is an integer literal\x00" as *const u8 as *const libc::c_char,
+                stk_lt as libc::c_long,
+            );
         }
         1 => {
             putc_log('\"' as i32);
             print_a_pool_str(stk_lt);
-            puts_log(b"\" is a string literal\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"\" is a string literal\x00" as *const u8 as *const libc::c_char);
         }
         2 => {
             putc_log('`' as i32);
             print_a_pool_str(*hash_text.offset(stk_lt as isize));
-            puts_log(b"\' is a function literal\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"\' is a function literal\x00" as *const u8 as *const libc::c_char);
         }
         3 => {
             putc_log('`' as i32);
             print_a_pool_str(stk_lt);
-            puts_log(b"\' is a missing field\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"\' is a missing field\x00" as *const u8 as *const libc::c_char);
         }
-        4 => { illegl_literal_confusion(); }
-        _ => { unknwn_literal_confusion(); }
+        4 => {
+            illegl_literal_confusion();
+        }
+        _ => {
+            unknwn_literal_confusion();
+        }
     };
 }
 unsafe extern "C" fn print_lit(mut stk_lt: int32_t, mut stk_tp: stk_type) {
     match stk_tp as libc::c_int {
         0 => {
-            printf_log(b"%ld\n\x00" as *const u8 as *const libc::c_char,
-                       stk_lt as libc::c_long);
+            printf_log(
+                b"%ld\n\x00" as *const u8 as *const libc::c_char,
+                stk_lt as libc::c_long,
+            );
         }
-        1 => { print_a_pool_str(stk_lt); putc_log('\n' as i32); }
+        1 => {
+            print_a_pool_str(stk_lt);
+            putc_log('\n' as i32);
+        }
         2 => {
             print_a_pool_str(*hash_text.offset(stk_lt as isize));
             putc_log('\n' as i32);
         }
-        3 => { print_a_pool_str(stk_lt); putc_log('\n' as i32); }
-        4 => { illegl_literal_confusion(); }
-        _ => { unknwn_literal_confusion(); }
+        3 => {
+            print_a_pool_str(stk_lt);
+            putc_log('\n' as i32);
+        }
+        4 => {
+            illegl_literal_confusion();
+        }
+        _ => {
+            unknwn_literal_confusion();
+        }
     };
 }
 unsafe extern "C" fn output_bbl_line() {
     if out_buf_length != 0i32 {
         while out_buf_length > 0i32 {
-            if !(lex_class[*out_buf.offset((out_buf_length - 1i32) as isize)
-                               as usize] as libc::c_int == 1i32) {
-                break ;
+            if !(lex_class[*out_buf.offset((out_buf_length - 1i32) as isize) as usize]
+                as libc::c_int
+                == 1i32)
+            {
+                break;
             }
             /*white_space */
             out_buf_length = out_buf_length - 1i32
         }
-        if out_buf_length == 0i32 { return }
+        if out_buf_length == 0i32 {
+            return;
+        }
         out_buf_ptr = 0i32;
         while out_buf_ptr < out_buf_length {
-            ttstub_output_putc(bbl_file,
-                               *out_buf.offset(out_buf_ptr as isize) as
-                                   libc::c_int);
+            ttstub_output_putc(
+                bbl_file,
+                *out_buf.offset(out_buf_ptr as isize) as libc::c_int,
+            );
             out_buf_ptr += 1
         }
     }
@@ -1202,49 +1220,42 @@ unsafe extern "C" fn output_bbl_line() {
     out_buf_length = 0i32;
 }
 unsafe extern "C" fn bst_1print_string_size_exceeded() {
-    puts_log(b"Warning--you\'ve exceeded \x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"Warning--you\'ve exceeded \x00" as *const u8 as *const libc::c_char);
 }
 unsafe extern "C" fn bst_2print_string_size_exceeded() {
     puts_log(b"-string-size,\x00" as *const u8 as *const libc::c_char);
     bst_mild_ex_warn_print();
-    puts_log(b"*Please notify the bibstyle designer*\n\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"*Please notify the bibstyle designer*\n\x00" as *const u8 as *const libc::c_char);
 }
-unsafe extern "C" fn braces_unbalanced_complaint(mut pop_lit_var:
-                                                     str_number) {
+unsafe extern "C" fn braces_unbalanced_complaint(mut pop_lit_var: str_number) {
     puts_log(b"Warning--\"\x00" as *const u8 as *const libc::c_char);
     print_a_pool_str(pop_lit_var);
-    puts_log(b"\" isn\'t a brace-balanced string\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"\" isn\'t a brace-balanced string\x00" as *const u8 as *const libc::c_char);
     bst_mild_ex_warn_print();
 }
 unsafe extern "C" fn case_conversion_confusion() {
-    puts_log(b"Unknown type of case conversion\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"Unknown type of case conversion\x00" as *const u8 as *const libc::c_char);
     print_confusion();
     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
 }
 unsafe extern "C" fn start_name(mut file_name: str_number) {
     let mut p_ptr: pool_pointer = 0;
     free(name_of_file as *mut libc::c_void);
-    name_of_file =
-        xmalloc(((*str_start.offset((file_name + 1i32) as isize) -
-                      *str_start.offset(file_name as isize) + 1i32 + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                     as libc::c_ulong)) as
-            *mut ASCII_code;
+    name_of_file = xmalloc(
+        ((*str_start.offset((file_name + 1i32) as isize) - *str_start.offset(file_name as isize)
+            + 1i32
+            + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as *mut ASCII_code;
     name_ptr = 0i32;
     p_ptr = *str_start.offset(file_name as isize);
     while p_ptr < *str_start.offset((file_name + 1i32) as isize) {
-        *name_of_file.offset(name_ptr as isize) =
-            *str_pool.offset(p_ptr as isize);
+        *name_of_file.offset(name_ptr as isize) = *str_pool.offset(p_ptr as isize);
         name_ptr += 1;
         p_ptr += 1
     }
     name_length =
-        *str_start.offset((file_name + 1i32) as isize) -
-            *str_start.offset(file_name as isize);
+        *str_start.offset((file_name + 1i32) as isize) - *str_start.offset(file_name as isize);
     *name_of_file.offset(name_length as isize) = 0i32 as ASCII_code;
 }
 unsafe extern "C" fn add_extension(mut ext: str_number) {
@@ -1252,115 +1263,120 @@ unsafe extern "C" fn add_extension(mut ext: str_number) {
     name_ptr = name_length;
     p_ptr = *str_start.offset(ext as isize);
     while p_ptr < *str_start.offset((ext + 1i32) as isize) {
-        *name_of_file.offset(name_ptr as isize) =
-            *str_pool.offset(p_ptr as isize);
+        *name_of_file.offset(name_ptr as isize) = *str_pool.offset(p_ptr as isize);
         name_ptr += 1;
         p_ptr += 1
     }
-    name_length +=
-        *str_start.offset((ext + 1i32) as isize) -
-            *str_start.offset(ext as isize);
+    name_length += *str_start.offset((ext + 1i32) as isize) - *str_start.offset(ext as isize);
     *name_of_file.offset(name_length as isize) = 0i32 as ASCII_code;
 }
 unsafe extern "C" fn make_string() -> str_number {
     if str_ptr == max_strings {
         print_overflow();
-        printf_log(b"number of strings %ld\n\x00" as *const u8 as
-                       *const libc::c_char, max_strings as libc::c_long);
+        printf_log(
+            b"number of strings %ld\n\x00" as *const u8 as *const libc::c_char,
+            max_strings as libc::c_long,
+        );
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
     str_ptr = str_ptr + 1i32;
     *str_start.offset(str_ptr as isize) = pool_ptr;
     return str_ptr - 1i32;
 }
-unsafe extern "C" fn str_eq_buf(mut s: str_number, mut buf: buf_type,
-                                mut bf_ptr: buf_pointer, mut len: buf_pointer)
- -> bool {
+unsafe extern "C" fn str_eq_buf(
+    mut s: str_number,
+    mut buf: buf_type,
+    mut bf_ptr: buf_pointer,
+    mut len: buf_pointer,
+) -> bool {
     let mut i: buf_pointer = 0;
     let mut j: pool_pointer = 0;
-    if *str_start.offset((s + 1i32) as isize) - *str_start.offset(s as isize)
-           != len {
-        return 0i32 != 0
+    if *str_start.offset((s + 1i32) as isize) - *str_start.offset(s as isize) != len {
+        return 0i32 != 0;
     }
     i = bf_ptr;
     j = *str_start.offset(s as isize);
     while j < *str_start.offset((s + 1i32) as isize) {
-        if *str_pool.offset(j as isize) as libc::c_int !=
-               *buf.offset(i as isize) as libc::c_int {
-            return 0i32 != 0
+        if *str_pool.offset(j as isize) as libc::c_int != *buf.offset(i as isize) as libc::c_int {
+            return 0i32 != 0;
         }
         i = i + 1i32;
         j = j + 1i32
     }
     return 1i32 != 0;
 }
-unsafe extern "C" fn str_eq_str(mut s1: str_number, mut s2: str_number)
- -> bool {
-    if *str_start.offset((s1 + 1i32) as isize) -
-           *str_start.offset(s1 as isize) !=
-           *str_start.offset((s2 + 1i32) as isize) -
-               *str_start.offset(s2 as isize) {
-        return 0i32 != 0
+unsafe extern "C" fn str_eq_str(mut s1: str_number, mut s2: str_number) -> bool {
+    if *str_start.offset((s1 + 1i32) as isize) - *str_start.offset(s1 as isize)
+        != *str_start.offset((s2 + 1i32) as isize) - *str_start.offset(s2 as isize)
+    {
+        return 0i32 != 0;
     }
     p_ptr1 = *str_start.offset(s1 as isize);
     p_ptr2 = *str_start.offset(s2 as isize);
     while p_ptr1 < *str_start.offset((s1 + 1i32) as isize) {
-        if *str_pool.offset(p_ptr1 as isize) as libc::c_int !=
-               *str_pool.offset(p_ptr2 as isize) as libc::c_int {
-            return 0i32 != 0
+        if *str_pool.offset(p_ptr1 as isize) as libc::c_int
+            != *str_pool.offset(p_ptr2 as isize) as libc::c_int
+        {
+            return 0i32 != 0;
         }
         p_ptr1 = p_ptr1 + 1i32;
         p_ptr2 = p_ptr2 + 1i32
     }
     return 1i32 != 0;
 }
-unsafe extern "C" fn lower_case(mut buf: buf_type, mut bf_ptr: buf_pointer,
-                                mut len: buf_pointer) {
+unsafe extern "C" fn lower_case(mut buf: buf_type, mut bf_ptr: buf_pointer, mut len: buf_pointer) {
     let mut i: buf_pointer = 0;
     if len > 0i32 {
         let mut for_end: int32_t = 0;
         i = bf_ptr;
         for_end = bf_ptr + len - 1i32;
         if i <= for_end {
-            loop  {
-                if *buf.offset(i as isize) as libc::c_int >= 'A' as i32 &&
-                       *buf.offset(i as isize) as libc::c_int <= 'Z' as i32 {
+            loop {
+                if *buf.offset(i as isize) as libc::c_int >= 'A' as i32
+                    && *buf.offset(i as isize) as libc::c_int <= 'Z' as i32
+                {
                     *buf.offset(i as isize) =
-                        (*buf.offset(i as isize) as libc::c_int + 32i32) as
-                            ASCII_code
+                        (*buf.offset(i as isize) as libc::c_int + 32i32) as ASCII_code
                 }
                 let fresh4 = i;
                 i = i + 1;
-                if !(fresh4 < for_end) { break ; }
+                if !(fresh4 < for_end) {
+                    break;
+                }
             }
         }
     };
 }
-unsafe extern "C" fn upper_case(mut buf: buf_type, mut bf_ptr: buf_pointer,
-                                mut len: buf_pointer) {
+unsafe extern "C" fn upper_case(mut buf: buf_type, mut bf_ptr: buf_pointer, mut len: buf_pointer) {
     let mut i: buf_pointer = 0;
     if len > 0i32 {
         let mut for_end: int32_t = 0;
         i = bf_ptr;
         for_end = bf_ptr + len - 1i32;
         if i <= for_end {
-            loop  {
-                if *buf.offset(i as isize) as libc::c_int >= 'a' as i32 &&
-                       *buf.offset(i as isize) as libc::c_int <= 'z' as i32 {
+            loop {
+                if *buf.offset(i as isize) as libc::c_int >= 'a' as i32
+                    && *buf.offset(i as isize) as libc::c_int <= 'z' as i32
+                {
                     *buf.offset(i as isize) =
-                        (*buf.offset(i as isize) as libc::c_int - 32i32) as
-                            ASCII_code
+                        (*buf.offset(i as isize) as libc::c_int - 32i32) as ASCII_code
                 }
                 let fresh5 = i;
                 i = i + 1;
-                if !(fresh5 < for_end) { break ; }
+                if !(fresh5 < for_end) {
+                    break;
+                }
             }
         }
     };
 }
-unsafe extern "C" fn str_lookup(mut buf: buf_type, mut j: buf_pointer,
-                                mut l: buf_pointer, mut ilk: str_ilk,
-                                mut insert_it: bool) -> hash_loc {
+unsafe extern "C" fn str_lookup(
+    mut buf: buf_type,
+    mut j: buf_pointer,
+    mut l: buf_pointer,
+    mut ilk: str_ilk,
+    mut insert_it: bool,
+) -> hash_loc {
     let mut h: int32_t = 0;
     let mut p: hash_loc = 0;
     let mut k: buf_pointer = 0;
@@ -1369,38 +1385,44 @@ unsafe extern "C" fn str_lookup(mut buf: buf_type, mut j: buf_pointer,
     k = j;
     while k < j + l {
         h = h + h + *buf.offset(k as isize) as libc::c_int;
-        while h >= hash_prime { h = h - hash_prime }
+        while h >= hash_prime {
+            h = h - hash_prime
+        }
         k = k + 1i32
     }
     p = h + 1i32;
     hash_found = 0i32 != 0;
     str_num = 0i32;
-    loop  {
+    loop {
         if *hash_text.offset(p as isize) > 0i32 {
             if str_eq_buf(*hash_text.offset(p as isize), buf, j, l) {
-                if *hash_ilk.offset(p as isize) as libc::c_int ==
-                       ilk as libc::c_int {
+                if *hash_ilk.offset(p as isize) as libc::c_int == ilk as libc::c_int {
                     hash_found = 1i32 != 0;
-                    return p
-                    /* str_found */
-                } else { str_num = *hash_text.offset(p as isize) }
+                    return p;
+                /* str_found */
+                } else {
+                    str_num = *hash_text.offset(p as isize)
+                }
             }
         }
         if *hash_next.offset(p as isize) == 0i32 {
             /*empty */
-            if !insert_it { return p } /* str_not_found */
+            if !insert_it {
+                return p;
+            } /* str_not_found */
             if *hash_text.offset(p as isize) > 0i32 {
-                loop  {
+                loop {
                     if hash_used == 1i32 {
                         print_overflow();
-                        printf_log(b"hash size %ld\n\x00" as *const u8 as
-                                       *const libc::c_char,
-                                   hash_size as libc::c_long);
+                        printf_log(
+                            b"hash size %ld\n\x00" as *const u8 as *const libc::c_char,
+                            hash_size as libc::c_long,
+                        );
                         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                     }
                     hash_used = hash_used - 1i32;
                     if *hash_text.offset(hash_used as isize) == 0i32 {
-                        break ;
+                        break;
                     }
                 }
                 *hash_next.offset(p as isize) = hash_used;
@@ -1409,111 +1431,119 @@ unsafe extern "C" fn str_lookup(mut buf: buf_type, mut j: buf_pointer,
             if str_num > 0i32 {
                 *hash_text.offset(p as isize) = str_num
             } else {
-                while pool_ptr + l > pool_size { pool_overflow(); }
+                while pool_ptr + l > pool_size {
+                    pool_overflow();
+                }
                 k = j;
                 while k < j + l {
-                    *str_pool.offset(pool_ptr as isize) =
-                        *buf.offset(k as isize);
+                    *str_pool.offset(pool_ptr as isize) = *buf.offset(k as isize);
                     pool_ptr = pool_ptr + 1i32;
                     k = k + 1i32
                 }
                 *hash_text.offset(p as isize) = make_string()
             }
             *hash_ilk.offset(p as isize) = ilk;
-            return p
+            return p;
         }
         p = *hash_next.offset(p as isize)
-    };
+    }
 }
-unsafe extern "C" fn pre_define(mut pds: pds_type, mut len: pds_len,
-                                mut ilk: str_ilk) {
+unsafe extern "C" fn pre_define(mut pds: pds_type, mut len: pds_len, mut ilk: str_ilk) {
     let mut i: pds_len = 0;
     let mut for_end: int32_t = 0;
     i = 1i32 as pds_len;
     for_end = len as int32_t;
     if i as libc::c_int <= for_end {
-        loop  {
+        loop {
             *buffer.offset(i as isize) =
-                *pds.offset((i as libc::c_int - 1i32) as isize) as
-                    libc::c_uchar;
+                *pds.offset((i as libc::c_int - 1i32) as isize) as libc::c_uchar;
             let fresh6 = i;
             i = i.wrapping_add(1);
-            if !((fresh6 as libc::c_int) < for_end) { break ; }
+            if !((fresh6 as libc::c_int) < for_end) {
+                break;
+            }
         }
     }
-    pre_def_loc =
-        str_lookup(buffer, 1i32, len as buf_pointer, ilk, 1i32 != 0);
+    pre_def_loc = str_lookup(buffer, 1i32, len as buf_pointer, ilk, 1i32 != 0);
 }
-unsafe extern "C" fn int_to_ASCII(mut the_int: int32_t, mut int_buf: buf_type,
-                                  mut int_begin: buf_pointer,
-                                  mut int_end: *mut buf_pointer) {
+unsafe extern "C" fn int_to_ASCII(
+    mut the_int: int32_t,
+    mut int_buf: buf_type,
+    mut int_begin: buf_pointer,
+    mut int_end: *mut buf_pointer,
+) {
     let mut int_ptr: buf_pointer = 0;
     let mut int_xptr: buf_pointer = 0;
     let mut int_tmp_val: ASCII_code = 0;
     int_ptr = int_begin;
     if the_int < 0i32 {
-        if int_ptr == buf_size { buffer_overflow(); }
+        if int_ptr == buf_size {
+            buffer_overflow();
+        }
         /* str_found */
-        *int_buf.offset(int_ptr as isize) =
-            45i32 as ASCII_code; /*minus_sign */
+        *int_buf.offset(int_ptr as isize) = 45i32 as ASCII_code; /*minus_sign */
         int_ptr = int_ptr + 1i32;
         the_int = -the_int
     }
     int_xptr = int_ptr;
-    loop  {
-        if int_ptr == buf_size { buffer_overflow(); }
-        *int_buf.offset(int_ptr as isize) =
-            ('0' as i32 + the_int % 10i32) as ASCII_code;
+    loop {
+        if int_ptr == buf_size {
+            buffer_overflow();
+        }
+        *int_buf.offset(int_ptr as isize) = ('0' as i32 + the_int % 10i32) as ASCII_code;
         int_ptr = int_ptr + 1i32;
         the_int = the_int / 10i32;
-        if the_int == 0i32 { break ; }
+        if the_int == 0i32 {
+            break;
+        }
     }
     *int_end = int_ptr;
     int_ptr = int_ptr - 1i32;
     while int_xptr < int_ptr {
         int_tmp_val = *int_buf.offset(int_xptr as isize);
-        *int_buf.offset(int_xptr as isize) =
-            *int_buf.offset(int_ptr as isize);
+        *int_buf.offset(int_xptr as isize) = *int_buf.offset(int_ptr as isize);
         *int_buf.offset(int_ptr as isize) = int_tmp_val;
         int_ptr = int_ptr - 1i32;
         int_xptr = int_xptr + 1i32
-    };
+    }
 }
 unsafe extern "C" fn add_database_cite(mut new_cite: *mut cite_number) {
     check_cite_overflow(*new_cite);
     check_field_overflow(num_fields * (*new_cite + 1i32));
-    *cite_list.offset(*new_cite as isize) =
-        *hash_text.offset(cite_loc as isize);
+    *cite_list.offset(*new_cite as isize) = *hash_text.offset(cite_loc as isize);
     *ilk_info.offset(cite_loc as isize) = *new_cite;
     *ilk_info.offset(lc_cite_loc as isize) = cite_loc;
     *new_cite = *new_cite + 1i32;
 }
-unsafe extern "C" fn find_cite_locs_for_this_cite_key(mut cite_str:
-                                                          str_number)
- -> bool {
+unsafe extern "C" fn find_cite_locs_for_this_cite_key(mut cite_str: str_number) -> bool {
     ex_buf_ptr = 0i32;
     tmp_ptr = *str_start.offset(cite_str as isize);
     tmp_end_ptr = *str_start.offset((cite_str + 1i32) as isize);
     while tmp_ptr < tmp_end_ptr {
-        *ex_buf.offset(ex_buf_ptr as isize) =
-            *str_pool.offset(tmp_ptr as isize);
+        *ex_buf.offset(ex_buf_ptr as isize) = *str_pool.offset(tmp_ptr as isize);
         ex_buf_ptr = ex_buf_ptr + 1i32;
         tmp_ptr = tmp_ptr + 1i32
     }
-    cite_loc =
-        str_lookup(ex_buf, 0i32,
-                   *str_start.offset((cite_str + 1i32) as isize) -
-                       *str_start.offset(cite_str as isize), 9i32 as str_ilk,
-                   0i32 != 0);
+    cite_loc = str_lookup(
+        ex_buf,
+        0i32,
+        *str_start.offset((cite_str + 1i32) as isize) - *str_start.offset(cite_str as isize),
+        9i32 as str_ilk,
+        0i32 != 0,
+    );
     cite_hash_found = hash_found;
-    lower_case(ex_buf, 0i32,
-               *str_start.offset((cite_str + 1i32) as isize) -
-                   *str_start.offset(cite_str as isize));
-    lc_cite_loc =
-        str_lookup(ex_buf, 0i32,
-                   *str_start.offset((cite_str + 1i32) as isize) -
-                       *str_start.offset(cite_str as isize), 10i32 as str_ilk,
-                   0i32 != 0);
+    lower_case(
+        ex_buf,
+        0i32,
+        *str_start.offset((cite_str + 1i32) as isize) - *str_start.offset(cite_str as isize),
+    );
+    lc_cite_loc = str_lookup(
+        ex_buf,
+        0i32,
+        *str_start.offset((cite_str + 1i32) as isize) - *str_start.offset(cite_str as isize),
+        10i32 as str_ilk,
+        0i32 != 0,
+    );
     return hash_found;
 }
 unsafe extern "C" fn swap(mut swap1: cite_number, mut swap2: cite_number) {
@@ -1522,8 +1552,7 @@ unsafe extern "C" fn swap(mut swap1: cite_number, mut swap2: cite_number) {
     *cite_info.offset(swap2 as isize) = *cite_info.offset(swap1 as isize);
     *cite_info.offset(swap1 as isize) = innocent_bystander;
 }
-unsafe extern "C" fn less_than(mut arg1: cite_number, mut arg2: cite_number)
- -> bool {
+unsafe extern "C" fn less_than(mut arg1: cite_number, mut arg2: cite_number) -> bool {
     let mut char_ptr: int32_t = 0;
     let mut ptr1: str_ent_loc = 0;
     let mut ptr2: str_ent_loc = 0;
@@ -1532,47 +1561,43 @@ unsafe extern "C" fn less_than(mut arg1: cite_number, mut arg2: cite_number)
     ptr1 = arg1 * num_ent_strs + sort_key_num;
     ptr2 = arg2 * num_ent_strs + sort_key_num;
     char_ptr = 0i32;
-    loop  {
-        char1 =
-            *entry_strs.offset((ptr1 * (ent_str_size + 1i32) + char_ptr) as
-                                   isize);
-        char2 =
-            *entry_strs.offset((ptr2 * (ent_str_size + 1i32) + char_ptr) as
-                                   isize);
+    loop {
+        char1 = *entry_strs.offset((ptr1 * (ent_str_size + 1i32) + char_ptr) as isize);
+        char2 = *entry_strs.offset((ptr2 * (ent_str_size + 1i32) + char_ptr) as isize);
         if char1 as libc::c_int == 127i32 {
             /*end_of_string */
             if char2 as libc::c_int == 127i32 {
                 /*end_of_string */
                 if arg1 < arg2 {
-                    return 1i32 != 0
+                    return 1i32 != 0;
                 } else if arg1 > arg2 {
-                    return 0i32 != 0
+                    return 0i32 != 0;
                 } else {
-                    puts_log(b"Duplicate sort key\x00" as *const u8 as
-                                 *const libc::c_char);
+                    puts_log(b"Duplicate sort key\x00" as *const u8 as *const libc::c_char);
                     print_confusion();
                     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                 }
-            } else { return 1i32 != 0 }
+            } else {
+                return 1i32 != 0;
+            }
         } else {
             if char2 as libc::c_int == 127i32 {
                 /*end_of_string */
-                return 0i32 != 0
+                return 0i32 != 0;
             } else {
                 if (char1 as libc::c_int) < char2 as libc::c_int {
-                    return 1i32 != 0
+                    return 1i32 != 0;
                 } else {
                     if char1 as libc::c_int > char2 as libc::c_int {
-                        return 0i32 != 0
+                        return 0i32 != 0;
                     }
                 }
             }
         }
         char_ptr = char_ptr + 1i32
-    };
+    }
 }
-unsafe extern "C" fn quick_sort(mut left_end: cite_number,
-                                mut right_end: cite_number) {
+unsafe extern "C" fn quick_sort(mut left_end: cite_number, mut right_end: cite_number) {
     let mut left: cite_number = 0;
     let mut right: cite_number = 0;
     let mut insert_ptr: cite_number = 0;
@@ -1585,26 +1610,27 @@ unsafe extern "C" fn quick_sort(mut left_end: cite_number,
         insert_ptr = left_end + 1i32; /*n_aux_citation */
         for_end = right_end; /*n_aux_bibdata */
         if insert_ptr <= for_end {
-            loop  {
+            loop {
                 let mut for_end_0: int32_t = 0; /*n_aux_bibstyle */
                 right = insert_ptr; /*n_aux_input */
                 for_end_0 = left_end + 1i32; /*n_bst_entry */
                 if right >= for_end_0 {
-                    while !less_than(*cite_info.offset((right - 1i32) as
-                                                           isize),
-                                     *cite_info.offset(right as isize)) {
+                    while !less_than(
+                        *cite_info.offset((right - 1i32) as isize),
+                        *cite_info.offset(right as isize),
+                    ) {
                         swap(right - 1i32, right); /*n_bst_execute */
                         let fresh7 = right; /*n_bst_function */
                         right = right - 1; /*n_bst_integers */
                         if !(fresh7 > for_end_0) {
-                            break ; /*n_bst_iterate */
+                            break; /*n_bst_iterate */
                         }
                     }
                 } /*n_bst_macro */
                 let fresh8 = insert_ptr; /*n_bst_read */
                 insert_ptr = insert_ptr + 1; /*n_bst_reverse */
                 if !(fresh8 < for_end) {
-                    break ; /*n_bst_sort */
+                    break; /*n_bst_sort */
                 }
             }
         }
@@ -1612,22 +1638,32 @@ unsafe extern "C" fn quick_sort(mut left_end: cite_number,
         left = left_end + 4i32; /*n_bst_strings */
         middle = (left_end + right_end) / 2i32; /*n_bib_comment */
         right = right_end - 4i32; /*n_bib_preamble */
-        if less_than(*cite_info.offset(left as isize),
-                     *cite_info.offset(middle as isize)) {
-            if less_than(*cite_info.offset(middle as isize),
-                         *cite_info.offset(right as isize)) {
+        if less_than(
+            *cite_info.offset(left as isize),
+            *cite_info.offset(middle as isize),
+        ) {
+            if less_than(
+                *cite_info.offset(middle as isize),
+                *cite_info.offset(right as isize),
+            ) {
                 swap(left_end, middle); /*n_bib_string */
-            } else if less_than(*cite_info.offset(left as isize),
-                                *cite_info.offset(right as isize)) {
+            } else if less_than(
+                *cite_info.offset(left as isize),
+                *cite_info.offset(right as isize),
+            ) {
                 swap(left_end, right); /*str_literal */
             } else {
                 swap(left_end, left); /*str_literal */
             }
-        } else if less_than(*cite_info.offset(right as isize),
-                            *cite_info.offset(middle as isize)) {
+        } else if less_than(
+            *cite_info.offset(right as isize),
+            *cite_info.offset(middle as isize),
+        ) {
             swap(left_end, middle); /*n_i */
-        } else if less_than(*cite_info.offset(right as isize),
-                            *cite_info.offset(left as isize)) {
+        } else if less_than(
+            *cite_info.offset(right as isize),
+            *cite_info.offset(left as isize),
+        ) {
             swap(left_end, right); /*n_j */
         } else {
             swap(left_end, left); /*n_oe */
@@ -1635,7 +1671,7 @@ unsafe extern "C" fn quick_sort(mut left_end: cite_number,
         partition = *cite_info.offset(left_end as isize); /*n_ae */
         left = left_end + 1i32; /*n_ae_upper */
         right = right_end; /*n_aa */
-        loop  {
+        loop {
             while less_than(*cite_info.offset(left as isize), partition) {
                 left = left + 1i32
             } /*n_aa_upper */
@@ -1648,7 +1684,7 @@ unsafe extern "C" fn quick_sort(mut left_end: cite_number,
                 right = right - 1i32
             } /*n_l_upper */
             if left == right + 1i32 {
-                break ; /*n_ss */
+                break; /*n_ss */
             }
         } /*field */
         swap(left_end, right); /*str_entry_var */
@@ -1656,325 +1692,601 @@ unsafe extern "C" fn quick_sort(mut left_end: cite_number,
         quick_sort(left, right_end); /*int_global_var */
     };
 }
-unsafe extern "C" fn build_in(mut pds: pds_type, mut len: pds_len,
-                              mut fn_hash_loc: *mut hash_loc,
-                              mut blt_in_num: blt_in_range) {
+unsafe extern "C" fn build_in(
+    mut pds: pds_type,
+    mut len: pds_len,
+    mut fn_hash_loc: *mut hash_loc,
+    mut blt_in_num: blt_in_range,
+) {
     pre_define(pds, len, 11i32 as str_ilk);
     *fn_hash_loc = pre_def_loc;
     *fn_type.offset(*fn_hash_loc as isize) = 0i32 as fn_class;
     *ilk_info.offset(*fn_hash_loc as isize) = blt_in_num;
 }
 unsafe extern "C" fn pre_def_certain_strings() {
-    pre_define(b".aux        \x00" as *const u8 as *const libc::c_char,
-               4i32 as pds_len, 7i32 as str_ilk);
+    pre_define(
+        b".aux        \x00" as *const u8 as *const libc::c_char,
+        4i32 as pds_len,
+        7i32 as str_ilk,
+    );
     s_aux_extension = *hash_text.offset(pre_def_loc as isize);
-    pre_define(b".bbl        \x00" as *const u8 as *const libc::c_char,
-               4i32 as pds_len, 7i32 as str_ilk);
+    pre_define(
+        b".bbl        \x00" as *const u8 as *const libc::c_char,
+        4i32 as pds_len,
+        7i32 as str_ilk,
+    );
     s_bbl_extension = *hash_text.offset(pre_def_loc as isize);
-    pre_define(b".blg        \x00" as *const u8 as *const libc::c_char,
-               4i32 as pds_len, 7i32 as str_ilk);
+    pre_define(
+        b".blg        \x00" as *const u8 as *const libc::c_char,
+        4i32 as pds_len,
+        7i32 as str_ilk,
+    );
     s_log_extension = *hash_text.offset(pre_def_loc as isize);
-    pre_define(b".bst        \x00" as *const u8 as *const libc::c_char,
-               4i32 as pds_len, 7i32 as str_ilk);
+    pre_define(
+        b".bst        \x00" as *const u8 as *const libc::c_char,
+        4i32 as pds_len,
+        7i32 as str_ilk,
+    );
     s_bst_extension = *hash_text.offset(pre_def_loc as isize);
-    pre_define(b".bib        \x00" as *const u8 as *const libc::c_char,
-               4i32 as pds_len, 7i32 as str_ilk);
+    pre_define(
+        b".bib        \x00" as *const u8 as *const libc::c_char,
+        4i32 as pds_len,
+        7i32 as str_ilk,
+    );
     s_bib_extension = *hash_text.offset(pre_def_loc as isize);
-    pre_define(b"texinputs:  \x00" as *const u8 as *const libc::c_char,
-               10i32 as pds_len, 8i32 as str_ilk);
+    pre_define(
+        b"texinputs:  \x00" as *const u8 as *const libc::c_char,
+        10i32 as pds_len,
+        8i32 as str_ilk,
+    );
     s_bst_area = *hash_text.offset(pre_def_loc as isize);
-    pre_define(b"texbib:     \x00" as *const u8 as *const libc::c_char,
-               7i32 as pds_len, 8i32 as str_ilk);
+    pre_define(
+        b"texbib:     \x00" as *const u8 as *const libc::c_char,
+        7i32 as pds_len,
+        8i32 as str_ilk,
+    );
     s_bib_area = *hash_text.offset(pre_def_loc as isize);
-    pre_define(b"\\citation   \x00" as *const u8 as *const libc::c_char,
-               9i32 as pds_len, 2i32 as str_ilk);
+    pre_define(
+        b"\\citation   \x00" as *const u8 as *const libc::c_char,
+        9i32 as pds_len,
+        2i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 2i32;
-    pre_define(b"\\bibdata    \x00" as *const u8 as *const libc::c_char,
-               8i32 as pds_len, 2i32 as str_ilk);
+    pre_define(
+        b"\\bibdata    \x00" as *const u8 as *const libc::c_char,
+        8i32 as pds_len,
+        2i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 0i32;
-    pre_define(b"\\bibstyle   \x00" as *const u8 as *const libc::c_char,
-               9i32 as pds_len, 2i32 as str_ilk);
+    pre_define(
+        b"\\bibstyle   \x00" as *const u8 as *const libc::c_char,
+        9i32 as pds_len,
+        2i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 1i32;
-    pre_define(b"\\@input     \x00" as *const u8 as *const libc::c_char,
-               7i32 as pds_len, 2i32 as str_ilk);
+    pre_define(
+        b"\\@input     \x00" as *const u8 as *const libc::c_char,
+        7i32 as pds_len,
+        2i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 3i32;
-    pre_define(b"entry       \x00" as *const u8 as *const libc::c_char,
-               5i32 as pds_len, 4i32 as str_ilk);
+    pre_define(
+        b"entry       \x00" as *const u8 as *const libc::c_char,
+        5i32 as pds_len,
+        4i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 0i32;
-    pre_define(b"execute     \x00" as *const u8 as *const libc::c_char,
-               7i32 as pds_len, 4i32 as str_ilk);
+    pre_define(
+        b"execute     \x00" as *const u8 as *const libc::c_char,
+        7i32 as pds_len,
+        4i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 1i32;
-    pre_define(b"function    \x00" as *const u8 as *const libc::c_char,
-               8i32 as pds_len, 4i32 as str_ilk);
+    pre_define(
+        b"function    \x00" as *const u8 as *const libc::c_char,
+        8i32 as pds_len,
+        4i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 2i32;
-    pre_define(b"integers    \x00" as *const u8 as *const libc::c_char,
-               8i32 as pds_len, 4i32 as str_ilk);
+    pre_define(
+        b"integers    \x00" as *const u8 as *const libc::c_char,
+        8i32 as pds_len,
+        4i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 3i32;
-    pre_define(b"iterate     \x00" as *const u8 as *const libc::c_char,
-               7i32 as pds_len, 4i32 as str_ilk);
+    pre_define(
+        b"iterate     \x00" as *const u8 as *const libc::c_char,
+        7i32 as pds_len,
+        4i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 4i32;
-    pre_define(b"macro       \x00" as *const u8 as *const libc::c_char,
-               5i32 as pds_len, 4i32 as str_ilk);
+    pre_define(
+        b"macro       \x00" as *const u8 as *const libc::c_char,
+        5i32 as pds_len,
+        4i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 5i32;
-    pre_define(b"read        \x00" as *const u8 as *const libc::c_char,
-               4i32 as pds_len, 4i32 as str_ilk);
+    pre_define(
+        b"read        \x00" as *const u8 as *const libc::c_char,
+        4i32 as pds_len,
+        4i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 6i32;
-    pre_define(b"reverse     \x00" as *const u8 as *const libc::c_char,
-               7i32 as pds_len, 4i32 as str_ilk);
+    pre_define(
+        b"reverse     \x00" as *const u8 as *const libc::c_char,
+        7i32 as pds_len,
+        4i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 7i32;
-    pre_define(b"sort        \x00" as *const u8 as *const libc::c_char,
-               4i32 as pds_len, 4i32 as str_ilk);
+    pre_define(
+        b"sort        \x00" as *const u8 as *const libc::c_char,
+        4i32 as pds_len,
+        4i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 8i32;
-    pre_define(b"strings     \x00" as *const u8 as *const libc::c_char,
-               7i32 as pds_len, 4i32 as str_ilk);
+    pre_define(
+        b"strings     \x00" as *const u8 as *const libc::c_char,
+        7i32 as pds_len,
+        4i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 9i32;
-    pre_define(b"comment     \x00" as *const u8 as *const libc::c_char,
-               7i32 as pds_len, 12i32 as str_ilk);
+    pre_define(
+        b"comment     \x00" as *const u8 as *const libc::c_char,
+        7i32 as pds_len,
+        12i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 0i32;
-    pre_define(b"preamble    \x00" as *const u8 as *const libc::c_char,
-               8i32 as pds_len, 12i32 as str_ilk);
+    pre_define(
+        b"preamble    \x00" as *const u8 as *const libc::c_char,
+        8i32 as pds_len,
+        12i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 1i32;
-    pre_define(b"string      \x00" as *const u8 as *const libc::c_char,
-               6i32 as pds_len, 12i32 as str_ilk);
+    pre_define(
+        b"string      \x00" as *const u8 as *const libc::c_char,
+        6i32 as pds_len,
+        12i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 2i32;
-    build_in(b"=           \x00" as *const u8 as *const libc::c_char,
-             1i32 as pds_len, &mut b_equals, 0i32);
-    build_in(b">           \x00" as *const u8 as *const libc::c_char,
-             1i32 as pds_len, &mut b_greater_than, 1i32);
-    build_in(b"<           \x00" as *const u8 as *const libc::c_char,
-             1i32 as pds_len, &mut b_less_than, 2i32);
-    build_in(b"+           \x00" as *const u8 as *const libc::c_char,
-             1i32 as pds_len, &mut b_plus, 3i32);
-    build_in(b"-           \x00" as *const u8 as *const libc::c_char,
-             1i32 as pds_len, &mut b_minus, 4i32);
-    build_in(b"*           \x00" as *const u8 as *const libc::c_char,
-             1i32 as pds_len, &mut b_concatenate, 5i32);
-    build_in(b":=          \x00" as *const u8 as *const libc::c_char,
-             2i32 as pds_len, &mut b_gets, 6i32);
-    build_in(b"add.period$ \x00" as *const u8 as *const libc::c_char,
-             11i32 as pds_len, &mut b_add_period, 7i32);
-    build_in(b"call.type$  \x00" as *const u8 as *const libc::c_char,
-             10i32 as pds_len, &mut b_call_type, 8i32);
-    build_in(b"change.case$\x00" as *const u8 as *const libc::c_char,
-             12i32 as pds_len, &mut b_change_case, 9i32);
-    build_in(b"chr.to.int$ \x00" as *const u8 as *const libc::c_char,
-             11i32 as pds_len, &mut b_chr_to_int, 10i32);
-    build_in(b"cite$       \x00" as *const u8 as *const libc::c_char,
-             5i32 as pds_len, &mut b_cite, 11i32);
-    build_in(b"duplicate$  \x00" as *const u8 as *const libc::c_char,
-             10i32 as pds_len, &mut b_duplicate, 12i32);
-    build_in(b"empty$      \x00" as *const u8 as *const libc::c_char,
-             6i32 as pds_len, &mut b_empty, 13i32);
-    build_in(b"format.name$\x00" as *const u8 as *const libc::c_char,
-             12i32 as pds_len, &mut b_format_name, 14i32);
-    build_in(b"if$         \x00" as *const u8 as *const libc::c_char,
-             3i32 as pds_len, &mut b_if, 15i32);
-    build_in(b"int.to.chr$ \x00" as *const u8 as *const libc::c_char,
-             11i32 as pds_len, &mut b_int_to_chr, 16i32);
-    build_in(b"int.to.str$ \x00" as *const u8 as *const libc::c_char,
-             11i32 as pds_len, &mut b_int_to_str, 17i32);
-    build_in(b"missing$    \x00" as *const u8 as *const libc::c_char,
-             8i32 as pds_len, &mut b_missing, 18i32);
-    build_in(b"newline$    \x00" as *const u8 as *const libc::c_char,
-             8i32 as pds_len, &mut b_newline, 19i32);
-    build_in(b"num.names$  \x00" as *const u8 as *const libc::c_char,
-             10i32 as pds_len, &mut b_num_names, 20i32);
-    build_in(b"pop$        \x00" as *const u8 as *const libc::c_char,
-             4i32 as pds_len, &mut b_pop, 21i32);
-    build_in(b"preamble$   \x00" as *const u8 as *const libc::c_char,
-             9i32 as pds_len, &mut b_preamble, 22i32);
-    build_in(b"purify$     \x00" as *const u8 as *const libc::c_char,
-             7i32 as pds_len, &mut b_purify, 23i32);
-    build_in(b"quote$      \x00" as *const u8 as *const libc::c_char,
-             6i32 as pds_len, &mut b_quote, 24i32);
-    build_in(b"skip$       \x00" as *const u8 as *const libc::c_char,
-             5i32 as pds_len, &mut b_skip, 25i32);
-    build_in(b"stack$      \x00" as *const u8 as *const libc::c_char,
-             6i32 as pds_len, &mut b_stack, 26i32);
-    build_in(b"substring$  \x00" as *const u8 as *const libc::c_char,
-             10i32 as pds_len, &mut b_substring, 27i32);
-    build_in(b"swap$       \x00" as *const u8 as *const libc::c_char,
-             5i32 as pds_len, &mut b_swap, 28i32);
-    build_in(b"text.length$\x00" as *const u8 as *const libc::c_char,
-             12i32 as pds_len, &mut b_text_length, 29i32);
-    build_in(b"text.prefix$\x00" as *const u8 as *const libc::c_char,
-             12i32 as pds_len, &mut b_text_prefix, 30i32);
-    build_in(b"top$        \x00" as *const u8 as *const libc::c_char,
-             4i32 as pds_len, &mut b_top_stack, 31i32);
-    build_in(b"type$       \x00" as *const u8 as *const libc::c_char,
-             5i32 as pds_len, &mut b_type, 32i32);
-    build_in(b"warning$    \x00" as *const u8 as *const libc::c_char,
-             8i32 as pds_len, &mut b_warning, 33i32);
-    build_in(b"while$      \x00" as *const u8 as *const libc::c_char,
-             6i32 as pds_len, &mut b_while, 34i32);
-    build_in(b"width$      \x00" as *const u8 as *const libc::c_char,
-             6i32 as pds_len, &mut b_width, 35i32);
-    build_in(b"write$      \x00" as *const u8 as *const libc::c_char,
-             6i32 as pds_len, &mut b_write, 36i32);
-    pre_define(b"            \x00" as *const u8 as *const libc::c_char,
-               0i32 as pds_len, 0i32 as str_ilk);
+    build_in(
+        b"=           \x00" as *const u8 as *const libc::c_char,
+        1i32 as pds_len,
+        &mut b_equals,
+        0i32,
+    );
+    build_in(
+        b">           \x00" as *const u8 as *const libc::c_char,
+        1i32 as pds_len,
+        &mut b_greater_than,
+        1i32,
+    );
+    build_in(
+        b"<           \x00" as *const u8 as *const libc::c_char,
+        1i32 as pds_len,
+        &mut b_less_than,
+        2i32,
+    );
+    build_in(
+        b"+           \x00" as *const u8 as *const libc::c_char,
+        1i32 as pds_len,
+        &mut b_plus,
+        3i32,
+    );
+    build_in(
+        b"-           \x00" as *const u8 as *const libc::c_char,
+        1i32 as pds_len,
+        &mut b_minus,
+        4i32,
+    );
+    build_in(
+        b"*           \x00" as *const u8 as *const libc::c_char,
+        1i32 as pds_len,
+        &mut b_concatenate,
+        5i32,
+    );
+    build_in(
+        b":=          \x00" as *const u8 as *const libc::c_char,
+        2i32 as pds_len,
+        &mut b_gets,
+        6i32,
+    );
+    build_in(
+        b"add.period$ \x00" as *const u8 as *const libc::c_char,
+        11i32 as pds_len,
+        &mut b_add_period,
+        7i32,
+    );
+    build_in(
+        b"call.type$  \x00" as *const u8 as *const libc::c_char,
+        10i32 as pds_len,
+        &mut b_call_type,
+        8i32,
+    );
+    build_in(
+        b"change.case$\x00" as *const u8 as *const libc::c_char,
+        12i32 as pds_len,
+        &mut b_change_case,
+        9i32,
+    );
+    build_in(
+        b"chr.to.int$ \x00" as *const u8 as *const libc::c_char,
+        11i32 as pds_len,
+        &mut b_chr_to_int,
+        10i32,
+    );
+    build_in(
+        b"cite$       \x00" as *const u8 as *const libc::c_char,
+        5i32 as pds_len,
+        &mut b_cite,
+        11i32,
+    );
+    build_in(
+        b"duplicate$  \x00" as *const u8 as *const libc::c_char,
+        10i32 as pds_len,
+        &mut b_duplicate,
+        12i32,
+    );
+    build_in(
+        b"empty$      \x00" as *const u8 as *const libc::c_char,
+        6i32 as pds_len,
+        &mut b_empty,
+        13i32,
+    );
+    build_in(
+        b"format.name$\x00" as *const u8 as *const libc::c_char,
+        12i32 as pds_len,
+        &mut b_format_name,
+        14i32,
+    );
+    build_in(
+        b"if$         \x00" as *const u8 as *const libc::c_char,
+        3i32 as pds_len,
+        &mut b_if,
+        15i32,
+    );
+    build_in(
+        b"int.to.chr$ \x00" as *const u8 as *const libc::c_char,
+        11i32 as pds_len,
+        &mut b_int_to_chr,
+        16i32,
+    );
+    build_in(
+        b"int.to.str$ \x00" as *const u8 as *const libc::c_char,
+        11i32 as pds_len,
+        &mut b_int_to_str,
+        17i32,
+    );
+    build_in(
+        b"missing$    \x00" as *const u8 as *const libc::c_char,
+        8i32 as pds_len,
+        &mut b_missing,
+        18i32,
+    );
+    build_in(
+        b"newline$    \x00" as *const u8 as *const libc::c_char,
+        8i32 as pds_len,
+        &mut b_newline,
+        19i32,
+    );
+    build_in(
+        b"num.names$  \x00" as *const u8 as *const libc::c_char,
+        10i32 as pds_len,
+        &mut b_num_names,
+        20i32,
+    );
+    build_in(
+        b"pop$        \x00" as *const u8 as *const libc::c_char,
+        4i32 as pds_len,
+        &mut b_pop,
+        21i32,
+    );
+    build_in(
+        b"preamble$   \x00" as *const u8 as *const libc::c_char,
+        9i32 as pds_len,
+        &mut b_preamble,
+        22i32,
+    );
+    build_in(
+        b"purify$     \x00" as *const u8 as *const libc::c_char,
+        7i32 as pds_len,
+        &mut b_purify,
+        23i32,
+    );
+    build_in(
+        b"quote$      \x00" as *const u8 as *const libc::c_char,
+        6i32 as pds_len,
+        &mut b_quote,
+        24i32,
+    );
+    build_in(
+        b"skip$       \x00" as *const u8 as *const libc::c_char,
+        5i32 as pds_len,
+        &mut b_skip,
+        25i32,
+    );
+    build_in(
+        b"stack$      \x00" as *const u8 as *const libc::c_char,
+        6i32 as pds_len,
+        &mut b_stack,
+        26i32,
+    );
+    build_in(
+        b"substring$  \x00" as *const u8 as *const libc::c_char,
+        10i32 as pds_len,
+        &mut b_substring,
+        27i32,
+    );
+    build_in(
+        b"swap$       \x00" as *const u8 as *const libc::c_char,
+        5i32 as pds_len,
+        &mut b_swap,
+        28i32,
+    );
+    build_in(
+        b"text.length$\x00" as *const u8 as *const libc::c_char,
+        12i32 as pds_len,
+        &mut b_text_length,
+        29i32,
+    );
+    build_in(
+        b"text.prefix$\x00" as *const u8 as *const libc::c_char,
+        12i32 as pds_len,
+        &mut b_text_prefix,
+        30i32,
+    );
+    build_in(
+        b"top$        \x00" as *const u8 as *const libc::c_char,
+        4i32 as pds_len,
+        &mut b_top_stack,
+        31i32,
+    );
+    build_in(
+        b"type$       \x00" as *const u8 as *const libc::c_char,
+        5i32 as pds_len,
+        &mut b_type,
+        32i32,
+    );
+    build_in(
+        b"warning$    \x00" as *const u8 as *const libc::c_char,
+        8i32 as pds_len,
+        &mut b_warning,
+        33i32,
+    );
+    build_in(
+        b"while$      \x00" as *const u8 as *const libc::c_char,
+        6i32 as pds_len,
+        &mut b_while,
+        34i32,
+    );
+    build_in(
+        b"width$      \x00" as *const u8 as *const libc::c_char,
+        6i32 as pds_len,
+        &mut b_width,
+        35i32,
+    );
+    build_in(
+        b"write$      \x00" as *const u8 as *const libc::c_char,
+        6i32 as pds_len,
+        &mut b_write,
+        36i32,
+    );
+    pre_define(
+        b"            \x00" as *const u8 as *const libc::c_char,
+        0i32 as pds_len,
+        0i32 as str_ilk,
+    );
     s_null = *hash_text.offset(pre_def_loc as isize);
     *fn_type.offset(pre_def_loc as isize) = 3i32 as fn_class;
-    pre_define(b"default.type\x00" as *const u8 as *const libc::c_char,
-               12i32 as pds_len, 0i32 as str_ilk);
+    pre_define(
+        b"default.type\x00" as *const u8 as *const libc::c_char,
+        12i32 as pds_len,
+        0i32 as str_ilk,
+    );
     s_default = *hash_text.offset(pre_def_loc as isize);
     *fn_type.offset(pre_def_loc as isize) = 3i32 as fn_class;
     b_default = b_skip;
     preamble_ptr = 0i32;
-    pre_define(b"i           \x00" as *const u8 as *const libc::c_char,
-               1i32 as pds_len, 14i32 as str_ilk);
+    pre_define(
+        b"i           \x00" as *const u8 as *const libc::c_char,
+        1i32 as pds_len,
+        14i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 0i32;
-    pre_define(b"j           \x00" as *const u8 as *const libc::c_char,
-               1i32 as pds_len, 14i32 as str_ilk);
+    pre_define(
+        b"j           \x00" as *const u8 as *const libc::c_char,
+        1i32 as pds_len,
+        14i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 1i32;
-    pre_define(b"oe          \x00" as *const u8 as *const libc::c_char,
-               2i32 as pds_len, 14i32 as str_ilk);
+    pre_define(
+        b"oe          \x00" as *const u8 as *const libc::c_char,
+        2i32 as pds_len,
+        14i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 2i32;
-    pre_define(b"OE          \x00" as *const u8 as *const libc::c_char,
-               2i32 as pds_len, 14i32 as str_ilk);
+    pre_define(
+        b"OE          \x00" as *const u8 as *const libc::c_char,
+        2i32 as pds_len,
+        14i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 3i32;
-    pre_define(b"ae          \x00" as *const u8 as *const libc::c_char,
-               2i32 as pds_len, 14i32 as str_ilk);
+    pre_define(
+        b"ae          \x00" as *const u8 as *const libc::c_char,
+        2i32 as pds_len,
+        14i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 4i32;
-    pre_define(b"AE          \x00" as *const u8 as *const libc::c_char,
-               2i32 as pds_len, 14i32 as str_ilk);
+    pre_define(
+        b"AE          \x00" as *const u8 as *const libc::c_char,
+        2i32 as pds_len,
+        14i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 5i32;
-    pre_define(b"aa          \x00" as *const u8 as *const libc::c_char,
-               2i32 as pds_len, 14i32 as str_ilk);
+    pre_define(
+        b"aa          \x00" as *const u8 as *const libc::c_char,
+        2i32 as pds_len,
+        14i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 6i32;
-    pre_define(b"AA          \x00" as *const u8 as *const libc::c_char,
-               2i32 as pds_len, 14i32 as str_ilk);
+    pre_define(
+        b"AA          \x00" as *const u8 as *const libc::c_char,
+        2i32 as pds_len,
+        14i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 7i32;
-    pre_define(b"o           \x00" as *const u8 as *const libc::c_char,
-               1i32 as pds_len, 14i32 as str_ilk);
+    pre_define(
+        b"o           \x00" as *const u8 as *const libc::c_char,
+        1i32 as pds_len,
+        14i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 8i32;
-    pre_define(b"O           \x00" as *const u8 as *const libc::c_char,
-               1i32 as pds_len, 14i32 as str_ilk);
+    pre_define(
+        b"O           \x00" as *const u8 as *const libc::c_char,
+        1i32 as pds_len,
+        14i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 9i32;
-    pre_define(b"l           \x00" as *const u8 as *const libc::c_char,
-               1i32 as pds_len, 14i32 as str_ilk);
+    pre_define(
+        b"l           \x00" as *const u8 as *const libc::c_char,
+        1i32 as pds_len,
+        14i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 10i32;
-    pre_define(b"L           \x00" as *const u8 as *const libc::c_char,
-               1i32 as pds_len, 14i32 as str_ilk);
+    pre_define(
+        b"L           \x00" as *const u8 as *const libc::c_char,
+        1i32 as pds_len,
+        14i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 11i32;
-    pre_define(b"ss          \x00" as *const u8 as *const libc::c_char,
-               2i32 as pds_len, 14i32 as str_ilk);
+    pre_define(
+        b"ss          \x00" as *const u8 as *const libc::c_char,
+        2i32 as pds_len,
+        14i32 as str_ilk,
+    );
     *ilk_info.offset(pre_def_loc as isize) = 12i32;
-    pre_define(b"crossref    \x00" as *const u8 as *const libc::c_char,
-               8i32 as pds_len, 11i32 as str_ilk);
+    pre_define(
+        b"crossref    \x00" as *const u8 as *const libc::c_char,
+        8i32 as pds_len,
+        11i32 as str_ilk,
+    );
     *fn_type.offset(pre_def_loc as isize) = 4i32 as fn_class;
     *ilk_info.offset(pre_def_loc as isize) = num_fields;
     crossref_num = num_fields;
     num_fields = num_fields + 1i32;
     num_pre_defined_fields = num_fields;
-    pre_define(b"sort.key$   \x00" as *const u8 as *const libc::c_char,
-               9i32 as pds_len, 11i32 as str_ilk);
+    pre_define(
+        b"sort.key$   \x00" as *const u8 as *const libc::c_char,
+        9i32 as pds_len,
+        11i32 as str_ilk,
+    );
     *fn_type.offset(pre_def_loc as isize) = 6i32 as fn_class;
     *ilk_info.offset(pre_def_loc as isize) = num_ent_strs;
     sort_key_num = num_ent_strs;
     num_ent_strs = num_ent_strs + 1i32;
-    pre_define(b"entry.max$  \x00" as *const u8 as *const libc::c_char,
-               10i32 as pds_len, 11i32 as str_ilk);
+    pre_define(
+        b"entry.max$  \x00" as *const u8 as *const libc::c_char,
+        10i32 as pds_len,
+        11i32 as str_ilk,
+    );
     *fn_type.offset(pre_def_loc as isize) = 7i32 as fn_class;
     *ilk_info.offset(pre_def_loc as isize) = ent_str_size;
-    pre_define(b"global.max$ \x00" as *const u8 as *const libc::c_char,
-               11i32 as pds_len, 11i32 as str_ilk);
+    pre_define(
+        b"global.max$ \x00" as *const u8 as *const libc::c_char,
+        11i32 as pds_len,
+        11i32 as str_ilk,
+    );
     *fn_type.offset(pre_def_loc as isize) = 7i32 as fn_class;
     *ilk_info.offset(pre_def_loc as isize) = glob_str_size;
 }
 unsafe extern "C" fn scan1(mut char1: ASCII_code) -> bool {
     buf_ptr1 = buf_ptr2;
-    while buf_ptr2 < last &&
-              *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-                  char1 as libc::c_int {
+    while buf_ptr2 < last
+        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char1 as libc::c_int
+    {
         buf_ptr2 = buf_ptr2 + 1i32
     }
     return buf_ptr2 < last;
 }
 unsafe extern "C" fn scan1_white(mut char1: ASCII_code) -> bool {
     buf_ptr1 = buf_ptr2;
-    while buf_ptr2 < last &&
-              lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as
-                  libc::c_int != 1i32 &&
-              *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-                  char1 as libc::c_int {
+    while buf_ptr2 < last
+        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int != 1i32
+        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char1 as libc::c_int
+    {
         buf_ptr2 = buf_ptr2 + 1i32
     }
     return buf_ptr2 < last;
 }
-unsafe extern "C" fn scan2(mut char1: ASCII_code, mut char2: ASCII_code)
- -> bool {
+unsafe extern "C" fn scan2(mut char1: ASCII_code, mut char2: ASCII_code) -> bool {
     buf_ptr1 = buf_ptr2;
-    while buf_ptr2 < last &&
-              *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-                  char1 as libc::c_int &&
-              *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-                  char2 as libc::c_int {
+    while buf_ptr2 < last
+        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char1 as libc::c_int
+        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char2 as libc::c_int
+    {
         buf_ptr2 = buf_ptr2 + 1i32
     }
     return buf_ptr2 < last;
 }
-unsafe extern "C" fn scan2_white(mut char1: ASCII_code, mut char2: ASCII_code)
- -> bool {
+unsafe extern "C" fn scan2_white(mut char1: ASCII_code, mut char2: ASCII_code) -> bool {
     buf_ptr1 = buf_ptr2;
-    while buf_ptr2 < last &&
-              *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-                  char1 as libc::c_int &&
-              *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-                  char2 as libc::c_int &&
-              lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as
-                  libc::c_int != 1i32 {
+    while buf_ptr2 < last
+        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char1 as libc::c_int
+        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char2 as libc::c_int
+        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int != 1i32
+    {
         buf_ptr2 = buf_ptr2 + 1i32
     }
     return buf_ptr2 < last;
 }
-unsafe extern "C" fn scan3(mut char1: ASCII_code, mut char2: ASCII_code,
-                           mut char3: ASCII_code) -> bool {
+unsafe extern "C" fn scan3(
+    mut char1: ASCII_code,
+    mut char2: ASCII_code,
+    mut char3: ASCII_code,
+) -> bool {
     buf_ptr1 = buf_ptr2;
-    while buf_ptr2 < last &&
-              *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-                  char1 as libc::c_int &&
-              *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-                  char2 as libc::c_int &&
-              *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-                  char3 as libc::c_int {
+    while buf_ptr2 < last
+        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char1 as libc::c_int
+        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char2 as libc::c_int
+        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char3 as libc::c_int
+    {
         buf_ptr2 = buf_ptr2 + 1i32
     }
     return buf_ptr2 < last;
 }
 unsafe extern "C" fn scan_alpha() -> bool {
     buf_ptr1 = buf_ptr2;
-    while buf_ptr2 < last &&
-              lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as
-                  libc::c_int == 2i32 {
+    while buf_ptr2 < last
+        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 2i32
+    {
         buf_ptr2 = buf_ptr2 + 1i32
     }
     return buf_ptr2 - buf_ptr1 != 0i32;
 }
-unsafe extern "C" fn scan_identifier(mut char1: ASCII_code,
-                                     mut char2: ASCII_code,
-                                     mut char3: ASCII_code) {
+unsafe extern "C" fn scan_identifier(
+    mut char1: ASCII_code,
+    mut char2: ASCII_code,
+    mut char3: ASCII_code,
+) {
     buf_ptr1 = buf_ptr2;
-    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int !=
-           3i32 {
+    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int != 3i32 {
         /*numeric */
-        while buf_ptr2 < last &&
-                  id_class[*buffer.offset(buf_ptr2 as isize) as usize] as
-                      libc::c_int == 1i32 {
+        while buf_ptr2 < last
+            && id_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32
+        {
             buf_ptr2 = buf_ptr2 + 1i32
         }
     } /*id_null */
     if buf_ptr2 - buf_ptr1 == 0i32 {
         scan_result = 0i32 as libc::c_uchar
-    } else if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as
-                  libc::c_int == 1i32 || buf_ptr2 == last {
+    } else if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32
+        || buf_ptr2 == last
+    {
         scan_result = 3i32 as libc::c_uchar
-    } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int ==
-                  char1 as libc::c_int ||
-                  *buffer.offset(buf_ptr2 as isize) as libc::c_int ==
-                      char2 as libc::c_int ||
-                  *buffer.offset(buf_ptr2 as isize) as libc::c_int ==
-                      char3 as libc::c_int { /*white_adjacent */
+    } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == char1 as libc::c_int
+        || *buffer.offset(buf_ptr2 as isize) as libc::c_int == char2 as libc::c_int
+        || *buffer.offset(buf_ptr2 as isize) as libc::c_int == char3 as libc::c_int
+    {
+        /*white_adjacent */
         scan_result = 1i32 as libc::c_uchar
     } else {
         scan_result = 2i32 as libc::c_uchar
@@ -1984,12 +2296,11 @@ unsafe extern "C" fn scan_identifier(mut char1: ASCII_code,
 unsafe extern "C" fn scan_nonneg_integer() -> bool {
     buf_ptr1 = buf_ptr2;
     token_value = 0i32;
-    while buf_ptr2 < last &&
-              lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as
-                  libc::c_int == 3i32 {
+    while buf_ptr2 < last
+        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 3i32
+    {
         token_value =
-            token_value * 10i32 +
-                (*buffer.offset(buf_ptr2 as isize) as libc::c_int - 48i32);
+            token_value * 10i32 + (*buffer.offset(buf_ptr2 as isize) as libc::c_int - 48i32);
         buf_ptr2 = buf_ptr2 + 1i32
     }
     return buf_ptr2 - buf_ptr1 != 0i32;
@@ -2001,39 +2312,44 @@ unsafe extern "C" fn scan_integer() -> bool {
         /*minus_sign */
         sign_length = 1i32 as libc::c_uchar;
         buf_ptr2 = buf_ptr2 + 1i32
-    } else { sign_length = 0i32 as libc::c_uchar }
+    } else {
+        sign_length = 0i32 as libc::c_uchar
+    }
     token_value = 0i32;
-    while buf_ptr2 < last &&
-              lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as
-                  libc::c_int == 3i32 {
+    while buf_ptr2 < last
+        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 3i32
+    {
         token_value =
-            token_value * 10i32 +
-                (*buffer.offset(buf_ptr2 as isize) as libc::c_int - 48i32);
+            token_value * 10i32 + (*buffer.offset(buf_ptr2 as isize) as libc::c_int - 48i32);
         buf_ptr2 = buf_ptr2 + 1i32
     }
-    if sign_length as libc::c_int == 1i32 { token_value = -token_value }
+    if sign_length as libc::c_int == 1i32 {
+        token_value = -token_value
+    }
     return buf_ptr2 - buf_ptr1 != sign_length as libc::c_int;
 }
 unsafe extern "C" fn scan_white_space() -> bool {
-    while buf_ptr2 < last &&
-              lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as
-                  libc::c_int == 1i32 {
+    while buf_ptr2 < last
+        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32
+    {
         buf_ptr2 = buf_ptr2 + 1i32
     }
     return buf_ptr2 < last;
 }
 unsafe extern "C" fn eat_bst_white_space() -> bool {
-    loop  {
+    loop {
         if scan_white_space() {
             if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 37i32 {
                 /*comment */
-                return 1i32 != 0
+                return 1i32 != 0;
             }
         }
-        if !input_ln(bst_file) { return 0i32 != 0 }
+        if !input_ln(bst_file) {
+            return 0i32 != 0;
+        }
         bst_line_num = bst_line_num + 1i32;
         buf_ptr2 = 0i32
-    };
+    }
 }
 unsafe extern "C" fn skip_token_print() {
     putc_log('-' as i32);
@@ -2042,24 +2358,24 @@ unsafe extern "C" fn skip_token_print() {
     scan2_white(125i32 as ASCII_code, 37i32 as ASCII_code);
 }
 unsafe extern "C" fn print_recursion_illegal() {
-    puts_log(b"Curse you, wizard, before you recurse me:\n\x00" as *const u8
-                 as *const libc::c_char);
+    puts_log(
+        b"Curse you, wizard, before you recurse me:\n\x00" as *const u8 as *const libc::c_char,
+    );
     puts_log(b"function \x00" as *const u8 as *const libc::c_char);
     print_a_token();
-    puts_log(b" is illegal in its own definition\n\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b" is illegal in its own definition\n\x00" as *const u8 as *const libc::c_char);
     skip_token_print();
 }
 unsafe extern "C" fn skp_token_unknown_function_print() {
     print_a_token();
-    puts_log(b" is an unknown function\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b" is an unknown function\x00" as *const u8 as *const libc::c_char);
     skip_token_print();
 }
 unsafe extern "C" fn skip_illegal_stuff_after_token_print() {
-    printf_log(b"\"%c\" can\'t follow a literal\x00" as *const u8 as
-                   *const libc::c_char,
-               *buffer.offset(buf_ptr2 as isize) as libc::c_int);
+    printf_log(
+        b"\"%c\" can\'t follow a literal\x00" as *const u8 as *const libc::c_char,
+        *buffer.offset(buf_ptr2 as isize) as libc::c_int,
+    );
     skip_token_print();
 }
 unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
@@ -2071,63 +2387,61 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
     let mut end_of_num: buf_pointer = 0;
     let mut impl_fn_loc: hash_loc = 0;
     single_fn_space = 100i32;
-    singl_function =
-        xmalloc(((single_fn_space + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_ptr2>()
-                                                     as libc::c_ulong)) as
-            *mut hash_ptr2;
+    singl_function = xmalloc(
+        ((single_fn_space + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as libc::c_ulong),
+    ) as *mut hash_ptr2;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"function\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
     } else {
         single_ptr = 0i32;
-        loop  {
+        loop {
             if !(*buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32) {
                 current_block = 355541881813056170;
-                break ;
+                break;
             }
             /*right_brace */
             match *buffer.offset(buf_ptr2 as isize) as libc::c_int {
                 35 => {
                     buf_ptr2 = buf_ptr2 + 1i32; /*int_literal */
                     if !scan_integer() {
-                        puts_log(b"Illegal integer in integer literal\x00" as
-                                     *const u8 as
-                                     *const libc::c_char); /*str_literal */
+                        puts_log(
+                            b"Illegal integer in integer literal\x00" as *const u8
+                                as *const libc::c_char,
+                        ); /*str_literal */
                         skip_token_print(); /*194: */
                     } else {
-                        literal_loc =
-                            str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                                       1i32 as str_ilk,
-                                       1i32 != 0); /*single_quote */
+                        literal_loc = str_lookup(
+                            buffer,
+                            buf_ptr1,
+                            buf_ptr2 - buf_ptr1,
+                            1i32 as str_ilk,
+                            1i32 != 0,
+                        ); /*single_quote */
                         if !hash_found {
-                            *fn_type.offset(literal_loc as isize) =
-                                2i32 as fn_class; /*wiz_defined */
-                            *ilk_info.offset(literal_loc as isize) =
-                                token_value
+                            *fn_type.offset(literal_loc as isize) = 2i32 as fn_class; /*wiz_defined */
+                            *ilk_info.offset(literal_loc as isize) = token_value
                         }
-                        if buf_ptr2 < last &&
-                               lex_class[*buffer.offset(buf_ptr2 as isize) as
-                                             usize] as libc::c_int != 1i32 &&
-                               *buffer.offset(buf_ptr2 as isize) as
-                                   libc::c_int != 125i32 &&
-                               *buffer.offset(buf_ptr2 as isize) as
-                                   libc::c_int != 37i32 {
+                        if buf_ptr2 < last
+                            && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int
+                                != 1i32
+                            && *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32
+                            && *buffer.offset(buf_ptr2 as isize) as libc::c_int != 37i32
+                        {
                             skip_illegal_stuff_after_token_print();
                         } else {
-                            *singl_function.offset(single_ptr as isize) =
-                                literal_loc;
+                            *singl_function.offset(single_ptr as isize) = literal_loc;
                             if single_ptr == single_fn_space {
-                                singl_function =
-                                    xrealloc(singl_function as
-                                                 *mut libc::c_void,
-                                             ((single_fn_space + 100i32 +
-                                                   1i32) as
-                                                  libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_ptr2>()
-                                                                                  as
-                                                                                  libc::c_ulong))
-                                        as *mut hash_ptr2;
+                                singl_function = xrealloc(
+                                    singl_function as *mut libc::c_void,
+                                    ((single_fn_space + 100i32 + 1i32) as libc::c_ulong)
+                                        .wrapping_mul(
+                                            ::std::mem::size_of::<hash_ptr2>() as libc::c_ulong
+                                        ),
+                                )
+                                    as *mut hash_ptr2;
                                 single_fn_space = single_fn_space + 100i32
                             }
                             single_ptr = single_ptr + 1i32
@@ -2137,37 +2451,39 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                 34 => {
                     buf_ptr2 = buf_ptr2 + 1i32;
                     if !scan1(34i32 as ASCII_code) {
-                        printf_log(b"No `\"\' to end string literal\x00" as
-                                       *const u8 as *const libc::c_char);
+                        printf_log(
+                            b"No `\"\' to end string literal\x00" as *const u8
+                                as *const libc::c_char,
+                        );
                         skip_token_print();
                     } else {
-                        literal_loc =
-                            str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                                       0i32 as str_ilk, 1i32 != 0);
-                        *fn_type.offset(literal_loc as isize) =
-                            3i32 as fn_class;
+                        literal_loc = str_lookup(
+                            buffer,
+                            buf_ptr1,
+                            buf_ptr2 - buf_ptr1,
+                            0i32 as str_ilk,
+                            1i32 != 0,
+                        );
+                        *fn_type.offset(literal_loc as isize) = 3i32 as fn_class;
                         buf_ptr2 = buf_ptr2 + 1i32;
-                        if buf_ptr2 < last &&
-                               lex_class[*buffer.offset(buf_ptr2 as isize) as
-                                             usize] as libc::c_int != 1i32 &&
-                               *buffer.offset(buf_ptr2 as isize) as
-                                   libc::c_int != 125i32 &&
-                               *buffer.offset(buf_ptr2 as isize) as
-                                   libc::c_int != 37i32 {
+                        if buf_ptr2 < last
+                            && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int
+                                != 1i32
+                            && *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32
+                            && *buffer.offset(buf_ptr2 as isize) as libc::c_int != 37i32
+                        {
                             skip_illegal_stuff_after_token_print();
                         } else {
-                            *singl_function.offset(single_ptr as isize) =
-                                literal_loc;
+                            *singl_function.offset(single_ptr as isize) = literal_loc;
                             if single_ptr == single_fn_space {
-                                singl_function =
-                                    xrealloc(singl_function as
-                                                 *mut libc::c_void,
-                                             ((single_fn_space + 100i32 +
-                                                   1i32) as
-                                                  libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_ptr2>()
-                                                                                  as
-                                                                                  libc::c_ulong))
-                                        as *mut hash_ptr2;
+                                singl_function = xrealloc(
+                                    singl_function as *mut libc::c_void,
+                                    ((single_fn_space + 100i32 + 1i32) as libc::c_ulong)
+                                        .wrapping_mul(
+                                            ::std::mem::size_of::<hash_ptr2>() as libc::c_ulong
+                                        ),
+                                )
+                                    as *mut hash_ptr2;
                                 single_fn_space = single_fn_space + 100i32
                             }
                             single_ptr = single_ptr + 1i32
@@ -2178,36 +2494,37 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                     buf_ptr2 = buf_ptr2 + 1i32;
                     scan2_white(125i32 as ASCII_code, 37i32 as ASCII_code);
                     lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-                    fn_loc =
-                        str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                                   11i32 as str_ilk, 0i32 != 0);
+                    fn_loc = str_lookup(
+                        buffer,
+                        buf_ptr1,
+                        buf_ptr2 - buf_ptr1,
+                        11i32 as str_ilk,
+                        0i32 != 0,
+                    );
                     if !hash_found {
                         skp_token_unknown_function_print();
                     } else if fn_loc == wiz_loc {
                         print_recursion_illegal();
                     } else {
-                        *singl_function.offset(single_ptr as isize) =
-                            1i32 - 1i32;
+                        *singl_function.offset(single_ptr as isize) = 1i32 - 1i32;
                         if single_ptr == single_fn_space {
-                            singl_function =
-                                xrealloc(singl_function as *mut libc::c_void,
-                                         ((single_fn_space + 100i32 + 1i32) as
-                                              libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_ptr2>()
-                                                                              as
-                                                                              libc::c_ulong))
-                                    as *mut hash_ptr2;
+                            singl_function = xrealloc(
+                                singl_function as *mut libc::c_void,
+                                ((single_fn_space + 100i32 + 1i32) as libc::c_ulong).wrapping_mul(
+                                    ::std::mem::size_of::<hash_ptr2>() as libc::c_ulong,
+                                ),
+                            ) as *mut hash_ptr2;
                             single_fn_space = single_fn_space + 100i32
                         }
                         single_ptr = single_ptr + 1i32;
                         *singl_function.offset(single_ptr as isize) = fn_loc;
                         if single_ptr == single_fn_space {
-                            singl_function =
-                                xrealloc(singl_function as *mut libc::c_void,
-                                         ((single_fn_space + 100i32 + 1i32) as
-                                              libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_ptr2>()
-                                                                              as
-                                                                              libc::c_ulong))
-                                    as *mut hash_ptr2;
+                            singl_function = xrealloc(
+                                singl_function as *mut libc::c_void,
+                                ((single_fn_space + 100i32 + 1i32) as libc::c_ulong).wrapping_mul(
+                                    ::std::mem::size_of::<hash_ptr2>() as libc::c_ulong,
+                                ),
+                            ) as *mut hash_ptr2;
                             single_fn_space = single_fn_space + 100i32
                         }
                         single_ptr = single_ptr + 1i32
@@ -2216,12 +2533,12 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                 123 => {
                     *ex_buf.offset(0) = 39i32 as ASCII_code;
                     int_to_ASCII(impl_fn_num, ex_buf, 1i32, &mut end_of_num);
-                    impl_fn_loc =
-                        str_lookup(ex_buf, 0i32, end_of_num, 11i32 as str_ilk,
-                                   1i32 != 0);
+                    impl_fn_loc = str_lookup(ex_buf, 0i32, end_of_num, 11i32 as str_ilk, 1i32 != 0);
                     if hash_found {
-                        puts_log(b"Already encountered implicit function\x00"
-                                     as *const u8 as *const libc::c_char);
+                        puts_log(
+                            b"Already encountered implicit function\x00" as *const u8
+                                as *const libc::c_char,
+                        );
                         print_confusion();
                         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                     }
@@ -2229,25 +2546,21 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                     *fn_type.offset(impl_fn_loc as isize) = 1i32 as fn_class;
                     *singl_function.offset(single_ptr as isize) = 1i32 - 1i32;
                     if single_ptr == single_fn_space {
-                        singl_function =
-                            xrealloc(singl_function as *mut libc::c_void,
-                                     ((single_fn_space + 100i32 + 1i32) as
-                                          libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_ptr2>()
-                                                                          as
-                                                                          libc::c_ulong))
-                                as *mut hash_ptr2;
+                        singl_function = xrealloc(
+                            singl_function as *mut libc::c_void,
+                            ((single_fn_space + 100i32 + 1i32) as libc::c_ulong)
+                                .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as libc::c_ulong),
+                        ) as *mut hash_ptr2;
                         single_fn_space = single_fn_space + 100i32
                     }
                     single_ptr = single_ptr + 1i32;
                     *singl_function.offset(single_ptr as isize) = impl_fn_loc;
                     if single_ptr == single_fn_space {
-                        singl_function =
-                            xrealloc(singl_function as *mut libc::c_void,
-                                     ((single_fn_space + 100i32 + 1i32) as
-                                          libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_ptr2>()
-                                                                          as
-                                                                          libc::c_ulong))
-                                as *mut hash_ptr2;
+                        singl_function = xrealloc(
+                            singl_function as *mut libc::c_void,
+                            ((single_fn_space + 100i32 + 1i32) as libc::c_ulong)
+                                .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as libc::c_ulong),
+                        ) as *mut hash_ptr2;
                         single_fn_space = single_fn_space + 100i32
                     }
                     single_ptr = single_ptr + 1i32;
@@ -2257,9 +2570,13 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                 _ => {
                     scan2_white(125i32 as ASCII_code, 37i32 as ASCII_code);
                     lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-                    fn_loc =
-                        str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                                   11i32 as str_ilk, 0i32 != 0);
+                    fn_loc = str_lookup(
+                        buffer,
+                        buf_ptr1,
+                        buf_ptr2 - buf_ptr1,
+                        11i32 as str_ilk,
+                        0i32 != 0,
+                    );
                     if !hash_found {
                         skp_token_unknown_function_print();
                     } else if fn_loc == wiz_loc {
@@ -2267,13 +2584,12 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                     } else {
                         *singl_function.offset(single_ptr as isize) = fn_loc;
                         if single_ptr == single_fn_space {
-                            singl_function =
-                                xrealloc(singl_function as *mut libc::c_void,
-                                         ((single_fn_space + 100i32 + 1i32) as
-                                              libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_ptr2>()
-                                                                              as
-                                                                              libc::c_ulong))
-                                    as *mut hash_ptr2;
+                            singl_function = xrealloc(
+                                singl_function as *mut libc::c_void,
+                                ((single_fn_space + 100i32 + 1i32) as libc::c_ulong).wrapping_mul(
+                                    ::std::mem::size_of::<hash_ptr2>() as libc::c_ulong,
+                                ),
+                            ) as *mut hash_ptr2;
                             single_fn_space = single_fn_space + 100i32
                         }
                         single_ptr = single_ptr + 1i32
@@ -2282,37 +2598,33 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
             }
             /*next_token */
             if eat_bst_white_space() {
-                continue ; /*space */
+                continue; /*space */
             }
             eat_bst_print();
             puts_log(b"function\x00" as *const u8 as *const libc::c_char);
             bst_err_print_and_look_for_blank_line();
             current_block = 623752384954289075;
-            break ;
+            break;
         }
         match current_block {
-            623752384954289075 => { }
+            623752384954289075 => {}
             _ => {
                 *singl_function.offset(single_ptr as isize) = end_of_def;
                 if single_ptr == single_fn_space {
-                    singl_function =
-                        xrealloc(singl_function as *mut libc::c_void,
-                                 ((single_fn_space + 100i32 + 1i32) as
-                                      libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_ptr2>()
-                                                                      as
-                                                                      libc::c_ulong))
-                            as *mut hash_ptr2;
+                    singl_function = xrealloc(
+                        singl_function as *mut libc::c_void,
+                        ((single_fn_space + 100i32 + 1i32) as libc::c_ulong)
+                            .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as libc::c_ulong),
+                    ) as *mut hash_ptr2;
                     single_fn_space = single_fn_space + 100i32
                 }
                 single_ptr = single_ptr + 1i32;
                 while single_ptr + wiz_def_ptr > wiz_fn_space {
-                    wiz_functions =
-                        xrealloc(wiz_functions as *mut libc::c_void,
-                                 ((wiz_fn_space + 3000i32 + 1i32) as
-                                      libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_ptr2>()
-                                                                      as
-                                                                      libc::c_ulong))
-                            as *mut hash_ptr2;
+                    wiz_functions = xrealloc(
+                        wiz_functions as *mut libc::c_void,
+                        ((wiz_fn_space + 3000i32 + 1i32) as libc::c_ulong)
+                            .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as libc::c_ulong),
+                    ) as *mut hash_ptr2;
                     wiz_fn_space = wiz_fn_space + 3000i32
                 }
                 *ilk_info.offset(fn_hash_loc as isize) = wiz_def_ptr;
@@ -2331,7 +2643,9 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
 }
 unsafe extern "C" fn eat_bib_white_space() -> bool {
     while !scan_white_space() {
-        if !input_ln(*bib_file.offset(bib_ptr as isize)) { return 0i32 != 0 }
+        if !input_ln(*bib_file.offset(bib_ptr as isize)) {
+            return 0i32 != 0;
+        }
         bib_line_num = bib_line_num + 1i32;
         buf_ptr2 = 0i32
     }
@@ -2340,7 +2654,7 @@ unsafe extern "C" fn eat_bib_white_space() -> bool {
 unsafe extern "C" fn compress_bib_white() -> bool {
     if ex_buf_ptr == buf_size {
         bib_field_too_long_print();
-        return 0i32 != 0
+        return 0i32 != 0;
     } else {
         *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as ASCII_code;
         ex_buf_ptr = ex_buf_ptr + 1i32
@@ -2348,7 +2662,7 @@ unsafe extern "C" fn compress_bib_white() -> bool {
     while !scan_white_space() {
         if !input_ln(*bib_file.offset(bib_ptr as isize)) {
             eat_bib_print();
-            return 0i32 != 0
+            return 0i32 != 0;
         }
         bib_line_num = bib_line_num + 1i32;
         buf_ptr2 = 0i32
@@ -2357,16 +2671,17 @@ unsafe extern "C" fn compress_bib_white() -> bool {
 }
 unsafe extern "C" fn scan_balanced_braces() -> bool {
     buf_ptr2 = buf_ptr2 + 1i32;
-    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int ==
-           1i32 || buf_ptr2 == last {
-        if !compress_bib_white() { return 0i32 != 0 }
+    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32
+        || buf_ptr2 == last
+    {
+        if !compress_bib_white() {
+            return 0i32 != 0;
+        }
     }
     if ex_buf_ptr > 1i32 {
-        if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int ==
-               32i32 {
+        if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int == 32i32 {
             /*space */
-            if *ex_buf.offset((ex_buf_ptr - 2i32) as isize) as libc::c_int ==
-                   32i32 {
+            if *ex_buf.offset((ex_buf_ptr - 2i32) as isize) as libc::c_int == 32i32 {
                 /*space */
                 ex_buf_ptr = ex_buf_ptr - 1i32
             }
@@ -2375,159 +2690,164 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
     bib_brace_level = 0i32;
     if store_field {
         /*257: */
-        while *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-                  right_str_delim as libc::c_int {
+        while *buffer.offset(buf_ptr2 as isize) as libc::c_int != right_str_delim as libc::c_int {
             match *buffer.offset(buf_ptr2 as isize) as libc::c_int {
                 123 => {
                     bib_brace_level = bib_brace_level + 1i32; /*left_brace */
                     if ex_buf_ptr == buf_size {
                         bib_field_too_long_print(); /*right_brace */
-                        return 0i32 != 0
+                        return 0i32 != 0;
                     } else {
-                        *ex_buf.offset(ex_buf_ptr as isize) =
-                            123i32 as ASCII_code; /*left_brace */
+                        *ex_buf.offset(ex_buf_ptr as isize) = 123i32 as ASCII_code; /*left_brace */
                         ex_buf_ptr = ex_buf_ptr + 1i32
                     }
                     buf_ptr2 = buf_ptr2 + 1i32;
-                    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize]
-                           as libc::c_int == 1i32 || buf_ptr2 == last {
-                        if !compress_bib_white() { return 0i32 != 0 }
+                    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32
+                        || buf_ptr2 == last
+                    {
+                        if !compress_bib_white() {
+                            return 0i32 != 0;
+                        }
                     }
-                    loop  {
-                        match *buffer.offset(buf_ptr2 as isize) as libc::c_int
-                            {
+                    loop {
+                        match *buffer.offset(buf_ptr2 as isize) as libc::c_int {
                             125 => {
                                 bib_brace_level = bib_brace_level - 1i32;
                                 if ex_buf_ptr == buf_size {
                                     bib_field_too_long_print();
-                                    return 0i32 != 0
+                                    return 0i32 != 0;
                                 } else {
-                                    *ex_buf.offset(ex_buf_ptr as isize) =
-                                        125i32 as ASCII_code;
+                                    *ex_buf.offset(ex_buf_ptr as isize) = 125i32 as ASCII_code;
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 }
                                 buf_ptr2 = buf_ptr2 + 1i32;
-                                if lex_class[*buffer.offset(buf_ptr2 as isize)
-                                                 as usize] as libc::c_int ==
-                                       1i32 || buf_ptr2 == last {
+                                if lex_class[*buffer.offset(buf_ptr2 as isize) as usize]
+                                    as libc::c_int
+                                    == 1i32
+                                    || buf_ptr2 == last
+                                {
                                     if !compress_bib_white() {
-                                        return 0i32 != 0
+                                        return 0i32 != 0;
                                     }
                                 }
-                                if bib_brace_level == 0i32 { break ; }
+                                if bib_brace_level == 0i32 {
+                                    break;
+                                }
                             }
                             123 => {
                                 bib_brace_level = bib_brace_level + 1i32;
                                 if ex_buf_ptr == buf_size {
                                     bib_field_too_long_print();
-                                    return 0i32 != 0
+                                    return 0i32 != 0;
                                 } else {
-                                    *ex_buf.offset(ex_buf_ptr as isize) =
-                                        123i32 as ASCII_code;
+                                    *ex_buf.offset(ex_buf_ptr as isize) = 123i32 as ASCII_code;
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 }
                                 buf_ptr2 = buf_ptr2 + 1i32;
-                                if lex_class[*buffer.offset(buf_ptr2 as isize)
-                                                 as usize] as libc::c_int ==
-                                       1i32 || buf_ptr2 == last {
+                                if lex_class[*buffer.offset(buf_ptr2 as isize) as usize]
+                                    as libc::c_int
+                                    == 1i32
+                                    || buf_ptr2 == last
+                                {
                                     if !compress_bib_white() {
-                                        return 0i32 != 0
+                                        return 0i32 != 0;
                                     }
                                 }
                             }
                             _ => {
                                 if ex_buf_ptr == buf_size {
                                     bib_field_too_long_print();
-                                    return 0i32 != 0
+                                    return 0i32 != 0;
                                 } else {
                                     *ex_buf.offset(ex_buf_ptr as isize) =
                                         *buffer.offset(buf_ptr2 as isize);
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 }
                                 buf_ptr2 = buf_ptr2 + 1i32;
-                                if lex_class[*buffer.offset(buf_ptr2 as isize)
-                                                 as usize] as libc::c_int ==
-                                       1i32 || buf_ptr2 == last {
+                                if lex_class[*buffer.offset(buf_ptr2 as isize) as usize]
+                                    as libc::c_int
+                                    == 1i32
+                                    || buf_ptr2 == last
+                                {
                                     if !compress_bib_white() {
-                                        return 0i32 != 0
+                                        return 0i32 != 0;
                                     }
                                 }
                             }
                         }
                     }
                 }
-                125 => { bib_unbalanced_braces_print(); return 0i32 != 0 }
+                125 => {
+                    bib_unbalanced_braces_print();
+                    return 0i32 != 0;
+                }
                 _ => {
                     if ex_buf_ptr == buf_size {
                         bib_field_too_long_print();
-                        return 0i32 != 0
+                        return 0i32 != 0;
                     } else {
-                        *ex_buf.offset(ex_buf_ptr as isize) =
-                            *buffer.offset(buf_ptr2 as isize);
+                        *ex_buf.offset(ex_buf_ptr as isize) = *buffer.offset(buf_ptr2 as isize);
                         ex_buf_ptr = ex_buf_ptr + 1i32
                     }
                     buf_ptr2 = buf_ptr2 + 1i32;
-                    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize]
-                           as libc::c_int == 1i32 || buf_ptr2 == last {
-                        if !compress_bib_white() { return 0i32 != 0 }
+                    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32
+                        || buf_ptr2 == last
+                    {
+                        if !compress_bib_white() {
+                            return 0i32 != 0;
+                        }
                     }
                 }
             }
         }
     } else {
-        while *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-                  right_str_delim as libc::c_int {
+        while *buffer.offset(buf_ptr2 as isize) as libc::c_int != right_str_delim as libc::c_int {
             if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 123i32 {
                 /*left_brace */
                 bib_brace_level = bib_brace_level + 1i32;
                 buf_ptr2 = buf_ptr2 + 1i32;
                 if !eat_bib_white_space() {
                     eat_bib_print();
-                    return 0i32 != 0
+                    return 0i32 != 0;
                 }
                 while bib_brace_level > 0i32 {
                     /*256: */
-                    if *buffer.offset(buf_ptr2 as isize) as libc::c_int ==
-                           125i32 {
+                    if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 125i32 {
                         /*right_brace */
                         bib_brace_level = bib_brace_level - 1i32;
                         buf_ptr2 = buf_ptr2 + 1i32;
                         if !eat_bib_white_space() {
                             eat_bib_print();
-                            return 0i32 != 0
+                            return 0i32 != 0;
                         }
-                    } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int
-                                  == 123i32 {
+                    } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 123i32 {
                         /*left_brace */
                         bib_brace_level = bib_brace_level + 1i32;
                         buf_ptr2 = buf_ptr2 + 1i32;
                         if !eat_bib_white_space() {
                             eat_bib_print();
-                            return 0i32 != 0
+                            return 0i32 != 0;
                         }
                     } else {
                         buf_ptr2 = buf_ptr2 + 1i32;
-                        if !scan2(125i32 as ASCII_code, 123i32 as ASCII_code)
-                           {
+                        if !scan2(125i32 as ASCII_code, 123i32 as ASCII_code) {
                             if !eat_bib_white_space() {
                                 eat_bib_print();
-                                return 0i32 != 0
+                                return 0i32 != 0;
                             }
                         }
                     }
                 }
-            } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int ==
-                          125i32 {
+            } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 125i32 {
                 /*right_brace */
                 bib_unbalanced_braces_print(); /*right_brace */
-                return 0i32 != 0
+                return 0i32 != 0;
             } else {
                 buf_ptr2 = buf_ptr2 + 1i32; /*double_quote */
-                if !scan3(right_str_delim, 123i32 as ASCII_code,
-                          125i32 as ASCII_code) {
+                if !scan3(right_str_delim, 123i32 as ASCII_code, 125i32 as ASCII_code) {
                     if !eat_bib_white_space() {
                         eat_bib_print();
-                        return 0i32 != 0
+                        return 0i32 != 0;
                     }
                 }
             }
@@ -2540,16 +2860,19 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
     match *buffer.offset(buf_ptr2 as isize) as libc::c_int {
         123 => {
             right_str_delim = 125i32 as ASCII_code;
-            if !scan_balanced_braces() { return 0i32 != 0 }
+            if !scan_balanced_braces() {
+                return 0i32 != 0;
+            }
         }
         34 => {
             right_str_delim = 34i32 as ASCII_code;
-            if !scan_balanced_braces() { return 0i32 != 0 }
+            if !scan_balanced_braces() {
+                return 0i32 != 0;
+            }
         }
         48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 => {
             if !scan_nonneg_integer() {
-                puts_log(b"A digit disappeared\x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b"A digit disappeared\x00" as *const u8 as *const libc::c_char);
                 print_confusion();
                 longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
             }
@@ -2558,10 +2881,9 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                 while tmp_ptr < buf_ptr2 {
                     if ex_buf_ptr == buf_size {
                         bib_field_too_long_print();
-                        return 0i32 != 0
+                        return 0i32 != 0;
                     } else {
-                        *ex_buf.offset(ex_buf_ptr as isize) =
-                            *buffer.offset(tmp_ptr as isize);
+                        *ex_buf.offset(ex_buf_ptr as isize) = *buffer.offset(tmp_ptr as isize);
                         ex_buf_ptr = ex_buf_ptr + 1i32
                     }
                     tmp_ptr = tmp_ptr + 1i32
@@ -2569,22 +2891,23 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
             }
         }
         _ => {
-            scan_identifier(44i32 as ASCII_code, right_outer_delim,
-                            35i32 as ASCII_code);
-            if scan_result as libc::c_int == 3i32 ||
-                   scan_result as libc::c_int == 1i32 {
+            scan_identifier(44i32 as ASCII_code, right_outer_delim, 35i32 as ASCII_code);
+            if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
             } else {
                 bib_id_print();
-                puts_log(b"a field part\x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b"a field part\x00" as *const u8 as *const libc::c_char);
                 bib_err_print();
-                return 0i32 != 0
+                return 0i32 != 0;
             }
             if store_field {
                 lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-                macro_name_loc =
-                    str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                               13i32 as str_ilk, 0i32 != 0);
+                macro_name_loc = str_lookup(
+                    buffer,
+                    buf_ptr1,
+                    buf_ptr2 - buf_ptr1,
+                    13i32 as str_ilk,
+                    0i32 != 0,
+                );
                 store_token = 1i32 != 0;
                 if at_bib_command {
                     if command_num == 2i32 {
@@ -2592,8 +2915,10 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                         if macro_name_loc == cur_macro_loc {
                             store_token = 0i32 != 0;
                             macro_warn_print();
-                            puts_log(b"used in its own definition\n\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"used in its own definition\n\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             bib_warn_print();
                         }
                     }
@@ -2601,63 +2926,58 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                 if !hash_found {
                     store_token = 0i32 != 0;
                     macro_warn_print();
-                    puts_log(b"undefined\n\x00" as *const u8 as
-                                 *const libc::c_char);
+                    puts_log(b"undefined\n\x00" as *const u8 as *const libc::c_char);
                     bib_warn_print();
                 }
                 if store_token {
                     /*261: */
-                    tmp_ptr =
-                        *str_start.offset(*ilk_info.offset(macro_name_loc as
-                                                               isize) as
-                                              isize); /*space */
-                    tmp_end_ptr =
-                        *str_start.offset((*ilk_info.offset(macro_name_loc as
-                                                                isize) + 1i32)
-                                              as isize);
+                    tmp_ptr = *str_start.offset(*ilk_info.offset(macro_name_loc as isize) as isize); /*space */
+                    tmp_end_ptr = *str_start
+                        .offset((*ilk_info.offset(macro_name_loc as isize) + 1i32) as isize);
                     if ex_buf_ptr == 0i32 {
-                        if tmp_ptr < tmp_end_ptr &&
-                               lex_class[*str_pool.offset(tmp_ptr as isize) as
-                                             usize] as libc::c_int == 1i32 {
+                        if tmp_ptr < tmp_end_ptr
+                            && lex_class[*str_pool.offset(tmp_ptr as isize) as usize] as libc::c_int
+                                == 1i32
+                        {
                             if ex_buf_ptr == buf_size {
                                 bib_field_too_long_print();
-                                return 0i32 != 0
+                                return 0i32 != 0;
                             } else {
-                                *ex_buf.offset(ex_buf_ptr as isize) =
-                                    32i32 as ASCII_code;
+                                *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as ASCII_code;
                                 ex_buf_ptr = ex_buf_ptr + 1i32
                             }
                             tmp_ptr = tmp_ptr + 1i32;
-                            while tmp_ptr < tmp_end_ptr &&
-                                      lex_class[*str_pool.offset(tmp_ptr as
-                                                                     isize) as
-                                                    usize] as libc::c_int ==
-                                          1i32 {
+                            while tmp_ptr < tmp_end_ptr
+                                && lex_class[*str_pool.offset(tmp_ptr as isize) as usize]
+                                    as libc::c_int
+                                    == 1i32
+                            {
                                 tmp_ptr = tmp_ptr + 1i32
                             }
                         }
                     }
                     while tmp_ptr < tmp_end_ptr {
-                        if lex_class[*str_pool.offset(tmp_ptr as isize) as
-                                         usize] as libc::c_int != 1i32 {
+                        if lex_class[*str_pool.offset(tmp_ptr as isize) as usize] as libc::c_int
+                            != 1i32
+                        {
                             /*white_space */
                             if ex_buf_ptr == buf_size {
                                 bib_field_too_long_print();
-                                return 0i32 != 0
+                                return 0i32 != 0;
                             } else {
                                 *ex_buf.offset(ex_buf_ptr as isize) =
                                     *str_pool.offset(tmp_ptr as isize);
                                 ex_buf_ptr = ex_buf_ptr + 1i32
                             }
-                        } else if *ex_buf.offset((ex_buf_ptr - 1i32) as isize)
-                                      as libc::c_int != 32i32 {
+                        } else if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int
+                            != 32i32
+                        {
                             /*space */
                             if ex_buf_ptr == buf_size {
                                 bib_field_too_long_print(); /*space */
-                                return 0i32 != 0
+                                return 0i32 != 0;
                             } else {
-                                *ex_buf.offset(ex_buf_ptr as isize) =
-                                    32i32 as ASCII_code;
+                                *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as ASCII_code;
                                 ex_buf_ptr = ex_buf_ptr + 1i32
                             }
                         }
@@ -2667,36 +2987,50 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
             }
         }
     }
-    if !eat_bib_white_space() { eat_bib_print(); return 0i32 != 0 }
+    if !eat_bib_white_space() {
+        eat_bib_print();
+        return 0i32 != 0;
+    }
     return 1i32 != 0;
 }
 unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
     ex_buf_ptr = 0i32;
-    if !scan_a_field_token_and_eat_white() { return 0i32 != 0 }
+    if !scan_a_field_token_and_eat_white() {
+        return 0i32 != 0;
+    }
     while *buffer.offset(buf_ptr2 as isize) as libc::c_int == 35i32 {
         /*concat_char */
         buf_ptr2 = buf_ptr2 + 1i32;
-        if !eat_bib_white_space() { eat_bib_print(); return 0i32 != 0 }
-        if !scan_a_field_token_and_eat_white() { return 0i32 != 0 }
+        if !eat_bib_white_space() {
+            eat_bib_print();
+            return 0i32 != 0;
+        }
+        if !scan_a_field_token_and_eat_white() {
+            return 0i32 != 0;
+        }
     }
     if store_field {
         /*262: */
         if !at_bib_command {
             if ex_buf_ptr > 0i32 {
-                if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int
-                       == 32i32 {
+                if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int == 32i32 {
                     /*space */
                     ex_buf_ptr = ex_buf_ptr - 1i32
                 }
             }
         } /*str_literal */
-        if !at_bib_command && *ex_buf.offset(0) as libc::c_int == 32i32 &&
-               ex_buf_ptr > 0i32 {
+        if !at_bib_command && *ex_buf.offset(0) as libc::c_int == 32i32 && ex_buf_ptr > 0i32 {
             ex_buf_xptr = 1i32
-        } else { ex_buf_xptr = 0i32 } /*264: */
-        field_val_loc =
-            str_lookup(ex_buf, ex_buf_xptr, ex_buf_ptr - ex_buf_xptr,
-                       0i32 as str_ilk, 1i32 != 0);
+        } else {
+            ex_buf_xptr = 0i32
+        } /*264: */
+        field_val_loc = str_lookup(
+            ex_buf,
+            ex_buf_xptr,
+            ex_buf_ptr - ex_buf_xptr,
+            0i32 as str_ilk,
+            1i32 != 0,
+        );
         *fn_type.offset(field_val_loc as isize) = 3i32 as fn_class;
         if at_bib_command {
             /*263: */
@@ -2710,67 +3044,64 @@ unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
                     *ilk_info.offset(cur_macro_loc as isize) =
                         *hash_text.offset(field_val_loc as isize)
                 }
-                _ => { bib_cmd_confusion(); }
+                _ => {
+                    bib_cmd_confusion();
+                }
             }
         } else {
-            field_ptr =
-                entry_cite_ptr * num_fields +
-                    *ilk_info.offset(field_name_loc as isize);
+            field_ptr = entry_cite_ptr * num_fields + *ilk_info.offset(field_name_loc as isize);
             if field_ptr >= max_fields {
-                puts_log(b"field_info index is out of range\x00" as *const u8
-                             as *const libc::c_char);
+                puts_log(
+                    b"field_info index is out of range\x00" as *const u8 as *const libc::c_char,
+                );
                 print_confusion();
                 longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
             }
             if *field_info.offset(field_ptr as isize) != 0i32 {
                 /*missing */
-                puts_log(b"Warning--I\'m ignoring \x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b"Warning--I\'m ignoring \x00" as *const u8 as *const libc::c_char);
                 print_a_pool_str(*cite_list.offset(entry_cite_ptr as isize));
-                puts_log(b"\'s extra \"\x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b"\'s extra \"\x00" as *const u8 as *const libc::c_char);
                 print_a_pool_str(*hash_text.offset(field_name_loc as isize));
-                puts_log(b"\" field\n\x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b"\" field\n\x00" as *const u8 as *const libc::c_char);
                 bib_warn_print();
             } else {
-                *field_info.offset(field_ptr as isize) =
-                    *hash_text.offset(field_val_loc as isize);
-                if *ilk_info.offset(field_name_loc as isize) == crossref_num
-                       && !all_entries {
+                *field_info.offset(field_ptr as isize) = *hash_text.offset(field_val_loc as isize);
+                if *ilk_info.offset(field_name_loc as isize) == crossref_num && !all_entries {
                     /*265: */
                     tmp_ptr = ex_buf_xptr;
                     while tmp_ptr < ex_buf_ptr {
-                        *out_buf.offset(tmp_ptr as isize) =
-                            *ex_buf.offset(tmp_ptr as isize);
+                        *out_buf.offset(tmp_ptr as isize) = *ex_buf.offset(tmp_ptr as isize);
                         tmp_ptr = tmp_ptr + 1i32
                     }
-                    lower_case(out_buf, ex_buf_xptr,
-                               ex_buf_ptr - ex_buf_xptr);
-                    lc_cite_loc =
-                        str_lookup(out_buf, ex_buf_xptr,
-                                   ex_buf_ptr - ex_buf_xptr, 10i32 as str_ilk,
-                                   1i32 != 0);
+                    lower_case(out_buf, ex_buf_xptr, ex_buf_ptr - ex_buf_xptr);
+                    lc_cite_loc = str_lookup(
+                        out_buf,
+                        ex_buf_xptr,
+                        ex_buf_ptr - ex_buf_xptr,
+                        10i32 as str_ilk,
+                        1i32 != 0,
+                    );
                     if hash_found {
                         cite_loc = *ilk_info.offset(lc_cite_loc as isize);
-                        if *ilk_info.offset(cite_loc as isize) >=
-                               old_num_cites {
-                            *cite_info.offset(*ilk_info.offset(cite_loc as
-                                                                   isize) as
-                                                  isize) =
-                                *cite_info.offset(*ilk_info.offset(cite_loc as
-                                                                       isize)
-                                                      as isize) + 1i32
+                        if *ilk_info.offset(cite_loc as isize) >= old_num_cites {
+                            *cite_info.offset(*ilk_info.offset(cite_loc as isize) as isize) =
+                                *cite_info.offset(*ilk_info.offset(cite_loc as isize) as isize)
+                                    + 1i32
                         }
                     } else {
-                        cite_loc =
-                            str_lookup(ex_buf, ex_buf_xptr,
-                                       ex_buf_ptr - ex_buf_xptr,
-                                       9i32 as str_ilk, 1i32 != 0);
-                        if hash_found { hash_cite_confusion(); }
+                        cite_loc = str_lookup(
+                            ex_buf,
+                            ex_buf_xptr,
+                            ex_buf_ptr - ex_buf_xptr,
+                            9i32 as str_ilk,
+                            1i32 != 0,
+                        );
+                        if hash_found {
+                            hash_cite_confusion();
+                        }
                         add_database_cite(&mut cite_ptr);
-                        *cite_info.offset(*ilk_info.offset(cite_loc as isize)
-                                              as isize) = 1i32
+                        *cite_info.offset(*ilk_info.offset(cite_loc as isize) as isize) = 1i32
                     }
                 }
             }
@@ -2781,10 +3112,14 @@ unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
 unsafe extern "C" fn decr_brace_level(mut pop_lit_var: str_number) {
     if brace_level == 0i32 {
         braces_unbalanced_complaint(pop_lit_var);
-    } else { brace_level = brace_level - 1i32 };
+    } else {
+        brace_level = brace_level - 1i32
+    };
 }
 unsafe extern "C" fn check_brace_level(mut pop_lit_var: str_number) {
-    if brace_level > 0i32 { braces_unbalanced_complaint(pop_lit_var); };
+    if brace_level > 0i32 {
+        braces_unbalanced_complaint(pop_lit_var);
+    };
 }
 unsafe extern "C" fn name_scan_for_and(mut pop_lit_var: str_number) {
     brace_level = 0i32;
@@ -2797,20 +3132,18 @@ unsafe extern "C" fn name_scan_for_and(mut pop_lit_var: str_number) {
                 if preceding_white {
                     /*387: */
                     if ex_buf_ptr <= ex_buf_length - 3i32 {
-                        if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int
-                               == 'n' as i32 ||
-                               *ex_buf.offset(ex_buf_ptr as isize) as
-                                   libc::c_int == 'N' as i32 {
-                            if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as
-                                   libc::c_int == 'd' as i32 ||
-                                   *ex_buf.offset((ex_buf_ptr + 1i32) as
-                                                      isize) as libc::c_int ==
-                                       'D' as i32 {
-                                if lex_class[*ex_buf.offset((ex_buf_ptr +
-                                                                 2i32) as
-                                                                isize) as
-                                                 usize] as libc::c_int == 1i32
-                                   {
+                        if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 'n' as i32
+                            || *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 'N' as i32
+                        {
+                            if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as libc::c_int
+                                == 'd' as i32
+                                || *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as libc::c_int
+                                    == 'D' as i32
+                            {
+                                if lex_class[*ex_buf.offset((ex_buf_ptr + 2i32) as isize) as usize]
+                                    as libc::c_int
+                                    == 1i32
+                                {
                                     /*white_space */
                                     ex_buf_ptr = ex_buf_ptr + 2i32;
                                     and_found = 1i32 != 0
@@ -2825,12 +3158,10 @@ unsafe extern "C" fn name_scan_for_and(mut pop_lit_var: str_number) {
                 brace_level = brace_level + 1i32;
                 ex_buf_ptr = ex_buf_ptr + 1i32;
                 while brace_level > 0i32 && ex_buf_ptr < ex_buf_length {
-                    if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int ==
-                           125i32 {
+                    if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 125i32 {
                         /*right_brace */
                         brace_level = brace_level - 1i32
-                    } else if *ex_buf.offset(ex_buf_ptr as isize) as
-                                  libc::c_int == 123i32 {
+                    } else if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 123i32 {
                         /*left_brace */
                         brace_level = brace_level + 1i32
                     }
@@ -2844,8 +3175,7 @@ unsafe extern "C" fn name_scan_for_and(mut pop_lit_var: str_number) {
                 preceding_white = 0i32 != 0
             }
             _ => {
-                if lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as
-                       libc::c_int == 1i32 {
+                if lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as libc::c_int == 1i32 {
                     /*white_space */
                     ex_buf_ptr = ex_buf_ptr + 1i32;
                     preceding_white = 1i32 != 0
@@ -2861,77 +3191,77 @@ unsafe extern "C" fn name_scan_for_and(mut pop_lit_var: str_number) {
 unsafe extern "C" fn von_token_found() -> bool {
     nm_brace_level = 0i32;
     while name_bf_ptr < name_bf_xptr {
-        if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int >=
-               'A' as i32 &&
-               *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int <=
-                   'Z' as i32 {
-            return 0i32 != 0
+        if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int >= 'A' as i32
+            && *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int <= 'Z' as i32
+        {
+            return 0i32 != 0;
         } else {
-            if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int >=
-                   'a' as i32 &&
-                   *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int <=
-                       'z' as i32 {
-                return 1i32 != 0
+            if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int >= 'a' as i32
+                && *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int <= 'z' as i32
+            {
+                return 1i32 != 0;
             } else {
-                if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int ==
-                       123i32 {
+                if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int == 123i32 {
                     /*left_brace */
                     nm_brace_level = nm_brace_level + 1i32; /*401: */
                     name_bf_ptr = name_bf_ptr + 1i32;
-                    if name_bf_ptr + 2i32 < name_bf_xptr &&
-                           *sv_buffer.offset(name_bf_ptr as isize) as
-                               libc::c_int == 92i32 {
+                    if name_bf_ptr + 2i32 < name_bf_xptr
+                        && *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int == 92i32
+                    {
                         /*399: */
                         name_bf_ptr = name_bf_ptr + 1i32;
                         name_bf_yptr = name_bf_ptr;
-                        while name_bf_ptr < name_bf_xptr &&
-                                  lex_class[*sv_buffer.offset(name_bf_ptr as
-                                                                  isize) as
-                                                usize] as libc::c_int == 2i32
-                              {
+                        while name_bf_ptr < name_bf_xptr
+                            && lex_class[*sv_buffer.offset(name_bf_ptr as isize) as usize]
+                                as libc::c_int
+                                == 2i32
+                        {
                             name_bf_ptr = name_bf_ptr + 1i32
                         }
-                        control_seq_loc =
-                            str_lookup(sv_buffer, name_bf_yptr,
-                                       name_bf_ptr - name_bf_yptr,
-                                       14i32 as str_ilk, 0i32 != 0);
+                        control_seq_loc = str_lookup(
+                            sv_buffer,
+                            name_bf_yptr,
+                            name_bf_ptr - name_bf_yptr,
+                            14i32 as str_ilk,
+                            0i32 != 0,
+                        );
                         if hash_found {
                             /*400: */
                             match *ilk_info.offset(control_seq_loc as isize) {
-                                3 | 5 | 7 | 9 | 11 => { return 0i32 != 0 }
-                                0 | 1 | 2 | 4 | 6 | 8 | 10 | 12 => {
-                                    return 1i32 != 0
-                                }
+                                3 | 5 | 7 | 9 | 11 => return 0i32 != 0,
+                                0 | 1 | 2 | 4 | 6 | 8 | 10 | 12 => return 1i32 != 0,
                                 _ => {
-                                    puts_log(b"Control-sequence hash error\x00"
-                                                 as *const u8 as
-                                                 *const libc::c_char);
+                                    puts_log(
+                                        b"Control-sequence hash error\x00" as *const u8
+                                            as *const libc::c_char,
+                                    );
                                     print_confusion();
                                     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                                 }
                             }
                         }
-                        while name_bf_ptr < name_bf_xptr &&
-                                  nm_brace_level > 0i32 {
-                            if *sv_buffer.offset(name_bf_ptr as isize) as
-                                   libc::c_int >= 'A' as i32 &&
-                                   *sv_buffer.offset(name_bf_ptr as isize) as
-                                       libc::c_int <= 'Z' as i32 {
-                                return 0i32 != 0
+                        while name_bf_ptr < name_bf_xptr && nm_brace_level > 0i32 {
+                            if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int >= 'A' as i32
+                                && *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                                    <= 'Z' as i32
+                            {
+                                return 0i32 != 0;
                             } else {
-                                if *sv_buffer.offset(name_bf_ptr as isize) as
-                                       libc::c_int >= 'a' as i32 &&
-                                       *sv_buffer.offset(name_bf_ptr as isize)
-                                           as libc::c_int <= 'z' as i32 {
-                                    return 1i32 != 0
+                                if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                                    >= 'a' as i32
+                                    && *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                                        <= 'z' as i32
+                                {
+                                    return 1i32 != 0;
                                 } else {
-                                    if *sv_buffer.offset(name_bf_ptr as isize)
-                                           as libc::c_int == 125i32 {
+                                    if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                                        == 125i32
+                                    {
                                         /*right_brace */
                                         nm_brace_level = nm_brace_level - 1i32
-                                    } else if *sv_buffer.offset(name_bf_ptr as
-                                                                    isize) as
-                                                  libc::c_int == 123i32 {
+                                    } else if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                                        == 123i32
+                                    {
                                         /*left_brace */
                                         nm_brace_level = nm_brace_level + 1i32
                                     }
@@ -2939,23 +3269,24 @@ unsafe extern "C" fn von_token_found() -> bool {
                             }
                             name_bf_ptr = name_bf_ptr + 1i32
                         }
-                        return 0i32 != 0
+                        return 0i32 != 0;
                     } else {
-                        while nm_brace_level > 0i32 &&
-                                  name_bf_ptr < name_bf_xptr {
-                            if *sv_buffer.offset(name_bf_ptr as isize) as
-                                   libc::c_int == 125i32 {
+                        while nm_brace_level > 0i32 && name_bf_ptr < name_bf_xptr {
+                            if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int == 125i32 {
                                 /*right_brace */
                                 nm_brace_level = nm_brace_level - 1i32
-                            } else if *sv_buffer.offset(name_bf_ptr as isize)
-                                          as libc::c_int == 123i32 {
+                            } else if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                                == 123i32
+                            {
                                 /*left_brace */
                                 nm_brace_level = nm_brace_level + 1i32
                             }
                             name_bf_ptr = name_bf_ptr + 1i32
                         }
                     }
-                } else { name_bf_ptr = name_bf_ptr + 1i32 }
+                } else {
+                    name_bf_ptr = name_bf_ptr + 1i32
+                }
             }
         }
     }
@@ -2966,9 +3297,11 @@ unsafe extern "C" fn von_name_ends_and_last_name_starts_stuff() {
     while von_end > von_start {
         name_bf_ptr = *name_tok.offset((von_end - 1i32) as isize);
         name_bf_xptr = *name_tok.offset(von_end as isize);
-        if von_token_found() { return }
+        if von_token_found() {
+            return;
+        }
         von_end = von_end - 1i32
-    };
+    }
 }
 unsafe extern "C" fn skip_stuff_at_sp_brace_level_greater_than_one() {
     while sp_brace_level > 1i32 && sp_ptr < sp_end {
@@ -2980,37 +3313,31 @@ unsafe extern "C" fn skip_stuff_at_sp_brace_level_greater_than_one() {
             sp_brace_level = sp_brace_level + 1i32
         }
         sp_ptr = sp_ptr + 1i32
-    };
+    }
 }
 unsafe extern "C" fn brace_lvl_one_letters_complaint() {
     puts_log(b"The format string \"\x00" as *const u8 as *const libc::c_char);
     print_a_pool_str(pop_lit1);
-    puts_log(b"\" has an illegal brace-level-1 letter\x00" as *const u8 as
-                 *const libc::c_char);
+    puts_log(b"\" has an illegal brace-level-1 letter\x00" as *const u8 as *const libc::c_char);
     bst_ex_warn_print();
 }
-unsafe extern "C" fn enough_text_chars(mut enough_chars: buf_pointer)
- -> bool {
+unsafe extern "C" fn enough_text_chars(mut enough_chars: buf_pointer) -> bool {
     num_text_chars = 0i32;
     ex_buf_yptr = ex_buf_xptr;
     while ex_buf_yptr < ex_buf_ptr && num_text_chars < enough_chars {
         ex_buf_yptr = ex_buf_yptr + 1i32;
-        if *ex_buf.offset((ex_buf_yptr - 1i32) as isize) as libc::c_int ==
-               123i32 {
+        if *ex_buf.offset((ex_buf_yptr - 1i32) as isize) as libc::c_int == 123i32 {
             /*left_brace */
             brace_level = brace_level + 1i32;
             if brace_level == 1i32 && ex_buf_yptr < ex_buf_ptr {
-                if *ex_buf.offset(ex_buf_yptr as isize) as libc::c_int ==
-                       92i32 {
+                if *ex_buf.offset(ex_buf_yptr as isize) as libc::c_int == 92i32 {
                     /*backslash */
                     ex_buf_yptr = ex_buf_yptr + 1i32;
                     while ex_buf_yptr < ex_buf_ptr && brace_level > 0i32 {
-                        if *ex_buf.offset(ex_buf_yptr as isize) as libc::c_int
-                               == 125i32 {
+                        if *ex_buf.offset(ex_buf_yptr as isize) as libc::c_int == 125i32 {
                             /*right_brace */
                             brace_level = brace_level - 1i32
-                        } else if *ex_buf.offset(ex_buf_yptr as isize) as
-                                      libc::c_int == 123i32 {
+                        } else if *ex_buf.offset(ex_buf_yptr as isize) as libc::c_int == 123i32 {
                             /*left_brace */
                             brace_level = brace_level + 1i32
                         }
@@ -3018,8 +3345,7 @@ unsafe extern "C" fn enough_text_chars(mut enough_chars: buf_pointer)
                     }
                 }
             }
-        } else if *ex_buf.offset((ex_buf_yptr - 1i32) as isize) as libc::c_int
-                      == 125i32 {
+        } else if *ex_buf.offset((ex_buf_yptr - 1i32) as isize) as libc::c_int == 125i32 {
             /*right_brace */
             brace_level = brace_level - 1i32
         }
@@ -3043,26 +3369,24 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
             end_of_group = 0i32 != 0;
             to_be_written = 1i32 != 0;
             while !end_of_group && sp_ptr < sp_end {
-                if lex_class[*str_pool.offset(sp_ptr as isize) as usize] as
-                       libc::c_int == 2i32 {
+                if lex_class[*str_pool.offset(sp_ptr as isize) as usize] as libc::c_int == 2i32 {
                     /*alpha */
                     sp_ptr = sp_ptr + 1i32;
                     if alpha_found {
                         brace_lvl_one_letters_complaint();
                         to_be_written = 0i32 != 0
                     } else {
-                        match *str_pool.offset((sp_ptr - 1i32) as isize) as
-                                  libc::c_int {
+                        match *str_pool.offset((sp_ptr - 1i32) as isize) as libc::c_int {
                             102 | 70 => {
                                 cur_token = first_start;
                                 last_token = first_end;
                                 if cur_token == last_token {
                                     to_be_written = 0i32 != 0
                                 }
-                                if *str_pool.offset(sp_ptr as isize) as
-                                       libc::c_int == 'f' as i32 ||
-                                       *str_pool.offset(sp_ptr as isize) as
-                                           libc::c_int == 'F' as i32 {
+                                if *str_pool.offset(sp_ptr as isize) as libc::c_int == 'f' as i32
+                                    || *str_pool.offset(sp_ptr as isize) as libc::c_int
+                                        == 'F' as i32
+                                {
                                     double_letter = 1i32 != 0
                                 }
                             }
@@ -3072,10 +3396,10 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                 if cur_token == last_token {
                                     to_be_written = 0i32 != 0
                                 }
-                                if *str_pool.offset(sp_ptr as isize) as
-                                       libc::c_int == 'v' as i32 ||
-                                       *str_pool.offset(sp_ptr as isize) as
-                                           libc::c_int == 'V' as i32 {
+                                if *str_pool.offset(sp_ptr as isize) as libc::c_int == 'v' as i32
+                                    || *str_pool.offset(sp_ptr as isize) as libc::c_int
+                                        == 'V' as i32
+                                {
                                     double_letter = 1i32 != 0
                                 }
                             }
@@ -3085,10 +3409,10 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                 if cur_token == last_token {
                                     to_be_written = 0i32 != 0
                                 }
-                                if *str_pool.offset(sp_ptr as isize) as
-                                       libc::c_int == 'l' as i32 ||
-                                       *str_pool.offset(sp_ptr as isize) as
-                                           libc::c_int == 'L' as i32 {
+                                if *str_pool.offset(sp_ptr as isize) as libc::c_int == 'l' as i32
+                                    || *str_pool.offset(sp_ptr as isize) as libc::c_int
+                                        == 'L' as i32
+                                {
                                     double_letter = 1i32 != 0
                                 }
                             }
@@ -3098,10 +3422,10 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                 if cur_token == last_token {
                                     to_be_written = 0i32 != 0
                                 }
-                                if *str_pool.offset(sp_ptr as isize) as
-                                       libc::c_int == 'j' as i32 ||
-                                       *str_pool.offset(sp_ptr as isize) as
-                                           libc::c_int == 'J' as i32 {
+                                if *str_pool.offset(sp_ptr as isize) as libc::c_int == 'j' as i32
+                                    || *str_pool.offset(sp_ptr as isize) as libc::c_int
+                                        == 'J' as i32
+                                {
                                     double_letter = 1i32 != 0
                                 }
                             }
@@ -3110,40 +3434,43 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                 to_be_written = 0i32 != 0
                             }
                         }
-                        if double_letter { sp_ptr = sp_ptr + 1i32 }
+                        if double_letter {
+                            sp_ptr = sp_ptr + 1i32
+                        }
                     }
                     alpha_found = 1i32 != 0
-                } else if *str_pool.offset(sp_ptr as isize) as libc::c_int ==
-                              125i32 {
+                } else if *str_pool.offset(sp_ptr as isize) as libc::c_int == 125i32 {
                     /*right_brace */
                     sp_brace_level = sp_brace_level - 1i32;
                     sp_ptr = sp_ptr + 1i32;
                     end_of_group = 1i32 != 0
-                } else if *str_pool.offset(sp_ptr as isize) as libc::c_int ==
-                              123i32 {
+                } else if *str_pool.offset(sp_ptr as isize) as libc::c_int == 123i32 {
                     /*left_brace */
                     sp_brace_level = sp_brace_level + 1i32;
                     sp_ptr = sp_ptr + 1i32;
                     skip_stuff_at_sp_brace_level_greater_than_one();
-                } else { sp_ptr = sp_ptr + 1i32 }
+                } else {
+                    sp_ptr = sp_ptr + 1i32
+                }
             }
-            if !(end_of_group as libc::c_int != 0 &&
-                     to_be_written as libc::c_int != 0) {
-                continue ;
+            if !(end_of_group as libc::c_int != 0 && to_be_written as libc::c_int != 0) {
+                continue;
             }
             /*412: */
             ex_buf_xptr = ex_buf_ptr;
             sp_ptr = sp_xptr1;
             sp_brace_level = 1i32;
             while sp_brace_level > 0i32 {
-                if lex_class[*str_pool.offset(sp_ptr as isize) as usize] as
-                       libc::c_int == 2i32 && sp_brace_level == 1i32 {
+                if lex_class[*str_pool.offset(sp_ptr as isize) as usize] as libc::c_int == 2i32
+                    && sp_brace_level == 1i32
+                {
                     sp_ptr = sp_ptr + 1i32;
-                    if double_letter { sp_ptr = sp_ptr + 1i32 }
+                    if double_letter {
+                        sp_ptr = sp_ptr + 1i32
+                    }
                     use_default = 1i32 != 0;
                     sp_xptr2 = sp_ptr;
-                    if *str_pool.offset(sp_ptr as isize) as libc::c_int ==
-                           123i32 {
+                    if *str_pool.offset(sp_ptr as isize) as libc::c_int == 123i32 {
                         /*left_brace */
                         use_default = 0i32 != 0; /*416: */
                         sp_brace_level = sp_brace_level + 1i32;
@@ -3155,12 +3482,9 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                     while cur_token < last_token {
                         if double_letter {
                             /*415: */
-                            name_bf_ptr =
-                                *name_tok.offset(cur_token as isize);
-                            name_bf_xptr =
-                                *name_tok.offset((cur_token + 1i32) as isize);
-                            if ex_buf_length + (name_bf_xptr - name_bf_ptr) >
-                                   buf_size {
+                            name_bf_ptr = *name_tok.offset(cur_token as isize);
+                            name_bf_xptr = *name_tok.offset((cur_token + 1i32) as isize);
+                            if ex_buf_length + (name_bf_xptr - name_bf_ptr) > buf_size {
                                 buffer_overflow();
                             }
                             while name_bf_ptr < name_bf_xptr {
@@ -3170,82 +3494,68 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                 name_bf_ptr = name_bf_ptr + 1i32
                             }
                         } else {
-                            name_bf_ptr =
-                                *name_tok.offset(cur_token as isize);
-                            name_bf_xptr =
-                                *name_tok.offset((cur_token + 1i32) as isize);
+                            name_bf_ptr = *name_tok.offset(cur_token as isize);
+                            name_bf_xptr = *name_tok.offset((cur_token + 1i32) as isize);
                             while name_bf_ptr < name_bf_xptr {
-                                if lex_class[*sv_buffer.offset(name_bf_ptr as
-                                                                   isize) as
-                                                 usize] as libc::c_int == 2i32
-                                   {
+                                if lex_class[*sv_buffer.offset(name_bf_ptr as isize) as usize]
+                                    as libc::c_int
+                                    == 2i32
+                                {
                                     /*alpha */
                                     if ex_buf_ptr == buf_size {
                                         buffer_overflow();
                                     }
                                     *ex_buf.offset(ex_buf_ptr as isize) =
-                                        *sv_buffer.offset(name_bf_ptr as
-                                                              isize);
+                                        *sv_buffer.offset(name_bf_ptr as isize);
                                     ex_buf_ptr = ex_buf_ptr + 1i32;
-                                    break ;
+                                    break;
                                 } else {
-                                    if name_bf_ptr + 1i32 < name_bf_xptr &&
-                                           *sv_buffer.offset(name_bf_ptr as
-                                                                 isize) as
-                                               libc::c_int == 123i32 {
-                                        if *sv_buffer.offset((name_bf_ptr +
-                                                                  1i32) as
-                                                                 isize) as
-                                               libc::c_int == 92i32 {
+                                    if name_bf_ptr + 1i32 < name_bf_xptr
+                                        && *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                                            == 123i32
+                                    {
+                                        if *sv_buffer.offset((name_bf_ptr + 1i32) as isize)
+                                            as libc::c_int
+                                            == 92i32
+                                        {
                                             /*backslash */
                                             /*417: */
                                             if ex_buf_ptr + 2i32 > buf_size {
                                                 buffer_overflow(); /*left_brace */
                                             } /*backslash */
-                                            *ex_buf.offset(ex_buf_ptr as
-                                                               isize) =
+                                            *ex_buf.offset(ex_buf_ptr as isize) =
                                                 123i32 as ASCII_code;
                                             ex_buf_ptr = ex_buf_ptr + 1i32;
-                                            *ex_buf.offset(ex_buf_ptr as
-                                                               isize) =
+                                            *ex_buf.offset(ex_buf_ptr as isize) =
                                                 92i32 as ASCII_code;
                                             ex_buf_ptr = ex_buf_ptr + 1i32;
                                             name_bf_ptr = name_bf_ptr + 2i32;
                                             nm_brace_level = 1i32;
                                             while name_bf_ptr < name_bf_xptr
-                                                      && nm_brace_level > 0i32
-                                                  {
-                                                if *sv_buffer.offset(name_bf_ptr
-                                                                         as
-                                                                         isize)
-                                                       as libc::c_int ==
-                                                       125i32 {
+                                                && nm_brace_level > 0i32
+                                            {
+                                                if *sv_buffer.offset(name_bf_ptr as isize)
+                                                    as libc::c_int
+                                                    == 125i32
+                                                {
                                                     /*right_brace */
-                                                    nm_brace_level =
-                                                        nm_brace_level - 1i32
-                                                } else if *sv_buffer.offset(name_bf_ptr
-                                                                                as
-                                                                                isize)
-                                                              as libc::c_int
-                                                              == 123i32 {
+                                                    nm_brace_level = nm_brace_level - 1i32
+                                                } else if *sv_buffer.offset(name_bf_ptr as isize)
+                                                    as libc::c_int
+                                                    == 123i32
+                                                {
                                                     /*left_brace */
-                                                    nm_brace_level =
-                                                        nm_brace_level + 1i32
+                                                    nm_brace_level = nm_brace_level + 1i32
                                                 }
                                                 if ex_buf_ptr == buf_size {
                                                     buffer_overflow();
                                                 }
-                                                *ex_buf.offset(ex_buf_ptr as
-                                                                   isize) =
-                                                    *sv_buffer.offset(name_bf_ptr
-                                                                          as
-                                                                          isize);
-                                                ex_buf_ptr =
-                                                    ex_buf_ptr + 1i32;
-                                                name_bf_ptr =
-                                                    name_bf_ptr + 1i32
+                                                *ex_buf.offset(ex_buf_ptr as isize) =
+                                                    *sv_buffer.offset(name_bf_ptr as isize);
+                                                ex_buf_ptr = ex_buf_ptr + 1i32;
+                                                name_bf_ptr = name_bf_ptr + 1i32
                                             }
-                                            break ;
+                                            break;
                                         }
                                     }
                                     name_bf_ptr = name_bf_ptr + 1i32
@@ -3260,42 +3570,36 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                     if ex_buf_ptr == buf_size {
                                         buffer_overflow(); /*period */
                                     }
-                                    *ex_buf.offset(ex_buf_ptr as isize) =
-                                        46i32 as ASCII_code;
+                                    *ex_buf.offset(ex_buf_ptr as isize) = 46i32 as ASCII_code;
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 }
-                                if lex_class[*name_sep_char.offset(cur_token
-                                                                       as
-                                                                       isize)
-                                                 as usize] as libc::c_int ==
-                                       4i32 {
+                                if lex_class[*name_sep_char.offset(cur_token as isize) as usize]
+                                    as libc::c_int
+                                    == 4i32
+                                {
                                     /*sep_char */
                                     if ex_buf_ptr == buf_size {
                                         buffer_overflow(); /*tie */
                                     } /*space */
                                     *ex_buf.offset(ex_buf_ptr as isize) =
-                                        *name_sep_char.offset(cur_token as
-                                                                  isize);
+                                        *name_sep_char.offset(cur_token as isize);
                                     ex_buf_ptr = ex_buf_ptr + 1i32
-                                } else if cur_token == last_token - 1i32 ||
-                                              !enough_text_chars(3i32) {
+                                } else if cur_token == last_token - 1i32 || !enough_text_chars(3i32)
+                                {
                                     if ex_buf_ptr == buf_size {
                                         buffer_overflow();
                                     }
-                                    *ex_buf.offset(ex_buf_ptr as isize) =
-                                        126i32 as ASCII_code;
+                                    *ex_buf.offset(ex_buf_ptr as isize) = 126i32 as ASCII_code;
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 } else {
                                     if ex_buf_ptr == buf_size {
                                         buffer_overflow();
                                     }
-                                    *ex_buf.offset(ex_buf_ptr as isize) =
-                                        32i32 as ASCII_code;
+                                    *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as ASCII_code;
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 }
                             } else {
-                                if ex_buf_length + (sp_xptr2 - sp_xptr1) >
-                                       buf_size {
+                                if ex_buf_length + (sp_xptr2 - sp_xptr1) > buf_size {
                                     buffer_overflow();
                                 }
                                 sp_ptr = sp_xptr1;
@@ -3308,48 +3612,48 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                             }
                         }
                     }
-                    if !use_default { sp_ptr = sp_xptr2 + 1i32 }
-                } else if *str_pool.offset(sp_ptr as isize) as libc::c_int ==
-                              125i32 {
+                    if !use_default {
+                        sp_ptr = sp_xptr2 + 1i32
+                    }
+                } else if *str_pool.offset(sp_ptr as isize) as libc::c_int == 125i32 {
                     /*right_brace */
                     sp_brace_level = sp_brace_level - 1i32; /*right_brace */
                     sp_ptr = sp_ptr + 1i32;
                     if sp_brace_level > 0i32 {
-                        if ex_buf_ptr == buf_size { buffer_overflow(); }
-                        *ex_buf.offset(ex_buf_ptr as isize) =
-                            125i32 as ASCII_code;
+                        if ex_buf_ptr == buf_size {
+                            buffer_overflow();
+                        }
+                        *ex_buf.offset(ex_buf_ptr as isize) = 125i32 as ASCII_code;
                         ex_buf_ptr = ex_buf_ptr + 1i32
                     }
-                } else if *str_pool.offset(sp_ptr as isize) as libc::c_int ==
-                              123i32 {
+                } else if *str_pool.offset(sp_ptr as isize) as libc::c_int == 123i32 {
                     /*left_brace */
                     sp_brace_level = sp_brace_level + 1i32; /*left_brace */
                     sp_ptr = sp_ptr + 1i32;
-                    if ex_buf_ptr == buf_size { buffer_overflow(); }
-                    *ex_buf.offset(ex_buf_ptr as isize) =
-                        123i32 as ASCII_code;
+                    if ex_buf_ptr == buf_size {
+                        buffer_overflow();
+                    }
+                    *ex_buf.offset(ex_buf_ptr as isize) = 123i32 as ASCII_code;
                     ex_buf_ptr = ex_buf_ptr + 1i32
                 } else {
-                    if ex_buf_ptr == buf_size { buffer_overflow(); }
-                    *ex_buf.offset(ex_buf_ptr as isize) =
-                        *str_pool.offset(sp_ptr as isize);
+                    if ex_buf_ptr == buf_size {
+                        buffer_overflow();
+                    }
+                    *ex_buf.offset(ex_buf_ptr as isize) = *str_pool.offset(sp_ptr as isize);
                     ex_buf_ptr = ex_buf_ptr + 1i32;
                     sp_ptr = sp_ptr + 1i32
                 }
             }
             if ex_buf_ptr > 0i32 {
-                if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int
-                       == 126i32 {
+                if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int == 126i32 {
                     /*tie */
                     /*420: */
                     ex_buf_ptr = ex_buf_ptr - 1i32; /*space */
-                    if !(*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as
-                             libc::c_int == 126i32) {
+                    if !(*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int == 126i32) {
                         if !enough_text_chars(3i32) {
                             ex_buf_ptr = ex_buf_ptr + 1i32
                         } else {
-                            *ex_buf.offset(ex_buf_ptr as isize) =
-                                32i32 as ASCII_code;
+                            *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as ASCII_code;
                             ex_buf_ptr = ex_buf_ptr + 1i32
                         }
                     }
@@ -3360,45 +3664,43 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
             braces_unbalanced_complaint(pop_lit1);
             sp_ptr = sp_ptr + 1i32
         } else {
-            if ex_buf_ptr == buf_size { buffer_overflow(); }
-            *ex_buf.offset(ex_buf_ptr as isize) =
-                *str_pool.offset(sp_ptr as isize);
+            if ex_buf_ptr == buf_size {
+                buffer_overflow();
+            }
+            *ex_buf.offset(ex_buf_ptr as isize) = *str_pool.offset(sp_ptr as isize);
             ex_buf_ptr = ex_buf_ptr + 1i32;
             sp_ptr = sp_ptr + 1i32
         }
     }
-    if sp_brace_level > 0i32 { braces_unbalanced_complaint(pop_lit1); }
+    if sp_brace_level > 0i32 {
+        braces_unbalanced_complaint(pop_lit1);
+    }
     ex_buf_length = ex_buf_ptr;
 }
-unsafe extern "C" fn push_lit_stk(mut push_lt: int32_t,
-                                  mut push_type: stk_type) {
+unsafe extern "C" fn push_lit_stk(mut push_lt: int32_t, mut push_type: stk_type) {
     *lit_stack.offset(lit_stk_ptr as isize) = push_lt;
     *lit_stk_type.offset(lit_stk_ptr as isize) = push_type;
     if lit_stk_ptr == lit_stk_size {
-        lit_stack =
-            xrealloc(lit_stack as *mut libc::c_void,
-                     ((lit_stk_size + 100i32 + 1i32) as
-                          libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
-                                                          as libc::c_ulong))
-                as *mut int32_t;
-        lit_stk_type =
-            xrealloc(lit_stk_type as *mut libc::c_void,
-                     ((lit_stk_size + 100i32 + 1i32) as
-                          libc::c_ulong).wrapping_mul(::std::mem::size_of::<stk_type>()
-                                                          as libc::c_ulong))
-                as *mut stk_type;
+        lit_stack = xrealloc(
+            lit_stack as *mut libc::c_void,
+            ((lit_stk_size + 100i32 + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+        ) as *mut int32_t;
+        lit_stk_type = xrealloc(
+            lit_stk_type as *mut libc::c_void,
+            ((lit_stk_size + 100i32 + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<stk_type>() as libc::c_ulong),
+        ) as *mut stk_type;
         lit_stk_size = lit_stk_size + 100i32
     }
     lit_stk_ptr = lit_stk_ptr + 1i32;
 }
-unsafe extern "C" fn pop_lit_stk(mut pop_lit: *mut int32_t,
-                                 mut pop_type: *mut stk_type) {
+unsafe extern "C" fn pop_lit_stk(mut pop_lit: *mut int32_t, mut pop_type: *mut stk_type) {
     if lit_stk_ptr == 0i32 {
-        puts_log(b"You can\'t pop an empty literal stack\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"You can\'t pop an empty literal stack\x00" as *const u8 as *const libc::c_char);
         bst_ex_warn_print();
         *pop_type = 4i32 as stk_type
-        /*stk_empty */
+    /*stk_empty */
     } else {
         lit_stk_ptr = lit_stk_ptr - 1i32;
         *pop_lit = *lit_stack.offset(lit_stk_ptr as isize);
@@ -3407,8 +3709,7 @@ unsafe extern "C" fn pop_lit_stk(mut pop_lit: *mut int32_t,
             /*stk_str */
             if *pop_lit >= cmd_str_ptr {
                 if *pop_lit != str_ptr - 1i32 {
-                    puts_log(b"Nontop top of string stack\x00" as *const u8 as
-                                 *const libc::c_char);
+                    puts_log(b"Nontop top of string stack\x00" as *const u8 as *const libc::c_char);
                     print_confusion();
                     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                 }
@@ -3418,27 +3719,30 @@ unsafe extern "C" fn pop_lit_stk(mut pop_lit: *mut int32_t,
         }
     };
 }
-unsafe extern "C" fn print_wrong_stk_lit(mut stk_lt: int32_t,
-                                         mut stk_tp1: stk_type,
-                                         mut stk_tp2: stk_type) {
+unsafe extern "C" fn print_wrong_stk_lit(
+    mut stk_lt: int32_t,
+    mut stk_tp1: stk_type,
+    mut stk_tp2: stk_type,
+) {
     if stk_tp1 as libc::c_int != 4i32 {
         /*stk_empty */
         print_stk_lit(stk_lt, stk_tp1);
         match stk_tp2 as libc::c_int {
             0 => {
-                puts_log(b", not an integer,\x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b", not an integer,\x00" as *const u8 as *const libc::c_char);
             }
             1 => {
-                puts_log(b", not a string,\x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b", not a string,\x00" as *const u8 as *const libc::c_char);
             }
             2 => {
-                puts_log(b", not a function,\x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b", not a function,\x00" as *const u8 as *const libc::c_char);
             }
-            3 | 4 => { illegl_literal_confusion(); }
-            _ => { unknwn_literal_confusion(); }
+            3 | 4 => {
+                illegl_literal_confusion();
+            }
+            _ => {
+                unknwn_literal_confusion();
+            }
         }
         bst_ex_warn_print();
     };
@@ -3450,10 +3754,14 @@ unsafe extern "C" fn pop_top_and_print() {
     if stk_tp as libc::c_int == 4i32 {
         /*stk_empty */
         puts_log(b"Empty literal\n\x00" as *const u8 as *const libc::c_char);
-    } else { print_lit(stk_lt, stk_tp); };
+    } else {
+        print_lit(stk_lt, stk_tp);
+    };
 }
 unsafe extern "C" fn pop_whole_stack() {
-    while lit_stk_ptr > 0i32 { pop_top_and_print(); };
+    while lit_stk_ptr > 0i32 {
+        pop_top_and_print();
+    }
 }
 unsafe extern "C" fn init_command_execution() {
     lit_stk_ptr = 0i32;
@@ -3461,26 +3769,27 @@ unsafe extern "C" fn init_command_execution() {
 }
 unsafe extern "C" fn check_command_execution() {
     if lit_stk_ptr != 0i32 {
-        printf_log(b"ptr=%ld, stack=\n\x00" as *const u8 as
-                       *const libc::c_char, lit_stk_ptr as libc::c_long);
+        printf_log(
+            b"ptr=%ld, stack=\n\x00" as *const u8 as *const libc::c_char,
+            lit_stk_ptr as libc::c_long,
+        );
         pop_whole_stack();
-        puts_log(b"---the literal stack isn\'t empty\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"---the literal stack isn\'t empty\x00" as *const u8 as *const libc::c_char);
         bst_ex_warn_print();
     }
     if cmd_str_ptr != str_ptr {
-        puts_log(b"Nonempty empty string stack\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"Nonempty empty string stack\x00" as *const u8 as *const libc::c_char);
         print_confusion();
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     };
 }
 unsafe extern "C" fn add_pool_buf_and_push() {
-    while pool_ptr + ex_buf_length > pool_size { pool_overflow(); }
+    while pool_ptr + ex_buf_length > pool_size {
+        pool_overflow();
+    }
     ex_buf_ptr = 0i32;
     while ex_buf_ptr < ex_buf_length {
-        *str_pool.offset(pool_ptr as isize) =
-            *ex_buf.offset(ex_buf_ptr as isize);
+        *str_pool.offset(pool_ptr as isize) = *ex_buf.offset(ex_buf_ptr as isize);
         pool_ptr = pool_ptr + 1i32;
         ex_buf_ptr = ex_buf_ptr + 1i32
     }
@@ -3489,11 +3798,12 @@ unsafe extern "C" fn add_pool_buf_and_push() {
 unsafe extern "C" fn add_buf_pool(mut p_str: str_number) {
     p_ptr1 = *str_start.offset(p_str as isize);
     p_ptr2 = *str_start.offset((p_str + 1i32) as isize);
-    if ex_buf_length + (p_ptr2 - p_ptr1) > buf_size { buffer_overflow(); }
+    if ex_buf_length + (p_ptr2 - p_ptr1) > buf_size {
+        buffer_overflow();
+    }
     ex_buf_ptr = ex_buf_length;
     while p_ptr1 < p_ptr2 {
-        *ex_buf.offset(ex_buf_ptr as isize) =
-            *str_pool.offset(p_ptr1 as isize);
+        *ex_buf.offset(ex_buf_ptr as isize) = *str_pool.offset(p_ptr1 as isize);
         ex_buf_ptr = ex_buf_ptr + 1i32;
         p_ptr1 = p_ptr1 + 1i32
     }
@@ -3506,11 +3816,12 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
     let mut unbreakable_tail: bool = false;
     p_ptr1 = *str_start.offset(p_str as isize);
     p_ptr2 = *str_start.offset((p_str + 1i32) as isize);
-    while out_buf_length + (p_ptr2 - p_ptr1) > buf_size { buffer_overflow(); }
+    while out_buf_length + (p_ptr2 - p_ptr1) > buf_size {
+        buffer_overflow();
+    }
     out_buf_ptr = out_buf_length;
     while p_ptr1 < p_ptr2 {
-        *out_buf.offset(out_buf_ptr as isize) =
-            *str_pool.offset(p_ptr1 as isize);
+        *out_buf.offset(out_buf_ptr as isize) = *str_pool.offset(p_ptr1 as isize);
         p_ptr1 = p_ptr1 + 1i32;
         out_buf_ptr = out_buf_ptr + 1i32
     }
@@ -3521,17 +3832,19 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
         end_ptr = out_buf_length;
         out_buf_ptr = 79i32;
         break_pt_found = 0i32 != 0;
-        while lex_class[*out_buf.offset(out_buf_ptr as isize) as usize] as
-                  libc::c_int != 1i32 && out_buf_ptr >= 3i32 {
+        while lex_class[*out_buf.offset(out_buf_ptr as isize) as usize] as libc::c_int != 1i32
+            && out_buf_ptr >= 3i32
+        {
             out_buf_ptr = out_buf_ptr - 1i32
         }
         if out_buf_ptr == 3i32 - 1i32 {
             /*325: */
             out_buf_ptr = 79i32 + 1i32;
             while out_buf_ptr < end_ptr {
-                if !(lex_class[*out_buf.offset(out_buf_ptr as isize) as usize]
-                         as libc::c_int != 1i32) {
-                    break ;
+                if !(lex_class[*out_buf.offset(out_buf_ptr as isize) as usize] as libc::c_int
+                    != 1i32)
+                {
+                    break;
                 }
                 /*white_space */
                 out_buf_ptr = out_buf_ptr + 1i32
@@ -3542,16 +3855,19 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
             } else {
                 break_pt_found = 1i32 != 0;
                 while out_buf_ptr + 1i32 < end_ptr {
-                    if !(lex_class[*out_buf.offset((out_buf_ptr + 1i32) as
-                                                       isize) as usize] as
-                             libc::c_int == 1i32) {
-                        break ;
+                    if !(lex_class[*out_buf.offset((out_buf_ptr + 1i32) as isize) as usize]
+                        as libc::c_int
+                        == 1i32)
+                    {
+                        break;
                     }
                     /*white_space */
                     out_buf_ptr = out_buf_ptr + 1i32
                 }
             }
-        } else { break_pt_found = 1i32 != 0 } /*space */
+        } else {
+            break_pt_found = 1i32 != 0
+        } /*space */
         if break_pt_found {
             out_buf_length = out_buf_ptr; /*space */
             break_ptr = out_buf_length + 1i32;
@@ -3561,37 +3877,34 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
             out_buf_ptr = 2i32;
             tmp_ptr = break_ptr;
             while tmp_ptr < end_ptr {
-                *out_buf.offset(out_buf_ptr as isize) =
-                    *out_buf.offset(tmp_ptr as isize);
+                *out_buf.offset(out_buf_ptr as isize) = *out_buf.offset(tmp_ptr as isize);
                 out_buf_ptr = out_buf_ptr + 1i32;
                 tmp_ptr = tmp_ptr + 1i32
             }
             out_buf_length = end_ptr - break_ptr + 2i32
         }
-    };
+    }
 }
 unsafe extern "C" fn x_equals() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
     if pop_typ1 as libc::c_int != pop_typ2 as libc::c_int {
-        if pop_typ1 as libc::c_int != 4i32 && pop_typ2 as libc::c_int != 4i32
-           {
+        if pop_typ1 as libc::c_int != 4i32 && pop_typ2 as libc::c_int != 4i32 {
             print_stk_lit(pop_lit1, pop_typ1);
             puts_log(b", \x00" as *const u8 as *const libc::c_char);
             print_stk_lit(pop_lit2, pop_typ2);
             putc_log('\n' as i32);
-            puts_log(b"---they aren\'t the same literal types\x00" as
-                         *const u8 as *const libc::c_char);
+            puts_log(
+                b"---they aren\'t the same literal types\x00" as *const u8 as *const libc::c_char,
+            );
             bst_ex_warn_print();
         }
         push_lit_stk(0i32, 0i32 as stk_type);
-    } else if pop_typ1 as libc::c_int != 0i32 &&
-                  pop_typ1 as libc::c_int != 1i32 {
+    } else if pop_typ1 as libc::c_int != 0i32 && pop_typ1 as libc::c_int != 1i32 {
         if pop_typ1 as libc::c_int != 4i32 {
             /*stk_empty */
             print_stk_lit(pop_lit1, pop_typ1);
-            puts_log(b", not an integer or a string,\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b", not an integer or a string,\x00" as *const u8 as *const libc::c_char);
             bst_ex_warn_print();
         }
         push_lit_stk(0i32, 0i32 as stk_type);
@@ -3599,10 +3912,14 @@ unsafe extern "C" fn x_equals() {
         /*stk_int */
         if pop_lit2 == pop_lit1 {
             push_lit_stk(1i32, 0i32 as stk_type);
-        } else { push_lit_stk(0i32, 0i32 as stk_type); }
+        } else {
+            push_lit_stk(0i32, 0i32 as stk_type);
+        }
     } else if str_eq_str(pop_lit2, pop_lit1) {
         push_lit_stk(1i32, 0i32 as stk_type);
-    } else { push_lit_stk(0i32, 0i32 as stk_type); };
+    } else {
+        push_lit_stk(0i32, 0i32 as stk_type);
+    };
 }
 unsafe extern "C" fn x_greater_than() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
@@ -3617,7 +3934,9 @@ unsafe extern "C" fn x_greater_than() {
         push_lit_stk(0i32, 0i32 as stk_type);
     } else if pop_lit2 > pop_lit1 {
         push_lit_stk(1i32, 0i32 as stk_type);
-    } else { push_lit_stk(0i32, 0i32 as stk_type); };
+    } else {
+        push_lit_stk(0i32, 0i32 as stk_type);
+    };
 }
 unsafe extern "C" fn x_less_than() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
@@ -3632,7 +3951,9 @@ unsafe extern "C" fn x_less_than() {
         push_lit_stk(0i32, 0i32 as stk_type);
     } else if pop_lit2 < pop_lit1 {
         push_lit_stk(1i32, 0i32 as stk_type);
-    } else { push_lit_stk(0i32, 0i32 as stk_type); };
+    } else {
+        push_lit_stk(0i32, 0i32 as stk_type);
+    };
 }
 unsafe extern "C" fn x_plus() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
@@ -3645,7 +3966,9 @@ unsafe extern "C" fn x_plus() {
         /*stk_int */
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
-    } else { push_lit_stk(pop_lit2 + pop_lit1, 0i32 as stk_type); };
+    } else {
+        push_lit_stk(pop_lit2 + pop_lit1, 0i32 as stk_type);
+    };
 }
 unsafe extern "C" fn x_minus() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
@@ -3658,7 +3981,9 @@ unsafe extern "C" fn x_minus() {
         /*stk_int */
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
-    } else { push_lit_stk(pop_lit2 - pop_lit1, 0i32 as stk_type); };
+    } else {
+        push_lit_stk(pop_lit2 - pop_lit1, 0i32 as stk_type);
+    };
 }
 unsafe extern "C" fn x_concatenate() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
@@ -3673,48 +3998,51 @@ unsafe extern "C" fn x_concatenate() {
         push_lit_stk(s_null, 1i32 as stk_type); /*353: */
     } else if pop_lit2 >= cmd_str_ptr {
         if pop_lit1 >= cmd_str_ptr {
-            *str_start.offset(pop_lit1 as isize) =
-                *str_start.offset((pop_lit1 + 1i32) as isize); /*354: */
+            *str_start.offset(pop_lit1 as isize) = *str_start.offset((pop_lit1 + 1i32) as isize); /*354: */
             str_ptr = str_ptr + 1i32;
             pool_ptr = *str_start.offset(str_ptr as isize);
             lit_stk_ptr = lit_stk_ptr + 1i32
-        } else if *str_start.offset((pop_lit2 + 1i32) as isize) -
-                      *str_start.offset(pop_lit2 as isize) == 0i32 {
+        } else if *str_start.offset((pop_lit2 + 1i32) as isize)
+            - *str_start.offset(pop_lit2 as isize)
+            == 0i32
+        {
             push_lit_stk(pop_lit1, 1i32 as stk_type);
         } else {
             pool_ptr = *str_start.offset((pop_lit2 + 1i32) as isize);
-            while pool_ptr +
-                      (*str_start.offset((pop_lit1 + 1i32) as isize) -
-                           *str_start.offset(pop_lit1 as isize)) > pool_size {
+            while pool_ptr
+                + (*str_start.offset((pop_lit1 + 1i32) as isize)
+                    - *str_start.offset(pop_lit1 as isize))
+                > pool_size
+            {
                 pool_overflow();
             }
             sp_ptr = *str_start.offset(pop_lit1 as isize);
             sp_end = *str_start.offset((pop_lit1 + 1i32) as isize);
             while sp_ptr < sp_end {
-                *str_pool.offset(pool_ptr as isize) =
-                    *str_pool.offset(sp_ptr as isize);
+                *str_pool.offset(pool_ptr as isize) = *str_pool.offset(sp_ptr as isize);
                 pool_ptr = pool_ptr + 1i32;
                 sp_ptr = sp_ptr + 1i32
             }
             push_lit_stk(make_string(), 1i32 as stk_type);
         }
     } else if pop_lit1 >= cmd_str_ptr {
-        if *str_start.offset((pop_lit2 + 1i32) as isize) -
-               *str_start.offset(pop_lit2 as isize) == 0i32 {
+        if *str_start.offset((pop_lit2 + 1i32) as isize) - *str_start.offset(pop_lit2 as isize)
+            == 0i32
+        {
             str_ptr = str_ptr + 1i32;
             pool_ptr = *str_start.offset(str_ptr as isize);
             *lit_stack.offset(lit_stk_ptr as isize) = pop_lit1;
             lit_stk_ptr = lit_stk_ptr + 1i32
-        } else if *str_start.offset((pop_lit1 + 1i32) as isize) -
-                      *str_start.offset(pop_lit1 as isize) == 0i32 {
+        } else if *str_start.offset((pop_lit1 + 1i32) as isize)
+            - *str_start.offset(pop_lit1 as isize)
+            == 0i32
+        {
             lit_stk_ptr = lit_stk_ptr + 1i32
         } else {
-            sp_length =
-                *str_start.offset((pop_lit1 + 1i32) as isize) -
-                    *str_start.offset(pop_lit1 as isize);
-            sp2_length =
-                *str_start.offset((pop_lit2 + 1i32) as isize) -
-                    *str_start.offset(pop_lit2 as isize);
+            sp_length = *str_start.offset((pop_lit1 + 1i32) as isize)
+                - *str_start.offset(pop_lit1 as isize);
+            sp2_length = *str_start.offset((pop_lit2 + 1i32) as isize)
+                - *str_start.offset(pop_lit2 as isize);
             while pool_ptr + sp_length + sp2_length > pool_size {
                 pool_overflow();
             }
@@ -3724,47 +4052,45 @@ unsafe extern "C" fn x_concatenate() {
             while sp_ptr > sp_end {
                 sp_ptr = sp_ptr - 1i32;
                 sp_xptr1 = sp_xptr1 - 1i32;
-                *str_pool.offset(sp_xptr1 as isize) =
-                    *str_pool.offset(sp_ptr as isize)
+                *str_pool.offset(sp_xptr1 as isize) = *str_pool.offset(sp_ptr as isize)
             }
             sp_ptr = *str_start.offset(pop_lit2 as isize);
             sp_end = *str_start.offset((pop_lit2 + 1i32) as isize);
             while sp_ptr < sp_end {
-                *str_pool.offset(pool_ptr as isize) =
-                    *str_pool.offset(sp_ptr as isize);
+                *str_pool.offset(pool_ptr as isize) = *str_pool.offset(sp_ptr as isize);
                 pool_ptr = pool_ptr + 1i32;
                 sp_ptr = sp_ptr + 1i32
             }
             pool_ptr = pool_ptr + sp_length;
             push_lit_stk(make_string(), 1i32 as stk_type);
         }
-    } else if *str_start.offset((pop_lit1 + 1i32) as isize) -
-                  *str_start.offset(pop_lit1 as isize) == 0i32 {
+    } else if *str_start.offset((pop_lit1 + 1i32) as isize) - *str_start.offset(pop_lit1 as isize)
+        == 0i32
+    {
         lit_stk_ptr = lit_stk_ptr + 1i32
-    } else if *str_start.offset((pop_lit2 + 1i32) as isize) -
-                  *str_start.offset(pop_lit2 as isize) == 0i32 {
+    } else if *str_start.offset((pop_lit2 + 1i32) as isize) - *str_start.offset(pop_lit2 as isize)
+        == 0i32
+    {
         push_lit_stk(pop_lit1, 1i32 as stk_type);
     } else {
-        while pool_ptr +
-                  (*str_start.offset((pop_lit1 + 1i32) as isize) -
-                       *str_start.offset(pop_lit1 as isize)) +
-                  (*str_start.offset((pop_lit2 + 1i32) as isize) -
-                       *str_start.offset(pop_lit2 as isize)) > pool_size {
+        while pool_ptr
+            + (*str_start.offset((pop_lit1 + 1i32) as isize) - *str_start.offset(pop_lit1 as isize))
+            + (*str_start.offset((pop_lit2 + 1i32) as isize) - *str_start.offset(pop_lit2 as isize))
+            > pool_size
+        {
             pool_overflow();
         }
         sp_ptr = *str_start.offset(pop_lit2 as isize);
         sp_end = *str_start.offset((pop_lit2 + 1i32) as isize);
         while sp_ptr < sp_end {
-            *str_pool.offset(pool_ptr as isize) =
-                *str_pool.offset(sp_ptr as isize);
+            *str_pool.offset(pool_ptr as isize) = *str_pool.offset(sp_ptr as isize);
             pool_ptr = pool_ptr + 1i32;
             sp_ptr = sp_ptr + 1i32
         }
         sp_ptr = *str_start.offset(pop_lit1 as isize);
         sp_end = *str_start.offset((pop_lit1 + 1i32) as isize);
         while sp_ptr < sp_end {
-            *str_pool.offset(pool_ptr as isize) =
-                *str_pool.offset(sp_ptr as isize);
+            *str_pool.offset(pool_ptr as isize) = *str_pool.offset(sp_ptr as isize);
             pool_ptr = pool_ptr + 1i32;
             sp_ptr = sp_ptr + 1i32
         }
@@ -3777,25 +4103,23 @@ unsafe extern "C" fn x_gets() {
     if pop_typ1 as libc::c_int != 2i32 {
         /*stk_fn */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-    } else if !mess_with_entries &&
-                  (*fn_type.offset(pop_lit1 as isize) as libc::c_int == 6i32
-                       ||
-                       *fn_type.offset(pop_lit1 as isize) as libc::c_int ==
-                           5i32) {
+    } else if !mess_with_entries
+        && (*fn_type.offset(pop_lit1 as isize) as libc::c_int == 6i32
+            || *fn_type.offset(pop_lit1 as isize) as libc::c_int == 5i32)
+    {
         bst_cant_mess_with_entries_print();
     } else {
         match *fn_type.offset(pop_lit1 as isize) as libc::c_int {
             5 => {
                 /*
-               356: */
+                356: */
                 if pop_typ2 as libc::c_int != 0i32 {
                     /*stk_int */
                     print_wrong_stk_lit(pop_lit2, pop_typ2, 0i32 as stk_type);
                 } else {
-                    *entry_ints.offset((cite_ptr * num_ent_ints +
-                                            *ilk_info.offset(pop_lit1 as
-                                                                 isize)) as
-                                           isize) = pop_lit2
+                    *entry_ints.offset(
+                        (cite_ptr * num_ent_ints + *ilk_info.offset(pop_lit1 as isize)) as isize,
+                    ) = pop_lit2
                 }
             }
             6 => {
@@ -3803,30 +4127,28 @@ unsafe extern "C" fn x_gets() {
                     /*stk_str */
                     print_wrong_stk_lit(pop_lit2, pop_typ2, 1i32 as stk_type);
                 } else {
-                    str_ent_ptr =
-                        cite_ptr * num_ent_strs +
-                            *ilk_info.offset(pop_lit1 as isize);
+                    str_ent_ptr = cite_ptr * num_ent_strs + *ilk_info.offset(pop_lit1 as isize);
                     ent_chr_ptr = 0i32;
                     sp_ptr = *str_start.offset(pop_lit2 as isize);
                     sp_xptr1 = *str_start.offset((pop_lit2 + 1i32) as isize);
                     if sp_xptr1 - sp_ptr > ent_str_size {
                         bst_1print_string_size_exceeded();
-                        printf_log(b"%ld, the entry\x00" as *const u8 as
-                                       *const libc::c_char,
-                                   ent_str_size as libc::c_long);
+                        printf_log(
+                            b"%ld, the entry\x00" as *const u8 as *const libc::c_char,
+                            ent_str_size as libc::c_long,
+                        );
                         bst_2print_string_size_exceeded();
                         sp_xptr1 = sp_ptr + ent_str_size
                     }
                     while sp_ptr < sp_xptr1 {
-                        *entry_strs.offset((str_ent_ptr *
-                                                (ent_str_size + 1i32) +
-                                                ent_chr_ptr) as isize) =
+                        *entry_strs
+                            .offset((str_ent_ptr * (ent_str_size + 1i32) + ent_chr_ptr) as isize) =
                             *str_pool.offset(sp_ptr as isize);
                         ent_chr_ptr = ent_chr_ptr + 1i32;
                         sp_ptr = sp_ptr + 1i32
                     }
-                    *entry_strs.offset((str_ent_ptr * (ent_str_size + 1i32) +
-                                            ent_chr_ptr) as isize) =
+                    *entry_strs
+                        .offset((str_ent_ptr * (ent_str_size + 1i32) + ent_chr_ptr) as isize) =
                         127i32 as ASCII_code
                     /*end_of_string */
                 }
@@ -3835,7 +4157,9 @@ unsafe extern "C" fn x_gets() {
                 if pop_typ2 as libc::c_int != 0i32 {
                     /*stk_int */
                     print_wrong_stk_lit(pop_lit2, pop_typ2, 0i32 as stk_type);
-                } else { *ilk_info.offset(pop_lit1 as isize) = pop_lit2 }
+                } else {
+                    *ilk_info.offset(pop_lit1 as isize) = pop_lit2
+                }
             }
             8 => {
                 if pop_typ2 as libc::c_int != 1i32 {
@@ -3849,35 +4173,31 @@ unsafe extern "C" fn x_gets() {
                         *glb_str_ptr.offset(str_glb_ptr as isize) = 0i32;
                         glob_chr_ptr = 0i32;
                         sp_ptr = *str_start.offset(pop_lit2 as isize);
-                        sp_end =
-                            *str_start.offset((pop_lit2 + 1i32) as isize);
+                        sp_end = *str_start.offset((pop_lit2 + 1i32) as isize);
                         if sp_end - sp_ptr > glob_str_size {
                             bst_1print_string_size_exceeded();
-                            printf_log(b"%ld, the global\x00" as *const u8 as
-                                           *const libc::c_char,
-                                       glob_str_size as libc::c_long);
+                            printf_log(
+                                b"%ld, the global\x00" as *const u8 as *const libc::c_char,
+                                glob_str_size as libc::c_long,
+                            );
                             bst_2print_string_size_exceeded();
                             sp_end = sp_ptr + glob_str_size
                         }
                         while sp_ptr < sp_end {
-                            *global_strs.offset((str_glb_ptr *
-                                                     (glob_str_size + 1i32) +
-                                                     glob_chr_ptr) as isize) =
-                                *str_pool.offset(sp_ptr as isize);
+                            *global_strs.offset(
+                                (str_glb_ptr * (glob_str_size + 1i32) + glob_chr_ptr) as isize,
+                            ) = *str_pool.offset(sp_ptr as isize);
                             glob_chr_ptr = glob_chr_ptr + 1i32;
                             sp_ptr = sp_ptr + 1i32
                         }
-                        *glb_str_end.offset(str_glb_ptr as isize) =
-                            glob_chr_ptr
+                        *glb_str_end.offset(str_glb_ptr as isize) = glob_chr_ptr
                     }
                 }
             }
             _ => {
-                puts_log(b"You can\'t assign to type \x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b"You can\'t assign to type \x00" as *const u8 as *const libc::c_char);
                 print_fn_class(pop_lit1);
-                puts_log(b", a nonvariable function class\x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b", a nonvariable function class\x00" as *const u8 as *const libc::c_char);
                 bst_ex_warn_print();
             }
         }
@@ -3889,8 +4209,9 @@ unsafe extern "C" fn x_add_period() {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
-    } else if *str_start.offset((pop_lit1 + 1i32) as isize) -
-                  *str_start.offset(pop_lit1 as isize) == 0i32 {
+    } else if *str_start.offset((pop_lit1 + 1i32) as isize) - *str_start.offset(pop_lit1 as isize)
+        == 0i32
+    {
         push_lit_stk(s_null, 1i32 as stk_type);
     } else {
         /*362: */
@@ -3899,7 +4220,7 @@ unsafe extern "C" fn x_add_period() {
         while sp_ptr > sp_end {
             sp_ptr = sp_ptr - 1i32;
             if *str_pool.offset(sp_ptr as isize) as libc::c_int != 125i32 {
-                break ;
+                break;
             }
         }
         /*right_brace */
@@ -3913,23 +4234,26 @@ unsafe extern "C" fn x_add_period() {
             }
             _ => {
                 if pop_lit1 < cmd_str_ptr {
-                    while pool_ptr +
-                              (*str_start.offset((pop_lit1 + 1i32) as isize) -
-                                   *str_start.offset(pop_lit1 as isize)) +
-                              1i32 > pool_size {
+                    while pool_ptr
+                        + (*str_start.offset((pop_lit1 + 1i32) as isize)
+                            - *str_start.offset(pop_lit1 as isize))
+                        + 1i32
+                        > pool_size
+                    {
                         pool_overflow();
                     }
                     sp_ptr = *str_start.offset(pop_lit1 as isize);
                     sp_end = *str_start.offset((pop_lit1 + 1i32) as isize);
                     while sp_ptr < sp_end {
-                        *str_pool.offset(pool_ptr as isize) =
-                            *str_pool.offset(sp_ptr as isize);
+                        *str_pool.offset(pool_ptr as isize) = *str_pool.offset(sp_ptr as isize);
                         pool_ptr = pool_ptr + 1i32;
                         sp_ptr = sp_ptr + 1i32
                     }
                 } else {
                     pool_ptr = *str_start.offset((pop_lit1 + 1i32) as isize);
-                    while pool_ptr + 1i32 > pool_size { pool_overflow(); }
+                    while pool_ptr + 1i32 > pool_size {
+                        pool_overflow();
+                    }
                 }
                 *str_pool.offset(pool_ptr as isize) = 46i32 as ASCII_code;
                 pool_ptr = pool_ptr + 1i32;
@@ -3948,26 +4272,27 @@ unsafe extern "C" fn x_change_case() {
         push_lit_stk(s_null, 1i32 as stk_type);
     } else if pop_typ2 as libc::c_int != 1i32 {
         /*stk_str */
-        print_wrong_stk_lit(pop_lit2, pop_typ2,
-                            1i32 as stk_type); /*title_lowers */
+        print_wrong_stk_lit(pop_lit2, pop_typ2, 1i32 as stk_type); /*title_lowers */
         push_lit_stk(s_null, 1i32 as stk_type); /*all_lowers */
     } else {
-        match *str_pool.offset(*str_start.offset(pop_lit1 as isize) as isize)
-                  as libc::c_int {
-            116 | 84 => { conversion_type = 0i32 as libc::c_uchar }
-            108 | 76 => { conversion_type = 1i32 as libc::c_uchar }
-            117 | 85 => { conversion_type = 2i32 as libc::c_uchar }
-            _ => { /*all_uppers */
+        match *str_pool.offset(*str_start.offset(pop_lit1 as isize) as isize) as libc::c_int {
+            116 | 84 => conversion_type = 0i32 as libc::c_uchar,
+            108 | 76 => conversion_type = 1i32 as libc::c_uchar,
+            117 | 85 => conversion_type = 2i32 as libc::c_uchar,
+            _ => {
+                /*all_uppers */
                 conversion_type = 3i32 as libc::c_uchar
             }
         } /*bad_conversion */
-        if *str_start.offset((pop_lit1 + 1i32) as isize) -
-               *str_start.offset(pop_lit1 as isize) != 1i32 ||
-               conversion_type as libc::c_int == 3i32 {
+        if *str_start.offset((pop_lit1 + 1i32) as isize) - *str_start.offset(pop_lit1 as isize)
+            != 1i32
+            || conversion_type as libc::c_int == 3i32
+        {
             conversion_type = 3i32 as libc::c_uchar; /*bad_conversion */
             print_a_pool_str(pop_lit1);
-            puts_log(b" is an illegal case-conversion string\x00" as *const u8
-                         as *const libc::c_char);
+            puts_log(
+                b" is an illegal case-conversion string\x00" as *const u8 as *const libc::c_char,
+            );
             bst_ex_warn_print();
         }
         ex_buf_length = 0i32;
@@ -3980,197 +4305,155 @@ unsafe extern "C" fn x_change_case() {
                 brace_level = brace_level + 1i32;
                 if !(brace_level != 1i32) {
                     if !(ex_buf_ptr + 4i32 > ex_buf_length) {
-                        if !(*ex_buf.offset((ex_buf_ptr + 1i32) as isize) as
-                                 libc::c_int != 92i32) {
+                        if !(*ex_buf.offset((ex_buf_ptr + 1i32) as isize) as libc::c_int != 92i32) {
                             if conversion_type as libc::c_int == 0i32 {
                                 /*title_lowers */
                                 if ex_buf_ptr == 0i32 {
                                     current_block = 17089879097653631793;
-                                } else if prev_colon as libc::c_int != 0 &&
-                                              lex_class[*ex_buf.offset((ex_buf_ptr
-                                                                            -
-                                                                            1i32)
-                                                                           as
-                                                                           isize)
-                                                            as usize] as
-                                                  libc::c_int == 1i32 {
+                                } else if prev_colon as libc::c_int != 0
+                                    && lex_class
+                                        [*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as usize]
+                                        as libc::c_int
+                                        == 1i32
+                                {
                                     current_block = 17089879097653631793;
                                 } else {
                                     current_block = 6417057564578538666;
                                 }
-                            } else { current_block = 6417057564578538666; }
+                            } else {
+                                current_block = 6417057564578538666;
+                            }
                             match current_block {
-                                17089879097653631793 => { }
+                                17089879097653631793 => {}
                                 _ => {
                                     ex_buf_ptr = ex_buf_ptr + 1i32;
-                                    while ex_buf_ptr < ex_buf_length &&
-                                              brace_level > 0i32 {
+                                    while ex_buf_ptr < ex_buf_length && brace_level > 0i32 {
                                         ex_buf_ptr = ex_buf_ptr + 1i32;
                                         ex_buf_xptr = ex_buf_ptr;
-                                        while ex_buf_ptr < ex_buf_length &&
-                                                  lex_class[*ex_buf.offset(ex_buf_ptr
-                                                                               as
-                                                                               isize)
-                                                                as usize] as
-                                                      libc::c_int == 2i32 {
+                                        while ex_buf_ptr < ex_buf_length
+                                            && lex_class
+                                                [*ex_buf.offset(ex_buf_ptr as isize) as usize]
+                                                as libc::c_int
+                                                == 2i32
+                                        {
                                             ex_buf_ptr = ex_buf_ptr + 1i32
                                         }
-                                        control_seq_loc =
-                                            str_lookup(ex_buf, ex_buf_xptr,
-                                                       ex_buf_ptr -
-                                                           ex_buf_xptr,
-                                                       14i32 as str_ilk,
-                                                       0i32 != 0);
+                                        control_seq_loc = str_lookup(
+                                            ex_buf,
+                                            ex_buf_xptr,
+                                            ex_buf_ptr - ex_buf_xptr,
+                                            14i32 as str_ilk,
+                                            0i32 != 0,
+                                        );
                                         if hash_found {
                                             /*373: */
-                                            match conversion_type as
-                                                      libc::c_int {
+                                            match conversion_type as libc::c_int {
                                                 0 | 1 => {
-                                                    match *ilk_info.offset(control_seq_loc
-                                                                               as
-                                                                               isize)
-                                                        {
-                                                        11 | 9 | 3 | 5 | 7 =>
-                                                        {
-                                                            lower_case(ex_buf,
-                                                                       ex_buf_xptr,
-                                                                       ex_buf_ptr
-                                                                           -
-                                                                           ex_buf_xptr);
+                                                    match *ilk_info.offset(control_seq_loc as isize)
+                                                    {
+                                                        11 | 9 | 3 | 5 | 7 => {
+                                                            lower_case(
+                                                                ex_buf,
+                                                                ex_buf_xptr,
+                                                                ex_buf_ptr - ex_buf_xptr,
+                                                            );
                                                         }
-                                                        _ => { }
+                                                        _ => {}
                                                     }
                                                 }
                                                 2 => {
-                                                    match *ilk_info.offset(control_seq_loc
-                                                                               as
-                                                                               isize)
-                                                        {
-                                                        10 | 8 | 2 | 4 | 6 =>
-                                                        {
-                                                            upper_case(ex_buf,
-                                                                       ex_buf_xptr,
-                                                                       ex_buf_ptr
-                                                                           -
-                                                                           ex_buf_xptr);
+                                                    match *ilk_info.offset(control_seq_loc as isize)
+                                                    {
+                                                        10 | 8 | 2 | 4 | 6 => {
+                                                            upper_case(
+                                                                ex_buf,
+                                                                ex_buf_xptr,
+                                                                ex_buf_ptr - ex_buf_xptr,
+                                                            );
                                                         }
                                                         0 | 1 | 12 => {
-                                                            upper_case(ex_buf,
-                                                                       ex_buf_xptr,
-                                                                       ex_buf_ptr
-                                                                           -
-                                                                           ex_buf_xptr);
-                                                            while ex_buf_xptr
-                                                                      <
-                                                                      ex_buf_ptr
-                                                                  {
-                                                                *ex_buf.offset((ex_buf_xptr
-                                                                                    -
-                                                                                    1i32)
-                                                                                   as
-                                                                                   isize)
-                                                                    =
-                                                                    *ex_buf.offset(ex_buf_xptr
-                                                                                       as
-                                                                                       isize);
-                                                                ex_buf_xptr =
-                                                                    ex_buf_xptr
-                                                                        + 1i32
+                                                            upper_case(
+                                                                ex_buf,
+                                                                ex_buf_xptr,
+                                                                ex_buf_ptr - ex_buf_xptr,
+                                                            );
+                                                            while ex_buf_xptr < ex_buf_ptr {
+                                                                *ex_buf.offset(
+                                                                    (ex_buf_xptr - 1i32) as isize,
+                                                                ) = *ex_buf
+                                                                    .offset(ex_buf_xptr as isize);
+                                                                ex_buf_xptr = ex_buf_xptr + 1i32
                                                             }
-                                                            ex_buf_xptr =
-                                                                ex_buf_xptr -
-                                                                    1i32;
-                                                            while ex_buf_ptr <
-                                                                      ex_buf_length
-                                                                      &&
-                                                                      lex_class[*ex_buf.offset(ex_buf_ptr
-                                                                                                   as
-                                                                                                   isize)
-                                                                                    as
-                                                                                    usize]
-                                                                          as
-                                                                          libc::c_int
-                                                                          ==
-                                                                          1i32
-                                                                  {
-                                                                ex_buf_ptr =
-                                                                    ex_buf_ptr
-                                                                        + 1i32
+                                                            ex_buf_xptr = ex_buf_xptr - 1i32;
+                                                            while ex_buf_ptr < ex_buf_length
+                                                                && lex_class[*ex_buf
+                                                                    .offset(ex_buf_ptr as isize)
+                                                                    as usize]
+                                                                    as libc::c_int
+                                                                    == 1i32
+                                                            {
+                                                                ex_buf_ptr = ex_buf_ptr + 1i32
                                                             }
-                                                            tmp_ptr =
-                                                                ex_buf_ptr;
-                                                            while tmp_ptr <
-                                                                      ex_buf_length
-                                                                  {
-                                                                *ex_buf.offset((tmp_ptr
-                                                                                    -
-                                                                                    (ex_buf_ptr
-                                                                                         -
-                                                                                         ex_buf_xptr))
-                                                                                   as
-                                                                                   isize)
-                                                                    =
-                                                                    *ex_buf.offset(tmp_ptr
-                                                                                       as
-                                                                                       isize);
-                                                                tmp_ptr =
-                                                                    tmp_ptr +
-                                                                        1i32
+                                                            tmp_ptr = ex_buf_ptr;
+                                                            while tmp_ptr < ex_buf_length {
+                                                                *ex_buf.offset(
+                                                                    (tmp_ptr
+                                                                        - (ex_buf_ptr
+                                                                            - ex_buf_xptr))
+                                                                        as isize,
+                                                                ) = *ex_buf
+                                                                    .offset(tmp_ptr as isize);
+                                                                tmp_ptr = tmp_ptr + 1i32
                                                             }
-                                                            ex_buf_length =
-                                                                tmp_ptr -
-                                                                    (ex_buf_ptr
-                                                                         -
-                                                                         ex_buf_xptr);
-                                                            ex_buf_ptr =
-                                                                ex_buf_xptr
+                                                            ex_buf_length = tmp_ptr
+                                                                - (ex_buf_ptr - ex_buf_xptr);
+                                                            ex_buf_ptr = ex_buf_xptr
                                                         }
-                                                        _ => { }
+                                                        _ => {}
                                                     }
                                                 }
-                                                3 => { }
+                                                3 => {}
                                                 _ => {
                                                     case_conversion_confusion();
                                                 }
                                             }
                                         }
                                         ex_buf_xptr = ex_buf_ptr;
-                                        while ex_buf_ptr < ex_buf_length &&
-                                                  brace_level > 0i32 &&
-                                                  *ex_buf.offset(ex_buf_ptr as
-                                                                     isize) as
-                                                      libc::c_int != 92i32 {
-                                            if *ex_buf.offset(ex_buf_ptr as
-                                                                  isize) as
-                                                   libc::c_int == 125i32 {
+                                        while ex_buf_ptr < ex_buf_length
+                                            && brace_level > 0i32
+                                            && *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int
+                                                != 92i32
+                                        {
+                                            if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int
+                                                == 125i32
+                                            {
                                                 /*right_brace */
-                                                brace_level =
-                                                    brace_level - 1i32
-                                            } else if *ex_buf.offset(ex_buf_ptr
-                                                                         as
-                                                                         isize)
-                                                          as libc::c_int ==
-                                                          123i32 {
+                                                brace_level = brace_level - 1i32
+                                            } else if *ex_buf.offset(ex_buf_ptr as isize)
+                                                as libc::c_int
+                                                == 123i32
+                                            {
                                                 /*left_brace */
-                                                brace_level =
-                                                    brace_level + 1i32
+                                                brace_level = brace_level + 1i32
                                             }
                                             ex_buf_ptr = ex_buf_ptr + 1i32
                                         }
                                         match conversion_type as libc::c_int {
                                             0 | 1 => {
-                                                lower_case(ex_buf,
-                                                           ex_buf_xptr,
-                                                           ex_buf_ptr -
-                                                               ex_buf_xptr);
+                                                lower_case(
+                                                    ex_buf,
+                                                    ex_buf_xptr,
+                                                    ex_buf_ptr - ex_buf_xptr,
+                                                );
                                             }
                                             2 => {
-                                                upper_case(ex_buf,
-                                                           ex_buf_xptr,
-                                                           ex_buf_ptr -
-                                                               ex_buf_xptr);
+                                                upper_case(
+                                                    ex_buf,
+                                                    ex_buf_xptr,
+                                                    ex_buf_ptr - ex_buf_xptr,
+                                                );
                                             }
-                                            3 => { }
+                                            3 => {}
                                             _ => {
                                                 case_conversion_confusion();
                                             }
@@ -4185,8 +4468,7 @@ unsafe extern "C" fn x_change_case() {
                 /*backslash */
                 /*ok_pascal_i_give_up */
                 prev_colon = 0i32 != 0
-            } else if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int ==
-                          125i32 {
+            } else if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 125i32 {
                 /*right_brace */
                 decr_brace_level(pop_lit2);
                 prev_colon = 0i32 != 0
@@ -4195,31 +4477,35 @@ unsafe extern "C" fn x_change_case() {
                 match conversion_type as libc::c_int {
                     0 => {
                         if !(ex_buf_ptr == 0i32) {
-                            if !(prev_colon as libc::c_int != 0 &&
-                                     lex_class[*ex_buf.offset((ex_buf_ptr -
-                                                                   1i32) as
-                                                                  isize) as
-                                                   usize] as libc::c_int ==
-                                         1i32) {
+                            if !(prev_colon as libc::c_int != 0
+                                && lex_class[*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as usize]
+                                    as libc::c_int
+                                    == 1i32)
+                            {
                                 lower_case(ex_buf, ex_buf_ptr, 1i32);
                             }
                         }
-                        if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int
-                               == 58i32 {
+                        if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 58i32 {
                             /*colon */
                             prev_colon = 1i32 != 0
-                        } else if lex_class[*ex_buf.offset(ex_buf_ptr as
-                                                               isize) as
-                                                usize] as libc::c_int != 1i32
-                         {
+                        } else if lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize]
+                            as libc::c_int
+                            != 1i32
+                        {
                             /*white_space */
                             prev_colon = 0i32 != 0
                         }
                     }
-                    1 => { lower_case(ex_buf, ex_buf_ptr, 1i32); }
-                    2 => { upper_case(ex_buf, ex_buf_ptr, 1i32); }
-                    3 => { }
-                    _ => { case_conversion_confusion(); }
+                    1 => {
+                        lower_case(ex_buf, ex_buf_ptr, 1i32);
+                    }
+                    2 => {
+                        upper_case(ex_buf, ex_buf_ptr, 1i32);
+                    }
+                    3 => {}
+                    _ => {
+                        case_conversion_confusion();
+                    }
                 }
             }
             ex_buf_ptr = ex_buf_ptr + 1i32
@@ -4234,18 +4520,19 @@ unsafe extern "C" fn x_chr_to_int() {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
-    } else if *str_start.offset((pop_lit1 + 1i32) as isize) -
-                  *str_start.offset(pop_lit1 as isize) != 1i32 {
+    } else if *str_start.offset((pop_lit1 + 1i32) as isize) - *str_start.offset(pop_lit1 as isize)
+        != 1i32
+    {
         putc_log('\"' as i32);
         print_a_pool_str(pop_lit1);
-        puts_log(b"\" isn\'t a single character\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"\" isn\'t a single character\x00" as *const u8 as *const libc::c_char);
         bst_ex_warn_print();
         push_lit_stk(0i32, 0i32 as stk_type);
     } else {
-        push_lit_stk(*str_pool.offset(*str_start.offset(pop_lit1 as isize) as
-                                          isize) as int32_t,
-                     0i32 as stk_type);
+        push_lit_stk(
+            *str_pool.offset(*str_start.offset(pop_lit1 as isize) as isize) as int32_t,
+            0i32 as stk_type,
+        );
     };
 }
 unsafe extern "C" fn x_cite() {
@@ -4270,16 +4557,17 @@ unsafe extern "C" fn x_duplicate() {
         if pop_lit1 < cmd_str_ptr {
             push_lit_stk(pop_lit1, pop_typ1);
         } else {
-            while pool_ptr +
-                      (*str_start.offset((pop_lit1 + 1i32) as isize) -
-                           *str_start.offset(pop_lit1 as isize)) > pool_size {
+            while pool_ptr
+                + (*str_start.offset((pop_lit1 + 1i32) as isize)
+                    - *str_start.offset(pop_lit1 as isize))
+                > pool_size
+            {
                 pool_overflow();
             }
             sp_ptr = *str_start.offset(pop_lit1 as isize);
             sp_end = *str_start.offset((pop_lit1 + 1i32) as isize);
             while sp_ptr < sp_end {
-                *str_pool.offset(pool_ptr as isize) =
-                    *str_pool.offset(sp_ptr as isize);
+                *str_pool.offset(pool_ptr as isize) = *str_pool.offset(sp_ptr as isize);
                 pool_ptr = pool_ptr + 1i32;
                 sp_ptr = sp_ptr + 1i32
             }
@@ -4294,22 +4582,24 @@ unsafe extern "C" fn x_empty() {
             sp_ptr = *str_start.offset(pop_lit1 as isize);
             sp_end = *str_start.offset((pop_lit1 + 1i32) as isize);
             while sp_ptr < sp_end {
-                if lex_class[*str_pool.offset(sp_ptr as isize) as usize] as
-                       libc::c_int != 1i32 {
+                if lex_class[*str_pool.offset(sp_ptr as isize) as usize] as libc::c_int != 1i32 {
                     /*white_space */
                     push_lit_stk(0i32, 0i32 as stk_type);
-                    return
+                    return;
                 }
                 sp_ptr = sp_ptr + 1i32
             }
             push_lit_stk(1i32, 0i32 as stk_type);
         }
-        3 => { push_lit_stk(1i32, 0i32 as stk_type); }
-        4 => { push_lit_stk(0i32, 0i32 as stk_type); }
+        3 => {
+            push_lit_stk(1i32, 0i32 as stk_type);
+        }
+        4 => {
+            push_lit_stk(0i32, 0i32 as stk_type);
+        }
         _ => {
             print_stk_lit(pop_lit1, pop_typ1);
-            puts_log(b", not a string or missing field,\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b", not a string or missing field,\x00" as *const u8 as *const libc::c_char);
             bst_ex_warn_print();
             push_lit_stk(0i32, 0i32 as stk_type);
         }
@@ -4341,36 +4631,36 @@ unsafe extern "C" fn x_format_name() {
             ex_buf_xptr = ex_buf_ptr;
             name_scan_for_and(pop_lit3);
         }
-        if ex_buf_ptr < ex_buf_length { ex_buf_ptr = ex_buf_ptr - 4i32 }
+        if ex_buf_ptr < ex_buf_length {
+            ex_buf_ptr = ex_buf_ptr - 4i32
+        }
         if num_names < pop_lit2 {
             if pop_lit2 == 1i32 {
-                puts_log(b"There is no name in \"\x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b"There is no name in \"\x00" as *const u8 as *const libc::c_char);
             } else {
-                printf_log(b"There aren\'t %ld names in \"\x00" as *const u8
-                               as *const libc::c_char,
-                           pop_lit2 as libc::c_long);
+                printf_log(
+                    b"There aren\'t %ld names in \"\x00" as *const u8 as *const libc::c_char,
+                    pop_lit2 as libc::c_long,
+                );
             }
             print_a_pool_str(pop_lit3);
             putc_log('\"' as i32);
             bst_ex_warn_print();
         }
         while ex_buf_ptr > ex_buf_xptr {
-            match lex_class[*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as
-                                usize] as libc::c_int {
-                1 | 4 => { ex_buf_ptr = ex_buf_ptr - 1i32 }
+            match lex_class[*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as usize] as libc::c_int {
+                1 | 4 => ex_buf_ptr = ex_buf_ptr - 1i32,
                 _ => {
-                    if !(*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as
-                             libc::c_int == 44i32) {
-                        break ;
+                    if !(*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int == 44i32) {
+                        break;
                     }
                     /*comma */
-                    printf_log(b"Name %ld in \"\x00" as *const u8 as
-                                   *const libc::c_char,
-                               pop_lit2 as libc::c_long);
+                    printf_log(
+                        b"Name %ld in \"\x00" as *const u8 as *const libc::c_char,
+                        pop_lit2 as libc::c_long,
+                    );
                     print_a_pool_str(pop_lit3);
-                    puts_log(b"\" has a comma at the end\x00" as *const u8 as
-                                 *const libc::c_char);
+                    puts_log(b"\" has a comma at the end\x00" as *const u8 as *const libc::c_char);
                     bst_ex_warn_print();
                     ex_buf_ptr = ex_buf_ptr - 1i32
                 }
@@ -4384,9 +4674,11 @@ unsafe extern "C" fn x_format_name() {
             match *ex_buf.offset(ex_buf_xptr as isize) as libc::c_int {
                 44 => {
                     if num_commas == 2i32 {
-                        printf_log(b"Too many commas in name %ld of \"\x00" as
-                                       *const u8 as *const libc::c_char,
-                                   pop_lit2 as libc::c_long);
+                        printf_log(
+                            b"Too many commas in name %ld of \"\x00" as *const u8
+                                as *const libc::c_char,
+                            pop_lit2 as libc::c_long,
+                        );
                         print_a_pool_str(pop_lit3);
                         putc_log('\"' as i32);
                         bst_ex_warn_print();
@@ -4394,9 +4686,10 @@ unsafe extern "C" fn x_format_name() {
                         num_commas = num_commas + 1i32;
                         if num_commas == 1i32 {
                             comma1 = num_tokens
-                        } else { comma2 = num_tokens }
-                        *name_sep_char.offset(num_tokens as isize) =
-                            44i32 as ASCII_code
+                        } else {
+                            comma2 = num_tokens
+                        }
+                        *name_sep_char.offset(num_tokens as isize) = 44i32 as ASCII_code
                         /*comma */
                     }
                     ex_buf_xptr = ex_buf_xptr + 1i32;
@@ -4408,17 +4701,14 @@ unsafe extern "C" fn x_format_name() {
                         *name_tok.offset(num_tokens as isize) = name_bf_ptr;
                         num_tokens = num_tokens + 1i32
                     }
-                    *sv_buffer.offset(name_bf_ptr as isize) =
-                        *ex_buf.offset(ex_buf_xptr as isize);
+                    *sv_buffer.offset(name_bf_ptr as isize) = *ex_buf.offset(ex_buf_xptr as isize);
                     name_bf_ptr = name_bf_ptr + 1i32;
                     ex_buf_xptr = ex_buf_xptr + 1i32;
                     while brace_level > 0i32 && ex_buf_xptr < ex_buf_ptr {
-                        if *ex_buf.offset(ex_buf_xptr as isize) as libc::c_int
-                               == 125i32 {
+                        if *ex_buf.offset(ex_buf_xptr as isize) as libc::c_int == 125i32 {
                             /*right_brace */
                             brace_level = brace_level - 1i32
-                        } else if *ex_buf.offset(ex_buf_xptr as isize) as
-                                      libc::c_int == 123i32 {
+                        } else if *ex_buf.offset(ex_buf_xptr as isize) as libc::c_int == 123i32 {
                             /*left_brace */
                             brace_level = brace_level + 1i32
                         } /*space */
@@ -4434,23 +4724,21 @@ unsafe extern "C" fn x_format_name() {
                         *name_tok.offset(num_tokens as isize) = name_bf_ptr;
                         num_tokens = num_tokens + 1i32
                     }
-                    printf_log(b"Name %ld of \"\x00" as *const u8 as
-                                   *const libc::c_char,
-                               pop_lit2 as libc::c_long);
+                    printf_log(
+                        b"Name %ld of \"\x00" as *const u8 as *const libc::c_char,
+                        pop_lit2 as libc::c_long,
+                    );
                     print_a_pool_str(pop_lit3);
-                    puts_log(b"\" isn\'t brace balanced\x00" as *const u8 as
-                                 *const libc::c_char);
+                    puts_log(b"\" isn\'t brace balanced\x00" as *const u8 as *const libc::c_char);
                     bst_ex_warn_print();
                     ex_buf_xptr = ex_buf_xptr + 1i32;
                     token_starting = 0i32 != 0
                 }
                 _ => {
-                    match lex_class[*ex_buf.offset(ex_buf_xptr as isize) as
-                                        usize] as libc::c_int {
+                    match lex_class[*ex_buf.offset(ex_buf_xptr as isize) as usize] as libc::c_int {
                         1 => {
                             if !token_starting {
-                                *name_sep_char.offset(num_tokens as isize) =
-                                    32i32 as ASCII_code
+                                *name_sep_char.offset(num_tokens as isize) = 32i32 as ASCII_code
                             }
                             ex_buf_xptr = ex_buf_xptr + 1i32;
                             token_starting = 1i32 != 0
@@ -4465,8 +4753,7 @@ unsafe extern "C" fn x_format_name() {
                         }
                         _ => {
                             if token_starting {
-                                *name_tok.offset(num_tokens as isize) =
-                                    name_bf_ptr;
+                                *name_tok.offset(num_tokens as isize) = name_bf_ptr;
                                 num_tokens = num_tokens + 1i32
                             }
                             *sv_buffer.offset(name_bf_ptr as isize) =
@@ -4486,37 +4773,39 @@ unsafe extern "C" fn x_format_name() {
             jr_end = last_end;
             let mut current_block_127: u64;
             von_start = 0i32;
-            loop  {
+            loop {
                 if !(von_start < last_end - 1i32) {
                     current_block_127 = 248631179418912492;
-                    break ;
+                    break;
                 }
                 name_bf_ptr = *name_tok.offset(von_start as isize);
                 name_bf_xptr = *name_tok.offset((von_start + 1i32) as isize);
                 if von_token_found() {
                     von_name_ends_and_last_name_starts_stuff();
                     current_block_127 = 7590078969446600227;
-                    break ;
-                } else { von_start = von_start + 1i32 }
+                    break;
+                } else {
+                    von_start = von_start + 1i32
+                }
             }
-            loop  {
+            loop {
                 match current_block_127 {
                     7590078969446600227 => {
                         /*von_found */
                         first_end = von_start;
-                        break ;
+                        break;
                     }
                     _ => {
                         if von_start > 0i32 {
-                            if !(lex_class[*name_sep_char.offset(von_start as
-                                                                     isize) as
-                                               usize] as libc::c_int != 4i32
-                                     ||
-                                     *name_sep_char.offset(von_start as isize)
-                                         as libc::c_int == 126i32) {
+                            if !(lex_class[*name_sep_char.offset(von_start as isize) as usize]
+                                as libc::c_int
+                                != 4i32
+                                || *name_sep_char.offset(von_start as isize) as libc::c_int
+                                    == 126i32)
+                            {
                                 von_start = von_start - 1i32;
                                 current_block_127 = 248631179418912492;
-                                continue ;
+                                continue;
                             }
                         }
                         /*loop2_exit */
@@ -4540,8 +4829,7 @@ unsafe extern "C" fn x_format_name() {
             first_end = num_tokens;
             von_name_ends_and_last_name_starts_stuff();
         } else {
-            puts_log(b"Illegal number of comma,s\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"Illegal number of comma,s\x00" as *const u8 as *const libc::c_char);
             print_confusion();
             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
         }
@@ -4558,12 +4846,16 @@ unsafe extern "C" fn x_int_to_chr() {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
     } else if pop_lit1 < 0i32 || pop_lit1 > 127i32 {
-        printf_log(b"%ld isn\'t valid ASCII\x00" as *const u8 as
-                       *const libc::c_char, pop_lit1 as libc::c_long);
+        printf_log(
+            b"%ld isn\'t valid ASCII\x00" as *const u8 as *const libc::c_char,
+            pop_lit1 as libc::c_long,
+        );
         bst_ex_warn_print();
         push_lit_stk(s_null, 1i32 as stk_type);
     } else {
-        while pool_ptr + 1i32 > pool_size { pool_overflow(); }
+        while pool_ptr + 1i32 > pool_size {
+            pool_overflow();
+        }
         *str_pool.offset(pool_ptr as isize) = pop_lit1 as ASCII_code;
         pool_ptr = pool_ptr + 1i32;
         push_lit_stk(make_string(), 1i32 as stk_type);
@@ -4584,20 +4876,20 @@ unsafe extern "C" fn x_missing() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     if !mess_with_entries {
         bst_cant_mess_with_entries_print();
-    } else if pop_typ1 as libc::c_int != 1i32 &&
-                  pop_typ1 as libc::c_int != 3i32 {
+    } else if pop_typ1 as libc::c_int != 1i32 && pop_typ1 as libc::c_int != 3i32 {
         if pop_typ1 as libc::c_int != 4i32 {
             /*stk_empty */
             print_stk_lit(pop_lit1, pop_typ1);
-            puts_log(b", not a string or missing field,\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b", not a string or missing field,\x00" as *const u8 as *const libc::c_char);
             bst_ex_warn_print();
         }
         push_lit_stk(0i32, 0i32 as stk_type);
     } else if pop_typ1 as libc::c_int == 3i32 {
         /*stk_field_missing */
         push_lit_stk(1i32, 0i32 as stk_type);
-    } else { push_lit_stk(0i32, 0i32 as stk_type); };
+    } else {
+        push_lit_stk(0i32, 0i32 as stk_type);
+    };
 }
 unsafe extern "C" fn x_num_names() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
@@ -4639,105 +4931,83 @@ unsafe extern "C" fn x_purify() {
         ex_buf_xptr = 0i32;
         ex_buf_ptr = 0i32;
         while ex_buf_ptr < ex_buf_length {
-            match lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as
-                      libc::c_int {
+            match lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as libc::c_int {
                 1 | 4 => {
-                    *ex_buf.offset(ex_buf_xptr as isize) =
-                        32i32 as ASCII_code;
+                    *ex_buf.offset(ex_buf_xptr as isize) = 32i32 as ASCII_code;
                     ex_buf_xptr = ex_buf_xptr + 1i32
                 }
                 2 | 3 => {
-                    *ex_buf.offset(ex_buf_xptr as isize) =
-                        *ex_buf.offset(ex_buf_ptr as isize);
+                    *ex_buf.offset(ex_buf_xptr as isize) = *ex_buf.offset(ex_buf_ptr as isize);
                     ex_buf_xptr = ex_buf_xptr + 1i32
                 }
                 _ => {
-                    if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int ==
-                           123i32 {
+                    if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 123i32 {
                         /*left_brace */
                         brace_level = brace_level + 1i32;
-                        if brace_level == 1i32 &&
-                               ex_buf_ptr + 1i32 < ex_buf_length {
-                            if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as
-                                   libc::c_int == 92i32 {
+                        if brace_level == 1i32 && ex_buf_ptr + 1i32 < ex_buf_length {
+                            if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as libc::c_int == 92i32
+                            {
                                 /*backslash */
                                 /*433: */
                                 ex_buf_ptr = ex_buf_ptr + 1i32;
-                                while ex_buf_ptr < ex_buf_length &&
-                                          brace_level > 0i32 {
+                                while ex_buf_ptr < ex_buf_length && brace_level > 0i32 {
                                     ex_buf_ptr = ex_buf_ptr + 1i32;
                                     ex_buf_yptr = ex_buf_ptr;
-                                    while ex_buf_ptr < ex_buf_length &&
-                                              lex_class[*ex_buf.offset(ex_buf_ptr
-                                                                           as
-                                                                           isize)
-                                                            as usize] as
-                                                  libc::c_int == 2i32 {
+                                    while ex_buf_ptr < ex_buf_length
+                                        && lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize]
+                                            as libc::c_int
+                                            == 2i32
+                                    {
                                         ex_buf_ptr = ex_buf_ptr + 1i32
                                     }
-                                    control_seq_loc =
-                                        str_lookup(ex_buf, ex_buf_yptr,
-                                                   ex_buf_ptr - ex_buf_yptr,
-                                                   14i32 as str_ilk,
-                                                   0i32 != 0);
+                                    control_seq_loc = str_lookup(
+                                        ex_buf,
+                                        ex_buf_yptr,
+                                        ex_buf_ptr - ex_buf_yptr,
+                                        14i32 as str_ilk,
+                                        0i32 != 0,
+                                    );
                                     if hash_found {
                                         /*434: */
                                         *ex_buf.offset(ex_buf_xptr as isize) =
-                                            *ex_buf.offset(ex_buf_yptr as
-                                                               isize);
+                                            *ex_buf.offset(ex_buf_yptr as isize);
                                         ex_buf_xptr = ex_buf_xptr + 1i32;
-                                        match *ilk_info.offset(control_seq_loc
-                                                                   as isize) {
+                                        match *ilk_info.offset(control_seq_loc as isize) {
                                             2 | 3 | 4 | 5 | 12 => {
-                                                *ex_buf.offset(ex_buf_xptr as
-                                                                   isize) =
-                                                    *ex_buf.offset((ex_buf_yptr
-                                                                        +
-                                                                        1i32)
-                                                                       as
-                                                                       isize);
-                                                ex_buf_xptr =
-                                                    ex_buf_xptr + 1i32
+                                                *ex_buf.offset(ex_buf_xptr as isize) =
+                                                    *ex_buf.offset((ex_buf_yptr + 1i32) as isize);
+                                                ex_buf_xptr = ex_buf_xptr + 1i32
                                             }
-                                            _ => { }
+                                            _ => {}
                                         }
                                     }
-                                    while ex_buf_ptr < ex_buf_length &&
-                                              brace_level > 0i32 &&
-                                              *ex_buf.offset(ex_buf_ptr as
-                                                                 isize) as
-                                                  libc::c_int != 92i32 {
-                                        match lex_class[*ex_buf.offset(ex_buf_ptr
-                                                                           as
-                                                                           isize)
-                                                            as usize] as
-                                                  libc::c_int {
+                                    while ex_buf_ptr < ex_buf_length
+                                        && brace_level > 0i32
+                                        && *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int
+                                            != 92i32
+                                    {
+                                        match lex_class
+                                            [*ex_buf.offset(ex_buf_ptr as isize) as usize]
+                                            as libc::c_int
+                                        {
                                             2 | 3 => {
-                                                *ex_buf.offset(ex_buf_xptr as
-                                                                   isize) =
-                                                    *ex_buf.offset(ex_buf_ptr
-                                                                       as
-                                                                       isize);
-                                                ex_buf_xptr =
-                                                    ex_buf_xptr + 1i32
+                                                *ex_buf.offset(ex_buf_xptr as isize) =
+                                                    *ex_buf.offset(ex_buf_ptr as isize);
+                                                ex_buf_xptr = ex_buf_xptr + 1i32
                                             }
                                             _ => {
-                                                if *ex_buf.offset(ex_buf_ptr
-                                                                      as
-                                                                      isize)
-                                                       as libc::c_int ==
-                                                       125i32 {
+                                                if *ex_buf.offset(ex_buf_ptr as isize)
+                                                    as libc::c_int
+                                                    == 125i32
+                                                {
                                                     /*right_brace */
-                                                    brace_level =
-                                                        brace_level - 1i32
-                                                } else if *ex_buf.offset(ex_buf_ptr
-                                                                             as
-                                                                             isize)
-                                                              as libc::c_int
-                                                              == 123i32 {
+                                                    brace_level = brace_level - 1i32
+                                                } else if *ex_buf.offset(ex_buf_ptr as isize)
+                                                    as libc::c_int
+                                                    == 123i32
+                                                {
                                                     /*left_brace */
-                                                    brace_level =
-                                                        brace_level + 1i32
+                                                    brace_level = brace_level + 1i32
                                                 }
                                             }
                                         }
@@ -4747,8 +5017,7 @@ unsafe extern "C" fn x_purify() {
                                 ex_buf_ptr = ex_buf_ptr - 1i32
                             }
                         }
-                    } else if *ex_buf.offset(ex_buf_ptr as isize) as
-                                  libc::c_int == 125i32 {
+                    } else if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 125i32 {
                         /*right_brace */
                         if brace_level > 0i32 {
                             brace_level = brace_level - 1i32
@@ -4763,7 +5032,9 @@ unsafe extern "C" fn x_purify() {
     };
 }
 unsafe extern "C" fn x_quote() {
-    while pool_ptr + 1i32 > pool_size { pool_overflow(); }
+    while pool_ptr + 1i32 > pool_size {
+        pool_overflow();
+    }
     *str_pool.offset(pool_ptr as isize) = 34i32 as ASCII_code;
     pool_ptr = pool_ptr + 1i32;
     push_lit_stk(make_string(), 1i32 as stk_type);
@@ -4786,8 +5057,7 @@ unsafe extern "C" fn x_substring() {
         push_lit_stk(s_null, 1i32 as stk_type); /*441: */
     } else {
         sp_length =
-            *str_start.offset((pop_lit3 + 1i32) as isize) -
-                *str_start.offset(pop_lit3 as isize);
+            *str_start.offset((pop_lit3 + 1i32) as isize) - *str_start.offset(pop_lit3 as isize);
         if pop_lit1 >= sp_length {
             if pop_lit2 == 1i32 || pop_lit2 == -1i32 {
                 if *lit_stack.offset(lit_stk_ptr as isize) >= cmd_str_ptr {
@@ -4795,29 +5065,26 @@ unsafe extern "C" fn x_substring() {
                     pool_ptr = *str_start.offset(str_ptr as isize)
                 }
                 lit_stk_ptr = lit_stk_ptr + 1i32;
-                return
+                return;
             }
         }
-        if pop_lit1 <= 0i32 || pop_lit2 == 0i32 || pop_lit2 > sp_length ||
-               pop_lit2 < -sp_length {
+        if pop_lit1 <= 0i32 || pop_lit2 == 0i32 || pop_lit2 > sp_length || pop_lit2 < -sp_length {
             push_lit_stk(s_null, 1i32 as stk_type);
-            return
+            return;
         } else {
             if pop_lit2 > 0i32 {
                 if pop_lit1 > sp_length - (pop_lit2 - 1i32) {
                     pop_lit1 = sp_length - (pop_lit2 - 1i32)
                 }
-                sp_ptr =
-                    *str_start.offset(pop_lit3 as isize) + (pop_lit2 - 1i32);
+                sp_ptr = *str_start.offset(pop_lit3 as isize) + (pop_lit2 - 1i32);
                 sp_end = sp_ptr + pop_lit1;
                 if pop_lit2 == 1i32 {
                     if pop_lit3 >= cmd_str_ptr {
-                        *str_start.offset((pop_lit3 + 1i32) as isize) =
-                            sp_end;
+                        *str_start.offset((pop_lit3 + 1i32) as isize) = sp_end;
                         str_ptr = str_ptr + 1i32;
                         pool_ptr = *str_start.offset(str_ptr as isize);
                         lit_stk_ptr = lit_stk_ptr + 1i32;
-                        return
+                        return;
                     }
                 }
             } else {
@@ -4825,15 +5092,14 @@ unsafe extern "C" fn x_substring() {
                 if pop_lit1 > sp_length - (pop_lit2 - 1i32) {
                     pop_lit1 = sp_length - (pop_lit2 - 1i32)
                 }
-                sp_end =
-                    *str_start.offset((pop_lit3 + 1i32) as isize) -
-                        (pop_lit2 - 1i32);
+                sp_end = *str_start.offset((pop_lit3 + 1i32) as isize) - (pop_lit2 - 1i32);
                 sp_ptr = sp_end - pop_lit1
             }
-            while pool_ptr + sp_end - sp_ptr > pool_size { pool_overflow(); }
+            while pool_ptr + sp_end - sp_ptr > pool_size {
+                pool_overflow();
+            }
             while sp_ptr < sp_end {
-                *str_pool.offset(pool_ptr as isize) =
-                    *str_pool.offset(sp_ptr as isize);
+                *str_pool.offset(pool_ptr as isize) = *str_pool.offset(sp_ptr as isize);
                 pool_ptr = pool_ptr + 1i32;
                 sp_ptr = sp_ptr + 1i32
             }
@@ -4862,8 +5128,7 @@ unsafe extern "C" fn x_swap() {
         sp_ptr = *str_start.offset(pop_lit1 as isize);
         sp_end = *str_start.offset((pop_lit1 + 1i32) as isize);
         while sp_ptr < sp_end {
-            *str_pool.offset(pool_ptr as isize) =
-                *str_pool.offset(sp_ptr as isize);
+            *str_pool.offset(pool_ptr as isize) = *str_pool.offset(sp_ptr as isize);
             pool_ptr = pool_ptr + 1i32;
             sp_ptr = sp_ptr + 1i32
         }
@@ -4884,22 +5149,18 @@ unsafe extern "C" fn x_text_length() {
         sp_brace_level = 0i32;
         while sp_ptr < sp_end {
             sp_ptr = sp_ptr + 1i32;
-            if *str_pool.offset((sp_ptr - 1i32) as isize) as libc::c_int ==
-                   123i32 {
+            if *str_pool.offset((sp_ptr - 1i32) as isize) as libc::c_int == 123i32 {
                 /*left_brace */
                 sp_brace_level = sp_brace_level + 1i32;
                 if sp_brace_level == 1i32 && sp_ptr < sp_end {
-                    if *str_pool.offset(sp_ptr as isize) as libc::c_int ==
-                           92i32 {
+                    if *str_pool.offset(sp_ptr as isize) as libc::c_int == 92i32 {
                         /*backslash */
                         sp_ptr = sp_ptr + 1i32;
                         while sp_ptr < sp_end && sp_brace_level > 0i32 {
-                            if *str_pool.offset(sp_ptr as isize) as
-                                   libc::c_int == 125i32 {
+                            if *str_pool.offset(sp_ptr as isize) as libc::c_int == 125i32 {
                                 /*right_brace */
                                 sp_brace_level = sp_brace_level - 1i32
-                            } else if *str_pool.offset(sp_ptr as isize) as
-                                          libc::c_int == 123i32 {
+                            } else if *str_pool.offset(sp_ptr as isize) as libc::c_int == 123i32 {
                                 /*left_brace */
                                 sp_brace_level = sp_brace_level + 1i32
                             }
@@ -4908,13 +5169,14 @@ unsafe extern "C" fn x_text_length() {
                         num_text_chars = num_text_chars + 1i32
                     }
                 }
-            } else if *str_pool.offset((sp_ptr - 1i32) as isize) as
-                          libc::c_int == 125i32 {
+            } else if *str_pool.offset((sp_ptr - 1i32) as isize) as libc::c_int == 125i32 {
                 /*right_brace */
                 if sp_brace_level > 0i32 {
                     sp_brace_level = sp_brace_level - 1i32
                 }
-            } else { num_text_chars = num_text_chars + 1i32 }
+            } else {
+                num_text_chars = num_text_chars + 1i32
+            }
         }
         push_lit_stk(num_text_chars, 0i32 as stk_type);
     };
@@ -4932,7 +5194,7 @@ unsafe extern "C" fn x_text_prefix() {
         push_lit_stk(s_null, 1i32 as stk_type);
     } else if pop_lit1 <= 0i32 {
         push_lit_stk(s_null, 1i32 as stk_type);
-        return
+        return;
     } else {
         sp_ptr = *str_start.offset(pop_lit2 as isize);
         sp_end = *str_start.offset((pop_lit2 + 1i32) as isize);
@@ -4941,22 +5203,18 @@ unsafe extern "C" fn x_text_prefix() {
         sp_xptr1 = sp_ptr;
         while sp_xptr1 < sp_end && num_text_chars < pop_lit1 {
             sp_xptr1 = sp_xptr1 + 1i32;
-            if *str_pool.offset((sp_xptr1 - 1i32) as isize) as libc::c_int ==
-                   123i32 {
+            if *str_pool.offset((sp_xptr1 - 1i32) as isize) as libc::c_int == 123i32 {
                 /*left_brace */
                 sp_brace_level = sp_brace_level + 1i32;
                 if sp_brace_level == 1i32 && sp_xptr1 < sp_end {
-                    if *str_pool.offset(sp_xptr1 as isize) as libc::c_int ==
-                           92i32 {
+                    if *str_pool.offset(sp_xptr1 as isize) as libc::c_int == 92i32 {
                         /*backslash */
                         sp_xptr1 = sp_xptr1 + 1i32;
                         while sp_xptr1 < sp_end && sp_brace_level > 0i32 {
-                            if *str_pool.offset(sp_xptr1 as isize) as
-                                   libc::c_int == 125i32 {
+                            if *str_pool.offset(sp_xptr1 as isize) as libc::c_int == 125i32 {
                                 /*right_brace */
                                 sp_brace_level = sp_brace_level - 1i32
-                            } else if *str_pool.offset(sp_xptr1 as isize) as
-                                          libc::c_int == 123i32 {
+                            } else if *str_pool.offset(sp_xptr1 as isize) as libc::c_int == 123i32 {
                                 /*left_brace */
                                 sp_brace_level = sp_brace_level + 1i32
                             }
@@ -4965,13 +5223,14 @@ unsafe extern "C" fn x_text_prefix() {
                         num_text_chars = num_text_chars + 1i32
                     }
                 }
-            } else if *str_pool.offset((sp_xptr1 - 1i32) as isize) as
-                          libc::c_int == 125i32 {
+            } else if *str_pool.offset((sp_xptr1 - 1i32) as isize) as libc::c_int == 125i32 {
                 /*right_brace */
                 if sp_brace_level > 0i32 {
                     sp_brace_level = sp_brace_level - 1i32
                 }
-            } else { num_text_chars = num_text_chars + 1i32 }
+            } else {
+                num_text_chars = num_text_chars + 1i32
+            }
         } /*right_brace */
         sp_end = sp_xptr1;
         while pool_ptr + sp_brace_level + sp_end - sp_ptr > pool_size {
@@ -4981,8 +5240,7 @@ unsafe extern "C" fn x_text_prefix() {
             pool_ptr = sp_end
         } else {
             while sp_ptr < sp_end {
-                *str_pool.offset(pool_ptr as isize) =
-                    *str_pool.offset(sp_ptr as isize);
+                *str_pool.offset(pool_ptr as isize) = *str_pool.offset(sp_ptr as isize);
                 pool_ptr = pool_ptr + 1i32;
                 sp_ptr = sp_ptr + 1i32
             }
@@ -4998,12 +5256,15 @@ unsafe extern "C" fn x_text_prefix() {
 unsafe extern "C" fn x_type() {
     if !mess_with_entries {
         bst_cant_mess_with_entries_print();
-    } else if *type_list.offset(cite_ptr as isize) == undefined ||
-                  *type_list.offset(cite_ptr as isize) == 0i32 {
+    } else if *type_list.offset(cite_ptr as isize) == undefined
+        || *type_list.offset(cite_ptr as isize) == 0i32
+    {
         push_lit_stk(s_null, 1i32 as stk_type);
     } else {
-        push_lit_stk(*hash_text.offset(*type_list.offset(cite_ptr as isize) as
-                                           isize), 1i32 as stk_type);
+        push_lit_stk(
+            *hash_text.offset(*type_list.offset(cite_ptr as isize) as isize),
+            1i32 as stk_type,
+        );
     };
 }
 unsafe extern "C" fn x_warning() {
@@ -5034,108 +5295,86 @@ unsafe extern "C" fn x_width() {
                 /*left_brace */
                 brace_level = brace_level + 1i32;
                 if brace_level == 1i32 && ex_buf_ptr + 1i32 < ex_buf_length {
-                    if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as
-                           libc::c_int == 92i32 {
+                    if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as libc::c_int == 92i32 {
                         /*backslash */
                         /*453: */
                         ex_buf_ptr = ex_buf_ptr + 1i32;
-                        while ex_buf_ptr < ex_buf_length && brace_level > 0i32
-                              {
+                        while ex_buf_ptr < ex_buf_length && brace_level > 0i32 {
                             ex_buf_ptr = ex_buf_ptr + 1i32;
                             ex_buf_xptr = ex_buf_ptr;
-                            while ex_buf_ptr < ex_buf_length &&
-                                      lex_class[*ex_buf.offset(ex_buf_ptr as
-                                                                   isize) as
-                                                    usize] as libc::c_int ==
-                                          2i32 {
+                            while ex_buf_ptr < ex_buf_length
+                                && lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize]
+                                    as libc::c_int
+                                    == 2i32
+                            {
                                 ex_buf_ptr = ex_buf_ptr + 1i32
                             }
-                            if ex_buf_ptr < ex_buf_length &&
-                                   ex_buf_ptr == ex_buf_xptr {
+                            if ex_buf_ptr < ex_buf_length && ex_buf_ptr == ex_buf_xptr {
                                 ex_buf_ptr = ex_buf_ptr + 1i32
                             } else {
-                                control_seq_loc =
-                                    str_lookup(ex_buf, ex_buf_xptr,
-                                               ex_buf_ptr - ex_buf_xptr,
-                                               14i32 as str_ilk, 0i32 != 0);
+                                control_seq_loc = str_lookup(
+                                    ex_buf,
+                                    ex_buf_xptr,
+                                    ex_buf_ptr - ex_buf_xptr,
+                                    14i32 as str_ilk,
+                                    0i32 != 0,
+                                );
                                 if hash_found {
                                     /*454: */
-                                    match *ilk_info.offset(control_seq_loc as
-                                                               isize) {
-                                        12 => {
-                                            string_width =
-                                                string_width + 500i32
-                                        }
-                                        4 => {
-                                            string_width =
-                                                string_width + 722i32
-                                        }
-                                        2 => {
-                                            string_width =
-                                                string_width + 778i32
-                                        }
-                                        5 => {
-                                            string_width =
-                                                string_width + 903i32
-                                        }
-                                        3 => {
-                                            string_width =
-                                                string_width + 1014i32
-                                        }
+                                    match *ilk_info.offset(control_seq_loc as isize) {
+                                        12 => string_width = string_width + 500i32,
+                                        4 => string_width = string_width + 722i32,
+                                        2 => string_width = string_width + 778i32,
+                                        5 => string_width = string_width + 903i32,
+                                        3 => string_width = string_width + 1014i32,
                                         _ => {
-                                            string_width =
-                                                string_width +
-                                                    char_width[*ex_buf.offset(ex_buf_xptr
-                                                                                  as
-                                                                                  isize)
-                                                                   as usize]
+                                            string_width = string_width
+                                                + char_width
+                                                    [*ex_buf.offset(ex_buf_xptr as isize) as usize]
                                         }
                                     }
                                 }
                             }
-                            while ex_buf_ptr < ex_buf_length &&
-                                      lex_class[*ex_buf.offset(ex_buf_ptr as
-                                                                   isize) as
-                                                    usize] as libc::c_int ==
-                                          1i32 {
+                            while ex_buf_ptr < ex_buf_length
+                                && lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize]
+                                    as libc::c_int
+                                    == 1i32
+                            {
                                 ex_buf_ptr = ex_buf_ptr + 1i32
                             }
-                            while ex_buf_ptr < ex_buf_length &&
-                                      brace_level > 0i32 &&
-                                      *ex_buf.offset(ex_buf_ptr as isize) as
-                                          libc::c_int != 92i32 {
-                                if *ex_buf.offset(ex_buf_ptr as isize) as
-                                       libc::c_int == 125i32 {
+                            while ex_buf_ptr < ex_buf_length
+                                && brace_level > 0i32
+                                && *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int != 92i32
+                            {
+                                if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 125i32 {
                                     /*right_brace */
                                     brace_level = brace_level - 1i32
-                                } else if *ex_buf.offset(ex_buf_ptr as isize)
-                                              as libc::c_int == 123i32 {
+                                } else if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int
+                                    == 123i32
+                                {
                                     /*left_brace */
                                     brace_level = brace_level + 1i32
                                 } else {
-                                    string_width =
-                                        string_width +
-                                            char_width[*ex_buf.offset(ex_buf_ptr
-                                                                          as
-                                                                          isize)
-                                                           as usize]
+                                    string_width = string_width
+                                        + char_width[*ex_buf.offset(ex_buf_ptr as isize) as usize]
                                 }
                                 ex_buf_ptr = ex_buf_ptr + 1i32
                             }
                         }
                         ex_buf_ptr = ex_buf_ptr - 1i32
-                    } else { string_width = string_width + char_width[123] }
-                } else { string_width = string_width + char_width[123] }
-            } else if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int ==
-                          125i32 {
+                    } else {
+                        string_width = string_width + char_width[123]
+                    }
+                } else {
+                    string_width = string_width + char_width[123]
+                }
+            } else if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 125i32 {
                 /*right_brace */
                 decr_brace_level(pop_lit1);
                 string_width = string_width + char_width[125]
             } else {
                 string_width =
-                    string_width +
-                        char_width[*ex_buf.offset(ex_buf_ptr as isize) as
-                                       usize]
+                    string_width + char_width[*ex_buf.offset(ex_buf_ptr as isize) as usize]
             }
             ex_buf_ptr = ex_buf_ptr + 1i32
         }
@@ -5148,7 +5387,9 @@ unsafe extern "C" fn x_write() {
     if pop_typ1 as libc::c_int != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type);
-    } else { add_out_pool(pop_lit1); };
+    } else {
+        add_out_pool(pop_lit1);
+    };
 }
 unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
     let mut current_block: u64;
@@ -5163,104 +5404,164 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 0 => {
                     current_block = 3427267834250323188;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
                                 /*stk_fn */
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
                                 /*stk_fn */
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
                                         /*stk_int */
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
                                 /*stk_fn */
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
                                 /*stk_fn */
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
                                 /*stk_int */
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -5269,98 +5570,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 1 => {
                     current_block = 8506478340253986099;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -5369,98 +5730,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 2 => {
                     current_block = 2992643050629887313;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -5469,98 +5890,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 3 => {
                     current_block = 3333486971056105332;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -5569,98 +6050,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 4 => {
                     current_block = 9486769047678124609;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -5669,98 +6210,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 5 => {
                     current_block = 751934050883067221;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -5769,98 +6370,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 6 => {
                     current_block = 11311982278797531854;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -5869,98 +6530,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 7 => {
                     current_block = 17093842530523746;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -5969,98 +6690,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 8 => {
                     current_block = 12003026128998772082;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6069,98 +6850,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 9 => {
                     current_block = 11401095418043589429;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6169,98 +7010,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 10 => {
                     current_block = 14433305390625741996;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6269,98 +7170,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 11 => {
                     current_block = 11821275415581843219;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6369,98 +7330,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 12 => {
                     current_block = 2586387813362916675;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6469,98 +7490,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 13 => {
                     current_block = 1299544639425101402;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6569,98 +7650,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 14 => {
                     current_block = 12456603346645215998;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6669,98 +7810,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 15 => {
                     current_block = 7451931000317828687;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6769,98 +7970,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 16 => {
                     current_block = 8655676648363273062;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6869,98 +8130,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 17 => {
                     current_block = 4310494265205845711;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6969,98 +8290,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 18 => {
                     current_block = 18342201684529422979;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7069,98 +8450,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 19 => {
                     current_block = 14095471398735929972;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7169,98 +8610,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 20 => {
                     current_block = 1788254067469565360;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7269,98 +8770,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 21 => {
                     current_block = 987738563414658848;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7369,98 +8930,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 22 => {
                     current_block = 9872068022390718344;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7469,98 +9090,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 23 => {
                     current_block = 8468081085890054388;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7569,199 +9250,319 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 24 => {
                     current_block = 17805198275128379845;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
                     }
                 }
-                25 => { }
+                25 => {}
                 26 => {
                     current_block = 12179545346928503758;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7770,98 +9571,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 27 => {
                     current_block = 227719186661713671;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7870,98 +9731,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 28 => {
                     current_block = 6386094465163296590;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7970,98 +9891,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 29 => {
                     current_block = 7298725476856358922;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8070,98 +10051,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 30 => {
                     current_block = 14071960002833054982;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8170,98 +10211,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 31 => {
                     current_block = 8412464758337420148;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8270,98 +10371,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 32 => {
                     current_block = 5003375028251918140;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8370,98 +10531,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 33 => {
                     current_block = 14559770770887801255;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8470,98 +10691,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 34 => {
                     current_block = 9705665520141849625;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8570,98 +10851,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 35 => {
                     current_block = 17353911828636475972;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8670,98 +11011,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 36 => {
                     current_block = 16007871220680826792;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8770,98 +11171,158 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 _ => {
                     current_block = 7817847338202672115;
                     match current_block {
-                        16007871220680826792 => { x_write(); }
+                        16007871220680826792 => {
+                            x_write();
+                        }
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
                             if r_pop_tp1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
                             } else if r_pop_tp2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
-                                loop  {
+                                loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                                     if pop_typ1 as libc::c_int != 0i32 {
-                                        print_wrong_stk_lit(pop_lit1,
-                                                            pop_typ1,
-                                                            0i32 as stk_type);
-                                        break ;
+                                        print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
+                                        break;
                                     } else {
-                                        if !(pop_lit1 > 0i32) { break ; }
+                                        if !(pop_lit1 > 0i32) {
+                                            break;
+                                        }
                                         execute_fn(r_pop_lt1);
                                     }
                                 }
                             }
                         }
-                        3427267834250323188 => { x_equals(); }
-                        8506478340253986099 => { x_greater_than(); }
-                        2992643050629887313 => { x_less_than(); }
-                        3333486971056105332 => { x_plus(); }
-                        9486769047678124609 => { x_minus(); }
-                        751934050883067221 => { x_concatenate(); }
-                        11311982278797531854 => { x_gets(); }
-                        17093842530523746 => { x_add_period(); }
+                        3427267834250323188 => {
+                            x_equals();
+                        }
+                        8506478340253986099 => {
+                            x_greater_than();
+                        }
+                        2992643050629887313 => {
+                            x_less_than();
+                        }
+                        3333486971056105332 => {
+                            x_plus();
+                        }
+                        9486769047678124609 => {
+                            x_minus();
+                        }
+                        751934050883067221 => {
+                            x_concatenate();
+                        }
+                        11311982278797531854 => {
+                            x_gets();
+                        }
+                        17093842530523746 => {
+                            x_add_period();
+                        }
                         12003026128998772082 => {
                             if !mess_with_entries {
                                 bst_cant_mess_with_entries_print();
-                            } else if *type_list.offset(cite_ptr as isize) ==
-                                          undefined {
+                            } else if *type_list.offset(cite_ptr as isize) == undefined {
                                 execute_fn(b_default);
-                            } else if !(*type_list.offset(cite_ptr as isize)
-                                            == 0i32) {
-                                execute_fn(*type_list.offset(cite_ptr as
-                                                                 isize));
+                            } else if !(*type_list.offset(cite_ptr as isize) == 0i32) {
+                                execute_fn(*type_list.offset(cite_ptr as isize));
                             }
                         }
-                        11401095418043589429 => { x_change_case(); }
-                        14433305390625741996 => { x_chr_to_int(); }
-                        11821275415581843219 => { x_cite(); }
-                        2586387813362916675 => { x_duplicate(); }
-                        1299544639425101402 => { x_empty(); }
-                        12456603346645215998 => { x_format_name(); }
+                        11401095418043589429 => {
+                            x_change_case();
+                        }
+                        14433305390625741996 => {
+                            x_chr_to_int();
+                        }
+                        11821275415581843219 => {
+                            x_cite();
+                        }
+                        2586387813362916675 => {
+                            x_duplicate();
+                        }
+                        1299544639425101402 => {
+                            x_empty();
+                        }
+                        12456603346645215998 => {
+                            x_format_name();
+                        }
                         7451931000317828687 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
                             if pop_typ1 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
                             } else if pop_typ2 as libc::c_int != 2i32 {
-                                print_wrong_stk_lit(pop_lit2, pop_typ2,
-                                                    2i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
                             } else if pop_typ3 as libc::c_int != 0i32 {
-                                print_wrong_stk_lit(pop_lit3, pop_typ3,
-                                                    0i32 as stk_type);
+                                print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
-                            } else { execute_fn(pop_lit1); }
+                            } else {
+                                execute_fn(pop_lit1);
+                            }
                         }
-                        8655676648363273062 => { x_int_to_chr(); }
-                        4310494265205845711 => { x_int_to_str(); }
-                        18342201684529422979 => { x_missing(); }
-                        14095471398735929972 => { output_bbl_line(); }
-                        1788254067469565360 => { x_num_names(); }
+                        8655676648363273062 => {
+                            x_int_to_chr();
+                        }
+                        4310494265205845711 => {
+                            x_int_to_str();
+                        }
+                        18342201684529422979 => {
+                            x_missing();
+                        }
+                        14095471398735929972 => {
+                            output_bbl_line();
+                        }
+                        1788254067469565360 => {
+                            x_num_names();
+                        }
                         987738563414658848 => {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                         }
-                        9872068022390718344 => { x_preamble(); }
-                        8468081085890054388 => { x_purify(); }
-                        17805198275128379845 => { x_quote(); }
-                        12179545346928503758 => { pop_whole_stack(); }
-                        227719186661713671 => { x_substring(); }
-                        6386094465163296590 => { x_swap(); }
-                        7298725476856358922 => { x_text_length(); }
-                        14071960002833054982 => { x_text_prefix(); }
-                        8412464758337420148 => { pop_top_and_print(); }
-                        5003375028251918140 => { x_type(); }
-                        14559770770887801255 => { x_warning(); }
-                        17353911828636475972 => { x_width(); }
+                        9872068022390718344 => {
+                            x_preamble();
+                        }
+                        8468081085890054388 => {
+                            x_purify();
+                        }
+                        17805198275128379845 => {
+                            x_quote();
+                        }
+                        12179545346928503758 => {
+                            pop_whole_stack();
+                        }
+                        227719186661713671 => {
+                            x_substring();
+                        }
+                        6386094465163296590 => {
+                            x_swap();
+                        }
+                        7298725476856358922 => {
+                            x_text_length();
+                        }
+                        14071960002833054982 => {
+                            x_text_prefix();
+                        }
+                        8412464758337420148 => {
+                            pop_top_and_print();
+                        }
+                        5003375028251918140 => {
+                            x_type();
+                        }
+                        14559770770887801255 => {
+                            x_warning();
+                        }
+                        17353911828636475972 => {
+                            x_width();
+                        }
                         _ => {
-                            puts_log(b"Unknown built-in function\x00" as
-                                         *const u8 as *const libc::c_char);
+                            puts_log(
+                                b"Unknown built-in function\x00" as *const u8
+                                    as *const libc::c_char,
+                            );
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8876,40 +11337,34 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                     execute_fn(*wiz_functions.offset(wiz_ptr as isize));
                 } else {
                     wiz_ptr = wiz_ptr + 1i32;
-                    push_lit_stk(*wiz_functions.offset(wiz_ptr as isize),
-                                 2i32 as stk_type);
+                    push_lit_stk(*wiz_functions.offset(wiz_ptr as isize), 2i32 as stk_type);
                 }
                 wiz_ptr = wiz_ptr + 1i32
             }
         }
         2 => {
-            push_lit_stk(*ilk_info.offset(ex_fn_loc as isize),
-                         0i32 as stk_type);
+            push_lit_stk(*ilk_info.offset(ex_fn_loc as isize), 0i32 as stk_type);
         }
         3 => {
-            push_lit_stk(*hash_text.offset(ex_fn_loc as isize),
-                         1i32 as stk_type);
+            push_lit_stk(*hash_text.offset(ex_fn_loc as isize), 1i32 as stk_type);
         }
         4 => {
             if !mess_with_entries {
                 bst_cant_mess_with_entries_print();
             } else {
-                field_ptr =
-                    cite_ptr * num_fields +
-                        *ilk_info.offset(ex_fn_loc as isize);
+                field_ptr = cite_ptr * num_fields + *ilk_info.offset(ex_fn_loc as isize);
                 if field_ptr >= max_fields {
-                    puts_log(b"field_info index is out of range\x00" as
-                                 *const u8 as *const libc::c_char);
+                    puts_log(
+                        b"field_info index is out of range\x00" as *const u8 as *const libc::c_char,
+                    );
                     print_confusion();
                     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                 }
                 if *field_info.offset(field_ptr as isize) == 0i32 {
                     /*missing */
-                    push_lit_stk(*hash_text.offset(ex_fn_loc as isize),
-                                 3i32 as stk_type);
+                    push_lit_stk(*hash_text.offset(ex_fn_loc as isize), 3i32 as stk_type);
                 } else {
-                    push_lit_stk(*field_info.offset(field_ptr as isize),
-                                 1i32 as stk_type);
+                    push_lit_stk(*field_info.offset(field_ptr as isize), 1i32 as stk_type);
                 }
             }
         }
@@ -8917,31 +11372,28 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
             if !mess_with_entries {
                 bst_cant_mess_with_entries_print();
             } else {
-                push_lit_stk(*entry_ints.offset((cite_ptr * num_ent_ints +
-                                                     *ilk_info.offset(ex_fn_loc
-                                                                          as
-                                                                          isize))
-                                                    as isize),
-                             0i32 as stk_type);
+                push_lit_stk(
+                    *entry_ints.offset(
+                        (cite_ptr * num_ent_ints + *ilk_info.offset(ex_fn_loc as isize)) as isize,
+                    ),
+                    0i32 as stk_type,
+                );
             }
         }
         6 => {
             if !mess_with_entries {
                 bst_cant_mess_with_entries_print();
             } else {
-                str_ent_ptr =
-                    cite_ptr * num_ent_strs +
-                        *ilk_info.offset(ex_fn_loc as isize);
+                str_ent_ptr = cite_ptr * num_ent_strs + *ilk_info.offset(ex_fn_loc as isize);
                 ex_buf_ptr = 0i32;
-                while *entry_strs.offset((str_ent_ptr * (ent_str_size + 1i32)
-                                              + ex_buf_ptr) as isize) as
-                          libc::c_int != 127i32 {
+                while *entry_strs
+                    .offset((str_ent_ptr * (ent_str_size + 1i32) + ex_buf_ptr) as isize)
+                    as libc::c_int
+                    != 127i32
+                {
                     /*end_of_string */
-                    *ex_buf.offset(ex_buf_ptr as isize) =
-                        *entry_strs.offset((str_ent_ptr *
-                                                (ent_str_size + 1i32) +
-                                                ex_buf_ptr) as
-                                               isize); /* strip off the (assumed) ".aux" for subsequent futzing */
+                    *ex_buf.offset(ex_buf_ptr as isize) = *entry_strs
+                        .offset((str_ent_ptr * (ent_str_size + 1i32) + ex_buf_ptr) as isize); /* strip off the (assumed) ".aux" for subsequent futzing */
                     ex_buf_ptr = ex_buf_ptr + 1i32
                 }
                 ex_buf_length = ex_buf_ptr;
@@ -8949,82 +11401,79 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
             }
         }
         7 => {
-            push_lit_stk(*ilk_info.offset(ex_fn_loc as isize),
-                         0i32 as stk_type);
+            push_lit_stk(*ilk_info.offset(ex_fn_loc as isize), 0i32 as stk_type);
         }
         8 => {
             str_glb_ptr = *ilk_info.offset(ex_fn_loc as isize);
             if *glb_str_ptr.offset(str_glb_ptr as isize) > 0i32 {
-                push_lit_stk(*glb_str_ptr.offset(str_glb_ptr as isize),
-                             1i32 as stk_type);
+                push_lit_stk(*glb_str_ptr.offset(str_glb_ptr as isize), 1i32 as stk_type);
             } else {
-                while pool_ptr + *glb_str_end.offset(str_glb_ptr as isize) >
-                          pool_size {
+                while pool_ptr + *glb_str_end.offset(str_glb_ptr as isize) > pool_size {
                     pool_overflow();
                 }
                 glob_chr_ptr = 0i32;
-                while glob_chr_ptr < *glb_str_end.offset(str_glb_ptr as isize)
-                      {
-                    *str_pool.offset(pool_ptr as isize) =
-                        *global_strs.offset((str_glb_ptr *
-                                                 (glob_str_size + 1i32) +
-                                                 glob_chr_ptr) as isize);
+                while glob_chr_ptr < *glb_str_end.offset(str_glb_ptr as isize) {
+                    *str_pool.offset(pool_ptr as isize) = *global_strs
+                        .offset((str_glb_ptr * (glob_str_size + 1i32) + glob_chr_ptr) as isize);
                     pool_ptr = pool_ptr + 1i32;
                     glob_chr_ptr = glob_chr_ptr + 1i32
                 }
                 push_lit_stk(make_string(), 1i32 as stk_type);
             }
         }
-        _ => { unknwn_function_class_confusion(); }
+        _ => {
+            unknwn_function_class_confusion();
+        }
     };
 }
-unsafe extern "C" fn get_the_top_level_aux_file_name(mut aux_file_name:
-                                                         *const libc::c_char)
- -> libc::c_int {
-    name_of_file =
-        xmalloc(strlen(aux_file_name).wrapping_add(1i32 as
-                                                       libc::c_ulong).wrapping_add(1i32
-                                                                                       as
-                                                                                       libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                                                                                       as
-                                                                                                                       libc::c_ulong))
-            as *mut ASCII_code;
+unsafe extern "C" fn get_the_top_level_aux_file_name(
+    mut aux_file_name: *const libc::c_char,
+) -> libc::c_int {
+    name_of_file = xmalloc(
+        strlen(aux_file_name)
+            .wrapping_add(1i32 as libc::c_ulong)
+            .wrapping_add(1i32 as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as *mut ASCII_code;
     strcpy(name_of_file as *mut libc::c_char, aux_file_name);
     aux_name_length = strlen(name_of_file as *mut libc::c_char) as int32_t;
     aux_name_length -= 4i32;
     name_length = aux_name_length;
     /* this code used to auto-add the .aux extension if needed; we don't */
     aux_ptr = 0i32; // preserve pascal-style string semantics
-    aux_file[aux_ptr as usize] =
-        peekable_open(name_of_file as *mut libc::c_char, TTIF_TEX);
+    aux_file[aux_ptr as usize] = peekable_open(name_of_file as *mut libc::c_char, TTIF_TEX);
     if aux_file[aux_ptr as usize].is_null() {
         sam_wrong_file_name_print();
-        return 1i32
+        return 1i32;
     }
     add_extension(s_log_extension);
     log_file = ttstub_output_open(name_of_file as *mut libc::c_char, 0i32);
-    if log_file.is_null() { sam_wrong_file_name_print(); return 1i32 }
+    if log_file.is_null() {
+        sam_wrong_file_name_print();
+        return 1i32;
+    }
     name_length = aux_name_length;
     add_extension(s_bbl_extension);
     bbl_file = ttstub_output_open(name_of_file as *mut libc::c_char, 0i32);
-    if bbl_file.is_null() { sam_wrong_file_name_print(); return 1i32 }
+    if bbl_file.is_null() {
+        sam_wrong_file_name_print();
+        return 1i32;
+    }
     name_length = aux_name_length;
     add_extension(s_aux_extension);
     name_ptr = 0i32;
     while name_ptr < name_length {
-        *buffer.offset((name_ptr + 1i32) as isize) =
-            *name_of_file.offset(name_ptr as isize);
+        *buffer.offset((name_ptr + 1i32) as isize) = *name_of_file.offset(name_ptr as isize);
         name_ptr = name_ptr + 1i32
     }
     top_lev_str =
-        *hash_text.offset(str_lookup(buffer, 1i32, aux_name_length,
-                                     0i32 as str_ilk, 1i32 != 0) as isize);
+        *hash_text
+            .offset(str_lookup(buffer, 1i32, aux_name_length, 0i32 as str_ilk, 1i32 != 0) as isize);
     aux_list[aux_ptr as usize] =
-        *hash_text.offset(str_lookup(buffer, 1i32, name_length,
-                                     3i32 as str_ilk, 1i32 != 0) as isize);
+        *hash_text
+            .offset(str_lookup(buffer, 1i32, name_length, 3i32 as str_ilk, 1i32 != 0) as isize);
     if hash_found {
-        puts_log(b"Already encountered auxiliary file\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"Already encountered auxiliary file\x00" as *const u8 as *const libc::c_char);
         print_confusion();
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
@@ -9035,7 +11484,7 @@ unsafe extern "C" fn aux_bib_data_command() {
     if bib_seen {
         aux_err_illegal_another_print(0i32);
         aux_err_print();
-        return
+        return;
     }
     bib_seen = 1i32 != 0;
     while *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
@@ -9044,120 +11493,118 @@ unsafe extern "C" fn aux_bib_data_command() {
         if !scan2_white(125i32 as ASCII_code, 44i32 as ASCII_code) {
             aux_err_no_right_brace_print();
             aux_err_print();
-            return
+            return;
         }
-        if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as
-               libc::c_int == 1i32 {
+        if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32 {
             /*white_space */
             aux_err_white_space_in_argument_print();
             aux_err_print();
-            return
+            return;
         }
-        if last > buf_ptr2 + 1i32 &&
-               *buffer.offset(buf_ptr2 as isize) as libc::c_int == 125i32 {
+        if last > buf_ptr2 + 1i32 && *buffer.offset(buf_ptr2 as isize) as libc::c_int == 125i32 {
             aux_err_stuff_after_right_brace_print();
             aux_err_print();
-            return
+            return;
         }
         if bib_ptr == max_bib_files {
-            bib_list =
-                xrealloc(bib_list as *mut libc::c_void,
-                         ((max_bib_files + 20i32 + 1i32) as
-                              libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                              as
-                                                              libc::c_ulong))
-                    as *mut str_number;
-            bib_file =
-                xrealloc(bib_file as *mut libc::c_void,
-                         ((max_bib_files + 20i32 + 1i32) as
-                              libc::c_ulong).wrapping_mul(::std::mem::size_of::<*mut peekable_input_t>()
-                                                              as
-                                                              libc::c_ulong))
-                    as *mut *mut peekable_input_t;
-            s_preamble =
-                xrealloc(s_preamble as *mut libc::c_void,
-                         ((max_bib_files + 20i32 + 1i32) as
-                              libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                              as
-                                                              libc::c_ulong))
-                    as *mut str_number;
+            bib_list = xrealloc(
+                bib_list as *mut libc::c_void,
+                ((max_bib_files + 20i32 + 1i32) as libc::c_ulong)
+                    .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+            ) as *mut str_number;
+            bib_file = xrealloc(
+                bib_file as *mut libc::c_void,
+                ((max_bib_files + 20i32 + 1i32) as libc::c_ulong)
+                    .wrapping_mul(::std::mem::size_of::<*mut peekable_input_t>() as libc::c_ulong),
+            ) as *mut *mut peekable_input_t;
+            s_preamble = xrealloc(
+                s_preamble as *mut libc::c_void,
+                ((max_bib_files + 20i32 + 1i32) as libc::c_ulong)
+                    .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+            ) as *mut str_number;
             max_bib_files = max_bib_files + 20i32
         }
-        *bib_list.offset(bib_ptr as isize) =
-            *hash_text.offset(str_lookup(buffer, buf_ptr1,
-                                         buf_ptr2 - buf_ptr1, 6i32 as str_ilk,
-                                         1i32 != 0) as isize);
+        *bib_list.offset(bib_ptr as isize) = *hash_text.offset(str_lookup(
+            buffer,
+            buf_ptr1,
+            buf_ptr2 - buf_ptr1,
+            6i32 as str_ilk,
+            1i32 != 0,
+        ) as isize);
         if hash_found {
-            puts_log(b"This database file appears more than once: \x00" as
-                         *const u8 as *const libc::c_char);
+            puts_log(
+                b"This database file appears more than once: \x00" as *const u8
+                    as *const libc::c_char,
+            );
             print_bib_name();
             aux_err_print();
-            return
+            return;
         }
         start_name(*bib_list.offset(bib_ptr as isize));
         let ref mut fresh9 = *bib_file.offset(bib_ptr as isize);
         *fresh9 = peekable_open(name_of_file as *mut libc::c_char, TTIF_BIB);
         if (*fresh9).is_null() {
-            puts_log(b"I couldn\'t open database file \x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"I couldn\'t open database file \x00" as *const u8 as *const libc::c_char);
             print_bib_name();
             aux_err_print();
-            return
+            return;
         }
         bib_ptr = bib_ptr + 1i32
-    };
+    }
 }
 unsafe extern "C" fn aux_bib_style_command() {
     if bst_seen {
         aux_err_illegal_another_print(1i32);
         aux_err_print();
-        return
+        return;
     }
     bst_seen = 1i32 != 0;
     buf_ptr2 = buf_ptr2 + 1i32;
     if !scan1_white(125i32 as ASCII_code) {
         aux_err_no_right_brace_print();
         aux_err_print();
-        return
+        return;
     }
-    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int ==
-           1i32 {
+    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32 {
         /*white_space */
         aux_err_white_space_in_argument_print();
         aux_err_print();
-        return
+        return;
     }
     if last > buf_ptr2 + 1i32 {
         aux_err_stuff_after_right_brace_print();
         aux_err_print();
-        return
+        return;
     }
-    bst_str =
-        *hash_text.offset(str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                                     5i32 as str_ilk, 1i32 != 0) as isize);
+    bst_str = *hash_text.offset(str_lookup(
+        buffer,
+        buf_ptr1,
+        buf_ptr2 - buf_ptr1,
+        5i32 as str_ilk,
+        1i32 != 0,
+    ) as isize);
     if hash_found {
-        puts_log(b"Already encountered style file\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"Already encountered style file\x00" as *const u8 as *const libc::c_char);
         print_confusion();
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
     start_name(bst_str);
     bst_file = peekable_open(name_of_file as *mut libc::c_char, TTIF_BST);
     if bst_file.is_null() {
-        puts_log(b"I couldn\'t open style file \x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"I couldn\'t open style file \x00" as *const u8 as *const libc::c_char);
         print_bst_name();
         bst_str = 0i32;
         aux_err_print();
-        return
+        return;
     }
     if verbose != 0 {
         puts_log(b"The style file: \x00" as *const u8 as *const libc::c_char);
         print_bst_name();
     } else {
-        ttstub_puts(log_file,
-                    b"The style file: \x00" as *const u8 as
-                        *const libc::c_char);
+        ttstub_puts(
+            log_file,
+            b"The style file: \x00" as *const u8 as *const libc::c_char,
+        );
         log_pr_bst_name();
     };
 }
@@ -9170,82 +11617,99 @@ unsafe extern "C" fn aux_citation_command() {
         if !scan2_white(125i32 as ASCII_code, 44i32 as ASCII_code) {
             aux_err_no_right_brace_print();
             aux_err_print();
-            return
+            return;
         }
-        if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as
-               libc::c_int == 1i32 {
+        if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32 {
             /*white_space */
             aux_err_white_space_in_argument_print();
             aux_err_print();
-            return
+            return;
         }
-        if last > buf_ptr2 + 1i32 &&
-               *buffer.offset(buf_ptr2 as isize) as libc::c_int == 125i32 {
+        if last > buf_ptr2 + 1i32 && *buffer.offset(buf_ptr2 as isize) as libc::c_int == 125i32 {
             aux_err_stuff_after_right_brace_print();
             aux_err_print();
-            return
+            return;
         }
         if buf_ptr2 - buf_ptr1 == 1i32 {
             if *buffer.offset(buf_ptr1 as isize) as libc::c_int == 42i32 {
                 /*star */
                 if all_entries {
-                    puts_log(b"Multiple inclusions of entire database\n\x00"
-                                 as *const u8 as
-                                 *const libc::c_char); /*137: */
+                    puts_log(
+                        b"Multiple inclusions of entire database\n\x00" as *const u8
+                            as *const libc::c_char,
+                    ); /*137: */
                     aux_err_print();
-                    return
-                } else { all_entries = 1i32 != 0; all_marker = cite_ptr }
+                    return;
+                } else {
+                    all_entries = 1i32 != 0;
+                    all_marker = cite_ptr
+                }
                 current_block_56 = 10930818133215224067;
-            } else { current_block_56 = 15925075030174552612; }
-        } else { current_block_56 = 15925075030174552612; }
+            } else {
+                current_block_56 = 15925075030174552612;
+            }
+        } else {
+            current_block_56 = 15925075030174552612;
+        }
         match current_block_56 {
             15925075030174552612 => {
                 tmp_ptr = buf_ptr1;
                 while tmp_ptr < buf_ptr2 {
-                    *ex_buf.offset(tmp_ptr as isize) =
-                        *buffer.offset(tmp_ptr as isize);
+                    *ex_buf.offset(tmp_ptr as isize) = *buffer.offset(tmp_ptr as isize);
                     tmp_ptr = tmp_ptr + 1i32
                 }
                 lower_case(ex_buf, buf_ptr1, buf_ptr2 - buf_ptr1);
-                lc_cite_loc =
-                    str_lookup(ex_buf, buf_ptr1, buf_ptr2 - buf_ptr1,
-                               10i32 as str_ilk, 1i32 != 0);
+                lc_cite_loc = str_lookup(
+                    ex_buf,
+                    buf_ptr1,
+                    buf_ptr2 - buf_ptr1,
+                    10i32 as str_ilk,
+                    1i32 != 0,
+                );
                 if hash_found {
-                    dummy_loc =
-                        str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                                   9i32 as str_ilk, 0i32 != 0);
+                    dummy_loc = str_lookup(
+                        buffer,
+                        buf_ptr1,
+                        buf_ptr2 - buf_ptr1,
+                        9i32 as str_ilk,
+                        0i32 != 0,
+                    );
                     if !hash_found {
-                        puts_log(b"Case mismatch error between cite keys \x00"
-                                     as *const u8 as *const libc::c_char);
+                        puts_log(
+                            b"Case mismatch error between cite keys \x00" as *const u8
+                                as *const libc::c_char,
+                        );
                         print_a_token();
-                        puts_log(b" and \x00" as *const u8 as
-                                     *const libc::c_char);
-                        print_a_pool_str(*cite_list.offset(*ilk_info.offset(*ilk_info.offset(lc_cite_loc
-                                                                                                 as
-                                                                                                 isize)
-                                                                                as
-                                                                                isize)
-                                                               as isize));
+                        puts_log(b" and \x00" as *const u8 as *const libc::c_char);
+                        print_a_pool_str(*cite_list.offset(
+                            *ilk_info.offset(*ilk_info.offset(lc_cite_loc as isize) as isize)
+                                as isize,
+                        ));
                         putc_log('\n' as i32);
                         aux_err_print();
-                        return
+                        return;
                     }
                 } else {
-                    cite_loc =
-                        str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                                   9i32 as str_ilk, 1i32 != 0);
-                    if hash_found { hash_cite_confusion(); }
+                    cite_loc = str_lookup(
+                        buffer,
+                        buf_ptr1,
+                        buf_ptr2 - buf_ptr1,
+                        9i32 as str_ilk,
+                        1i32 != 0,
+                    );
+                    if hash_found {
+                        hash_cite_confusion();
+                    }
                     check_cite_overflow(cite_ptr);
-                    *cite_list.offset(cite_ptr as isize) =
-                        *hash_text.offset(cite_loc as isize);
+                    *cite_list.offset(cite_ptr as isize) = *hash_text.offset(cite_loc as isize);
                     *ilk_info.offset(cite_loc as isize) = cite_ptr;
                     *ilk_info.offset(lc_cite_loc as isize) = cite_loc;
                     cite_ptr = cite_ptr + 1i32
                 }
             }
-            _ => { }
+            _ => {}
         }
-    };
+    }
 }
 unsafe extern "C" fn aux_input_command() {
     let mut aux_extension_ok: bool = false;
@@ -9253,103 +11717,123 @@ unsafe extern "C" fn aux_input_command() {
     if !scan1_white(125i32 as ASCII_code) {
         aux_err_no_right_brace_print();
         aux_err_print();
-        return
+        return;
     }
-    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int ==
-           1i32 {
+    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32 {
         /*white_space */
         aux_err_white_space_in_argument_print();
         aux_err_print();
-        return
+        return;
     }
     if last > buf_ptr2 + 1i32 {
         aux_err_stuff_after_right_brace_print();
         aux_err_print();
-        return
+        return;
     }
     aux_ptr = aux_ptr + 1i32;
     if aux_ptr == 20i32 {
         print_a_token();
         puts_log(b": \x00" as *const u8 as *const libc::c_char);
         print_overflow();
-        printf_log(b"auxiliary file depth %ld\n\x00" as *const u8 as
-                       *const libc::c_char, 20i32 as libc::c_long);
+        printf_log(
+            b"auxiliary file depth %ld\n\x00" as *const u8 as *const libc::c_char,
+            20i32 as libc::c_long,
+        );
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
     aux_extension_ok = 1i32 != 0;
-    if buf_ptr2 - buf_ptr1 <
-           *str_start.offset((s_aux_extension + 1i32) as isize) -
-               *str_start.offset(s_aux_extension as isize) {
+    if buf_ptr2 - buf_ptr1
+        < *str_start.offset((s_aux_extension + 1i32) as isize)
+            - *str_start.offset(s_aux_extension as isize)
+    {
         aux_extension_ok = 0i32 != 0
-    } else if !str_eq_buf(s_aux_extension, buffer,
-                          buf_ptr2 -
-                              (*str_start.offset((s_aux_extension + 1i32) as
-                                                     isize) -
-                                   *str_start.offset(s_aux_extension as
-                                                         isize)),
-                          *str_start.offset((s_aux_extension + 1i32) as isize)
-                              - *str_start.offset(s_aux_extension as isize)) {
+    } else if !str_eq_buf(
+        s_aux_extension,
+        buffer,
+        buf_ptr2
+            - (*str_start.offset((s_aux_extension + 1i32) as isize)
+                - *str_start.offset(s_aux_extension as isize)),
+        *str_start.offset((s_aux_extension + 1i32) as isize)
+            - *str_start.offset(s_aux_extension as isize),
+    ) {
         aux_extension_ok = 0i32 != 0
     }
     if !aux_extension_ok {
         print_a_token();
-        puts_log(b" has a wrong extension\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b" has a wrong extension\x00" as *const u8 as *const libc::c_char);
         aux_ptr = aux_ptr - 1i32;
         aux_err_print();
-        return
+        return;
     }
-    aux_list[aux_ptr as usize] =
-        *hash_text.offset(str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                                     3i32 as str_ilk, 1i32 != 0) as isize);
+    aux_list[aux_ptr as usize] = *hash_text.offset(str_lookup(
+        buffer,
+        buf_ptr1,
+        buf_ptr2 - buf_ptr1,
+        3i32 as str_ilk,
+        1i32 != 0,
+    ) as isize);
     if hash_found {
-        puts_log(b"Already encountered file \x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"Already encountered file \x00" as *const u8 as *const libc::c_char);
         print_aux_name();
         aux_ptr = aux_ptr - 1i32;
         aux_err_print();
-        return
+        return;
     }
     start_name(aux_list[aux_ptr as usize]);
     name_ptr = name_length;
     *name_of_file.offset(name_ptr as isize) = 0i32 as ASCII_code;
-    aux_file[aux_ptr as usize] =
-        peekable_open(name_of_file as *mut libc::c_char, TTIF_TEX);
+    aux_file[aux_ptr as usize] = peekable_open(name_of_file as *mut libc::c_char, TTIF_TEX);
     if aux_file[aux_ptr as usize].is_null() {
-        puts_log(b"I couldn\'t open auxiliary file \x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"I couldn\'t open auxiliary file \x00" as *const u8 as *const libc::c_char);
         print_aux_name();
         aux_ptr = aux_ptr - 1i32;
         aux_err_print();
-        return
+        return;
     }
-    printf_log(b"A level-%ld auxiliary file: \x00" as *const u8 as
-                   *const libc::c_char, aux_ptr as libc::c_long);
+    printf_log(
+        b"A level-%ld auxiliary file: \x00" as *const u8 as *const libc::c_char,
+        aux_ptr as libc::c_long,
+    );
     print_aux_name();
     aux_ln_stack[aux_ptr as usize] = 0i32;
 }
 unsafe extern "C" fn pop_the_aux_stack() -> libc::c_int {
     peekable_close(aux_file[aux_ptr as usize]);
     aux_file[aux_ptr as usize] = 0 as *mut peekable_input_t;
-    if aux_ptr == 0i32 { return 1i32 }
+    if aux_ptr == 0i32 {
+        return 1i32;
+    }
     aux_ptr -= 1;
     return 0i32;
 }
 unsafe extern "C" fn get_aux_command_and_process() {
     buf_ptr2 = 0i32;
-    if !scan1(123i32 as ASCII_code) { return }
-    command_num =
-        *ilk_info.offset(str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                                    2i32 as str_ilk, 0i32 != 0) as isize);
+    if !scan1(123i32 as ASCII_code) {
+        return;
+    }
+    command_num = *ilk_info.offset(str_lookup(
+        buffer,
+        buf_ptr1,
+        buf_ptr2 - buf_ptr1,
+        2i32 as str_ilk,
+        0i32 != 0,
+    ) as isize);
     if hash_found {
         match command_num {
-            0 => { aux_bib_data_command(); }
-            1 => { aux_bib_style_command(); }
-            2 => { aux_citation_command(); }
-            3 => { aux_input_command(); }
+            0 => {
+                aux_bib_data_command();
+            }
+            1 => {
+                aux_bib_style_command();
+            }
+            2 => {
+                aux_citation_command();
+            }
+            3 => {
+                aux_input_command();
+            }
             _ => {
-                puts_log(b"Unknown auxiliary-file command\x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b"Unknown auxiliary-file command\x00" as *const u8 as *const libc::c_char);
                 print_confusion();
                 longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
             }
@@ -9361,8 +11845,7 @@ unsafe extern "C" fn last_check_for_aux_errors() {
     num_bib_files = bib_ptr;
     if !citation_seen {
         aux_end1_err_print();
-        puts_log(b"\\citation commands\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"\\citation commands\x00" as *const u8 as *const libc::c_char);
         aux_end2_err_print();
     } else if num_cites == 0i32 && !all_entries {
         aux_end1_err_print();
@@ -9371,8 +11854,7 @@ unsafe extern "C" fn last_check_for_aux_errors() {
     }
     if !bib_seen {
         aux_end1_err_print();
-        puts_log(b"\\bibdata command\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"\\bibdata command\x00" as *const u8 as *const libc::c_char);
         aux_end2_err_print();
     } else if num_bib_files == 0i32 {
         aux_end1_err_print();
@@ -9381,8 +11863,7 @@ unsafe extern "C" fn last_check_for_aux_errors() {
     }
     if !bst_seen {
         aux_end1_err_print();
-        puts_log(b"\\bibstyle command\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"\\bibstyle command\x00" as *const u8 as *const libc::c_char);
         aux_end2_err_print();
     } else if bst_str == 0i32 {
         aux_end1_err_print();
@@ -9392,49 +11873,57 @@ unsafe extern "C" fn last_check_for_aux_errors() {
 }
 unsafe extern "C" fn bst_entry_command() {
     if entry_seen {
-        puts_log(b"Illegal, another entry command\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"Illegal, another entry command\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     entry_seen = 1i32 != 0;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     while *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
         /*right_brace */
-        scan_identifier(125i32 as ASCII_code, 37i32 as ASCII_code,
-                        37i32 as ASCII_code); /*field */
-        if scan_result as libc::c_int == 3i32 ||
-               scan_result as libc::c_int == 1i32 {
+        scan_identifier(
+            125i32 as ASCII_code,
+            37i32 as ASCII_code,
+            37i32 as ASCII_code,
+        ); /*field */
+        if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
         } else {
             bst_id_print();
             puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
             bst_err_print_and_look_for_blank_line();
-            return
+            return;
         }
         lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-        fn_loc =
-            str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                       11i32 as str_ilk, 1i32 != 0);
-        if hash_found { already_seen_function_print(fn_loc); return }
+        fn_loc = str_lookup(
+            buffer,
+            buf_ptr1,
+            buf_ptr2 - buf_ptr1,
+            11i32 as str_ilk,
+            1i32 != 0,
+        );
+        if hash_found {
+            already_seen_function_print(fn_loc);
+            return;
+        }
         *fn_type.offset(fn_loc as isize) = 4i32 as fn_class;
         *ilk_info.offset(fn_loc as isize) = num_fields;
         num_fields = num_fields + 1i32;
@@ -9442,7 +11931,7 @@ unsafe extern "C" fn bst_entry_command() {
             eat_bst_print();
             puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
             bst_err_print_and_look_for_blank_line();
-            return
+            return;
         }
     }
     buf_ptr2 = buf_ptr2 + 1i32;
@@ -9450,11 +11939,10 @@ unsafe extern "C" fn bst_entry_command() {
         eat_bst_print();
         puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if num_fields == num_pre_defined_fields {
-        puts_log(b"Warning--I didn\'t find any fields\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"Warning--I didn\'t find any fields\x00" as *const u8 as *const libc::c_char);
         bst_warn_print();
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
@@ -9462,32 +11950,41 @@ unsafe extern "C" fn bst_entry_command() {
         bst_left_brace_print();
         puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     while *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
         /*right_brace */
-        scan_identifier(125i32 as ASCII_code, 37i32 as ASCII_code,
-                        37i32 as ASCII_code); /*int_entry_var */
-        if scan_result as libc::c_int == 3i32 ||
-               scan_result as libc::c_int == 1i32 {
+        scan_identifier(
+            125i32 as ASCII_code,
+            37i32 as ASCII_code,
+            37i32 as ASCII_code,
+        ); /*int_entry_var */
+        if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
         } else {
             bst_id_print();
             puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
             bst_err_print_and_look_for_blank_line();
-            return
+            return;
         }
         lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-        fn_loc =
-            str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                       11i32 as str_ilk, 1i32 != 0);
-        if hash_found { already_seen_function_print(fn_loc); return }
+        fn_loc = str_lookup(
+            buffer,
+            buf_ptr1,
+            buf_ptr2 - buf_ptr1,
+            11i32 as str_ilk,
+            1i32 != 0,
+        );
+        if hash_found {
+            already_seen_function_print(fn_loc);
+            return;
+        }
         *fn_type.offset(fn_loc as isize) = 5i32 as fn_class;
         *ilk_info.offset(fn_loc as isize) = num_ent_ints;
         num_ent_ints = num_ent_ints + 1i32;
@@ -9495,7 +11992,7 @@ unsafe extern "C" fn bst_entry_command() {
             eat_bst_print();
             puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
             bst_err_print_and_look_for_blank_line();
-            return
+            return;
         }
     }
     buf_ptr2 = buf_ptr2 + 1i32;
@@ -9503,39 +12000,48 @@ unsafe extern "C" fn bst_entry_command() {
         eat_bst_print();
         puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     while *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
         /*right_brace */
-        scan_identifier(125i32 as ASCII_code, 37i32 as ASCII_code,
-                        37i32 as ASCII_code); /*str_entry_var */
-        if scan_result as libc::c_int == 3i32 ||
-               scan_result as libc::c_int == 1i32 {
+        scan_identifier(
+            125i32 as ASCII_code,
+            37i32 as ASCII_code,
+            37i32 as ASCII_code,
+        ); /*str_entry_var */
+        if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
         } else {
             bst_id_print();
             puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
             bst_err_print_and_look_for_blank_line();
-            return
+            return;
         }
         lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-        fn_loc =
-            str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                       11i32 as str_ilk, 1i32 != 0);
-        if hash_found { already_seen_function_print(fn_loc); return }
+        fn_loc = str_lookup(
+            buffer,
+            buf_ptr1,
+            buf_ptr2 - buf_ptr1,
+            11i32 as str_ilk,
+            1i32 != 0,
+        );
+        if hash_found {
+            already_seen_function_print(fn_loc);
+            return;
+        }
         *fn_type.offset(fn_loc as isize) = 6i32 as fn_class;
         *ilk_info.offset(fn_loc as isize) = num_ent_strs;
         num_ent_strs = num_ent_strs + 1i32;
@@ -9543,85 +12049,93 @@ unsafe extern "C" fn bst_entry_command() {
             eat_bst_print();
             puts_log(b"entry\x00" as *const u8 as *const libc::c_char);
             bst_err_print_and_look_for_blank_line();
-            return
+            return;
         }
     }
     buf_ptr2 = buf_ptr2 + 1i32;
 }
 unsafe extern "C" fn bad_argument_token() -> bool {
     lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-    fn_loc =
-        str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1, 11i32 as str_ilk,
-                   0i32 != 0);
+    fn_loc = str_lookup(
+        buffer,
+        buf_ptr1,
+        buf_ptr2 - buf_ptr1,
+        11i32 as str_ilk,
+        0i32 != 0,
+    );
     if !hash_found {
         print_a_token();
-        puts_log(b" is an unknown function\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b" is an unknown function\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return 1i32 != 0
+        return 1i32 != 0;
     } else {
-        if *fn_type.offset(fn_loc as isize) as libc::c_int != 0i32 &&
-               *fn_type.offset(fn_loc as isize) as libc::c_int != 1i32 {
+        if *fn_type.offset(fn_loc as isize) as libc::c_int != 0i32
+            && *fn_type.offset(fn_loc as isize) as libc::c_int != 1i32
+        {
             print_a_token();
-            puts_log(b" has bad function type \x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b" has bad function type \x00" as *const u8 as *const libc::c_char);
             print_fn_class(fn_loc);
             bst_err_print_and_look_for_blank_line();
-            return 1i32 != 0
+            return 1i32 != 0;
         }
     }
     return 0i32 != 0;
 }
 unsafe extern "C" fn bst_execute_command() {
     if !read_seen {
-        puts_log(b"Illegal, execute command before read command\x00" as
-                     *const u8 as *const libc::c_char);
+        puts_log(
+            b"Illegal, execute command before read command\x00" as *const u8 as *const libc::c_char,
+        );
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"execute\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"execute\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"execute\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
-    scan_identifier(125i32 as ASCII_code, 37i32 as ASCII_code,
-                    37i32 as ASCII_code);
-    if scan_result as libc::c_int == 3i32 ||
-           scan_result as libc::c_int == 1i32 {
+    scan_identifier(
+        125i32 as ASCII_code,
+        37i32 as ASCII_code,
+        37i32 as ASCII_code,
+    );
+    if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
     } else {
         bst_id_print();
         puts_log(b"execute\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
-    if bad_argument_token() { return }
+    if bad_argument_token() {
+        return;
+    }
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"execute\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
         /*right_brace */
         bst_right_brace_print();
         puts_log(b"execute\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     init_command_execution();
@@ -9634,37 +12148,46 @@ unsafe extern "C" fn bst_function_command() {
         eat_bst_print();
         puts_log(b"function\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
         /*left_brace */
         bst_left_brace_print(); /*wiz_defined */
         puts_log(b"function\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"function\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
-    scan_identifier(125i32 as ASCII_code, 37i32 as ASCII_code,
-                    37i32 as ASCII_code);
-    if scan_result as libc::c_int == 3i32 ||
-           scan_result as libc::c_int == 1i32 {
+    scan_identifier(
+        125i32 as ASCII_code,
+        37i32 as ASCII_code,
+        37i32 as ASCII_code,
+    );
+    if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
     } else {
         bst_id_print();
         puts_log(b"function\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-    wiz_loc =
-        str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1, 11i32 as str_ilk,
-                   1i32 != 0);
-    if hash_found { already_seen_function_print(wiz_loc); return }
+    wiz_loc = str_lookup(
+        buffer,
+        buf_ptr1,
+        buf_ptr2 - buf_ptr1,
+        11i32 as str_ilk,
+        1i32 != 0,
+    );
+    if hash_found {
+        already_seen_function_print(wiz_loc);
+        return;
+    }
     *fn_type.offset(wiz_loc as isize) = 1i32 as fn_class;
     if *hash_text.offset(wiz_loc as isize) == s_default {
         b_default = wiz_loc
@@ -9673,28 +12196,28 @@ unsafe extern "C" fn bst_function_command() {
         eat_bst_print();
         puts_log(b"function\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
         /*right_brace */
         bst_right_brace_print();
         puts_log(b"function\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"function\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"function\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     scan_fn_def(wiz_loc);
@@ -9704,100 +12227,114 @@ unsafe extern "C" fn bst_integers_command() {
         eat_bst_print();
         puts_log(b"integers\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"integers\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"integers\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     while *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
         /*right_brace */
-        scan_identifier(125i32 as ASCII_code, 37i32 as ASCII_code,
-                        37i32 as ASCII_code); /*int_global_var */
-        if scan_result as libc::c_int == 3i32 ||
-               scan_result as libc::c_int == 1i32 {
+        scan_identifier(
+            125i32 as ASCII_code,
+            37i32 as ASCII_code,
+            37i32 as ASCII_code,
+        ); /*int_global_var */
+        if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
         } else {
             bst_id_print();
             puts_log(b"integers\x00" as *const u8 as *const libc::c_char);
             bst_err_print_and_look_for_blank_line();
-            return
+            return;
         }
         lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-        fn_loc =
-            str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                       11i32 as str_ilk, 1i32 != 0);
-        if hash_found { already_seen_function_print(fn_loc); return }
+        fn_loc = str_lookup(
+            buffer,
+            buf_ptr1,
+            buf_ptr2 - buf_ptr1,
+            11i32 as str_ilk,
+            1i32 != 0,
+        );
+        if hash_found {
+            already_seen_function_print(fn_loc);
+            return;
+        }
         *fn_type.offset(fn_loc as isize) = 7i32 as fn_class;
         *ilk_info.offset(fn_loc as isize) = 0i32;
         if !eat_bst_white_space() {
             eat_bst_print();
             puts_log(b"integers\x00" as *const u8 as *const libc::c_char);
             bst_err_print_and_look_for_blank_line();
-            return
+            return;
         }
     }
     buf_ptr2 = buf_ptr2 + 1i32;
 }
 unsafe extern "C" fn bst_iterate_command() {
     if !read_seen {
-        puts_log(b"Illegal, iterate command before read command\x00" as
-                     *const u8 as *const libc::c_char);
+        puts_log(
+            b"Illegal, iterate command before read command\x00" as *const u8 as *const libc::c_char,
+        );
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"iterate\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"iterate\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"iterate\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
-    scan_identifier(125i32 as ASCII_code, 37i32 as ASCII_code,
-                    37i32 as ASCII_code);
-    if scan_result as libc::c_int == 3i32 ||
-           scan_result as libc::c_int == 1i32 {
+    scan_identifier(
+        125i32 as ASCII_code,
+        37i32 as ASCII_code,
+        37i32 as ASCII_code,
+    );
+    if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
     } else {
         bst_id_print();
         puts_log(b"iterate\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
-    if bad_argument_token() { return }
+    if bad_argument_token() {
+        return;
+    }
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"iterate\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
         /*right_brace */
         bst_right_brace_print();
         puts_log(b"iterate\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     init_command_execution();
@@ -9808,125 +12345,135 @@ unsafe extern "C" fn bst_iterate_command() {
         execute_fn(fn_loc);
         check_command_execution();
         sort_cite_ptr = sort_cite_ptr + 1i32
-    };
+    }
 }
 unsafe extern "C" fn bst_macro_command() {
     if read_seen {
-        puts_log(b"Illegal, macro command after read command\x00" as *const u8
-                     as *const libc::c_char);
+        puts_log(
+            b"Illegal, macro command after read command\x00" as *const u8 as *const libc::c_char,
+        );
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"macro\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"macro\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"macro\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
-    scan_identifier(125i32 as ASCII_code, 37i32 as ASCII_code,
-                    37i32 as ASCII_code);
-    if scan_result as libc::c_int == 3i32 ||
-           scan_result as libc::c_int == 1i32 {
+    scan_identifier(
+        125i32 as ASCII_code,
+        37i32 as ASCII_code,
+        37i32 as ASCII_code,
+    );
+    if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
     } else {
         bst_id_print();
         puts_log(b"macro\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-    macro_name_loc =
-        str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1, 13i32 as str_ilk,
-                   1i32 != 0);
+    macro_name_loc = str_lookup(
+        buffer,
+        buf_ptr1,
+        buf_ptr2 - buf_ptr1,
+        13i32 as str_ilk,
+        1i32 != 0,
+    );
     if hash_found {
         print_a_token();
-        puts_log(b" is already defined as a macro\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b" is already defined as a macro\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
-    *ilk_info.offset(macro_name_loc as isize) =
-        *hash_text.offset(macro_name_loc as isize);
+    *ilk_info.offset(macro_name_loc as isize) = *hash_text.offset(macro_name_loc as isize);
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"macro\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
         /*right_brace */
         bst_right_brace_print();
         puts_log(b"macro\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"macro\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"macro\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"macro\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 34i32 {
         /*double_quote */
-        puts_log(b"A macro definition must be \"-delimited\x00" as *const u8
-                     as *const libc::c_char); /*str_literal */
+        puts_log(
+            b"A macro definition must be \"-delimited\x00" as *const u8 as *const libc::c_char,
+        ); /*str_literal */
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !scan1(34i32 as ASCII_code) {
-        puts_log(b"There\'s no `\"\' to end macro definition\x00" as *const u8
-                     as *const libc::c_char);
+        puts_log(
+            b"There\'s no `\"\' to end macro definition\x00" as *const u8 as *const libc::c_char,
+        );
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
-    macro_def_loc =
-        str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1, 0i32 as str_ilk,
-                   1i32 != 0);
+    macro_def_loc = str_lookup(
+        buffer,
+        buf_ptr1,
+        buf_ptr2 - buf_ptr1,
+        0i32 as str_ilk,
+        1i32 != 0,
+    );
     *fn_type.offset(macro_def_loc as isize) = 3i32 as fn_class;
-    *ilk_info.offset(macro_name_loc as isize) =
-        *hash_text.offset(macro_def_loc as isize);
+    *ilk_info.offset(macro_name_loc as isize) = *hash_text.offset(macro_def_loc as isize);
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"macro\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
         /*right_brace */
         bst_right_brace_print();
         puts_log(b"macro\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
 }
@@ -9934,180 +12481,224 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
     let mut current_block: u64;
     at_bib_command = 0i32 != 0;
     while !scan1(64i32 as ASCII_code) {
-        if !input_ln(*bib_file.offset(bib_ptr as isize)) { return }
+        if !input_ln(*bib_file.offset(bib_ptr as isize)) {
+            return;
+        }
         bib_line_num = bib_line_num + 1i32;
         buf_ptr2 = 0i32
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 64i32 {
         /*at_sign */
-        puts_log(b"An \"@\" disappeared\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"An \"@\" disappeared\x00" as *const u8 as *const libc::c_char);
         print_confusion();
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
     buf_ptr2 = buf_ptr2 + 1i32;
-    if !eat_bib_white_space() { eat_bib_print(); return }
-    scan_identifier(123i32 as ASCII_code, 40i32 as ASCII_code,
-                    40i32 as ASCII_code);
-    if scan_result as libc::c_int == 3i32 ||
-           scan_result as libc::c_int == 1i32 {
+    if !eat_bib_white_space() {
+        eat_bib_print();
+        return;
+    }
+    scan_identifier(
+        123i32 as ASCII_code,
+        40i32 as ASCII_code,
+        40i32 as ASCII_code,
+    );
+    if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
     } else {
         bib_id_print();
         puts_log(b"an entry type\x00" as *const u8 as *const libc::c_char);
         bib_err_print();
-        return
+        return;
     }
     lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-    command_num =
-        *ilk_info.offset(str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                                    12i32 as str_ilk, 0i32 != 0) as isize);
+    command_num = *ilk_info.offset(str_lookup(
+        buffer,
+        buf_ptr1,
+        buf_ptr2 - buf_ptr1,
+        12i32 as str_ilk,
+        0i32 != 0,
+    ) as isize);
     if hash_found {
         /*240: */
         at_bib_command = 1i32 != 0;
         match command_num {
-            0 => { return }
+            0 => return,
             1 => {
                 if preamble_ptr == max_bib_files {
-                    bib_list =
-                        xrealloc(bib_list as *mut libc::c_void,
-                                 ((max_bib_files + 20i32 + 1i32) as
-                                      libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                                      as
-                                                                      libc::c_ulong))
-                            as *mut str_number;
-                    bib_file =
-                        xrealloc(bib_file as *mut libc::c_void,
-                                 ((max_bib_files + 20i32 + 1i32) as
-                                      libc::c_ulong).wrapping_mul(::std::mem::size_of::<*mut peekable_input_t>()
-                                                                      as
-                                                                      libc::c_ulong))
-                            as *mut *mut peekable_input_t;
-                    s_preamble =
-                        xrealloc(s_preamble as *mut libc::c_void,
-                                 ((max_bib_files + 20i32 + 1i32) as
-                                      libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                                      as
-                                                                      libc::c_ulong))
-                            as *mut str_number;
+                    bib_list = xrealloc(
+                        bib_list as *mut libc::c_void,
+                        ((max_bib_files + 20i32 + 1i32) as libc::c_ulong)
+                            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+                    ) as *mut str_number;
+                    bib_file = xrealloc(
+                        bib_file as *mut libc::c_void,
+                        ((max_bib_files + 20i32 + 1i32) as libc::c_ulong).wrapping_mul(
+                            ::std::mem::size_of::<*mut peekable_input_t>() as libc::c_ulong,
+                        ),
+                    ) as *mut *mut peekable_input_t;
+                    s_preamble = xrealloc(
+                        s_preamble as *mut libc::c_void,
+                        ((max_bib_files + 20i32 + 1i32) as libc::c_ulong)
+                            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+                    ) as *mut str_number;
                     max_bib_files = max_bib_files + 20i32
                 }
-                if !eat_bib_white_space() { eat_bib_print(); return }
-                if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 123i32
-                   {
+                if !eat_bib_white_space() {
+                    eat_bib_print();
+                    return;
+                }
+                if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 123i32 {
                     /*left_brace */
                     right_outer_delim = 125i32 as ASCII_code
-                } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int ==
-                              40i32 { /*right_brace */
+                } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 40i32 {
+                    /*right_brace */
                     /*left_paren */
                     right_outer_delim = 41i32 as ASCII_code
                 } else {
-                    bib_one_of_two_print(123i32 as ASCII_code,
-                                         40i32 as
-                                             ASCII_code); /*right_paren */
-                    return
+                    bib_one_of_two_print(123i32 as ASCII_code, 40i32 as ASCII_code); /*right_paren */
+                    return;
                 }
                 buf_ptr2 = buf_ptr2 + 1i32;
-                if !eat_bib_white_space() { eat_bib_print(); return }
+                if !eat_bib_white_space() {
+                    eat_bib_print();
+                    return;
+                }
                 store_field = 1i32 != 0;
-                if !scan_and_store_the_field_value_and_eat_white() { return }
-                if *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-                       right_outer_delim as libc::c_int {
-                    printf_log(b"Missing \"%c\" in preamble command\x00" as
-                                   *const u8 as *const libc::c_char,
-                               right_outer_delim as libc::c_int);
+                if !scan_and_store_the_field_value_and_eat_white() {
+                    return;
+                }
+                if *buffer.offset(buf_ptr2 as isize) as libc::c_int
+                    != right_outer_delim as libc::c_int
+                {
+                    printf_log(
+                        b"Missing \"%c\" in preamble command\x00" as *const u8
+                            as *const libc::c_char,
+                        right_outer_delim as libc::c_int,
+                    );
                     bib_err_print();
-                    return
+                    return;
                 }
                 buf_ptr2 = buf_ptr2 + 1i32;
-                return
+                return;
             }
             2 => {
-                if !eat_bib_white_space() { eat_bib_print(); return }
-                if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 123i32
-                   {
+                if !eat_bib_white_space() {
+                    eat_bib_print();
+                    return;
+                }
+                if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 123i32 {
                     /*left_brace */
                     right_outer_delim = 125i32 as ASCII_code
-                } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int ==
-                              40i32 { /*right_brace */
+                } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 40i32 {
+                    /*right_brace */
                     /*left_paren */
                     right_outer_delim = 41i32 as ASCII_code
                 } else {
-                    bib_one_of_two_print(123i32 as ASCII_code,
-                                         40i32 as
-                                             ASCII_code); /*right_paren */
-                    return
+                    bib_one_of_two_print(123i32 as ASCII_code, 40i32 as ASCII_code); /*right_paren */
+                    return;
                 }
                 buf_ptr2 = buf_ptr2 + 1i32;
-                if !eat_bib_white_space() { eat_bib_print(); return }
-                scan_identifier(61i32 as ASCII_code, 61i32 as ASCII_code,
-                                61i32 as ASCII_code);
-                if scan_result as libc::c_int == 3i32 ||
-                       scan_result as libc::c_int == 1i32 {
+                if !eat_bib_white_space() {
+                    eat_bib_print();
+                    return;
+                }
+                scan_identifier(
+                    61i32 as ASCII_code,
+                    61i32 as ASCII_code,
+                    61i32 as ASCII_code,
+                );
+                if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
                 } else {
                     bib_id_print();
-                    puts_log(b"a string name\x00" as *const u8 as
-                                 *const libc::c_char);
+                    puts_log(b"a string name\x00" as *const u8 as *const libc::c_char);
                     bib_err_print();
-                    return
+                    return;
                 }
                 lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-                cur_macro_loc =
-                    str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                               13i32 as str_ilk, 1i32 != 0);
+                cur_macro_loc = str_lookup(
+                    buffer,
+                    buf_ptr1,
+                    buf_ptr2 - buf_ptr1,
+                    13i32 as str_ilk,
+                    1i32 != 0,
+                );
                 *ilk_info.offset(cur_macro_loc as isize) =
                     *hash_text.offset(cur_macro_loc as isize);
-                if !eat_bib_white_space() { eat_bib_print(); return }
+                if !eat_bib_white_space() {
+                    eat_bib_print();
+                    return;
+                }
                 if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 61i32 {
                     /*equals_sign */
                     bib_equals_sign_print();
-                    return
+                    return;
                 }
                 buf_ptr2 = buf_ptr2 + 1i32;
-                if !eat_bib_white_space() { eat_bib_print(); return }
+                if !eat_bib_white_space() {
+                    eat_bib_print();
+                    return;
+                }
                 store_field = 1i32 != 0;
-                if !scan_and_store_the_field_value_and_eat_white() { return }
-                if *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-                       right_outer_delim as libc::c_int {
-                    printf_log(b"Missing \"%c\" in string command\x00" as
-                                   *const u8 as *const libc::c_char,
-                               right_outer_delim as libc::c_int);
+                if !scan_and_store_the_field_value_and_eat_white() {
+                    return;
+                }
+                if *buffer.offset(buf_ptr2 as isize) as libc::c_int
+                    != right_outer_delim as libc::c_int
+                {
+                    printf_log(
+                        b"Missing \"%c\" in string command\x00" as *const u8 as *const libc::c_char,
+                        right_outer_delim as libc::c_int,
+                    );
                     bib_err_print();
-                    return
+                    return;
                 }
                 buf_ptr2 = buf_ptr2 + 1i32;
-                return
+                return;
             }
-            _ => { bib_cmd_confusion(); }
+            _ => {
+                bib_cmd_confusion();
+            }
         }
     } else {
-        entry_type_loc =
-            str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                       11i32 as str_ilk, 0i32 != 0);
-        if !hash_found ||
-               *fn_type.offset(entry_type_loc as isize) as libc::c_int != 1i32
-           {
+        entry_type_loc = str_lookup(
+            buffer,
+            buf_ptr1,
+            buf_ptr2 - buf_ptr1,
+            11i32 as str_ilk,
+            0i32 != 0,
+        );
+        if !hash_found || *fn_type.offset(entry_type_loc as isize) as libc::c_int != 1i32 {
             type_exists = 0i32 != 0
-        } else { type_exists = 1i32 != 0 }
+        } else {
+            type_exists = 1i32 != 0
+        }
     }
-    if !eat_bib_white_space() { eat_bib_print(); return }
+    if !eat_bib_white_space() {
+        eat_bib_print();
+        return;
+    }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 123i32 {
         /*left_brace */
         right_outer_delim = 125i32 as ASCII_code
-    } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 40i32
-     { /*right_brace */
+    } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 40i32 {
+        /*right_brace */
         /*left_paren */
         right_outer_delim = 41i32 as ASCII_code
     } else {
-        bib_one_of_two_print(123i32 as ASCII_code,
-                             40i32 as ASCII_code); /*right_paren */
-        return
+        bib_one_of_two_print(123i32 as ASCII_code, 40i32 as ASCII_code); /*right_paren */
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
-    if !eat_bib_white_space() { eat_bib_print(); return }
+    if !eat_bib_white_space() {
+        eat_bib_print();
+        return;
+    }
     if right_outer_delim as libc::c_int == 41i32 {
         /*right_paren */
         scan1_white(44i32 as ASCII_code);
-    } else { scan2_white(44i32 as ASCII_code, 125i32 as ASCII_code); }
+    } else {
+        scan2_white(44i32 as ASCII_code, 125i32 as ASCII_code);
+    }
     tmp_ptr = buf_ptr1;
     while tmp_ptr < buf_ptr2 {
         *ex_buf.offset(tmp_ptr as isize) = *buffer.offset(tmp_ptr as isize);
@@ -10115,25 +12706,35 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
     }
     lower_case(ex_buf, buf_ptr1, buf_ptr2 - buf_ptr1);
     if all_entries {
-        lc_cite_loc =
-            str_lookup(ex_buf, buf_ptr1, buf_ptr2 - buf_ptr1,
-                       10i32 as str_ilk, 1i32 != 0)
+        lc_cite_loc = str_lookup(
+            ex_buf,
+            buf_ptr1,
+            buf_ptr2 - buf_ptr1,
+            10i32 as str_ilk,
+            1i32 != 0,
+        )
     } else {
-        lc_cite_loc =
-            str_lookup(ex_buf, buf_ptr1, buf_ptr2 - buf_ptr1,
-                       10i32 as str_ilk, 0i32 != 0)
+        lc_cite_loc = str_lookup(
+            ex_buf,
+            buf_ptr1,
+            buf_ptr2 - buf_ptr1,
+            10i32 as str_ilk,
+            0i32 != 0,
+        )
     }
     if hash_found {
-        entry_cite_ptr =
-            *ilk_info.offset(*ilk_info.offset(lc_cite_loc as isize) as isize);
-        if !all_entries || entry_cite_ptr < all_marker ||
-               entry_cite_ptr >= old_num_cites {
+        entry_cite_ptr = *ilk_info.offset(*ilk_info.offset(lc_cite_loc as isize) as isize);
+        if !all_entries || entry_cite_ptr < all_marker || entry_cite_ptr >= old_num_cites {
             if *type_list.offset(entry_cite_ptr as isize) == 0i32 {
                 /*empty */
                 if !all_entries && entry_cite_ptr >= old_num_cites {
-                    cite_loc =
-                        str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                                   9i32 as str_ilk, 1i32 != 0);
+                    cite_loc = str_lookup(
+                        buffer,
+                        buf_ptr1,
+                        buf_ptr2 - buf_ptr1,
+                        9i32 as str_ilk,
+                        1i32 != 0,
+                    );
                     if !hash_found {
                         *ilk_info.offset(lc_cite_loc as isize) = cite_loc;
                         *ilk_info.offset(cite_loc as isize) = entry_cite_ptr;
@@ -10143,57 +12744,56 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     }
                 }
                 current_block = 12387625063048049585;
-            } else { current_block = 3813860224257983916; }
+            } else {
+                current_block = 3813860224257983916;
+            }
         } else if !*entry_exists.offset(entry_cite_ptr as isize) {
             ex_buf_ptr = 0i32;
-            tmp_ptr =
-                *str_start.offset(*cite_info.offset(entry_cite_ptr as isize)
-                                      as isize);
+            tmp_ptr = *str_start.offset(*cite_info.offset(entry_cite_ptr as isize) as isize);
             tmp_end_ptr =
-                *str_start.offset((*cite_info.offset(entry_cite_ptr as isize)
-                                       + 1i32) as isize);
+                *str_start.offset((*cite_info.offset(entry_cite_ptr as isize) + 1i32) as isize);
             while tmp_ptr < tmp_end_ptr {
-                *ex_buf.offset(ex_buf_ptr as isize) =
-                    *str_pool.offset(tmp_ptr as isize);
+                *ex_buf.offset(ex_buf_ptr as isize) = *str_pool.offset(tmp_ptr as isize);
                 ex_buf_ptr = ex_buf_ptr + 1i32;
                 tmp_ptr = tmp_ptr + 1i32
             }
-            lower_case(ex_buf, 0i32,
-                       *str_start.offset((*cite_info.offset(entry_cite_ptr as
-                                                                isize) + 1i32)
-                                             as isize) -
-                           *str_start.offset(*cite_info.offset(entry_cite_ptr
-                                                                   as isize)
-                                                 as isize));
-            lc_xcite_loc =
-                str_lookup(ex_buf, 0i32,
-                           *str_start.offset((*cite_info.offset(entry_cite_ptr
-                                                                    as isize)
-                                                  + 1i32) as isize) -
-                               *str_start.offset(*cite_info.offset(entry_cite_ptr
-                                                                       as
-                                                                       isize)
-                                                     as isize),
-                           10i32 as str_ilk, 0i32 != 0);
-            if !hash_found { cite_key_disappeared_confusion(); }
+            lower_case(
+                ex_buf,
+                0i32,
+                *str_start.offset((*cite_info.offset(entry_cite_ptr as isize) + 1i32) as isize)
+                    - *str_start.offset(*cite_info.offset(entry_cite_ptr as isize) as isize),
+            );
+            lc_xcite_loc = str_lookup(
+                ex_buf,
+                0i32,
+                *str_start.offset((*cite_info.offset(entry_cite_ptr as isize) + 1i32) as isize)
+                    - *str_start.offset(*cite_info.offset(entry_cite_ptr as isize) as isize),
+                10i32 as str_ilk,
+                0i32 != 0,
+            );
+            if !hash_found {
+                cite_key_disappeared_confusion();
+            }
             if lc_xcite_loc == lc_cite_loc {
                 current_block = 12387625063048049585;
-            } else { current_block = 3813860224257983916; }
-        } else { current_block = 3813860224257983916; }
+            } else {
+                current_block = 3813860224257983916;
+            }
+        } else {
+            current_block = 3813860224257983916;
+        }
         match current_block {
-            12387625063048049585 => { }
+            12387625063048049585 => {}
             _ => {
                 if *type_list.offset(entry_cite_ptr as isize) == 0i32 {
                     /*empty */
-                    puts_log(b"The cite list is messed up\x00" as *const u8 as
-                                 *const libc::c_char);
+                    puts_log(b"The cite list is messed up\x00" as *const u8 as *const libc::c_char);
                     print_confusion();
                     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                 }
-                puts_log(b"Repeated entry\x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b"Repeated entry\x00" as *const u8 as *const libc::c_char);
                 bib_err_print();
-                return
+                return;
             }
         }
     }
@@ -10211,10 +12811,16 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                 current_block_216 = 763224442071743734;
             }
         } else {
-            cite_loc =
-                str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                           9i32 as str_ilk, 1i32 != 0);
-            if hash_found { hash_cite_confusion(); }
+            cite_loc = str_lookup(
+                buffer,
+                buf_ptr1,
+                buf_ptr2 - buf_ptr1,
+                9i32 as str_ilk,
+                1i32 != 0,
+            );
+            if hash_found {
+                hash_cite_confusion();
+            }
             current_block_216 = 763224442071743734;
         }
         match current_block_216 {
@@ -10222,93 +12828,109 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                 entry_cite_ptr = cite_ptr;
                 add_database_cite(&mut cite_ptr);
             }
-            _ => { }
+            _ => {}
         }
-    } else if !hash_found { store_entry = 0i32 != 0 }
+    } else if !hash_found {
+        store_entry = 0i32 != 0
+    }
     if store_entry {
         /*274: */
         if type_exists {
             *type_list.offset(entry_cite_ptr as isize) = entry_type_loc
         } else {
             *type_list.offset(entry_cite_ptr as isize) = undefined;
-            puts_log(b"Warning--entry type for \"\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"Warning--entry type for \"\x00" as *const u8 as *const libc::c_char);
             print_a_token();
-            puts_log(b"\" isn\'t style-file defined\n\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"\" isn\'t style-file defined\n\x00" as *const u8 as *const libc::c_char);
             bib_warn_print();
         }
     }
-    if !eat_bib_white_space() { eat_bib_print(); return }
-    while *buffer.offset(buf_ptr2 as isize) as libc::c_int !=
-              right_outer_delim as libc::c_int {
+    if !eat_bib_white_space() {
+        eat_bib_print();
+        return;
+    }
+    while *buffer.offset(buf_ptr2 as isize) as libc::c_int != right_outer_delim as libc::c_int {
         if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 44i32 {
             /*comma */
             bib_one_of_two_print(44i32 as ASCII_code, right_outer_delim);
-            return
+            return;
         }
         buf_ptr2 = buf_ptr2 + 1i32;
-        if !eat_bib_white_space() { eat_bib_print(); return }
-        if *buffer.offset(buf_ptr2 as isize) as libc::c_int ==
-               right_outer_delim as libc::c_int {
-            break ;
+        if !eat_bib_white_space() {
+            eat_bib_print();
+            return;
         }
-        scan_identifier(61i32 as ASCII_code, 61i32 as ASCII_code,
-                        61i32 as ASCII_code);
-        if scan_result as libc::c_int == 3i32 ||
-               scan_result as libc::c_int == 1i32 {
+        if *buffer.offset(buf_ptr2 as isize) as libc::c_int == right_outer_delim as libc::c_int {
+            break;
+        }
+        scan_identifier(
+            61i32 as ASCII_code,
+            61i32 as ASCII_code,
+            61i32 as ASCII_code,
+        );
+        if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
         } else {
             bib_id_print();
             puts_log(b"a field name\x00" as *const u8 as *const libc::c_char);
             bib_err_print();
-            return
+            return;
         }
         store_field = 0i32 != 0;
         if store_entry {
             lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-            field_name_loc =
-                str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                           11i32 as str_ilk, 0i32 != 0);
+            field_name_loc = str_lookup(
+                buffer,
+                buf_ptr1,
+                buf_ptr2 - buf_ptr1,
+                11i32 as str_ilk,
+                0i32 != 0,
+            );
             if hash_found {
-                if *fn_type.offset(field_name_loc as isize) as libc::c_int ==
-                       4i32 {
+                if *fn_type.offset(field_name_loc as isize) as libc::c_int == 4i32 {
                     /*field */
                     store_field = 1i32 != 0
                 }
             }
         }
-        if !eat_bib_white_space() { eat_bib_print(); return }
+        if !eat_bib_white_space() {
+            eat_bib_print();
+            return;
+        }
         if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 61i32 {
             /*equals_sign */
             bib_equals_sign_print(); /*missing */
-            return
+            return;
         } /*empty */
         buf_ptr2 = buf_ptr2 + 1i32; /*any_value */
-        if !eat_bib_white_space() { eat_bib_print(); return }
-        if !scan_and_store_the_field_value_and_eat_white() { return }
+        if !eat_bib_white_space() {
+            eat_bib_print();
+            return;
+        }
+        if !scan_and_store_the_field_value_and_eat_white() {
+            return;
+        }
     }
     buf_ptr2 = buf_ptr2 + 1i32;
 }
 unsafe extern "C" fn bst_read_command() {
     if read_seen {
-        puts_log(b"Illegal, another read command\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"Illegal, another read command\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     read_seen = 1i32 != 0;
     if !entry_seen {
-        puts_log(b"Illegal, read command before entry command\x00" as
-                     *const u8 as *const libc::c_char);
+        puts_log(
+            b"Illegal, read command before entry command\x00" as *const u8 as *const libc::c_char,
+        );
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     sv_ptr1 = buf_ptr2;
     sv_ptr2 = last;
     tmp_ptr = sv_ptr1;
     while tmp_ptr < sv_ptr2 {
-        *sv_buffer.offset(tmp_ptr as isize) =
-            *buffer.offset(tmp_ptr as isize);
+        *sv_buffer.offset(tmp_ptr as isize) = *buffer.offset(tmp_ptr as isize);
         tmp_ptr = tmp_ptr + 1i32
     }
     check_field_overflow(num_fields * num_cites);
@@ -10327,8 +12949,7 @@ unsafe extern "C" fn bst_read_command() {
     if all_entries {
         cite_ptr = all_marker;
         while cite_ptr < old_num_cites {
-            *cite_info.offset(cite_ptr as isize) =
-                *cite_list.offset(cite_ptr as isize);
+            *cite_info.offset(cite_ptr as isize) = *cite_list.offset(cite_ptr as isize);
             *entry_exists.offset(cite_ptr as isize) = 0i32 != 0;
             cite_ptr = cite_ptr + 1i32
         }
@@ -10342,20 +12963,21 @@ unsafe extern "C" fn bst_read_command() {
     bib_ptr = 0i32;
     while bib_ptr < num_bib_files {
         if verbose != 0 {
-            printf_log(b"Database file #%ld: \x00" as *const u8 as
-                           *const libc::c_char,
-                       bib_ptr as libc::c_long + 1i32 as libc::c_long);
+            printf_log(
+                b"Database file #%ld: \x00" as *const u8 as *const libc::c_char,
+                bib_ptr as libc::c_long + 1i32 as libc::c_long,
+            );
             print_bib_name();
         } else {
             let mut buf: [libc::c_char; 512] = [0; 512];
-            snprintf(buf.as_mut_ptr(),
-                     (::std::mem::size_of::<[libc::c_char; 512]>() as
-                          libc::c_ulong).wrapping_sub(1i32 as libc::c_ulong),
-                     b"Database file #%ld: \x00" as *const u8 as
-                         *const libc::c_char,
-                     bib_ptr as libc::c_long + 1i32 as libc::c_long);
-            ttstub_output_write(log_file, buf.as_mut_ptr(),
-                                strlen(buf.as_mut_ptr()));
+            snprintf(
+                buf.as_mut_ptr(),
+                (::std::mem::size_of::<[libc::c_char; 512]>() as libc::c_ulong)
+                    .wrapping_sub(1i32 as libc::c_ulong),
+                b"Database file #%ld: \x00" as *const u8 as *const libc::c_char,
+                bib_ptr as libc::c_long + 1i32 as libc::c_long,
+            );
+            ttstub_output_write(log_file, buf.as_mut_ptr(), strlen(buf.as_mut_ptr()));
             log_pr_bib_name();
         }
         bib_line_num = 0i32;
@@ -10372,8 +12994,7 @@ unsafe extern "C" fn bst_read_command() {
     num_cites = cite_ptr;
     num_preamble_strings = preamble_ptr;
     if (num_cites - 1i32) * num_fields + crossref_num >= max_fields {
-        puts_log(b"field_info index is out of range\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"field_info index is out of range\x00" as *const u8 as *const libc::c_char);
         print_confusion();
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
@@ -10382,19 +13003,13 @@ unsafe extern "C" fn bst_read_command() {
         field_ptr = cite_ptr * num_fields + crossref_num;
         if *field_info.offset(field_ptr as isize) != 0i32 {
             /*missing */
-            if find_cite_locs_for_this_cite_key(*field_info.offset(field_ptr
-                                                                       as
-                                                                       isize))
-               {
+            if find_cite_locs_for_this_cite_key(*field_info.offset(field_ptr as isize)) {
                 cite_loc = *ilk_info.offset(lc_cite_loc as isize);
-                *field_info.offset(field_ptr as isize) =
-                    *hash_text.offset(cite_loc as isize);
+                *field_info.offset(field_ptr as isize) = *hash_text.offset(cite_loc as isize);
                 cite_parent_ptr = *ilk_info.offset(cite_loc as isize);
                 field_ptr = cite_ptr * num_fields + num_pre_defined_fields;
-                field_end_ptr =
-                    field_ptr - num_pre_defined_fields + num_fields;
-                field_parent_ptr =
-                    cite_parent_ptr * num_fields + num_pre_defined_fields;
+                field_end_ptr = field_ptr - num_pre_defined_fields + num_fields;
+                field_parent_ptr = cite_parent_ptr * num_fields + num_pre_defined_fields;
                 while field_ptr < field_end_ptr {
                     if *field_info.offset(field_ptr as isize) == 0i32 {
                         /*missing */
@@ -10409,8 +13024,7 @@ unsafe extern "C" fn bst_read_command() {
         cite_ptr = cite_ptr + 1i32
     }
     if (num_cites - 1i32) * num_fields + crossref_num >= max_fields {
-        puts_log(b"field_info index is out of range\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b"field_info index is out of range\x00" as *const u8 as *const libc::c_char);
         print_confusion();
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
@@ -10419,14 +13033,13 @@ unsafe extern "C" fn bst_read_command() {
         field_ptr = cite_ptr * num_fields + crossref_num;
         if *field_info.offset(field_ptr as isize) != 0i32 {
             /*missing */
-            if !find_cite_locs_for_this_cite_key(*field_info.offset(field_ptr
-                                                                        as
-                                                                        isize))
-               {
-                if cite_hash_found { hash_cite_confusion(); }
+            if !find_cite_locs_for_this_cite_key(*field_info.offset(field_ptr as isize)) {
+                if cite_hash_found {
+                    hash_cite_confusion();
+                }
                 nonexistent_cross_reference_error();
                 *field_info.offset(field_ptr as isize) = 0i32
-                /*missing */
+            /*missing */
             } else {
                 if cite_loc != *ilk_info.offset(lc_cite_loc as isize) {
                     hash_cite_confusion();
@@ -10436,26 +13049,28 @@ unsafe extern "C" fn bst_read_command() {
                     /*empty */
                     nonexistent_cross_reference_error();
                     *field_info.offset(field_ptr as isize) = 0i32
-                    /*missing */
+                /*missing */
                 } else {
-                    field_parent_ptr =
-                        cite_parent_ptr * num_fields + crossref_num;
+                    field_parent_ptr = cite_parent_ptr * num_fields + crossref_num;
                     if *field_info.offset(field_parent_ptr as isize) != 0i32 {
                         /*missing */
                         /*missing */
                         /*283: */
-                        puts_log(b"Warning--you\'ve nested cross references\x00"
-                                     as *const u8 as *const libc::c_char);
-                        bad_cross_reference_print(*cite_list.offset(cite_parent_ptr
-                                                                        as
-                                                                        isize));
-                        puts_log(b"\", which also refers to something\n\x00"
-                                     as *const u8 as *const libc::c_char);
+                        puts_log(
+                            b"Warning--you\'ve nested cross references\x00" as *const u8
+                                as *const libc::c_char,
+                        );
+                        bad_cross_reference_print(*cite_list.offset(cite_parent_ptr as isize));
+                        puts_log(
+                            b"\", which also refers to something\n\x00" as *const u8
+                                as *const libc::c_char,
+                        );
                         mark_warning();
                     }
-                    if !all_entries && cite_parent_ptr >= old_num_cites &&
-                           *cite_info.offset(cite_parent_ptr as isize) <
-                               min_crossrefs {
+                    if !all_entries
+                        && cite_parent_ptr >= old_num_cites
+                        && *cite_info.offset(cite_parent_ptr as isize) < min_crossrefs
+                    {
                         *field_info.offset(field_ptr as isize) = 0i32
                     }
                 }
@@ -10468,29 +13083,25 @@ unsafe extern "C" fn bst_read_command() {
         if *type_list.offset(cite_ptr as isize) == 0i32 {
             /*empty */
             print_missing_entry(*cite_list.offset(cite_ptr as isize));
-        } else if all_entries as libc::c_int != 0 || cite_ptr < old_num_cites
-                      || *cite_info.offset(cite_ptr as isize) >= min_crossrefs
-         {
+        } else if all_entries as libc::c_int != 0
+            || cite_ptr < old_num_cites
+            || *cite_info.offset(cite_ptr as isize) >= min_crossrefs
+        {
             if cite_ptr > cite_xptr {
                 /*286: */
                 if (cite_xptr + 1i32) * num_fields > max_fields {
-                    puts_log(b"field_info index is out of range\x00" as
-                                 *const u8 as *const libc::c_char);
+                    puts_log(
+                        b"field_info index is out of range\x00" as *const u8 as *const libc::c_char,
+                    );
                     print_confusion();
                     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                 }
-                *cite_list.offset(cite_xptr as isize) =
-                    *cite_list.offset(cite_ptr as isize);
-                *type_list.offset(cite_xptr as isize) =
-                    *type_list.offset(cite_ptr as isize);
-                if !find_cite_locs_for_this_cite_key(*cite_list.offset(cite_ptr
-                                                                           as
-                                                                           isize))
-                   {
+                *cite_list.offset(cite_xptr as isize) = *cite_list.offset(cite_ptr as isize);
+                *type_list.offset(cite_xptr as isize) = *type_list.offset(cite_ptr as isize);
+                if !find_cite_locs_for_this_cite_key(*cite_list.offset(cite_ptr as isize)) {
                     cite_key_disappeared_confusion();
                 }
-                if !cite_hash_found ||
-                       cite_loc != *ilk_info.offset(lc_cite_loc as isize) {
+                if !cite_hash_found || cite_loc != *ilk_info.offset(lc_cite_loc as isize) {
                     hash_cite_confusion();
                 }
                 *ilk_info.offset(cite_loc as isize) = cite_xptr;
@@ -10498,8 +13109,7 @@ unsafe extern "C" fn bst_read_command() {
                 field_end_ptr = field_ptr + num_fields;
                 tmp_ptr = cite_ptr * num_fields;
                 while field_ptr < field_end_ptr {
-                    *field_info.offset(field_ptr as isize) =
-                        *field_info.offset(tmp_ptr as isize);
+                    *field_info.offset(field_ptr as isize) = *field_info.offset(tmp_ptr as isize);
                     field_ptr = field_ptr + 1i32;
                     tmp_ptr = tmp_ptr + 1i32
                 }
@@ -10519,26 +13129,23 @@ unsafe extern "C" fn bst_read_command() {
             cite_ptr = cite_ptr + 1i32
         }
     }
-    entry_ints =
-        xmalloc((((num_ent_ints + 1i32) * (num_cites + 1i32)) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
-                                                     as libc::c_ulong)) as
-            *mut int32_t;
+    entry_ints = xmalloc(
+        (((num_ent_ints + 1i32) * (num_cites + 1i32)) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+    ) as *mut int32_t;
     int_ent_ptr = 0i32;
     while int_ent_ptr < num_ent_ints * num_cites {
         *entry_ints.offset(int_ent_ptr as isize) = 0i32;
         int_ent_ptr = int_ent_ptr + 1i32
     }
-    entry_strs =
-        xmalloc((((num_ent_strs + 1i32) * (num_cites + 1i32) *
-                      (ent_str_size + 1i32)) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                     as libc::c_ulong)) as
-            *mut ASCII_code;
+    entry_strs = xmalloc(
+        (((num_ent_strs + 1i32) * (num_cites + 1i32) * (ent_str_size + 1i32)) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as *mut ASCII_code;
     str_ent_ptr = 0i32;
     while str_ent_ptr < num_ent_strs * num_cites {
-        *entry_strs.offset((str_ent_ptr * (ent_str_size + 1i32) + 0i32) as
-                               isize) = 127i32 as ASCII_code;
+        *entry_strs.offset((str_ent_ptr * (ent_str_size + 1i32) + 0i32) as isize) =
+            127i32 as ASCII_code;
         str_ent_ptr = str_ent_ptr + 1i32
     }
     cite_ptr = 0i32;
@@ -10551,149 +13158,159 @@ unsafe extern "C" fn bst_read_command() {
     last = sv_ptr2;
     tmp_ptr = buf_ptr2;
     while tmp_ptr < last {
-        *buffer.offset(tmp_ptr as isize) =
-            *sv_buffer.offset(tmp_ptr as isize);
+        *buffer.offset(tmp_ptr as isize) = *sv_buffer.offset(tmp_ptr as isize);
         tmp_ptr = tmp_ptr + 1i32
-    };
+    }
 }
 unsafe extern "C" fn bst_reverse_command() {
     if !read_seen {
-        puts_log(b"Illegal, reverse command before read command\x00" as
-                     *const u8 as *const libc::c_char);
+        puts_log(
+            b"Illegal, reverse command before read command\x00" as *const u8 as *const libc::c_char,
+        );
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"reverse\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"reverse\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"reverse\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
-    scan_identifier(125i32 as ASCII_code, 37i32 as ASCII_code,
-                    37i32 as ASCII_code);
-    if scan_result as libc::c_int == 3i32 ||
-           scan_result as libc::c_int == 1i32 {
+    scan_identifier(
+        125i32 as ASCII_code,
+        37i32 as ASCII_code,
+        37i32 as ASCII_code,
+    );
+    if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
     } else {
         bst_id_print();
         puts_log(b"reverse\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
-    if bad_argument_token() { return }
+    if bad_argument_token() {
+        return;
+    }
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"reverse\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
         /*right_brace */
         bst_right_brace_print();
         puts_log(b"reverse\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     init_command_execution();
     mess_with_entries = 1i32 != 0;
     if num_cites > 0i32 {
         sort_cite_ptr = num_cites;
-        loop  {
+        loop {
             sort_cite_ptr = sort_cite_ptr - 1i32;
             cite_ptr = *cite_info.offset(sort_cite_ptr as isize);
             execute_fn(fn_loc);
             check_command_execution();
-            if sort_cite_ptr == 0i32 { break ; }
+            if sort_cite_ptr == 0i32 {
+                break;
+            }
         }
     };
 }
 unsafe extern "C" fn bst_sort_command() {
     if !read_seen {
-        puts_log(b"Illegal, sort command before read command\x00" as *const u8
-                     as *const libc::c_char);
+        puts_log(
+            b"Illegal, sort command before read command\x00" as *const u8 as *const libc::c_char,
+        );
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
-    if num_cites > 1i32 { quick_sort(0i32, num_cites - 1i32); };
+    if num_cites > 1i32 {
+        quick_sort(0i32, num_cites - 1i32);
+    };
 }
 unsafe extern "C" fn bst_strings_command() {
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"strings\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"strings\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     buf_ptr2 += 1;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"strings\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     while *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
         /*right_brace */
-        scan_identifier(125i32 as ASCII_code, 37i32 as ASCII_code,
-                        37i32 as ASCII_code);
-        if scan_result as libc::c_int != 3i32 &&
-               scan_result as libc::c_int != 1i32 {
+        scan_identifier(
+            125i32 as ASCII_code,
+            37i32 as ASCII_code,
+            37i32 as ASCII_code,
+        );
+        if scan_result as libc::c_int != 3i32 && scan_result as libc::c_int != 1i32 {
             /*specified_char_adjacent */
             bst_id_print(); /*str_global_var */
-            puts_log(b"strings\x00" as *const u8 as
-                         *const libc::c_char); /*HASH_SIZE */
+            puts_log(b"strings\x00" as *const u8 as *const libc::c_char); /*HASH_SIZE */
             bst_err_print_and_look_for_blank_line();
-            return
+            return;
         }
         lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-        fn_loc =
-            str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                       11i32 as str_ilk, 1i32 != 0);
-        if hash_found { already_seen_function_print(fn_loc); return }
+        fn_loc = str_lookup(
+            buffer,
+            buf_ptr1,
+            buf_ptr2 - buf_ptr1,
+            11i32 as str_ilk,
+            1i32 != 0,
+        );
+        if hash_found {
+            already_seen_function_print(fn_loc);
+            return;
+        }
         *fn_type.offset(fn_loc as isize) = 8i32 as fn_class;
         *ilk_info.offset(fn_loc as isize) = num_glb_strs;
         if num_glb_strs == max_glob_strs {
-            glb_str_ptr =
-                xrealloc(glb_str_ptr as *mut libc::c_void,
-                         ((max_glob_strs + 10i32 + 1i32) as
-                              libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                              as
-                                                              libc::c_ulong))
-                    as *mut str_number;
-            global_strs =
-                xrealloc(global_strs as *mut libc::c_void,
-                         (((max_glob_strs + 10i32) * (glob_str_size + 1i32))
-                              as
-                              libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                              as
-                                                              libc::c_ulong))
-                    as *mut ASCII_code;
-            glb_str_end =
-                xrealloc(glb_str_end as *mut libc::c_void,
-                         ((max_glob_strs + 10i32 + 1i32) as
-                              libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
-                                                              as
-                                                              libc::c_ulong))
-                    as *mut int32_t;
+            glb_str_ptr = xrealloc(
+                glb_str_ptr as *mut libc::c_void,
+                ((max_glob_strs + 10i32 + 1i32) as libc::c_ulong)
+                    .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+            ) as *mut str_number;
+            global_strs = xrealloc(
+                global_strs as *mut libc::c_void,
+                (((max_glob_strs + 10i32) * (glob_str_size + 1i32)) as libc::c_ulong)
+                    .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+            ) as *mut ASCII_code;
+            glb_str_end = xrealloc(
+                glb_str_end as *mut libc::c_void,
+                ((max_glob_strs + 10i32 + 1i32) as libc::c_ulong)
+                    .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+            ) as *mut int32_t;
             max_glob_strs = max_glob_strs + 10i32;
             str_glb_ptr = num_glb_strs;
             while str_glb_ptr < max_glob_strs {
@@ -10707,44 +13324,67 @@ unsafe extern "C" fn bst_strings_command() {
             eat_bst_print();
             puts_log(b"strings\x00" as *const u8 as *const libc::c_char);
             bst_err_print_and_look_for_blank_line();
-            return
+            return;
         }
     }
     buf_ptr2 += 1;
 }
 unsafe extern "C" fn get_bst_command_and_process() {
     if !scan_alpha() {
-        printf_log(b"\"%c\" can\'t start a style-file command\x00" as
-                       *const u8 as *const libc::c_char,
-                   *buffer.offset(buf_ptr2 as isize) as libc::c_int);
+        printf_log(
+            b"\"%c\" can\'t start a style-file command\x00" as *const u8 as *const libc::c_char,
+            *buffer.offset(buf_ptr2 as isize) as libc::c_int,
+        );
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
-    command_num =
-        *ilk_info.offset(str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1,
-                                    4i32 as str_ilk, 0i32 != 0) as isize);
+    command_num = *ilk_info.offset(str_lookup(
+        buffer,
+        buf_ptr1,
+        buf_ptr2 - buf_ptr1,
+        4i32 as str_ilk,
+        0i32 != 0,
+    ) as isize);
     if !hash_found {
         print_a_token();
-        puts_log(b" is an illegal style-file command\x00" as *const u8 as
-                     *const libc::c_char);
+        puts_log(b" is an illegal style-file command\x00" as *const u8 as *const libc::c_char);
         bst_err_print_and_look_for_blank_line();
-        return
+        return;
     }
     match command_num {
-        0 => { bst_entry_command(); }
-        1 => { bst_execute_command(); }
-        2 => { bst_function_command(); }
-        3 => { bst_integers_command(); }
-        4 => { bst_iterate_command(); }
-        5 => { bst_macro_command(); }
-        6 => { bst_read_command(); }
-        7 => { bst_reverse_command(); }
-        8 => { bst_sort_command(); }
-        9 => { bst_strings_command(); }
+        0 => {
+            bst_entry_command();
+        }
+        1 => {
+            bst_execute_command();
+        }
+        2 => {
+            bst_function_command();
+        }
+        3 => {
+            bst_integers_command();
+        }
+        4 => {
+            bst_iterate_command();
+        }
+        5 => {
+            bst_macro_command();
+        }
+        6 => {
+            bst_read_command();
+        }
+        7 => {
+            bst_reverse_command();
+        }
+        8 => {
+            bst_sort_command();
+        }
+        9 => {
+            bst_strings_command();
+        }
         _ => {
-            puts_log(b"Unknown style-file command\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"Unknown style-file command\x00" as *const u8 as *const libc::c_char);
             print_confusion();
             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
         }
@@ -10779,56 +13419,85 @@ unsafe extern "C" fn compute_hash_prime() {
     o = 2i32; /*illegal_id_char */
     square = 9i32; /*illegal_id_char */
     while hash_prime < hash_want {
-        loop  {
+        loop {
             j += 2i32; /*illegal_id_char */
             if j == square {
                 *hash_text.offset(o as isize) = j; /*illegal_id_char */
                 j += 2i32; /*illegal_id_char */
                 o += 1i32; /*illegal_id_char */
-                square =
-                    *hash_next.offset(o as isize) *
-                        *hash_next.offset(o as isize)
+                square = *hash_next.offset(o as isize) * *hash_next.offset(o as isize)
             } /*illegal_id_char */
             n = 2i32; /*illegal_id_char */
             j_prime = 1i32 != 0; /*illegal_id_char */
             while n < o && j_prime as libc::c_int != 0 {
                 while *hash_text.offset(n as isize) < j {
-                    let ref mut fresh11 =
-                        *hash_text.offset(n as isize); /*illegal_id_char */
+                    let ref mut fresh11 = *hash_text.offset(n as isize); /*illegal_id_char */
                     *fresh11 += 2i32 * *hash_next.offset(n as isize)
                 } /*empty */
-                if *hash_text.offset(n as isize) == j { j_prime = 0i32 != 0 }
+                if *hash_text.offset(n as isize) == j {
+                    j_prime = 0i32 != 0
+                }
                 n = n + 1i32
             }
-            if j_prime { break ; }
+            if j_prime {
+                break;
+            }
         }
         k += 1;
         hash_prime = j;
         *hash_next.offset(k as isize) = hash_prime
-    };
+    }
 }
-unsafe extern "C" fn initialize(mut aux_file_name: *const libc::c_char)
- -> libc::c_int {
+unsafe extern "C" fn initialize(mut aux_file_name: *const libc::c_char) -> libc::c_int {
     let mut i: int32_t = 0;
     let mut k: hash_loc = 0;
     bad = 0i32;
-    if 3i32 < 3i32 { bad = 1i32 }
-    if 79i32 <= 3i32 { bad = 10i32 * bad + 2i32 }
-    if 79i32 >= buf_size { bad = 10i32 * bad + 3i32 }
-    if hash_prime < 128i32 { bad = 10i32 * bad + 4i32 }
-    if hash_prime > hash_size { bad = 10i32 * bad + 5i32 }
-    if 1i32 != 1i32 { bad = 10i32 * bad + 6i32 }
-    if max_strings > hash_size { bad = 10i32 * bad + 7i32 }
-    if max_cites > max_strings { bad = 10i32 * bad + 8i32 }
-    if 10i32 < 2i32 * 4i32 + 2i32 { bad = 100i32 * bad + 22i32 }
-    if bad != 0 { return 1i32 }
+    if 3i32 < 3i32 {
+        bad = 1i32
+    }
+    if 79i32 <= 3i32 {
+        bad = 10i32 * bad + 2i32
+    }
+    if 79i32 >= buf_size {
+        bad = 10i32 * bad + 3i32
+    }
+    if hash_prime < 128i32 {
+        bad = 10i32 * bad + 4i32
+    }
+    if hash_prime > hash_size {
+        bad = 10i32 * bad + 5i32
+    }
+    if 1i32 != 1i32 {
+        bad = 10i32 * bad + 6i32
+    }
+    if max_strings > hash_size {
+        bad = 10i32 * bad + 7i32
+    }
+    if max_cites > max_strings {
+        bad = 10i32 * bad + 8i32
+    }
+    if 10i32 < 2i32 * 4i32 + 2i32 {
+        bad = 100i32 * bad + 22i32
+    }
+    if bad != 0 {
+        return 1i32;
+    }
     history = HISTORY_SPOTLESS as libc::c_int as libc::c_uchar;
     i = 0i32;
-    while i <= 127i32 { lex_class[i as usize] = 5i32 as lex_type; i += 1 }
+    while i <= 127i32 {
+        lex_class[i as usize] = 5i32 as lex_type;
+        i += 1
+    }
     i = 128i32;
-    while i <= 255i32 { lex_class[i as usize] = 2i32 as lex_type; i += 1 }
+    while i <= 255i32 {
+        lex_class[i as usize] = 2i32 as lex_type;
+        i += 1
+    }
     i = 0i32;
-    while i <= 31i32 { lex_class[i as usize] = 0i32 as lex_type; i += 1 }
+    while i <= 31i32 {
+        lex_class[i as usize] = 0i32 as lex_type;
+        i += 1
+    }
     lex_class[127] = 0i32 as lex_type;
     lex_class[9] = 1i32 as lex_type;
     lex_class[13] = 1i32 as lex_type;
@@ -10836,15 +13505,30 @@ unsafe extern "C" fn initialize(mut aux_file_name: *const libc::c_char)
     lex_class[126] = 4i32 as lex_type;
     lex_class[45] = 4i32 as lex_type;
     i = 48i32;
-    while i <= 57i32 { lex_class[i as usize] = 3i32 as lex_type; i += 1 }
+    while i <= 57i32 {
+        lex_class[i as usize] = 3i32 as lex_type;
+        i += 1
+    }
     i = 65i32;
-    while i <= 90i32 { lex_class[i as usize] = 2i32 as lex_type; i += 1 }
+    while i <= 90i32 {
+        lex_class[i as usize] = 2i32 as lex_type;
+        i += 1
+    }
     i = 97i32;
-    while i <= 122i32 { lex_class[i as usize] = 2i32 as lex_type; i += 1 }
+    while i <= 122i32 {
+        lex_class[i as usize] = 2i32 as lex_type;
+        i += 1
+    }
     i = 0i32;
-    while i <= 255i32 { id_class[i as usize] = 1i32 as id_type; i += 1 }
+    while i <= 255i32 {
+        id_class[i as usize] = 1i32 as id_type;
+        i += 1
+    }
     i = 0i32;
-    while i <= 31i32 { id_class[i as usize] = 0i32 as id_type; i += 1 }
+    while i <= 31i32 {
+        id_class[i as usize] = 0i32 as id_type;
+        i += 1
+    }
     id_class[32] = 0i32 as id_type;
     id_class[9] = 0i32 as id_type;
     id_class[34] = 0i32 as id_type;
@@ -10858,7 +13542,10 @@ unsafe extern "C" fn initialize(mut aux_file_name: *const libc::c_char)
     id_class[123] = 0i32 as id_type;
     id_class[125] = 0i32 as id_type;
     i = 0i32;
-    while i <= 127i32 { char_width[i as usize] = 0i32; i += 1 }
+    while i <= 127i32 {
+        char_width[i as usize] = 0i32;
+        i += 1
+    }
     char_width[32] = 278i32;
     char_width[33] = 278i32;
     char_width[34] = 500i32;
@@ -10997,8 +13684,7 @@ unsafe extern "C" fn initialize(mut aux_file_name: *const libc::c_char)
    Licensed under the MIT License.
 */
 #[no_mangle]
-pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const libc::c_char)
- -> tt_history_t {
+pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const libc::c_char) -> tt_history_t {
     pool_size = 65000i64 as int32_t;
     buf_size = 20000i32;
     max_bib_files = 20i32;
@@ -11008,184 +13694,165 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const libc::c_char)
     wiz_fn_space = 3000i32;
     lit_stk_size = 100i32;
     standard_output = ttstub_output_open_stdout();
-    if standard_output.is_null() { return HISTORY_FATAL_ERROR }
+    if standard_output.is_null() {
+        return HISTORY_FATAL_ERROR;
+    }
     setup_params();
     entry_ints = 0 as *mut int32_t;
     entry_strs = 0 as *mut ASCII_code;
-    bib_file =
-        xmalloc(((max_bib_files + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<*mut peekable_input_t>()
-                                                     as libc::c_ulong)) as
-            *mut *mut peekable_input_t;
-    bib_list =
-        xmalloc(((max_bib_files + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                     as libc::c_ulong)) as
-            *mut str_number;
-    wiz_functions =
-        xmalloc(((wiz_fn_space + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_ptr2>()
-                                                     as libc::c_ulong)) as
-            *mut hash_ptr2;
-    field_info =
-        xmalloc(((max_fields + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                     as libc::c_ulong)) as
-            *mut str_number;
-    s_preamble =
-        xmalloc(((max_bib_files + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                     as libc::c_ulong)) as
-            *mut str_number;
-    str_pool =
-        xmalloc(((pool_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                     as libc::c_ulong)) as
-            *mut ASCII_code;
-    buffer =
-        xmalloc(((buf_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                     as libc::c_ulong)) as
-            buf_type;
-    sv_buffer =
-        xmalloc(((buf_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                     as libc::c_ulong)) as
-            buf_type;
-    ex_buf =
-        xmalloc(((buf_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                     as libc::c_ulong)) as
-            buf_type;
-    out_buf =
-        xmalloc(((buf_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                     as libc::c_ulong)) as
-            buf_type;
-    name_tok =
-        xmalloc(((buf_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<buf_pointer>()
-                                                     as libc::c_ulong)) as
-            *mut buf_pointer;
-    name_sep_char =
-        xmalloc(((buf_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                     as libc::c_ulong)) as
-            *mut ASCII_code;
-    glb_str_ptr =
-        xmalloc((max_glob_strs as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                     as libc::c_ulong)) as
-            *mut str_number;
-    global_strs =
-        xmalloc(((max_glob_strs * (glob_str_size + 1i32)) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<ASCII_code>()
-                                                     as libc::c_ulong)) as
-            *mut ASCII_code;
-    glb_str_end =
-        xmalloc((max_glob_strs as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
-                                                     as libc::c_ulong)) as
-            *mut int32_t;
-    cite_list =
-        xmalloc(((max_cites + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                     as libc::c_ulong)) as
-            *mut str_number;
-    type_list =
-        xmalloc(((max_cites + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_ptr2>()
-                                                     as libc::c_ulong)) as
-            *mut hash_ptr2;
-    entry_exists =
-        xmalloc(((max_cites + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<bool>()
-                                                     as libc::c_ulong)) as
-            *mut bool;
-    cite_info =
-        xmalloc(((max_cites + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                     as libc::c_ulong)) as
-            *mut str_number;
-    str_start =
-        xmalloc(((max_strings + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<pool_pointer>()
-                                                     as libc::c_ulong)) as
-            *mut pool_pointer;
-    hash_next =
-        xmalloc(((hash_max + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<hash_pointer>()
-                                                     as libc::c_ulong)) as
-            *mut hash_pointer;
-    hash_text =
-        xmalloc(((hash_max + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                     as libc::c_ulong)) as
-            *mut str_number;
-    hash_ilk =
-        xmalloc(((hash_max + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_ilk>()
-                                                     as libc::c_ulong)) as
-            *mut str_ilk;
-    ilk_info =
-        xmalloc(((hash_max + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
-                                                     as libc::c_ulong)) as
-            *mut int32_t;
-    fn_type =
-        xmalloc(((hash_max + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<fn_class>()
-                                                     as libc::c_ulong)) as
-            *mut fn_class;
-    lit_stack =
-        xmalloc(((lit_stk_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
-                                                     as libc::c_ulong)) as
-            *mut int32_t;
-    lit_stk_type =
-        xmalloc(((lit_stk_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<stk_type>()
-                                                     as libc::c_ulong)) as
-            *mut stk_type;
+    bib_file = xmalloc(
+        ((max_bib_files + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<*mut peekable_input_t>() as libc::c_ulong),
+    ) as *mut *mut peekable_input_t;
+    bib_list = xmalloc(
+        ((max_bib_files + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+    ) as *mut str_number;
+    wiz_functions = xmalloc(
+        ((wiz_fn_space + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as libc::c_ulong),
+    ) as *mut hash_ptr2;
+    field_info = xmalloc(
+        ((max_fields + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+    ) as *mut str_number;
+    s_preamble = xmalloc(
+        ((max_bib_files + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+    ) as *mut str_number;
+    str_pool = xmalloc(
+        ((pool_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as *mut ASCII_code;
+    buffer = xmalloc(
+        ((buf_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as buf_type;
+    sv_buffer = xmalloc(
+        ((buf_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as buf_type;
+    ex_buf = xmalloc(
+        ((buf_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as buf_type;
+    out_buf = xmalloc(
+        ((buf_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as buf_type;
+    name_tok = xmalloc(
+        ((buf_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<buf_pointer>() as libc::c_ulong),
+    ) as *mut buf_pointer;
+    name_sep_char = xmalloc(
+        ((buf_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as *mut ASCII_code;
+    glb_str_ptr = xmalloc(
+        (max_glob_strs as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+    ) as *mut str_number;
+    global_strs = xmalloc(
+        ((max_glob_strs * (glob_str_size + 1i32)) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
+    ) as *mut ASCII_code;
+    glb_str_end = xmalloc(
+        (max_glob_strs as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+    ) as *mut int32_t;
+    cite_list = xmalloc(
+        ((max_cites + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+    ) as *mut str_number;
+    type_list = xmalloc(
+        ((max_cites + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as libc::c_ulong),
+    ) as *mut hash_ptr2;
+    entry_exists = xmalloc(
+        ((max_cites + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<bool>() as libc::c_ulong),
+    ) as *mut bool;
+    cite_info = xmalloc(
+        ((max_cites + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+    ) as *mut str_number;
+    str_start = xmalloc(
+        ((max_strings + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<pool_pointer>() as libc::c_ulong),
+    ) as *mut pool_pointer;
+    hash_next = xmalloc(
+        ((hash_max + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<hash_pointer>() as libc::c_ulong),
+    ) as *mut hash_pointer;
+    hash_text = xmalloc(
+        ((hash_max + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+    ) as *mut str_number;
+    hash_ilk = xmalloc(
+        ((hash_max + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<str_ilk>() as libc::c_ulong),
+    ) as *mut str_ilk;
+    ilk_info = xmalloc(
+        ((hash_max + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+    ) as *mut int32_t;
+    fn_type = xmalloc(
+        ((hash_max + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<fn_class>() as libc::c_ulong),
+    ) as *mut fn_class;
+    lit_stack = xmalloc(
+        ((lit_stk_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+    ) as *mut int32_t;
+    lit_stk_type = xmalloc(
+        ((lit_stk_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<stk_type>() as libc::c_ulong),
+    ) as *mut stk_type;
     compute_hash_prime();
     if initialize(aux_file_name) != 0 {
         /* TODO: log initialization or get_the_..() error */
-        return HISTORY_FATAL_ERROR
+        return HISTORY_FATAL_ERROR;
     }
     if !(_setjmp(error_jmpbuf.as_mut_ptr()) == 1i32) {
         if verbose != 0 {
-            puts_log(b"This is BibTeX, Version 0.99d\n\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"This is BibTeX, Version 0.99d\n\x00" as *const u8 as *const libc::c_char);
         } else {
-            ttstub_puts(log_file,
-                        b"This is BibTeX, Version 0.99d\n\x00" as *const u8 as
-                            *const libc::c_char);
+            ttstub_puts(
+                log_file,
+                b"This is BibTeX, Version 0.99d\n\x00" as *const u8 as *const libc::c_char,
+            );
         }
         let mut buf: [libc::c_char; 512] = [0; 512];
-        snprintf(buf.as_mut_ptr(),
-                 (::std::mem::size_of::<[libc::c_char; 512]>() as
-                      libc::c_ulong).wrapping_sub(1i32 as libc::c_ulong),
-                 b"Capacity: max_strings=%ld, hash_size=%ld, hash_prime=%ld\n\x00"
-                     as *const u8 as *const libc::c_char,
-                 max_strings as libc::c_long, hash_size as libc::c_long,
-                 hash_prime as libc::c_long);
-        ttstub_output_write(log_file, buf.as_mut_ptr(),
-                            strlen(buf.as_mut_ptr()));
+        snprintf(
+            buf.as_mut_ptr(),
+            (::std::mem::size_of::<[libc::c_char; 512]>() as libc::c_ulong)
+                .wrapping_sub(1i32 as libc::c_ulong),
+            b"Capacity: max_strings=%ld, hash_size=%ld, hash_prime=%ld\n\x00" as *const u8
+                as *const libc::c_char,
+            max_strings as libc::c_long,
+            hash_size as libc::c_long,
+            hash_prime as libc::c_long,
+        );
+        ttstub_output_write(log_file, buf.as_mut_ptr(), strlen(buf.as_mut_ptr()));
         if verbose != 0 {
-            puts_log(b"The top-level auxiliary file: \x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"The top-level auxiliary file: \x00" as *const u8 as *const libc::c_char);
             print_aux_name();
         } else {
-            ttstub_puts(log_file,
-                        b"The top-level auxiliary file: \x00" as *const u8 as
-                            *const libc::c_char);
+            ttstub_puts(
+                log_file,
+                b"The top-level auxiliary file: \x00" as *const u8 as *const libc::c_char,
+            );
             log_pr_aux_name();
         }
-        loop  {
+        loop {
             aux_ln_stack[aux_ptr as usize] += 1;
             if !input_ln(aux_file[aux_ptr as usize]) {
-                if pop_the_aux_stack() != 0 { break ; }
-            } else { get_aux_command_and_process(); }
+                if pop_the_aux_stack() != 0 {
+                    break;
+                }
+            } else {
+                get_aux_command_and_process();
+            }
         }
         last_check_for_aux_errors();
         if !(bst_str == 0i32) {
@@ -11193,7 +13860,9 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const libc::c_char)
             bbl_line_num = 1i32;
             buf_ptr2 = last;
             if _setjmp(recover_jmpbuf.as_mut_ptr()) == 0i32 {
-                while eat_bst_white_space() { get_bst_command_and_process(); }
+                while eat_bst_white_space() {
+                    get_bst_command_and_process();
+                }
             }
             peekable_close(bst_file);
             bst_file = 0 as *mut peekable_input_t
@@ -11202,39 +13871,39 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const libc::c_char)
     }
     /*456:*/
     if read_performed as libc::c_int != 0 && !reading_completed {
-        printf_log(b"Aborted at line %ld of file \x00" as *const u8 as
-                       *const libc::c_char, bib_line_num as libc::c_long);
+        printf_log(
+            b"Aborted at line %ld of file \x00" as *const u8 as *const libc::c_char,
+            bib_line_num as libc::c_long,
+        );
         print_bib_name();
     }
     match history as libc::c_int {
-        0 => { }
+        0 => {}
         1 => {
             if err_count == 1i32 {
-                puts_log(b"(There was 1 warning)\n\x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b"(There was 1 warning)\n\x00" as *const u8 as *const libc::c_char);
             } else {
-                printf_log(b"(There were %ld warnings)\n\x00" as *const u8 as
-                               *const libc::c_char,
-                           err_count as libc::c_long);
+                printf_log(
+                    b"(There were %ld warnings)\n\x00" as *const u8 as *const libc::c_char,
+                    err_count as libc::c_long,
+                );
             }
         }
         2 => {
             if err_count == 1i32 {
-                puts_log(b"(There was 1 error message)\n\x00" as *const u8 as
-                             *const libc::c_char);
+                puts_log(b"(There was 1 error message)\n\x00" as *const u8 as *const libc::c_char);
             } else {
-                printf_log(b"(There were %ld error messages)\n\x00" as
-                               *const u8 as *const libc::c_char,
-                           err_count as libc::c_long);
+                printf_log(
+                    b"(There were %ld error messages)\n\x00" as *const u8 as *const libc::c_char,
+                    err_count as libc::c_long,
+                );
             }
         }
         3 => {
-            puts_log(b"(That was a fatal error)\n\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"(That was a fatal error)\n\x00" as *const u8 as *const libc::c_char);
         }
         _ => {
-            puts_log(b"History is bunk\x00" as *const u8 as
-                         *const libc::c_char);
+            puts_log(b"History is bunk\x00" as *const u8 as *const libc::c_char);
             print_confusion();
         }
     }

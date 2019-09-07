@@ -9,48 +9,53 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn __assert_fail(__assertion: *const libc::c_char,
-                     __file: *const libc::c_char, __line: libc::c_uint,
-                     __function: *const libc::c_char) -> !;
+    fn __assert_fail(
+        __assertion: *const libc::c_char,
+        __file: *const libc::c_char,
+        __line: libc::c_uint,
+        __function: *const libc::c_char,
+    ) -> !;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const libc::c_ushort;
     #[no_mangle]
-    fn strtol(_: *const libc::c_char, _: *mut *mut libc::c_char,
-              _: libc::c_int) -> libc::c_long;
+    fn strtol(_: *const libc::c_char, _: *mut *mut libc::c_char, _: libc::c_int) -> libc::c_long;
     /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
-   Copyright 2016-2018 the Tectonic Project
-   Licensed under the MIT License.
-*/
+       Copyright 2016-2018 the Tectonic Project
+       Licensed under the MIT License.
+    */
     /* Both XeTeX and bibtex use this enum: */
     /* The weird enum values are historical and could be rationalized. But it is
- * good to write them explicitly since they must be kept in sync with
- * `src/engines/mod.rs`.
- */
+     * good to write them explicitly since they must be kept in sync with
+     * `src/engines/mod.rs`.
+     */
     /* quasi-hack to get the primary input */
     /* Bridge API. Keep synchronized with src/engines/mod.rs. */
     /* These functions are not meant to be used in the C/C++ code. They define the
- * API that we expose to the Rust side of things. */
+     * API that we expose to the Rust side of things. */
     /* The internal, C/C++ interface: */
     /* Global symbols that route through the global API variable. Hopefully we
- * will one day eliminate all of the global state and get rid of all of
- * these. */
+     * will one day eliminate all of the global state and get rid of all of
+     * these. */
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
-    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t,
-                         whence: libc::c_int) -> size_t;
+    fn ttstub_input_seek(
+        handle: rust_input_handle_t,
+        offset: ssize_t,
+        whence: libc::c_int,
+    ) -> size_t;
     #[no_mangle]
-    fn ttstub_input_open(path: *const libc::c_char,
-                         format: tt_input_format_type, is_gz: libc::c_int)
-     -> rust_input_handle_t;
+    fn ttstub_input_open(
+        path: *const libc::c_char,
+        format: tt_input_format_type,
+        is_gz: libc::c_int,
+    ) -> rust_input_handle_t;
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
-     -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char)
-     -> *mut libc::c_char;
+    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
@@ -61,54 +66,57 @@ extern "C" {
     fn free(__ptr: *mut libc::c_void);
     /* Tectonic-enabled versions */
     #[no_mangle]
-    fn tt_mfgets(buffer: *mut libc::c_char, length: libc::c_int,
-                 file: rust_input_handle_t) -> *mut libc::c_char;
+    fn tt_mfgets(
+        buffer: *mut libc::c_char,
+        length: libc::c_int,
+        file: rust_input_handle_t,
+    ) -> *mut libc::c_char;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
     #[no_mangle]
     fn dpx_message(fmt: *const libc::c_char, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn new(size: uint32_t) -> *mut libc::c_void;
     #[no_mangle]
@@ -168,7 +176,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
  *  We store code mapping tables in different place than
  *  struct sfd_file_.
  */
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfd_file_ {
     pub ident: *mut libc::c_char,
@@ -178,16 +186,17 @@ pub struct sfd_file_ {
     pub num_subfonts: libc::c_int,
 }
 /* Mapping table */
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfd_rec_ {
     pub vector: [libc::c_ushort; 256],
     /* 0 for undefined */
 }
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char,
-                               mut s2: *const libc::c_char) -> bool {
-    if !s1.is_null() && !s2.is_null() { return strcmp(s1, s2) == 0i32 }
+unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+    if !s1.is_null() && !s2.is_null() {
+        return strcmp(s1, s2) == 0i32;
+    }
     return 0i32 != 0;
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -235,8 +244,7 @@ unsafe extern "C" fn clean_sfd_file_(mut sfd: *mut sfd_file_) {
     free((*sfd).rec_id as *mut libc::c_void);
     init_sfd_file_(sfd);
 }
-static mut sfd_files: *mut sfd_file_ =
-    0 as *const sfd_file_ as *mut sfd_file_;
+static mut sfd_files: *mut sfd_file_ = 0 as *const sfd_file_ as *mut sfd_file_;
 static mut num_sfd_files: libc::c_int = 0i32;
 static mut max_sfd_files: libc::c_int = 0i32;
 static mut sfd_record: *mut sfd_rec_ = 0 as *const sfd_rec_ as *mut sfd_rec_;
@@ -248,22 +256,20 @@ static mut line_buf: [libc::c_char; 4096] = [0; 4096];
  * SFD file format uses a '\' before newline sequence
  * for line-continuation.
  */
-unsafe extern "C" fn readline(mut buf: *mut libc::c_char,
-                              mut buf_len: libc::c_int,
-                              mut handle: *mut rust_input_handle_t)
- -> *mut libc::c_char {
+unsafe extern "C" fn readline(
+    mut buf: *mut libc::c_char,
+    mut buf_len: libc::c_int,
+    mut handle: *mut rust_input_handle_t,
+) -> *mut libc::c_char {
     let mut r: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut p: *mut libc::c_char = buf;
     let mut n: libc::c_int = 0i32;
     let mut c: libc::c_int = 0i32;
-    while buf_len - n > 0i32 &&
-              {
-                  q =
-                      tt_mfgets(p, buf_len - n,
-                                handle as rust_input_handle_t);
-                  !q.is_null()
-              } {
+    while buf_len - n > 0i32 && {
+        q = tt_mfgets(p, buf_len - n, handle as rust_input_handle_t);
+        !q.is_null()
+    } {
         c += 1;
         r = strchr(q, '#' as i32);
         /* Comment is converted to single wsp (followed by a newline). */
@@ -271,21 +277,30 @@ unsafe extern "C" fn readline(mut buf: *mut libc::c_char,
             *r = ' ' as i32 as libc::c_char; /* empty line */
             *r.offset(1) = '\u{0}' as i32 as libc::c_char
         }
-        if strlen(q) == 0i32 as libc::c_ulong { break ; }
-        n =
-            (n as libc::c_ulong).wrapping_add(strlen(q)) as libc::c_int as
-                libc::c_int;
+        if strlen(q) == 0i32 as libc::c_ulong {
+            break;
+        }
+        n = (n as libc::c_ulong).wrapping_add(strlen(q)) as libc::c_int as libc::c_int;
         q = q.offset(strlen(q).wrapping_sub(1i32 as libc::c_ulong) as isize);
-        if *q as libc::c_int != '\\' as i32 { break ; }
+        if *q as libc::c_int != '\\' as i32 {
+            break;
+        }
         /* line continued */
         n -= 1i32;
         p = buf.offset(n as isize)
     }
     if n >= buf_len - 1i32 {
-        dpx_warning(b"Possible buffer overflow in reading SFD file (buffer full, size=%d bytes)\x00"
-                        as *const u8 as *const libc::c_char, buf_len - 1i32);
+        dpx_warning(
+            b"Possible buffer overflow in reading SFD file (buffer full, size=%d bytes)\x00"
+                as *const u8 as *const libc::c_char,
+            buf_len - 1i32,
+        );
     }
-    return if c > 0i32 { buf } else { 0 as *mut libc::c_char };
+    return if c > 0i32 {
+        buf
+    } else {
+        0 as *mut libc::c_char
+    };
 }
 /* subfont_id ( integer ':' | integer '_' integer | integer )*
  *
@@ -294,9 +309,10 @@ unsafe extern "C" fn readline(mut buf: *mut libc::c_char,
  *  0xA1A1_0xA1A5 ==> Expanded to 0xA1A1 0xA1A2 ... 0xA1A5
  */
 /* subfont_id is already consumed here. */
-unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_,
-                                     mut lbuf: *const libc::c_char)
- -> libc::c_int {
+unsafe extern "C" fn read_sfd_record(
+    mut rec: *mut sfd_rec_,
+    mut lbuf: *const libc::c_char,
+) -> libc::c_int {
     let mut p: *const libc::c_char = lbuf;
     let mut q: *const libc::c_char = 0 as *const libc::c_char;
     let mut r: *mut libc::c_char = 0 as *mut libc::c_char;
@@ -306,11 +322,11 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_,
     let mut v2: libc::c_int = 0i32;
     let mut curpos: libc::c_int = 0i32;
     let mut error: libc::c_int = 0i32;
-    while *p as libc::c_int != 0 &&
-              *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as
-                                             isize) as libc::c_int &
-                  _ISspace as libc::c_int as libc::c_ushort as libc::c_int !=
-                  0 {
+    while *p as libc::c_int != 0
+        && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize) as libc::c_int
+            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            != 0
+    {
         p = p.offset(1)
     }
     while error == 0 && *p as libc::c_int != 0 {
@@ -318,26 +334,31 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_,
         q = p;
         v1 = strtol(p, &mut r, 0i32) as libc::c_int;
         q = r;
-        if q == p ||
-               !(*q as libc::c_int == '\u{0}' as i32 ||
-                     *(*__ctype_b_loc()).offset(*q as libc::c_uchar as
-                                                    libc::c_int as isize) as
-                         libc::c_int &
-                         _ISspace as libc::c_int as libc::c_ushort as
-                             libc::c_int != 0) &&
-                   *q as libc::c_int != ':' as i32 &&
-                   *q as libc::c_int != '_' as i32 {
-            dpx_warning(b"Unknown token in subfont mapping table: %c\x00" as
-                            *const u8 as *const libc::c_char,
-                        *q as libc::c_int);
-            return -1i32
+        if q == p
+            || !(*q as libc::c_int == '\u{0}' as i32
+                || *(*__ctype_b_loc()).offset(*q as libc::c_uchar as libc::c_int as isize)
+                    as libc::c_int
+                    & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                    != 0)
+                && *q as libc::c_int != ':' as i32
+                && *q as libc::c_int != '_' as i32
+        {
+            dpx_warning(
+                b"Unknown token in subfont mapping table: %c\x00" as *const u8
+                    as *const libc::c_char,
+                *q as libc::c_int,
+            );
+            return -1i32;
         }
         match *q as libc::c_int {
             58 => {
                 if v1 < 0i32 || v1 > 0xffi32 {
-                    dpx_warning(b"Invalud value for subfont table offset: %d\x00"
-                                    as *const u8 as *const libc::c_char, v1);
-                    return -1i32
+                    dpx_warning(
+                        b"Invalud value for subfont table offset: %d\x00" as *const u8
+                            as *const libc::c_char,
+                        v1,
+                    );
+                    return -1i32;
                 }
                 repos = 1i32;
                 q = q.offset(1)
@@ -346,34 +367,44 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_,
                 p = q.offset(1);
                 v2 = strtol(p, &mut r, 0i32) as libc::c_int;
                 q = r;
-                if v1 < 0i32 || v1 as libc::c_long > 0xffffi64 || v2 < 0i32 ||
-                       v2 as libc::c_long > 0xffffi64 {
-                    dpx_warning(b"Invalid value in subfont mapping table: 0x%x_0x%x\x00"
-                                    as *const u8 as *const libc::c_char, v1,
-                                v2);
-                    return -1i32
+                if v1 < 0i32
+                    || v1 as libc::c_long > 0xffffi64
+                    || v2 < 0i32
+                    || v2 as libc::c_long > 0xffffi64
+                {
+                    dpx_warning(
+                        b"Invalid value in subfont mapping table: 0x%x_0x%x\x00" as *const u8
+                            as *const libc::c_char,
+                        v1,
+                        v2,
+                    );
+                    return -1i32;
                 } else {
-                    if q == p ||
-                           !(*q as libc::c_int == '\u{0}' as i32 ||
-                                 *(*__ctype_b_loc()).offset(*q as
-                                                                libc::c_uchar
-                                                                as libc::c_int
-                                                                as isize) as
-                                     libc::c_int &
-                                     _ISspace as libc::c_int as libc::c_ushort
-                                         as libc::c_int != 0) {
-                        dpx_warning(b"Invalid char in subfont mapping table: %c\x00"
-                                        as *const u8 as *const libc::c_char,
-                                    *q as libc::c_int);
-                        return -1i32
+                    if q == p
+                        || !(*q as libc::c_int == '\u{0}' as i32
+                            || *(*__ctype_b_loc())
+                                .offset(*q as libc::c_uchar as libc::c_int as isize)
+                                as libc::c_int
+                                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                                != 0)
+                    {
+                        dpx_warning(
+                            b"Invalid char in subfont mapping table: %c\x00" as *const u8
+                                as *const libc::c_char,
+                            *q as libc::c_int,
+                        );
+                        return -1i32;
                     }
                 }
             }
             _ => {
                 if v1 < 0i32 || v1 as libc::c_long > 0xffffi64 {
-                    dpx_warning(b"Invalid character code in subfont mapping table: 0x%x\x00"
-                                    as *const u8 as *const libc::c_char, v1);
-                    return -1i32
+                    dpx_warning(
+                        b"Invalid character code in subfont mapping table: 0x%x\x00" as *const u8
+                            as *const libc::c_char,
+                        v1,
+                    );
+                    return -1i32;
                 }
                 v2 = v1
             }
@@ -385,25 +416,29 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_,
                 dpx_warning(b"Invalid range in subfont mapping: curpos=\"0x%02x\" range=\"0x%04x,0x%04x\"\x00"
                                 as *const u8 as *const libc::c_char, curpos,
                             v1, v2);
-                return -1i32
+                return -1i32;
             }
             c = v1;
             while c <= v2 {
                 if (*rec).vector[curpos as usize] as libc::c_int != 0i32 {
-                    dpx_warning(b"Subfont mapping for slot=\"0x%02x\" already defined...\x00"
-                                    as *const u8 as *const libc::c_char,
-                                curpos);
-                    return -1i32
+                    dpx_warning(
+                        b"Subfont mapping for slot=\"0x%02x\" already defined...\x00" as *const u8
+                            as *const libc::c_char,
+                        curpos,
+                    );
+                    return -1i32;
                 }
                 if curpos >= 0i32 && curpos <= 255i32 {
                 } else {
-                    __assert_fail(b"curpos >= 0 && curpos <= 255\x00" as
-                                      *const u8 as *const libc::c_char,
-                                  b"dpx-subfont.c\x00" as *const u8 as
-                                      *const libc::c_char,
-                                  230i32 as libc::c_uint,
-                                  (*::std::mem::transmute::<&[u8; 53],
-                                                            &[libc::c_char; 53]>(b"int read_sfd_record(struct sfd_rec_ *, const char *)\x00")).as_ptr());
+                    __assert_fail(
+                        b"curpos >= 0 && curpos <= 255\x00" as *const u8 as *const libc::c_char,
+                        b"dpx-subfont.c\x00" as *const u8 as *const libc::c_char,
+                        230i32 as libc::c_uint,
+                        (*::std::mem::transmute::<&[u8; 53], &[libc::c_char; 53]>(
+                            b"int read_sfd_record(struct sfd_rec_ *, const char *)\x00",
+                        ))
+                        .as_ptr(),
+                    );
                 }
                 let fresh0 = curpos;
                 curpos = curpos + 1;
@@ -412,21 +447,22 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_,
             }
         }
         p = q;
-        while *p as libc::c_int != 0 &&
-                  *(*__ctype_b_loc()).offset(*p as libc::c_uchar as
-                                                 libc::c_int as isize) as
-                      libc::c_int &
-                      _ISspace as libc::c_int as libc::c_ushort as libc::c_int
-                      != 0 {
+        while *p as libc::c_int != 0
+            && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                as libc::c_int
+                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                != 0
+        {
             p = p.offset(1)
         }
     }
     return error;
 }
 /* Scan for subfont IDs */
-unsafe extern "C" fn scan_sfd_file(mut sfd: *mut sfd_file_,
-                                   mut handle: *mut rust_input_handle_t)
- -> libc::c_int {
+unsafe extern "C" fn scan_sfd_file(
+    mut sfd: *mut sfd_file_,
+    mut handle: *mut rust_input_handle_t,
+) -> libc::c_int {
     let mut id: *mut libc::c_char = 0 as *mut libc::c_char; /* empty */
     let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut p: *mut libc::c_char = 0 as *mut libc::c_char;
@@ -434,76 +470,86 @@ unsafe extern "C" fn scan_sfd_file(mut sfd: *mut sfd_file_,
     let mut lpos: libc::c_int = 0i32;
     if !sfd.is_null() && !handle.is_null() {
     } else {
-        __assert_fail(b"sfd && handle\x00" as *const u8 as
-                          *const libc::c_char,
-                      b"dpx-subfont.c\x00" as *const u8 as
-                          *const libc::c_char, 248i32 as libc::c_uint,
-                      (*::std::mem::transmute::<&[u8; 61],
-                                                &[libc::c_char; 61]>(b"int scan_sfd_file(struct sfd_file_ *, rust_input_handle_t *)\x00")).as_ptr());
+        __assert_fail(
+            b"sfd && handle\x00" as *const u8 as *const libc::c_char,
+            b"dpx-subfont.c\x00" as *const u8 as *const libc::c_char,
+            248i32 as libc::c_uint,
+            (*::std::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+                b"int scan_sfd_file(struct sfd_file_ *, rust_input_handle_t *)\x00",
+            ))
+            .as_ptr(),
+        );
     }
     if verbose > 3i32 {
-        dpx_message(b"\nsubfont>> Scanning SFD file \"%s\"...\n\x00" as
-                        *const u8 as *const libc::c_char, (*sfd).ident);
+        dpx_message(
+            b"\nsubfont>> Scanning SFD file \"%s\"...\n\x00" as *const u8 as *const libc::c_char,
+            (*sfd).ident,
+        );
     }
     ttstub_input_seek(handle as rust_input_handle_t, 0i32 as ssize_t, 0i32);
     (*sfd).num_subfonts = 0i32;
     (*sfd).max_subfonts = (*sfd).num_subfonts;
-    loop  {
+    loop {
         p = readline(line_buf.as_mut_ptr(), 4096i32, handle);
-        if p.is_null() { break ; }
+        if p.is_null() {
+            break;
+        }
         lpos += 1;
-        while *p as libc::c_int != 0 &&
-                  *(*__ctype_b_loc()).offset(*p as libc::c_uchar as
-                                                 libc::c_int as isize) as
-                      libc::c_int &
-                      _ISspace as libc::c_int as libc::c_ushort as libc::c_int
-                      != 0 {
+        while *p as libc::c_int != 0
+            && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                as libc::c_int
+                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                != 0
+        {
             p = p.offset(1)
         }
-        if *p as libc::c_int == 0i32 { continue ; }
+        if *p as libc::c_int == 0i32 {
+            continue;
+        }
         /* Saw non-wsp here */
         n = 0i32;
         q = p;
-        while *p as libc::c_int != 0 &&
-                  *(*__ctype_b_loc()).offset(*p as libc::c_uchar as
-                                                 libc::c_int as isize) as
-                      libc::c_int &
-                      _ISspace as libc::c_int as libc::c_ushort as libc::c_int
-                      == 0 {
+        while *p as libc::c_int != 0
+            && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                as libc::c_int
+                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                == 0
+        {
             p = p.offset(1);
             n += 1
         }
-        id =
-            new(((n + 1i32) as uint32_t as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_char>()
-                                                     as libc::c_ulong) as
-                    uint32_t) as *mut libc::c_char;
-        memcpy(id as *mut libc::c_void, q as *const libc::c_void,
-               n as libc::c_ulong);
+        id = new(((n + 1i32) as uint32_t as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            as uint32_t) as *mut libc::c_char;
+        memcpy(
+            id as *mut libc::c_void,
+            q as *const libc::c_void,
+            n as libc::c_ulong,
+        );
         *id.offset(n as isize) = '\u{0}' as i32 as libc::c_char;
         if (*sfd).num_subfonts >= (*sfd).max_subfonts {
             (*sfd).max_subfonts += 16i32;
-            (*sfd).sub_id =
-                renew((*sfd).sub_id as *mut libc::c_void,
-                      ((*sfd).max_subfonts as uint32_t as
-                           libc::c_ulong).wrapping_mul(::std::mem::size_of::<*mut libc::c_char>()
-                                                           as libc::c_ulong)
-                          as uint32_t) as *mut *mut libc::c_char
+            (*sfd).sub_id = renew(
+                (*sfd).sub_id as *mut libc::c_void,
+                ((*sfd).max_subfonts as uint32_t as libc::c_ulong)
+                    .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as libc::c_ulong)
+                    as uint32_t,
+            ) as *mut *mut libc::c_char
         }
         if verbose > 3i32 {
-            dpx_message(b"subfont>>   id=\"%s\" at line=\"%d\"\n\x00" as
-                            *const u8 as *const libc::c_char, id, lpos);
+            dpx_message(
+                b"subfont>>   id=\"%s\" at line=\"%d\"\n\x00" as *const u8 as *const libc::c_char,
+                id,
+                lpos,
+            );
         }
-        let ref mut fresh1 =
-            *(*sfd).sub_id.offset((*sfd).num_subfonts as isize);
+        let ref mut fresh1 = *(*sfd).sub_id.offset((*sfd).num_subfonts as isize);
         *fresh1 = id;
         (*sfd).num_subfonts += 1
     }
-    (*sfd).rec_id =
-        new(((*sfd).num_subfonts as uint32_t as
-                 libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_int>()
-                                                 as libc::c_ulong) as
-                uint32_t) as *mut libc::c_int;
+    (*sfd).rec_id = new(((*sfd).num_subfonts as uint32_t as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<libc::c_int>() as libc::c_ulong)
+        as uint32_t) as *mut libc::c_int;
     n = 0i32;
     while n < (*sfd).num_subfonts {
         *(*sfd).rec_id.offset(n as isize) = -1i32;
@@ -511,17 +557,19 @@ unsafe extern "C" fn scan_sfd_file(mut sfd: *mut sfd_file_,
         /* Not loaded yet. We do lazy loading of map definitions. */
     }
     if verbose > 3i32 {
-        dpx_message(b"subfont>> %d entries found in SFD file \"%s\".\n\x00" as
-                        *const u8 as *const libc::c_char, (*sfd).num_subfonts,
-                    (*sfd).ident);
+        dpx_message(
+            b"subfont>> %d entries found in SFD file \"%s\".\n\x00" as *const u8
+                as *const libc::c_char,
+            (*sfd).num_subfonts,
+            (*sfd).ident,
+        );
     }
     return 0i32;
 }
 /* Open SFD file and gather subfont IDs. We do not read mapping tables
  * here but only read subfont IDs used in SFD file.
  */
-unsafe extern "C" fn find_sfd_file(mut sfd_name: *const libc::c_char)
- -> libc::c_int {
+unsafe extern "C" fn find_sfd_file(mut sfd_name: *const libc::c_char) -> libc::c_int {
     let mut id: libc::c_int = -1i32;
     let mut i: libc::c_int = 0;
     let mut error: libc::c_int = -1i32;
@@ -530,36 +578,36 @@ unsafe extern "C" fn find_sfd_file(mut sfd_name: *const libc::c_char)
     while i < num_sfd_files {
         if streq_ptr((*sfd_files.offset(i as isize)).ident, sfd_name) {
             id = i;
-            break ;
-        } else { i += 1 }
+            break;
+        } else {
+            i += 1
+        }
     }
     if id < 0i32 {
         let mut sfd: *mut sfd_file_ = 0 as *mut sfd_file_;
-        let mut handle: *mut rust_input_handle_t =
-            0 as *mut rust_input_handle_t;
+        let mut handle: *mut rust_input_handle_t = 0 as *mut rust_input_handle_t;
         if num_sfd_files >= max_sfd_files {
             max_sfd_files += 8i32;
-            sfd_files =
-                renew(sfd_files as *mut libc::c_void,
-                      (max_sfd_files as uint32_t as
-                           libc::c_ulong).wrapping_mul(::std::mem::size_of::<sfd_file_>()
-                                                           as libc::c_ulong)
-                          as uint32_t) as *mut sfd_file_
+            sfd_files = renew(
+                sfd_files as *mut libc::c_void,
+                (max_sfd_files as uint32_t as libc::c_ulong)
+                    .wrapping_mul(::std::mem::size_of::<sfd_file_>() as libc::c_ulong)
+                    as uint32_t,
+            ) as *mut sfd_file_
         }
-        sfd =
-            &mut *sfd_files.offset(num_sfd_files as isize) as *mut sfd_file_;
+        sfd = &mut *sfd_files.offset(num_sfd_files as isize) as *mut sfd_file_;
         init_sfd_file_(sfd);
-        (*sfd).ident =
-            new((strlen(sfd_name).wrapping_add(1i32 as libc::c_ulong) as
-                     uint32_t as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_char>()
-                                                     as libc::c_ulong) as
-                    uint32_t) as *mut libc::c_char;
+        (*sfd).ident = new(
+            (strlen(sfd_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                as uint32_t,
+        ) as *mut libc::c_char;
         strcpy((*sfd).ident, sfd_name);
-        handle =
-            ttstub_input_open((*sfd).ident, TTIF_SFD, 0i32) as
-                *mut rust_input_handle_t;
-        if handle.is_null() { clean_sfd_file_(sfd); return -1i32 }
+        handle = ttstub_input_open((*sfd).ident, TTIF_SFD, 0i32) as *mut rust_input_handle_t;
+        if handle.is_null() {
+            clean_sfd_file_(sfd);
+            return -1i32;
+        }
         error = scan_sfd_file(sfd, handle);
         ttstub_input_close(handle as rust_input_handle_t);
         if error == 0 {
@@ -567,8 +615,11 @@ unsafe extern "C" fn find_sfd_file(mut sfd_name: *const libc::c_char)
             num_sfd_files = num_sfd_files + 1;
             id = fresh2
         } else {
-            dpx_warning(b"Error occured while reading SFD file \"%s\"\x00" as
-                            *const u8 as *const libc::c_char, sfd_name);
+            dpx_warning(
+                b"Error occured while reading SFD file \"%s\"\x00" as *const u8
+                    as *const libc::c_char,
+                sfd_name,
+            );
             clean_sfd_file_(sfd);
             id = -1i32
         }
@@ -576,14 +627,18 @@ unsafe extern "C" fn find_sfd_file(mut sfd_name: *const libc::c_char)
     return id;
 }
 #[no_mangle]
-pub unsafe extern "C" fn sfd_get_subfont_ids(mut sfd_name:
-                                                 *const libc::c_char,
-                                             mut num_ids: *mut libc::c_int)
- -> *mut *mut libc::c_char {
+pub unsafe extern "C" fn sfd_get_subfont_ids(
+    mut sfd_name: *const libc::c_char,
+    mut num_ids: *mut libc::c_int,
+) -> *mut *mut libc::c_char {
     let mut sfd_id: libc::c_int = 0;
-    if sfd_name.is_null() { return 0 as *mut *mut libc::c_char }
+    if sfd_name.is_null() {
+        return 0 as *mut *mut libc::c_char;
+    }
     sfd_id = find_sfd_file(sfd_name);
-    if sfd_id < 0i32 { return 0 as *mut *mut libc::c_char }
+    if sfd_id < 0i32 {
+        return 0 as *mut *mut libc::c_char;
+    }
     if !num_ids.is_null() {
         *num_ids = (*sfd_files.offset(sfd_id as isize)).num_subfonts
     }
@@ -593,9 +648,10 @@ pub unsafe extern "C" fn sfd_get_subfont_ids(mut sfd_name:
  * Mapping tables are actually read here.
  */
 #[no_mangle]
-pub unsafe extern "C" fn sfd_load_record(mut sfd_name: *const libc::c_char,
-                                         mut subfont_id: *const libc::c_char)
- -> libc::c_int {
+pub unsafe extern "C" fn sfd_load_record(
+    mut sfd_name: *const libc::c_char,
+    mut subfont_id: *const libc::c_char,
+) -> libc::c_int {
     let mut rec_id: libc::c_int = -1i32;
     let mut sfd: *mut sfd_file_ = 0 as *mut sfd_file_;
     let mut handle: *mut rust_input_handle_t = 0 as *mut rust_input_handle_t;
@@ -604,61 +660,72 @@ pub unsafe extern "C" fn sfd_load_record(mut sfd_name: *const libc::c_char,
     let mut error: libc::c_int = 0i32;
     let mut p: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
-    if sfd_name.is_null() || subfont_id.is_null() { return -1i32 }
+    if sfd_name.is_null() || subfont_id.is_null() {
+        return -1i32;
+    }
     sfd_id = find_sfd_file(sfd_name);
-    if sfd_id < 0i32 { return -1i32 }
+    if sfd_id < 0i32 {
+        return -1i32;
+    }
     sfd = &mut *sfd_files.offset(sfd_id as isize) as *mut sfd_file_;
     /* Check if we already loaded mapping table. */
     i = 0i32;
-    while i < (*sfd).num_subfonts &&
-              strcmp(*(*sfd).sub_id.offset(i as isize), subfont_id) != 0 {
+    while i < (*sfd).num_subfonts && strcmp(*(*sfd).sub_id.offset(i as isize), subfont_id) != 0 {
         i += 1
     }
     if i == (*sfd).num_subfonts {
-        dpx_warning(b"Subfont id=\"%s\" not exist in SFD file \"%s\"...\x00"
-                        as *const u8 as *const libc::c_char, subfont_id,
-                    (*sfd).ident);
-        return -1i32
+        dpx_warning(
+            b"Subfont id=\"%s\" not exist in SFD file \"%s\"...\x00" as *const u8
+                as *const libc::c_char,
+            subfont_id,
+            (*sfd).ident,
+        );
+        return -1i32;
     } else {
         if *(*sfd).rec_id.offset(i as isize) >= 0i32 {
-            return *(*sfd).rec_id.offset(i as isize)
+            return *(*sfd).rec_id.offset(i as isize);
         }
     }
     if verbose > 3i32 {
-        dpx_message(b"\nsubfont>> Loading SFD mapping table for <%s,%s>...\x00"
-                        as *const u8 as *const libc::c_char, (*sfd).ident,
-                    subfont_id);
+        dpx_message(
+            b"\nsubfont>> Loading SFD mapping table for <%s,%s>...\x00" as *const u8
+                as *const libc::c_char,
+            (*sfd).ident,
+            subfont_id,
+        );
     }
     /* reopen */
-    handle =
-        ttstub_input_open((*sfd).ident, TTIF_SFD, 0i32) as
-            *mut rust_input_handle_t;
+    handle = ttstub_input_open((*sfd).ident, TTIF_SFD, 0i32) as *mut rust_input_handle_t;
     if handle.is_null() {
-        return -1i32
+        return -1i32;
         /* _tt_abort("Could not open SFD file \"%s\"", sfd_name); */
     }
-    loop 
-         /* Seek to record for 'sub_name'. */
-         {
+    loop
+    /* Seek to record for 'sub_name'. */
+    {
         p = readline(line_buf.as_mut_ptr(), 4096i32, handle); /* empty line */
-        if p.is_null() { break ; }
-        while *p as libc::c_int != 0 &&
-                  *(*__ctype_b_loc()).offset(*p as libc::c_uchar as
-                                                 libc::c_int as isize) as
-                      libc::c_int &
-                      _ISspace as libc::c_int as libc::c_ushort as libc::c_int
-                      != 0 {
+        if p.is_null() {
+            break;
+        }
+        while *p as libc::c_int != 0
+            && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                as libc::c_int
+                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                != 0
+        {
             p = p.offset(1)
         }
-        if *p as libc::c_int == 0i32 { continue ; }
+        if *p as libc::c_int == 0i32 {
+            continue;
+        }
         /* q = parse_ident(&p, p + strlen(p)); */
         q = p;
-        while *p as libc::c_int != 0 &&
-                  *(*__ctype_b_loc()).offset(*p as libc::c_uchar as
-                                                 libc::c_int as isize) as
-                      libc::c_int &
-                      _ISspace as libc::c_int as libc::c_ushort as libc::c_int
-                      == 0 {
+        while *p as libc::c_int != 0
+            && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                as libc::c_int
+                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                == 0
+        {
             p = p.offset(1)
         }
         *p = '\u{0}' as i32 as libc::c_char;
@@ -666,33 +733,34 @@ pub unsafe extern "C" fn sfd_load_record(mut sfd_name: *const libc::c_char,
         if streq_ptr(q, subfont_id) {
             if num_sfd_records >= max_sfd_records {
                 max_sfd_records += 16i32;
-                sfd_record =
-                    renew(sfd_record as *mut libc::c_void,
-                          (max_sfd_records as uint32_t as
-                               libc::c_ulong).wrapping_mul(::std::mem::size_of::<sfd_rec_>()
-                                                               as
-                                                               libc::c_ulong)
-                              as uint32_t) as *mut sfd_rec_
+                sfd_record = renew(
+                    sfd_record as *mut libc::c_void,
+                    (max_sfd_records as uint32_t as libc::c_ulong)
+                        .wrapping_mul(::std::mem::size_of::<sfd_rec_>() as libc::c_ulong)
+                        as uint32_t,
+                ) as *mut sfd_rec_
             }
-            if !(*sfd_record.offset(num_sfd_records as
-                                        isize)).vector.as_mut_ptr().is_null()
-               {
+            if !(*sfd_record.offset(num_sfd_records as isize))
+                .vector
+                .as_mut_ptr()
+                .is_null()
+            {
                 let mut __i: libc::c_int = 0;
                 __i = 0i32;
                 while __i < 256i32 {
-                    (*sfd_record.offset(num_sfd_records as
-                                            isize)).vector[__i as usize] =
+                    (*sfd_record.offset(num_sfd_records as isize)).vector[__i as usize] =
                         0i32 as libc::c_ushort;
                     __i += 1
                 }
             }
-            error =
-                read_sfd_record(&mut *sfd_record.offset(num_sfd_records as
-                                                            isize), p);
+            error = read_sfd_record(&mut *sfd_record.offset(num_sfd_records as isize), p);
             if error != 0 {
-                dpx_warning(b"Error occured while reading SFD file: file=\"%s\" subfont_id=\"%s\"\x00"
-                                as *const u8 as *const libc::c_char,
-                            (*sfd).ident, subfont_id);
+                dpx_warning(
+                    b"Error occured while reading SFD file: file=\"%s\" subfont_id=\"%s\"\x00"
+                        as *const u8 as *const libc::c_char,
+                    (*sfd).ident,
+                    subfont_id,
+                );
             } else {
                 let fresh3 = num_sfd_records;
                 num_sfd_records = num_sfd_records + 1;
@@ -701,30 +769,34 @@ pub unsafe extern "C" fn sfd_load_record(mut sfd_name: *const libc::c_char,
         }
     }
     if rec_id < 0i32 {
-        dpx_warning(b"Failed to load subfont mapping table for SFD=\"%s\" subfont_id=\"%s\"\x00"
-                        as *const u8 as *const libc::c_char, (*sfd).ident,
-                    subfont_id);
+        dpx_warning(
+            b"Failed to load subfont mapping table for SFD=\"%s\" subfont_id=\"%s\"\x00"
+                as *const u8 as *const libc::c_char,
+            (*sfd).ident,
+            subfont_id,
+        );
     }
     *(*sfd).rec_id.offset(i as isize) = rec_id;
     ttstub_input_close(handle as rust_input_handle_t);
     if verbose > 3i32 {
         let mut __i_0: libc::c_int = 0;
         if rec_id >= 0i32 {
-            dpx_message(b" at id=\"%d\"\x00" as *const u8 as
-                            *const libc::c_char, rec_id);
-            dpx_message(b"\nsubfont>> Content of mapping table:\x00" as
-                            *const u8 as *const libc::c_char);
+            dpx_message(
+                b" at id=\"%d\"\x00" as *const u8 as *const libc::c_char,
+                rec_id,
+            );
+            dpx_message(
+                b"\nsubfont>> Content of mapping table:\x00" as *const u8 as *const libc::c_char,
+            );
             __i_0 = 0i32;
             while __i_0 < 256i32 {
                 if __i_0 % 16i32 == 0i32 {
-                    dpx_message(b"\nsubfont>>  \x00" as *const u8 as
-                                    *const libc::c_char);
+                    dpx_message(b"\nsubfont>>  \x00" as *const u8 as *const libc::c_char);
                 }
-                dpx_message(b" %04x\x00" as *const u8 as *const libc::c_char,
-                            (*sfd_record.offset(rec_id as
-                                                    isize)).vector[__i_0 as
-                                                                       usize]
-                                as libc::c_int);
+                dpx_message(
+                    b" %04x\x00" as *const u8 as *const libc::c_char,
+                    (*sfd_record.offset(rec_id as isize)).vector[__i_0 as usize] as libc::c_int,
+                );
                 __i_0 += 1
             }
         }
@@ -734,12 +806,15 @@ pub unsafe extern "C" fn sfd_load_record(mut sfd_name: *const libc::c_char,
 }
 /* Lookup mapping table */
 #[no_mangle]
-pub unsafe extern "C" fn lookup_sfd_record(mut rec_id: libc::c_int,
-                                           mut c: libc::c_uchar)
- -> libc::c_ushort {
+pub unsafe extern "C" fn lookup_sfd_record(
+    mut rec_id: libc::c_int,
+    mut c: libc::c_uchar,
+) -> libc::c_ushort {
     if sfd_record.is_null() || rec_id < 0i32 || rec_id >= num_sfd_records {
-        _tt_abort(b"Invalid subfont_id: %d\x00" as *const u8 as
-                      *const libc::c_char, rec_id);
+        _tt_abort(
+            b"Invalid subfont_id: %d\x00" as *const u8 as *const libc::c_char,
+            rec_id,
+        );
     }
     return (*sfd_record.offset(rec_id as isize)).vector[c as usize];
 }
@@ -765,7 +840,9 @@ pub unsafe extern "C" fn lookup_sfd_record(mut rec_id: libc::c_int,
 #[no_mangle]
 pub unsafe extern "C" fn release_sfd_record() {
     let mut i: libc::c_int = 0;
-    if !sfd_record.is_null() { free(sfd_record as *mut libc::c_void); }
+    if !sfd_record.is_null() {
+        free(sfd_record as *mut libc::c_void);
+    }
     if !sfd_files.is_null() {
         i = 0i32;
         while i < num_sfd_files {

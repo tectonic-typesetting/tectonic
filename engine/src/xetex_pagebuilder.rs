@@ -95,8 +95,7 @@ extern "C" {
     #[no_mangle]
     fn scan_left_brace();
     #[no_mangle]
-    fn vpackage(p: int32_t, h: scaled_t, m: small_number, l: scaled_t)
-     -> int32_t;
+    fn vpackage(p: int32_t, h: scaled_t, m: small_number, l: scaled_t) -> int32_t;
     #[no_mangle]
     fn prune_page_top(p: int32_t, s: bool) -> int32_t;
     #[no_mangle]
@@ -133,7 +132,7 @@ pub type uint16_t = __uint16_t;
 pub type scaled_t = int32_t;
 pub type eight_bits = libc::c_uchar;
 pub type small_number = libc::c_short;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
     pub s0: int32_t,
@@ -172,7 +171,7 @@ pub struct b32x2_le_t {
  *
  */
 pub type b32x2 = b32x2_le_t;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b16x4_le_t {
     pub s0: uint16_t,
@@ -181,8 +180,8 @@ pub struct b16x4_le_t {
     pub s3: uint16_t,
 }
 pub type b16x4 = b16x4_le_t;
-#[derive ( Copy , Clone )]
-#[repr ( C )]
+#[derive(Copy, Clone)]
+#[repr(C)]
 pub union memory_word {
     pub b32: b32x2,
     pub b16: b16x4,
@@ -191,7 +190,7 @@ pub union memory_word {
 }
 /* enum: normal .. filll */
 pub type group_code = libc::c_uchar;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
     pub mode: libc::c_short,
@@ -229,26 +228,70 @@ pub unsafe extern "C" fn initialize_pagebuilder_variables() {
 }
 unsafe extern "C" fn freeze_page_specs(mut s: small_number) {
     page_contents = s as libc::c_uchar;
-    page_so_far[0] =
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32
-                           + 256i32 + (0x10ffffi32 + 1i32) + 4i32) as
-                          isize)).b32.s1;
-    page_max_depth =
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32
-                           + 256i32 + (0x10ffffi32 + 1i32) + 5i32) as
-                          isize)).b32.s1;
+    page_so_far[0] = (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 4i32) as isize,
+    ))
+    .b32
+    .s1;
+    page_max_depth = (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 5i32) as isize,
+    ))
+    .b32
+    .s1;
     page_so_far[7] = 0i32;
     page_so_far[1] = 0i32;
     page_so_far[2] = 0i32;
@@ -259,28 +302,45 @@ unsafe extern "C" fn freeze_page_specs(mut s: small_number) {
     least_page_cost = 0x3fffffffi32;
 }
 unsafe extern "C" fn ensure_vbox(mut n: eight_bits) {
-    let mut p: int32_t =
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           n as libc::c_int) as isize)).b32.s1;
-    if p == -0xfffffffi32 { return }
-    if (*mem.offset(p as isize)).b16.s1 as libc::c_int != 0i32 { return }
+    let mut p: int32_t = (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + n as libc::c_int) as isize,
+    ))
+    .b32
+    .s1;
+    if p == -0xfffffffi32 {
+        return;
+    }
+    if (*mem.offset(p as isize)).b16.s1 as libc::c_int != 0i32 {
+        return;
+    }
     if file_line_error_style_p != 0 {
         print_file_line();
-    } else { print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char); }
-    print_cstr(b"Insertions can only be added to a vbox\x00" as *const u8 as
-                   *const libc::c_char);
+    } else {
+        print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+    }
+    print_cstr(b"Insertions can only be added to a vbox\x00" as *const u8 as *const libc::c_char);
     help_ptr = 3i32 as libc::c_uchar;
     help_line[2] =
-        b"Tut tut: You\'re trying to \\insert into a\x00" as *const u8 as
-            *const libc::c_char;
+        b"Tut tut: You\'re trying to \\insert into a\x00" as *const u8 as *const libc::c_char;
     help_line[1] =
-        b"\\box register that now contains an \\hbox.\x00" as *const u8 as
-            *const libc::c_char;
+        b"\\box register that now contains an \\hbox.\x00" as *const u8 as *const libc::c_char;
     help_line[0] =
-        b"Proceed, and I\'ll discard its present contents.\x00" as *const u8
-            as *const libc::c_char;
+        b"Proceed, and I\'ll discard its present contents.\x00" as *const u8 as *const libc::c_char;
     box_error(n);
 }
 /*1047: "The fire_up subroutine prepares to output the curent page at the best
@@ -301,28 +361,63 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
     let mut save_split_top_skip: int32_t = 0;
     let mut process_inserts: bool = false;
     /*1048: "Set the value of output_penalty" */
-    if (*mem.offset(best_page_break as isize)).b16.s1 as libc::c_int == 12i32
-       {
-        geq_word_define(1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                            1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                            19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                            256i32 + 1i32 + 3i32 * 256i32 +
-                            (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                            (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                            (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                            39i32,
-                        (*mem.offset((best_page_break + 1i32) as
-                                         isize)).b32.s1);
+    if (*mem.offset(best_page_break as isize)).b16.s1 as libc::c_int == 12i32 {
+        geq_word_define(
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 39i32,
+            (*mem.offset((best_page_break + 1i32) as isize)).b32.s1,
+        );
         (*mem.offset((best_page_break + 1i32) as isize)).b32.s1 = 10000i32
     } else {
-        geq_word_define(1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                            1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                            19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                            256i32 + 1i32 + 3i32 * 256i32 +
-                            (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                            (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                            (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                            39i32, 10000i32);
+        geq_word_define(
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 39i32,
+            10000i32,
+        );
     }
     /* ... resuming 1047 ... "We set the values of top_mark, first_mark, and
      * bot_mark. The program uses the fact that `bot_mark != null` implies
@@ -337,7 +432,9 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
         }
     }
     if cur_mark[2] != -0xfffffffi32 {
-        if cur_mark[0] != -0xfffffffi32 { delete_token_ref(cur_mark[0]); }
+        if cur_mark[0] != -0xfffffffi32 {
+            delete_token_ref(cur_mark[0]);
+        }
         cur_mark[0] = cur_mark[2];
         let ref mut fresh0 = (*mem.offset(cur_mark[0] as isize)).b32.s0;
         *fresh0 += 1;
@@ -350,10 +447,27 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
     if c == best_page_break {
         best_page_break = -0xfffffffi32
     } /* "c not yet linked in" */
-    if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                          19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                          255i32) as isize)).b32.s1 != -0xfffffffi32 {
+    if (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 255i32) as isize,
+    ))
+    .b32
+    .s1 != -0xfffffffi32
+    {
         /*1050:*/
         if file_line_error_style_p != 0 {
             print_file_line(); /* "this will count the number of insertions held over" */
@@ -362,34 +476,61 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
         }
         print_cstr(b"\x00" as *const u8 as *const libc::c_char);
         print_esc_cstr(b"box\x00" as *const u8 as *const libc::c_char);
-        print_cstr(b"255 is not void\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b"255 is not void\x00" as *const u8 as *const libc::c_char);
         help_ptr = 2i32 as libc::c_uchar;
-        help_line[1] =
-            b"You shouldn\'t use \\box255 except in \\output routines.\x00" as
-                *const u8 as *const libc::c_char;
-        help_line[0] =
-            b"Proceed, and I\'ll discard its present contents.\x00" as
-                *const u8 as *const libc::c_char;
+        help_line[1] = b"You shouldn\'t use \\box255 except in \\output routines.\x00" as *const u8
+            as *const libc::c_char;
+        help_line[0] = b"Proceed, and I\'ll discard its present contents.\x00" as *const u8
+            as *const libc::c_char;
         box_error(255i32 as eight_bits);
     }
     insert_penalties = 0i32;
-    save_split_top_skip =
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           10i32) as isize)).b32.s1;
+    save_split_top_skip = (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 10i32) as isize,
+    ))
+    .b32
+    .s1;
     /* Tectonic: in semantic pagination mode, we act as if holding_inserts is
      * always active. */
-    process_inserts =
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           53i32) as isize)).b32.s1 <= 0i32 &&
-            !semantic_pagination_enabled;
+    process_inserts = (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 53i32) as isize,
+    ))
+    .b32
+    .s1 <= 0i32
+        && !semantic_pagination_enabled;
     if process_inserts {
         /*1053: "Prepare all the boxes involved in insertions to act as
          * queues". Namely: for each insert being tracked, set the
@@ -398,32 +539,73 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
          * just kept in the page vlist without any processing, I believe with
          * the expectation that the output routine will do something clever
          * with them. */
-        r =
-            (*mem.offset(4999999)).b32.s1; /* 5 = list_offset, "position of the list inside the box" */
+        r = (*mem.offset(4999999)).b32.s1; /* 5 = list_offset, "position of the list inside the box" */
         while r != 4999999i32 {
             if (*mem.offset((r + 2i32) as isize)).b32.s0 != -0xfffffffi32 {
                 n = (*mem.offset(r as isize)).b16.s0 as libc::c_uchar;
                 ensure_vbox(n);
-                if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                      (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                      12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                      256i32 + 256i32 + 13i32 + 256i32 + 4i32
-                                      + n as libc::c_int) as isize)).b32.s1 ==
-                       -0xfffffffi32 {
-                    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) + 1i32 + 15000i32
-                                       + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32
-                                       + 256i32 + 256i32 + 13i32 + 256i32 +
-                                       4i32 + n as libc::c_int) as
-                                      isize)).b32.s1 = new_null_box()
+                if (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + n as libc::c_int) as isize,
+                ))
+                .b32
+                .s1 == -0xfffffffi32
+                {
+                    (*eqtb.offset(
+                        (1i32
+                            + (0x10ffffi32 + 1i32)
+                            + (0x10ffffi32 + 1i32)
+                            + 1i32
+                            + 15000i32
+                            + 12i32
+                            + 9000i32
+                            + 1i32
+                            + 1i32
+                            + 19i32
+                            + 256i32
+                            + 256i32
+                            + 13i32
+                            + 256i32
+                            + 4i32
+                            + n as libc::c_int) as isize,
+                    ))
+                    .b32
+                    .s1 = new_null_box()
                 }
-                p =
-                    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) + 1i32 + 15000i32
-                                       + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32
-                                       + 256i32 + 256i32 + 13i32 + 256i32 +
-                                       4i32 + n as libc::c_int) as
-                                      isize)).b32.s1 + 5i32;
+                p = (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + n as libc::c_int) as isize,
+                ))
+                .b32
+                .s1 + 5i32;
                 while (*mem.offset(p as isize)).b32.s1 != -0xfffffffi32 {
                     p = (*mem.offset(p as isize)).b32.s1
                 }
@@ -443,117 +625,149 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
                  * the appropriate box, or hold it for the next page; also
                  * delete node p from the current page." */
                 r = (*mem.offset(4999999)).b32.s1;
-                while (*mem.offset(r as isize)).b16.s0 as libc::c_int !=
-                          (*mem.offset(p as isize)).b16.s0 as libc::c_int {
+                while (*mem.offset(r as isize)).b16.s0 as libc::c_int
+                    != (*mem.offset(p as isize)).b16.s0 as libc::c_int
+                {
                     r = (*mem.offset(r as isize)).b32.s1
                 }
-                if (*mem.offset((r + 2i32) as isize)).b32.s0 == -0xfffffffi32
-                   {
+                if (*mem.offset((r + 2i32) as isize)).b32.s0 == -0xfffffffi32 {
                     wait = 1i32 != 0
                 } else {
                     wait = 0i32 != 0;
                     s = (*mem.offset((r + 2i32) as isize)).b32.s1;
-                    (*mem.offset(s as isize)).b32.s1 =
-                        (*mem.offset((p + 4i32) as isize)).b32.s0;
+                    (*mem.offset(s as isize)).b32.s1 = (*mem.offset((p + 4i32) as isize)).b32.s0;
                     if (*mem.offset((r + 2i32) as isize)).b32.s0 == p {
                         /*:1057 */
                         /*1056: "Wrap up the box specified by node r,
                          * splitting node p if called for; set wait = true if
                          * node p holds a remainder after splitting" */
-                        if (*mem.offset(r as isize)).b16.s1 as libc::c_int ==
-                               1i32 {
+                        if (*mem.offset(r as isize)).b16.s1 as libc::c_int == 1i32 {
                             if (*mem.offset((r + 1i32) as isize)).b32.s0 == p
-                                   &&
-                                   (*mem.offset((r + 1i32) as isize)).b32.s1
-                                       != -0xfffffffi32 {
-                                while (*mem.offset(s as isize)).b32.s1 !=
-                                          (*mem.offset((r + 1i32) as
-                                                           isize)).b32.s1 {
+                                && (*mem.offset((r + 1i32) as isize)).b32.s1 != -0xfffffffi32
+                            {
+                                while (*mem.offset(s as isize)).b32.s1
+                                    != (*mem.offset((r + 1i32) as isize)).b32.s1
+                                {
                                     s = (*mem.offset(s as isize)).b32.s1
                                 }
-                                (*mem.offset(s as isize)).b32.s1 =
-                                    -0xfffffffi32;
-                                (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                                   (0x10ffffi32 + 1i32) + 1i32
-                                                   + 15000i32 + 12i32 +
-                                                   9000i32 + 1i32 + 1i32 +
-                                                   10i32) as isize)).b32.s1 =
-                                    (*mem.offset((p + 4i32) as isize)).b32.s1;
-                                (*mem.offset((p + 4i32) as isize)).b32.s0 =
-                                    prune_page_top((*mem.offset((r + 1i32) as
-                                                                    isize)).b32.s1,
-                                                   0i32 != 0);
-                                if (*mem.offset((p + 4i32) as isize)).b32.s0
-                                       != -0xfffffffi32 {
-                                    temp_ptr =
-                                        vpackage((*mem.offset((p + 4i32) as
-                                                                  isize)).b32.s0,
-                                                 0i32, 1i32 as small_number,
-                                                 0x3fffffffi32);
-                                    (*mem.offset((p + 3i32) as isize)).b32.s1
-                                        =
-                                        (*mem.offset((temp_ptr + 3i32) as
-                                                         isize)).b32.s1 +
-                                            (*mem.offset((temp_ptr + 2i32) as
-                                                             isize)).b32.s1;
+                                (*mem.offset(s as isize)).b32.s1 = -0xfffffffi32;
+                                (*eqtb.offset(
+                                    (1i32
+                                        + (0x10ffffi32 + 1i32)
+                                        + (0x10ffffi32 + 1i32)
+                                        + 1i32
+                                        + 15000i32
+                                        + 12i32
+                                        + 9000i32
+                                        + 1i32
+                                        + 1i32
+                                        + 10i32) as isize,
+                                ))
+                                .b32
+                                .s1 = (*mem.offset((p + 4i32) as isize)).b32.s1;
+                                (*mem.offset((p + 4i32) as isize)).b32.s0 = prune_page_top(
+                                    (*mem.offset((r + 1i32) as isize)).b32.s1,
+                                    0i32 != 0,
+                                );
+                                if (*mem.offset((p + 4i32) as isize)).b32.s0 != -0xfffffffi32 {
+                                    temp_ptr = vpackage(
+                                        (*mem.offset((p + 4i32) as isize)).b32.s0,
+                                        0i32,
+                                        1i32 as small_number,
+                                        0x3fffffffi32,
+                                    );
+                                    (*mem.offset((p + 3i32) as isize)).b32.s1 =
+                                        (*mem.offset((temp_ptr + 3i32) as isize)).b32.s1
+                                            + (*mem.offset((temp_ptr + 2i32) as isize)).b32.s1;
                                     free_node(temp_ptr, 8i32);
                                     wait = 1i32 != 0
                                 }
                             }
                         }
-                        (*mem.offset((r + 2i32) as isize)).b32.s0 =
-                            -0xfffffffi32;
+                        (*mem.offset((r + 2i32) as isize)).b32.s0 = -0xfffffffi32;
                         n = (*mem.offset(r as isize)).b16.s0 as libc::c_uchar;
-                        temp_ptr =
-                            (*mem.offset(((*eqtb.offset((1i32 +
-                                                             (0x10ffffi32 +
-                                                                  1i32) +
-                                                             (0x10ffffi32 +
-                                                                  1i32) + 1i32
-                                                             + 15000i32 +
-                                                             12i32 + 9000i32 +
-                                                             1i32 + 1i32 +
-                                                             19i32 + 256i32 +
-                                                             256i32 + 13i32 +
-                                                             256i32 + 4i32 +
-                                                             n as libc::c_int)
-                                                            as isize)).b32.s1
-                                              + 5i32) as isize)).b32.s1;
-                        free_node((*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                                     (0x10ffffi32 + 1i32) +
-                                                     1i32 + 15000i32 + 12i32 +
-                                                     9000i32 + 1i32 + 1i32 +
-                                                     19i32 + 256i32 + 256i32 +
-                                                     13i32 + 256i32 + 4i32 +
-                                                     n as libc::c_int) as
-                                                    isize)).b32.s1, 8i32);
-                        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                           (0x10ffffi32 + 1i32) + 1i32 +
-                                           15000i32 + 12i32 + 9000i32 + 1i32 +
-                                           1i32 + 19i32 + 256i32 + 256i32 +
-                                           13i32 + 256i32 + 4i32 +
-                                           n as libc::c_int) as isize)).b32.s1
-                            =
-                            vpackage(temp_ptr, 0i32, 1i32 as small_number,
-                                     0x3fffffffi32)
+                        temp_ptr = (*mem.offset(
+                            ((*eqtb.offset(
+                                (1i32
+                                    + (0x10ffffi32 + 1i32)
+                                    + (0x10ffffi32 + 1i32)
+                                    + 1i32
+                                    + 15000i32
+                                    + 12i32
+                                    + 9000i32
+                                    + 1i32
+                                    + 1i32
+                                    + 19i32
+                                    + 256i32
+                                    + 256i32
+                                    + 13i32
+                                    + 256i32
+                                    + 4i32
+                                    + n as libc::c_int) as isize,
+                            ))
+                            .b32
+                            .s1 + 5i32) as isize,
+                        ))
+                        .b32
+                        .s1;
+                        free_node(
+                            (*eqtb.offset(
+                                (1i32
+                                    + (0x10ffffi32 + 1i32)
+                                    + (0x10ffffi32 + 1i32)
+                                    + 1i32
+                                    + 15000i32
+                                    + 12i32
+                                    + 9000i32
+                                    + 1i32
+                                    + 1i32
+                                    + 19i32
+                                    + 256i32
+                                    + 256i32
+                                    + 13i32
+                                    + 256i32
+                                    + 4i32
+                                    + n as libc::c_int) as isize,
+                            ))
+                            .b32
+                            .s1,
+                            8i32,
+                        );
+                        (*eqtb.offset(
+                            (1i32
+                                + (0x10ffffi32 + 1i32)
+                                + (0x10ffffi32 + 1i32)
+                                + 1i32
+                                + 15000i32
+                                + 12i32
+                                + 9000i32
+                                + 1i32
+                                + 1i32
+                                + 19i32
+                                + 256i32
+                                + 256i32
+                                + 13i32
+                                + 256i32
+                                + 4i32
+                                + n as libc::c_int) as isize,
+                        ))
+                        .b32
+                        .s1 = vpackage(temp_ptr, 0i32, 1i32 as small_number, 0x3fffffffi32)
                     } else {
-                        while (*mem.offset(s as isize)).b32.s1 !=
-                                  -0xfffffffi32 {
+                        while (*mem.offset(s as isize)).b32.s1 != -0xfffffffi32 {
                             s = (*mem.offset(s as isize)).b32.s1
                         }
                         (*mem.offset((r + 2i32) as isize)).b32.s1 = s
                     }
                 }
-                (*mem.offset(prev_p as isize)).b32.s1 =
-                    (*mem.offset(p as isize)).b32.s1;
+                (*mem.offset(prev_p as isize)).b32.s1 = (*mem.offset(p as isize)).b32.s1;
                 (*mem.offset(p as isize)).b32.s1 = -0xfffffffi32;
                 if wait {
                     (*mem.offset(q as isize)).b32.s1 = p;
                     q = p;
                     insert_penalties += 1
                 } else {
-                    delete_glue_ref((*mem.offset((p + 4i32) as
-                                                     isize)).b32.s1);
+                    delete_glue_ref((*mem.offset((p + 4i32) as isize)).b32.s1);
                     free_node(p, 5i32);
                 }
                 p = prev_p
@@ -563,60 +777,71 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
                 /*1057: "Either append the insertion node p after node q, and
                  * remove it from the current page, or delete node(p)" */
                 /*1618: "Update the current marks" */
-                find_sa_element(7i32 as small_number,
-                                (*mem.offset((p + 1i32) as isize)).b32.s0,
-                                1i32 != 0);
-                if (*mem.offset((cur_ptr + 1i32) as isize)).b32.s1 ==
-                       -0xfffffffi32 {
+                find_sa_element(
+                    7i32 as small_number,
+                    (*mem.offset((p + 1i32) as isize)).b32.s0,
+                    1i32 != 0,
+                );
+                if (*mem.offset((cur_ptr + 1i32) as isize)).b32.s1 == -0xfffffffi32 {
                     (*mem.offset((cur_ptr + 1i32) as isize)).b32.s1 =
                         (*mem.offset((p + 1i32) as isize)).b32.s1;
-                    let ref mut fresh1 =
-                        (*mem.offset((*mem.offset((p + 1i32) as isize)).b32.s1
-                                         as isize)).b32.s0;
+                    let ref mut fresh1 = (*mem
+                        .offset((*mem.offset((p + 1i32) as isize)).b32.s1 as isize))
+                    .b32
+                    .s0;
                     *fresh1 += 1
                 }
-                if (*mem.offset((cur_ptr + 2i32) as isize)).b32.s0 !=
-                       -0xfffffffi32 {
-                    delete_token_ref((*mem.offset((cur_ptr + 2i32) as
-                                                      isize)).b32.s0);
+                if (*mem.offset((cur_ptr + 2i32) as isize)).b32.s0 != -0xfffffffi32 {
+                    delete_token_ref((*mem.offset((cur_ptr + 2i32) as isize)).b32.s0);
                 }
                 (*mem.offset((cur_ptr + 2i32) as isize)).b32.s0 =
                     (*mem.offset((p + 1i32) as isize)).b32.s1;
-                let ref mut fresh2 =
-                    (*mem.offset((*mem.offset((p + 1i32) as isize)).b32.s1 as
-                                     isize)).b32.s0;
+                let ref mut fresh2 = (*mem
+                    .offset((*mem.offset((p + 1i32) as isize)).b32.s1 as isize))
+                .b32
+                .s0;
                 *fresh2 += 1
             } else {
                 /*1051: "Update the values of first_mark and bot_mark" */
                 if cur_mark[1] == -0xfffffffi32 {
                     cur_mark[1] = (*mem.offset((p + 1i32) as isize)).b32.s1;
-                    let ref mut fresh3 =
-                        (*mem.offset(cur_mark[1] as isize)).b32.s0;
+                    let ref mut fresh3 = (*mem.offset(cur_mark[1] as isize)).b32.s0;
                     *fresh3 += 1
                 }
                 if cur_mark[2] != -0xfffffffi32 {
                     delete_token_ref(cur_mark[2]);
                 }
                 cur_mark[2] = (*mem.offset((p + 1i32) as isize)).b32.s1;
-                let ref mut fresh4 =
-                    (*mem.offset(cur_mark[2] as isize)).b32.s0;
+                let ref mut fresh4 = (*mem.offset(cur_mark[2] as isize)).b32.s0;
                 *fresh4 += 1
             }
         }
         prev_p = p;
         p = (*mem.offset(prev_p as isize)).b32.s1
     }
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 10i32) as
-                      isize)).b32.s1 = save_split_top_skip;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 10i32) as isize,
+    ))
+    .b32
+    .s1 = save_split_top_skip;
     /*1052: "Break the current page at node p, put it in box 255, and put the
      * remaining nodes on the contribution list". */
     if p != -0xfffffffi32 {
-        if (*mem.offset((4999999i32 - 1i32) as isize)).b32.s1 == -0xfffffffi32
-           {
+        if (*mem.offset((4999999i32 - 1i32) as isize)).b32.s1 == -0xfffffffi32 {
             if nest_ptr == 0i32 {
                 cur_list.tail = page_tail
-            } else { (*nest.offset(0)).tail = page_tail }
+            } else {
+                (*nest.offset(0)).tail = page_tail
+            }
         }
         (*mem.offset(page_tail as isize)).b32.s1 =
             (*mem.offset((4999999i32 - 1i32) as isize)).b32.s1;
@@ -624,66 +849,217 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
         (*mem.offset(prev_p as isize)).b32.s1 = -0xfffffffi32
     }
     /* Temporarily futz some variables to inhibit error messages */
-    save_vbadness =
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           27i32) as isize)).b32.s1;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 27i32) as isize)).b32.s1 =
-        10000i32;
-    save_vfuzz =
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32
-                           + 256i32 + (0x10ffffi32 + 1i32) + 9i32) as
-                          isize)).b32.s1;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                       (0x10ffffi32 + 1i32) + 9i32) as isize)).b32.s1 =
-        0x3fffffffi32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 255i32) as
-                      isize)).b32.s1 =
-        vpackage((*mem.offset((4999999i32 - 2i32) as isize)).b32.s1,
-                 best_size, 0i32 as small_number, page_max_depth);
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 27i32) as isize)).b32.s1 =
-        save_vbadness;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                       (0x10ffffi32 + 1i32) + 9i32) as isize)).b32.s1 =
-        save_vfuzz;
-    if last_glue != 0x3fffffffi32 { delete_glue_ref(last_glue); }
+    save_vbadness = (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 27i32) as isize,
+    ))
+    .b32
+    .s1;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 27i32) as isize,
+    ))
+    .b32
+    .s1 = 10000i32;
+    save_vfuzz = (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 9i32) as isize,
+    ))
+    .b32
+    .s1;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 9i32) as isize,
+    ))
+    .b32
+    .s1 = 0x3fffffffi32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 255i32) as isize,
+    ))
+    .b32
+    .s1 = vpackage(
+        (*mem.offset((4999999i32 - 2i32) as isize)).b32.s1,
+        best_size,
+        0i32 as small_number,
+        page_max_depth,
+    );
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 27i32) as isize,
+    ))
+    .b32
+    .s1 = save_vbadness;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 9i32) as isize,
+    ))
+    .b32
+    .s1 = save_vfuzz;
+    if last_glue != 0x3fffffffi32 {
+        delete_glue_ref(last_glue);
+    }
     /*1026: "Start a new current page" */
     page_contents = 0i32 as libc::c_uchar;
     page_tail = 4999999i32 - 2i32;
@@ -719,42 +1095,72 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
         *fresh5 += 1
     }
     /* Tectonic: in semantic pagination mode, ignore the output routine. */
-    if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                          19i32 + 256i32 + 256i32 + 1i32) as isize)).b32.s1 !=
-           -0xfffffffi32 && !semantic_pagination_enabled {
-        if dead_cycles >=
-               (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                  (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                  12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                  256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                  256i32 + 1i32 + 3i32 * 256i32 +
-                                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                  + (0x10ffffi32 + 1i32) +
-                                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                  + (0x10ffffi32 + 1i32) + 40i32) as
-                                 isize)).b32.s1 {
+    if (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 1i32) as isize,
+    ))
+    .b32
+    .s1 != -0xfffffffi32
+        && !semantic_pagination_enabled
+    {
+        if dead_cycles
+            >= (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 40i32) as isize,
+            ))
+            .b32
+            .s1
+        {
             /*1059: "Explain that too many dead cycles have happened in a row." */
             if file_line_error_style_p != 0 {
                 print_file_line();
             } else {
                 print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
             }
-            print_cstr(b"Output loop---\x00" as *const u8 as
-                           *const libc::c_char);
+            print_cstr(b"Output loop---\x00" as *const u8 as *const libc::c_char);
             print_int(dead_cycles);
-            print_cstr(b" consecutive dead cycles\x00" as *const u8 as
-                           *const libc::c_char);
+            print_cstr(b" consecutive dead cycles\x00" as *const u8 as *const libc::c_char);
             help_ptr = 3i32 as libc::c_uchar;
-            help_line[2] =
-                b"I\'ve concluded that your \\output is awry; it never does a\x00"
-                    as *const u8 as *const libc::c_char;
-            help_line[1] =
-                b"\\shipout, so I\'m shipping \\box255 out myself. Next time\x00"
-                    as *const u8 as *const libc::c_char;
-            help_line[0] =
-                b"increase \\maxdeadcycles if you want me to be more patient!\x00"
-                    as *const u8 as *const libc::c_char;
+            help_line[2] = b"I\'ve concluded that your \\output is awry; it never does a\x00"
+                as *const u8 as *const libc::c_char;
+            help_line[1] = b"\\shipout, so I\'m shipping \\box255 out myself. Next time\x00"
+                as *const u8 as *const libc::c_char;
+            help_line[0] = b"increase \\maxdeadcycles if you want me to be more patient!\x00"
+                as *const u8 as *const libc::c_char;
             error();
         } else {
             /*1060: "Fire up the user's output routine and return" */
@@ -764,26 +1170,40 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
             cur_list.mode = -1i32 as libc::c_short;
             cur_list.aux.b32.s1 = -65536000i32;
             cur_list.mode_line = -line;
-            begin_token_list((*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                                (0x10ffffi32 + 1i32) + 1i32 +
-                                                15000i32 + 12i32 + 9000i32 +
-                                                1i32 + 1i32 + 19i32 + 256i32 +
-                                                256i32 + 1i32) as
-                                               isize)).b32.s1,
-                             7i32 as uint16_t);
+            begin_token_list(
+                (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 1i32) as isize,
+                ))
+                .b32
+                .s1,
+                7i32 as uint16_t,
+            );
             new_save_level(8i32 as group_code);
             normal_paragraph();
             scan_left_brace();
-            return
+            return;
         }
     }
     /*1058: "Perform the default output routine." */
     if (*mem.offset((4999999i32 - 2i32) as isize)).b32.s1 != -0xfffffffi32 {
-        if (*mem.offset((4999999i32 - 1i32) as isize)).b32.s1 == -0xfffffffi32
-           {
+        if (*mem.offset((4999999i32 - 1i32) as isize)).b32.s1 == -0xfffffffi32 {
             if nest_ptr == 0i32 {
                 cur_list.tail = page_tail
-            } else { (*nest.offset(0)).tail = page_tail }
+            } else {
+                (*nest.offset(0)).tail = page_tail
+            }
         } else {
             (*mem.offset(page_tail as isize)).b32.s1 =
                 (*mem.offset((4999999i32 - 1i32) as isize)).b32.s1
@@ -795,14 +1215,48 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
     }
     flush_node_list(disc_ptr[2]);
     disc_ptr[2] = -0xfffffffi32;
-    ship_out((*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                + 1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 +
-                                1i32 + 19i32 + 256i32 + 256i32 + 13i32 +
-                                256i32 + 4i32 + 255i32) as isize)).b32.s1);
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 255i32) as
-                      isize)).b32.s1 = -0xfffffffi32;
+    ship_out(
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 255i32) as isize,
+        ))
+        .b32
+        .s1,
+    );
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 255i32) as isize,
+    ))
+    .b32
+    .s1 = -0xfffffffi32;
 }
 /* xetex-errors */
 /* xetex-math */
@@ -822,9 +1276,10 @@ pub unsafe extern "C" fn build_page() {
     let mut delta: scaled_t = 0;
     let mut h: scaled_t = 0;
     let mut w: scaled_t = 0;
-    if (*mem.offset((4999999i32 - 1i32) as isize)).b32.s1 == -0xfffffffi32 ||
-           output_active as libc::c_int != 0 {
-        return
+    if (*mem.offset((4999999i32 - 1i32) as isize)).b32.s1 == -0xfffffffi32
+        || output_active as libc::c_int != 0
+    {
+        return;
     }
     loop  {
         p = (*mem.offset((4999999i32 - 1i32) as isize)).b32.s1;
@@ -1535,6 +1990,8 @@ pub unsafe extern "C" fn build_page() {
     }
     if nest_ptr == 0i32 {
         cur_list.tail = 4999999i32 - 1i32
-    } else { (*nest.offset(0)).tail = 4999999i32 - 1i32 };
+    } else {
+        (*nest.offset(0)).tail = 4999999i32 - 1i32
+    };
     /* "other modes" */
 }

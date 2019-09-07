@@ -13,35 +13,40 @@ extern "C" {
     #[no_mangle]
     fn abs(_: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong)
-     -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char)
-     -> *mut libc::c_char;
+    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
     fn strlen(_: *const libc::c_char) -> libc::c_ulong;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_output_open(path: *const libc::c_char, is_gz: libc::c_int)
-     -> rust_output_handle_t;
+    fn ttstub_output_open(path: *const libc::c_char, is_gz: libc::c_int) -> rust_output_handle_t;
     #[no_mangle]
     fn ttstub_output_open_stdout() -> rust_output_handle_t;
     #[no_mangle]
-    fn ttstub_output_write(handle: rust_output_handle_t,
-                           data: *const libc::c_char, len: size_t) -> size_t;
+    fn ttstub_output_write(
+        handle: rust_output_handle_t,
+        data: *const libc::c_char,
+        len: size_t,
+    ) -> size_t;
     #[no_mangle]
     fn ttstub_output_flush(handle: rust_output_handle_t) -> libc::c_int;
     #[no_mangle]
     fn ttstub_output_close(handle: rust_output_handle_t) -> libc::c_int;
     #[no_mangle]
-    fn ttstub_input_open(path: *const libc::c_char,
-                         format: tt_input_format_type, is_gz: libc::c_int)
-     -> rust_input_handle_t;
+    fn ttstub_input_open(
+        path: *const libc::c_char,
+        format: tt_input_format_type,
+        is_gz: libc::c_int,
+    ) -> rust_input_handle_t;
     #[no_mangle]
-    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut libc::c_char,
-                         len: size_t) -> ssize_t;
+    fn ttstub_input_read(
+        handle: rust_input_handle_t,
+        data: *mut libc::c_char,
+        len: size_t,
+    ) -> ssize_t;
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
@@ -49,8 +54,7 @@ extern "C" {
     #[no_mangle]
     fn xcalloc(nelem: size_t, elsize: size_t) -> *mut libc::c_void;
     #[no_mangle]
-    fn get_date_and_time(_: *mut int32_t, _: *mut int32_t, _: *mut int32_t,
-                         _: *mut int32_t);
+    fn get_date_and_time(_: *mut int32_t, _: *mut int32_t, _: *mut int32_t, _: *mut int32_t);
     #[no_mangle]
     fn get_avail() -> int32_t;
     #[no_mangle]
@@ -236,51 +240,50 @@ extern "C" {
     #[no_mangle]
     fn maketexstring(s: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn set_cp_code(fontNum: libc::c_int, code: libc::c_uint,
-                   side: libc::c_int, value: libc::c_int);
+    fn set_cp_code(fontNum: libc::c_int, code: libc::c_uint, side: libc::c_int, value: libc::c_int);
     /* synctex.h
 
-Copyright (c) 2008, 2009 jerome DOT laurens AT u-bourgogne DOT fr
+    Copyright (c) 2008, 2009 jerome DOT laurens AT u-bourgogne DOT fr
 
-This file is part of the SyncTeX package.
+    This file is part of the SyncTeX package.
 
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software and associated documentation
+    files (the "Software"), to deal in the Software without
+    restriction, including without limitation the rights to use,
+    copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following
+    conditions:
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
+    The above copyright notice and this permission notice shall be
+    included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+    OTHER DEALINGS IN THE SOFTWARE
 
-Acknowledgments:
-----------------
-The author received useful remarks from the pdfTeX developers, especially Hahn The Thanh,
-and significant help from XeTeX developer Jonathan Kew
+    Acknowledgments:
+    ----------------
+    The author received useful remarks from the pdfTeX developers, especially Hahn The Thanh,
+    and significant help from XeTeX developer Jonathan Kew
 
-Nota Bene:
-----------
-If you include or use a significant part of the synctex package into a software,
-I would appreciate to be listed as contributor and see "SyncTeX" highlighted.
+    Nota Bene:
+    ----------
+    If you include or use a significant part of the synctex package into a software,
+    I would appreciate to be listed as contributor and see "SyncTeX" highlighted.
 
-Version 1
-Latest Revision: Wed Jul  1 08:17:50 UTC 2009
+    Version 1
+    Latest Revision: Wed Jul  1 08:17:50 UTC 2009
 
-*/
+    */
     /*  Send this message to init the synctex command value to the command line option.
- *  Sending this message too early will cause a bus error.  */
+     *  Sending this message too early will cause a bus error.  */
     #[no_mangle]
     fn synctex_init_command();
     #[no_mangle]
@@ -365,7 +368,7 @@ pub type pool_pointer = int32_t;
 pub type str_number = int32_t;
 pub type packed_UTF16_code = libc::c_ushort;
 pub type small_number = libc::c_short;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
     pub s0: int32_t,
@@ -404,7 +407,7 @@ pub struct b32x2_le_t {
  *
  */
 pub type b32x2 = b32x2_le_t;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b16x4_le_t {
     pub s0: uint16_t,
@@ -413,8 +416,8 @@ pub struct b16x4_le_t {
     pub s3: uint16_t,
 }
 pub type b16x4 = b16x4_le_t;
-#[derive ( Copy , Clone )]
-#[repr ( C )]
+#[derive(Copy, Clone)]
+#[repr(C)]
 pub union memory_word {
     pub b32: b32x2,
     pub b16: b16x4,
@@ -598,7 +601,7 @@ pub type trie_pointer = int32_t;
 pub type trie_opcode = libc::c_ushort;
 pub type hyph_pointer = libc::c_ushort;
 pub type save_pointer = int32_t;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
     pub mode: libc::c_short,
@@ -609,7 +612,7 @@ pub struct list_state_record {
     pub mode_line: int32_t,
     pub aux: memory_word,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct input_state_t {
     pub state: uint16_t,
@@ -624,7 +627,7 @@ pub struct input_state_t {
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct UFILE {
     pub handle: rust_input_handle_t,
@@ -644,23 +647,19 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 */
 /* All the following variables are declared in xetex-xetexd.h */
 #[no_mangle]
-pub static mut eqtb: *mut memory_word =
-    0 as *const memory_word as *mut memory_word;
+pub static mut eqtb: *mut memory_word = 0 as *const memory_word as *mut memory_word;
 #[no_mangle]
 pub static mut bad: int32_t = 0;
 #[no_mangle]
-pub static mut name_of_file: *mut libc::c_char =
-    0 as *const libc::c_char as *mut libc::c_char;
+pub static mut name_of_file: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
 #[no_mangle]
-pub static mut name_of_file16: *mut UTF16_code =
-    0 as *const UTF16_code as *mut UTF16_code;
+pub static mut name_of_file16: *mut UTF16_code = 0 as *const UTF16_code as *mut UTF16_code;
 #[no_mangle]
 pub static mut name_length: int32_t = 0;
 #[no_mangle]
 pub static mut name_length16: int32_t = 0;
 #[no_mangle]
-pub static mut buffer: *mut UnicodeScalar =
-    0 as *const UnicodeScalar as *mut UnicodeScalar;
+pub static mut buffer: *mut UnicodeScalar = 0 as *const UnicodeScalar as *mut UnicodeScalar;
 #[no_mangle]
 pub static mut first: int32_t = 0;
 #[no_mangle]
@@ -725,8 +724,7 @@ pub static mut insert_src_special_every_vbox: bool = false;
 pub static mut str_pool: *mut packed_UTF16_code =
     0 as *const packed_UTF16_code as *mut packed_UTF16_code;
 #[no_mangle]
-pub static mut str_start: *mut pool_pointer =
-    0 as *const pool_pointer as *mut pool_pointer;
+pub static mut str_start: *mut pool_pointer = 0 as *const pool_pointer as *mut pool_pointer;
 #[no_mangle]
 pub static mut pool_ptr: pool_pointer = 0;
 #[no_mangle]
@@ -736,11 +734,9 @@ pub static mut init_pool_ptr: pool_pointer = 0;
 #[no_mangle]
 pub static mut init_str_ptr: str_number = 0;
 #[no_mangle]
-pub static mut rust_stdout: rust_output_handle_t =
-    0 as *const libc::c_void as *mut libc::c_void;
+pub static mut rust_stdout: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
 #[no_mangle]
-pub static mut log_file: rust_output_handle_t =
-    0 as *const libc::c_void as *mut libc::c_void;
+pub static mut log_file: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
 #[no_mangle]
 pub static mut selector: selector_t = SELECTOR_FILE_0;
 #[no_mangle]
@@ -760,8 +756,7 @@ pub static mut first_count: int32_t = 0;
 #[no_mangle]
 pub static mut doing_special: bool = false;
 #[no_mangle]
-pub static mut native_text: *mut UTF16_code =
-    0 as *const UTF16_code as *mut UTF16_code;
+pub static mut native_text: *mut UTF16_code = 0 as *const UTF16_code as *mut UTF16_code;
 #[no_mangle]
 pub static mut native_text_size: int32_t = 0;
 #[no_mangle]
@@ -779,8 +774,7 @@ pub static mut history: tt_history_t = HISTORY_SPOTLESS;
 #[no_mangle]
 pub static mut error_count: libc::c_schar = 0;
 #[no_mangle]
-pub static mut help_line: [*const libc::c_char; 6] =
-    [0 as *const libc::c_char; 6];
+pub static mut help_line: [*const libc::c_char; 6] = [0 as *const libc::c_char; 6];
 #[no_mangle]
 pub static mut help_ptr: libc::c_uchar = 0;
 #[no_mangle]
@@ -792,8 +786,7 @@ pub static mut tex_remainder: scaled_t = 0;
 #[no_mangle]
 pub static mut temp_ptr: int32_t = 0;
 #[no_mangle]
-pub static mut mem: *mut memory_word =
-    0 as *const memory_word as *mut memory_word;
+pub static mut mem: *mut memory_word = 0 as *const memory_word as *mut memory_word;
 #[no_mangle]
 pub static mut lo_mem_max: int32_t = 0;
 #[no_mangle]
@@ -834,14 +827,17 @@ pub static mut nest_ptr: int32_t = 0;
 #[no_mangle]
 pub static mut max_nest_stack: int32_t = 0;
 #[no_mangle]
-pub static mut cur_list: list_state_record =
-    list_state_record{mode: 0,
-                      head: 0,
-                      tail: 0,
-                      eTeX_aux: 0,
-                      prev_graf: 0,
-                      mode_line: 0,
-                      aux: memory_word{b32: b32x2{s0: 0, s1: 0,},},};
+pub static mut cur_list: list_state_record = list_state_record {
+    mode: 0,
+    head: 0,
+    tail: 0,
+    eTeX_aux: 0,
+    prev_graf: 0,
+    mode_line: 0,
+    aux: memory_word {
+        b32: b32x2 { s0: 0, s1: 0 },
+    },
+};
 #[no_mangle]
 pub static mut shown_mode: libc::c_short = 0;
 #[no_mangle]
@@ -863,15 +859,15 @@ pub static mut no_new_control_sequence: bool = false;
 #[no_mangle]
 pub static mut cs_count: int32_t = 0;
 #[no_mangle]
-pub static mut prim: [b32x2; 501] = [b32x2{s0: 0, s1: 0,}; 501];
+pub static mut prim: [b32x2; 501] = [b32x2 { s0: 0, s1: 0 }; 501];
 #[no_mangle]
 pub static mut prim_used: int32_t = 0;
 #[no_mangle]
-pub static mut prim_eqtb: [memory_word; 501] =
-    [memory_word{b32: b32x2{s0: 0, s1: 0,},}; 501];
+pub static mut prim_eqtb: [memory_word; 501] = [memory_word {
+    b32: b32x2 { s0: 0, s1: 0 },
+}; 501];
 #[no_mangle]
-pub static mut save_stack: *mut memory_word =
-    0 as *const memory_word as *mut memory_word;
+pub static mut save_stack: *mut memory_word = 0 as *const memory_word as *mut memory_word;
 #[no_mangle]
 pub static mut save_ptr: int32_t = 0;
 #[no_mangle]
@@ -893,35 +889,33 @@ pub static mut cur_cs: int32_t = 0;
 #[no_mangle]
 pub static mut cur_tok: int32_t = 0;
 #[no_mangle]
-pub static mut input_stack: *mut input_state_t =
-    0 as *const input_state_t as *mut input_state_t;
+pub static mut input_stack: *mut input_state_t = 0 as *const input_state_t as *mut input_state_t;
 #[no_mangle]
 pub static mut input_ptr: int32_t = 0;
 #[no_mangle]
 pub static mut max_in_stack: int32_t = 0;
 #[no_mangle]
-pub static mut cur_input: input_state_t =
-    input_state_t{state: 0,
-                  index: 0,
-                  start: 0,
-                  loc: 0,
-                  limit: 0,
-                  name: 0,
-                  synctex_tag: 0,};
+pub static mut cur_input: input_state_t = input_state_t {
+    state: 0,
+    index: 0,
+    start: 0,
+    loc: 0,
+    limit: 0,
+    name: 0,
+    synctex_tag: 0,
+};
 #[no_mangle]
 pub static mut in_open: int32_t = 0;
 #[no_mangle]
 pub static mut open_parens: int32_t = 0;
 #[no_mangle]
-pub static mut input_file: *mut *mut UFILE =
-    0 as *const *mut UFILE as *mut *mut UFILE;
+pub static mut input_file: *mut *mut UFILE = 0 as *const *mut UFILE as *mut *mut UFILE;
 #[no_mangle]
 pub static mut line: int32_t = 0;
 #[no_mangle]
 pub static mut line_stack: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
-pub static mut source_filename_stack: *mut str_number =
-    0 as *const str_number as *mut str_number;
+pub static mut source_filename_stack: *mut str_number = 0 as *const str_number as *mut str_number;
 #[no_mangle]
 pub static mut full_source_filename_stack: *mut str_number =
     0 as *const str_number as *mut str_number;
@@ -932,8 +926,7 @@ pub static mut warning_index: int32_t = 0;
 #[no_mangle]
 pub static mut def_ref: int32_t = 0;
 #[no_mangle]
-pub static mut param_stack: *mut int32_t =
-    0 as *const int32_t as *mut int32_t;
+pub static mut param_stack: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
 pub static mut param_ptr: int32_t = 0;
 #[no_mangle]
@@ -969,8 +962,7 @@ pub static mut radix: small_number = 0;
 #[no_mangle]
 pub static mut cur_order: glue_ord = 0;
 #[no_mangle]
-pub static mut read_file: [*mut UFILE; 16] =
-    [0 as *const UFILE as *mut UFILE; 16];
+pub static mut read_file: [*mut UFILE; 16] = [0 as *const UFILE as *mut UFILE; 16];
 #[no_mangle]
 pub static mut read_open: [libc::c_uchar; 17] = [0; 17];
 #[no_mangle]
@@ -1007,13 +999,11 @@ pub static mut job_name: str_number = 0;
 #[no_mangle]
 pub static mut log_opened: bool = false;
 #[no_mangle]
-pub static mut output_file_extension: *const libc::c_char =
-    0 as *const libc::c_char;
+pub static mut output_file_extension: *const libc::c_char = 0 as *const libc::c_char;
 #[no_mangle]
 pub static mut texmf_log_name: str_number = 0;
 #[no_mangle]
-pub static mut font_info: *mut memory_word =
-    0 as *const memory_word as *mut memory_word;
+pub static mut font_info: *mut memory_word = 0 as *const memory_word as *mut memory_word;
 #[no_mangle]
 pub static mut fmem_ptr: font_index = 0;
 #[no_mangle]
@@ -1021,44 +1011,33 @@ pub static mut font_ptr: internal_font_number = 0;
 #[no_mangle]
 pub static mut font_check: *mut b16x4 = 0 as *const b16x4 as *mut b16x4;
 #[no_mangle]
-pub static mut font_size: *mut scaled_t =
-    0 as *const scaled_t as *mut scaled_t;
+pub static mut font_size: *mut scaled_t = 0 as *const scaled_t as *mut scaled_t;
 #[no_mangle]
-pub static mut font_dsize: *mut scaled_t =
-    0 as *const scaled_t as *mut scaled_t;
+pub static mut font_dsize: *mut scaled_t = 0 as *const scaled_t as *mut scaled_t;
 #[no_mangle]
-pub static mut font_params: *mut font_index =
-    0 as *const font_index as *mut font_index;
+pub static mut font_params: *mut font_index = 0 as *const font_index as *mut font_index;
 #[no_mangle]
-pub static mut font_name: *mut str_number =
-    0 as *const str_number as *mut str_number;
+pub static mut font_name: *mut str_number = 0 as *const str_number as *mut str_number;
 #[no_mangle]
-pub static mut font_area: *mut str_number =
-    0 as *const str_number as *mut str_number;
+pub static mut font_area: *mut str_number = 0 as *const str_number as *mut str_number;
 #[no_mangle]
-pub static mut font_bc: *mut UTF16_code =
-    0 as *const UTF16_code as *mut UTF16_code;
+pub static mut font_bc: *mut UTF16_code = 0 as *const UTF16_code as *mut UTF16_code;
 #[no_mangle]
-pub static mut font_ec: *mut UTF16_code =
-    0 as *const UTF16_code as *mut UTF16_code;
+pub static mut font_ec: *mut UTF16_code = 0 as *const UTF16_code as *mut UTF16_code;
 #[no_mangle]
 pub static mut font_glue: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
 pub static mut font_used: *mut bool = 0 as *const bool as *mut bool;
 #[no_mangle]
-pub static mut hyphen_char: *mut int32_t =
-    0 as *const int32_t as *mut int32_t;
+pub static mut hyphen_char: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
 pub static mut skew_char: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
-pub static mut bchar_label: *mut font_index =
-    0 as *const font_index as *mut font_index;
+pub static mut bchar_label: *mut font_index = 0 as *const font_index as *mut font_index;
 #[no_mangle]
-pub static mut font_bchar: *mut nine_bits =
-    0 as *const nine_bits as *mut nine_bits;
+pub static mut font_bchar: *mut nine_bits = 0 as *const nine_bits as *mut nine_bits;
 #[no_mangle]
-pub static mut font_false_bchar: *mut nine_bits =
-    0 as *const nine_bits as *mut nine_bits;
+pub static mut font_false_bchar: *mut nine_bits = 0 as *const nine_bits as *mut nine_bits;
 #[no_mangle]
 pub static mut font_layout_engine: *mut *mut libc::c_void =
     0 as *const *mut libc::c_void as *mut *mut libc::c_void;
@@ -1066,11 +1045,9 @@ pub static mut font_layout_engine: *mut *mut libc::c_void =
 pub static mut font_mapping: *mut *mut libc::c_void =
     0 as *const *mut libc::c_void as *mut *mut libc::c_void;
 #[no_mangle]
-pub static mut font_flags: *mut libc::c_char =
-    0 as *const libc::c_char as *mut libc::c_char;
+pub static mut font_flags: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
 #[no_mangle]
-pub static mut font_letter_space: *mut scaled_t =
-    0 as *const scaled_t as *mut scaled_t;
+pub static mut font_letter_space: *mut scaled_t = 0 as *const scaled_t as *mut scaled_t;
 #[no_mangle]
 pub static mut loaded_font_mapping: *mut libc::c_void =
     0 as *const libc::c_void as *mut libc::c_void;
@@ -1081,26 +1058,21 @@ pub static mut loaded_font_letter_space: scaled_t = 0;
 #[no_mangle]
 pub static mut loaded_font_design_size: scaled_t = 0;
 #[no_mangle]
-pub static mut mapped_text: *mut UTF16_code =
-    0 as *const UTF16_code as *mut UTF16_code;
+pub static mut mapped_text: *mut UTF16_code = 0 as *const UTF16_code as *mut UTF16_code;
 #[no_mangle]
-pub static mut xdv_buffer: *mut libc::c_char =
-    0 as *const libc::c_char as *mut libc::c_char;
+pub static mut xdv_buffer: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
 #[no_mangle]
 pub static mut char_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
 pub static mut width_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
-pub static mut height_base: *mut int32_t =
-    0 as *const int32_t as *mut int32_t;
+pub static mut height_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
 pub static mut depth_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
-pub static mut italic_base: *mut int32_t =
-    0 as *const int32_t as *mut int32_t;
+pub static mut italic_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
-pub static mut lig_kern_base: *mut int32_t =
-    0 as *const int32_t as *mut int32_t;
+pub static mut lig_kern_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
 pub static mut kern_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
@@ -1108,7 +1080,12 @@ pub static mut exten_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
 pub static mut param_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
-pub static mut null_character: b16x4 = b16x4{s0: 0, s1: 0, s2: 0, s3: 0,};
+pub static mut null_character: b16x4 = b16x4 {
+    s0: 0,
+    s1: 0,
+    s2: 0,
+    s3: 0,
+};
 #[no_mangle]
 pub static mut total_pages: int32_t = 0;
 #[no_mangle]
@@ -1146,13 +1123,18 @@ pub static mut pre_adjust_tail: int32_t = 0;
 #[no_mangle]
 pub static mut pack_begin_line: int32_t = 0;
 #[no_mangle]
-pub static mut empty: b32x2 = b32x2{s0: 0, s1: 0,};
+pub static mut empty: b32x2 = b32x2 { s0: 0, s1: 0 };
 #[no_mangle]
 pub static mut cur_f: internal_font_number = 0;
 #[no_mangle]
 pub static mut cur_c: int32_t = 0;
 #[no_mangle]
-pub static mut cur_i: b16x4 = b16x4{s0: 0, s1: 0, s2: 0, s3: 0,};
+pub static mut cur_i: b16x4 = b16x4 {
+    s0: 0,
+    s1: 0,
+    s2: 0,
+    s3: 0,
+};
 #[no_mangle]
 pub static mut cur_align: int32_t = 0;
 #[no_mangle]
@@ -1208,14 +1190,11 @@ pub static mut lft_hit: bool = false;
 #[no_mangle]
 pub static mut rt_hit: bool = false;
 #[no_mangle]
-pub static mut trie_trl: *mut trie_pointer =
-    0 as *const trie_pointer as *mut trie_pointer;
+pub static mut trie_trl: *mut trie_pointer = 0 as *const trie_pointer as *mut trie_pointer;
 #[no_mangle]
-pub static mut trie_tro: *mut trie_pointer =
-    0 as *const trie_pointer as *mut trie_pointer;
+pub static mut trie_tro: *mut trie_pointer = 0 as *const trie_pointer as *mut trie_pointer;
 #[no_mangle]
-pub static mut trie_trc: *mut uint16_t =
-    0 as *const uint16_t as *mut uint16_t;
+pub static mut trie_trc: *mut uint16_t = 0 as *const uint16_t as *mut uint16_t;
 #[no_mangle]
 pub static mut hyf_distance: [small_number; 35112] = [0; 35112];
 #[no_mangle]
@@ -1225,13 +1204,11 @@ pub static mut hyf_next: [trie_opcode; 35112] = [0; 35112];
 #[no_mangle]
 pub static mut op_start: [int32_t; 256] = [0; 256];
 #[no_mangle]
-pub static mut hyph_word: *mut str_number =
-    0 as *const str_number as *mut str_number;
+pub static mut hyph_word: *mut str_number = 0 as *const str_number as *mut str_number;
 #[no_mangle]
 pub static mut hyph_list: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
-pub static mut hyph_link: *mut hyph_pointer =
-    0 as *const hyph_pointer as *mut hyph_pointer;
+pub static mut hyph_link: *mut hyph_pointer = 0 as *const hyph_pointer as *mut hyph_pointer;
 #[no_mangle]
 pub static mut hyph_count: int32_t = 0;
 #[no_mangle]
@@ -1250,19 +1227,15 @@ pub static mut max_op_used: trie_opcode = 0;
 pub static mut trie_c: *mut packed_UTF16_code =
     0 as *const packed_UTF16_code as *mut packed_UTF16_code;
 #[no_mangle]
-pub static mut trie_o: *mut trie_opcode =
-    0 as *const trie_opcode as *mut trie_opcode;
+pub static mut trie_o: *mut trie_opcode = 0 as *const trie_opcode as *mut trie_opcode;
 #[no_mangle]
-pub static mut trie_l: *mut trie_pointer =
-    0 as *const trie_pointer as *mut trie_pointer;
+pub static mut trie_l: *mut trie_pointer = 0 as *const trie_pointer as *mut trie_pointer;
 #[no_mangle]
-pub static mut trie_r: *mut trie_pointer =
-    0 as *const trie_pointer as *mut trie_pointer;
+pub static mut trie_r: *mut trie_pointer = 0 as *const trie_pointer as *mut trie_pointer;
 #[no_mangle]
 pub static mut trie_ptr: trie_pointer = 0;
 #[no_mangle]
-pub static mut trie_hash: *mut trie_pointer =
-    0 as *const trie_pointer as *mut trie_pointer;
+pub static mut trie_hash: *mut trie_pointer = 0 as *const trie_pointer as *mut trie_pointer;
 #[no_mangle]
 pub static mut trie_taken: *mut bool = 0 as *const bool as *mut bool;
 #[no_mangle]
@@ -1276,9 +1249,19 @@ pub static mut best_height_plus_depth: scaled_t = 0;
 #[no_mangle]
 pub static mut main_f: internal_font_number = 0;
 #[no_mangle]
-pub static mut main_i: b16x4 = b16x4{s0: 0, s1: 0, s2: 0, s3: 0,};
+pub static mut main_i: b16x4 = b16x4 {
+    s0: 0,
+    s1: 0,
+    s2: 0,
+    s3: 0,
+};
 #[no_mangle]
-pub static mut main_j: b16x4 = b16x4{s0: 0, s1: 0, s2: 0, s3: 0,};
+pub static mut main_j: b16x4 = b16x4 {
+    s0: 0,
+    s1: 0,
+    s2: 0,
+    s3: 0,
+};
 #[no_mangle]
 pub static mut main_k: font_index = 0;
 #[no_mangle]
@@ -1343,21 +1326,21 @@ pub static mut cur_dir: small_number = 0;
 #[no_mangle]
 pub static mut pseudo_files: int32_t = 0;
 #[no_mangle]
-pub static mut grp_stack: *mut save_pointer =
-    0 as *const save_pointer as *mut save_pointer;
+pub static mut grp_stack: *mut save_pointer = 0 as *const save_pointer as *mut save_pointer;
 #[no_mangle]
 pub static mut if_stack: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
 pub static mut max_reg_num: int32_t = 0;
 #[no_mangle]
-pub static mut max_reg_help_line: *const libc::c_char =
-    0 as *const libc::c_char;
+pub static mut max_reg_help_line: *const libc::c_char = 0 as *const libc::c_char;
 #[no_mangle]
 pub static mut sa_root: [int32_t; 8] = [0; 8];
 #[no_mangle]
 pub static mut cur_ptr: int32_t = 0;
 #[no_mangle]
-pub static mut sa_null: memory_word = memory_word{b32: b32x2{s0: 0, s1: 0,},};
+pub static mut sa_null: memory_word = memory_word {
+    b32: b32x2 { s0: 0, s1: 0 },
+};
 #[no_mangle]
 pub static mut sa_chain: int32_t = 0;
 #[no_mangle]
@@ -1410,136 +1393,147 @@ pub static mut _xeq_level_array: [uint16_t; 1114732] = [0; 1114732];
 static mut _trie_op_hash_array: [int32_t; 70223] = [0; 70223];
 static mut yhash: *mut b32x2 = 0 as *const b32x2 as *mut b32x2;
 /* Read and write dump files.  As distributed, these files are
-   architecture dependent; specifically, BigEndian and LittleEndian
-   architectures produce different files.  These routines always output
-   BigEndian files.  This still does not guarantee them to be
-   architecture-independent, because it is possible to make a format
-   that dumps a glue ratio, i.e., a floating-point number.  Fortunately,
-   none of the standard formats do that.  */
+architecture dependent; specifically, BigEndian and LittleEndian
+architectures produce different files.  These routines always output
+BigEndian files.  This still does not guarantee them to be
+architecture-independent, because it is possible to make a format
+that dumps a glue ratio, i.e., a floating-point number.  Fortunately,
+none of the standard formats do that.  */
 /* This macro is always invoked as a statement.  It assumes a variable
-   `temp'.  */
+`temp'.  */
 /* Make the NITEMS items pointed at by P, each of size SIZE, be the
-   opposite-endianness of whatever they are now.  */
-unsafe extern "C" fn swap_items(mut p: *mut libc::c_char, mut nitems: size_t,
-                                mut size: size_t) {
+opposite-endianness of whatever they are now.  */
+unsafe extern "C" fn swap_items(mut p: *mut libc::c_char, mut nitems: size_t, mut size: size_t) {
     let mut temp: libc::c_char = 0;
     match size {
-        16 => {
-            loop  {
-                let fresh0 = nitems;
-                nitems = nitems.wrapping_sub(1);
-                if !(fresh0 != 0) { break ; }
-                temp = *p.offset(0);
-                *p.offset(0) = *p.offset(15);
-                *p.offset(15) = temp;
-                temp = *p.offset(1);
-                *p.offset(1) = *p.offset(14);
-                *p.offset(14) = temp;
-                temp = *p.offset(2);
-                *p.offset(2) = *p.offset(13);
-                *p.offset(13) = temp;
-                temp = *p.offset(3);
-                *p.offset(3) = *p.offset(12);
-                *p.offset(12) = temp;
-                temp = *p.offset(4);
-                *p.offset(4) = *p.offset(11);
-                *p.offset(11) = temp;
-                temp = *p.offset(5);
-                *p.offset(5) = *p.offset(10);
-                *p.offset(10) = temp;
-                temp = *p.offset(6);
-                *p.offset(6) = *p.offset(9);
-                *p.offset(9) = temp;
-                temp = *p.offset(7);
-                *p.offset(7) = *p.offset(8);
-                *p.offset(8) = temp;
-                p = p.offset(size as isize)
+        16 => loop {
+            let fresh0 = nitems;
+            nitems = nitems.wrapping_sub(1);
+            if !(fresh0 != 0) {
+                break;
             }
-        }
-        8 => {
-            loop  {
-                let fresh1 = nitems;
-                nitems = nitems.wrapping_sub(1);
-                if !(fresh1 != 0) { break ; }
-                temp = *p.offset(0);
-                *p.offset(0) = *p.offset(7);
-                *p.offset(7) = temp;
-                temp = *p.offset(1);
-                *p.offset(1) = *p.offset(6);
-                *p.offset(6) = temp;
-                temp = *p.offset(2);
-                *p.offset(2) = *p.offset(5);
-                *p.offset(5) = temp;
-                temp = *p.offset(3);
-                *p.offset(3) = *p.offset(4);
-                *p.offset(4) = temp;
-                p = p.offset(size as isize)
+            temp = *p.offset(0);
+            *p.offset(0) = *p.offset(15);
+            *p.offset(15) = temp;
+            temp = *p.offset(1);
+            *p.offset(1) = *p.offset(14);
+            *p.offset(14) = temp;
+            temp = *p.offset(2);
+            *p.offset(2) = *p.offset(13);
+            *p.offset(13) = temp;
+            temp = *p.offset(3);
+            *p.offset(3) = *p.offset(12);
+            *p.offset(12) = temp;
+            temp = *p.offset(4);
+            *p.offset(4) = *p.offset(11);
+            *p.offset(11) = temp;
+            temp = *p.offset(5);
+            *p.offset(5) = *p.offset(10);
+            *p.offset(10) = temp;
+            temp = *p.offset(6);
+            *p.offset(6) = *p.offset(9);
+            *p.offset(9) = temp;
+            temp = *p.offset(7);
+            *p.offset(7) = *p.offset(8);
+            *p.offset(8) = temp;
+            p = p.offset(size as isize)
+        },
+        8 => loop {
+            let fresh1 = nitems;
+            nitems = nitems.wrapping_sub(1);
+            if !(fresh1 != 0) {
+                break;
             }
-        }
-        4 => {
-            loop  {
-                let fresh2 = nitems;
-                nitems = nitems.wrapping_sub(1);
-                if !(fresh2 != 0) { break ; }
-                temp = *p.offset(0);
-                *p.offset(0) = *p.offset(3);
-                *p.offset(3) = temp;
-                temp = *p.offset(1);
-                *p.offset(1) = *p.offset(2);
-                *p.offset(2) = temp;
-                p = p.offset(size as isize)
+            temp = *p.offset(0);
+            *p.offset(0) = *p.offset(7);
+            *p.offset(7) = temp;
+            temp = *p.offset(1);
+            *p.offset(1) = *p.offset(6);
+            *p.offset(6) = temp;
+            temp = *p.offset(2);
+            *p.offset(2) = *p.offset(5);
+            *p.offset(5) = temp;
+            temp = *p.offset(3);
+            *p.offset(3) = *p.offset(4);
+            *p.offset(4) = temp;
+            p = p.offset(size as isize)
+        },
+        4 => loop {
+            let fresh2 = nitems;
+            nitems = nitems.wrapping_sub(1);
+            if !(fresh2 != 0) {
+                break;
             }
-        }
-        2 => {
-            loop  {
-                let fresh3 = nitems;
-                nitems = nitems.wrapping_sub(1);
-                if !(fresh3 != 0) { break ; }
-                temp = *p.offset(0);
-                *p.offset(0) = *p.offset(1);
-                *p.offset(1) = temp;
-                p = p.offset(size as isize)
+            temp = *p.offset(0);
+            *p.offset(0) = *p.offset(3);
+            *p.offset(3) = temp;
+            temp = *p.offset(1);
+            *p.offset(1) = *p.offset(2);
+            *p.offset(2) = temp;
+            p = p.offset(size as isize)
+        },
+        2 => loop {
+            let fresh3 = nitems;
+            nitems = nitems.wrapping_sub(1);
+            if !(fresh3 != 0) {
+                break;
             }
-        }
-        1 => { }
+            temp = *p.offset(0);
+            *p.offset(0) = *p.offset(1);
+            *p.offset(1) = temp;
+            p = p.offset(size as isize)
+        },
+        1 => {}
         _ => {
-            _tt_abort(b"can\'t swap a %zu-byte item for (un)dumping\x00" as
-                          *const u8 as *const libc::c_char, size);
+            _tt_abort(
+                b"can\'t swap a %zu-byte item for (un)dumping\x00" as *const u8
+                    as *const libc::c_char,
+                size,
+            );
         }
     };
 }
 /* not WORDS_BIGENDIAN */
 /* Here we write NITEMS items, each item being ITEM_SIZE bytes long.
-   The pointer to the stuff to write is P, and we write to the file
-   OUT_FILE.  */
-unsafe extern "C" fn do_dump(mut p: *mut libc::c_char, mut item_size: size_t,
-                             mut nitems: size_t,
-                             mut out_file: rust_output_handle_t) {
+The pointer to the stuff to write is P, and we write to the file
+OUT_FILE.  */
+unsafe extern "C" fn do_dump(
+    mut p: *mut libc::c_char,
+    mut item_size: size_t,
+    mut nitems: size_t,
+    mut out_file: rust_output_handle_t,
+) {
     swap_items(p, nitems, item_size);
     let mut r: ssize_t =
-        ttstub_output_write(out_file, p, item_size.wrapping_mul(nitems)) as
-            ssize_t;
-    if r < 0i32 as libc::c_long ||
-           r as size_t != item_size.wrapping_mul(nitems) {
-        _tt_abort(b"could not write %zu %zu-byte item(s) to %s\x00" as
-                      *const u8 as *const libc::c_char, nitems, item_size,
-                  name_of_file);
+        ttstub_output_write(out_file, p, item_size.wrapping_mul(nitems)) as ssize_t;
+    if r < 0i32 as libc::c_long || r as size_t != item_size.wrapping_mul(nitems) {
+        _tt_abort(
+            b"could not write %zu %zu-byte item(s) to %s\x00" as *const u8 as *const libc::c_char,
+            nitems,
+            item_size,
+            name_of_file,
+        );
     }
     /* Have to restore the old contents of memory, since some of it might
-       get used again.  */
+    get used again.  */
     swap_items(p, nitems, item_size);
 }
 /* Here is the dual of the writing routine.  */
-unsafe extern "C" fn do_undump(mut p: *mut libc::c_char,
-                               mut item_size: size_t, mut nitems: size_t,
-                               mut in_file: rust_input_handle_t) {
-    let mut r: ssize_t =
-        ttstub_input_read(in_file, p, item_size.wrapping_mul(nitems));
-    if r < 0i32 as libc::c_long ||
-           r as size_t != item_size.wrapping_mul(nitems) {
-        _tt_abort(b"could not undump %zu %zu-byte item(s) from %s\x00" as
-                      *const u8 as *const libc::c_char, nitems, item_size,
-                  name_of_file);
+unsafe extern "C" fn do_undump(
+    mut p: *mut libc::c_char,
+    mut item_size: size_t,
+    mut nitems: size_t,
+    mut in_file: rust_input_handle_t,
+) {
+    let mut r: ssize_t = ttstub_input_read(in_file, p, item_size.wrapping_mul(nitems));
+    if r < 0i32 as libc::c_long || r as size_t != item_size.wrapping_mul(nitems) {
+        _tt_abort(
+            b"could not undump %zu %zu-byte item(s) from %s\x00" as *const u8
+                as *const libc::c_char,
+            nitems,
+            item_size,
+            name_of_file,
+        );
     }
     swap_items(p, nitems, item_size);
 }
@@ -1567,16 +1561,16 @@ unsafe extern "C" fn sort_avail() {
                 q = (*mem.offset((q + 1i32) as isize)).b32.s1
             }
             r = (*mem.offset((p + 1i32) as isize)).b32.s1;
-            (*mem.offset((p + 1i32) as isize)).b32.s1 =
-                (*mem.offset((q + 1i32) as isize)).b32.s1;
+            (*mem.offset((p + 1i32) as isize)).b32.s1 = (*mem.offset((q + 1i32) as isize)).b32.s1;
             (*mem.offset((q + 1i32) as isize)).b32.s1 = p;
             p = r
         }
     }
     p = rover;
     while (*mem.offset((p + 1i32) as isize)).b32.s1 != 0x3fffffffi32 {
-        (*mem.offset(((*mem.offset((p + 1i32) as isize)).b32.s1 + 1i32) as
-                         isize)).b32.s0 = p;
+        (*mem.offset(((*mem.offset((p + 1i32) as isize)).b32.s1 + 1i32) as isize))
+            .b32
+            .s0 = p;
         p = (*mem.offset((p + 1i32) as isize)).b32.s1
     }
     (*mem.offset((p + 1i32) as isize)).b32.s1 = rover;
@@ -1584,20 +1578,20 @@ unsafe extern "C" fn sort_avail() {
 }
 /*:271*/
 /*276: */
-unsafe extern "C" fn primitive(mut ident: *const libc::c_char,
-                               mut c: uint16_t, mut o: int32_t) {
+unsafe extern "C" fn primitive(mut ident: *const libc::c_char, mut c: uint16_t, mut o: int32_t) {
     let mut prim_val: int32_t = 0;
     let mut len: libc::c_int = strlen(ident) as libc::c_int;
     if len > 1i32 {
         let mut s: str_number = maketexstring(ident);
         if first + len > buf_size + 1i32 {
-            overflow(b"buffer size\x00" as *const u8 as *const libc::c_char,
-                     buf_size);
+            overflow(
+                b"buffer size\x00" as *const u8 as *const libc::c_char,
+                buf_size,
+            );
         }
         let mut i: libc::c_int = 0i32;
         while i < len {
-            *buffer.offset((first + i) as isize) =
-                *ident.offset(i as isize) as UnicodeScalar;
+            *buffer.offset((first + i) as isize) = *ident.offset(i as isize) as UnicodeScalar;
             i += 1
         }
         cur_val = id_lookup(first, len);
@@ -1606,8 +1600,7 @@ unsafe extern "C" fn primitive(mut ident: *const libc::c_char,
         (*hash.offset(cur_val as isize)).s1 = s;
         prim_val = prim_lookup(s)
     } else {
-        cur_val =
-            *ident.offset(0) as libc::c_int + (1i32 + (0x10ffffi32 + 1i32));
+        cur_val = *ident.offset(0) as libc::c_int + (1i32 + (0x10ffffi32 + 1i32));
         prim_val = prim_lookup(*ident.offset(0) as str_number)
     }
     (*eqtb.offset(cur_val as isize)).b16.s0 = 1i32 as uint16_t;
@@ -1620,28 +1613,35 @@ unsafe extern "C" fn primitive(mut ident: *const libc::c_char,
 /*:925*/
 /*977: */
 #[no_mangle]
-pub unsafe extern "C" fn new_trie_op(mut d: small_number, mut n: small_number,
-                                     mut v: trie_opcode) -> trie_opcode {
+pub unsafe extern "C" fn new_trie_op(
+    mut d: small_number,
+    mut n: small_number,
+    mut v: trie_opcode,
+) -> trie_opcode {
     let mut h: int32_t = 0;
     let mut u: trie_opcode = 0;
     let mut l: int32_t = 0;
-    h =
-        (abs(n as libc::c_int + 313i32 * d as libc::c_int +
-                 361i32 * v as libc::c_int +
-                 1009i32 * cur_lang as libc::c_int) as libc::c_long %
-             (35111i64 - -35111i64) + -35111i64) as int32_t;
-    loop  {
+    h = (abs(n as libc::c_int
+        + 313i32 * d as libc::c_int
+        + 361i32 * v as libc::c_int
+        + 1009i32 * cur_lang as libc::c_int) as libc::c_long
+        % (35111i64 - -35111i64)
+        + -35111i64) as int32_t;
+    loop {
         l = _trie_op_hash_array[(h as libc::c_long - -35111i64) as usize];
         if l == 0i32 {
             if trie_op_ptr as libc::c_long == 35111i64 {
-                overflow(b"pattern memory ops\x00" as *const u8 as
-                             *const libc::c_char, 35111i64 as int32_t);
+                overflow(
+                    b"pattern memory ops\x00" as *const u8 as *const libc::c_char,
+                    35111i64 as int32_t,
+                );
             }
             u = trie_used[cur_lang as usize];
             if u as libc::c_long == 65535i64 {
-                overflow(b"pattern memory ops per language\x00" as *const u8
-                             as *const libc::c_char,
-                         (65535i64 - 0i32 as libc::c_long) as int32_t);
+                overflow(
+                    b"pattern memory ops per language\x00" as *const u8 as *const libc::c_char,
+                    (65535i64 - 0i32 as libc::c_long) as int32_t,
+                );
             }
             trie_op_ptr += 1;
             u = u.wrapping_add(1);
@@ -1653,56 +1653,62 @@ pub unsafe extern "C" fn new_trie_op(mut d: small_number, mut n: small_number,
             hyf_num[trie_op_ptr as usize] = n;
             hyf_next[trie_op_ptr as usize] = v;
             trie_op_lang[trie_op_ptr as usize] = cur_lang;
-            _trie_op_hash_array[(h as libc::c_long - -35111i64) as usize] =
-                trie_op_ptr;
+            _trie_op_hash_array[(h as libc::c_long - -35111i64) as usize] = trie_op_ptr;
             trie_op_val[trie_op_ptr as usize] = u;
-            return u
+            return u;
         }
-        if hyf_distance[l as usize] as libc::c_int == d as libc::c_int &&
-               hyf_num[l as usize] as libc::c_int == n as libc::c_int &&
-               hyf_next[l as usize] as libc::c_int == v as libc::c_int &&
-               trie_op_lang[l as usize] as libc::c_int ==
-                   cur_lang as libc::c_int {
-            return trie_op_val[l as usize]
+        if hyf_distance[l as usize] as libc::c_int == d as libc::c_int
+            && hyf_num[l as usize] as libc::c_int == n as libc::c_int
+            && hyf_next[l as usize] as libc::c_int == v as libc::c_int
+            && trie_op_lang[l as usize] as libc::c_int == cur_lang as libc::c_int
+        {
+            return trie_op_val[l as usize];
         }
         if h > -(35111i64 as int32_t) {
             h -= 1
-        } else { h = 35111i64 as int32_t }
-    };
+        } else {
+            h = 35111i64 as int32_t
+        }
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn trie_node(mut p: trie_pointer) -> trie_pointer {
     let mut h: trie_pointer = 0;
     let mut q: trie_pointer = 0;
-    h =
-        abs(*trie_c.offset(p as isize) as libc::c_int +
-                1009i32 * *trie_o.offset(p as isize) as libc::c_int +
-                2718i32 * *trie_l.offset(p as isize) +
-                3142i32 * *trie_r.offset(p as isize)) % trie_size;
-    loop  {
+    h = abs(*trie_c.offset(p as isize) as libc::c_int
+        + 1009i32 * *trie_o.offset(p as isize) as libc::c_int
+        + 2718i32 * *trie_l.offset(p as isize)
+        + 3142i32 * *trie_r.offset(p as isize))
+        % trie_size;
+    loop {
         q = *trie_hash.offset(h as isize);
-        if q == 0i32 { *trie_hash.offset(h as isize) = p; return p }
-        if *trie_c.offset(q as isize) as libc::c_int ==
-               *trie_c.offset(p as isize) as libc::c_int &&
-               *trie_o.offset(q as isize) as libc::c_int ==
-                   *trie_o.offset(p as isize) as libc::c_int &&
-               *trie_l.offset(q as isize) == *trie_l.offset(p as isize) &&
-               *trie_r.offset(q as isize) == *trie_r.offset(p as isize) {
-            return q
+        if q == 0i32 {
+            *trie_hash.offset(h as isize) = p;
+            return p;
         }
-        if h > 0i32 { h -= 1 } else { h = trie_size }
-    };
+        if *trie_c.offset(q as isize) as libc::c_int == *trie_c.offset(p as isize) as libc::c_int
+            && *trie_o.offset(q as isize) as libc::c_int
+                == *trie_o.offset(p as isize) as libc::c_int
+            && *trie_l.offset(q as isize) == *trie_l.offset(p as isize)
+            && *trie_r.offset(q as isize) == *trie_r.offset(p as isize)
+        {
+            return q;
+        }
+        if h > 0i32 {
+            h -= 1
+        } else {
+            h = trie_size
+        }
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn compress_trie(mut p: trie_pointer) -> trie_pointer {
     if p == 0i32 {
-        return 0i32
+        return 0i32;
     } else {
-        *trie_l.offset(p as isize) =
-            compress_trie(*trie_l.offset(p as isize));
-        *trie_r.offset(p as isize) =
-            compress_trie(*trie_r.offset(p as isize));
-        return trie_node(p)
+        *trie_l.offset(p as isize) = compress_trie(*trie_l.offset(p as isize));
+        *trie_r.offset(p as isize) = compress_trie(*trie_r.offset(p as isize));
+        return trie_node(p);
     };
 }
 #[no_mangle]
@@ -1716,43 +1722,47 @@ pub unsafe extern "C" fn first_fit(mut p: trie_pointer) {
     let mut ll: int32_t = 0;
     c = *trie_c.offset(p as isize);
     z = trie_min[c as usize];
-    's_31:
-        loop  {
-            h = z - c as libc::c_int;
-            if trie_max < h + max_hyph_char {
-                if trie_size <= h + max_hyph_char {
-                    overflow(b"pattern memory\x00" as *const u8 as
-                                 *const libc::c_char, trie_size);
-                }
-                loop  {
-                    trie_max += 1;
-                    *trie_taken.offset(trie_max as isize) = 0i32 != 0;
-                    *trie_trl.offset(trie_max as isize) = trie_max + 1i32;
-                    *trie_tro.offset(trie_max as isize) = trie_max - 1i32;
-                    if trie_max == h + max_hyph_char { break ; }
+    's_31: loop {
+        h = z - c as libc::c_int;
+        if trie_max < h + max_hyph_char {
+            if trie_size <= h + max_hyph_char {
+                overflow(
+                    b"pattern memory\x00" as *const u8 as *const libc::c_char,
+                    trie_size,
+                );
+            }
+            loop {
+                trie_max += 1;
+                *trie_taken.offset(trie_max as isize) = 0i32 != 0;
+                *trie_trl.offset(trie_max as isize) = trie_max + 1i32;
+                *trie_tro.offset(trie_max as isize) = trie_max - 1i32;
+                if trie_max == h + max_hyph_char {
+                    break;
                 }
             }
-            if !*trie_taken.offset(h as isize) {
-                q = *trie_r.offset(p as isize);
-                loop  {
-                    if !(q > 0i32) { break 's_31 ; }
-                    if *trie_trl.offset((h +
-                                             *trie_c.offset(q as isize) as
-                                                 libc::c_int) as isize) ==
-                           0i32 {
-                        break ;
-                    }
-                    q = *trie_r.offset(q as isize)
-                }
-            }
-            /*not_found */
-            z = *trie_trl.offset(z as isize)
         }
+        if !*trie_taken.offset(h as isize) {
+            q = *trie_r.offset(p as isize);
+            loop {
+                if !(q > 0i32) {
+                    break 's_31;
+                }
+                if *trie_trl.offset((h + *trie_c.offset(q as isize) as libc::c_int) as isize)
+                    == 0i32
+                {
+                    break;
+                }
+                q = *trie_r.offset(q as isize)
+            }
+        }
+        /*not_found */
+        z = *trie_trl.offset(z as isize)
+    }
     /*found *//*991: */
     *trie_taken.offset(h as isize) = 1i32 != 0;
     *trie_hash.offset(p as isize) = h;
     q = p;
-    loop  {
+    loop {
         z = h + *trie_c.offset(q as isize) as libc::c_int;
         l = *trie_tro.offset(z as isize);
         r = *trie_trl.offset(z as isize);
@@ -1760,25 +1770,39 @@ pub unsafe extern "C" fn first_fit(mut p: trie_pointer) {
         *trie_trl.offset(l as isize) = r;
         *trie_trl.offset(z as isize) = 0i32;
         if l < max_hyph_char {
-            if z < max_hyph_char { ll = z } else { ll = max_hyph_char }
-            loop  { trie_min[l as usize] = r; l += 1; if l == ll { break ; } }
+            if z < max_hyph_char {
+                ll = z
+            } else {
+                ll = max_hyph_char
+            }
+            loop {
+                trie_min[l as usize] = r;
+                l += 1;
+                if l == ll {
+                    break;
+                }
+            }
         }
         q = *trie_r.offset(q as isize);
-        if q == 0i32 { break ; }
-    };
+        if q == 0i32 {
+            break;
+        }
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn trie_pack(mut p: trie_pointer) {
     let mut q: trie_pointer = 0;
-    loop  {
+    loop {
         q = *trie_l.offset(p as isize);
         if q > 0i32 && *trie_hash.offset(q as isize) == 0i32 {
             first_fit(q);
             trie_pack(q);
         }
         p = *trie_r.offset(p as isize);
-        if p == 0i32 { break ; }
-    };
+        if p == 0i32 {
+            break;
+        }
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn trie_fix(mut p: trie_pointer) {
@@ -1786,18 +1810,21 @@ pub unsafe extern "C" fn trie_fix(mut p: trie_pointer) {
     let mut c: UTF16_code = 0;
     let mut z: trie_pointer = 0;
     z = *trie_hash.offset(p as isize);
-    loop  {
+    loop {
         q = *trie_l.offset(p as isize);
         c = *trie_c.offset(p as isize);
-        *trie_trl.offset((z + c as libc::c_int) as isize) =
-            *trie_hash.offset(q as isize);
+        *trie_trl.offset((z + c as libc::c_int) as isize) = *trie_hash.offset(q as isize);
         *trie_trc.offset((z + c as libc::c_int) as isize) = c;
         *trie_tro.offset((z + c as libc::c_int) as isize) =
             *trie_o.offset(p as isize) as trie_pointer;
-        if q > 0i32 { trie_fix(q); }
+        if q > 0i32 {
+            trie_fix(q);
+        }
         p = *trie_r.offset(p as isize);
-        if p == 0i32 { break ; }
-    };
+        if p == 0i32 {
+            break;
+        }
+    }
 }
 unsafe extern "C" fn new_patterns() {
     let mut k: libc::c_short = 0;
@@ -1809,82 +1836,154 @@ unsafe extern "C" fn new_patterns() {
     let mut first_child: bool = false;
     let mut c: UTF16_code = 0;
     if trie_not_ready {
-        if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              50i32) as isize)).b32.s1 <= 0i32 {
+        if (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 50i32) as isize,
+        ))
+        .b32
+        .s1 <= 0i32
+        {
             cur_lang = 0i32 as libc::c_uchar
-        } else if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                     12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                     256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                     256i32 + 1i32 + 3i32 * 256i32 +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) + 50i32) as
-                                    isize)).b32.s1 > 255i32 {
+        } else if (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 50i32) as isize,
+        ))
+        .b32
+        .s1 > 255i32
+        {
             cur_lang = 0i32 as libc::c_uchar
         } else {
-            cur_lang =
-                (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                   12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                   256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                   256i32 + 1i32 + 3i32 * 256i32 +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32) + 50i32) as
-                                  isize)).b32.s1 as libc::c_uchar
+            cur_lang = (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 50i32) as isize,
+            ))
+            .b32
+            .s1 as libc::c_uchar
         }
         scan_left_brace();
         k = 0i32 as libc::c_short;
         hyf[0] = 0i32 as libc::c_uchar;
         digit_sensed = 0i32 != 0;
-        loop  {
+        loop {
             get_x_token();
             match cur_cmd as libc::c_int {
                 11 | 12 => {
-                    if digit_sensed as libc::c_int != 0 ||
-                           cur_chr < '0' as i32 || cur_chr > '9' as i32 {
+                    if digit_sensed as libc::c_int != 0
+                        || cur_chr < '0' as i32
+                        || cur_chr > '9' as i32
+                    {
                         if cur_chr == '.' as i32 {
                             cur_chr = 0i32
                         } else {
-                            cur_chr =
-                                (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                                   (0x10ffffi32 + 1i32) + 1i32
-                                                   + 15000i32 + 12i32 +
-                                                   9000i32 + 1i32 + 1i32 +
-                                                   19i32 + 256i32 + 256i32 +
-                                                   13i32 + 256i32 + 4i32 +
-                                                   256i32 + 1i32 +
-                                                   3i32 * 256i32 +
-                                                   (0x10ffffi32 + 1i32) +
-                                                   cur_chr) as isize)).b32.s1;
+                            cur_chr = (*eqtb.offset(
+                                (1i32
+                                    + (0x10ffffi32 + 1i32)
+                                    + (0x10ffffi32 + 1i32)
+                                    + 1i32
+                                    + 15000i32
+                                    + 12i32
+                                    + 9000i32
+                                    + 1i32
+                                    + 1i32
+                                    + 19i32
+                                    + 256i32
+                                    + 256i32
+                                    + 13i32
+                                    + 256i32
+                                    + 4i32
+                                    + 256i32
+                                    + 1i32
+                                    + 3i32 * 256i32
+                                    + (0x10ffffi32 + 1i32)
+                                    + cur_chr) as isize,
+                            ))
+                            .b32
+                            .s1;
                             if cur_chr == 0i32 {
                                 if file_line_error_style_p != 0 {
                                     print_file_line();
                                 } else {
-                                    print_nl_cstr(b"! \x00" as *const u8 as
-                                                      *const libc::c_char);
+                                    print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
                                 }
-                                print_cstr(b"Nonletter\x00" as *const u8 as
-                                               *const libc::c_char);
+                                print_cstr(b"Nonletter\x00" as *const u8 as *const libc::c_char);
                                 help_ptr = 1i32 as libc::c_uchar;
                                 help_line[0] =
-                                    b"(See Appendix H.)\x00" as *const u8 as
-                                        *const libc::c_char;
+                                    b"(See Appendix H.)\x00" as *const u8 as *const libc::c_char;
                                 error();
                             }
                         }
-                        if cur_chr > max_hyph_char { max_hyph_char = cur_chr }
+                        if cur_chr > max_hyph_char {
+                            max_hyph_char = cur_chr
+                        }
                         if (k as libc::c_int) < max_hyphenatable_length() {
                             k += 1;
                             hc[k as usize] = cur_chr;
@@ -1899,22 +1998,25 @@ unsafe extern "C" fn new_patterns() {
                 10 | 2 => {
                     if k as libc::c_int > 0i32 {
                         /*998:*/
-                        if hc[1] == 0i32 { hyf[0] = 0i32 as libc::c_uchar }
+                        if hc[1] == 0i32 {
+                            hyf[0] = 0i32 as libc::c_uchar
+                        }
                         if hc[k as usize] == 0i32 {
                             hyf[k as usize] = 0i32 as libc::c_uchar
                         }
                         l = k;
                         v = 0i32 as trie_opcode;
-                        loop  {
+                        loop {
                             if hyf[l as usize] as libc::c_int != 0i32 {
-                                v =
-                                    new_trie_op((k as libc::c_int -
-                                                     l as libc::c_int) as
-                                                    small_number,
-                                                hyf[l as usize] as
-                                                    small_number, v)
+                                v = new_trie_op(
+                                    (k as libc::c_int - l as libc::c_int) as small_number,
+                                    hyf[l as usize] as small_number,
+                                    v,
+                                )
                             }
-                            if !(l as libc::c_int > 0i32) { break ; }
+                            if !(l as libc::c_int > 0i32) {
+                                break;
+                            }
                             l -= 1
                         }
                         q = 0i32;
@@ -1924,24 +2026,22 @@ unsafe extern "C" fn new_patterns() {
                             l += 1;
                             p = *trie_l.offset(q as isize);
                             first_child = 1i32 != 0;
-                            while p > 0i32 &&
-                                      c as libc::c_int >
-                                          *trie_c.offset(p as isize) as
-                                              libc::c_int {
+                            while p > 0i32
+                                && c as libc::c_int > *trie_c.offset(p as isize) as libc::c_int
+                            {
                                 q = p;
                                 p = *trie_r.offset(q as isize);
                                 first_child = 0i32 != 0
                             }
-                            if p == 0i32 ||
-                                   (c as libc::c_int) <
-                                       *trie_c.offset(p as isize) as
-                                           libc::c_int {
+                            if p == 0i32
+                                || (c as libc::c_int) < *trie_c.offset(p as isize) as libc::c_int
+                            {
                                 /*999:*/
                                 if trie_ptr == trie_size {
-                                    overflow(b"pattern memory\x00" as
-                                                 *const u8 as
-                                                 *const libc::c_char,
-                                             trie_size);
+                                    overflow(
+                                        b"pattern memory\x00" as *const u8 as *const libc::c_char,
+                                        trie_size,
+                                    );
                                 }
                                 trie_ptr += 1;
                                 *trie_r.offset(trie_ptr as isize) = p;
@@ -1949,10 +2049,11 @@ unsafe extern "C" fn new_patterns() {
                                 *trie_l.offset(p as isize) = 0i32;
                                 if first_child {
                                     *trie_l.offset(q as isize) = p
-                                } else { *trie_r.offset(q as isize) = p }
+                                } else {
+                                    *trie_r.offset(q as isize) = p
+                                }
                                 *trie_c.offset(p as isize) = c;
-                                *trie_o.offset(p as isize) =
-                                    0i32 as trie_opcode
+                                *trie_o.offset(p as isize) = 0i32 as trie_opcode
                             }
                             q = p
                         }
@@ -1960,20 +2061,21 @@ unsafe extern "C" fn new_patterns() {
                             if file_line_error_style_p != 0 {
                                 print_file_line();
                             } else {
-                                print_nl_cstr(b"! \x00" as *const u8 as
-                                                  *const libc::c_char);
+                                print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
                             }
-                            print_cstr(b"Duplicate pattern\x00" as *const u8
-                                           as *const libc::c_char);
+                            print_cstr(
+                                b"Duplicate pattern\x00" as *const u8 as *const libc::c_char,
+                            );
                             help_ptr = 1i32 as libc::c_uchar;
                             help_line[0] =
-                                b"(See Appendix H.)\x00" as *const u8 as
-                                    *const libc::c_char;
+                                b"(See Appendix H.)\x00" as *const u8 as *const libc::c_char;
                             error();
                         }
                         *trie_o.offset(q as isize) = v
                     }
-                    if cur_cmd as libc::c_int == 2i32 { break ; }
+                    if cur_cmd as libc::c_int == 2i32 {
+                        break;
+                    }
                     k = 0i32 as libc::c_short;
                     hyf[0] = 0i32 as libc::c_uchar;
                     digit_sensed = 0i32 != 0
@@ -1982,51 +2084,66 @@ unsafe extern "C" fn new_patterns() {
                     if file_line_error_style_p != 0 {
                         print_file_line();
                     } else {
-                        print_nl_cstr(b"! \x00" as *const u8 as
-                                          *const libc::c_char);
+                        print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
                     }
-                    print_cstr(b"Bad \x00" as *const u8 as
-                                   *const libc::c_char);
-                    print_esc_cstr(b"patterns\x00" as *const u8 as
-                                       *const libc::c_char);
+                    print_cstr(b"Bad \x00" as *const u8 as *const libc::c_char);
+                    print_esc_cstr(b"patterns\x00" as *const u8 as *const libc::c_char);
                     help_ptr = 1i32 as libc::c_uchar;
-                    help_line[0] =
-                        b"(See Appendix H.)\x00" as *const u8 as
-                            *const libc::c_char;
+                    help_line[0] = b"(See Appendix H.)\x00" as *const u8 as *const libc::c_char;
                     error();
                 }
             }
         }
         /*:996*/
-        if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              66i32) as isize)).b32.s1 > 0i32 {
+        if (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 66i32) as isize,
+        ))
+        .b32
+        .s1 > 0i32
+        {
             /*1643:*/
             c = cur_lang as UTF16_code;
             first_child = 0i32 != 0;
             p = 0i32;
-            loop  {
+            loop {
                 q = p;
                 p = *trie_r.offset(q as isize);
-                if p == 0i32 ||
-                       c as libc::c_int <=
-                           *trie_c.offset(p as isize) as libc::c_int {
-                    break ;
+                if p == 0i32 || c as libc::c_int <= *trie_c.offset(p as isize) as libc::c_int {
+                    break;
                 }
             }
-            if p == 0i32 ||
-                   (c as libc::c_int) <
-                       *trie_c.offset(p as isize) as libc::c_int {
+            if p == 0i32 || (c as libc::c_int) < *trie_c.offset(p as isize) as libc::c_int {
                 /*:1644*/
                 /*999:*/
                 if trie_ptr == trie_size {
-                    overflow(b"pattern memory\x00" as *const u8 as
-                                 *const libc::c_char, trie_size);
+                    overflow(
+                        b"pattern memory\x00" as *const u8 as *const libc::c_char,
+                        trie_size,
+                    );
                 }
                 trie_ptr += 1;
                 *trie_r.offset(trie_ptr as isize) = p;
@@ -2034,7 +2151,9 @@ unsafe extern "C" fn new_patterns() {
                 *trie_l.offset(p as isize) = 0i32;
                 if first_child {
                     *trie_l.offset(q as isize) = p
-                } else { *trie_r.offset(q as isize) = p }
+                } else {
+                    *trie_r.offset(q as isize) = p
+                }
                 *trie_c.offset(p as isize) = c;
                 *trie_o.offset(p as isize) = 0i32 as trie_opcode
             }
@@ -2043,21 +2162,39 @@ unsafe extern "C" fn new_patterns() {
             first_child = 1i32 != 0;
             c = 0i32 as UTF16_code;
             while c as libc::c_int <= 255i32 {
-                if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                      (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                      12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                      256i32 + 256i32 + 13i32 + 256i32 + 4i32
-                                      + 256i32 + 1i32 + 3i32 * 256i32 +
-                                      (0x10ffffi32 + 1i32) + c as libc::c_int)
-                                     as isize)).b32.s1 > 0i32 ||
-                       c as libc::c_int == 255i32 &&
-                           first_child as libc::c_int != 0 {
+                if (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + 256i32
+                        + 1i32
+                        + 3i32 * 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + c as libc::c_int) as isize,
+                ))
+                .b32
+                .s1 > 0i32
+                    || c as libc::c_int == 255i32 && first_child as libc::c_int != 0
+                {
                     if p == 0i32 {
                         /*999:*/
                         if trie_ptr == trie_size {
-                            overflow(b"pattern memory\x00" as *const u8 as
-                                         *const libc::c_char,
-                                     trie_size); /*:987 */
+                            overflow(
+                                b"pattern memory\x00" as *const u8 as *const libc::c_char,
+                                trie_size,
+                            ); /*:987 */
                         }
                         trie_ptr += 1;
                         *trie_r.offset(trie_ptr as isize) = p;
@@ -2065,20 +2202,38 @@ unsafe extern "C" fn new_patterns() {
                         *trie_l.offset(p as isize) = 0i32;
                         if first_child {
                             *trie_l.offset(q as isize) = p
-                        } else { *trie_r.offset(q as isize) = p }
+                        } else {
+                            *trie_r.offset(q as isize) = p
+                        }
                         *trie_c.offset(p as isize) = c;
                         *trie_o.offset(p as isize) = 0i32 as trie_opcode
-                    } else { *trie_c.offset(p as isize) = c }
-                    *trie_o.offset(p as isize) =
-                        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                           (0x10ffffi32 + 1i32) + 1i32 +
-                                           15000i32 + 12i32 + 9000i32 + 1i32 +
-                                           1i32 + 19i32 + 256i32 + 256i32 +
-                                           13i32 + 256i32 + 4i32 + 256i32 +
-                                           1i32 + 3i32 * 256i32 +
-                                           (0x10ffffi32 + 1i32) +
-                                           c as libc::c_int) as isize)).b32.s1
-                            as trie_opcode;
+                    } else {
+                        *trie_c.offset(p as isize) = c
+                    }
+                    *trie_o.offset(p as isize) = (*eqtb.offset(
+                        (1i32
+                            + (0x10ffffi32 + 1i32)
+                            + (0x10ffffi32 + 1i32)
+                            + 1i32
+                            + 15000i32
+                            + 12i32
+                            + 9000i32
+                            + 1i32
+                            + 1i32
+                            + 19i32
+                            + 256i32
+                            + 256i32
+                            + 13i32
+                            + 256i32
+                            + 4i32
+                            + 256i32
+                            + 1i32
+                            + 3i32 * 256i32
+                            + (0x10ffffi32 + 1i32)
+                            + c as libc::c_int) as isize,
+                    ))
+                    .b32
+                    .s1 as trie_opcode;
                     q = p;
                     p = *trie_r.offset(q as isize);
                     first_child = 0i32 != 0
@@ -2087,7 +2242,9 @@ unsafe extern "C" fn new_patterns() {
             }
             if first_child {
                 *trie_l.offset(q as isize) = 0i32
-            } else { *trie_r.offset(q as isize) = 0i32 }
+            } else {
+                *trie_r.offset(q as isize) = 0i32
+            }
         }
     } else {
         if file_line_error_style_p != 0 {
@@ -2098,12 +2255,10 @@ unsafe extern "C" fn new_patterns() {
         print_cstr(b"Too late for \x00" as *const u8 as *const libc::c_char);
         print_esc_cstr(b"patterns\x00" as *const u8 as *const libc::c_char);
         help_ptr = 1i32 as libc::c_uchar;
-        help_line[0] =
-            b"All patterns must be given before typesetting begins.\x00" as
-                *const u8 as *const libc::c_char;
+        help_line[0] = b"All patterns must be given before typesetting begins.\x00" as *const u8
+            as *const libc::c_char;
         error();
-        (*mem.offset((4999999i32 - 12i32) as isize)).b32.s1 =
-            scan_toks(0i32 != 0, 0i32 != 0);
+        (*mem.offset((4999999i32 - 12i32) as isize)).b32.s1 = scan_toks(0i32 != 0, 0i32 != 0);
         flush_list(def_ref);
     };
 }
@@ -2121,38 +2276,38 @@ pub unsafe extern "C" fn init_trie() {
     j = 1i32;
     for_end = 255i32;
     if j <= for_end {
-        loop  {
+        loop {
             op_start[j as usize] =
-                op_start[(j - 1i32) as usize] +
-                    trie_used[(j - 1i32) as usize] as libc::c_int;
+                op_start[(j - 1i32) as usize] + trie_used[(j - 1i32) as usize] as libc::c_int;
             let fresh4 = j;
             j = j + 1;
-            if !(fresh4 < for_end) { break ; }
+            if !(fresh4 < for_end) {
+                break;
+            }
         }
     }
     let mut for_end_0: int32_t = 0;
     j = 1i32;
     for_end_0 = trie_op_ptr;
     if j <= for_end_0 {
-        loop  {
-            _trie_op_hash_array[(j as libc::c_long - -35111i64) as usize] =
-                op_start[trie_op_lang[j as usize] as usize] +
-                    trie_op_val[j as usize] as libc::c_int;
+        loop {
+            _trie_op_hash_array[(j as libc::c_long - -35111i64) as usize] = op_start
+                [trie_op_lang[j as usize] as usize]
+                + trie_op_val[j as usize] as libc::c_int;
             let fresh5 = j;
             j = j + 1;
-            if !(fresh5 < for_end_0) { break ; }
+            if !(fresh5 < for_end_0) {
+                break;
+            }
         }
     }
     let mut for_end_1: int32_t = 0;
     j = 1i32;
     for_end_1 = trie_op_ptr;
     if j <= for_end_1 {
-        loop  {
-            while _trie_op_hash_array[(j as libc::c_long - -35111i64) as
-                                          usize] > j {
-                k =
-                    _trie_op_hash_array[(j as libc::c_long - -35111i64) as
-                                            usize];
+        loop {
+            while _trie_op_hash_array[(j as libc::c_long - -35111i64) as usize] > j {
+                k = _trie_op_hash_array[(j as libc::c_long - -35111i64) as usize];
                 t = hyf_distance[k as usize] as int32_t;
                 hyf_distance[k as usize] = hyf_distance[j as usize];
                 hyf_distance[j as usize] = t as small_number;
@@ -2162,27 +2317,28 @@ pub unsafe extern "C" fn init_trie() {
                 t = hyf_next[k as usize] as int32_t;
                 hyf_next[k as usize] = hyf_next[j as usize];
                 hyf_next[j as usize] = t as trie_opcode;
-                _trie_op_hash_array[(j as libc::c_long - -35111i64) as usize]
-                    =
-                    _trie_op_hash_array[(k as libc::c_long - -35111i64) as
-                                            usize];
-                _trie_op_hash_array[(k as libc::c_long - -35111i64) as usize]
-                    = k
+                _trie_op_hash_array[(j as libc::c_long - -35111i64) as usize] =
+                    _trie_op_hash_array[(k as libc::c_long - -35111i64) as usize];
+                _trie_op_hash_array[(k as libc::c_long - -35111i64) as usize] = k
             }
             let fresh6 = j;
             j = j + 1;
-            if !(fresh6 < for_end_1) { break ; }
+            if !(fresh6 < for_end_1) {
+                break;
+            }
         }
     }
     let mut for_end_2: int32_t = 0;
     p = 0i32;
     for_end_2 = trie_size;
     if p <= for_end_2 {
-        loop  {
+        loop {
             *trie_hash.offset(p as isize) = 0i32;
             let fresh7 = p;
             p = p + 1;
-            if !(fresh7 < for_end_2) { break ; }
+            if !(fresh7 < for_end_2) {
+                break;
+            }
         }
     }
     *trie_r.offset(0) = compress_trie(*trie_r.offset(0));
@@ -2191,22 +2347,26 @@ pub unsafe extern "C" fn init_trie() {
     p = 0i32;
     for_end_3 = trie_ptr;
     if p <= for_end_3 {
-        loop  {
+        loop {
             *trie_hash.offset(p as isize) = 0i32;
             let fresh8 = p;
             p = p + 1;
-            if !(fresh8 < for_end_3) { break ; }
+            if !(fresh8 < for_end_3) {
+                break;
+            }
         }
     }
     let mut for_end_4: int32_t = 0;
     p = 0i32;
     for_end_4 = 0xffffi32;
     if p <= for_end_4 {
-        loop  {
+        loop {
             trie_min[p as usize] = p + 1i32;
             let fresh9 = p;
             p = p + 1;
-            if !(fresh9 < for_end_4) { break ; }
+            if !(fresh9 < for_end_4) {
+                break;
+            }
         }
     }
     *trie_trl.offset(0) = 1i32;
@@ -2222,11 +2382,13 @@ pub unsafe extern "C" fn init_trie() {
             p = 0i32;
             for_end_5 = 255i32;
             if p <= for_end_5 {
-                loop  {
+                loop {
                     trie_min[p as usize] = p + 2i32;
                     let fresh10 = p;
                     p = p + 1;
-                    if !(fresh10 < for_end_5) { break ; }
+                    if !(fresh10 < for_end_5) {
+                        break;
+                    }
                 }
             }
         }
@@ -2239,27 +2401,35 @@ pub unsafe extern "C" fn init_trie() {
         r = 0i32;
         for_end_6 = max_hyph_char;
         if r <= for_end_6 {
-            loop  {
+            loop {
                 *trie_trl.offset(r as isize) = 0i32;
                 *trie_tro.offset(r as isize) = 0i32;
                 *trie_trc.offset(r as isize) = 0i32 as uint16_t;
                 let fresh11 = r;
                 r = r + 1;
-                if !(fresh11 < for_end_6) { break ; }
+                if !(fresh11 < for_end_6) {
+                    break;
+                }
             }
         }
         trie_max = max_hyph_char
     } else {
-        if *trie_r.offset(0) > 0i32 { trie_fix(*trie_r.offset(0)); }
-        if *trie_l.offset(0) > 0i32 { trie_fix(*trie_l.offset(0)); }
+        if *trie_r.offset(0) > 0i32 {
+            trie_fix(*trie_r.offset(0));
+        }
+        if *trie_l.offset(0) > 0i32 {
+            trie_fix(*trie_l.offset(0));
+        }
         r = 0i32;
-        loop  {
+        loop {
             s = *trie_trl.offset(r as isize);
             *trie_trl.offset(r as isize) = 0i32;
             *trie_tro.offset(r as isize) = 0i32;
             *trie_trc.offset(r as isize) = 0i32 as uint16_t;
             r = s;
-            if r > trie_max { break ; }
+            if r > trie_max {
+                break;
+            }
         }
     }
     *trie_trc.offset(0) = '?' as i32 as uint16_t;
@@ -2278,260 +2448,313 @@ unsafe extern "C" fn new_hyph_exceptions() {
     let mut u: pool_pointer = 0;
     let mut v: pool_pointer = 0;
     scan_left_brace();
-    if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                          19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                          256i32 + 1i32 + 3i32 * 256i32 + (0x10ffffi32 + 1i32)
-                          + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + 50i32) as isize)).b32.s1 <=
-           0i32 {
+    if (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 50i32) as isize,
+    ))
+    .b32
+    .s1 <= 0i32
+    {
         cur_lang = 0i32 as libc::c_uchar
-    } else if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                 256i32 + 1i32 + 3i32 * 256i32 +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 50i32) as isize)).b32.s1 > 255i32 {
+    } else if (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 50i32) as isize,
+    ))
+    .b32
+    .s1 > 255i32
+    {
         cur_lang = 0i32 as libc::c_uchar
     } else {
-        cur_lang =
-            (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                               + 1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 +
-                               1i32 + 19i32 + 256i32 + 256i32 + 13i32 + 256i32
-                               + 4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               50i32) as isize)).b32.s1 as libc::c_uchar
+        cur_lang = (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 50i32) as isize,
+        ))
+        .b32
+        .s1 as libc::c_uchar
     }
     if trie_not_ready {
         hyph_index = 0i32
-    } else if *trie_trc.offset((hyph_start + cur_lang as libc::c_int) as
-                                   isize) as libc::c_int !=
-                  cur_lang as libc::c_int {
+    } else if *trie_trc.offset((hyph_start + cur_lang as libc::c_int) as isize) as libc::c_int
+        != cur_lang as libc::c_int
+    {
         hyph_index = 0i32
     } else {
-        hyph_index =
-            *trie_trl.offset((hyph_start + cur_lang as libc::c_int) as isize)
+        hyph_index = *trie_trl.offset((hyph_start + cur_lang as libc::c_int) as isize)
     }
     /*970:*/
     n = 0i32 as libc::c_short;
     p = -0xfffffffi32;
-    's_91:
-        loop  {
-            get_x_token();
-            loop  {
-                match cur_cmd as libc::c_int {
-                    11 | 12 | 68 => {
-                        if cur_chr == '-' as i32 {
-                            /*973:*/
-                            if (n as libc::c_int) < max_hyphenatable_length()
-                               {
-                                q = get_avail();
-                                (*mem.offset(q as isize)).b32.s1 = p;
-                                (*mem.offset(q as isize)).b32.s0 =
-                                    n as int32_t;
-                                p = q
-                            }
+    's_91: loop {
+        get_x_token();
+        loop {
+            match cur_cmd as libc::c_int {
+                11 | 12 | 68 => {
+                    if cur_chr == '-' as i32 {
+                        /*973:*/
+                        if (n as libc::c_int) < max_hyphenatable_length() {
+                            q = get_avail();
+                            (*mem.offset(q as isize)).b32.s1 = p;
+                            (*mem.offset(q as isize)).b32.s0 = n as int32_t;
+                            p = q
+                        }
+                    } else {
+                        if hyph_index == 0i32 || cur_chr > 255i32 {
+                            hc[0] = (*eqtb.offset(
+                                (1i32
+                                    + (0x10ffffi32 + 1i32)
+                                    + (0x10ffffi32 + 1i32)
+                                    + 1i32
+                                    + 15000i32
+                                    + 12i32
+                                    + 9000i32
+                                    + 1i32
+                                    + 1i32
+                                    + 19i32
+                                    + 256i32
+                                    + 256i32
+                                    + 13i32
+                                    + 256i32
+                                    + 4i32
+                                    + 256i32
+                                    + 1i32
+                                    + 3i32 * 256i32
+                                    + (0x10ffffi32 + 1i32)
+                                    + cur_chr) as isize,
+                            ))
+                            .b32
+                            .s1
+                        } else if *trie_trc.offset((hyph_index + cur_chr) as isize) as libc::c_int
+                            != cur_chr
+                        {
+                            hc[0] = 0i32
                         } else {
-                            if hyph_index == 0i32 || cur_chr > 255i32 {
-                                hc[0] =
-                                    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32)
-                                                       + (0x10ffffi32 + 1i32)
-                                                       + 1i32 + 15000i32 +
-                                                       12i32 + 9000i32 + 1i32
-                                                       + 1i32 + 19i32 + 256i32
-                                                       + 256i32 + 13i32 +
-                                                       256i32 + 4i32 + 256i32
-                                                       + 1i32 + 3i32 * 256i32
-                                                       + (0x10ffffi32 + 1i32)
-                                                       + cur_chr) as
-                                                      isize)).b32.s1
-                            } else if *trie_trc.offset((hyph_index + cur_chr)
-                                                           as isize) as
-                                          libc::c_int != cur_chr {
-                                hc[0] = 0i32
+                            hc[0] = *trie_tro.offset((hyph_index + cur_chr) as isize)
+                        }
+                        if hc[0] == 0i32 {
+                            if file_line_error_style_p != 0 {
+                                print_file_line();
                             } else {
-                                hc[0] =
-                                    *trie_tro.offset((hyph_index + cur_chr) as
-                                                         isize)
+                                print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
                             }
-                            if hc[0] == 0i32 {
-                                if file_line_error_style_p != 0 {
-                                    print_file_line();
-                                } else {
-                                    print_nl_cstr(b"! \x00" as *const u8 as
-                                                      *const libc::c_char);
-                                }
-                                print_cstr(b"Not a letter\x00" as *const u8 as
-                                               *const libc::c_char);
-                                help_ptr = 2i32 as libc::c_uchar;
-                                help_line[1] =
-                                    b"Letters in \\hyphenation words must have \\lccode>0.\x00"
-                                        as *const u8 as *const libc::c_char;
-                                help_line[0] =
-                                    b"Proceed; I\'ll ignore the character I just read.\x00"
-                                        as *const u8 as *const libc::c_char;
-                                error();
-                            } else if (n as libc::c_int) <
-                                          max_hyphenatable_length() {
+                            print_cstr(b"Not a letter\x00" as *const u8 as *const libc::c_char);
+                            help_ptr = 2i32 as libc::c_uchar;
+                            help_line[1] =
+                                b"Letters in \\hyphenation words must have \\lccode>0.\x00"
+                                    as *const u8
+                                    as *const libc::c_char;
+                            help_line[0] = b"Proceed; I\'ll ignore the character I just read.\x00"
+                                as *const u8
+                                as *const libc::c_char;
+                            error();
+                        } else if (n as libc::c_int) < max_hyphenatable_length() {
+                            n += 1;
+                            if (hc[0] as libc::c_long) < 65536i64 {
+                                hc[n as usize] = hc[0]
+                            } else {
+                                hc[n as usize] =
+                                    ((hc[0] as libc::c_long - 65536i64) / 1024i32 as libc::c_long
+                                        + 55296i64) as int32_t;
                                 n += 1;
-                                if (hc[0] as libc::c_long) < 65536i64 {
-                                    hc[n as usize] = hc[0]
-                                } else {
-                                    hc[n as usize] =
-                                        ((hc[0] as libc::c_long - 65536i64) /
-                                             1024i32 as libc::c_long +
-                                             55296i64) as int32_t;
-                                    n += 1;
-                                    hc[n as usize] =
-                                        ((hc[0] % 1024i32) as libc::c_long +
-                                             56320i64) as int32_t
-                                }
+                                hc[n as usize] =
+                                    ((hc[0] % 1024i32) as libc::c_long + 56320i64) as int32_t
                             }
                         }
-                        continue 's_91 ;
                     }
-                    16 => {
-                        scan_char_num();
-                        cur_chr = cur_val;
-                        cur_cmd = 68i32 as eight_bits
-                    }
-                    10 | 2 => {
-                        if n as libc::c_int > 1i32 {
-                            current_block = 10753070352654377903;
-                            break ;
-                        } else {
-                            current_block = 9500030526577190060;
-                            break ;
-                        }
-                    }
-                    _ => {
-                        if file_line_error_style_p != 0 {
-                            print_file_line();
-                        } else {
-                            print_nl_cstr(b"! \x00" as *const u8 as
-                                              *const libc::c_char);
-                        }
-                        print_cstr(b"Improper \x00" as *const u8 as
-                                       *const libc::c_char);
-                        print_esc_cstr(b"hyphenation\x00" as *const u8 as
-                                           *const libc::c_char);
-                        print_cstr(b" will be flushed\x00" as *const u8 as
-                                       *const libc::c_char);
-                        help_ptr = 2i32 as libc::c_uchar;
-                        help_line[1] =
-                            b"Hyphenation exceptions must contain only letters\x00"
-                                as *const u8 as *const libc::c_char;
-                        help_line[0] =
-                            b"and hyphens. But continue; I\'ll forgive and forget.\x00"
-                                as *const u8 as *const libc::c_char;
-                        error();
-                        continue 's_91 ;
+                    continue 's_91;
+                }
+                16 => {
+                    scan_char_num();
+                    cur_chr = cur_val;
+                    cur_cmd = 68i32 as eight_bits
+                }
+                10 | 2 => {
+                    if n as libc::c_int > 1i32 {
+                        current_block = 10753070352654377903;
+                        break;
+                    } else {
+                        current_block = 9500030526577190060;
+                        break;
                     }
                 }
-            }
-            match current_block {
-                10753070352654377903 => {
-                    /*974:*/
-                    n += 1;
-                    hc[n as usize] = cur_lang as int32_t;
-                    if pool_ptr + n as libc::c_int > pool_size {
-                        overflow(b"pool size\x00" as *const u8 as
-                                     *const libc::c_char,
-                                 pool_size - init_pool_ptr);
+                _ => {
+                    if file_line_error_style_p != 0 {
+                        print_file_line();
+                    } else {
+                        print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
                     }
-                    h = 0i32 as hyph_pointer;
-                    j = 1i32 as libc::c_short;
-                    while j as libc::c_int <= n as libc::c_int {
-                        h =
-                            ((h as libc::c_int + h as libc::c_int +
-                                  hc[j as usize]) % 607i32) as hyph_pointer;
-                        *str_pool.offset(pool_ptr as isize) =
-                            hc[j as usize] as packed_UTF16_code;
-                        pool_ptr += 1;
-                        j += 1
-                    }
-                    s = make_string();
-                    if hyph_next <= 607i32 {
-                        while hyph_next > 0i32 &&
-                                  *hyph_word.offset((hyph_next - 1i32) as
-                                                        isize) > 0i32 {
-                            hyph_next -= 1
-                        }
-                    }
-                    if hyph_count == hyph_size || hyph_next == 0i32 {
-                        overflow(b"exception dictionary\x00" as *const u8 as
-                                     *const libc::c_char, hyph_size);
-                    }
-                    hyph_count += 1;
-                    while *hyph_word.offset(h as isize) != 0i32 {
-                        k = *hyph_word.offset(h as isize);
-                        if !(length(k) != length(s)) {
-                            u =
-                                *str_start.offset((k as libc::c_long -
-                                                       65536i64) as isize);
-                            v =
-                                *str_start.offset((s as libc::c_long -
-                                                       65536i64) as isize);
-                            loop  {
-                                if *str_pool.offset(u as isize) as libc::c_int
-                                       !=
-                                       *str_pool.offset(v as isize) as
-                                           libc::c_int {
-                                    current_block = 876886731760051519;
-                                    break ;
-                                }
-                                u += 1;
-                                v += 1;
-                                if !(u !=
-                                         *str_start.offset(((k + 1i32) as
-                                                                libc::c_long -
-                                                                65536i64) as
-                                                               isize)) {
-                                    current_block = 8732226822098929438;
-                                    break ;
-                                }
-                            }
-                            match current_block {
-                                876886731760051519 => { }
-                                _ => {
-                                    str_ptr -= 1;
-                                    pool_ptr =
-                                        *str_start.offset((str_ptr - 65536i32)
-                                                              as isize);
-                                    s = *hyph_word.offset(h as isize);
-                                    hyph_count -= 1;
-                                    break ;
-                                }
-                            }
-                        }
-                        /*:975*/
-                        /*:976*/
-                        if *hyph_link.offset(h as isize) as libc::c_int ==
-                               0i32 {
-                            *hyph_link.offset(h as isize) =
-                                hyph_next as hyph_pointer;
-                            if hyph_next >= hyph_size { hyph_next = 607i32 }
-                            if hyph_next > 607i32 { hyph_next += 1 }
-                        }
-                        h =
-                            (*hyph_link.offset(h as isize) as libc::c_int -
-                                 1i32) as hyph_pointer
-                    }
-                    *hyph_word.offset(h as isize) = s;
-                    *hyph_list.offset(h as isize) = p
+                    print_cstr(b"Improper \x00" as *const u8 as *const libc::c_char);
+                    print_esc_cstr(b"hyphenation\x00" as *const u8 as *const libc::c_char);
+                    print_cstr(b" will be flushed\x00" as *const u8 as *const libc::c_char);
+                    help_ptr = 2i32 as libc::c_uchar;
+                    help_line[1] = b"Hyphenation exceptions must contain only letters\x00"
+                        as *const u8 as *const libc::c_char;
+                    help_line[0] = b"and hyphens. But continue; I\'ll forgive and forget.\x00"
+                        as *const u8 as *const libc::c_char;
+                    error();
+                    continue 's_91;
                 }
-                _ => { }
             }
-            if cur_cmd as libc::c_int == 2i32 { return }
-            n = 0i32 as libc::c_short;
-            p = -0xfffffffi32
-        };
+        }
+        match current_block {
+            10753070352654377903 => {
+                /*974:*/
+                n += 1;
+                hc[n as usize] = cur_lang as int32_t;
+                if pool_ptr + n as libc::c_int > pool_size {
+                    overflow(
+                        b"pool size\x00" as *const u8 as *const libc::c_char,
+                        pool_size - init_pool_ptr,
+                    );
+                }
+                h = 0i32 as hyph_pointer;
+                j = 1i32 as libc::c_short;
+                while j as libc::c_int <= n as libc::c_int {
+                    h = ((h as libc::c_int + h as libc::c_int + hc[j as usize]) % 607i32)
+                        as hyph_pointer;
+                    *str_pool.offset(pool_ptr as isize) = hc[j as usize] as packed_UTF16_code;
+                    pool_ptr += 1;
+                    j += 1
+                }
+                s = make_string();
+                if hyph_next <= 607i32 {
+                    while hyph_next > 0i32 && *hyph_word.offset((hyph_next - 1i32) as isize) > 0i32
+                    {
+                        hyph_next -= 1
+                    }
+                }
+                if hyph_count == hyph_size || hyph_next == 0i32 {
+                    overflow(
+                        b"exception dictionary\x00" as *const u8 as *const libc::c_char,
+                        hyph_size,
+                    );
+                }
+                hyph_count += 1;
+                while *hyph_word.offset(h as isize) != 0i32 {
+                    k = *hyph_word.offset(h as isize);
+                    if !(length(k) != length(s)) {
+                        u = *str_start.offset((k as libc::c_long - 65536i64) as isize);
+                        v = *str_start.offset((s as libc::c_long - 65536i64) as isize);
+                        loop {
+                            if *str_pool.offset(u as isize) as libc::c_int
+                                != *str_pool.offset(v as isize) as libc::c_int
+                            {
+                                current_block = 876886731760051519;
+                                break;
+                            }
+                            u += 1;
+                            v += 1;
+                            if !(u
+                                != *str_start
+                                    .offset(((k + 1i32) as libc::c_long - 65536i64) as isize))
+                            {
+                                current_block = 8732226822098929438;
+                                break;
+                            }
+                        }
+                        match current_block {
+                            876886731760051519 => {}
+                            _ => {
+                                str_ptr -= 1;
+                                pool_ptr = *str_start.offset((str_ptr - 65536i32) as isize);
+                                s = *hyph_word.offset(h as isize);
+                                hyph_count -= 1;
+                                break;
+                            }
+                        }
+                    }
+                    /*:975*/
+                    /*:976*/
+                    if *hyph_link.offset(h as isize) as libc::c_int == 0i32 {
+                        *hyph_link.offset(h as isize) = hyph_next as hyph_pointer;
+                        if hyph_next >= hyph_size {
+                            hyph_next = 607i32
+                        }
+                        if hyph_next > 607i32 {
+                            hyph_next += 1
+                        }
+                    }
+                    h = (*hyph_link.offset(h as isize) as libc::c_int - 1i32) as hyph_pointer
+                }
+                *hyph_word.offset(h as isize) = s;
+                *hyph_list.offset(h as isize) = p
+            }
+            _ => {}
+        }
+        if cur_cmd as libc::c_int == 2i32 {
+            return;
+        }
+        n = 0i32 as libc::c_short;
+        p = -0xfffffffi32
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn prefixed_command() {
@@ -2549,11 +2772,10 @@ pub unsafe extern "C" fn prefixed_command() {
         if a as libc::c_int / cur_chr & 1i32 == 0 {
             a = (a as libc::c_int + cur_chr) as small_number
         }
-        loop  {
+        loop {
             get_x_token();
-            if !(cur_cmd as libc::c_int == 10i32 ||
-                     cur_cmd as libc::c_int == 0i32) {
-                break ;
+            if !(cur_cmd as libc::c_int == 10i32 || cur_cmd as libc::c_int == 0i32) {
+                break;
             }
         }
         if cur_cmd as libc::c_int <= 71i32 {
@@ -2563,8 +2785,7 @@ pub unsafe extern "C" fn prefixed_command() {
             } else {
                 print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
             }
-            print_cstr(b"You can\'t use a prefix with `\x00" as *const u8 as
-                           *const libc::c_char);
+            print_cstr(b"You can\'t use a prefix with `\x00" as *const u8 as *const libc::c_char);
             print_cmd_chr(cur_cmd as uint16_t, cur_chr);
             print_char('\'' as i32);
             help_ptr = 1i32 as libc::c_uchar;
@@ -2572,39 +2793,60 @@ pub unsafe extern "C" fn prefixed_command() {
                 b"I\'ll pretend you didn\'t say \\long or \\outer or \\global or \\protected.\x00"
                     as *const u8 as *const libc::c_char;
             back_error();
-            return
+            return;
         }
-        if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              36i32) as isize)).b32.s1 > 2i32 {
+        if (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 36i32) as isize,
+        ))
+        .b32
+        .s1 > 2i32
+        {
             show_cur_cmd_chr();
         }
     }
     if a as libc::c_int >= 8i32 {
         j = 0x1c00000i32 + 1i32;
         a = (a as libc::c_int - 8i32) as small_number
-    } else { j = 0i32 }
-    if cur_cmd as libc::c_int != 99i32 &&
-           (a as libc::c_int % 4i32 != 0i32 || j != 0i32) {
+    } else {
+        j = 0i32
+    }
+    if cur_cmd as libc::c_int != 99i32 && (a as libc::c_int % 4i32 != 0i32 || j != 0i32) {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
             print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
         }
-        print_cstr(b"You can\'t use `\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b"You can\'t use `\x00" as *const u8 as *const libc::c_char);
         print_esc_cstr(b"long\x00" as *const u8 as *const libc::c_char);
         print_cstr(b"\' or `\x00" as *const u8 as *const libc::c_char);
         print_esc_cstr(b"outer\x00" as *const u8 as *const libc::c_char);
         help_ptr = 1i32 as libc::c_uchar;
-        help_line[0] =
-            b"I\'ll pretend you didn\'t say \\long or \\outer or \\protected here.\x00"
-                as *const u8 as *const libc::c_char;
+        help_line[0] = b"I\'ll pretend you didn\'t say \\long or \\outer or \\protected here.\x00"
+            as *const u8 as *const libc::c_char;
         print_cstr(b"\' or `\x00" as *const u8 as *const libc::c_char);
         print_esc_cstr(b"protected\x00" as *const u8 as *const libc::c_char);
         print_cstr(b"\' with `\x00" as *const u8 as *const libc::c_char);
@@ -2612,22 +2854,66 @@ pub unsafe extern "C" fn prefixed_command() {
         print_char('\'' as i32);
         error();
     }
-    if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                          19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                          256i32 + 1i32 + 3i32 * 256i32 + (0x10ffffi32 + 1i32)
-                          + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + 43i32) as isize)).b32.s1 !=
-           0i32 {
-        if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              43i32) as isize)).b32.s1 < 0i32 {
+    if (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 43i32) as isize,
+    ))
+    .b32
+    .s1 != 0i32
+    {
+        if (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 43i32) as isize,
+        ))
+        .b32
+        .s1 < 0i32
+        {
             if a as libc::c_int >= 4i32 {
                 a = (a as libc::c_int - 4i32) as small_number
             }
@@ -3775,190 +4061,334 @@ unsafe extern "C" fn store_fmt_file() {
         } else {
             print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
         }
-        print_cstr(b"You can\'t dump inside a group\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b"You can\'t dump inside a group\x00" as *const u8 as *const libc::c_char);
         help_ptr = 1i32 as libc::c_uchar;
-        help_line[0] =
-            b"`{...\\dump}\' is a no-no.\x00" as *const u8 as
-                *const libc::c_char;
+        help_line[0] = b"`{...\\dump}\' is a no-no.\x00" as *const u8 as *const libc::c_char;
         if interaction as libc::c_int == 3i32 {
             interaction = 2i32 as libc::c_uchar
         }
-        if log_opened { error(); }
+        if log_opened {
+            error();
+        }
         history = HISTORY_FATAL_ERROR;
         close_files_and_terminate();
         ttstub_output_flush(rust_stdout);
-        _tt_abort(b"\\dump inside a group\x00" as *const u8 as
-                      *const libc::c_char);
+        _tt_abort(b"\\dump inside a group\x00" as *const u8 as *const libc::c_char);
     }
     selector = SELECTOR_NEW_STRING;
-    print_cstr(b" (preloaded format=\x00" as *const u8 as
-                   *const libc::c_char);
+    print_cstr(b" (preloaded format=\x00" as *const u8 as *const libc::c_char);
     print(job_name);
     print_char(' ' as i32);
-    print_int((*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                 256i32 + 1i32 + 3i32 * 256i32 +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 23i32) as isize)).b32.s1);
+    print_int(
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 23i32) as isize,
+        ))
+        .b32
+        .s1,
+    );
     print_char('.' as i32);
-    print_int((*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                 256i32 + 1i32 + 3i32 * 256i32 +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 22i32) as isize)).b32.s1);
+    print_int(
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 22i32) as isize,
+        ))
+        .b32
+        .s1,
+    );
     print_char('.' as i32);
-    print_int((*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                 256i32 + 1i32 + 3i32 * 256i32 +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 21i32) as isize)).b32.s1);
+    print_int(
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 21i32) as isize,
+        ))
+        .b32
+        .s1,
+    );
     print_char(')' as i32);
     if interaction as libc::c_int == 0i32 {
         selector = SELECTOR_LOG_ONLY
-    } else { selector = SELECTOR_TERM_AND_LOG }
+    } else {
+        selector = SELECTOR_TERM_AND_LOG
+    }
     if pool_ptr + 1i32 > pool_size {
-        overflow(b"pool size\x00" as *const u8 as *const libc::c_char,
-                 pool_size - init_pool_ptr);
+        overflow(
+            b"pool size\x00" as *const u8 as *const libc::c_char,
+            pool_size - init_pool_ptr,
+        );
     }
     format_ident = make_string();
     pack_job_name(b".fmt\x00" as *const u8 as *const libc::c_char);
     fmt_out = ttstub_output_open(name_of_file, 0i32);
     if fmt_out.is_null() {
-        _tt_abort(b"cannot open format output file \"%s\"\x00" as *const u8 as
-                      *const libc::c_char, name_of_file);
+        _tt_abort(
+            b"cannot open format output file \"%s\"\x00" as *const u8 as *const libc::c_char,
+            name_of_file,
+        );
     }
-    print_nl_cstr(b"Beginning to dump on file \x00" as *const u8 as
-                      *const libc::c_char);
+    print_nl_cstr(b"Beginning to dump on file \x00" as *const u8 as *const libc::c_char);
     print(make_name_string());
     str_ptr -= 1;
     pool_ptr = *str_start.offset((str_ptr - 65536i32) as isize);
     print_nl_cstr(b"\x00" as *const u8 as *const libc::c_char);
     print(format_ident);
     /* Header */
-    let mut x_val: int32_t =
-        0x54544e43i32; /* TODO: can we move this farther up in this function? */
-    do_dump(&mut x_val as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    let mut x_val: int32_t = 0x54544e43i32; /* TODO: can we move this farther up in this function? */
+    do_dump(
+        &mut x_val as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     let mut x_val_0: int32_t = 28i32;
-    do_dump(&mut x_val_0 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_0 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     let mut x_val_1: int32_t = hash_high;
-    do_dump(&mut x_val_1 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
-    while pseudo_files != -0xfffffffi32 { pseudo_close(); }
+    do_dump(
+        &mut x_val_1 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
+    while pseudo_files != -0xfffffffi32 {
+        pseudo_close();
+    }
     let mut x_val_2: int32_t = 4999999i32;
-    do_dump(&mut x_val_2 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
-    let mut x_val_3: int32_t =
-        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-            12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 + 256i32 + 13i32 +
-            256i32 + 4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-            (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-            (0x10ffffi32 + 1i32) + 85i32 + 256i32 + (0x10ffffi32 + 1i32) +
-            23i32 + 256i32 - 1i32;
-    do_dump(&mut x_val_3 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_2 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
+    let mut x_val_3: int32_t = 1i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + 1i32
+        + 15000i32
+        + 12i32
+        + 9000i32
+        + 1i32
+        + 1i32
+        + 19i32
+        + 256i32
+        + 256i32
+        + 13i32
+        + 256i32
+        + 4i32
+        + 256i32
+        + 1i32
+        + 3i32 * 256i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + 85i32
+        + 256i32
+        + (0x10ffffi32 + 1i32)
+        + 23i32
+        + 256i32
+        - 1i32;
+    do_dump(
+        &mut x_val_3 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     let mut x_val_4: int32_t = 8501i32;
-    do_dump(&mut x_val_4 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_4 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     let mut x_val_5: int32_t = 607i32;
-    do_dump(&mut x_val_5 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_5 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     /* string pool */
     let mut x_val_6: int32_t = pool_ptr;
-    do_dump(&mut x_val_6 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_6 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     let mut x_val_7: int32_t = str_ptr;
-    do_dump(&mut x_val_7 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
-    do_dump(&mut *str_start.offset(0) as *mut pool_pointer as
-                *mut libc::c_char,
-            ::std::mem::size_of::<pool_pointer>() as libc::c_ulong,
-            (str_ptr - 65536i32 + 1i32) as size_t, fmt_out);
-    do_dump(&mut *str_pool.offset(0) as *mut packed_UTF16_code as
-                *mut libc::c_char,
-            ::std::mem::size_of::<packed_UTF16_code>() as libc::c_ulong,
-            pool_ptr as size_t, fmt_out);
+    do_dump(
+        &mut x_val_7 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *str_start.offset(0) as *mut pool_pointer as *mut libc::c_char,
+        ::std::mem::size_of::<pool_pointer>() as libc::c_ulong,
+        (str_ptr - 65536i32 + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *str_pool.offset(0) as *mut packed_UTF16_code as *mut libc::c_char,
+        ::std::mem::size_of::<packed_UTF16_code>() as libc::c_ulong,
+        pool_ptr as size_t,
+        fmt_out,
+    );
     print_ln();
     print_int(str_ptr);
-    print_cstr(b" strings of total length \x00" as *const u8 as
-                   *const libc::c_char);
+    print_cstr(b" strings of total length \x00" as *const u8 as *const libc::c_char);
     print_int(pool_ptr);
     /* "memory locations" */
     sort_avail();
     var_used = 0i32;
     let mut x_val_8: int32_t = lo_mem_max;
-    do_dump(&mut x_val_8 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_8 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     let mut x_val_9: int32_t = rover;
-    do_dump(&mut x_val_9 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_9 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     k = 0i32;
     while k <= 6i32 {
         let mut x_val_10: int32_t = sa_root[k as usize];
-        do_dump(&mut x_val_10 as *mut int32_t as *mut libc::c_char,
-                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                1i32 as size_t, fmt_out);
+        do_dump(
+            &mut x_val_10 as *mut int32_t as *mut libc::c_char,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            1i32 as size_t,
+            fmt_out,
+        );
         k += 1
     }
     p = 0i32;
     q = rover;
     x = 0i32;
-    loop  {
-        do_dump(&mut *mem.offset(p as isize) as *mut memory_word as
-                    *mut libc::c_char,
-                ::std::mem::size_of::<memory_word>() as libc::c_ulong,
-                (q + 2i32 - p) as size_t, fmt_out);
+    loop {
+        do_dump(
+            &mut *mem.offset(p as isize) as *mut memory_word as *mut libc::c_char,
+            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+            (q + 2i32 - p) as size_t,
+            fmt_out,
+        );
         x = x + q + 2i32 - p;
         var_used = var_used + q - p;
         p = q + (*mem.offset(q as isize)).b32.s0;
         q = (*mem.offset((q + 1i32) as isize)).b32.s1;
-        if !(q != rover) { break ; }
+        if !(q != rover) {
+            break;
+        }
     }
     var_used = var_used + lo_mem_max - p;
     dyn_used = mem_end + 1i32 - hi_mem_min;
-    do_dump(&mut *mem.offset(p as isize) as *mut memory_word as
-                *mut libc::c_char,
-            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
-            (lo_mem_max + 1i32 - p) as size_t, fmt_out);
+    do_dump(
+        &mut *mem.offset(p as isize) as *mut memory_word as *mut libc::c_char,
+        ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+        (lo_mem_max + 1i32 - p) as size_t,
+        fmt_out,
+    );
     x = x + lo_mem_max + 1i32 - p;
     let mut x_val_11: int32_t = hi_mem_min;
-    do_dump(&mut x_val_11 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_11 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     let mut x_val_12: int32_t = avail;
-    do_dump(&mut x_val_12 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
-    do_dump(&mut *mem.offset(hi_mem_min as isize) as *mut memory_word as
-                *mut libc::c_char,
-            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
-            (mem_end + 1i32 - hi_mem_min) as size_t, fmt_out);
+    do_dump(
+        &mut x_val_12 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *mem.offset(hi_mem_min as isize) as *mut memory_word as *mut libc::c_char,
+        ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+        (mem_end + 1i32 - hi_mem_min) as size_t,
+        fmt_out,
+    );
     x = x + mem_end + 1i32 - hi_mem_min;
     p = avail;
     while p != -0xfffffffi32 {
@@ -3966,408 +4396,740 @@ unsafe extern "C" fn store_fmt_file() {
         p = (*mem.offset(p as isize)).b32.s1
     }
     let mut x_val_13: int32_t = var_used;
-    do_dump(&mut x_val_13 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_13 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     let mut x_val_14: int32_t = dyn_used;
-    do_dump(&mut x_val_14 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_14 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     print_ln();
     print_int(x);
-    print_cstr(b" memory locations dumped; current usage is \x00" as *const u8
-                   as *const libc::c_char);
+    print_cstr(
+        b" memory locations dumped; current usage is \x00" as *const u8 as *const libc::c_char,
+    );
     print_int(var_used);
     print_char('&' as i32);
     print_int(dyn_used);
     /* equivalents table / primitive */
     k = 1i32; /*:1350*/
-    loop  {
+    loop {
         j = k;
-        loop  {
-            if !(j <
-                     1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32
-                         + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                         256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 +
-                         1i32 + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                         (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                         (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                         (0x10ffffi32 + 1i32) - 1i32) {
+        loop {
+            if !(j < 1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                - 1i32)
+            {
                 current_block = 7923086311623215889;
-                break ;
+                break;
             }
-            if (*eqtb.offset(j as isize)).b32.s1 ==
-                   (*eqtb.offset((j + 1i32) as isize)).b32.s1 &&
-                   (*eqtb.offset(j as isize)).b16.s1 as libc::c_int ==
-                       (*eqtb.offset((j + 1i32) as isize)).b16.s1 as
-                           libc::c_int &&
-                   (*eqtb.offset(j as isize)).b16.s0 as libc::c_int ==
-                       (*eqtb.offset((j + 1i32) as isize)).b16.s0 as
-                           libc::c_int {
+            if (*eqtb.offset(j as isize)).b32.s1 == (*eqtb.offset((j + 1i32) as isize)).b32.s1
+                && (*eqtb.offset(j as isize)).b16.s1 as libc::c_int
+                    == (*eqtb.offset((j + 1i32) as isize)).b16.s1 as libc::c_int
+                && (*eqtb.offset(j as isize)).b16.s0 as libc::c_int
+                    == (*eqtb.offset((j + 1i32) as isize)).b16.s0 as libc::c_int
+            {
                 current_block = 8379985486002839332;
-                break ;
+                break;
             }
             j += 1
         }
         match current_block {
             7923086311623215889 => {
-                l =
-                    1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32
-                        + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                        256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 +
-                        1i32 + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                        (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                        (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                        (0x10ffffi32 + 1i32)
+                l = 1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
             }
             _ => {
                 j += 1;
                 l = j;
-                while j <
-                          1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) -
-                              1i32 {
-                    if (*eqtb.offset(j as isize)).b32.s1 !=
-                           (*eqtb.offset((j + 1i32) as isize)).b32.s1 ||
-                           (*eqtb.offset(j as isize)).b16.s1 as libc::c_int !=
-                               (*eqtb.offset((j + 1i32) as isize)).b16.s1 as
-                                   libc::c_int ||
-                           (*eqtb.offset(j as isize)).b16.s0 as libc::c_int !=
-                               (*eqtb.offset((j + 1i32) as isize)).b16.s0 as
-                                   libc::c_int {
-                        break ;
+                while j < 1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    - 1i32
+                {
+                    if (*eqtb.offset(j as isize)).b32.s1
+                        != (*eqtb.offset((j + 1i32) as isize)).b32.s1
+                        || (*eqtb.offset(j as isize)).b16.s1 as libc::c_int
+                            != (*eqtb.offset((j + 1i32) as isize)).b16.s1 as libc::c_int
+                        || (*eqtb.offset(j as isize)).b16.s0 as libc::c_int
+                            != (*eqtb.offset((j + 1i32) as isize)).b16.s0 as libc::c_int
+                    {
+                        break;
                     }
                     j += 1
                 }
             }
         }
         let mut x_val_15: int32_t = l - k;
-        do_dump(&mut x_val_15 as *mut int32_t as *mut libc::c_char,
-                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                1i32 as size_t, fmt_out);
-        do_dump(&mut *eqtb.offset(k as isize) as *mut memory_word as
-                    *mut libc::c_char,
-                ::std::mem::size_of::<memory_word>() as libc::c_ulong,
-                (l - k) as size_t, fmt_out);
+        do_dump(
+            &mut x_val_15 as *mut int32_t as *mut libc::c_char,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            1i32 as size_t,
+            fmt_out,
+        );
+        do_dump(
+            &mut *eqtb.offset(k as isize) as *mut memory_word as *mut libc::c_char,
+            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+            (l - k) as size_t,
+            fmt_out,
+        );
         k = j + 1i32;
         let mut x_val_16: int32_t = k - l;
-        do_dump(&mut x_val_16 as *mut int32_t as *mut libc::c_char,
-                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                1i32 as size_t, fmt_out);
-        if !(k !=
-                 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                     15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32
-                     + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                     3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                     (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                     (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                     (0x10ffffi32 + 1i32)) {
-            break ;
+        do_dump(
+            &mut x_val_16 as *mut int32_t as *mut libc::c_char,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            1i32 as size_t,
+            fmt_out,
+        );
+        if !(k
+            != 1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32))
+        {
+            break;
         }
     }
-    loop  {
+    loop {
         j = k;
-        loop  {
-            if !(j <
-                     1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32
-                         + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                         256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 +
-                         1i32 + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                         (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                         (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                         (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                         (0x10ffffi32 + 1i32) + 23i32 + 256i32 - 1i32) {
+        loop {
+            if !(j < 1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 85i32
+                + 256i32
+                + (0x10ffffi32 + 1i32)
+                + 23i32
+                + 256i32
+                - 1i32)
+            {
                 current_block = 10505255564575309249;
-                break ;
+                break;
             }
-            if (*eqtb.offset(j as isize)).b32.s1 ==
-                   (*eqtb.offset((j + 1i32) as isize)).b32.s1 {
+            if (*eqtb.offset(j as isize)).b32.s1 == (*eqtb.offset((j + 1i32) as isize)).b32.s1 {
                 current_block = 18329769178042496632;
-                break ;
+                break;
             }
             j += 1
         }
         match current_block {
             10505255564575309249 => {
-                l =
-                    1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32
-                        + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                        256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 +
-                        1i32 + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                        (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                        (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                        (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                        (0x10ffffi32 + 1i32) + 23i32 + 256i32 - 1i32 + 1i32
+                l = 1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 85i32
+                    + 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + 23i32
+                    + 256i32
+                    - 1i32
+                    + 1i32
             }
             _ => {
                 j += 1;
                 l = j;
-                while j <
-                          1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              85i32 + 256i32 + (0x10ffffi32 + 1i32) + 23i32 +
-                              256i32 - 1i32 {
-                    if (*eqtb.offset(j as isize)).b32.s1 !=
-                           (*eqtb.offset((j + 1i32) as isize)).b32.s1 {
-                        break ;
+                while j < 1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 85i32
+                    + 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + 23i32
+                    + 256i32
+                    - 1i32
+                {
+                    if (*eqtb.offset(j as isize)).b32.s1
+                        != (*eqtb.offset((j + 1i32) as isize)).b32.s1
+                    {
+                        break;
                     }
                     j += 1
                 }
             }
         }
         let mut x_val_17: int32_t = l - k;
-        do_dump(&mut x_val_17 as *mut int32_t as *mut libc::c_char,
-                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                1i32 as size_t, fmt_out);
-        do_dump(&mut *eqtb.offset(k as isize) as *mut memory_word as
-                    *mut libc::c_char,
-                ::std::mem::size_of::<memory_word>() as libc::c_ulong,
-                (l - k) as size_t, fmt_out);
+        do_dump(
+            &mut x_val_17 as *mut int32_t as *mut libc::c_char,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            1i32 as size_t,
+            fmt_out,
+        );
+        do_dump(
+            &mut *eqtb.offset(k as isize) as *mut memory_word as *mut libc::c_char,
+            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+            (l - k) as size_t,
+            fmt_out,
+        );
         k = j + 1i32;
         let mut x_val_18: int32_t = k - l;
-        do_dump(&mut x_val_18 as *mut int32_t as *mut libc::c_char,
-                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                1i32 as size_t, fmt_out);
-        if !(k <=
-                 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                     15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32
-                     + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                     3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                     (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                     (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                     (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                     (0x10ffffi32 + 1i32) + 23i32 + 256i32 - 1i32) {
-            break ;
+        do_dump(
+            &mut x_val_18 as *mut int32_t as *mut libc::c_char,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            1i32 as size_t,
+            fmt_out,
+        );
+        if !(k
+            <= 1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 85i32
+                + 256i32
+                + (0x10ffffi32 + 1i32)
+                + 23i32
+                + 256i32
+                - 1i32)
+        {
+            break;
         }
     }
     if hash_high > 0i32 {
-        do_dump(&mut *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) + 1i32 + 15000i32
-                                       + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32
-                                       + 256i32 + 256i32 + 13i32 + 256i32 +
-                                       4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                                       (0x10ffffi32 + 1i32) + 23i32 + 256i32 -
-                                       1i32 + 1i32) as isize) as
-                    *mut memory_word as *mut libc::c_char,
-                ::std::mem::size_of::<memory_word>() as libc::c_ulong,
-                hash_high as size_t, fmt_out);
+        do_dump(
+            &mut *eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 85i32
+                    + 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + 23i32
+                    + 256i32
+                    - 1i32
+                    + 1i32) as isize,
+            ) as *mut memory_word as *mut libc::c_char,
+            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+            hash_high as size_t,
+            fmt_out,
+        );
     }
     let mut x_val_19: int32_t = par_loc;
-    do_dump(&mut x_val_19 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_19 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     let mut x_val_20: int32_t = write_loc;
-    do_dump(&mut x_val_20 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_20 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     p = 0i32;
     while p <= 500i32 {
-        do_dump(&mut *prim.as_mut_ptr().offset(p as isize) as *mut b32x2 as
-                    *mut libc::c_char,
-                ::std::mem::size_of::<b32x2>() as libc::c_ulong,
-                1i32 as size_t, fmt_out);
+        do_dump(
+            &mut *prim.as_mut_ptr().offset(p as isize) as *mut b32x2 as *mut libc::c_char,
+            ::std::mem::size_of::<b32x2>() as libc::c_ulong,
+            1i32 as size_t,
+            fmt_out,
+        );
         p += 1
     }
     p = 0i32;
     while p <= 500i32 {
-        do_dump(&mut *prim_eqtb.as_mut_ptr().offset(p as isize) as
-                    *mut memory_word as *mut libc::c_char,
-                ::std::mem::size_of::<memory_word>() as libc::c_ulong,
-                1i32 as size_t, fmt_out);
+        do_dump(
+            &mut *prim_eqtb.as_mut_ptr().offset(p as isize) as *mut memory_word
+                as *mut libc::c_char,
+            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+            1i32 as size_t,
+            fmt_out,
+        );
         p += 1
     }
     /* control sequences */
     let mut x_val_21: int32_t = hash_used;
-    do_dump(&mut x_val_21 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_21 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     cs_count =
-        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 -
-            1i32 - hash_used + hash_high;
+        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 - 1i32 - hash_used
+            + hash_high;
     p = 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32;
     while p <= hash_used {
         if (*hash.offset(p as isize)).s1 != 0i32 {
             let mut x_val_22: int32_t = p;
-            do_dump(&mut x_val_22 as *mut int32_t as *mut libc::c_char,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                    1i32 as size_t, fmt_out);
-            do_dump(&mut *hash.offset(p as isize) as *mut b32x2 as
-                        *mut libc::c_char,
-                    ::std::mem::size_of::<b32x2>() as libc::c_ulong,
-                    1i32 as size_t, fmt_out);
+            do_dump(
+                &mut x_val_22 as *mut int32_t as *mut libc::c_char,
+                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                1i32 as size_t,
+                fmt_out,
+            );
+            do_dump(
+                &mut *hash.offset(p as isize) as *mut b32x2 as *mut libc::c_char,
+                ::std::mem::size_of::<b32x2>() as libc::c_ulong,
+                1i32 as size_t,
+                fmt_out,
+            );
             cs_count += 1
         }
         p += 1
     }
-    do_dump(&mut *hash.offset((hash_used + 1i32) as isize) as *mut b32x2 as
-                *mut libc::c_char,
-            ::std::mem::size_of::<b32x2>() as libc::c_ulong,
-            (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                 15000i32 + 12i32 + 9000i32 + 1i32 - 1i32 - hash_used) as
-                size_t, fmt_out);
+    do_dump(
+        &mut *hash.offset((hash_used + 1i32) as isize) as *mut b32x2 as *mut libc::c_char,
+        ::std::mem::size_of::<b32x2>() as libc::c_ulong,
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            - 1i32
+            - hash_used) as size_t,
+        fmt_out,
+    );
     if hash_high > 0i32 {
-        do_dump(&mut *hash.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) + 1i32 + 15000i32
-                                       + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32
-                                       + 256i32 + 256i32 + 13i32 + 256i32 +
-                                       4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                                       (0x10ffffi32 + 1i32) + 23i32 + 256i32 -
-                                       1i32 + 1i32) as isize) as *mut b32x2 as
-                    *mut libc::c_char,
-                ::std::mem::size_of::<b32x2>() as libc::c_ulong,
-                hash_high as size_t, fmt_out);
+        do_dump(
+            &mut *hash.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 85i32
+                    + 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + 23i32
+                    + 256i32
+                    - 1i32
+                    + 1i32) as isize,
+            ) as *mut b32x2 as *mut libc::c_char,
+            ::std::mem::size_of::<b32x2>() as libc::c_ulong,
+            hash_high as size_t,
+            fmt_out,
+        );
     }
     let mut x_val_23: int32_t = cs_count;
-    do_dump(&mut x_val_23 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_23 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     print_ln();
     print_int(cs_count);
-    print_cstr(b" multiletter control sequences\x00" as *const u8 as
-                   *const libc::c_char);
+    print_cstr(b" multiletter control sequences\x00" as *const u8 as *const libc::c_char);
     /* fonts */
     let mut x_val_24: int32_t = fmem_ptr;
-    do_dump(&mut x_val_24 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
-    do_dump(&mut *font_info.offset(0) as *mut memory_word as
-                *mut libc::c_char,
-            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
-            fmem_ptr as size_t, fmt_out);
+    do_dump(
+        &mut x_val_24 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *font_info.offset(0) as *mut memory_word as *mut libc::c_char,
+        ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+        fmem_ptr as size_t,
+        fmt_out,
+    );
     let mut x_val_25: int32_t = font_ptr;
-    do_dump(&mut x_val_25 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
-    do_dump(&mut *font_check.offset(0) as *mut b16x4 as *mut libc::c_char,
-            ::std::mem::size_of::<b16x4>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *font_size.offset(0) as *mut scaled_t as *mut libc::c_char,
-            ::std::mem::size_of::<scaled_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *font_dsize.offset(0) as *mut scaled_t as *mut libc::c_char,
-            ::std::mem::size_of::<scaled_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *font_params.offset(0) as *mut font_index as
-                *mut libc::c_char,
-            ::std::mem::size_of::<font_index>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *hyphen_char.offset(0) as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *skew_char.offset(0) as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *font_name.offset(0) as *mut str_number as *mut libc::c_char,
-            ::std::mem::size_of::<str_number>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *font_area.offset(0) as *mut str_number as *mut libc::c_char,
-            ::std::mem::size_of::<str_number>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *font_bc.offset(0) as *mut UTF16_code as *mut libc::c_char,
-            ::std::mem::size_of::<UTF16_code>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *font_ec.offset(0) as *mut UTF16_code as *mut libc::c_char,
-            ::std::mem::size_of::<UTF16_code>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *char_base.offset(0) as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *width_base.offset(0) as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *height_base.offset(0) as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *depth_base.offset(0) as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *italic_base.offset(0) as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *lig_kern_base.offset(0) as *mut int32_t as
-                *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *kern_base.offset(0) as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *exten_base.offset(0) as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *param_base.offset(0) as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *font_glue.offset(0) as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *bchar_label.offset(0) as *mut font_index as
-                *mut libc::c_char,
-            ::std::mem::size_of::<font_index>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *font_bchar.offset(0) as *mut nine_bits as *mut libc::c_char,
-            ::std::mem::size_of::<nine_bits>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
-    do_dump(&mut *font_false_bchar.offset(0) as *mut nine_bits as
-                *mut libc::c_char,
-            ::std::mem::size_of::<nine_bits>() as libc::c_ulong,
-            (font_ptr + 1i32) as size_t, fmt_out);
+    do_dump(
+        &mut x_val_25 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *font_check.offset(0) as *mut b16x4 as *mut libc::c_char,
+        ::std::mem::size_of::<b16x4>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *font_size.offset(0) as *mut scaled_t as *mut libc::c_char,
+        ::std::mem::size_of::<scaled_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *font_dsize.offset(0) as *mut scaled_t as *mut libc::c_char,
+        ::std::mem::size_of::<scaled_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *font_params.offset(0) as *mut font_index as *mut libc::c_char,
+        ::std::mem::size_of::<font_index>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *hyphen_char.offset(0) as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *skew_char.offset(0) as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *font_name.offset(0) as *mut str_number as *mut libc::c_char,
+        ::std::mem::size_of::<str_number>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *font_area.offset(0) as *mut str_number as *mut libc::c_char,
+        ::std::mem::size_of::<str_number>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *font_bc.offset(0) as *mut UTF16_code as *mut libc::c_char,
+        ::std::mem::size_of::<UTF16_code>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *font_ec.offset(0) as *mut UTF16_code as *mut libc::c_char,
+        ::std::mem::size_of::<UTF16_code>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *char_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *width_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *height_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *depth_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *italic_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *lig_kern_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *kern_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *exten_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *param_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *font_glue.offset(0) as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *bchar_label.offset(0) as *mut font_index as *mut libc::c_char,
+        ::std::mem::size_of::<font_index>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *font_bchar.offset(0) as *mut nine_bits as *mut libc::c_char,
+        ::std::mem::size_of::<nine_bits>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *font_false_bchar.offset(0) as *mut nine_bits as *mut libc::c_char,
+        ::std::mem::size_of::<nine_bits>() as libc::c_ulong,
+        (font_ptr + 1i32) as size_t,
+        fmt_out,
+    );
     k = 0i32;
     while k <= font_ptr {
         print_nl_cstr(b"\\font\x00" as *const u8 as *const libc::c_char);
-        print_esc((*hash.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                     12i32 + k) as isize)).s1);
+        print_esc(
+            (*hash.offset(
+                (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 12i32 + k)
+                    as isize,
+            ))
+            .s1,
+        );
         print_char('=' as i32);
-        if *font_area.offset(k as isize) as libc::c_uint == 0xffffu32 ||
-               *font_area.offset(k as isize) as libc::c_uint == 0xfffeu32 ||
-               !(*font_mapping.offset(k as isize)).is_null() {
-            print_file_name(*font_name.offset(k as isize),
-                            (65536i64 + 1i32 as libc::c_long) as int32_t,
-                            (65536i64 + 1i32 as libc::c_long) as int32_t);
+        if *font_area.offset(k as isize) as libc::c_uint == 0xffffu32
+            || *font_area.offset(k as isize) as libc::c_uint == 0xfffeu32
+            || !(*font_mapping.offset(k as isize)).is_null()
+        {
+            print_file_name(
+                *font_name.offset(k as isize),
+                (65536i64 + 1i32 as libc::c_long) as int32_t,
+                (65536i64 + 1i32 as libc::c_long) as int32_t,
+            );
             if file_line_error_style_p != 0 {
                 print_file_line();
             } else {
                 print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
             }
-            print_cstr(b"Can\'t \\dump a format with native fonts or font-mappings\x00"
-                           as *const u8 as *const libc::c_char);
+            print_cstr(
+                b"Can\'t \\dump a format with native fonts or font-mappings\x00" as *const u8
+                    as *const libc::c_char,
+            );
             help_ptr = 3i32 as libc::c_uchar;
-            help_line[2] =
-                b"You really, really don\'t want to do this.\x00" as *const u8
-                    as *const libc::c_char;
+            help_line[2] = b"You really, really don\'t want to do this.\x00" as *const u8
+                as *const libc::c_char;
             help_line[1] =
-                b"It won\'t work, and only confuses me.\x00" as *const u8 as
-                    *const libc::c_char;
-            help_line[0] =
-                b"(Load them at runtime, not as part of the format file.)\x00"
-                    as *const u8 as *const libc::c_char;
+                b"It won\'t work, and only confuses me.\x00" as *const u8 as *const libc::c_char;
+            help_line[0] = b"(Load them at runtime, not as part of the format file.)\x00"
+                as *const u8 as *const libc::c_char;
             error();
         } else {
-            print_file_name(*font_name.offset(k as isize),
-                            *font_area.offset(k as isize),
-                            (65536i64 + 1i32 as libc::c_long) as int32_t);
+            print_file_name(
+                *font_name.offset(k as isize),
+                *font_area.offset(k as isize),
+                (65536i64 + 1i32 as libc::c_long) as int32_t,
+            );
         }
         if *font_size.offset(k as isize) != *font_dsize.offset(k as isize) {
             print_cstr(b" at \x00" as *const u8 as *const libc::c_char);
@@ -4378,104 +5140,143 @@ unsafe extern "C" fn store_fmt_file() {
     }
     print_ln();
     print_int(fmem_ptr - 7i32);
-    print_cstr(b" words of font info for \x00" as *const u8 as
-                   *const libc::c_char);
+    print_cstr(b" words of font info for \x00" as *const u8 as *const libc::c_char);
     print_int(font_ptr - 0i32);
     if font_ptr != 0i32 + 1i32 {
-        print_cstr(b" preloaded fonts\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b" preloaded fonts\x00" as *const u8 as *const libc::c_char);
     } else {
-        print_cstr(b" preloaded font\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b" preloaded font\x00" as *const u8 as *const libc::c_char);
     }
     /* hyphenation info */
     let mut x_val_26: int32_t = hyph_count;
-    do_dump(&mut x_val_26 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
-    if hyph_next <= 607i32 { hyph_next = hyph_size }
+    do_dump(
+        &mut x_val_26 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
+    if hyph_next <= 607i32 {
+        hyph_next = hyph_size
+    }
     let mut x_val_27: int32_t = hyph_next;
-    do_dump(&mut x_val_27 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_27 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     k = 0i32;
     while k <= hyph_size {
         if *hyph_word.offset(k as isize) != 0i32 {
-            let mut x_val_28: int32_t =
-                (k as libc::c_long +
-                     65536i64 * *hyph_link.offset(k as isize) as libc::c_long)
-                    as int32_t;
-            do_dump(&mut x_val_28 as *mut int32_t as *mut libc::c_char,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                    1i32 as size_t, fmt_out);
+            let mut x_val_28: int32_t = (k as libc::c_long
+                + 65536i64 * *hyph_link.offset(k as isize) as libc::c_long)
+                as int32_t;
+            do_dump(
+                &mut x_val_28 as *mut int32_t as *mut libc::c_char,
+                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                1i32 as size_t,
+                fmt_out,
+            );
             let mut x_val_29: int32_t = *hyph_word.offset(k as isize);
-            do_dump(&mut x_val_29 as *mut int32_t as *mut libc::c_char,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                    1i32 as size_t, fmt_out);
+            do_dump(
+                &mut x_val_29 as *mut int32_t as *mut libc::c_char,
+                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                1i32 as size_t,
+                fmt_out,
+            );
             let mut x_val_30: int32_t = *hyph_list.offset(k as isize);
-            do_dump(&mut x_val_30 as *mut int32_t as *mut libc::c_char,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                    1i32 as size_t, fmt_out);
+            do_dump(
+                &mut x_val_30 as *mut int32_t as *mut libc::c_char,
+                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                1i32 as size_t,
+                fmt_out,
+            );
         }
         k += 1
     }
     print_ln();
     print_int(hyph_count);
     if hyph_count != 1i32 {
-        print_cstr(b" hyphenation exceptions\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b" hyphenation exceptions\x00" as *const u8 as *const libc::c_char);
     } else {
-        print_cstr(b" hyphenation exception\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b" hyphenation exception\x00" as *const u8 as *const libc::c_char);
     }
-    if trie_not_ready { init_trie(); }
+    if trie_not_ready {
+        init_trie();
+    }
     let mut x_val_31: int32_t = trie_max;
-    do_dump(&mut x_val_31 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_31 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     let mut x_val_32: int32_t = hyph_start;
-    do_dump(&mut x_val_32 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
-    do_dump(&mut *trie_trl.offset(0) as *mut trie_pointer as
-                *mut libc::c_char,
-            ::std::mem::size_of::<trie_pointer>() as libc::c_ulong,
-            (trie_max + 1i32) as size_t, fmt_out);
-    do_dump(&mut *trie_tro.offset(0) as *mut trie_pointer as
-                *mut libc::c_char,
-            ::std::mem::size_of::<trie_pointer>() as libc::c_ulong,
-            (trie_max + 1i32) as size_t, fmt_out);
-    do_dump(&mut *trie_trc.offset(0) as *mut uint16_t as *mut libc::c_char,
-            ::std::mem::size_of::<uint16_t>() as libc::c_ulong,
-            (trie_max + 1i32) as size_t, fmt_out);
+    do_dump(
+        &mut x_val_32 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *trie_trl.offset(0) as *mut trie_pointer as *mut libc::c_char,
+        ::std::mem::size_of::<trie_pointer>() as libc::c_ulong,
+        (trie_max + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *trie_tro.offset(0) as *mut trie_pointer as *mut libc::c_char,
+        ::std::mem::size_of::<trie_pointer>() as libc::c_ulong,
+        (trie_max + 1i32) as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *trie_trc.offset(0) as *mut uint16_t as *mut libc::c_char,
+        ::std::mem::size_of::<uint16_t>() as libc::c_ulong,
+        (trie_max + 1i32) as size_t,
+        fmt_out,
+    );
     let mut x_val_33: int32_t = max_hyph_char;
-    do_dump(&mut x_val_33 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
+    do_dump(
+        &mut x_val_33 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
     let mut x_val_34: int32_t = trie_op_ptr;
-    do_dump(&mut x_val_34 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
-    do_dump(&mut *hyf_distance.as_mut_ptr().offset(1) as *mut small_number as
-                *mut libc::c_char,
-            ::std::mem::size_of::<small_number>() as libc::c_ulong,
-            trie_op_ptr as size_t, fmt_out);
-    do_dump(&mut *hyf_num.as_mut_ptr().offset(1) as *mut small_number as
-                *mut libc::c_char,
-            ::std::mem::size_of::<small_number>() as libc::c_ulong,
-            trie_op_ptr as size_t, fmt_out);
-    do_dump(&mut *hyf_next.as_mut_ptr().offset(1) as *mut trie_opcode as
-                *mut libc::c_char,
-            ::std::mem::size_of::<trie_opcode>() as libc::c_ulong,
-            trie_op_ptr as size_t, fmt_out);
-    print_nl_cstr(b"Hyphenation trie of length \x00" as *const u8 as
-                      *const libc::c_char);
+    do_dump(
+        &mut x_val_34 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *hyf_distance.as_mut_ptr().offset(1) as *mut small_number as *mut libc::c_char,
+        ::std::mem::size_of::<small_number>() as libc::c_ulong,
+        trie_op_ptr as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *hyf_num.as_mut_ptr().offset(1) as *mut small_number as *mut libc::c_char,
+        ::std::mem::size_of::<small_number>() as libc::c_ulong,
+        trie_op_ptr as size_t,
+        fmt_out,
+    );
+    do_dump(
+        &mut *hyf_next.as_mut_ptr().offset(1) as *mut trie_opcode as *mut libc::c_char,
+        ::std::mem::size_of::<trie_opcode>() as libc::c_ulong,
+        trie_op_ptr as size_t,
+        fmt_out,
+    );
+    print_nl_cstr(b"Hyphenation trie of length \x00" as *const u8 as *const libc::c_char);
     print_int(trie_max);
     print_cstr(b" has \x00" as *const u8 as *const libc::c_char);
     print_int(trie_op_ptr);
     if trie_op_ptr != 1i32 {
         print_cstr(b" ops\x00" as *const u8 as *const libc::c_char);
-    } else { print_cstr(b" op\x00" as *const u8 as *const libc::c_char); }
+    } else {
+        print_cstr(b" op\x00" as *const u8 as *const libc::c_char);
+    }
     print_cstr(b" out of \x00" as *const u8 as *const libc::c_char);
     print_int(35111i64 as int32_t);
     k = 255i32;
@@ -4483,42 +5284,70 @@ unsafe extern "C" fn store_fmt_file() {
         if trie_used[k as usize] as libc::c_int > 0i32 {
             print_nl_cstr(b"  \x00" as *const u8 as *const libc::c_char);
             print_int(trie_used[k as usize] as int32_t);
-            print_cstr(b" for language \x00" as *const u8 as
-                           *const libc::c_char);
+            print_cstr(b" for language \x00" as *const u8 as *const libc::c_char);
             print_int(k);
             let mut x_val_35: int32_t = k;
-            do_dump(&mut x_val_35 as *mut int32_t as *mut libc::c_char,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                    1i32 as size_t, fmt_out);
+            do_dump(
+                &mut x_val_35 as *mut int32_t as *mut libc::c_char,
+                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                1i32 as size_t,
+                fmt_out,
+            );
             let mut x_val_36: int32_t = trie_used[k as usize] as int32_t;
-            do_dump(&mut x_val_36 as *mut int32_t as *mut libc::c_char,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                    1i32 as size_t, fmt_out);
+            do_dump(
+                &mut x_val_36 as *mut int32_t as *mut libc::c_char,
+                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                1i32 as size_t,
+                fmt_out,
+            );
         }
         k -= 1
     }
     /* footer */
     let mut x_val_37: int32_t = 0x29ai32; /*:1361*/
-    do_dump(&mut x_val_37 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong, 1i32 as size_t,
-            fmt_out);
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 31i32) as isize)).b32.s1 = 0i32;
+    do_dump(
+        &mut x_val_37 as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_out,
+    );
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 31i32) as isize,
+    ))
+    .b32
+    .s1 = 0i32;
     ttstub_output_close(fmt_out);
 }
-unsafe extern "C" fn pack_buffered_name(mut n: small_number, mut a: int32_t,
-                                        mut b: int32_t) {
+unsafe extern "C" fn pack_buffered_name(mut n: small_number, mut a: int32_t, mut b: int32_t) {
     free(name_of_file as *mut libc::c_void);
-    name_of_file =
-        xmalloc(((format_default_length + 1i32 + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<UTF8_code>()
-                                                     as libc::c_ulong)) as
-            *mut libc::c_char;
+    name_of_file = xmalloc(
+        ((format_default_length + 1i32 + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<UTF8_code>() as libc::c_ulong),
+    ) as *mut libc::c_char;
     strcpy(name_of_file, TEX_format_default);
     name_length = strlen(name_of_file) as int32_t;
 }
@@ -4533,12 +5362,13 @@ unsafe extern "C" fn load_fmt_file() -> bool {
     j = cur_input.loc;
     /* This is where a first line starting with "&" used to
      * trigger code that would change the format file. */
-    pack_buffered_name((format_default_length - 4i32) as small_number, 1i32,
-                       0i32);
+    pack_buffered_name((format_default_length - 4i32) as small_number, 1i32, 0i32);
     fmt_in = ttstub_input_open(name_of_file, TTIF_FORMAT, 0i32);
     if fmt_in.is_null() {
-        _tt_abort(b"cannot open the format file \"%s\"\x00" as *const u8 as
-                      *const libc::c_char, name_of_file);
+        _tt_abort(
+            b"cannot open the format file \"%s\"\x00" as *const u8 as *const libc::c_char,
+            name_of_file,
+        );
     }
     cur_input.loc = j;
     if in_initex_mode {
@@ -4551,189 +5381,310 @@ unsafe extern "C" fn load_fmt_file() -> bool {
         mem = 0 as *mut memory_word
     }
     /* start reading the header */
-    do_undump(&mut x as *mut int32_t as *mut libc::c_char,
-              ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-              1i32 as size_t, fmt_in);
+    do_undump(
+        &mut x as *mut int32_t as *mut libc::c_char,
+        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        1i32 as size_t,
+        fmt_in,
+    );
     if !(x != 0x54544e43i32) {
-        do_undump(&mut x as *mut int32_t as *mut libc::c_char,
-                  ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                  1i32 as size_t, fmt_in);
+        do_undump(
+            &mut x as *mut int32_t as *mut libc::c_char,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            1i32 as size_t,
+            fmt_in,
+        );
         if x != 28i32 {
-            _tt_abort(b"format file \"%s\" is of the wrong version: expected %d, found %d\x00"
-                          as *const u8 as *const libc::c_char, name_of_file,
-                      28i32, x);
+            _tt_abort(
+                b"format file \"%s\" is of the wrong version: expected %d, found %d\x00"
+                    as *const u8 as *const libc::c_char,
+                name_of_file,
+                28i32,
+                x,
+            );
         }
         /* hash table parameters */
-        do_undump(&mut hash_high as *mut int32_t as *mut libc::c_char,
-                  ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                  1i32 as size_t, fmt_in);
+        do_undump(
+            &mut hash_high as *mut int32_t as *mut libc::c_char,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            1i32 as size_t,
+            fmt_in,
+        );
         if !(hash_high < 0i32 || hash_high as libc::c_long > 2097151i64) {
-            if hash_extra < hash_high { hash_extra = hash_high }
-            eqtb_top =
-                1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                    15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32
-                    + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                    3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                    (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                    (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                    (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                    (0x10ffffi32 + 1i32) + 23i32 + 256i32 - 1i32 + hash_extra;
+            if hash_extra < hash_high {
+                hash_extra = hash_high
+            }
+            eqtb_top = 1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 85i32
+                + 256i32
+                + (0x10ffffi32 + 1i32)
+                + 23i32
+                + 256i32
+                - 1i32
+                + hash_extra;
             if hash_extra == 0i32 {
-                hash_top =
-                    1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32
-                        + 15000i32 + 12i32 + 9000i32 + 1i32
-            } else { hash_top = eqtb_top }
-            yhash =
-                xmalloc(((1i32 + hash_top - 514i32 + 1i32) as
-                             libc::c_ulong).wrapping_mul(::std::mem::size_of::<b32x2>()
-                                                             as
-                                                             libc::c_ulong))
-                    as *mut b32x2;
+                hash_top = 1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+            } else {
+                hash_top = eqtb_top
+            }
+            yhash = xmalloc(
+                ((1i32 + hash_top - 514i32 + 1i32) as libc::c_ulong)
+                    .wrapping_mul(::std::mem::size_of::<b32x2>() as libc::c_ulong),
+            ) as *mut b32x2;
             hash = yhash.offset(-514);
-            (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                               + 1i32) as isize)).s0 = 0i32;
-            (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                               + 1i32) as isize)).s1 = 0i32;
-            x =
-                1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                    1i32;
+            (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32) as isize))
+                .s0 = 0i32;
+            (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32) as isize))
+                .s1 = 0i32;
+            x = 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 1i32;
             while x <= hash_top {
-                *hash.offset(x as isize) =
-                    *hash.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                      (0x10ffffi32 + 1i32) + 1i32) as isize);
+                *hash.offset(x as isize) = *hash
+                    .offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32) as isize);
                 x += 1
             }
-            eqtb =
-                xmalloc(((eqtb_top + 1i32 + 1i32) as
-                             libc::c_ulong).wrapping_mul(::std::mem::size_of::<memory_word>()
-                                                             as
-                                                             libc::c_ulong))
-                    as *mut memory_word;
-            (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                               + 1i32 + 15000i32 + 12i32 + 9000i32 + 1i32) as
-                              isize)).b16.s1 = 103i32 as uint16_t;
-            (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                               + 1i32 + 15000i32 + 12i32 + 9000i32 + 1i32) as
-                              isize)).b32.s1 = -0xfffffffi32;
-            (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                               + 1i32 + 15000i32 + 12i32 + 9000i32 + 1i32) as
-                              isize)).b16.s0 = 0i32 as uint16_t;
-            x =
-                1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                    15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32
-                    + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                    3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                    (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                    (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                    (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                    (0x10ffffi32 + 1i32) + 23i32 + 256i32 - 1i32 + 1i32;
+            eqtb = xmalloc(
+                ((eqtb_top + 1i32 + 1i32) as libc::c_ulong)
+                    .wrapping_mul(::std::mem::size_of::<memory_word>() as libc::c_ulong),
+            ) as *mut memory_word;
+            (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32) as isize,
+            ))
+            .b16
+            .s1 = 103i32 as uint16_t;
+            (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32) as isize,
+            ))
+            .b32
+            .s1 = -0xfffffffi32;
+            (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32) as isize,
+            ))
+            .b16
+            .s0 = 0i32 as uint16_t;
+            x = 1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 85i32
+                + 256i32
+                + (0x10ffffi32 + 1i32)
+                + 23i32
+                + 256i32
+                - 1i32
+                + 1i32;
             while x <= eqtb_top {
-                *eqtb.offset(x as isize) =
-                    *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                      (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                      12i32 + 9000i32 + 1i32) as isize);
+                *eqtb.offset(x as isize) = *eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32) as isize,
+                );
                 x += 1
             }
             max_reg_num = 32767i32;
-            max_reg_help_line =
-                b"A register number must be between 0 and 32767.\x00" as
-                    *const u8 as *const libc::c_char;
+            max_reg_help_line = b"A register number must be between 0 and 32767.\x00" as *const u8
+                as *const libc::c_char;
             /* "memory locations" */
-            do_undump(&mut x as *mut int32_t as *mut libc::c_char,
-                      ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                      1i32 as size_t, fmt_in);
+            do_undump(
+                &mut x as *mut int32_t as *mut libc::c_char,
+                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                1i32 as size_t,
+                fmt_in,
+            );
             if !(x != 4999999i32) {
                 cur_list.head = 4999999i32 - 1i32;
                 cur_list.tail = 4999999i32 - 1i32;
                 page_tail = 4999999i32 - 2i32;
-                mem =
-                    xmalloc(((4999999i32 + 1i32 + 1i32) as
-                                 libc::c_ulong).wrapping_mul(::std::mem::size_of::<memory_word>()
-                                                                 as
-                                                                 libc::c_ulong))
-                        as *mut memory_word;
-                do_undump(&mut x as *mut int32_t as *mut libc::c_char,
-                          ::std::mem::size_of::<int32_t>() as libc::c_ulong,
-                          1i32 as size_t, fmt_in);
-                if !(x !=
-                         1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                             1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                             19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                             256i32 + 1i32 + 3i32 * 256i32 +
-                             (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                             (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                             (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                             85i32 + 256i32 + (0x10ffffi32 + 1i32) + 23i32 +
-                             256i32 - 1i32) {
-                    do_undump(&mut x as *mut int32_t as *mut libc::c_char,
-                              ::std::mem::size_of::<int32_t>() as
-                                  libc::c_ulong, 1i32 as size_t, fmt_in);
+                mem = xmalloc(
+                    ((4999999i32 + 1i32 + 1i32) as libc::c_ulong)
+                        .wrapping_mul(::std::mem::size_of::<memory_word>() as libc::c_ulong),
+                ) as *mut memory_word;
+                do_undump(
+                    &mut x as *mut int32_t as *mut libc::c_char,
+                    ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                    1i32 as size_t,
+                    fmt_in,
+                );
+                if !(x
+                    != 1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + 256i32
+                        + 1i32
+                        + 3i32 * 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 85i32
+                        + 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + 23i32
+                        + 256i32
+                        - 1i32)
+                {
+                    do_undump(
+                        &mut x as *mut int32_t as *mut libc::c_char,
+                        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                        1i32 as size_t,
+                        fmt_in,
+                    );
                     if !(x != 8501i32) {
-                        do_undump(&mut x as *mut int32_t as *mut libc::c_char,
-                                  ::std::mem::size_of::<int32_t>() as
-                                      libc::c_ulong, 1i32 as size_t, fmt_in);
+                        do_undump(
+                            &mut x as *mut int32_t as *mut libc::c_char,
+                            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                            1i32 as size_t,
+                            fmt_in,
+                        );
                         if !(x != 607i32) {
                             /* string pool */
-                            do_undump(&mut x as *mut int32_t as
-                                          *mut libc::c_char,
-                                      ::std::mem::size_of::<int32_t>() as
-                                          libc::c_ulong, 1i32 as size_t,
-                                      fmt_in); /*:1345 */
+                            do_undump(
+                                &mut x as *mut int32_t as *mut libc::c_char,
+                                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                                1i32 as size_t,
+                                fmt_in,
+                            ); /*:1345 */
                             if !(x < 0i32) {
-                                if x as libc::c_long >
-                                       40000000i64 - pool_free as libc::c_long
-                                   {
-                                    _tt_abort(b"must increase string_pool_size\x00"
-                                                  as *const u8 as
-                                                  *const libc::c_char);
+                                if x as libc::c_long > 40000000i64 - pool_free as libc::c_long {
+                                    _tt_abort(
+                                        b"must increase string_pool_size\x00" as *const u8
+                                            as *const libc::c_char,
+                                    );
                                 }
                                 pool_ptr = x;
                                 if pool_size < pool_ptr + pool_free {
                                     pool_size = pool_ptr + pool_free
                                 }
-                                do_undump(&mut x as *mut int32_t as
-                                              *mut libc::c_char,
-                                          ::std::mem::size_of::<int32_t>() as
-                                              libc::c_ulong, 1i32 as size_t,
-                                          fmt_in);
+                                do_undump(
+                                    &mut x as *mut int32_t as *mut libc::c_char,
+                                    ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                                    1i32 as size_t,
+                                    fmt_in,
+                                );
                                 if !(x < 0i32) {
-                                    if x as libc::c_long >
-                                           2097151i64 -
-                                               strings_free as libc::c_long {
-                                        _tt_abort(b"must increase sup_strings\x00"
-                                                      as *const u8 as
-                                                      *const libc::c_char);
+                                    if x as libc::c_long > 2097151i64 - strings_free as libc::c_long
+                                    {
+                                        _tt_abort(
+                                            b"must increase sup_strings\x00" as *const u8
+                                                as *const libc::c_char,
+                                        );
                                     }
                                     str_ptr = x;
                                     if max_strings < str_ptr + strings_free {
                                         max_strings = str_ptr + strings_free
                                     }
-                                    str_start =
-                                        xmalloc(((max_strings + 1i32) as
-                                                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<pool_pointer>()
-                                                                                     as
-                                                                                     libc::c_ulong))
-                                            as *mut pool_pointer;
+                                    str_start = xmalloc(
+                                        ((max_strings + 1i32) as libc::c_ulong)
+                                            .wrapping_mul(::std::mem::size_of::<pool_pointer>()
+                                                as libc::c_ulong),
+                                    )
+                                        as *mut pool_pointer;
                                     let mut i: libc::c_int = 0;
-                                    do_undump(&mut *str_start.offset(0) as
-                                                  *mut pool_pointer as
-                                                  *mut libc::c_char,
-                                              ::std::mem::size_of::<pool_pointer>()
-                                                  as libc::c_ulong,
-                                              (str_ptr - 65536i32 + 1i32) as
-                                                  size_t, fmt_in);
+                                    do_undump(
+                                        &mut *str_start.offset(0) as *mut pool_pointer
+                                            as *mut libc::c_char,
+                                        ::std::mem::size_of::<pool_pointer>() as libc::c_ulong,
+                                        (str_ptr - 65536i32 + 1i32) as size_t,
+                                        fmt_in,
+                                    );
                                     i = 0i32;
                                     while i < str_ptr - 65536i32 + 1i32 {
-                                        if *(&mut *str_start.offset(0) as
-                                                 *mut pool_pointer).offset(i
-                                                                               as
-                                                                               isize)
-                                               < 0i32 ||
-                                               *(&mut *str_start.offset(0) as
-                                                     *mut pool_pointer).offset(i
-                                                                                   as
-                                                                                   isize)
-                                                   > pool_ptr {
+                                        if *(&mut *str_start.offset(0) as *mut pool_pointer)
+                                            .offset(i as isize)
+                                            < 0i32
+                                            || *(&mut *str_start.offset(0) as *mut pool_pointer)
+                                                .offset(i as isize)
+                                                > pool_ptr
+                                        {
                                             _tt_abort(b"item %u (=%ld) of .fmt array at %lx <%ld or >%ld\x00"
                                                           as *const u8 as
                                                           *const libc::c_char,
@@ -4753,235 +5704,178 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                         i += 1
                                     }
                                     str_pool =
-                                        xmalloc(((pool_size + 1i32) as
-                                                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<packed_UTF16_code>()
-                                                                                     as
-                                                                                     libc::c_ulong))
+                                        xmalloc(((pool_size + 1i32) as libc::c_ulong).wrapping_mul(
+                                            ::std::mem::size_of::<packed_UTF16_code>()
+                                                as libc::c_ulong,
+                                        ))
                                             as *mut packed_UTF16_code;
-                                    do_undump(&mut *str_pool.offset(0) as
-                                                  *mut packed_UTF16_code as
-                                                  *mut libc::c_char,
-                                              ::std::mem::size_of::<packed_UTF16_code>()
-                                                  as libc::c_ulong,
-                                              pool_ptr as size_t, fmt_in);
+                                    do_undump(
+                                        &mut *str_pool.offset(0) as *mut packed_UTF16_code
+                                            as *mut libc::c_char,
+                                        ::std::mem::size_of::<packed_UTF16_code>() as libc::c_ulong,
+                                        pool_ptr as size_t,
+                                        fmt_in,
+                                    );
                                     init_str_ptr = str_ptr;
                                     init_pool_ptr = pool_ptr;
                                     /* "By sorting the list of available spaces in the variable-size portion
-     * of |mem|, we are usually able to get by without having to dump very
-     * much of the dynamic memory." */
-                                    do_undump(&mut x as *mut int32_t as
-                                                  *mut libc::c_char,
-                                              ::std::mem::size_of::<int32_t>()
-                                                  as libc::c_ulong,
-                                              1i32 as size_t, fmt_in);
-                                    if !(x < 1019i32 ||
-                                             x > 4999999i32 - 15i32) {
+                                     * of |mem|, we are usually able to get by without having to dump very
+                                     * much of the dynamic memory." */
+                                    do_undump(
+                                        &mut x as *mut int32_t as *mut libc::c_char,
+                                        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                                        1i32 as size_t,
+                                        fmt_in,
+                                    );
+                                    if !(x < 1019i32 || x > 4999999i32 - 15i32) {
                                         lo_mem_max = x;
-                                        do_undump(&mut x as *mut int32_t as
-                                                      *mut libc::c_char,
-                                                  ::std::mem::size_of::<int32_t>()
-                                                      as libc::c_ulong,
-                                                  1i32 as size_t, fmt_in);
+                                        do_undump(
+                                            &mut x as *mut int32_t as *mut libc::c_char,
+                                            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                                            1i32 as size_t,
+                                            fmt_in,
+                                        );
                                         if !(x < 20i32 || x > lo_mem_max) {
                                             rover = x;
                                             k = 0i32;
-                                            loop  {
+                                            loop {
                                                 if !(k <= 6i32) {
-                                                    current_block =
-                                                        1209030638129645089;
-                                                    break ;
+                                                    current_block = 1209030638129645089;
+                                                    break;
                                                 }
-                                                do_undump(&mut x as
-                                                              *mut int32_t as
-                                                              *mut libc::c_char,
-                                                          ::std::mem::size_of::<int32_t>()
-                                                              as
-                                                              libc::c_ulong,
-                                                          1i32 as size_t,
-                                                          fmt_in);
-                                                if x < -0xfffffffi32 ||
-                                                       x > lo_mem_max {
-                                                    current_block =
-                                                        6442379788293543199;
-                                                    break ;
+                                                do_undump(
+                                                    &mut x as *mut int32_t as *mut libc::c_char,
+                                                    ::std::mem::size_of::<int32_t>()
+                                                        as libc::c_ulong,
+                                                    1i32 as size_t,
+                                                    fmt_in,
+                                                );
+                                                if x < -0xfffffffi32 || x > lo_mem_max {
+                                                    current_block = 6442379788293543199;
+                                                    break;
                                                 }
                                                 sa_root[k as usize] = x;
                                                 k += 1
                                             }
                                             match current_block {
-                                                6442379788293543199 => { }
+                                                6442379788293543199 => {}
                                                 _ => {
                                                     p = 0i32;
                                                     q = rover;
-                                                    loop  {
-                                                        do_undump(&mut *mem.offset(p
-                                                                                       as
-                                                                                       isize)
-                                                                      as
-                                                                      *mut memory_word
-                                                                      as
-                                                                      *mut libc::c_char,
-                                                                  ::std::mem::size_of::<memory_word>()
-                                                                      as
-                                                                      libc::c_ulong,
-                                                                  (q + 2i32 -
-                                                                       p) as
-                                                                      size_t,
-                                                                  fmt_in);
-                                                        p =
-                                                            q +
-                                                                (*mem.offset(q
-                                                                                 as
-                                                                                 isize)).b32.s0;
-                                                        if p > lo_mem_max ||
-                                                               q >=
-                                                                   (*mem.offset((q
-                                                                                     +
-                                                                                     1i32)
-                                                                                    as
-                                                                                    isize)).b32.s1
-                                                                   &&
-                                                                   (*mem.offset((q
-                                                                                     +
-                                                                                     1i32)
-                                                                                    as
-                                                                                    isize)).b32.s1
-                                                                       !=
-                                                                       rover {
-                                                            current_block =
-                                                                6442379788293543199;
-                                                            break ;
+                                                    loop {
+                                                        do_undump(
+                                                            &mut *mem.offset(p as isize)
+                                                                as *mut memory_word
+                                                                as *mut libc::c_char,
+                                                            ::std::mem::size_of::<memory_word>()
+                                                                as libc::c_ulong,
+                                                            (q + 2i32 - p) as size_t,
+                                                            fmt_in,
+                                                        );
+                                                        p = q + (*mem.offset(q as isize)).b32.s0;
+                                                        if p > lo_mem_max
+                                                            || q >= (*mem
+                                                                .offset((q + 1i32) as isize))
+                                                            .b32
+                                                            .s1 && (*mem
+                                                                .offset((q + 1i32) as isize))
+                                                            .b32
+                                                            .s1 != rover
+                                                        {
+                                                            current_block = 6442379788293543199;
+                                                            break;
                                                         }
-                                                        q =
-                                                            (*mem.offset((q +
-                                                                              1i32)
-                                                                             as
-                                                                             isize)).b32.s1;
+                                                        q = (*mem.offset((q + 1i32) as isize))
+                                                            .b32
+                                                            .s1;
                                                         if !(q != rover) {
-                                                            current_block =
-                                                                17395932908762866334;
-                                                            break ;
+                                                            current_block = 17395932908762866334;
+                                                            break;
                                                         }
                                                     }
                                                     match current_block {
-                                                        6442379788293543199 =>
-                                                        {
-                                                        }
+                                                        6442379788293543199 => {}
                                                         _ => {
-                                                            do_undump(&mut *mem.offset(p
-                                                                                           as
-                                                                                           isize)
-                                                                          as
-                                                                          *mut memory_word
-                                                                          as
-                                                                          *mut libc::c_char,
-                                                                      ::std::mem::size_of::<memory_word>()
-                                                                          as
-                                                                          libc::c_ulong,
-                                                                      (lo_mem_max
-                                                                           +
-                                                                           1i32
-                                                                           -
-                                                                           p)
-                                                                          as
-                                                                          size_t,
-                                                                      fmt_in);
-                                                            do_undump(&mut x
-                                                                          as
-                                                                          *mut int32_t
-                                                                          as
-                                                                          *mut libc::c_char,
-                                                                      ::std::mem::size_of::<int32_t>()
-                                                                          as
-                                                                          libc::c_ulong,
-                                                                      1i32 as
-                                                                          size_t,
-                                                                      fmt_in);
-                                                            if !(x <
-                                                                     lo_mem_max
-                                                                         +
-                                                                         1i32
-                                                                     ||
-                                                                     x >
-                                                                         4999999i32
-                                                                             -
-                                                                             14i32)
-                                                               {
-                                                                hi_mem_min =
-                                                                    x;
-                                                                do_undump(&mut x
-                                                                              as
-                                                                              *mut int32_t
-                                                                              as
-                                                                              *mut libc::c_char,
-                                                                          ::std::mem::size_of::<int32_t>()
-                                                                              as
-                                                                              libc::c_ulong,
-                                                                          1i32
-                                                                              as
-                                                                              size_t,
-                                                                          fmt_in);
-                                                                if !(x <
-                                                                         -0xfffffffi32
-                                                                         ||
-                                                                         x >
-                                                                             4999999i32)
-                                                                   {
+                                                            do_undump(
+                                                                &mut *mem.offset(p as isize)
+                                                                    as *mut memory_word
+                                                                    as *mut libc::c_char,
+                                                                ::std::mem::size_of::<memory_word>()
+                                                                    as libc::c_ulong,
+                                                                (lo_mem_max + 1i32 - p) as size_t,
+                                                                fmt_in,
+                                                            );
+                                                            do_undump(
+                                                                &mut x as *mut int32_t
+                                                                    as *mut libc::c_char,
+                                                                ::std::mem::size_of::<int32_t>()
+                                                                    as libc::c_ulong,
+                                                                1i32 as size_t,
+                                                                fmt_in,
+                                                            );
+                                                            if !(x < lo_mem_max + 1i32
+                                                                || x > 4999999i32 - 14i32)
+                                                            {
+                                                                hi_mem_min = x;
+                                                                do_undump(
+                                                                    &mut x as *mut int32_t
+                                                                        as *mut libc::c_char,
+                                                                    ::std::mem::size_of::<int32_t>()
+                                                                        as libc::c_ulong,
+                                                                    1i32 as size_t,
+                                                                    fmt_in,
+                                                                );
+                                                                if !(x < -0xfffffffi32
+                                                                    || x > 4999999i32)
+                                                                {
                                                                     avail = x;
-                                                                    mem_end =
-                                                                        4999999i32;
-                                                                    do_undump(&mut *mem.offset(hi_mem_min
-                                                                                                   as
-                                                                                                   isize)
-                                                                                  as
-                                                                                  *mut memory_word
-                                                                                  as
-                                                                                  *mut libc::c_char,
-                                                                              ::std::mem::size_of::<memory_word>()
-                                                                                  as
-                                                                                  libc::c_ulong,
-                                                                              (mem_end
-                                                                                   +
-                                                                                   1i32
-                                                                                   -
-                                                                                   hi_mem_min)
-                                                                                  as
-                                                                                  size_t,
-                                                                              fmt_in);
-                                                                    do_undump(&mut var_used
-                                                                                  as
-                                                                                  *mut int32_t
-                                                                                  as
-                                                                                  *mut libc::c_char,
-                                                                              ::std::mem::size_of::<int32_t>()
-                                                                                  as
-                                                                                  libc::c_ulong,
-                                                                              1i32
-                                                                                  as
-                                                                                  size_t,
-                                                                              fmt_in);
-                                                                    do_undump(&mut dyn_used
-                                                                                  as
-                                                                                  *mut int32_t
-                                                                                  as
-                                                                                  *mut libc::c_char,
-                                                                              ::std::mem::size_of::<int32_t>()
-                                                                                  as
-                                                                                  libc::c_ulong,
-                                                                              1i32
-                                                                                  as
-                                                                                  size_t,
-                                                                              fmt_in);
+                                                                    mem_end = 4999999i32;
+                                                                    do_undump(
+                                                                        &mut *mem.offset(
+                                                                            hi_mem_min as isize,
+                                                                        )
+                                                                            as *mut memory_word
+                                                                            as *mut libc::c_char,
+                                                                        ::std::mem::size_of::<
+                                                                            memory_word,
+                                                                        >(
+                                                                        )
+                                                                            as libc::c_ulong,
+                                                                        (mem_end + 1i32
+                                                                            - hi_mem_min)
+                                                                            as size_t,
+                                                                        fmt_in,
+                                                                    );
+                                                                    do_undump(
+                                                                        &mut var_used
+                                                                            as *mut int32_t
+                                                                            as *mut libc::c_char,
+                                                                        ::std::mem::size_of::<int32_t>(
+                                                                        )
+                                                                            as libc::c_ulong,
+                                                                        1i32 as size_t,
+                                                                        fmt_in,
+                                                                    );
+                                                                    do_undump(
+                                                                        &mut dyn_used
+                                                                            as *mut int32_t
+                                                                            as *mut libc::c_char,
+                                                                        ::std::mem::size_of::<int32_t>(
+                                                                        )
+                                                                            as libc::c_ulong,
+                                                                        1i32 as size_t,
+                                                                        fmt_in,
+                                                                    );
                                                                     /* equivalents table / primitives
-     *
-     * "The table of equivalents usually contains repeated information, so we
-     * dump it in compressed form: The sequence of $n + 2$ values
-     * $(n, x_1, \ldots, x_n, m)$ in the format file represents $n + m$ consecutive
-     * entries of |eqtb|, with |m| extra copies of $x_n$, namely
-     * $(x_1, \ldots, x_n, x_n, \ldots, x_n)$"
-     */
+                                                                     *
+                                                                     * "The table of equivalents usually contains repeated information, so we
+                                                                     * dump it in compressed form: The sequence of $n + 2$ values
+                                                                     * $(n, x_1, \ldots, x_n, m)$ in the format file represents $n + m$ consecutive
+                                                                     * entries of |eqtb|, with |m| extra copies of $x_n$, namely
+                                                                     * $(x_1, \ldots, x_n, x_n, \ldots, x_n)$"
+                                                                     */
                                                                     k = 1i32;
-                                                                    loop  {
+                                                                    loop {
                                                                         do_undump(&mut x
                                                                                       as
                                                                                       *mut int32_t
@@ -4994,100 +5888,52 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                       as
                                                                                       size_t,
                                                                                   fmt_in);
-                                                                        if x <
-                                                                               1i32
-                                                                               ||
-                                                                               k
-                                                                                   +
-                                                                                   x
-                                                                                   >
-                                                                                   1i32
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       1i32
-                                                                                       +
-                                                                                       15000i32
-                                                                                       +
-                                                                                       12i32
-                                                                                       +
-                                                                                       9000i32
-                                                                                       +
-                                                                                       1i32
-                                                                                       +
-                                                                                       1i32
-                                                                                       +
-                                                                                       19i32
-                                                                                       +
-                                                                                       256i32
-                                                                                       +
-                                                                                       256i32
-                                                                                       +
-                                                                                       13i32
-                                                                                       +
-                                                                                       256i32
-                                                                                       +
-                                                                                       4i32
-                                                                                       +
-                                                                                       256i32
-                                                                                       +
-                                                                                       1i32
-                                                                                       +
-                                                                                       3i32
-                                                                                           *
-                                                                                           256i32
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       85i32
-                                                                                       +
-                                                                                       256i32
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       23i32
-                                                                                       +
-                                                                                       256i32
-                                                                                       -
-                                                                                       1i32
-                                                                                       +
-                                                                                       1i32
-                                                                           {
-                                                                            current_block
-                                                                                =
+                                                                        if x < 1i32
+                                                                            || k + x
+                                                                                > 1i32
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + 1i32
+                                                                                    + 15000i32
+                                                                                    + 12i32
+                                                                                    + 9000i32
+                                                                                    + 1i32
+                                                                                    + 1i32
+                                                                                    + 19i32
+                                                                                    + 256i32
+                                                                                    + 256i32
+                                                                                    + 13i32
+                                                                                    + 256i32
+                                                                                    + 4i32
+                                                                                    + 256i32
+                                                                                    + 1i32
+                                                                                    + 3i32 * 256i32
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + 85i32
+                                                                                    + 256i32
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + 23i32
+                                                                                    + 256i32
+                                                                                    - 1i32
+                                                                                    + 1i32
+                                                                        {
+                                                                            current_block =
                                                                                 6442379788293543199;
-                                                                            break
-                                                                                ;
+                                                                            break;
                                                                         }
                                                                         do_undump(&mut *eqtb.offset(k
                                                                                                         as
@@ -5103,10 +5949,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                       as
                                                                                       size_t,
                                                                                   fmt_in);
-                                                                        k =
-                                                                            k
-                                                                                +
-                                                                                x;
+                                                                        k = k + x;
                                                                         do_undump(&mut x
                                                                                       as
                                                                                       *mut int32_t
@@ -5119,226 +5962,114 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                       as
                                                                                       size_t,
                                                                                   fmt_in);
-                                                                        if x <
-                                                                               0i32
-                                                                               ||
-                                                                               k
-                                                                                   +
-                                                                                   x
-                                                                                   >
-                                                                                   1i32
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       1i32
-                                                                                       +
-                                                                                       15000i32
-                                                                                       +
-                                                                                       12i32
-                                                                                       +
-                                                                                       9000i32
-                                                                                       +
-                                                                                       1i32
-                                                                                       +
-                                                                                       1i32
-                                                                                       +
-                                                                                       19i32
-                                                                                       +
-                                                                                       256i32
-                                                                                       +
-                                                                                       256i32
-                                                                                       +
-                                                                                       13i32
-                                                                                       +
-                                                                                       256i32
-                                                                                       +
-                                                                                       4i32
-                                                                                       +
-                                                                                       256i32
-                                                                                       +
-                                                                                       1i32
-                                                                                       +
-                                                                                       3i32
-                                                                                           *
-                                                                                           256i32
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       85i32
-                                                                                       +
-                                                                                       256i32
-                                                                                       +
-                                                                                       (0x10ffffi32
-                                                                                            +
-                                                                                            1i32)
-                                                                                       +
-                                                                                       23i32
-                                                                                       +
-                                                                                       256i32
-                                                                                       -
-                                                                                       1i32
-                                                                                       +
-                                                                                       1i32
-                                                                           {
-                                                                            current_block
-                                                                                =
+                                                                        if x < 0i32
+                                                                            || k + x
+                                                                                > 1i32
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + 1i32
+                                                                                    + 15000i32
+                                                                                    + 12i32
+                                                                                    + 9000i32
+                                                                                    + 1i32
+                                                                                    + 1i32
+                                                                                    + 19i32
+                                                                                    + 256i32
+                                                                                    + 256i32
+                                                                                    + 13i32
+                                                                                    + 256i32
+                                                                                    + 4i32
+                                                                                    + 256i32
+                                                                                    + 1i32
+                                                                                    + 3i32 * 256i32
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + 85i32
+                                                                                    + 256i32
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + 23i32
+                                                                                    + 256i32
+                                                                                    - 1i32
+                                                                                    + 1i32
+                                                                        {
+                                                                            current_block =
                                                                                 6442379788293543199;
-                                                                            break
-                                                                                ;
+                                                                            break;
                                                                         }
                                                                         j = k;
-                                                                        while j
-                                                                                  <=
-                                                                                  k
-                                                                                      +
-                                                                                      x
-                                                                                      -
-                                                                                      1i32
-                                                                              {
-                                                                            *eqtb.offset(j
-                                                                                             as
-                                                                                             isize)
-                                                                                =
-                                                                                *eqtb.offset((k
-                                                                                                  -
-                                                                                                  1i32)
-                                                                                                 as
-                                                                                                 isize);
-                                                                            j
-                                                                                +=
-                                                                                1
+                                                                        while j <= k + x - 1i32 {
+                                                                            *eqtb.offset(
+                                                                                j as isize,
+                                                                            ) = *eqtb.offset(
+                                                                                (k - 1i32) as isize,
+                                                                            );
+                                                                            j += 1
                                                                         }
-                                                                        k =
-                                                                            k
-                                                                                +
-                                                                                x;
+                                                                        k = k + x;
                                                                         if !(k
-                                                                                 <=
-                                                                                 1i32
-                                                                                     +
-                                                                                     (0x10ffffi32
-                                                                                          +
-                                                                                          1i32)
-                                                                                     +
-                                                                                     (0x10ffffi32
-                                                                                          +
-                                                                                          1i32)
-                                                                                     +
-                                                                                     1i32
-                                                                                     +
-                                                                                     15000i32
-                                                                                     +
-                                                                                     12i32
-                                                                                     +
-                                                                                     9000i32
-                                                                                     +
-                                                                                     1i32
-                                                                                     +
-                                                                                     1i32
-                                                                                     +
-                                                                                     19i32
-                                                                                     +
-                                                                                     256i32
-                                                                                     +
-                                                                                     256i32
-                                                                                     +
-                                                                                     13i32
-                                                                                     +
-                                                                                     256i32
-                                                                                     +
-                                                                                     4i32
-                                                                                     +
-                                                                                     256i32
-                                                                                     +
-                                                                                     1i32
-                                                                                     +
-                                                                                     3i32
-                                                                                         *
-                                                                                         256i32
-                                                                                     +
-                                                                                     (0x10ffffi32
-                                                                                          +
-                                                                                          1i32)
-                                                                                     +
-                                                                                     (0x10ffffi32
-                                                                                          +
-                                                                                          1i32)
-                                                                                     +
-                                                                                     (0x10ffffi32
-                                                                                          +
-                                                                                          1i32)
-                                                                                     +
-                                                                                     (0x10ffffi32
-                                                                                          +
-                                                                                          1i32)
-                                                                                     +
-                                                                                     (0x10ffffi32
-                                                                                          +
-                                                                                          1i32)
-                                                                                     +
-                                                                                     (0x10ffffi32
-                                                                                          +
-                                                                                          1i32)
-                                                                                     +
-                                                                                     85i32
-                                                                                     +
-                                                                                     256i32
-                                                                                     +
-                                                                                     (0x10ffffi32
-                                                                                          +
-                                                                                          1i32)
-                                                                                     +
-                                                                                     23i32
-                                                                                     +
-                                                                                     256i32
-                                                                                     -
-                                                                                     1i32)
-                                                                           {
+                                                                            <= 1i32
+                                                                                + (0x10ffffi32
+                                                                                    + 1i32)
+                                                                                + (0x10ffffi32
+                                                                                    + 1i32)
+                                                                                + 1i32
+                                                                                + 15000i32
+                                                                                + 12i32
+                                                                                + 9000i32
+                                                                                + 1i32
+                                                                                + 1i32
+                                                                                + 19i32
+                                                                                + 256i32
+                                                                                + 256i32
+                                                                                + 13i32
+                                                                                + 256i32
+                                                                                + 4i32
+                                                                                + 256i32
+                                                                                + 1i32
+                                                                                + 3i32 * 256i32
+                                                                                + (0x10ffffi32
+                                                                                    + 1i32)
+                                                                                + (0x10ffffi32
+                                                                                    + 1i32)
+                                                                                + (0x10ffffi32
+                                                                                    + 1i32)
+                                                                                + (0x10ffffi32
+                                                                                    + 1i32)
+                                                                                + (0x10ffffi32
+                                                                                    + 1i32)
+                                                                                + (0x10ffffi32
+                                                                                    + 1i32)
+                                                                                + 85i32
+                                                                                + 256i32
+                                                                                + (0x10ffffi32
+                                                                                    + 1i32)
+                                                                                + 23i32
+                                                                                + 256i32
+                                                                                - 1i32)
+                                                                        {
                                                                             current_block
                                                                                 =
                                                                                 10041771570435381152;
-                                                                            break
-                                                                                ;
+                                                                            break;
                                                                         }
                                                                     }
-                                                                    match current_block
-                                                                        {
-                                                                        6442379788293543199
-                                                                        => {
-                                                                        }
+                                                                    match current_block {
+                                                                        6442379788293543199 => {}
                                                                         _ => {
-                                                                            if hash_high
-                                                                                   >
-                                                                                   0i32
-                                                                               {
+                                                                            if hash_high > 0i32 {
                                                                                 do_undump(&mut *eqtb.offset((1i32
                                                                                                                  +
                                                                                                                  (0x10ffffi32
@@ -5446,32 +6177,18 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                           as
                                                                                           size_t,
                                                                                       fmt_in);
-                                                                            if !(x
-                                                                                     <
-                                                                                     1i32
-                                                                                         +
-                                                                                         (0x10ffffi32
-                                                                                              +
-                                                                                              1i32)
-                                                                                         +
-                                                                                         (0x10ffffi32
-                                                                                              +
-                                                                                              1i32)
-                                                                                         +
-                                                                                         1i32
-                                                                                     ||
-                                                                                     x
-                                                                                         >
-                                                                                         hash_top)
-                                                                               {
-                                                                                par_loc
-                                                                                    =
-                                                                                    x;
-                                                                                par_token
-                                                                                    =
+                                                                            if !(x < 1i32
+                                                                                + (0x10ffffi32
+                                                                                    + 1i32)
+                                                                                + (0x10ffffi32
+                                                                                    + 1i32)
+                                                                                + 1i32
+                                                                                || x > hash_top)
+                                                                            {
+                                                                                par_loc = x;
+                                                                                par_token =
                                                                                     0x1ffffffi32
-                                                                                        +
-                                                                                        par_loc;
+                                                                                        + par_loc;
                                                                                 do_undump(&mut x
                                                                                               as
                                                                                               *mut int32_t
@@ -5484,42 +6201,27 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                               as
                                                                                               size_t,
                                                                                           fmt_in);
-                                                                                if !(x
-                                                                                         <
-                                                                                         1i32
-                                                                                             +
-                                                                                             (0x10ffffi32
-                                                                                                  +
-                                                                                                  1i32)
-                                                                                             +
-                                                                                             (0x10ffffi32
-                                                                                                  +
-                                                                                                  1i32)
-                                                                                             +
-                                                                                             1i32
-                                                                                         ||
-                                                                                         x
-                                                                                             >
-                                                                                             hash_top)
-                                                                                   {
-                                                                                    write_loc
-                                                                                        =
-                                                                                        x;
+                                                                                if !(x < 1i32
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + (0x10ffffi32
+                                                                                        + 1i32)
+                                                                                    + 1i32
+                                                                                    || x > hash_top)
+                                                                                {
+                                                                                    write_loc = x;
                                                                                     /* control sequence names
-     *
-     * "A different scheme is used to compress the hash table, since its lower
-     * region is usually sparse. When |text(p) != 0| for |p <= hash_used|, we
-     * output two words, |p| and |hash[p]|. The hash table is, of course,
-     * densely packed for |p >= hash_used|, so the remaining entries are
-     * output in a block."
-     */
-                                                                                    p
-                                                                                        =
-                                                                                        0i32;
+                                                                                     *
+                                                                                     * "A different scheme is used to compress the hash table, since its lower
+                                                                                     * region is usually sparse. When |text(p) != 0| for |p <= hash_used|, we
+                                                                                     * output two words, |p| and |hash[p]|. The hash table is, of course,
+                                                                                     * densely packed for |p >= hash_used|, so the remaining entries are
+                                                                                     * output in a block."
+                                                                                     */
+                                                                                    p = 0i32;
                                                                                     while p
-                                                                                              <=
-                                                                                              500i32
-                                                                                          {
+                                                                                        <= 500i32
+                                                                                    {
                                                                                         do_undump(&mut *prim.as_mut_ptr().offset(p
                                                                                                                                      as
                                                                                                                                      isize)
@@ -5534,17 +6236,12 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                       as
                                                                                                       size_t,
                                                                                                   fmt_in);
-                                                                                        p
-                                                                                            +=
-                                                                                            1
+                                                                                        p += 1
                                                                                     }
-                                                                                    p
-                                                                                        =
-                                                                                        0i32;
+                                                                                    p = 0i32;
                                                                                     while p
-                                                                                              <=
-                                                                                              500i32
-                                                                                          {
+                                                                                        <= 500i32
+                                                                                    {
                                                                                         do_undump(&mut *prim_eqtb.as_mut_ptr().offset(p
                                                                                                                                           as
                                                                                                                                           isize)
@@ -5559,9 +6256,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                       as
                                                                                                       size_t,
                                                                                                   fmt_in);
-                                                                                        p
-                                                                                            +=
-                                                                                            1
+                                                                                        p += 1
                                                                                     }
                                                                                     do_undump(&mut x
                                                                                                   as
@@ -5623,7 +6318,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                 1i32
                                                                                                 -
                                                                                                 1i32;
-                                                                                        loop 
+                                                                                        loop
                                                                                              {
                                                                                             do_undump(&mut x
                                                                                                           as
@@ -7019,7 +7714,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                 k
                                                                                                                     =
                                                                                                                     1i32;
-                                                                                                                loop 
+                                                                                                                loop
                                                                                                                      {
                                                                                                                     if !(k
                                                                                                                              <=
@@ -7507,7 +8202,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                         255i32
                                                                                                                                             +
                                                                                                                                             1i32;
-                                                                                                                                    loop 
+                                                                                                                                    loop
                                                                                                                                          {
                                                                                                                                         if !(j
                                                                                                                                                  >
@@ -7664,17 +8359,20 @@ unsafe extern "C" fn load_fmt_file() -> bool {
             }
         }
     }
-    _tt_abort(b"fatal format file error\x00" as *const u8 as
-                  *const libc::c_char);
+    _tt_abort(b"fatal format file error\x00" as *const u8 as *const libc::c_char);
 }
 unsafe extern "C" fn final_cleanup() {
     let mut c: small_number = 0;
     c = cur_chr as small_number;
-    if job_name == 0i32 { open_log_file(); }
+    if job_name == 0i32 {
+        open_log_file();
+    }
     while input_ptr > 0i32 {
         if cur_input.state as libc::c_int == 0i32 {
             end_token_list();
-        } else { end_file_reading(); }
+        } else {
+            end_file_reading();
+        }
     }
     while open_parens > 0i32 {
         print_cstr(b" )\x00" as *const u8 as *const libc::c_char);
@@ -7682,42 +8380,38 @@ unsafe extern "C" fn final_cleanup() {
     }
     if cur_level as libc::c_int > 1i32 {
         print_nl('(' as i32);
-        print_esc_cstr(b"end occurred \x00" as *const u8 as
-                           *const libc::c_char);
-        print_cstr(b"inside a group at level \x00" as *const u8 as
-                       *const libc::c_char);
+        print_esc_cstr(b"end occurred \x00" as *const u8 as *const libc::c_char);
+        print_cstr(b"inside a group at level \x00" as *const u8 as *const libc::c_char);
         print_int(cur_level as libc::c_int - 1i32);
         print_char(')' as i32);
         show_save_groups();
     }
     while cond_ptr != -0xfffffffi32 {
         print_nl('(' as i32);
-        print_esc_cstr(b"end occurred \x00" as *const u8 as
-                           *const libc::c_char);
+        print_esc_cstr(b"end occurred \x00" as *const u8 as *const libc::c_char);
         print_cstr(b"when \x00" as *const u8 as *const libc::c_char);
         print_cmd_chr(107i32 as uint16_t, cur_if as int32_t);
         if if_line != 0i32 {
             print_cstr(b" on line \x00" as *const u8 as *const libc::c_char);
             print_int(if_line);
         }
-        print_cstr(b" was incomplete)\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b" was incomplete)\x00" as *const u8 as *const libc::c_char);
         if_line = (*mem.offset((cond_ptr + 1i32) as isize)).b32.s1;
         cur_if = (*mem.offset(cond_ptr as isize)).b16.s0 as small_number;
         temp_ptr = cond_ptr;
         cond_ptr = (*mem.offset(cond_ptr as isize)).b32.s1;
         free_node(temp_ptr, 2i32);
     }
-    if history as libc::c_uint !=
-           HISTORY_SPOTLESS as libc::c_int as libc::c_uint {
-        if history as libc::c_uint ==
-               HISTORY_WARNING_ISSUED as libc::c_int as libc::c_uint ||
-               (interaction as libc::c_int) < 3i32 {
-            if selector as libc::c_uint ==
-                   SELECTOR_TERM_AND_LOG as libc::c_int as libc::c_uint {
+    if history as libc::c_uint != HISTORY_SPOTLESS as libc::c_int as libc::c_uint {
+        if history as libc::c_uint == HISTORY_WARNING_ISSUED as libc::c_int as libc::c_uint
+            || (interaction as libc::c_int) < 3i32
+        {
+            if selector as libc::c_uint == SELECTOR_TERM_AND_LOG as libc::c_int as libc::c_uint {
                 selector = SELECTOR_TERM_ONLY;
-                print_nl_cstr(b"(see the transcript file for additional information)\x00"
-                                  as *const u8 as *const libc::c_char);
+                print_nl_cstr(
+                    b"(see the transcript file for additional information)\x00" as *const u8
+                        as *const libc::c_char,
+                );
                 selector = SELECTOR_TERM_AND_LOG
             }
         }
@@ -7728,18 +8422,19 @@ unsafe extern "C" fn final_cleanup() {
             c = 0i32 as small_number;
             for_end = 4i32;
             if c as libc::c_int <= for_end {
-                loop  {
+                loop {
                     if cur_mark[c as usize] != -0xfffffffi32 {
                         delete_token_ref(cur_mark[c as usize]);
                     }
                     let fresh17 = c;
                     c = c + 1;
-                    if !((fresh17 as libc::c_int) < for_end) { break ; }
+                    if !((fresh17 as libc::c_int) < for_end) {
+                        break;
+                    }
                 }
             }
             if sa_root[7] != -0xfffffffi32 {
-                if do_marks(3i32 as small_number, 0i32 as small_number,
-                            sa_root[7]) {
+                if do_marks(3i32 as small_number, 0i32 as small_number, sa_root[7]) {
                     sa_root[7] = -0xfffffffi32
                 }
             }
@@ -7747,29 +8442,35 @@ unsafe extern "C" fn final_cleanup() {
             c = 2i32 as small_number;
             for_end_0 = 3i32;
             if c as libc::c_int <= for_end_0 {
-                loop  {
+                loop {
                     flush_node_list(disc_ptr[c as usize]);
                     let fresh18 = c;
                     c = c + 1;
-                    if !((fresh18 as libc::c_int) < for_end_0) { break ; }
+                    if !((fresh18 as libc::c_int) < for_end_0) {
+                        break;
+                    }
                 }
             }
-            if last_glue != 0x3fffffffi32 { delete_glue_ref(last_glue); }
+            if last_glue != 0x3fffffffi32 {
+                delete_glue_ref(last_glue);
+            }
             store_fmt_file();
-            return
+            return;
         }
-        print_nl_cstr(b"(\\dump is performed only by INITEX)\x00" as *const u8
-                          as *const libc::c_char);
-        return
+        print_nl_cstr(
+            b"(\\dump is performed only by INITEX)\x00" as *const u8 as *const libc::c_char,
+        );
+        return;
     };
 }
 /* Engine initialization */
-static mut stdin_ufile: UFILE =
-    UFILE{handle: 0 as *const libc::c_void as *mut libc::c_void,
-          savedChar: 0,
-          skipNextLF: 0,
-          encodingMode: 0,
-          conversionData: 0 as *const libc::c_void as *mut libc::c_void,};
+static mut stdin_ufile: UFILE = UFILE {
+    handle: 0 as *const libc::c_void as *mut libc::c_void,
+    savedChar: 0,
+    skipNextLF: 0,
+    encodingMode: 0,
+    conversionData: 0 as *const libc::c_void as *mut libc::c_void,
+};
 unsafe extern "C" fn init_io() {
     /* This is largely vestigial at this point */
     stdin_ufile.handle = 0 as *mut libc::c_void;
@@ -7790,11 +8491,10 @@ unsafe extern "C" fn initialize_more_variables() {
     let mut z: hyph_pointer = 0;
     doing_special = 0i32 != 0;
     native_text_size = 128i32;
-    native_text =
-        xmalloc((native_text_size as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<UTF16_code>()
-                                                     as libc::c_ulong)) as
-            *mut UTF16_code;
+    native_text = xmalloc(
+        (native_text_size as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<UTF16_code>() as libc::c_ulong),
+    ) as *mut UTF16_code;
     interaction = 3i32 as libc::c_uchar;
     deletions_allowed = 1i32 != 0;
     set_box_allowed = 1i32 != 0;
@@ -7817,44 +8517,105 @@ unsafe extern "C" fn initialize_more_variables() {
     last_penalty = 0i32;
     last_kern = 0i32;
     page_so_far[7] = 0i32;
-    k =
-        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-            12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 + 256i32 + 13i32 +
-            256i32 + 4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-            (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-            (0x10ffffi32 + 1i32);
-    while k <=
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 23i32 + 256i32 - 1i32 {
-        _xeq_level_array[(k -
-                              (1i32 + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                   12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                   256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                   256i32 + 1i32 + 3i32 * 256i32 +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32))) as usize] =
-            1i32 as uint16_t;
+    k = 1i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + 1i32
+        + 15000i32
+        + 12i32
+        + 9000i32
+        + 1i32
+        + 1i32
+        + 19i32
+        + 256i32
+        + 256i32
+        + 13i32
+        + 256i32
+        + 4i32
+        + 256i32
+        + 1i32
+        + 3i32 * 256i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32);
+    while k
+        <= 1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 23i32
+            + 256i32
+            - 1i32
+    {
+        _xeq_level_array[(k
+            - (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32))) as usize] = 1i32 as uint16_t;
         k += 1
     }
     no_new_control_sequence = 1i32 != 0;
     prim[0].s0 = 0i32;
     prim[0].s1 = 0i32;
     k = 1i32;
-    while k <= 500i32 { prim[k as usize] = prim[0]; k += 1 }
+    while k <= 500i32 {
+        prim[k as usize] = prim[0];
+        k += 1
+    }
     prim_eqtb[0].b16.s0 = 0i32 as uint16_t;
     prim_eqtb[0].b16.s1 = 103i32 as uint16_t;
     prim_eqtb[0].b32.s1 = -0xfffffffi32;
     k = 1i32;
-    while k <= 500i32 { prim_eqtb[k as usize] = prim_eqtb[0]; k += 1 }
+    while k <= 500i32 {
+        prim_eqtb[k as usize] = prim_eqtb[0];
+        k += 1
+    }
     save_ptr = 0i32;
     cur_level = 1i32 as uint16_t;
     cur_group = 0i32 as group_code;
@@ -7873,7 +8634,10 @@ unsafe extern "C" fn initialize_more_variables() {
     radix = 0i32 as small_number;
     cur_order = 0i32 as glue_ord;
     k = 0i32;
-    while k <= 16i32 { read_open[k as usize] = 2i32 as libc::c_uchar; k += 1 }
+    while k <= 16i32 {
+        read_open[k as usize] = 2i32 as libc::c_uchar;
+        k += 1
+    }
     cond_ptr = -0xfffffffi32;
     if_limit = 0i32 as libc::c_uchar;
     cur_if = 0i32 as small_number;
@@ -7914,7 +8678,9 @@ unsafe extern "C" fn initialize_more_variables() {
     }
     hyph_count = 0i32;
     hyph_next = 607i32 + 1i32;
-    if hyph_next > hyph_size { hyph_next = 607i32 }
+    if hyph_next > hyph_size {
+        hyph_next = 607i32
+    }
     output_active = 0i32 != 0;
     insert_penalties = 0i32;
     ligature_present = 0i32 != 0;
@@ -7926,7 +8692,10 @@ unsafe extern "C" fn initialize_more_variables() {
     long_help_seen = 0i32 != 0;
     format_ident = 0i32;
     k = 0i32;
-    while k <= 17i32 { write_open[k as usize] = 0i32 != 0; k += 1 }
+    while k <= 17i32 {
+        write_open[k as usize] = 0i32 != 0;
+        k += 1
+    }
     LR_ptr = -0xfffffffi32;
     LR_problems = 0i32;
     cur_dir = 0i32 as small_number;
@@ -7945,7 +8714,10 @@ unsafe extern "C" fn initialize_more_initex_variables() {
     let mut i: int32_t = 0;
     let mut k: int32_t = 0;
     k = 1i32;
-    while k <= 19i32 { (*mem.offset(k as isize)).b32.s1 = 0i32; k += 1 }
+    while k <= 19i32 {
+        (*mem.offset(k as isize)).b32.s1 = 0i32;
+        k += 1
+    }
     k = 0i32;
     while k <= 19i32 {
         (*mem.offset(k as isize)).b32.s1 = -0xfffffffi32 + 1i32;
@@ -7976,10 +8748,8 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         *mem.offset(k as isize) = *mem.offset(lo_mem_max as isize);
         k += 1
     }
-    (*mem.offset((4999999i32 - 10i32) as isize)).b32.s0 =
-        0x1ffffffi32 +
-            (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                 15000i32 + 5i32);
+    (*mem.offset((4999999i32 - 10i32) as isize)).b32.s0 = 0x1ffffffi32
+        + (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 5i32);
     (*mem.offset((4999999i32 - 9i32) as isize)).b32.s1 = 65535i32 + 1i32;
     (*mem.offset((4999999i32 - 9i32) as isize)).b32.s0 = -0xfffffffi32;
     (*mem.offset((4999999i32 - 7i32) as isize)).b16.s1 = 1i32 as uint16_t;
@@ -7995,1987 +8765,6185 @@ unsafe extern "C" fn initialize_more_initex_variables() {
     hi_mem_min = 4999999i32 - 14i32;
     var_used = 20i32;
     dyn_used = 15i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32) as isize)).b16.s1 =
-        103i32 as uint16_t;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32) as isize)).b32.s1 =
-        -0xfffffffi32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32) as isize)).b16.s0 =
-        0i32 as uint16_t;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32) as isize,
+    ))
+    .b16
+    .s1 = 103i32 as uint16_t;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32) as isize,
+    ))
+    .b32
+    .s1 = -0xfffffffi32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32) as isize,
+    ))
+    .b16
+    .s0 = 0i32 as uint16_t;
     k = 1i32;
     while k <= eqtb_top {
-        *eqtb.offset(k as isize) =
-            *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32) as
-                             isize);
+        *eqtb.offset(k as isize) = *eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32) as isize,
+        );
         k += 1
     }
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32) as
-                      isize)).b32.s1 = 0i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32) as
-                      isize)).b16.s0 = 1i32 as uint16_t;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32) as
-                      isize)).b16.s1 = 119i32 as uint16_t;
-    k =
-        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-            12i32 + 9000i32 + 1i32 + 1i32 + 1i32;
-    while k <=
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 - 1i32 {
-        *eqtb.offset(k as isize) =
-            *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32)
-                             as isize);
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32) as isize,
+    ))
+    .b32
+    .s1 = 0i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32) as isize,
+    ))
+    .b16
+    .s0 = 1i32 as uint16_t;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32) as isize,
+    ))
+    .b16
+    .s1 = 119i32 as uint16_t;
+    k = 1i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + 1i32
+        + 15000i32
+        + 12i32
+        + 9000i32
+        + 1i32
+        + 1i32
+        + 1i32;
+    while k
+        <= 1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            - 1i32
+    {
+        *eqtb.offset(k as isize) = *eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32) as isize,
+        );
         k += 1
     }
     let ref mut fresh20 = (*mem.offset(0)).b32.s1;
     *fresh20 += 531i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 0i32) as isize)).b32.s1 =
-        -0xfffffffi32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 0i32) as isize)).b16.s1 =
-        120i32 as uint16_t;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 0i32) as isize)).b16.s0 =
-        1i32 as uint16_t;
-    k =
-        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-            12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 + 256i32 + 13i32 +
-            256i32;
-    while k <=
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 - 1i32 {
-        *eqtb.offset(k as isize) =
-            *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 0i32) as isize);
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 0i32) as isize,
+    ))
+    .b32
+    .s1 = -0xfffffffi32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 0i32) as isize,
+    ))
+    .b16
+    .s1 = 120i32 as uint16_t;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 0i32) as isize,
+    ))
+    .b16
+    .s0 = 1i32 as uint16_t;
+    k = 1i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + 1i32
+        + 15000i32
+        + 12i32
+        + 9000i32
+        + 1i32
+        + 1i32
+        + 19i32
+        + 256i32
+        + 256i32
+        + 13i32
+        + 256i32;
+    while k
+        <= 1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            - 1i32
+    {
+        *eqtb.offset(k as isize) = *eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 0i32) as isize,
+        );
         k += 1
     }
-    k =
-        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-            12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 + 256i32 + 1i32;
-    while k <=
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 - 1i32 {
-        *eqtb.offset(k as isize) =
-            *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32) as
-                             isize);
+    k = 1i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + 1i32
+        + 15000i32
+        + 12i32
+        + 9000i32
+        + 1i32
+        + 1i32
+        + 19i32
+        + 256i32
+        + 256i32
+        + 1i32;
+    while k
+        <= 1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            - 1i32
+    {
+        *eqtb.offset(k as isize) = *eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32) as isize,
+        );
         k += 1
     }
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32) as
-                      isize)).b32.s1 = -0xfffffffi32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32) as
-                      isize)).b16.s1 = 121i32 as uint16_t;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32) as
-                      isize)).b16.s0 = 1i32 as uint16_t;
-    k =
-        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-            12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 + 256i32 + 13i32 +
-            256i32 + 4i32 + 1i32;
-    while k <=
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 - 1i32 {
-        *eqtb.offset(k as isize) =
-            *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32) as isize);
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32) as isize,
+    ))
+    .b32
+    .s1 = -0xfffffffi32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32) as isize,
+    ))
+    .b16
+    .s1 = 121i32 as uint16_t;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32) as isize,
+    ))
+    .b16
+    .s0 = 1i32 as uint16_t;
+    k = 1i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + 1i32
+        + 15000i32
+        + 12i32
+        + 9000i32
+        + 1i32
+        + 1i32
+        + 19i32
+        + 256i32
+        + 256i32
+        + 13i32
+        + 256i32
+        + 4i32
+        + 1i32;
+    while k
+        <= 1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            - 1i32
+    {
+        *eqtb.offset(k as isize) = *eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32) as isize,
+        );
         k += 1
     }
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32) as
-                      isize)).b32.s1 = 0i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32) as
-                      isize)).b16.s1 = 122i32 as uint16_t;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32) as
-                      isize)).b16.s0 = 1i32 as uint16_t;
-    k =
-        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-            12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 + 256i32 + 13i32 +
-            256i32 + 4i32 + 256i32 + 1i32;
-    while k <=
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 - 1i32 {
-        *eqtb.offset(k as isize) =
-            *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32) as isize);
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32) as isize,
+    ))
+    .b32
+    .s1 = 0i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32) as isize,
+    ))
+    .b16
+    .s1 = 122i32 as uint16_t;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32) as isize,
+    ))
+    .b16
+    .s0 = 1i32 as uint16_t;
+    k = 1i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + 1i32
+        + 15000i32
+        + 12i32
+        + 9000i32
+        + 1i32
+        + 1i32
+        + 19i32
+        + 256i32
+        + 256i32
+        + 13i32
+        + 256i32
+        + 4i32
+        + 256i32
+        + 1i32;
+    while k
+        <= 1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            - 1i32
+    {
+        *eqtb.offset(k as isize) = *eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32) as isize,
+        );
         k += 1
     }
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32) as isize)).b32.s1 = 0i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32) as isize)).b16.s1 =
-        122i32 as uint16_t;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32) as isize)).b16.s0 = 1i32 as uint16_t;
-    k =
-        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-            12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 + 256i32 + 13i32 +
-            256i32 + 4i32 + 256i32 + 1i32 + 3i32 * 256i32 + 1i32;
-    while k <=
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) - 1i32 {
-        *eqtb.offset(k as isize) =
-            *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32) as isize);
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32) as isize,
+    ))
+    .b32
+    .s1 = 0i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32) as isize,
+    ))
+    .b16
+    .s1 = 122i32 as uint16_t;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32) as isize,
+    ))
+    .b16
+    .s0 = 1i32 as uint16_t;
+    k = 1i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + 1i32
+        + 15000i32
+        + 12i32
+        + 9000i32
+        + 1i32
+        + 1i32
+        + 19i32
+        + 256i32
+        + 256i32
+        + 13i32
+        + 256i32
+        + 4i32
+        + 256i32
+        + 1i32
+        + 3i32 * 256i32
+        + 1i32;
+    while k
+        <= 1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            - 1i32
+    {
+        *eqtb.offset(k as isize) = *eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32) as isize,
+        );
         k += 1
     }
     k = 0i32;
     while k <= 0x10ffffi32 + 1i32 - 1i32 {
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 + k) as
-                          isize)).b32.s1 = 12i32;
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + k) as
-                          isize)).b32.s1 = k;
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + k) as isize)).b32.s1 =
-            1000i32;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + k) as isize,
+        ))
+        .b32
+        .s1 = 12i32;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + k) as isize,
+        ))
+        .b32
+        .s1 = k;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + k) as isize,
+        ))
+        .b32
+        .s1 = 1000i32;
         k += 1
     }
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + 13i32) as isize)).b32.s1 = 5i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + 32i32) as isize)).b32.s1 = 10i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + 92i32) as isize)).b32.s1 = 0i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + 37i32) as isize)).b32.s1 = 14i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + 127i32) as isize)).b32.s1 = 15i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32) as isize)).b32.s1 = 9i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + 13i32) as isize,
+    ))
+    .b32
+    .s1 = 5i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + 32i32) as isize,
+    ))
+    .b32
+    .s1 = 10i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + 92i32) as isize,
+    ))
+    .b32
+    .s1 = 0i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + 37i32) as isize,
+    ))
+    .b32
+    .s1 = 14i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + 127i32) as isize,
+    ))
+    .b32
+    .s1 = 15i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32) as isize,
+    ))
+    .b32
+    .s1 = 9i32;
     k = '0' as i32;
     while k <= '9' as i32 {
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + k) as
-                          isize)).b32.s1 =
-            (k as
-                 libc::c_uint).wrapping_add((7i32 as libc::c_uint &
-                                                 0x7i32 as libc::c_uint) <<
-                                                21i32) as int32_t;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + k) as isize,
+        ))
+        .b32
+        .s1 = (k as libc::c_uint)
+            .wrapping_add((7i32 as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
+            as int32_t;
         k += 1
     }
     k = 'A' as i32;
     while k <= 'Z' as i32 {
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 + k) as
-                          isize)).b32.s1 = 11i32;
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 + (k + 32i32)) as
-                          isize)).b32.s1 = 11i32;
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + k) as
-                          isize)).b32.s1 =
-            (k as
-                 libc::c_uint).wrapping_add((1i32 as libc::c_uint &
-                                                 0xffi32 as libc::c_uint) <<
-                                                24i32).wrapping_add((7i32 as
-                                                                         libc::c_uint
-                                                                         &
-                                                                         0x7i32
-                                                                             as
-                                                                             libc::c_uint)
-                                                                        <<
-                                                                        21i32)
-                as int32_t;
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (k + 32i32)) as isize)).b32.s1 =
-            ((k + 32i32) as
-                 libc::c_uint).wrapping_add((1i32 as libc::c_uint &
-                                                 0xffi32 as libc::c_uint) <<
-                                                24i32).wrapping_add((7i32 as
-                                                                         libc::c_uint
-                                                                         &
-                                                                         0x7i32
-                                                                             as
-                                                                             libc::c_uint)
-                                                                        <<
-                                                                        21i32)
-                as int32_t;
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + k) as isize)).b32.s1 =
-            k + 32i32;
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (k + 32i32)) as
-                          isize)).b32.s1 = k + 32i32;
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + k) as
-                          isize)).b32.s1 = k;
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (k + 32i32)) as isize)).b32.s1 = k;
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + k) as isize)).b32.s1 =
-            999i32;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + k) as isize,
+        ))
+        .b32
+        .s1 = 11i32;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (k + 32i32)) as isize,
+        ))
+        .b32
+        .s1 = 11i32;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + k) as isize,
+        ))
+        .b32
+        .s1 = (k as libc::c_uint)
+            .wrapping_add((1i32 as libc::c_uint & 0xffi32 as libc::c_uint) << 24i32)
+            .wrapping_add((7i32 as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
+            as int32_t;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (k + 32i32)) as isize,
+        ))
+        .b32
+        .s1 = ((k + 32i32) as libc::c_uint)
+            .wrapping_add((1i32 as libc::c_uint & 0xffi32 as libc::c_uint) << 24i32)
+            .wrapping_add((7i32 as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
+            as int32_t;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + k) as isize,
+        ))
+        .b32
+        .s1 = k + 32i32;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (k + 32i32)) as isize,
+        ))
+        .b32
+        .s1 = k + 32i32;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + k) as isize,
+        ))
+        .b32
+        .s1 = k;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (k + 32i32)) as isize,
+        ))
+        .b32
+        .s1 = k;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + k) as isize,
+        ))
+        .b32
+        .s1 = 999i32;
         k += 1
     }
-    k =
-        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-            12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 + 256i32 + 13i32 +
-            256i32 + 4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-            (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-            (0x10ffffi32 + 1i32);
-    while k <=
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  - 1i32 {
+    k = 1i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + 1i32
+        + 15000i32
+        + 12i32
+        + 9000i32
+        + 1i32
+        + 1i32
+        + 19i32
+        + 256i32
+        + 256i32
+        + 13i32
+        + 256i32
+        + 4i32
+        + 256i32
+        + 1i32
+        + 3i32 * 256i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32);
+    while k
+        <= 1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            - 1i32
+    {
         (*eqtb.offset(k as isize)).b32.s1 = 0i32;
         k += 1
     }
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 55i32) as isize)).b32.s1 =
-        256i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 56i32) as isize)).b32.s1 =
-        -1i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 17i32) as isize)).b32.s1 =
-        1000i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 1i32) as isize)).b32.s1 =
-        10000i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 41i32) as isize)).b32.s1 = 1i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 40i32) as isize)).b32.s1 =
-        25i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 45i32) as isize)).b32.s1 =
-        '\\' as i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 48i32) as isize)).b32.s1 =
-        13i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 55i32) as isize,
+    ))
+    .b32
+    .s1 = 256i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 56i32) as isize,
+    ))
+    .b32
+    .s1 = -1i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 17i32) as isize,
+    ))
+    .b32
+    .s1 = 1000i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32) as isize,
+    ))
+    .b32
+    .s1 = 10000i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 41i32) as isize,
+    ))
+    .b32
+    .s1 = 1i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 40i32) as isize,
+    ))
+    .b32
+    .s1 = 25i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 45i32) as isize,
+    ))
+    .b32
+    .s1 = '\\' as i32;
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 48i32) as isize,
+    ))
+    .b32
+    .s1 = 13i32;
     k = 0i32;
     while k <= 0x10ffffi32 + 1i32 - 1i32 {
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32
-                           + 256i32 + k) as isize)).b32.s1 = -1i32;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 85i32
+                + 256i32
+                + k) as isize,
+        ))
+        .b32
+        .s1 = -1i32;
         k += 1
     }
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 85i32 + 256i32 + 46i32) as
-                      isize)).b32.s1 = 0i32;
-    k =
-        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-            12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 + 256i32 + 13i32 +
-            256i32 + 4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-            (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-            (0x10ffffi32 + 1i32) + 85i32 + 256i32 + (0x10ffffi32 + 1i32);
-    while k <=
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 23i32 + 256i32 - 1i32 {
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + 46i32) as isize,
+    ))
+    .b32
+    .s1 = 0i32;
+    k = 1i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + 1i32
+        + 15000i32
+        + 12i32
+        + 9000i32
+        + 1i32
+        + 1i32
+        + 19i32
+        + 256i32
+        + 256i32
+        + 13i32
+        + 256i32
+        + 4i32
+        + 256i32
+        + 1i32
+        + 3i32 * 256i32
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + (0x10ffffi32 + 1i32)
+        + 85i32
+        + 256i32
+        + (0x10ffffi32 + 1i32);
+    while k
+        <= 1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 23i32
+            + 256i32
+            - 1i32
+    {
         (*eqtb.offset(k as isize)).b32.s1 = 0i32;
         k += 1
     }
     prim_used = 500i32;
-    hash_used =
-        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32;
+    hash_used = 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32;
     hash_high = 0i32;
     cs_count = 0i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 9i32) as isize)).b16.s1 =
-        118i32 as uint16_t;
-    (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 9i32) as isize)).s1 =
-        maketexstring(b"notexpanded:\x00" as *const u8 as
-                          *const libc::c_char);
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 11i32) as isize)).b16.s1 =
-        39i32 as uint16_t;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 11i32) as isize)).b32.s1 = 1i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 11i32) as isize)).b16.s0 = 1i32 as uint16_t;
-    (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 11i32) as isize)).s1 =
-        maketexstring(b"primitive\x00" as *const u8 as *const libc::c_char);
+    (*eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 9i32) as isize,
+    ))
+    .b16
+    .s1 = 118i32 as uint16_t;
+    (*hash.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 9i32) as isize,
+    ))
+    .s1 = maketexstring(b"notexpanded:\x00" as *const u8 as *const libc::c_char);
+    (*eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 11i32) as isize,
+    ))
+    .b16
+    .s1 = 39i32 as uint16_t;
+    (*eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 11i32) as isize,
+    ))
+    .b32
+    .s1 = 1i32;
+    (*eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 11i32) as isize,
+    ))
+    .b16
+    .s0 = 1i32 as uint16_t;
+    (*hash.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 11i32) as isize,
+    ))
+    .s1 = maketexstring(b"primitive\x00" as *const u8 as *const libc::c_char);
     k = -(35111i64 as int32_t);
     while k as libc::c_long <= 35111i64 {
         _trie_op_hash_array[(k as libc::c_long - -35111i64) as usize] = 0i32;
         k += 1
     }
     k = 0i32;
-    while k <= 255i32 { trie_used[k as usize] = 0i32 as trie_opcode; k += 1 }
+    while k <= 255i32 {
+        trie_used[k as usize] = 0i32 as trie_opcode;
+        k += 1
+    }
     max_op_used = 0i32 as trie_opcode;
     trie_op_ptr = 0i32;
     trie_not_ready = 1i32 != 0;
-    (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 0i32) as isize)).s1 =
-        maketexstring(b"inaccessible\x00" as *const u8 as
-                          *const libc::c_char);
-    format_ident =
-        maketexstring(b" (INITEX)\x00" as *const u8 as *const libc::c_char);
-    (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 8i32) as isize)).s1 =
-        maketexstring(b"endwrite\x00" as *const u8 as *const libc::c_char);
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 8i32) as isize)).b16.s0 = 1i32 as uint16_t;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 8i32) as isize)).b16.s1 =
-        115i32 as uint16_t;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 8i32) as isize)).b32.s1 = -0xfffffffi32;
+    (*hash.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 0i32) as isize,
+    ))
+    .s1 = maketexstring(b"inaccessible\x00" as *const u8 as *const libc::c_char);
+    format_ident = maketexstring(b" (INITEX)\x00" as *const u8 as *const libc::c_char);
+    (*hash.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32) as isize,
+    ))
+    .s1 = maketexstring(b"endwrite\x00" as *const u8 as *const libc::c_char);
+    (*eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32) as isize,
+    ))
+    .b16
+    .s0 = 1i32 as uint16_t;
+    (*eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32) as isize,
+    ))
+    .b16
+    .s1 = 115i32 as uint16_t;
+    (*eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32) as isize,
+    ))
+    .b32
+    .s1 = -0xfffffffi32;
     max_reg_num = 32767i32;
     max_reg_help_line =
-        b"A register number must be between 0 and 32767.\x00" as *const u8 as
-            *const libc::c_char;
+        b"A register number must be between 0 and 32767.\x00" as *const u8 as *const libc::c_char;
     i = 0i32;
-    while i <= 6i32 { sa_root[i as usize] = -0xfffffffi32; i += 1 }
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                       256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                       + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                       (0x10ffffi32 + 1i32) + 82i32) as isize)).b32.s1 =
-        63i32;
+    while i <= 6i32 {
+        sa_root[i as usize] = -0xfffffffi32;
+        i += 1
+    }
+    (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 82i32) as isize,
+    ))
+    .b32
+    .s1 = 63i32;
 }
 /*:1370*/
 /*1371: */
 unsafe extern "C" fn initialize_primitives() {
     no_new_control_sequence = 0i32 != 0;
     first = 0i32;
-    primitive(b"lineskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 0i32);
-    primitive(b"baselineskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 1i32);
-    primitive(b"parskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 2i32);
-    primitive(b"abovedisplayskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 3i32);
-    primitive(b"belowdisplayskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 4i32);
-    primitive(b"abovedisplayshortskip\x00" as *const u8 as
-                  *const libc::c_char, 76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 5i32);
-    primitive(b"belowdisplayshortskip\x00" as *const u8 as
-                  *const libc::c_char, 76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 6i32);
-    primitive(b"leftskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 7i32);
-    primitive(b"rightskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 8i32);
-    primitive(b"topskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 9i32);
-    primitive(b"splittopskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 10i32);
-    primitive(b"tabskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 11i32);
-    primitive(b"spaceskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 12i32);
-    primitive(b"xspaceskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 13i32);
-    primitive(b"parfillskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 14i32);
-    primitive(b"XeTeXlinebreakskip\x00" as *const u8 as *const libc::c_char,
-              76i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 15i32);
-    primitive(b"thinmuskip\x00" as *const u8 as *const libc::c_char,
-              77i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 16i32);
-    primitive(b"medmuskip\x00" as *const u8 as *const libc::c_char,
-              77i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 17i32);
-    primitive(b"thickmuskip\x00" as *const u8 as *const libc::c_char,
-              77i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 18i32);
-    primitive(b"output\x00" as *const u8 as *const libc::c_char,
-              73i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 1i32);
-    primitive(b"everypar\x00" as *const u8 as *const libc::c_char,
-              73i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 2i32);
-    primitive(b"everymath\x00" as *const u8 as *const libc::c_char,
-              73i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 3i32);
-    primitive(b"everydisplay\x00" as *const u8 as *const libc::c_char,
-              73i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 4i32);
-    primitive(b"everyhbox\x00" as *const u8 as *const libc::c_char,
-              73i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 5i32);
-    primitive(b"everyvbox\x00" as *const u8 as *const libc::c_char,
-              73i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 6i32);
-    primitive(b"everyjob\x00" as *const u8 as *const libc::c_char,
-              73i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 7i32);
-    primitive(b"everycr\x00" as *const u8 as *const libc::c_char,
-              73i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 8i32);
-    primitive(b"errhelp\x00" as *const u8 as *const libc::c_char,
-              73i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 9i32);
-    primitive(b"everyeof\x00" as *const u8 as *const libc::c_char,
-              73i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 10i32);
-    primitive(b"XeTeXinterchartoks\x00" as *const u8 as *const libc::c_char,
-              73i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 11i32);
-    primitive(b"TectonicCodaTokens\x00" as *const u8 as *const libc::c_char,
-              73i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 12i32);
-    primitive(b"pretolerance\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 0i32);
-    primitive(b"tolerance\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32);
-    primitive(b"linepenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 2i32);
-    primitive(b"hyphenpenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 3i32);
-    primitive(b"exhyphenpenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 4i32);
-    primitive(b"clubpenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 5i32);
-    primitive(b"widowpenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 6i32);
-    primitive(b"displaywidowpenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 7i32);
-    primitive(b"brokenpenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 8i32);
-    primitive(b"binoppenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 9i32);
-    primitive(b"relpenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 10i32);
-    primitive(b"predisplaypenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 11i32);
-    primitive(b"postdisplaypenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 12i32);
-    primitive(b"interlinepenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 13i32);
-    primitive(b"doublehyphendemerits\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 14i32);
-    primitive(b"finalhyphendemerits\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 15i32);
-    primitive(b"adjdemerits\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 16i32);
-    primitive(b"mag\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 17i32);
-    primitive(b"delimiterfactor\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 18i32);
-    primitive(b"looseness\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 19i32);
-    primitive(b"time\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 20i32);
-    primitive(b"day\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 21i32);
-    primitive(b"month\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 22i32);
-    primitive(b"year\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 23i32);
-    primitive(b"showboxbreadth\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 24i32);
-    primitive(b"showboxdepth\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 25i32);
-    primitive(b"hbadness\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 26i32);
-    primitive(b"vbadness\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 27i32);
-    primitive(b"pausing\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 28i32);
-    primitive(b"tracingonline\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 29i32);
-    primitive(b"tracingmacros\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 30i32);
-    primitive(b"tracingstats\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 31i32);
-    primitive(b"tracingparagraphs\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 32i32);
-    primitive(b"tracingpages\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 33i32);
-    primitive(b"tracingoutput\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 34i32);
-    primitive(b"tracinglostchars\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 35i32);
-    primitive(b"tracingcommands\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 36i32);
-    primitive(b"tracingrestores\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 37i32);
-    primitive(b"uchyph\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 38i32);
-    primitive(b"outputpenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 39i32);
-    primitive(b"maxdeadcycles\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 40i32);
-    primitive(b"hangafter\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 41i32);
-    primitive(b"floatingpenalty\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 42i32);
-    primitive(b"globaldefs\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 43i32);
-    primitive(b"fam\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 44i32);
-    primitive(b"escapechar\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 45i32);
-    primitive(b"defaulthyphenchar\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 46i32);
-    primitive(b"defaultskewchar\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 47i32);
-    primitive(b"endlinechar\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 48i32);
-    primitive(b"newlinechar\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 49i32);
-    primitive(b"language\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 50i32);
-    primitive(b"lefthyphenmin\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 51i32);
-    primitive(b"righthyphenmin\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 52i32);
-    primitive(b"holdinginserts\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 53i32);
-    primitive(b"errorcontextlines\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 54i32);
-    primitive(b"XeTeXlinebreakpenalty\x00" as *const u8 as
-                  *const libc::c_char, 74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 69i32);
-    primitive(b"XeTeXprotrudechars\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 70i32);
-    primitive(b"parindent\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 0i32);
-    primitive(b"mathsurround\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 1i32);
-    primitive(b"lineskiplimit\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 2i32);
-    primitive(b"hsize\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 3i32);
-    primitive(b"vsize\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 4i32);
-    primitive(b"maxdepth\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 5i32);
-    primitive(b"splitmaxdepth\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 6i32);
-    primitive(b"boxmaxdepth\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 7i32);
-    primitive(b"hfuzz\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 8i32);
-    primitive(b"vfuzz\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 9i32);
-    primitive(b"delimitershortfall\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 10i32);
-    primitive(b"nulldelimiterspace\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 11i32);
-    primitive(b"scriptspace\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 12i32);
-    primitive(b"predisplaysize\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 13i32);
-    primitive(b"displaywidth\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 14i32);
-    primitive(b"displayindent\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 15i32);
-    primitive(b"overfullrule\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 16i32);
-    primitive(b"hangindent\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 17i32);
-    primitive(b"hoffset\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 18i32);
-    primitive(b"voffset\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 19i32);
-    primitive(b"emergencystretch\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 20i32);
-    primitive(b"pdfpagewidth\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 21i32);
-    primitive(b"pdfpageheight\x00" as *const u8 as *const libc::c_char,
-              75i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + (0x10ffffi32 + 1i32) + 22i32);
-    primitive(b" \x00" as *const u8 as *const libc::c_char, 64i32 as uint16_t,
-              0i32);
-    primitive(b"/\x00" as *const u8 as *const libc::c_char, 44i32 as uint16_t,
-              0i32);
-    primitive(b"accent\x00" as *const u8 as *const libc::c_char,
-              45i32 as uint16_t, 0i32);
-    primitive(b"advance\x00" as *const u8 as *const libc::c_char,
-              92i32 as uint16_t, 0i32);
-    primitive(b"afterassignment\x00" as *const u8 as *const libc::c_char,
-              40i32 as uint16_t, 0i32);
-    primitive(b"aftergroup\x00" as *const u8 as *const libc::c_char,
-              41i32 as uint16_t, 0i32);
-    primitive(b"begingroup\x00" as *const u8 as *const libc::c_char,
-              61i32 as uint16_t, 0i32);
-    primitive(b"char\x00" as *const u8 as *const libc::c_char,
-              16i32 as uint16_t, 0i32);
-    primitive(b"csname\x00" as *const u8 as *const libc::c_char,
-              109i32 as uint16_t, 0i32);
-    primitive(b"delimiter\x00" as *const u8 as *const libc::c_char,
-              15i32 as uint16_t, 0i32);
-    primitive(b"XeTeXdelimiter\x00" as *const u8 as *const libc::c_char,
-              15i32 as uint16_t, 1i32);
-    primitive(b"Udelimiter\x00" as *const u8 as *const libc::c_char,
-              15i32 as uint16_t, 1i32);
-    primitive(b"divide\x00" as *const u8 as *const libc::c_char,
-              94i32 as uint16_t, 0i32);
-    primitive(b"endcsname\x00" as *const u8 as *const libc::c_char,
-              67i32 as uint16_t, 0i32);
-    primitive(b"endgroup\x00" as *const u8 as *const libc::c_char,
-              62i32 as uint16_t, 0i32);
-    (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 2i32) as isize)).s1 =
-        maketexstring(b"endgroup\x00" as *const u8 as *const libc::c_char);
-    *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 2i32) as isize) =
-        *eqtb.offset(cur_val as isize);
-    primitive(b"expandafter\x00" as *const u8 as *const libc::c_char,
-              104i32 as uint16_t, 0i32);
-    primitive(b"font\x00" as *const u8 as *const libc::c_char,
-              90i32 as uint16_t, 0i32);
-    primitive(b"fontdimen\x00" as *const u8 as *const libc::c_char,
-              78i32 as uint16_t, 0i32);
-    primitive(b"halign\x00" as *const u8 as *const libc::c_char,
-              32i32 as uint16_t, 0i32);
-    primitive(b"hrule\x00" as *const u8 as *const libc::c_char,
-              36i32 as uint16_t, 0i32);
-    primitive(b"ignorespaces\x00" as *const u8 as *const libc::c_char,
-              39i32 as uint16_t, 0i32);
-    primitive(b"insert\x00" as *const u8 as *const libc::c_char,
-              37i32 as uint16_t, 0i32);
-    primitive(b"mark\x00" as *const u8 as *const libc::c_char,
-              18i32 as uint16_t, 0i32);
-    primitive(b"mathaccent\x00" as *const u8 as *const libc::c_char,
-              46i32 as uint16_t, 0i32);
-    primitive(b"XeTeXmathaccent\x00" as *const u8 as *const libc::c_char,
-              46i32 as uint16_t, 1i32);
-    primitive(b"Umathaccent\x00" as *const u8 as *const libc::c_char,
-              46i32 as uint16_t, 1i32);
-    primitive(b"mathchar\x00" as *const u8 as *const libc::c_char,
-              17i32 as uint16_t, 0i32);
-    primitive(b"XeTeXmathcharnum\x00" as *const u8 as *const libc::c_char,
-              17i32 as uint16_t, 1i32);
-    primitive(b"Umathcharnum\x00" as *const u8 as *const libc::c_char,
-              17i32 as uint16_t, 1i32);
-    primitive(b"XeTeXmathchar\x00" as *const u8 as *const libc::c_char,
-              17i32 as uint16_t, 2i32);
-    primitive(b"Umathchar\x00" as *const u8 as *const libc::c_char,
-              17i32 as uint16_t, 2i32);
-    primitive(b"mathchoice\x00" as *const u8 as *const libc::c_char,
-              54i32 as uint16_t, 0i32);
-    primitive(b"multiply\x00" as *const u8 as *const libc::c_char,
-              93i32 as uint16_t, 0i32);
-    primitive(b"noalign\x00" as *const u8 as *const libc::c_char,
-              34i32 as uint16_t, 0i32);
-    primitive(b"noboundary\x00" as *const u8 as *const libc::c_char,
-              65i32 as uint16_t, 0i32);
-    primitive(b"noexpand\x00" as *const u8 as *const libc::c_char,
-              105i32 as uint16_t, 0i32);
-    primitive(b"primitive\x00" as *const u8 as *const libc::c_char,
-              105i32 as uint16_t, 1i32);
-    primitive(b"nonscript\x00" as *const u8 as *const libc::c_char,
-              55i32 as uint16_t, 0i32);
-    primitive(b"omit\x00" as *const u8 as *const libc::c_char,
-              63i32 as uint16_t, 0i32);
-    primitive(b"parshape\x00" as *const u8 as *const libc::c_char,
-              85i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 0i32);
-    primitive(b"penalty\x00" as *const u8 as *const libc::c_char,
-              42i32 as uint16_t, 0i32);
-    primitive(b"prevgraf\x00" as *const u8 as *const libc::c_char,
-              81i32 as uint16_t, 0i32);
-    primitive(b"radical\x00" as *const u8 as *const libc::c_char,
-              66i32 as uint16_t, 0i32);
-    primitive(b"XeTeXradical\x00" as *const u8 as *const libc::c_char,
-              66i32 as uint16_t, 1i32);
-    primitive(b"Uradical\x00" as *const u8 as *const libc::c_char,
-              66i32 as uint16_t, 1i32);
-    primitive(b"read\x00" as *const u8 as *const libc::c_char,
-              98i32 as uint16_t, 0i32);
-    primitive(b"relax\x00" as *const u8 as *const libc::c_char,
-              0i32 as uint16_t, 0x10ffffi32 + 1i32);
-    (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 7i32) as isize)).s1 =
-        maketexstring(b"relax\x00" as *const u8 as *const libc::c_char);
-    *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 7i32) as isize) =
-        *eqtb.offset(cur_val as isize);
-    primitive(b"setbox\x00" as *const u8 as *const libc::c_char,
-              100i32 as uint16_t, 0i32);
-    primitive(b"the\x00" as *const u8 as *const libc::c_char,
-              111i32 as uint16_t, 0i32);
-    primitive(b"toks\x00" as *const u8 as *const libc::c_char,
-              72i32 as uint16_t, 0i32);
-    primitive(b"vadjust\x00" as *const u8 as *const libc::c_char,
-              38i32 as uint16_t, 0i32);
-    primitive(b"valign\x00" as *const u8 as *const libc::c_char,
-              33i32 as uint16_t, 0i32);
-    primitive(b"vcenter\x00" as *const u8 as *const libc::c_char,
-              56i32 as uint16_t, 0i32);
-    primitive(b"vrule\x00" as *const u8 as *const libc::c_char,
-              35i32 as uint16_t, 0i32);
-    primitive(b"par\x00" as *const u8 as *const libc::c_char,
-              13i32 as uint16_t, 0x10ffffi32 + 1i32);
+    primitive(
+        b"lineskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 0i32,
+    );
+    primitive(
+        b"baselineskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 1i32,
+    );
+    primitive(
+        b"parskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 2i32,
+    );
+    primitive(
+        b"abovedisplayskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 3i32,
+    );
+    primitive(
+        b"belowdisplayskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 4i32,
+    );
+    primitive(
+        b"abovedisplayshortskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 5i32,
+    );
+    primitive(
+        b"belowdisplayshortskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 6i32,
+    );
+    primitive(
+        b"leftskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 7i32,
+    );
+    primitive(
+        b"rightskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 8i32,
+    );
+    primitive(
+        b"topskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 9i32,
+    );
+    primitive(
+        b"splittopskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 10i32,
+    );
+    primitive(
+        b"tabskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 11i32,
+    );
+    primitive(
+        b"spaceskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 12i32,
+    );
+    primitive(
+        b"xspaceskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 13i32,
+    );
+    primitive(
+        b"parfillskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 14i32,
+    );
+    primitive(
+        b"XeTeXlinebreakskip\x00" as *const u8 as *const libc::c_char,
+        76i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 15i32,
+    );
+    primitive(
+        b"thinmuskip\x00" as *const u8 as *const libc::c_char,
+        77i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 16i32,
+    );
+    primitive(
+        b"medmuskip\x00" as *const u8 as *const libc::c_char,
+        77i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 17i32,
+    );
+    primitive(
+        b"thickmuskip\x00" as *const u8 as *const libc::c_char,
+        77i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 18i32,
+    );
+    primitive(
+        b"output\x00" as *const u8 as *const libc::c_char,
+        73i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 1i32,
+    );
+    primitive(
+        b"everypar\x00" as *const u8 as *const libc::c_char,
+        73i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 2i32,
+    );
+    primitive(
+        b"everymath\x00" as *const u8 as *const libc::c_char,
+        73i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 3i32,
+    );
+    primitive(
+        b"everydisplay\x00" as *const u8 as *const libc::c_char,
+        73i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 4i32,
+    );
+    primitive(
+        b"everyhbox\x00" as *const u8 as *const libc::c_char,
+        73i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 5i32,
+    );
+    primitive(
+        b"everyvbox\x00" as *const u8 as *const libc::c_char,
+        73i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 6i32,
+    );
+    primitive(
+        b"everyjob\x00" as *const u8 as *const libc::c_char,
+        73i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 7i32,
+    );
+    primitive(
+        b"everycr\x00" as *const u8 as *const libc::c_char,
+        73i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 8i32,
+    );
+    primitive(
+        b"errhelp\x00" as *const u8 as *const libc::c_char,
+        73i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 9i32,
+    );
+    primitive(
+        b"everyeof\x00" as *const u8 as *const libc::c_char,
+        73i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 10i32,
+    );
+    primitive(
+        b"XeTeXinterchartoks\x00" as *const u8 as *const libc::c_char,
+        73i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 11i32,
+    );
+    primitive(
+        b"TectonicCodaTokens\x00" as *const u8 as *const libc::c_char,
+        73i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 12i32,
+    );
+    primitive(
+        b"pretolerance\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 0i32,
+    );
+    primitive(
+        b"tolerance\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32,
+    );
+    primitive(
+        b"linepenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 2i32,
+    );
+    primitive(
+        b"hyphenpenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 3i32,
+    );
+    primitive(
+        b"exhyphenpenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 4i32,
+    );
+    primitive(
+        b"clubpenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 5i32,
+    );
+    primitive(
+        b"widowpenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 6i32,
+    );
+    primitive(
+        b"displaywidowpenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 7i32,
+    );
+    primitive(
+        b"brokenpenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 8i32,
+    );
+    primitive(
+        b"binoppenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 9i32,
+    );
+    primitive(
+        b"relpenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 10i32,
+    );
+    primitive(
+        b"predisplaypenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 11i32,
+    );
+    primitive(
+        b"postdisplaypenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 12i32,
+    );
+    primitive(
+        b"interlinepenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 13i32,
+    );
+    primitive(
+        b"doublehyphendemerits\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 14i32,
+    );
+    primitive(
+        b"finalhyphendemerits\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 15i32,
+    );
+    primitive(
+        b"adjdemerits\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 16i32,
+    );
+    primitive(
+        b"mag\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 17i32,
+    );
+    primitive(
+        b"delimiterfactor\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 18i32,
+    );
+    primitive(
+        b"looseness\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 19i32,
+    );
+    primitive(
+        b"time\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 20i32,
+    );
+    primitive(
+        b"day\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 21i32,
+    );
+    primitive(
+        b"month\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 22i32,
+    );
+    primitive(
+        b"year\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 23i32,
+    );
+    primitive(
+        b"showboxbreadth\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 24i32,
+    );
+    primitive(
+        b"showboxdepth\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 25i32,
+    );
+    primitive(
+        b"hbadness\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 26i32,
+    );
+    primitive(
+        b"vbadness\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 27i32,
+    );
+    primitive(
+        b"pausing\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 28i32,
+    );
+    primitive(
+        b"tracingonline\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 29i32,
+    );
+    primitive(
+        b"tracingmacros\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 30i32,
+    );
+    primitive(
+        b"tracingstats\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 31i32,
+    );
+    primitive(
+        b"tracingparagraphs\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 32i32,
+    );
+    primitive(
+        b"tracingpages\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 33i32,
+    );
+    primitive(
+        b"tracingoutput\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 34i32,
+    );
+    primitive(
+        b"tracinglostchars\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 35i32,
+    );
+    primitive(
+        b"tracingcommands\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 36i32,
+    );
+    primitive(
+        b"tracingrestores\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 37i32,
+    );
+    primitive(
+        b"uchyph\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 38i32,
+    );
+    primitive(
+        b"outputpenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 39i32,
+    );
+    primitive(
+        b"maxdeadcycles\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 40i32,
+    );
+    primitive(
+        b"hangafter\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 41i32,
+    );
+    primitive(
+        b"floatingpenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 42i32,
+    );
+    primitive(
+        b"globaldefs\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 43i32,
+    );
+    primitive(
+        b"fam\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 44i32,
+    );
+    primitive(
+        b"escapechar\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 45i32,
+    );
+    primitive(
+        b"defaulthyphenchar\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 46i32,
+    );
+    primitive(
+        b"defaultskewchar\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 47i32,
+    );
+    primitive(
+        b"endlinechar\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 48i32,
+    );
+    primitive(
+        b"newlinechar\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 49i32,
+    );
+    primitive(
+        b"language\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 50i32,
+    );
+    primitive(
+        b"lefthyphenmin\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 51i32,
+    );
+    primitive(
+        b"righthyphenmin\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 52i32,
+    );
+    primitive(
+        b"holdinginserts\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 53i32,
+    );
+    primitive(
+        b"errorcontextlines\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 54i32,
+    );
+    primitive(
+        b"XeTeXlinebreakpenalty\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 69i32,
+    );
+    primitive(
+        b"XeTeXprotrudechars\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 70i32,
+    );
+    primitive(
+        b"parindent\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 0i32,
+    );
+    primitive(
+        b"mathsurround\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 1i32,
+    );
+    primitive(
+        b"lineskiplimit\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 2i32,
+    );
+    primitive(
+        b"hsize\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 3i32,
+    );
+    primitive(
+        b"vsize\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 4i32,
+    );
+    primitive(
+        b"maxdepth\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 5i32,
+    );
+    primitive(
+        b"splitmaxdepth\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 6i32,
+    );
+    primitive(
+        b"boxmaxdepth\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 7i32,
+    );
+    primitive(
+        b"hfuzz\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 8i32,
+    );
+    primitive(
+        b"vfuzz\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 9i32,
+    );
+    primitive(
+        b"delimitershortfall\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 10i32,
+    );
+    primitive(
+        b"nulldelimiterspace\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 11i32,
+    );
+    primitive(
+        b"scriptspace\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 12i32,
+    );
+    primitive(
+        b"predisplaysize\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 13i32,
+    );
+    primitive(
+        b"displaywidth\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 14i32,
+    );
+    primitive(
+        b"displayindent\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 15i32,
+    );
+    primitive(
+        b"overfullrule\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 16i32,
+    );
+    primitive(
+        b"hangindent\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 17i32,
+    );
+    primitive(
+        b"hoffset\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 18i32,
+    );
+    primitive(
+        b"voffset\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 19i32,
+    );
+    primitive(
+        b"emergencystretch\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 20i32,
+    );
+    primitive(
+        b"pdfpagewidth\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 21i32,
+    );
+    primitive(
+        b"pdfpageheight\x00" as *const u8 as *const libc::c_char,
+        75i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 22i32,
+    );
+    primitive(
+        b" \x00" as *const u8 as *const libc::c_char,
+        64i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"/\x00" as *const u8 as *const libc::c_char,
+        44i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"accent\x00" as *const u8 as *const libc::c_char,
+        45i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"advance\x00" as *const u8 as *const libc::c_char,
+        92i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"afterassignment\x00" as *const u8 as *const libc::c_char,
+        40i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"aftergroup\x00" as *const u8 as *const libc::c_char,
+        41i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"begingroup\x00" as *const u8 as *const libc::c_char,
+        61i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"char\x00" as *const u8 as *const libc::c_char,
+        16i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"csname\x00" as *const u8 as *const libc::c_char,
+        109i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"delimiter\x00" as *const u8 as *const libc::c_char,
+        15i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"XeTeXdelimiter\x00" as *const u8 as *const libc::c_char,
+        15i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"Udelimiter\x00" as *const u8 as *const libc::c_char,
+        15i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"divide\x00" as *const u8 as *const libc::c_char,
+        94i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"endcsname\x00" as *const u8 as *const libc::c_char,
+        67i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"endgroup\x00" as *const u8 as *const libc::c_char,
+        62i32 as uint16_t,
+        0i32,
+    );
+    (*hash.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 2i32) as isize,
+    ))
+    .s1 = maketexstring(b"endgroup\x00" as *const u8 as *const libc::c_char);
+    *eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 2i32) as isize,
+    ) = *eqtb.offset(cur_val as isize);
+    primitive(
+        b"expandafter\x00" as *const u8 as *const libc::c_char,
+        104i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"font\x00" as *const u8 as *const libc::c_char,
+        90i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"fontdimen\x00" as *const u8 as *const libc::c_char,
+        78i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"halign\x00" as *const u8 as *const libc::c_char,
+        32i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"hrule\x00" as *const u8 as *const libc::c_char,
+        36i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"ignorespaces\x00" as *const u8 as *const libc::c_char,
+        39i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"insert\x00" as *const u8 as *const libc::c_char,
+        37i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"mark\x00" as *const u8 as *const libc::c_char,
+        18i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"mathaccent\x00" as *const u8 as *const libc::c_char,
+        46i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"XeTeXmathaccent\x00" as *const u8 as *const libc::c_char,
+        46i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"Umathaccent\x00" as *const u8 as *const libc::c_char,
+        46i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"mathchar\x00" as *const u8 as *const libc::c_char,
+        17i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"XeTeXmathcharnum\x00" as *const u8 as *const libc::c_char,
+        17i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"Umathcharnum\x00" as *const u8 as *const libc::c_char,
+        17i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"XeTeXmathchar\x00" as *const u8 as *const libc::c_char,
+        17i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"Umathchar\x00" as *const u8 as *const libc::c_char,
+        17i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"mathchoice\x00" as *const u8 as *const libc::c_char,
+        54i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"multiply\x00" as *const u8 as *const libc::c_char,
+        93i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"noalign\x00" as *const u8 as *const libc::c_char,
+        34i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"noboundary\x00" as *const u8 as *const libc::c_char,
+        65i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"noexpand\x00" as *const u8 as *const libc::c_char,
+        105i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"primitive\x00" as *const u8 as *const libc::c_char,
+        105i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"nonscript\x00" as *const u8 as *const libc::c_char,
+        55i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"omit\x00" as *const u8 as *const libc::c_char,
+        63i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"parshape\x00" as *const u8 as *const libc::c_char,
+        85i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 0i32,
+    );
+    primitive(
+        b"penalty\x00" as *const u8 as *const libc::c_char,
+        42i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"prevgraf\x00" as *const u8 as *const libc::c_char,
+        81i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"radical\x00" as *const u8 as *const libc::c_char,
+        66i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"XeTeXradical\x00" as *const u8 as *const libc::c_char,
+        66i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"Uradical\x00" as *const u8 as *const libc::c_char,
+        66i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"read\x00" as *const u8 as *const libc::c_char,
+        98i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"relax\x00" as *const u8 as *const libc::c_char,
+        0i32 as uint16_t,
+        0x10ffffi32 + 1i32,
+    );
+    (*hash.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 7i32) as isize,
+    ))
+    .s1 = maketexstring(b"relax\x00" as *const u8 as *const libc::c_char);
+    *eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 7i32) as isize,
+    ) = *eqtb.offset(cur_val as isize);
+    primitive(
+        b"setbox\x00" as *const u8 as *const libc::c_char,
+        100i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"the\x00" as *const u8 as *const libc::c_char,
+        111i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"toks\x00" as *const u8 as *const libc::c_char,
+        72i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"vadjust\x00" as *const u8 as *const libc::c_char,
+        38i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"valign\x00" as *const u8 as *const libc::c_char,
+        33i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"vcenter\x00" as *const u8 as *const libc::c_char,
+        56i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"vrule\x00" as *const u8 as *const libc::c_char,
+        35i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"par\x00" as *const u8 as *const libc::c_char,
+        13i32 as uint16_t,
+        0x10ffffi32 + 1i32,
+    );
     par_loc = cur_val;
     par_token = 0x1ffffffi32 + par_loc;
-    primitive(b"input\x00" as *const u8 as *const libc::c_char,
-              106i32 as uint16_t, 0i32);
-    primitive(b"endinput\x00" as *const u8 as *const libc::c_char,
-              106i32 as uint16_t, 1i32);
-    primitive(b"topmark\x00" as *const u8 as *const libc::c_char,
-              112i32 as uint16_t, 0i32);
-    primitive(b"firstmark\x00" as *const u8 as *const libc::c_char,
-              112i32 as uint16_t, 1i32);
-    primitive(b"botmark\x00" as *const u8 as *const libc::c_char,
-              112i32 as uint16_t, 2i32);
-    primitive(b"splitfirstmark\x00" as *const u8 as *const libc::c_char,
-              112i32 as uint16_t, 3i32);
-    primitive(b"splitbotmark\x00" as *const u8 as *const libc::c_char,
-              112i32 as uint16_t, 4i32);
-    primitive(b"count\x00" as *const u8 as *const libc::c_char,
-              91i32 as uint16_t, 0i32);
-    primitive(b"dimen\x00" as *const u8 as *const libc::c_char,
-              91i32 as uint16_t, 1i32);
-    primitive(b"skip\x00" as *const u8 as *const libc::c_char,
-              91i32 as uint16_t, 2i32);
-    primitive(b"muskip\x00" as *const u8 as *const libc::c_char,
-              91i32 as uint16_t, 3i32);
-    primitive(b"spacefactor\x00" as *const u8 as *const libc::c_char,
-              80i32 as uint16_t, 104i32);
-    primitive(b"prevdepth\x00" as *const u8 as *const libc::c_char,
-              80i32 as uint16_t, 1i32);
-    primitive(b"deadcycles\x00" as *const u8 as *const libc::c_char,
-              83i32 as uint16_t, 0i32);
-    primitive(b"insertpenalties\x00" as *const u8 as *const libc::c_char,
-              83i32 as uint16_t, 1i32);
-    primitive(b"wd\x00" as *const u8 as *const libc::c_char,
-              84i32 as uint16_t, 1i32);
-    primitive(b"ht\x00" as *const u8 as *const libc::c_char,
-              84i32 as uint16_t, 3i32);
-    primitive(b"dp\x00" as *const u8 as *const libc::c_char,
-              84i32 as uint16_t, 2i32);
-    primitive(b"lastpenalty\x00" as *const u8 as *const libc::c_char,
-              71i32 as uint16_t, 0i32);
-    primitive(b"lastkern\x00" as *const u8 as *const libc::c_char,
-              71i32 as uint16_t, 1i32);
-    primitive(b"lastskip\x00" as *const u8 as *const libc::c_char,
-              71i32 as uint16_t, 2i32);
-    primitive(b"inputlineno\x00" as *const u8 as *const libc::c_char,
-              71i32 as uint16_t, 4i32);
-    primitive(b"badness\x00" as *const u8 as *const libc::c_char,
-              71i32 as uint16_t, 5i32);
-    primitive(b"number\x00" as *const u8 as *const libc::c_char,
-              110i32 as uint16_t, 0i32);
-    primitive(b"romannumeral\x00" as *const u8 as *const libc::c_char,
-              110i32 as uint16_t, 1i32);
-    primitive(b"string\x00" as *const u8 as *const libc::c_char,
-              110i32 as uint16_t, 2i32);
-    primitive(b"meaning\x00" as *const u8 as *const libc::c_char,
-              110i32 as uint16_t, 3i32);
-    primitive(b"fontname\x00" as *const u8 as *const libc::c_char,
-              110i32 as uint16_t, 4i32);
-    primitive(b"jobname\x00" as *const u8 as *const libc::c_char,
-              110i32 as uint16_t, 15i32);
-    primitive(b"leftmarginkern\x00" as *const u8 as *const libc::c_char,
-              110i32 as uint16_t, 11i32);
-    primitive(b"rightmarginkern\x00" as *const u8 as *const libc::c_char,
-              110i32 as uint16_t, 12i32);
-    primitive(b"Uchar\x00" as *const u8 as *const libc::c_char,
-              110i32 as uint16_t, 13i32);
-    primitive(b"Ucharcat\x00" as *const u8 as *const libc::c_char,
-              110i32 as uint16_t, 14i32);
-    primitive(b"if\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 0i32);
-    primitive(b"ifcat\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 1i32);
-    primitive(b"ifnum\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 2i32);
-    primitive(b"ifdim\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 3i32);
-    primitive(b"ifodd\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 4i32);
-    primitive(b"ifvmode\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 5i32);
-    primitive(b"ifhmode\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 6i32);
-    primitive(b"ifmmode\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 7i32);
-    primitive(b"ifinner\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 8i32);
-    primitive(b"ifvoid\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 9i32);
-    primitive(b"ifhbox\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 10i32);
-    primitive(b"ifvbox\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 11i32);
-    primitive(b"ifx\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 12i32);
-    primitive(b"ifeof\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 13i32);
-    primitive(b"iftrue\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 14i32);
-    primitive(b"iffalse\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 15i32);
-    primitive(b"ifcase\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 16i32);
-    primitive(b"ifprimitive\x00" as *const u8 as *const libc::c_char,
-              107i32 as uint16_t, 21i32);
-    primitive(b"fi\x00" as *const u8 as *const libc::c_char,
-              108i32 as uint16_t, 2i32);
-    (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 4i32) as isize)).s1 =
-        maketexstring(b"fi\x00" as *const u8 as *const libc::c_char);
-    *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 4i32) as isize) =
-        *eqtb.offset(cur_val as isize);
-    primitive(b"or\x00" as *const u8 as *const libc::c_char,
-              108i32 as uint16_t, 4i32);
-    primitive(b"else\x00" as *const u8 as *const libc::c_char,
-              108i32 as uint16_t, 3i32);
-    primitive(b"nullfont\x00" as *const u8 as *const libc::c_char,
-              89i32 as uint16_t, 0i32);
-    (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 12i32) as isize)).s1 =
-        maketexstring(b"nullfont\x00" as *const u8 as *const libc::c_char);
-    *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32) as isize) =
-        *eqtb.offset(cur_val as isize);
-    primitive(b"span\x00" as *const u8 as *const libc::c_char,
-              4i32 as uint16_t, 0x10ffffi32 + 2i32);
-    primitive(b"cr\x00" as *const u8 as *const libc::c_char, 5i32 as uint16_t,
-              0x10ffffi32 + 3i32);
-    (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 1i32) as isize)).s1 =
-        maketexstring(b"cr\x00" as *const u8 as *const libc::c_char);
-    *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 1i32) as isize) =
-        *eqtb.offset(cur_val as isize);
-    primitive(b"crcr\x00" as *const u8 as *const libc::c_char,
-              5i32 as uint16_t, 0x10ffffi32 + 4i32);
-    (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 5i32) as isize)).s1 =
-        maketexstring(b"endtemplate\x00" as *const u8 as *const libc::c_char);
-    (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 6i32) as isize)).s1 =
-        maketexstring(b"endtemplate\x00" as *const u8 as *const libc::c_char);
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 6i32) as isize)).b16.s1 = 9i32 as uint16_t;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 6i32) as isize)).b32.s1 =
-        4999999i32 - 11i32;
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 6i32) as isize)).b16.s0 = 1i32 as uint16_t;
-    *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 5i32) as isize) =
-        *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          1i32 + 15000i32 + 6i32) as isize);
-    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 5i32) as isize)).b16.s1 =
-        117i32 as uint16_t;
-    primitive(b"pagegoal\x00" as *const u8 as *const libc::c_char,
-              82i32 as uint16_t, 0i32);
-    primitive(b"pagetotal\x00" as *const u8 as *const libc::c_char,
-              82i32 as uint16_t, 1i32);
-    primitive(b"pagestretch\x00" as *const u8 as *const libc::c_char,
-              82i32 as uint16_t, 2i32);
-    primitive(b"pagefilstretch\x00" as *const u8 as *const libc::c_char,
-              82i32 as uint16_t, 3i32);
-    primitive(b"pagefillstretch\x00" as *const u8 as *const libc::c_char,
-              82i32 as uint16_t, 4i32);
-    primitive(b"pagefilllstretch\x00" as *const u8 as *const libc::c_char,
-              82i32 as uint16_t, 5i32);
-    primitive(b"pageshrink\x00" as *const u8 as *const libc::c_char,
-              82i32 as uint16_t, 6i32);
-    primitive(b"pagedepth\x00" as *const u8 as *const libc::c_char,
-              82i32 as uint16_t, 7i32);
-    primitive(b"end\x00" as *const u8 as *const libc::c_char,
-              14i32 as uint16_t, 0i32);
-    primitive(b"dump\x00" as *const u8 as *const libc::c_char,
-              14i32 as uint16_t, 1i32);
-    primitive(b"hskip\x00" as *const u8 as *const libc::c_char,
-              26i32 as uint16_t, 4i32);
-    primitive(b"hfil\x00" as *const u8 as *const libc::c_char,
-              26i32 as uint16_t, 0i32);
-    primitive(b"hfill\x00" as *const u8 as *const libc::c_char,
-              26i32 as uint16_t, 1i32);
-    primitive(b"hss\x00" as *const u8 as *const libc::c_char,
-              26i32 as uint16_t, 2i32);
-    primitive(b"hfilneg\x00" as *const u8 as *const libc::c_char,
-              26i32 as uint16_t, 3i32);
-    primitive(b"vskip\x00" as *const u8 as *const libc::c_char,
-              27i32 as uint16_t, 4i32);
-    primitive(b"vfil\x00" as *const u8 as *const libc::c_char,
-              27i32 as uint16_t, 0i32);
-    primitive(b"vfill\x00" as *const u8 as *const libc::c_char,
-              27i32 as uint16_t, 1i32);
-    primitive(b"vss\x00" as *const u8 as *const libc::c_char,
-              27i32 as uint16_t, 2i32);
-    primitive(b"vfilneg\x00" as *const u8 as *const libc::c_char,
-              27i32 as uint16_t, 3i32);
-    primitive(b"mskip\x00" as *const u8 as *const libc::c_char,
-              28i32 as uint16_t, 5i32);
-    primitive(b"kern\x00" as *const u8 as *const libc::c_char,
-              29i32 as uint16_t, 1i32);
-    primitive(b"mkern\x00" as *const u8 as *const libc::c_char,
-              30i32 as uint16_t, 99i32);
-    primitive(b"moveleft\x00" as *const u8 as *const libc::c_char,
-              21i32 as uint16_t, 1i32);
-    primitive(b"moveright\x00" as *const u8 as *const libc::c_char,
-              21i32 as uint16_t, 0i32);
-    primitive(b"raise\x00" as *const u8 as *const libc::c_char,
-              22i32 as uint16_t, 1i32);
-    primitive(b"lower\x00" as *const u8 as *const libc::c_char,
-              22i32 as uint16_t, 0i32);
-    primitive(b"box\x00" as *const u8 as *const libc::c_char,
-              20i32 as uint16_t, 0i32);
-    primitive(b"copy\x00" as *const u8 as *const libc::c_char,
-              20i32 as uint16_t, 1i32);
-    primitive(b"lastbox\x00" as *const u8 as *const libc::c_char,
-              20i32 as uint16_t, 2i32);
-    primitive(b"vsplit\x00" as *const u8 as *const libc::c_char,
-              20i32 as uint16_t, 3i32);
-    primitive(b"vtop\x00" as *const u8 as *const libc::c_char,
-              20i32 as uint16_t, 4i32);
-    primitive(b"vbox\x00" as *const u8 as *const libc::c_char,
-              20i32 as uint16_t, 4i32 + 1i32);
-    primitive(b"hbox\x00" as *const u8 as *const libc::c_char,
-              20i32 as uint16_t, 4i32 + 104i32);
-    primitive(b"shipout\x00" as *const u8 as *const libc::c_char,
-              31i32 as uint16_t, 100i32 - 1i32);
-    primitive(b"leaders\x00" as *const u8 as *const libc::c_char,
-              31i32 as uint16_t, 100i32);
-    primitive(b"cleaders\x00" as *const u8 as *const libc::c_char,
-              31i32 as uint16_t, 101i32);
-    primitive(b"xleaders\x00" as *const u8 as *const libc::c_char,
-              31i32 as uint16_t, 102i32);
-    primitive(b"indent\x00" as *const u8 as *const libc::c_char,
-              43i32 as uint16_t, 1i32);
-    primitive(b"noindent\x00" as *const u8 as *const libc::c_char,
-              43i32 as uint16_t, 0i32);
-    primitive(b"unpenalty\x00" as *const u8 as *const libc::c_char,
-              25i32 as uint16_t, 12i32);
-    primitive(b"unkern\x00" as *const u8 as *const libc::c_char,
-              25i32 as uint16_t, 11i32);
-    primitive(b"unskip\x00" as *const u8 as *const libc::c_char,
-              25i32 as uint16_t, 10i32);
-    primitive(b"unhbox\x00" as *const u8 as *const libc::c_char,
-              23i32 as uint16_t, 0i32);
-    primitive(b"unhcopy\x00" as *const u8 as *const libc::c_char,
-              23i32 as uint16_t, 1i32);
-    primitive(b"unvbox\x00" as *const u8 as *const libc::c_char,
-              24i32 as uint16_t, 0i32);
-    primitive(b"unvcopy\x00" as *const u8 as *const libc::c_char,
-              24i32 as uint16_t, 1i32);
-    primitive(b"-\x00" as *const u8 as *const libc::c_char, 47i32 as uint16_t,
-              1i32);
-    primitive(b"discretionary\x00" as *const u8 as *const libc::c_char,
-              47i32 as uint16_t, 0i32);
-    primitive(b"eqno\x00" as *const u8 as *const libc::c_char,
-              48i32 as uint16_t, 0i32);
-    primitive(b"leqno\x00" as *const u8 as *const libc::c_char,
-              48i32 as uint16_t, 1i32);
-    primitive(b"mathord\x00" as *const u8 as *const libc::c_char,
-              50i32 as uint16_t, 16i32);
-    primitive(b"mathop\x00" as *const u8 as *const libc::c_char,
-              50i32 as uint16_t, 17i32);
-    primitive(b"mathbin\x00" as *const u8 as *const libc::c_char,
-              50i32 as uint16_t, 18i32);
-    primitive(b"mathrel\x00" as *const u8 as *const libc::c_char,
-              50i32 as uint16_t, 19i32);
-    primitive(b"mathopen\x00" as *const u8 as *const libc::c_char,
-              50i32 as uint16_t, 20i32);
-    primitive(b"mathclose\x00" as *const u8 as *const libc::c_char,
-              50i32 as uint16_t, 21i32);
-    primitive(b"mathpunct\x00" as *const u8 as *const libc::c_char,
-              50i32 as uint16_t, 22i32);
-    primitive(b"mathinner\x00" as *const u8 as *const libc::c_char,
-              50i32 as uint16_t, 23i32);
-    primitive(b"underline\x00" as *const u8 as *const libc::c_char,
-              50i32 as uint16_t, 26i32);
-    primitive(b"overline\x00" as *const u8 as *const libc::c_char,
-              50i32 as uint16_t, 27i32);
-    primitive(b"displaylimits\x00" as *const u8 as *const libc::c_char,
-              51i32 as uint16_t, 0i32);
-    primitive(b"limits\x00" as *const u8 as *const libc::c_char,
-              51i32 as uint16_t, 1i32);
-    primitive(b"nolimits\x00" as *const u8 as *const libc::c_char,
-              51i32 as uint16_t, 2i32);
-    primitive(b"displaystyle\x00" as *const u8 as *const libc::c_char,
-              53i32 as uint16_t, 0i32);
-    primitive(b"textstyle\x00" as *const u8 as *const libc::c_char,
-              53i32 as uint16_t, 2i32);
-    primitive(b"scriptstyle\x00" as *const u8 as *const libc::c_char,
-              53i32 as uint16_t, 4i32);
-    primitive(b"scriptscriptstyle\x00" as *const u8 as *const libc::c_char,
-              53i32 as uint16_t, 6i32);
-    primitive(b"above\x00" as *const u8 as *const libc::c_char,
-              52i32 as uint16_t, 0i32);
-    primitive(b"over\x00" as *const u8 as *const libc::c_char,
-              52i32 as uint16_t, 1i32);
-    primitive(b"atop\x00" as *const u8 as *const libc::c_char,
-              52i32 as uint16_t, 2i32);
-    primitive(b"abovewithdelims\x00" as *const u8 as *const libc::c_char,
-              52i32 as uint16_t, 3i32 + 0i32);
-    primitive(b"overwithdelims\x00" as *const u8 as *const libc::c_char,
-              52i32 as uint16_t, 3i32 + 1i32);
-    primitive(b"atopwithdelims\x00" as *const u8 as *const libc::c_char,
-              52i32 as uint16_t, 3i32 + 2i32);
-    primitive(b"left\x00" as *const u8 as *const libc::c_char,
-              49i32 as uint16_t, 30i32);
-    primitive(b"right\x00" as *const u8 as *const libc::c_char,
-              49i32 as uint16_t, 31i32);
-    (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 3i32) as isize)).s1 =
-        maketexstring(b"right\x00" as *const u8 as *const libc::c_char);
-    *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 3i32) as isize) =
-        *eqtb.offset(cur_val as isize);
-    primitive(b"long\x00" as *const u8 as *const libc::c_char,
-              95i32 as uint16_t, 1i32);
-    primitive(b"outer\x00" as *const u8 as *const libc::c_char,
-              95i32 as uint16_t, 2i32);
-    primitive(b"global\x00" as *const u8 as *const libc::c_char,
-              95i32 as uint16_t, 4i32);
-    primitive(b"def\x00" as *const u8 as *const libc::c_char,
-              99i32 as uint16_t, 0i32);
-    primitive(b"gdef\x00" as *const u8 as *const libc::c_char,
-              99i32 as uint16_t, 1i32);
-    primitive(b"edef\x00" as *const u8 as *const libc::c_char,
-              99i32 as uint16_t, 2i32);
-    primitive(b"xdef\x00" as *const u8 as *const libc::c_char,
-              99i32 as uint16_t, 3i32);
-    primitive(b"let\x00" as *const u8 as *const libc::c_char,
-              96i32 as uint16_t, 0i32);
-    primitive(b"futurelet\x00" as *const u8 as *const libc::c_char,
-              96i32 as uint16_t, 0i32 + 1i32);
-    primitive(b"chardef\x00" as *const u8 as *const libc::c_char,
-              97i32 as uint16_t, 0i32);
-    primitive(b"mathchardef\x00" as *const u8 as *const libc::c_char,
-              97i32 as uint16_t, 1i32);
-    primitive(b"XeTeXmathcharnumdef\x00" as *const u8 as *const libc::c_char,
-              97i32 as uint16_t, 8i32);
-    primitive(b"Umathcharnumdef\x00" as *const u8 as *const libc::c_char,
-              97i32 as uint16_t, 8i32);
-    primitive(b"XeTeXmathchardef\x00" as *const u8 as *const libc::c_char,
-              97i32 as uint16_t, 9i32);
-    primitive(b"Umathchardef\x00" as *const u8 as *const libc::c_char,
-              97i32 as uint16_t, 9i32);
-    primitive(b"countdef\x00" as *const u8 as *const libc::c_char,
-              97i32 as uint16_t, 2i32);
-    primitive(b"dimendef\x00" as *const u8 as *const libc::c_char,
-              97i32 as uint16_t, 3i32);
-    primitive(b"skipdef\x00" as *const u8 as *const libc::c_char,
-              97i32 as uint16_t, 4i32);
-    primitive(b"muskipdef\x00" as *const u8 as *const libc::c_char,
-              97i32 as uint16_t, 5i32);
-    primitive(b"toksdef\x00" as *const u8 as *const libc::c_char,
-              97i32 as uint16_t, 6i32);
-    primitive(b"catcode\x00" as *const u8 as *const libc::c_char,
-              86i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32);
-    primitive(b"mathcode\x00" as *const u8 as *const libc::c_char,
-              86i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32));
-    primitive(b"XeTeXmathcodenum\x00" as *const u8 as *const libc::c_char,
-              87i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32));
-    primitive(b"Umathcodenum\x00" as *const u8 as *const libc::c_char,
-              87i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32));
-    primitive(b"XeTeXmathcode\x00" as *const u8 as *const libc::c_char,
-              87i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32);
-    primitive(b"Umathcode\x00" as *const u8 as *const libc::c_char,
-              87i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32);
-    primitive(b"lccode\x00" as *const u8 as *const libc::c_char,
-              86i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32));
-    primitive(b"uccode\x00" as *const u8 as *const libc::c_char,
-              86i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32));
-    primitive(b"sfcode\x00" as *const u8 as *const libc::c_char,
-              86i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32));
-    primitive(b"XeTeXcharclass\x00" as *const u8 as *const libc::c_char,
-              87i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32));
-    primitive(b"delcode\x00" as *const u8 as *const libc::c_char,
-              86i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 +
-                  256i32);
-    primitive(b"XeTeXdelcodenum\x00" as *const u8 as *const libc::c_char,
-              87i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 +
-                  256i32);
-    primitive(b"Udelcodenum\x00" as *const u8 as *const libc::c_char,
-              87i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 +
-                  256i32);
-    primitive(b"XeTeXdelcode\x00" as *const u8 as *const libc::c_char,
-              87i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + 1i32);
-    primitive(b"Udelcode\x00" as *const u8 as *const libc::c_char,
-              87i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32
-                  + 1i32);
-    primitive(b"textfont\x00" as *const u8 as *const libc::c_char,
-              88i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 + 0i32);
-    primitive(b"scriptfont\x00" as *const u8 as *const libc::c_char,
-              88i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 + 256i32);
-    primitive(b"scriptscriptfont\x00" as *const u8 as *const libc::c_char,
-              88i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  2i32 * 256i32);
-    primitive(b"hyphenation\x00" as *const u8 as *const libc::c_char,
-              101i32 as uint16_t, 0i32);
-    primitive(b"patterns\x00" as *const u8 as *const libc::c_char,
-              101i32 as uint16_t, 1i32);
-    primitive(b"hyphenchar\x00" as *const u8 as *const libc::c_char,
-              79i32 as uint16_t, 0i32);
-    primitive(b"skewchar\x00" as *const u8 as *const libc::c_char,
-              79i32 as uint16_t, 1i32);
-    primitive(b"lpcode\x00" as *const u8 as *const libc::c_char,
-              79i32 as uint16_t, 2i32);
-    primitive(b"rpcode\x00" as *const u8 as *const libc::c_char,
-              79i32 as uint16_t, 3i32);
-    primitive(b"batchmode\x00" as *const u8 as *const libc::c_char,
-              102i32 as uint16_t, 0i32);
-    primitive(b"nonstopmode\x00" as *const u8 as *const libc::c_char,
-              102i32 as uint16_t, 1i32);
-    primitive(b"scrollmode\x00" as *const u8 as *const libc::c_char,
-              102i32 as uint16_t, 2i32);
-    primitive(b"errorstopmode\x00" as *const u8 as *const libc::c_char,
-              102i32 as uint16_t, 3i32);
-    primitive(b"openin\x00" as *const u8 as *const libc::c_char,
-              60i32 as uint16_t, 1i32);
-    primitive(b"closein\x00" as *const u8 as *const libc::c_char,
-              60i32 as uint16_t, 0i32);
-    primitive(b"message\x00" as *const u8 as *const libc::c_char,
-              58i32 as uint16_t, 0i32);
-    primitive(b"errmessage\x00" as *const u8 as *const libc::c_char,
-              58i32 as uint16_t, 1i32);
-    primitive(b"lowercase\x00" as *const u8 as *const libc::c_char,
-              57i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32));
-    primitive(b"uppercase\x00" as *const u8 as *const libc::c_char,
-              57i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32));
-    primitive(b"show\x00" as *const u8 as *const libc::c_char,
-              19i32 as uint16_t, 0i32);
-    primitive(b"showbox\x00" as *const u8 as *const libc::c_char,
-              19i32 as uint16_t, 1i32);
-    primitive(b"showthe\x00" as *const u8 as *const libc::c_char,
-              19i32 as uint16_t, 2i32);
-    primitive(b"showlists\x00" as *const u8 as *const libc::c_char,
-              19i32 as uint16_t, 3i32);
-    primitive(b"openout\x00" as *const u8 as *const libc::c_char,
-              59i32 as uint16_t, 0i32);
-    primitive(b"write\x00" as *const u8 as *const libc::c_char,
-              59i32 as uint16_t, 1i32);
+    primitive(
+        b"input\x00" as *const u8 as *const libc::c_char,
+        106i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"endinput\x00" as *const u8 as *const libc::c_char,
+        106i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"topmark\x00" as *const u8 as *const libc::c_char,
+        112i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"firstmark\x00" as *const u8 as *const libc::c_char,
+        112i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"botmark\x00" as *const u8 as *const libc::c_char,
+        112i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"splitfirstmark\x00" as *const u8 as *const libc::c_char,
+        112i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"splitbotmark\x00" as *const u8 as *const libc::c_char,
+        112i32 as uint16_t,
+        4i32,
+    );
+    primitive(
+        b"count\x00" as *const u8 as *const libc::c_char,
+        91i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"dimen\x00" as *const u8 as *const libc::c_char,
+        91i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"skip\x00" as *const u8 as *const libc::c_char,
+        91i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"muskip\x00" as *const u8 as *const libc::c_char,
+        91i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"spacefactor\x00" as *const u8 as *const libc::c_char,
+        80i32 as uint16_t,
+        104i32,
+    );
+    primitive(
+        b"prevdepth\x00" as *const u8 as *const libc::c_char,
+        80i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"deadcycles\x00" as *const u8 as *const libc::c_char,
+        83i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"insertpenalties\x00" as *const u8 as *const libc::c_char,
+        83i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"wd\x00" as *const u8 as *const libc::c_char,
+        84i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"ht\x00" as *const u8 as *const libc::c_char,
+        84i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"dp\x00" as *const u8 as *const libc::c_char,
+        84i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"lastpenalty\x00" as *const u8 as *const libc::c_char,
+        71i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"lastkern\x00" as *const u8 as *const libc::c_char,
+        71i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"lastskip\x00" as *const u8 as *const libc::c_char,
+        71i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"inputlineno\x00" as *const u8 as *const libc::c_char,
+        71i32 as uint16_t,
+        4i32,
+    );
+    primitive(
+        b"badness\x00" as *const u8 as *const libc::c_char,
+        71i32 as uint16_t,
+        5i32,
+    );
+    primitive(
+        b"number\x00" as *const u8 as *const libc::c_char,
+        110i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"romannumeral\x00" as *const u8 as *const libc::c_char,
+        110i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"string\x00" as *const u8 as *const libc::c_char,
+        110i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"meaning\x00" as *const u8 as *const libc::c_char,
+        110i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"fontname\x00" as *const u8 as *const libc::c_char,
+        110i32 as uint16_t,
+        4i32,
+    );
+    primitive(
+        b"jobname\x00" as *const u8 as *const libc::c_char,
+        110i32 as uint16_t,
+        15i32,
+    );
+    primitive(
+        b"leftmarginkern\x00" as *const u8 as *const libc::c_char,
+        110i32 as uint16_t,
+        11i32,
+    );
+    primitive(
+        b"rightmarginkern\x00" as *const u8 as *const libc::c_char,
+        110i32 as uint16_t,
+        12i32,
+    );
+    primitive(
+        b"Uchar\x00" as *const u8 as *const libc::c_char,
+        110i32 as uint16_t,
+        13i32,
+    );
+    primitive(
+        b"Ucharcat\x00" as *const u8 as *const libc::c_char,
+        110i32 as uint16_t,
+        14i32,
+    );
+    primitive(
+        b"if\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"ifcat\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"ifnum\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"ifdim\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"ifodd\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        4i32,
+    );
+    primitive(
+        b"ifvmode\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        5i32,
+    );
+    primitive(
+        b"ifhmode\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        6i32,
+    );
+    primitive(
+        b"ifmmode\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        7i32,
+    );
+    primitive(
+        b"ifinner\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        8i32,
+    );
+    primitive(
+        b"ifvoid\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        9i32,
+    );
+    primitive(
+        b"ifhbox\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        10i32,
+    );
+    primitive(
+        b"ifvbox\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        11i32,
+    );
+    primitive(
+        b"ifx\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        12i32,
+    );
+    primitive(
+        b"ifeof\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        13i32,
+    );
+    primitive(
+        b"iftrue\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        14i32,
+    );
+    primitive(
+        b"iffalse\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        15i32,
+    );
+    primitive(
+        b"ifcase\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        16i32,
+    );
+    primitive(
+        b"ifprimitive\x00" as *const u8 as *const libc::c_char,
+        107i32 as uint16_t,
+        21i32,
+    );
+    primitive(
+        b"fi\x00" as *const u8 as *const libc::c_char,
+        108i32 as uint16_t,
+        2i32,
+    );
+    (*hash.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 4i32) as isize,
+    ))
+    .s1 = maketexstring(b"fi\x00" as *const u8 as *const libc::c_char);
+    *eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 4i32) as isize,
+    ) = *eqtb.offset(cur_val as isize);
+    primitive(
+        b"or\x00" as *const u8 as *const libc::c_char,
+        108i32 as uint16_t,
+        4i32,
+    );
+    primitive(
+        b"else\x00" as *const u8 as *const libc::c_char,
+        108i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"nullfont\x00" as *const u8 as *const libc::c_char,
+        89i32 as uint16_t,
+        0i32,
+    );
+    (*hash.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 12i32) as isize,
+    ))
+    .s1 = maketexstring(b"nullfont\x00" as *const u8 as *const libc::c_char);
+    *eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 12i32) as isize,
+    ) = *eqtb.offset(cur_val as isize);
+    primitive(
+        b"span\x00" as *const u8 as *const libc::c_char,
+        4i32 as uint16_t,
+        0x10ffffi32 + 2i32,
+    );
+    primitive(
+        b"cr\x00" as *const u8 as *const libc::c_char,
+        5i32 as uint16_t,
+        0x10ffffi32 + 3i32,
+    );
+    (*hash.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 1i32) as isize,
+    ))
+    .s1 = maketexstring(b"cr\x00" as *const u8 as *const libc::c_char);
+    *eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 1i32) as isize,
+    ) = *eqtb.offset(cur_val as isize);
+    primitive(
+        b"crcr\x00" as *const u8 as *const libc::c_char,
+        5i32 as uint16_t,
+        0x10ffffi32 + 4i32,
+    );
+    (*hash.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 5i32) as isize,
+    ))
+    .s1 = maketexstring(b"endtemplate\x00" as *const u8 as *const libc::c_char);
+    (*hash.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 6i32) as isize,
+    ))
+    .s1 = maketexstring(b"endtemplate\x00" as *const u8 as *const libc::c_char);
+    (*eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 6i32) as isize,
+    ))
+    .b16
+    .s1 = 9i32 as uint16_t;
+    (*eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 6i32) as isize,
+    ))
+    .b32
+    .s1 = 4999999i32 - 11i32;
+    (*eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 6i32) as isize,
+    ))
+    .b16
+    .s0 = 1i32 as uint16_t;
+    *eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 5i32) as isize,
+    ) = *eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 6i32) as isize,
+    );
+    (*eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 5i32) as isize,
+    ))
+    .b16
+    .s1 = 117i32 as uint16_t;
+    primitive(
+        b"pagegoal\x00" as *const u8 as *const libc::c_char,
+        82i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"pagetotal\x00" as *const u8 as *const libc::c_char,
+        82i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"pagestretch\x00" as *const u8 as *const libc::c_char,
+        82i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"pagefilstretch\x00" as *const u8 as *const libc::c_char,
+        82i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"pagefillstretch\x00" as *const u8 as *const libc::c_char,
+        82i32 as uint16_t,
+        4i32,
+    );
+    primitive(
+        b"pagefilllstretch\x00" as *const u8 as *const libc::c_char,
+        82i32 as uint16_t,
+        5i32,
+    );
+    primitive(
+        b"pageshrink\x00" as *const u8 as *const libc::c_char,
+        82i32 as uint16_t,
+        6i32,
+    );
+    primitive(
+        b"pagedepth\x00" as *const u8 as *const libc::c_char,
+        82i32 as uint16_t,
+        7i32,
+    );
+    primitive(
+        b"end\x00" as *const u8 as *const libc::c_char,
+        14i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"dump\x00" as *const u8 as *const libc::c_char,
+        14i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"hskip\x00" as *const u8 as *const libc::c_char,
+        26i32 as uint16_t,
+        4i32,
+    );
+    primitive(
+        b"hfil\x00" as *const u8 as *const libc::c_char,
+        26i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"hfill\x00" as *const u8 as *const libc::c_char,
+        26i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"hss\x00" as *const u8 as *const libc::c_char,
+        26i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"hfilneg\x00" as *const u8 as *const libc::c_char,
+        26i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"vskip\x00" as *const u8 as *const libc::c_char,
+        27i32 as uint16_t,
+        4i32,
+    );
+    primitive(
+        b"vfil\x00" as *const u8 as *const libc::c_char,
+        27i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"vfill\x00" as *const u8 as *const libc::c_char,
+        27i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"vss\x00" as *const u8 as *const libc::c_char,
+        27i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"vfilneg\x00" as *const u8 as *const libc::c_char,
+        27i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"mskip\x00" as *const u8 as *const libc::c_char,
+        28i32 as uint16_t,
+        5i32,
+    );
+    primitive(
+        b"kern\x00" as *const u8 as *const libc::c_char,
+        29i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"mkern\x00" as *const u8 as *const libc::c_char,
+        30i32 as uint16_t,
+        99i32,
+    );
+    primitive(
+        b"moveleft\x00" as *const u8 as *const libc::c_char,
+        21i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"moveright\x00" as *const u8 as *const libc::c_char,
+        21i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"raise\x00" as *const u8 as *const libc::c_char,
+        22i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"lower\x00" as *const u8 as *const libc::c_char,
+        22i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"box\x00" as *const u8 as *const libc::c_char,
+        20i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"copy\x00" as *const u8 as *const libc::c_char,
+        20i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"lastbox\x00" as *const u8 as *const libc::c_char,
+        20i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"vsplit\x00" as *const u8 as *const libc::c_char,
+        20i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"vtop\x00" as *const u8 as *const libc::c_char,
+        20i32 as uint16_t,
+        4i32,
+    );
+    primitive(
+        b"vbox\x00" as *const u8 as *const libc::c_char,
+        20i32 as uint16_t,
+        4i32 + 1i32,
+    );
+    primitive(
+        b"hbox\x00" as *const u8 as *const libc::c_char,
+        20i32 as uint16_t,
+        4i32 + 104i32,
+    );
+    primitive(
+        b"shipout\x00" as *const u8 as *const libc::c_char,
+        31i32 as uint16_t,
+        100i32 - 1i32,
+    );
+    primitive(
+        b"leaders\x00" as *const u8 as *const libc::c_char,
+        31i32 as uint16_t,
+        100i32,
+    );
+    primitive(
+        b"cleaders\x00" as *const u8 as *const libc::c_char,
+        31i32 as uint16_t,
+        101i32,
+    );
+    primitive(
+        b"xleaders\x00" as *const u8 as *const libc::c_char,
+        31i32 as uint16_t,
+        102i32,
+    );
+    primitive(
+        b"indent\x00" as *const u8 as *const libc::c_char,
+        43i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"noindent\x00" as *const u8 as *const libc::c_char,
+        43i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"unpenalty\x00" as *const u8 as *const libc::c_char,
+        25i32 as uint16_t,
+        12i32,
+    );
+    primitive(
+        b"unkern\x00" as *const u8 as *const libc::c_char,
+        25i32 as uint16_t,
+        11i32,
+    );
+    primitive(
+        b"unskip\x00" as *const u8 as *const libc::c_char,
+        25i32 as uint16_t,
+        10i32,
+    );
+    primitive(
+        b"unhbox\x00" as *const u8 as *const libc::c_char,
+        23i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"unhcopy\x00" as *const u8 as *const libc::c_char,
+        23i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"unvbox\x00" as *const u8 as *const libc::c_char,
+        24i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"unvcopy\x00" as *const u8 as *const libc::c_char,
+        24i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"-\x00" as *const u8 as *const libc::c_char,
+        47i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"discretionary\x00" as *const u8 as *const libc::c_char,
+        47i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"eqno\x00" as *const u8 as *const libc::c_char,
+        48i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"leqno\x00" as *const u8 as *const libc::c_char,
+        48i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"mathord\x00" as *const u8 as *const libc::c_char,
+        50i32 as uint16_t,
+        16i32,
+    );
+    primitive(
+        b"mathop\x00" as *const u8 as *const libc::c_char,
+        50i32 as uint16_t,
+        17i32,
+    );
+    primitive(
+        b"mathbin\x00" as *const u8 as *const libc::c_char,
+        50i32 as uint16_t,
+        18i32,
+    );
+    primitive(
+        b"mathrel\x00" as *const u8 as *const libc::c_char,
+        50i32 as uint16_t,
+        19i32,
+    );
+    primitive(
+        b"mathopen\x00" as *const u8 as *const libc::c_char,
+        50i32 as uint16_t,
+        20i32,
+    );
+    primitive(
+        b"mathclose\x00" as *const u8 as *const libc::c_char,
+        50i32 as uint16_t,
+        21i32,
+    );
+    primitive(
+        b"mathpunct\x00" as *const u8 as *const libc::c_char,
+        50i32 as uint16_t,
+        22i32,
+    );
+    primitive(
+        b"mathinner\x00" as *const u8 as *const libc::c_char,
+        50i32 as uint16_t,
+        23i32,
+    );
+    primitive(
+        b"underline\x00" as *const u8 as *const libc::c_char,
+        50i32 as uint16_t,
+        26i32,
+    );
+    primitive(
+        b"overline\x00" as *const u8 as *const libc::c_char,
+        50i32 as uint16_t,
+        27i32,
+    );
+    primitive(
+        b"displaylimits\x00" as *const u8 as *const libc::c_char,
+        51i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"limits\x00" as *const u8 as *const libc::c_char,
+        51i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"nolimits\x00" as *const u8 as *const libc::c_char,
+        51i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"displaystyle\x00" as *const u8 as *const libc::c_char,
+        53i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"textstyle\x00" as *const u8 as *const libc::c_char,
+        53i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"scriptstyle\x00" as *const u8 as *const libc::c_char,
+        53i32 as uint16_t,
+        4i32,
+    );
+    primitive(
+        b"scriptscriptstyle\x00" as *const u8 as *const libc::c_char,
+        53i32 as uint16_t,
+        6i32,
+    );
+    primitive(
+        b"above\x00" as *const u8 as *const libc::c_char,
+        52i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"over\x00" as *const u8 as *const libc::c_char,
+        52i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"atop\x00" as *const u8 as *const libc::c_char,
+        52i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"abovewithdelims\x00" as *const u8 as *const libc::c_char,
+        52i32 as uint16_t,
+        3i32 + 0i32,
+    );
+    primitive(
+        b"overwithdelims\x00" as *const u8 as *const libc::c_char,
+        52i32 as uint16_t,
+        3i32 + 1i32,
+    );
+    primitive(
+        b"atopwithdelims\x00" as *const u8 as *const libc::c_char,
+        52i32 as uint16_t,
+        3i32 + 2i32,
+    );
+    primitive(
+        b"left\x00" as *const u8 as *const libc::c_char,
+        49i32 as uint16_t,
+        30i32,
+    );
+    primitive(
+        b"right\x00" as *const u8 as *const libc::c_char,
+        49i32 as uint16_t,
+        31i32,
+    );
+    (*hash.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 3i32) as isize,
+    ))
+    .s1 = maketexstring(b"right\x00" as *const u8 as *const libc::c_char);
+    *eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 3i32) as isize,
+    ) = *eqtb.offset(cur_val as isize);
+    primitive(
+        b"long\x00" as *const u8 as *const libc::c_char,
+        95i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"outer\x00" as *const u8 as *const libc::c_char,
+        95i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"global\x00" as *const u8 as *const libc::c_char,
+        95i32 as uint16_t,
+        4i32,
+    );
+    primitive(
+        b"def\x00" as *const u8 as *const libc::c_char,
+        99i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"gdef\x00" as *const u8 as *const libc::c_char,
+        99i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"edef\x00" as *const u8 as *const libc::c_char,
+        99i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"xdef\x00" as *const u8 as *const libc::c_char,
+        99i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"let\x00" as *const u8 as *const libc::c_char,
+        96i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"futurelet\x00" as *const u8 as *const libc::c_char,
+        96i32 as uint16_t,
+        0i32 + 1i32,
+    );
+    primitive(
+        b"chardef\x00" as *const u8 as *const libc::c_char,
+        97i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"mathchardef\x00" as *const u8 as *const libc::c_char,
+        97i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"XeTeXmathcharnumdef\x00" as *const u8 as *const libc::c_char,
+        97i32 as uint16_t,
+        8i32,
+    );
+    primitive(
+        b"Umathcharnumdef\x00" as *const u8 as *const libc::c_char,
+        97i32 as uint16_t,
+        8i32,
+    );
+    primitive(
+        b"XeTeXmathchardef\x00" as *const u8 as *const libc::c_char,
+        97i32 as uint16_t,
+        9i32,
+    );
+    primitive(
+        b"Umathchardef\x00" as *const u8 as *const libc::c_char,
+        97i32 as uint16_t,
+        9i32,
+    );
+    primitive(
+        b"countdef\x00" as *const u8 as *const libc::c_char,
+        97i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"dimendef\x00" as *const u8 as *const libc::c_char,
+        97i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"skipdef\x00" as *const u8 as *const libc::c_char,
+        97i32 as uint16_t,
+        4i32,
+    );
+    primitive(
+        b"muskipdef\x00" as *const u8 as *const libc::c_char,
+        97i32 as uint16_t,
+        5i32,
+    );
+    primitive(
+        b"toksdef\x00" as *const u8 as *const libc::c_char,
+        97i32 as uint16_t,
+        6i32,
+    );
+    primitive(
+        b"catcode\x00" as *const u8 as *const libc::c_char,
+        86i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32,
+    );
+    primitive(
+        b"mathcode\x00" as *const u8 as *const libc::c_char,
+        86i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32),
+    );
+    primitive(
+        b"XeTeXmathcodenum\x00" as *const u8 as *const libc::c_char,
+        87i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32),
+    );
+    primitive(
+        b"Umathcodenum\x00" as *const u8 as *const libc::c_char,
+        87i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32),
+    );
+    primitive(
+        b"XeTeXmathcode\x00" as *const u8 as *const libc::c_char,
+        87i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32,
+    );
+    primitive(
+        b"Umathcode\x00" as *const u8 as *const libc::c_char,
+        87i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32,
+    );
+    primitive(
+        b"lccode\x00" as *const u8 as *const libc::c_char,
+        86i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32),
+    );
+    primitive(
+        b"uccode\x00" as *const u8 as *const libc::c_char,
+        86i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32),
+    );
+    primitive(
+        b"sfcode\x00" as *const u8 as *const libc::c_char,
+        86i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32),
+    );
+    primitive(
+        b"XeTeXcharclass\x00" as *const u8 as *const libc::c_char,
+        87i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32),
+    );
+    primitive(
+        b"delcode\x00" as *const u8 as *const libc::c_char,
+        86i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32,
+    );
+    primitive(
+        b"XeTeXdelcodenum\x00" as *const u8 as *const libc::c_char,
+        87i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32,
+    );
+    primitive(
+        b"Udelcodenum\x00" as *const u8 as *const libc::c_char,
+        87i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32,
+    );
+    primitive(
+        b"XeTeXdelcode\x00" as *const u8 as *const libc::c_char,
+        87i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + 1i32,
+    );
+    primitive(
+        b"Udelcode\x00" as *const u8 as *const libc::c_char,
+        87i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + 1i32,
+    );
+    primitive(
+        b"textfont\x00" as *const u8 as *const libc::c_char,
+        88i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 0i32,
+    );
+    primitive(
+        b"scriptfont\x00" as *const u8 as *const libc::c_char,
+        88i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 256i32,
+    );
+    primitive(
+        b"scriptscriptfont\x00" as *const u8 as *const libc::c_char,
+        88i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 2i32 * 256i32,
+    );
+    primitive(
+        b"hyphenation\x00" as *const u8 as *const libc::c_char,
+        101i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"patterns\x00" as *const u8 as *const libc::c_char,
+        101i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"hyphenchar\x00" as *const u8 as *const libc::c_char,
+        79i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"skewchar\x00" as *const u8 as *const libc::c_char,
+        79i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"lpcode\x00" as *const u8 as *const libc::c_char,
+        79i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"rpcode\x00" as *const u8 as *const libc::c_char,
+        79i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"batchmode\x00" as *const u8 as *const libc::c_char,
+        102i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"nonstopmode\x00" as *const u8 as *const libc::c_char,
+        102i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"scrollmode\x00" as *const u8 as *const libc::c_char,
+        102i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"errorstopmode\x00" as *const u8 as *const libc::c_char,
+        102i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"openin\x00" as *const u8 as *const libc::c_char,
+        60i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"closein\x00" as *const u8 as *const libc::c_char,
+        60i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"message\x00" as *const u8 as *const libc::c_char,
+        58i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"errmessage\x00" as *const u8 as *const libc::c_char,
+        58i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"lowercase\x00" as *const u8 as *const libc::c_char,
+        57i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32),
+    );
+    primitive(
+        b"uppercase\x00" as *const u8 as *const libc::c_char,
+        57i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32),
+    );
+    primitive(
+        b"show\x00" as *const u8 as *const libc::c_char,
+        19i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"showbox\x00" as *const u8 as *const libc::c_char,
+        19i32 as uint16_t,
+        1i32,
+    );
+    primitive(
+        b"showthe\x00" as *const u8 as *const libc::c_char,
+        19i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"showlists\x00" as *const u8 as *const libc::c_char,
+        19i32 as uint16_t,
+        3i32,
+    );
+    primitive(
+        b"openout\x00" as *const u8 as *const libc::c_char,
+        59i32 as uint16_t,
+        0i32,
+    );
+    primitive(
+        b"write\x00" as *const u8 as *const libc::c_char,
+        59i32 as uint16_t,
+        1i32,
+    );
     write_loc = cur_val;
-    primitive(b"closeout\x00" as *const u8 as *const libc::c_char,
-              59i32 as uint16_t, 2i32);
-    primitive(b"special\x00" as *const u8 as *const libc::c_char,
-              59i32 as uint16_t, 3i32);
-    (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                       15000i32 + 10i32) as isize)).s1 =
-        maketexstring(b"special\x00" as *const u8 as *const libc::c_char);
-    *eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 10i32) as isize) =
-        *eqtb.offset(cur_val as isize);
-    primitive(b"immediate\x00" as *const u8 as *const libc::c_char,
-              59i32 as uint16_t, 4i32);
-    primitive(b"setlanguage\x00" as *const u8 as *const libc::c_char,
-              59i32 as uint16_t, 5i32);
-    primitive(b"synctex\x00" as *const u8 as *const libc::c_char,
-              74i32 as uint16_t,
-              1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                  15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                  256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 +
-                  3i32 * 256i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                  + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 83i32);
+    primitive(
+        b"closeout\x00" as *const u8 as *const libc::c_char,
+        59i32 as uint16_t,
+        2i32,
+    );
+    primitive(
+        b"special\x00" as *const u8 as *const libc::c_char,
+        59i32 as uint16_t,
+        3i32,
+    );
+    (*hash.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 10i32) as isize,
+    ))
+    .s1 = maketexstring(b"special\x00" as *const u8 as *const libc::c_char);
+    *eqtb.offset(
+        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 10i32) as isize,
+    ) = *eqtb.offset(cur_val as isize);
+    primitive(
+        b"immediate\x00" as *const u8 as *const libc::c_char,
+        59i32 as uint16_t,
+        4i32,
+    );
+    primitive(
+        b"setlanguage\x00" as *const u8 as *const libc::c_char,
+        59i32 as uint16_t,
+        5i32,
+    );
+    primitive(
+        b"synctex\x00" as *const u8 as *const libc::c_char,
+        74i32 as uint16_t,
+        1i32 + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 83i32,
+    );
     no_new_control_sequence = 1i32 != 0;
 }
 unsafe extern "C" fn get_strings_started() {
@@ -9984,8 +14952,7 @@ unsafe extern "C" fn get_strings_started() {
     *str_start.offset(0) = 0i32;
     str_ptr = 65536i32;
     if load_pool_strings(pool_size - string_vacancies) == 0i32 {
-        _tt_abort(b"must increase pool_size\x00" as *const u8 as
-                      *const libc::c_char);
+        _tt_abort(b"must increase pool_size\x00" as *const u8 as *const libc::c_char);
     };
 }
 /* xetex-errors */
@@ -9996,26 +14963,28 @@ unsafe extern "C" fn get_strings_started() {
 /* xetex-shipout */
 /* Inlines */
 /* Strings printed this way will end up in the .log as well
-     * as the terminal output. */
+ * as the terminal output. */
 /*41: The length of the current string in the pool */
 /* Tectonic related functions */
 /*:1001*/
 #[no_mangle]
-pub unsafe extern "C" fn tt_run_engine(mut dump_name: *mut libc::c_char,
-                                       mut input_file_name: *mut libc::c_char)
- -> tt_history_t {
+pub unsafe extern "C" fn tt_run_engine(
+    mut dump_name: *mut libc::c_char,
+    mut input_file_name: *mut libc::c_char,
+) -> tt_history_t {
     let mut font_k: int32_t = 0;
     /* Miscellaneous initializations that were mostly originally done in the
      * main() driver routines. */
     /* Get our stdout handle */
     rust_stdout = ttstub_output_open_stdout();
     let mut len: size_t = strlen(dump_name);
-    TEX_format_default =
-        xmalloc(len.wrapping_add(1i32 as libc::c_ulong)) as *mut libc::c_char;
+    TEX_format_default = xmalloc(len.wrapping_add(1i32 as libc::c_ulong)) as *mut libc::c_char;
     strcpy(TEX_format_default, dump_name);
     format_default_length = len as int32_t;
     /* Not sure why these get custom initializations. */
-    if file_line_error_style_p < 0i32 { file_line_error_style_p = 0i32 }
+    if file_line_error_style_p < 0i32 {
+        file_line_error_style_p = 0i32
+    }
     /* These various parameters were configurable in web2c TeX. We don't
      * bother to allow that. */
     pool_size = 6250000i64 as int32_t;
@@ -10039,138 +15008,146 @@ pub unsafe extern "C" fn tt_run_engine(mut dump_name: *mut libc::c_char,
     hash_extra = 600000i64 as int32_t;
     expand_depth = 10000i32;
     /* Allocate many of our big arrays. */
-    buffer =
-        xmalloc(((buf_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<UnicodeScalar>()
-                                                     as libc::c_ulong)) as
-            *mut UnicodeScalar;
-    nest =
-        xmalloc(((nest_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<list_state_record>()
-                                                     as libc::c_ulong)) as
-            *mut list_state_record;
-    save_stack =
-        xmalloc(((save_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<memory_word>()
-                                                     as libc::c_ulong)) as
-            *mut memory_word;
-    input_stack =
-        xmalloc(((stack_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<input_state_t>()
-                                                     as libc::c_ulong)) as
-            *mut input_state_t;
-    input_file =
-        xmalloc(((max_in_open + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<*mut UFILE>()
-                                                     as libc::c_ulong)) as
-            *mut *mut UFILE;
-    line_stack =
-        xmalloc(((max_in_open + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
-                                                     as libc::c_ulong)) as
-            *mut int32_t;
-    eof_seen =
-        xmalloc(((max_in_open + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<bool>()
-                                                     as libc::c_ulong)) as
-            *mut bool;
-    grp_stack =
-        xmalloc(((max_in_open + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<save_pointer>()
-                                                     as libc::c_ulong)) as
-            *mut save_pointer;
-    if_stack =
-        xmalloc(((max_in_open + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
-                                                     as libc::c_ulong)) as
-            *mut int32_t;
-    source_filename_stack =
-        xmalloc(((max_in_open + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                     as libc::c_ulong)) as
-            *mut str_number;
-    full_source_filename_stack =
-        xmalloc(((max_in_open + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                     as libc::c_ulong)) as
-            *mut str_number;
-    param_stack =
-        xmalloc(((param_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
-                                                     as libc::c_ulong)) as
-            *mut int32_t;
-    hyph_word =
-        xmalloc(((hyph_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
-                                                     as libc::c_ulong)) as
-            *mut str_number;
-    hyph_list =
-        xmalloc(((hyph_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
-                                                     as libc::c_ulong)) as
-            *mut int32_t;
-    hyph_link =
-        xmalloc(((hyph_size + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<hyph_pointer>()
-                                                     as libc::c_ulong)) as
-            *mut hyph_pointer;
+    buffer = xmalloc(
+        ((buf_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<UnicodeScalar>() as libc::c_ulong),
+    ) as *mut UnicodeScalar;
+    nest = xmalloc(
+        ((nest_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<list_state_record>() as libc::c_ulong),
+    ) as *mut list_state_record;
+    save_stack = xmalloc(
+        ((save_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<memory_word>() as libc::c_ulong),
+    ) as *mut memory_word;
+    input_stack = xmalloc(
+        ((stack_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<input_state_t>() as libc::c_ulong),
+    ) as *mut input_state_t;
+    input_file = xmalloc(
+        ((max_in_open + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<*mut UFILE>() as libc::c_ulong),
+    ) as *mut *mut UFILE;
+    line_stack = xmalloc(
+        ((max_in_open + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+    ) as *mut int32_t;
+    eof_seen = xmalloc(
+        ((max_in_open + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<bool>() as libc::c_ulong),
+    ) as *mut bool;
+    grp_stack = xmalloc(
+        ((max_in_open + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<save_pointer>() as libc::c_ulong),
+    ) as *mut save_pointer;
+    if_stack = xmalloc(
+        ((max_in_open + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+    ) as *mut int32_t;
+    source_filename_stack = xmalloc(
+        ((max_in_open + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+    ) as *mut str_number;
+    full_source_filename_stack = xmalloc(
+        ((max_in_open + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+    ) as *mut str_number;
+    param_stack = xmalloc(
+        ((param_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+    ) as *mut int32_t;
+    hyph_word = xmalloc(
+        ((hyph_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+    ) as *mut str_number;
+    hyph_list = xmalloc(
+        ((hyph_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+    ) as *mut int32_t;
+    hyph_link = xmalloc(
+        ((hyph_size + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<hyph_pointer>() as libc::c_ulong),
+    ) as *mut hyph_pointer;
     /* First bit of initex handling: more allocations. */
     if in_initex_mode {
-        mem =
-            xmalloc(((4999999i32 + 1i32 + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<memory_word>()
-                                                         as libc::c_ulong)) as
-                *mut memory_word;
-        eqtb_top =
-            1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                (0x10ffffi32 + 1i32) + 23i32 + 256i32 - 1i32 + hash_extra;
+        mem = xmalloc(
+            ((4999999i32 + 1i32 + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<memory_word>() as libc::c_ulong),
+        ) as *mut memory_word;
+        eqtb_top = 1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 23i32
+            + 256i32
+            - 1i32
+            + hash_extra;
         if hash_extra == 0i32 {
-            hash_top =
-                1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                    15000i32 + 12i32 + 9000i32 + 1i32
-        } else { hash_top = eqtb_top }
-        yhash =
-            xmalloc(((1i32 + hash_top - 514i32 + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<b32x2>()
-                                                         as libc::c_ulong)) as
-                *mut b32x2;
+            hash_top = 1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+        } else {
+            hash_top = eqtb_top
+        }
+        yhash = xmalloc(
+            ((1i32 + hash_top - 514i32 + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<b32x2>() as libc::c_ulong),
+        ) as *mut b32x2;
         hash = yhash.offset(-514);
-        (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32) as isize)).s0 = 0i32;
-        (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32) as isize)).s1 = 0i32;
-        hash_used =
-            1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 1i32;
+        (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32) as isize)).s0 =
+            0i32;
+        (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32) as isize)).s1 =
+            0i32;
+        hash_used = 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 1i32;
         while hash_used <= hash_top {
             *hash.offset(hash_used as isize) =
-                *hash.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                  (0x10ffffi32 + 1i32) + 1i32) as isize);
+                *hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32) as isize);
             hash_used += 1
         }
-        eqtb =
-            xcalloc((eqtb_top + 1i32) as size_t,
-                    ::std::mem::size_of::<memory_word>() as libc::c_ulong) as
-                *mut memory_word;
-        str_start =
-            xmalloc(((max_strings + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<pool_pointer>()
-                                                         as libc::c_ulong)) as
-                *mut pool_pointer;
-        str_pool =
-            xmalloc(((pool_size + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<packed_UTF16_code>()
-                                                         as libc::c_ulong)) as
-                *mut packed_UTF16_code;
-        font_info =
-            xmalloc(((font_mem_size + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<memory_word>()
-                                                         as libc::c_ulong)) as
-                *mut memory_word
+        eqtb = xcalloc(
+            (eqtb_top + 1i32) as size_t,
+            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+        ) as *mut memory_word;
+        str_start = xmalloc(
+            ((max_strings + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<pool_pointer>() as libc::c_ulong),
+        ) as *mut pool_pointer;
+        str_pool = xmalloc(
+            ((pool_size + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<packed_UTF16_code>() as libc::c_ulong),
+        ) as *mut packed_UTF16_code;
+        font_info = xmalloc(
+            ((font_mem_size + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<memory_word>() as libc::c_ulong),
+        ) as *mut memory_word
     }
     /* Sanity-check various invariants. */
     history = HISTORY_FATAL_ERROR;
@@ -10178,39 +15155,86 @@ pub unsafe extern "C" fn tt_run_engine(mut dump_name: *mut libc::c_char,
     if half_error_line < 30i32 || half_error_line > error_line - 15i32 {
         bad = 1i32
     }
-    if max_print_line < 60i32 { bad = 2i32 }
-    if 1100i32 > 4999999i32 { bad = 4i32 }
-    if 8501i32 > 15000i32 { bad = 5i32 }
-    if max_in_open >= 128i32 { bad = 6i32 }
-    if 4999999i32 < 267i32 { bad = 7i32 }
-    if -0xfffffffi32 > 0i32 { bad = 12i32 }
-    if 9000i32 < -0xfffffffi32 || 9000i32 > 0x3fffffffi32 { bad = 15i32 }
-    if font_max > 0i32 + 9000i32 { bad = 16i32 }
+    if max_print_line < 60i32 {
+        bad = 2i32
+    }
+    if 1100i32 > 4999999i32 {
+        bad = 4i32
+    }
+    if 8501i32 > 15000i32 {
+        bad = 5i32
+    }
+    if max_in_open >= 128i32 {
+        bad = 6i32
+    }
+    if 4999999i32 < 267i32 {
+        bad = 7i32
+    }
+    if -0xfffffffi32 > 0i32 {
+        bad = 12i32
+    }
+    if 9000i32 < -0xfffffffi32 || 9000i32 > 0x3fffffffi32 {
+        bad = 15i32
+    }
+    if font_max > 0i32 + 9000i32 {
+        bad = 16i32
+    }
     if save_size > 0x3fffffffi32 || max_strings > 0x3fffffffi32 {
         bad = 17i32
     }
-    if buf_size > 0x3fffffffi32 { bad = 18i32 }
-    if 0x1ffffffi32 +
-           (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 + 256i32 +
-                256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32 + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                (0x10ffffi32 + 1i32) + 23i32 + 256i32 - 1i32) + hash_extra >
-           0x3fffffffi32 {
+    if buf_size > 0x3fffffffi32 {
+        bad = 18i32
+    }
+    if 0x1ffffffi32
+        + (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 23i32
+            + 256i32
+            - 1i32)
+        + hash_extra
+        > 0x3fffffffi32
+    {
         bad = 21i32
     }
-    if 514i32 < 0i32 ||
-           514i32 > 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32
-       {
+    if 514i32 < 0i32 || 514i32 > 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 {
         bad = 42i32
     }
-    if format_default_length > 2147483647i32 { bad = 31i32 }
-    if 2i32 * 0x3fffffffi32 < 4999999i32 { bad = 41i32 }
+    if format_default_length > 2147483647i32 {
+        bad = 31i32
+    }
+    if 2i32 * 0x3fffffffi32 < 4999999i32 {
+        bad = 41i32
+    }
     if bad > 0i32 {
-        _tt_abort(b"failed internal consistency check #%d\x00" as *const u8 as
-                      *const libc::c_char, bad);
+        _tt_abort(
+            b"failed internal consistency check #%d\x00" as *const u8 as *const libc::c_char,
+            bad,
+        );
     }
     /* OK, ready to keep on initializing. */
     initialize_more_variables();
@@ -10233,11 +15257,9 @@ pub unsafe extern "C" fn tt_run_engine(mut dump_name: *mut libc::c_char,
     name_in_progress = 0i32 != 0;
     log_opened = 0i32 != 0;
     if semantic_pagination_enabled {
-        output_file_extension =
-            b".spx\x00" as *const u8 as *const libc::c_char
+        output_file_extension = b".spx\x00" as *const u8 as *const libc::c_char
     } else {
-        output_file_extension =
-            b".xdv\x00" as *const u8 as *const libc::c_char
+        output_file_extension = b".xdv\x00" as *const u8 as *const libc::c_char
     }
     input_ptr = 0i32;
     max_in_stack = 0i32;
@@ -10252,10 +15274,12 @@ pub unsafe extern "C" fn tt_run_engine(mut dump_name: *mut libc::c_char,
     max_param_stack = 0i32;
     used_tectonic_coda_tokens = 0i32 != 0;
     gave_char_warning_help = 0i32 != 0;
-    memset(buffer as *mut libc::c_void, 0i32,
-           (buf_size as
-                libc::c_ulong).wrapping_mul(::std::mem::size_of::<UnicodeScalar>()
-                                                as libc::c_ulong));
+    memset(
+        buffer as *mut libc::c_void,
+        0i32,
+        (buf_size as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<UnicodeScalar>() as libc::c_ulong),
+    );
     first = 0i32;
     scanner_status = 0i32 as libc::c_uchar;
     warning_index = -0xfffffffi32;
@@ -10270,707 +15294,1655 @@ pub unsafe extern "C" fn tt_run_engine(mut dump_name: *mut libc::c_char,
     init_io();
     if in_initex_mode {
         no_new_control_sequence = 0i32 != 0;
-        primitive(b"XeTeXpicfile\x00" as *const u8 as *const libc::c_char,
-                  59i32 as uint16_t, 41i32);
-        primitive(b"XeTeXpdffile\x00" as *const u8 as *const libc::c_char,
-                  59i32 as uint16_t, 42i32);
-        primitive(b"XeTeXglyph\x00" as *const u8 as *const libc::c_char,
-                  59i32 as uint16_t, 43i32);
-        primitive(b"XeTeXlinebreaklocale\x00" as *const u8 as
-                      *const libc::c_char, 59i32 as uint16_t, 46i32);
-        primitive(b"pdfsavepos\x00" as *const u8 as *const libc::c_char,
-                  59i32 as uint16_t, 6i32 + 0i32);
-        primitive(b"lastnodetype\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 3i32);
-        primitive(b"eTeXversion\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 6i32);
-        primitive(b"eTeXrevision\x00" as *const u8 as *const libc::c_char,
-                  110i32 as uint16_t, 5i32);
-        primitive(b"XeTeXversion\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 14i32);
-        primitive(b"XeTeXrevision\x00" as *const u8 as *const libc::c_char,
-                  110i32 as uint16_t, 6i32);
-        primitive(b"XeTeXcountglyphs\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 15i32);
-        primitive(b"XeTeXcountvariations\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 16i32);
-        primitive(b"XeTeXvariation\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 17i32);
-        primitive(b"XeTeXfindvariationbyname\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 18i32);
-        primitive(b"XeTeXvariationmin\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 19i32);
-        primitive(b"XeTeXvariationmax\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 20i32);
-        primitive(b"XeTeXvariationdefault\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 21i32);
-        primitive(b"XeTeXcountfeatures\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 22i32);
-        primitive(b"XeTeXfeaturecode\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 23i32);
-        primitive(b"XeTeXfindfeaturebyname\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 24i32);
-        primitive(b"XeTeXisexclusivefeature\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 25i32);
-        primitive(b"XeTeXcountselectors\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 26i32);
-        primitive(b"XeTeXselectorcode\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 27i32);
-        primitive(b"XeTeXfindselectorbyname\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 28i32);
-        primitive(b"XeTeXisdefaultselector\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 29i32);
-        primitive(b"XeTeXvariationname\x00" as *const u8 as
-                      *const libc::c_char, 110i32 as uint16_t, 7i32);
-        primitive(b"XeTeXfeaturename\x00" as *const u8 as *const libc::c_char,
-                  110i32 as uint16_t, 8i32);
-        primitive(b"XeTeXselectorname\x00" as *const u8 as
-                      *const libc::c_char, 110i32 as uint16_t, 9i32);
-        primitive(b"XeTeXOTcountscripts\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 30i32);
-        primitive(b"XeTeXOTcountlanguages\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 31i32);
-        primitive(b"XeTeXOTcountfeatures\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 32i32);
-        primitive(b"XeTeXOTscripttag\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 33i32);
-        primitive(b"XeTeXOTlanguagetag\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 34i32);
-        primitive(b"XeTeXOTfeaturetag\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 35i32);
-        primitive(b"XeTeXcharglyph\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 36i32);
-        primitive(b"XeTeXglyphindex\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 37i32);
-        primitive(b"XeTeXglyphbounds\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 47i32);
-        primitive(b"XeTeXglyphname\x00" as *const u8 as *const libc::c_char,
-                  110i32 as uint16_t, 10i32);
-        primitive(b"XeTeXfonttype\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 38i32);
-        primitive(b"XeTeXfirstfontchar\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 39i32);
-        primitive(b"XeTeXlastfontchar\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 40i32);
-        primitive(b"pdflastxpos\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 41i32);
-        primitive(b"pdflastypos\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 42i32);
-        primitive(b"strcmp\x00" as *const u8 as *const libc::c_char,
-                  110i32 as uint16_t, 43i32);
-        primitive(b"mdfivesum\x00" as *const u8 as *const libc::c_char,
-                  110i32 as uint16_t, 44i32);
-        primitive(b"pdfmdfivesum\x00" as *const u8 as *const libc::c_char,
-                  110i32 as uint16_t, 44i32);
-        primitive(b"shellescape\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 45i32);
-        primitive(b"XeTeXpdfpagecount\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 46i32);
-        primitive(b"tracingassigns\x00" as *const u8 as *const libc::c_char,
-                  74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 58i32);
-        primitive(b"tracinggroups\x00" as *const u8 as *const libc::c_char,
-                  74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 59i32);
-        primitive(b"tracingifs\x00" as *const u8 as *const libc::c_char,
-                  74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 60i32);
-        primitive(b"tracingscantokens\x00" as *const u8 as
-                      *const libc::c_char, 74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 61i32);
-        primitive(b"tracingnesting\x00" as *const u8 as *const libc::c_char,
-                  74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 62i32);
-        primitive(b"predisplaydirection\x00" as *const u8 as
-                      *const libc::c_char, 74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 63i32);
-        primitive(b"lastlinefit\x00" as *const u8 as *const libc::c_char,
-                  74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 64i32);
-        primitive(b"savingvdiscards\x00" as *const u8 as *const libc::c_char,
-                  74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 65i32);
-        primitive(b"savinghyphcodes\x00" as *const u8 as *const libc::c_char,
-                  74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 66i32);
-        primitive(b"currentgrouplevel\x00" as *const u8 as
-                      *const libc::c_char, 71i32 as uint16_t, 7i32);
-        primitive(b"currentgrouptype\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 8i32);
-        primitive(b"currentiflevel\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 9i32);
-        primitive(b"currentiftype\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 10i32);
-        primitive(b"currentifbranch\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 11i32);
-        primitive(b"fontcharwd\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 48i32);
-        primitive(b"fontcharht\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 49i32);
-        primitive(b"fontchardp\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 50i32);
-        primitive(b"fontcharic\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 51i32);
-        primitive(b"parshapelength\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 52i32);
-        primitive(b"parshapeindent\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 53i32);
-        primitive(b"parshapedimen\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 54i32);
-        primitive(b"showgroups\x00" as *const u8 as *const libc::c_char,
-                  19i32 as uint16_t, 4i32);
-        primitive(b"showtokens\x00" as *const u8 as *const libc::c_char,
-                  19i32 as uint16_t, 5i32);
-        primitive(b"unexpanded\x00" as *const u8 as *const libc::c_char,
-                  111i32 as uint16_t, 1i32);
-        primitive(b"detokenize\x00" as *const u8 as *const libc::c_char,
-                  111i32 as uint16_t, 5i32);
-        primitive(b"showifs\x00" as *const u8 as *const libc::c_char,
-                  19i32 as uint16_t, 6i32);
-        primitive(b"interactionmode\x00" as *const u8 as *const libc::c_char,
-                  83i32 as uint16_t, 2i32);
-        primitive(b"middle\x00" as *const u8 as *const libc::c_char,
-                  49i32 as uint16_t, 1i32);
-        primitive(b"suppressfontnotfounderror\x00" as *const u8 as
-                      *const libc::c_char, 74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 67i32);
-        primitive(b"TeXXeTstate\x00" as *const u8 as *const libc::c_char,
-                  74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 71i32);
-        primitive(b"XeTeXupwardsmode\x00" as *const u8 as *const libc::c_char,
-                  74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 73i32);
-        primitive(b"XeTeXuseglyphmetrics\x00" as *const u8 as
-                      *const libc::c_char, 74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 74i32);
-        primitive(b"XeTeXinterchartokenstate\x00" as *const u8 as
-                      *const libc::c_char, 74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 75i32);
-        primitive(b"XeTeXdashbreakstate\x00" as *const u8 as
-                      *const libc::c_char, 74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 72i32);
-        primitive(b"XeTeXinputnormalization\x00" as *const u8 as
-                      *const libc::c_char, 74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 76i32);
-        primitive(b"XeTeXtracingfonts\x00" as *const u8 as
-                      *const libc::c_char, 74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 79i32);
-        primitive(b"XeTeXinterwordspaceshaping\x00" as *const u8 as
-                      *const libc::c_char, 74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 80i32);
-        primitive(b"XeTeXgenerateactualtext\x00" as *const u8 as
-                      *const libc::c_char, 74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 81i32);
-        primitive(b"XeTeXhyphenatablelength\x00" as *const u8 as
-                      *const libc::c_char, 74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 82i32);
-        primitive(b"pdfoutput\x00" as *const u8 as *const libc::c_char,
-                  74i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 4i32 + 256i32 + 1i32
-                      + 3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                      (0x10ffffi32 + 1i32) + 84i32);
-        primitive(b"XeTeXinputencoding\x00" as *const u8 as
-                      *const libc::c_char, 59i32 as uint16_t, 44i32);
-        primitive(b"XeTeXdefaultencoding\x00" as *const u8 as
-                      *const libc::c_char, 59i32 as uint16_t, 45i32);
-        primitive(b"beginL\x00" as *const u8 as *const libc::c_char,
-                  33i32 as uint16_t, 6i32);
-        primitive(b"endL\x00" as *const u8 as *const libc::c_char,
-                  33i32 as uint16_t, 7i32);
-        primitive(b"beginR\x00" as *const u8 as *const libc::c_char,
-                  33i32 as uint16_t, 10i32);
-        primitive(b"endR\x00" as *const u8 as *const libc::c_char,
-                  33i32 as uint16_t, 11i32);
-        primitive(b"scantokens\x00" as *const u8 as *const libc::c_char,
-                  106i32 as uint16_t, 2i32);
-        primitive(b"readline\x00" as *const u8 as *const libc::c_char,
-                  98i32 as uint16_t, 1i32);
-        primitive(b"unless\x00" as *const u8 as *const libc::c_char,
-                  104i32 as uint16_t, 1i32);
-        primitive(b"ifdefined\x00" as *const u8 as *const libc::c_char,
-                  107i32 as uint16_t, 17i32);
-        primitive(b"ifcsname\x00" as *const u8 as *const libc::c_char,
-                  107i32 as uint16_t, 18i32);
-        primitive(b"iffontchar\x00" as *const u8 as *const libc::c_char,
-                  107i32 as uint16_t, 19i32);
-        primitive(b"ifincsname\x00" as *const u8 as *const libc::c_char,
-                  107i32 as uint16_t, 20i32);
-        primitive(b"protected\x00" as *const u8 as *const libc::c_char,
-                  95i32 as uint16_t, 8i32);
-        primitive(b"numexpr\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 59i32 + 0i32);
-        primitive(b"dimexpr\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 59i32 + 1i32);
-        primitive(b"glueexpr\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 59i32 + 2i32);
-        primitive(b"muexpr\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 59i32 + 3i32);
-        primitive(b"gluestretchorder\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 12i32);
-        primitive(b"glueshrinkorder\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 13i32);
-        primitive(b"gluestretch\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 55i32);
-        primitive(b"glueshrink\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 56i32);
-        primitive(b"mutoglue\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 57i32);
-        primitive(b"gluetomu\x00" as *const u8 as *const libc::c_char,
-                  71i32 as uint16_t, 58i32);
-        primitive(b"marks\x00" as *const u8 as *const libc::c_char,
-                  18i32 as uint16_t, 5i32);
-        primitive(b"topmarks\x00" as *const u8 as *const libc::c_char,
-                  112i32 as uint16_t, 0i32 + 5i32);
-        primitive(b"firstmarks\x00" as *const u8 as *const libc::c_char,
-                  112i32 as uint16_t, 1i32 + 5i32);
-        primitive(b"botmarks\x00" as *const u8 as *const libc::c_char,
-                  112i32 as uint16_t, 2i32 + 5i32);
-        primitive(b"splitfirstmarks\x00" as *const u8 as *const libc::c_char,
-                  112i32 as uint16_t, 3i32 + 5i32);
-        primitive(b"splitbotmarks\x00" as *const u8 as *const libc::c_char,
-                  112i32 as uint16_t, 4i32 + 5i32);
-        primitive(b"pagediscards\x00" as *const u8 as *const libc::c_char,
-                  24i32 as uint16_t, 2i32);
-        primitive(b"splitdiscards\x00" as *const u8 as *const libc::c_char,
-                  24i32 as uint16_t, 3i32);
-        primitive(b"interlinepenalties\x00" as *const u8 as
-                      *const libc::c_char, 85i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 0i32);
-        primitive(b"clubpenalties\x00" as *const u8 as *const libc::c_char,
-                  85i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 1i32);
-        primitive(b"widowpenalties\x00" as *const u8 as *const libc::c_char,
-                  85i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 2i32);
-        primitive(b"displaywidowpenalties\x00" as *const u8 as
-                      *const libc::c_char, 85i32 as uint16_t,
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                      256i32 + 256i32 + 13i32 + 256i32 + 3i32);
+        primitive(
+            b"XeTeXpicfile\x00" as *const u8 as *const libc::c_char,
+            59i32 as uint16_t,
+            41i32,
+        );
+        primitive(
+            b"XeTeXpdffile\x00" as *const u8 as *const libc::c_char,
+            59i32 as uint16_t,
+            42i32,
+        );
+        primitive(
+            b"XeTeXglyph\x00" as *const u8 as *const libc::c_char,
+            59i32 as uint16_t,
+            43i32,
+        );
+        primitive(
+            b"XeTeXlinebreaklocale\x00" as *const u8 as *const libc::c_char,
+            59i32 as uint16_t,
+            46i32,
+        );
+        primitive(
+            b"pdfsavepos\x00" as *const u8 as *const libc::c_char,
+            59i32 as uint16_t,
+            6i32 + 0i32,
+        );
+        primitive(
+            b"lastnodetype\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            3i32,
+        );
+        primitive(
+            b"eTeXversion\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            6i32,
+        );
+        primitive(
+            b"eTeXrevision\x00" as *const u8 as *const libc::c_char,
+            110i32 as uint16_t,
+            5i32,
+        );
+        primitive(
+            b"XeTeXversion\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            14i32,
+        );
+        primitive(
+            b"XeTeXrevision\x00" as *const u8 as *const libc::c_char,
+            110i32 as uint16_t,
+            6i32,
+        );
+        primitive(
+            b"XeTeXcountglyphs\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            15i32,
+        );
+        primitive(
+            b"XeTeXcountvariations\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            16i32,
+        );
+        primitive(
+            b"XeTeXvariation\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            17i32,
+        );
+        primitive(
+            b"XeTeXfindvariationbyname\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            18i32,
+        );
+        primitive(
+            b"XeTeXvariationmin\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            19i32,
+        );
+        primitive(
+            b"XeTeXvariationmax\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            20i32,
+        );
+        primitive(
+            b"XeTeXvariationdefault\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            21i32,
+        );
+        primitive(
+            b"XeTeXcountfeatures\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            22i32,
+        );
+        primitive(
+            b"XeTeXfeaturecode\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            23i32,
+        );
+        primitive(
+            b"XeTeXfindfeaturebyname\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            24i32,
+        );
+        primitive(
+            b"XeTeXisexclusivefeature\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            25i32,
+        );
+        primitive(
+            b"XeTeXcountselectors\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            26i32,
+        );
+        primitive(
+            b"XeTeXselectorcode\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            27i32,
+        );
+        primitive(
+            b"XeTeXfindselectorbyname\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            28i32,
+        );
+        primitive(
+            b"XeTeXisdefaultselector\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            29i32,
+        );
+        primitive(
+            b"XeTeXvariationname\x00" as *const u8 as *const libc::c_char,
+            110i32 as uint16_t,
+            7i32,
+        );
+        primitive(
+            b"XeTeXfeaturename\x00" as *const u8 as *const libc::c_char,
+            110i32 as uint16_t,
+            8i32,
+        );
+        primitive(
+            b"XeTeXselectorname\x00" as *const u8 as *const libc::c_char,
+            110i32 as uint16_t,
+            9i32,
+        );
+        primitive(
+            b"XeTeXOTcountscripts\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            30i32,
+        );
+        primitive(
+            b"XeTeXOTcountlanguages\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            31i32,
+        );
+        primitive(
+            b"XeTeXOTcountfeatures\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            32i32,
+        );
+        primitive(
+            b"XeTeXOTscripttag\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            33i32,
+        );
+        primitive(
+            b"XeTeXOTlanguagetag\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            34i32,
+        );
+        primitive(
+            b"XeTeXOTfeaturetag\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            35i32,
+        );
+        primitive(
+            b"XeTeXcharglyph\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            36i32,
+        );
+        primitive(
+            b"XeTeXglyphindex\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            37i32,
+        );
+        primitive(
+            b"XeTeXglyphbounds\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            47i32,
+        );
+        primitive(
+            b"XeTeXglyphname\x00" as *const u8 as *const libc::c_char,
+            110i32 as uint16_t,
+            10i32,
+        );
+        primitive(
+            b"XeTeXfonttype\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            38i32,
+        );
+        primitive(
+            b"XeTeXfirstfontchar\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            39i32,
+        );
+        primitive(
+            b"XeTeXlastfontchar\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            40i32,
+        );
+        primitive(
+            b"pdflastxpos\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            41i32,
+        );
+        primitive(
+            b"pdflastypos\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            42i32,
+        );
+        primitive(
+            b"strcmp\x00" as *const u8 as *const libc::c_char,
+            110i32 as uint16_t,
+            43i32,
+        );
+        primitive(
+            b"mdfivesum\x00" as *const u8 as *const libc::c_char,
+            110i32 as uint16_t,
+            44i32,
+        );
+        primitive(
+            b"pdfmdfivesum\x00" as *const u8 as *const libc::c_char,
+            110i32 as uint16_t,
+            44i32,
+        );
+        primitive(
+            b"shellescape\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            45i32,
+        );
+        primitive(
+            b"XeTeXpdfpagecount\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            46i32,
+        );
+        primitive(
+            b"tracingassigns\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 58i32,
+        );
+        primitive(
+            b"tracinggroups\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 59i32,
+        );
+        primitive(
+            b"tracingifs\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 60i32,
+        );
+        primitive(
+            b"tracingscantokens\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 61i32,
+        );
+        primitive(
+            b"tracingnesting\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 62i32,
+        );
+        primitive(
+            b"predisplaydirection\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 63i32,
+        );
+        primitive(
+            b"lastlinefit\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 64i32,
+        );
+        primitive(
+            b"savingvdiscards\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 65i32,
+        );
+        primitive(
+            b"savinghyphcodes\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 66i32,
+        );
+        primitive(
+            b"currentgrouplevel\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            7i32,
+        );
+        primitive(
+            b"currentgrouptype\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            8i32,
+        );
+        primitive(
+            b"currentiflevel\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            9i32,
+        );
+        primitive(
+            b"currentiftype\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            10i32,
+        );
+        primitive(
+            b"currentifbranch\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            11i32,
+        );
+        primitive(
+            b"fontcharwd\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            48i32,
+        );
+        primitive(
+            b"fontcharht\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            49i32,
+        );
+        primitive(
+            b"fontchardp\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            50i32,
+        );
+        primitive(
+            b"fontcharic\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            51i32,
+        );
+        primitive(
+            b"parshapelength\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            52i32,
+        );
+        primitive(
+            b"parshapeindent\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            53i32,
+        );
+        primitive(
+            b"parshapedimen\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            54i32,
+        );
+        primitive(
+            b"showgroups\x00" as *const u8 as *const libc::c_char,
+            19i32 as uint16_t,
+            4i32,
+        );
+        primitive(
+            b"showtokens\x00" as *const u8 as *const libc::c_char,
+            19i32 as uint16_t,
+            5i32,
+        );
+        primitive(
+            b"unexpanded\x00" as *const u8 as *const libc::c_char,
+            111i32 as uint16_t,
+            1i32,
+        );
+        primitive(
+            b"detokenize\x00" as *const u8 as *const libc::c_char,
+            111i32 as uint16_t,
+            5i32,
+        );
+        primitive(
+            b"showifs\x00" as *const u8 as *const libc::c_char,
+            19i32 as uint16_t,
+            6i32,
+        );
+        primitive(
+            b"interactionmode\x00" as *const u8 as *const libc::c_char,
+            83i32 as uint16_t,
+            2i32,
+        );
+        primitive(
+            b"middle\x00" as *const u8 as *const libc::c_char,
+            49i32 as uint16_t,
+            1i32,
+        );
+        primitive(
+            b"suppressfontnotfounderror\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 67i32,
+        );
+        primitive(
+            b"TeXXeTstate\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 71i32,
+        );
+        primitive(
+            b"XeTeXupwardsmode\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 73i32,
+        );
+        primitive(
+            b"XeTeXuseglyphmetrics\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 74i32,
+        );
+        primitive(
+            b"XeTeXinterchartokenstate\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 75i32,
+        );
+        primitive(
+            b"XeTeXdashbreakstate\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 72i32,
+        );
+        primitive(
+            b"XeTeXinputnormalization\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 76i32,
+        );
+        primitive(
+            b"XeTeXtracingfonts\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 79i32,
+        );
+        primitive(
+            b"XeTeXinterwordspaceshaping\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 80i32,
+        );
+        primitive(
+            b"XeTeXgenerateactualtext\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 81i32,
+        );
+        primitive(
+            b"XeTeXhyphenatablelength\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 82i32,
+        );
+        primitive(
+            b"pdfoutput\x00" as *const u8 as *const libc::c_char,
+            74i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 84i32,
+        );
+        primitive(
+            b"XeTeXinputencoding\x00" as *const u8 as *const libc::c_char,
+            59i32 as uint16_t,
+            44i32,
+        );
+        primitive(
+            b"XeTeXdefaultencoding\x00" as *const u8 as *const libc::c_char,
+            59i32 as uint16_t,
+            45i32,
+        );
+        primitive(
+            b"beginL\x00" as *const u8 as *const libc::c_char,
+            33i32 as uint16_t,
+            6i32,
+        );
+        primitive(
+            b"endL\x00" as *const u8 as *const libc::c_char,
+            33i32 as uint16_t,
+            7i32,
+        );
+        primitive(
+            b"beginR\x00" as *const u8 as *const libc::c_char,
+            33i32 as uint16_t,
+            10i32,
+        );
+        primitive(
+            b"endR\x00" as *const u8 as *const libc::c_char,
+            33i32 as uint16_t,
+            11i32,
+        );
+        primitive(
+            b"scantokens\x00" as *const u8 as *const libc::c_char,
+            106i32 as uint16_t,
+            2i32,
+        );
+        primitive(
+            b"readline\x00" as *const u8 as *const libc::c_char,
+            98i32 as uint16_t,
+            1i32,
+        );
+        primitive(
+            b"unless\x00" as *const u8 as *const libc::c_char,
+            104i32 as uint16_t,
+            1i32,
+        );
+        primitive(
+            b"ifdefined\x00" as *const u8 as *const libc::c_char,
+            107i32 as uint16_t,
+            17i32,
+        );
+        primitive(
+            b"ifcsname\x00" as *const u8 as *const libc::c_char,
+            107i32 as uint16_t,
+            18i32,
+        );
+        primitive(
+            b"iffontchar\x00" as *const u8 as *const libc::c_char,
+            107i32 as uint16_t,
+            19i32,
+        );
+        primitive(
+            b"ifincsname\x00" as *const u8 as *const libc::c_char,
+            107i32 as uint16_t,
+            20i32,
+        );
+        primitive(
+            b"protected\x00" as *const u8 as *const libc::c_char,
+            95i32 as uint16_t,
+            8i32,
+        );
+        primitive(
+            b"numexpr\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            59i32 + 0i32,
+        );
+        primitive(
+            b"dimexpr\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            59i32 + 1i32,
+        );
+        primitive(
+            b"glueexpr\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            59i32 + 2i32,
+        );
+        primitive(
+            b"muexpr\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            59i32 + 3i32,
+        );
+        primitive(
+            b"gluestretchorder\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            12i32,
+        );
+        primitive(
+            b"glueshrinkorder\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            13i32,
+        );
+        primitive(
+            b"gluestretch\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            55i32,
+        );
+        primitive(
+            b"glueshrink\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            56i32,
+        );
+        primitive(
+            b"mutoglue\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            57i32,
+        );
+        primitive(
+            b"gluetomu\x00" as *const u8 as *const libc::c_char,
+            71i32 as uint16_t,
+            58i32,
+        );
+        primitive(
+            b"marks\x00" as *const u8 as *const libc::c_char,
+            18i32 as uint16_t,
+            5i32,
+        );
+        primitive(
+            b"topmarks\x00" as *const u8 as *const libc::c_char,
+            112i32 as uint16_t,
+            0i32 + 5i32,
+        );
+        primitive(
+            b"firstmarks\x00" as *const u8 as *const libc::c_char,
+            112i32 as uint16_t,
+            1i32 + 5i32,
+        );
+        primitive(
+            b"botmarks\x00" as *const u8 as *const libc::c_char,
+            112i32 as uint16_t,
+            2i32 + 5i32,
+        );
+        primitive(
+            b"splitfirstmarks\x00" as *const u8 as *const libc::c_char,
+            112i32 as uint16_t,
+            3i32 + 5i32,
+        );
+        primitive(
+            b"splitbotmarks\x00" as *const u8 as *const libc::c_char,
+            112i32 as uint16_t,
+            4i32 + 5i32,
+        );
+        primitive(
+            b"pagediscards\x00" as *const u8 as *const libc::c_char,
+            24i32 as uint16_t,
+            2i32,
+        );
+        primitive(
+            b"splitdiscards\x00" as *const u8 as *const libc::c_char,
+            24i32 as uint16_t,
+            3i32,
+        );
+        primitive(
+            b"interlinepenalties\x00" as *const u8 as *const libc::c_char,
+            85i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 0i32,
+        );
+        primitive(
+            b"clubpenalties\x00" as *const u8 as *const libc::c_char,
+            85i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 1i32,
+        );
+        primitive(
+            b"widowpenalties\x00" as *const u8 as *const libc::c_char,
+            85i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 2i32,
+        );
+        primitive(
+            b"displaywidowpenalties\x00" as *const u8 as *const libc::c_char,
+            85i32 as uint16_t,
+            1i32 + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 3i32,
+        );
         max_reg_num = 32767i32;
-        max_reg_help_line =
-            b"A register number must be between 0 and 32767.\x00" as *const u8
-                as *const libc::c_char
+        max_reg_help_line = b"A register number must be between 0 and 32767.\x00" as *const u8
+            as *const libc::c_char
     }
     no_new_control_sequence = 1i32 != 0;
-    if !in_initex_mode { if !load_fmt_file() { return history } }
-    if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                          19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                          256i32 + 1i32 + 3i32 * 256i32 + (0x10ffffi32 + 1i32)
-                          + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + 48i32) as isize)).b32.s1 <
-           0i32 ||
-           (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              48i32) as isize)).b32.s1 > 0xffffi32 {
+    if !in_initex_mode {
+        if !load_fmt_file() {
+            return history;
+        }
+    }
+    if (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 48i32) as isize,
+    ))
+    .b32
+    .s1 < 0i32
+        || (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 48i32) as isize,
+        ))
+        .b32
+        .s1 > 0xffffi32
+    {
         cur_input.limit -= 1
     } else {
-        *buffer.offset(cur_input.limit as isize) =
-            (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                               + 1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 +
-                               1i32 + 19i32 + 256i32 + 256i32 + 13i32 + 256i32
-                               + 4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               48i32) as isize)).b32.s1
+        *buffer.offset(cur_input.limit as isize) = (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 48i32) as isize,
+        ))
+        .b32
+        .s1
     }
     if in_initex_mode {
         /* TeX initializes with the real date and time, but for format file
          * reproducibility we do this: */
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           20i32) as isize)).b32.s1 = 0i32; /*:79*/
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           21i32) as isize)).b32.s1 = 0i32;
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           22i32) as isize)).b32.s1 = 0i32;
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           23i32) as isize)).b32.s1 = 0i32
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 20i32) as isize,
+        ))
+        .b32
+        .s1 = 0i32; /*:79*/
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 21i32) as isize,
+        ))
+        .b32
+        .s1 = 0i32;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 22i32) as isize,
+        ))
+        .b32
+        .s1 = 0i32;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 23i32) as isize,
+        ))
+        .b32
+        .s1 = 0i32
     } else {
-        get_date_and_time(&mut (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) + 1i32
-                                                  + 15000i32 + 12i32 + 9000i32
-                                                  + 1i32 + 1i32 + 19i32 +
-                                                  256i32 + 256i32 + 13i32 +
-                                                  256i32 + 4i32 + 256i32 +
-                                                  1i32 + 3i32 * 256i32 +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  20i32) as isize)).b32.s1,
-                          &mut (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) + 1i32
-                                                  + 15000i32 + 12i32 + 9000i32
-                                                  + 1i32 + 1i32 + 19i32 +
-                                                  256i32 + 256i32 + 13i32 +
-                                                  256i32 + 4i32 + 256i32 +
-                                                  1i32 + 3i32 * 256i32 +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  21i32) as isize)).b32.s1,
-                          &mut (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) + 1i32
-                                                  + 15000i32 + 12i32 + 9000i32
-                                                  + 1i32 + 1i32 + 19i32 +
-                                                  256i32 + 256i32 + 13i32 +
-                                                  256i32 + 4i32 + 256i32 +
-                                                  1i32 + 3i32 * 256i32 +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  22i32) as isize)).b32.s1,
-                          &mut (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) + 1i32
-                                                  + 15000i32 + 12i32 + 9000i32
-                                                  + 1i32 + 1i32 + 19i32 +
-                                                  256i32 + 256i32 + 13i32 +
-                                                  256i32 + 4i32 + 256i32 +
-                                                  1i32 + 3i32 * 256i32 +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  23i32) as isize)).b32.s1);
+        get_date_and_time(
+            &mut (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 20i32) as isize,
+            ))
+            .b32
+            .s1,
+            &mut (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 21i32) as isize,
+            ))
+            .b32
+            .s1,
+            &mut (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 22i32) as isize,
+            ))
+            .b32
+            .s1,
+            &mut (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 23i32) as isize,
+            ))
+            .b32
+            .s1,
+        );
     }
     if trie_not_ready {
-        trie_trl =
-            xmalloc(((trie_size + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<trie_pointer>()
-                                                         as libc::c_ulong)) as
-                *mut trie_pointer;
-        trie_tro =
-            xmalloc(((trie_size + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<trie_pointer>()
-                                                         as libc::c_ulong)) as
-                *mut trie_pointer;
-        trie_trc =
-            xmalloc(((trie_size + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<uint16_t>()
-                                                         as libc::c_ulong)) as
-                *mut uint16_t;
-        trie_c =
-            xmalloc(((trie_size + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<packed_UTF16_code>()
-                                                         as libc::c_ulong)) as
-                *mut packed_UTF16_code;
-        trie_o =
-            xmalloc(((trie_size + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<trie_opcode>()
-                                                         as libc::c_ulong)) as
-                *mut trie_opcode;
-        trie_l =
-            xmalloc(((trie_size + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<trie_pointer>()
-                                                         as libc::c_ulong)) as
-                *mut trie_pointer;
-        trie_r =
-            xmalloc(((trie_size + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<trie_pointer>()
-                                                         as libc::c_ulong)) as
-                *mut trie_pointer;
-        trie_hash =
-            xmalloc(((trie_size + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<trie_pointer>()
-                                                         as libc::c_ulong)) as
-                *mut trie_pointer;
-        trie_taken =
-            xmalloc(((trie_size + 1i32) as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<bool>()
-                                                         as libc::c_ulong)) as
-                *mut bool;
+        trie_trl = xmalloc(
+            ((trie_size + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as libc::c_ulong),
+        ) as *mut trie_pointer;
+        trie_tro = xmalloc(
+            ((trie_size + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as libc::c_ulong),
+        ) as *mut trie_pointer;
+        trie_trc = xmalloc(
+            ((trie_size + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<uint16_t>() as libc::c_ulong),
+        ) as *mut uint16_t;
+        trie_c = xmalloc(
+            ((trie_size + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<packed_UTF16_code>() as libc::c_ulong),
+        ) as *mut packed_UTF16_code;
+        trie_o = xmalloc(
+            ((trie_size + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<trie_opcode>() as libc::c_ulong),
+        ) as *mut trie_opcode;
+        trie_l = xmalloc(
+            ((trie_size + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as libc::c_ulong),
+        ) as *mut trie_pointer;
+        trie_r = xmalloc(
+            ((trie_size + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as libc::c_ulong),
+        ) as *mut trie_pointer;
+        trie_hash = xmalloc(
+            ((trie_size + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as libc::c_ulong),
+        ) as *mut trie_pointer;
+        trie_taken = xmalloc(
+            ((trie_size + 1i32) as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<bool>() as libc::c_ulong),
+        ) as *mut bool;
         *trie_l.offset(0) = 0i32;
         *trie_c.offset(0) = 0i32 as packed_UTF16_code;
         trie_ptr = 0i32;
         *trie_r.offset(0) = 0i32;
         hyph_start = 0i32;
-        font_mapping =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<*mut libc::c_void>() as
-                        libc::c_ulong) as *mut *mut libc::c_void;
-        font_layout_engine =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<*mut libc::c_void>() as
-                        libc::c_ulong) as *mut *mut libc::c_void;
-        font_flags =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<libc::c_char>() as libc::c_ulong) as
-                *mut libc::c_char;
-        font_letter_space =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<scaled_t>() as libc::c_ulong) as
-                *mut scaled_t;
-        font_check =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<b16x4>() as libc::c_ulong) as
-                *mut b16x4;
-        font_size =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<scaled_t>() as libc::c_ulong) as
-                *mut scaled_t;
-        font_dsize =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<scaled_t>() as libc::c_ulong) as
-                *mut scaled_t;
-        font_params =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<font_index>() as libc::c_ulong) as
-                *mut font_index;
-        font_name =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<str_number>() as libc::c_ulong) as
-                *mut str_number;
-        font_area =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<str_number>() as libc::c_ulong) as
-                *mut str_number;
-        font_bc =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<UTF16_code>() as libc::c_ulong) as
-                *mut UTF16_code;
-        font_ec =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<UTF16_code>() as libc::c_ulong) as
-                *mut UTF16_code;
-        font_glue =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong) as
-                *mut int32_t;
-        hyphen_char =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong) as
-                *mut int32_t;
-        skew_char =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong) as
-                *mut int32_t;
-        bchar_label =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<font_index>() as libc::c_ulong) as
-                *mut font_index;
-        font_bchar =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<nine_bits>() as libc::c_ulong) as
-                *mut nine_bits;
-        font_false_bchar =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<nine_bits>() as libc::c_ulong) as
-                *mut nine_bits;
-        char_base =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong) as
-                *mut int32_t;
-        width_base =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong) as
-                *mut int32_t;
-        height_base =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong) as
-                *mut int32_t;
-        depth_base =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong) as
-                *mut int32_t;
-        italic_base =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong) as
-                *mut int32_t;
-        lig_kern_base =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong) as
-                *mut int32_t;
-        kern_base =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong) as
-                *mut int32_t;
-        exten_base =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong) as
-                *mut int32_t;
-        param_base =
-            xcalloc((font_max + 1i32) as size_t,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong) as
-                *mut int32_t;
+        font_mapping = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<*mut libc::c_void>() as libc::c_ulong,
+        ) as *mut *mut libc::c_void;
+        font_layout_engine = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<*mut libc::c_void>() as libc::c_ulong,
+        ) as *mut *mut libc::c_void;
+        font_flags = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<libc::c_char>() as libc::c_ulong,
+        ) as *mut libc::c_char;
+        font_letter_space = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<scaled_t>() as libc::c_ulong,
+        ) as *mut scaled_t;
+        font_check = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<b16x4>() as libc::c_ulong,
+        ) as *mut b16x4;
+        font_size = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<scaled_t>() as libc::c_ulong,
+        ) as *mut scaled_t;
+        font_dsize = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<scaled_t>() as libc::c_ulong,
+        ) as *mut scaled_t;
+        font_params = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<font_index>() as libc::c_ulong,
+        ) as *mut font_index;
+        font_name = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<str_number>() as libc::c_ulong,
+        ) as *mut str_number;
+        font_area = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<str_number>() as libc::c_ulong,
+        ) as *mut str_number;
+        font_bc = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<UTF16_code>() as libc::c_ulong,
+        ) as *mut UTF16_code;
+        font_ec = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<UTF16_code>() as libc::c_ulong,
+        ) as *mut UTF16_code;
+        font_glue = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ) as *mut int32_t;
+        hyphen_char = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ) as *mut int32_t;
+        skew_char = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ) as *mut int32_t;
+        bchar_label = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<font_index>() as libc::c_ulong,
+        ) as *mut font_index;
+        font_bchar = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<nine_bits>() as libc::c_ulong,
+        ) as *mut nine_bits;
+        font_false_bchar = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<nine_bits>() as libc::c_ulong,
+        ) as *mut nine_bits;
+        char_base = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ) as *mut int32_t;
+        width_base = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ) as *mut int32_t;
+        height_base = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ) as *mut int32_t;
+        depth_base = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ) as *mut int32_t;
+        italic_base = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ) as *mut int32_t;
+        lig_kern_base = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ) as *mut int32_t;
+        kern_base = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ) as *mut int32_t;
+        exten_base = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ) as *mut int32_t;
+        param_base = xcalloc(
+            (font_max + 1i32) as size_t,
+            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ) as *mut int32_t;
         font_ptr = 0i32;
         fmem_ptr = 7i32;
-        *font_name.offset(0) =
-            maketexstring(b"nullfont\x00" as *const u8 as
-                              *const libc::c_char);
-        *font_area.offset(0) =
-            (65536i64 + 1i32 as libc::c_long) as str_number;
+        *font_name.offset(0) = maketexstring(b"nullfont\x00" as *const u8 as *const libc::c_char);
+        *font_area.offset(0) = (65536i64 + 1i32 as libc::c_long) as str_number;
         *hyphen_char.offset(0) = '-' as i32;
         *skew_char.offset(0) = -1i32;
         *bchar_label.offset(0) = 0i32;
@@ -10999,11 +16971,10 @@ pub unsafe extern "C" fn tt_run_engine(mut dump_name: *mut libc::c_char,
             font_k += 1
         }
     }
-    font_used =
-        xmalloc(((font_max + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<bool>()
-                                                     as libc::c_ulong)) as
-            *mut bool;
+    font_used = xmalloc(
+        ((font_max + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<bool>() as libc::c_ulong),
+    ) as *mut bool;
     font_k = 0i32;
     while font_k <= font_max {
         *font_used.offset(font_k as isize) = 0i32 != 0;
@@ -11011,16 +16982,39 @@ pub unsafe extern "C" fn tt_run_engine(mut dump_name: *mut libc::c_char,
     }
     if interaction as libc::c_int == 0i32 {
         selector = SELECTOR_NO_PRINT
-    } else { selector = SELECTOR_TERM_ONLY }
+    } else {
+        selector = SELECTOR_TERM_ONLY
+    }
     if semantic_pagination_enabled {
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           81i32) as isize)).b32.s1 = 1i32
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 81i32) as isize,
+        ))
+        .b32
+        .s1 = 1i32
     }
     pdf_files_init();
     synctex_init_command();
@@ -11037,8 +17031,10 @@ pub unsafe extern "C" fn tt_run_engine(mut dump_name: *mut libc::c_char,
     font_k = 0i32;
     while font_k < font_max {
         if !(*font_layout_engine.offset(font_k as isize)).is_null() {
-            release_font_engine(*font_layout_engine.offset(font_k as isize),
-                                *font_area.offset(font_k as isize));
+            release_font_engine(
+                *font_layout_engine.offset(font_k as isize),
+                *font_area.offset(font_k as isize),
+            );
             let ref mut fresh22 = *font_layout_engine.offset(font_k as isize);
             *fresh22 = 0 as *mut libc::c_void
         }

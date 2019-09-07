@@ -23,14 +23,16 @@ extern "C" {
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void,
-              _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn __assert_fail(__assertion: *const libc::c_char,
-                     __file: *const libc::c_char, __line: libc::c_uint,
-                     __function: *const libc::c_char) -> !;
+    fn __assert_fail(
+        __assertion: *const libc::c_char,
+        __file: *const libc::c_char,
+        __line: libc::c_uint,
+        __function: *const libc::c_char,
+    ) -> !;
     #[no_mangle]
     fn pdf_obj_set_verbose(level: libc::c_int);
     #[no_mangle]
@@ -41,25 +43,25 @@ extern "C" {
     fn pdf_get_version() -> libc::c_uint;
     /* Name does not include the / */
     /* pdf_add_dict requires key but pdf_add_array does not.
- * pdf_add_array always append elements to array.
- * They should be pdf_put_array(array, idx, element) and
- * pdf_put_dict(dict, key, value)
- */
+     * pdf_add_array always append elements to array.
+     * They should be pdf_put_array(array, idx, element) and
+     * pdf_put_dict(dict, key, value)
+     */
     /* pdf_add_dict() want pdf_obj as key, however, key must always be name
- * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
- * key. This strange difference seems come from pdfdoc that first allocate
- * name objects frequently used (maybe 1000 times) such as /Type and does
- * pdf_link_obj() it rather than allocate/free-ing them each time. But I
- * already removed that.
- */
+     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
+     * key. This strange difference seems come from pdfdoc that first allocate
+     * name objects frequently used (maybe 1000 times) such as /Type and does
+     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
+     * already removed that.
+     */
     /* Apply proc(key, value, pdata) for each key-value pairs in dict, stop if proc()
- * returned non-zero value (and that value is returned). PDF object is passed for
- * key to allow modification (fix) of key.
- */
+     * returned non-zero value (and that value is returned). PDF object is passed for
+     * key to allow modification (fix) of key.
+     */
     /* Compare label of two indirect reference object.
- */
+     */
     /* The following routines are not appropriate for pdfobj.
- */
+     */
     #[no_mangle]
     fn pdf_files_init();
     #[no_mangle]
@@ -71,8 +73,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_close_fontmaps();
     #[no_mangle]
-    fn pdf_load_fontmap_file(filename: *const libc::c_char, mode: libc::c_int)
-     -> libc::c_int;
+    fn pdf_load_fontmap_file(filename: *const libc::c_char, mode: libc::c_int) -> libc::c_int;
     #[no_mangle]
     fn pdf_fontmap_set_verbose(level: libc::c_int);
     #[no_mangle]
@@ -86,66 +87,70 @@ extern "C" {
     #[no_mangle]
     fn dpx_delete_old_cache(life: libc::c_int);
     #[no_mangle]
-    fn parse_float_decimal(pp: *mut *const libc::c_char,
-                           endptr: *const libc::c_char) -> *mut libc::c_char;
+    fn parse_float_decimal(
+        pp: *mut *const libc::c_char,
+        endptr: *const libc::c_char,
+    ) -> *mut libc::c_char;
     #[no_mangle]
-    fn parse_c_ident(pp: *mut *const libc::c_char,
-                     endptr: *const libc::c_char) -> *mut libc::c_char;
+    fn parse_c_ident(
+        pp: *mut *const libc::c_char,
+        endptr: *const libc::c_char,
+    ) -> *mut libc::c_char;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     /* The name transform_info is misleading.
- * I'll put this here for a moment...
- */
+     * I'll put this here for a moment...
+     */
     /* Physical dimensions
-   *
-   * If those values are given, images will be scaled
-   * and/or shifted to fit within a box described by
-   * those values.
-   */
+     *
+     * If those values are given, images will be scaled
+     * and/or shifted to fit within a box described by
+     * those values.
+     */
     /* transform matrix */
     /* user_bbox */
     #[no_mangle]
     fn pdf_dev_reset_global_state();
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn shut_up(quietness: libc::c_int);
     #[no_mangle]
@@ -157,11 +162,9 @@ extern "C" {
     #[no_mangle]
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
     #[no_mangle]
-    fn dvi_init(dvi_filename: *const libc::c_char, mag_0: libc::c_double)
-     -> libc::c_double;
+    fn dvi_init(dvi_filename: *const libc::c_char, mag_0: libc::c_double) -> libc::c_double;
     #[no_mangle]
-    fn pdf_init_device(unit_conv: libc::c_double, precision: libc::c_int,
-                       is_bw: libc::c_int);
+    fn pdf_init_device(unit_conv: libc::c_double, precision: libc::c_int, is_bw: libc::c_int);
     #[no_mangle]
     fn pdf_close_device();
     #[no_mangle]
@@ -173,75 +176,86 @@ extern "C" {
     #[no_mangle]
     fn dvi_npages() -> libc::c_uint;
     #[no_mangle]
-    fn dvi_do_page(paper_height_0: libc::c_double, x_offset_0: libc::c_double,
-                   y_offset_0: libc::c_double);
+    fn dvi_do_page(
+        paper_height_0: libc::c_double,
+        x_offset_0: libc::c_double,
+        y_offset_0: libc::c_double,
+    );
     #[no_mangle]
-    fn dvi_scan_specials(page_no: libc::c_int, width: *mut libc::c_double,
-                         height: *mut libc::c_double,
-                         x_offset_0: *mut libc::c_double,
-                         y_offset_0: *mut libc::c_double,
-                         landscape: *mut libc::c_int,
-                         majorversion: *mut libc::c_int,
-                         minorversion: *mut libc::c_int,
-                         do_enc: *mut libc::c_int, keybits: *mut libc::c_int,
-                         perm: *mut int32_t, opasswd: *mut libc::c_char,
-                         upasswd: *mut libc::c_char);
+    fn dvi_scan_specials(
+        page_no: libc::c_int,
+        width: *mut libc::c_double,
+        height: *mut libc::c_double,
+        x_offset_0: *mut libc::c_double,
+        y_offset_0: *mut libc::c_double,
+        landscape: *mut libc::c_int,
+        majorversion: *mut libc::c_int,
+        minorversion: *mut libc::c_int,
+        do_enc: *mut libc::c_int,
+        keybits: *mut libc::c_int,
+        perm: *mut int32_t,
+        opasswd: *mut libc::c_char,
+        upasswd: *mut libc::c_char,
+    );
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn new(size: uint32_t) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn pdf_doc_set_verbose(level: libc::c_int);
     #[no_mangle]
-    fn pdf_open_document(filename: *const libc::c_char, enable_encrypt: bool,
-                         enable_object_stream: bool,
-                         media_width: libc::c_double,
-                         media_height: libc::c_double,
-                         annot_grow_amount: libc::c_double,
-                         bookmark_open_depth: libc::c_int,
-                         check_gotos: libc::c_int);
+    fn pdf_open_document(
+        filename: *const libc::c_char,
+        enable_encrypt: bool,
+        enable_object_stream: bool,
+        media_width: libc::c_double,
+        media_height: libc::c_double,
+        annot_grow_amount: libc::c_double,
+        bookmark_open_depth: libc::c_int,
+        check_gotos: libc::c_int,
+    );
     #[no_mangle]
     fn pdf_close_document();
     /* PDF document metadata */
@@ -251,34 +265,36 @@ extern "C" {
     fn pdf_doc_set_mediabox(page_no: libc::c_uint, mediabox: *const pdf_rect);
     /*
 
-    This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
+        This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn pdf_enc_set_verbose(level: libc::c_int);
     #[no_mangle]
-    fn pdf_enc_compute_id_string(dviname: *const libc::c_char,
-                                 pdfname: *const libc::c_char);
+    fn pdf_enc_compute_id_string(dviname: *const libc::c_char, pdfname: *const libc::c_char);
     #[no_mangle]
-    fn pdf_enc_set_passwd(size: libc::c_uint, perm: libc::c_uint,
-                          owner: *const libc::c_char,
-                          user: *const libc::c_char);
+    fn pdf_enc_set_passwd(
+        size: libc::c_uint,
+        perm: libc::c_uint,
+        owner: *const libc::c_char,
+        user: *const libc::c_char,
+    );
     #[no_mangle]
     fn pdf_font_set_dpi(font_dpi_0: libc::c_int);
     #[no_mangle]
@@ -288,56 +304,58 @@ extern "C" {
     #[no_mangle]
     fn skip_white(start: *mut *const libc::c_char, end: *const libc::c_char);
     #[no_mangle]
-    fn parse_unsigned(start: *mut *const libc::c_char,
-                      end: *const libc::c_char) -> *mut libc::c_char;
+    fn parse_unsigned(
+        start: *mut *const libc::c_char,
+        end: *const libc::c_char,
+    ) -> *mut libc::c_char;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn tpic_set_fill_mode(mode: libc::c_int);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     /* current page in PDF */
     /* This should not use pdf_. */
     /* PDF parser shouldn't depend on this...
- */
+     */
     #[no_mangle]
     fn spc_exec_at_end_document() -> libc::c_int;
     #[no_mangle]
@@ -348,23 +366,23 @@ extern "C" {
     fn vf_reset_global_state();
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     /* flag declared in dvipdfmx.c */
     #[no_mangle]
     fn tt_aux_set_verbose(level: libc::c_int);
@@ -412,13 +430,13 @@ pub type uint32_t = __uint32_t;
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 pub type PageRange = page_range;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct page_range {
     pub first: libc::c_int,
     pub last: libc::c_int,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
     pub llx: libc::c_double,
@@ -447,7 +465,7 @@ pub struct pdf_rect {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct paper {
     pub name: *const libc::c_char,
@@ -490,45 +508,49 @@ pub static mut landscape_mode: libc::c_int = 0i32;
 pub static mut always_embed: libc::c_int = 0i32;
 /* always embed fonts, regardless of licensing flags */
 /* XXX: there are four quasi-redundant versions of this; grp for K_UNIT__PT */
-unsafe extern "C" fn read_length(mut vp: *mut libc::c_double,
-                                 mut pp: *mut *const libc::c_char,
-                                 mut endptr: *const libc::c_char)
- -> libc::c_int {
+unsafe extern "C" fn read_length(
+    mut vp: *mut libc::c_double,
+    mut pp: *mut *const libc::c_char,
+    mut endptr: *const libc::c_char,
+) -> libc::c_int {
     let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut p: *const libc::c_char = *pp;
     let mut v: libc::c_double = 0.;
     let mut u: libc::c_double = 1.0f64;
-    let mut _ukeys: [*const libc::c_char; 10] =
-        [b"pt\x00" as *const u8 as *const libc::c_char,
-         b"in\x00" as *const u8 as *const libc::c_char,
-         b"cm\x00" as *const u8 as *const libc::c_char,
-         b"mm\x00" as *const u8 as *const libc::c_char,
-         b"bp\x00" as *const u8 as *const libc::c_char,
-         b"pc\x00" as *const u8 as *const libc::c_char,
-         b"dd\x00" as *const u8 as *const libc::c_char,
-         b"cc\x00" as *const u8 as *const libc::c_char,
-         b"sp\x00" as *const u8 as *const libc::c_char,
-         0 as *const libc::c_char];
+    let mut _ukeys: [*const libc::c_char; 10] = [
+        b"pt\x00" as *const u8 as *const libc::c_char,
+        b"in\x00" as *const u8 as *const libc::c_char,
+        b"cm\x00" as *const u8 as *const libc::c_char,
+        b"mm\x00" as *const u8 as *const libc::c_char,
+        b"bp\x00" as *const u8 as *const libc::c_char,
+        b"pc\x00" as *const u8 as *const libc::c_char,
+        b"dd\x00" as *const u8 as *const libc::c_char,
+        b"cc\x00" as *const u8 as *const libc::c_char,
+        b"sp\x00" as *const u8 as *const libc::c_char,
+        0 as *const libc::c_char,
+    ];
     let mut k: libc::c_int = 0;
     let mut error: libc::c_int = 0i32;
     q = parse_float_decimal(&mut p, endptr);
-    if q.is_null() { *vp = 0.0f64; *pp = p; return -1i32 }
+    if q.is_null() {
+        *vp = 0.0f64;
+        *pp = p;
+        return -1i32;
+    }
     v = atof(q);
     free(q as *mut libc::c_void);
     skip_white(&mut p, endptr);
     q = parse_c_ident(&mut p, endptr);
     if !q.is_null() {
         let mut qq: *mut libc::c_char = q;
-        if strlen(q) >=
-               strlen(b"true\x00" as *const u8 as *const libc::c_char) &&
-               memcmp(q as *const libc::c_void,
-                      b"true\x00" as *const u8 as *const libc::c_char as
-                          *const libc::c_void,
-                      strlen(b"true\x00" as *const u8 as *const libc::c_char))
-                   == 0 {
-            q =
-                q.offset(strlen(b"true\x00" as *const u8 as
-                                    *const libc::c_char) as isize)
+        if strlen(q) >= strlen(b"true\x00" as *const u8 as *const libc::c_char)
+            && memcmp(
+                q as *const libc::c_void,
+                b"true\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
+                strlen(b"true\x00" as *const u8 as *const libc::c_char),
+            ) == 0
+        {
+            q = q.offset(strlen(b"true\x00" as *const u8 as *const libc::c_char) as isize)
             /* just skip "true" */
         }
         if strlen(q) == 0i32 as libc::c_ulong {
@@ -539,34 +561,32 @@ unsafe extern "C" fn read_length(mut vp: *mut libc::c_double,
         }
         if !q.is_null() {
             k = 0i32;
-            while !_ukeys[k as usize].is_null() &&
-                      strcmp(_ukeys[k as usize], q) != 0 {
+            while !_ukeys[k as usize].is_null() && strcmp(_ukeys[k as usize], q) != 0 {
                 k += 1
             }
             match k {
-                0 => { u *= 72.0f64 / 72.27f64 }
-                1 => { u *= 72.0f64 }
-                2 => { u *= 72.0f64 / 2.54f64 }
-                3 => { u *= 72.0f64 / 25.4f64 }
-                4 => { u *= 1.0f64 }
-                5 => { u *= 12.0f64 * 72.0f64 / 72.27f64 }
-                6 => { u *= 1238.0f64 / 1157.0f64 * 72.0f64 / 72.27f64 }
-                7 => {
-                    u *= 12.0f64 * 1238.0f64 / 1157.0f64 * 72.0f64 / 72.27f64
-                }
-                8 => {
-                    u *= 72.0f64 / (72.27f64 * 65536i32 as libc::c_double)
-                }
+                0 => u *= 72.0f64 / 72.27f64,
+                1 => u *= 72.0f64,
+                2 => u *= 72.0f64 / 2.54f64,
+                3 => u *= 72.0f64 / 25.4f64,
+                4 => u *= 1.0f64,
+                5 => u *= 12.0f64 * 72.0f64 / 72.27f64,
+                6 => u *= 1238.0f64 / 1157.0f64 * 72.0f64 / 72.27f64,
+                7 => u *= 12.0f64 * 1238.0f64 / 1157.0f64 * 72.0f64 / 72.27f64,
+                8 => u *= 72.0f64 / (72.27f64 * 65536i32 as libc::c_double),
                 _ => {
-                    dpx_warning(b"Unknown unit of measure: %s\x00" as
-                                    *const u8 as *const libc::c_char, q);
+                    dpx_warning(
+                        b"Unknown unit of measure: %s\x00" as *const u8 as *const libc::c_char,
+                        q,
+                    );
                     error = -1i32
                 }
             }
             free(qq as *mut libc::c_void);
         } else {
-            dpx_warning(b"Missing unit of measure after \"true\"\x00" as
-                            *const u8 as *const libc::c_char);
+            dpx_warning(
+                b"Missing unit of measure after \"true\"\x00" as *const u8 as *const libc::c_char,
+            );
             error = -1i32
         }
     }
@@ -578,18 +598,24 @@ unsafe extern "C" fn select_paper(mut paperspec: *const libc::c_char) {
     let mut pi: *const paper = 0 as *const paper;
     let mut error: libc::c_int = 0i32;
     pi = paperinfo(paperspec);
-    if !pi.is_null() &&
-           !(if !pi.is_null() && !(*pi).name.is_null() {
-                 (*pi).name
-             } else { 0 as *const libc::c_char }).is_null() {
-        paper_width =
-            if !pi.is_null() && !(*pi).name.is_null() {
-                (*pi).pswidth
-            } else { 0.0f64 };
-        paper_height =
-            if !pi.is_null() && !(*pi).name.is_null() {
-                (*pi).psheight
-            } else { 0.0f64 }
+    if !pi.is_null()
+        && !(if !pi.is_null() && !(*pi).name.is_null() {
+            (*pi).name
+        } else {
+            0 as *const libc::c_char
+        })
+        .is_null()
+    {
+        paper_width = if !pi.is_null() && !(*pi).name.is_null() {
+            (*pi).pswidth
+        } else {
+            0.0f64
+        };
+        paper_height = if !pi.is_null() && !(*pi).name.is_null() {
+            (*pi).psheight
+        } else {
+            0.0f64
+        }
     } else {
         let mut p: *const libc::c_char = paperspec;
         let mut endptr: *const libc::c_char = 0 as *const libc::c_char;
@@ -597,23 +623,29 @@ unsafe extern "C" fn select_paper(mut paperspec: *const libc::c_char) {
         comma = strchr(p, ',' as i32);
         endptr = p.offset(strlen(p) as isize);
         if comma.is_null() {
-            _tt_abort(b"Unrecognized paper format: %s\x00" as *const u8 as
-                          *const libc::c_char, paperspec);
+            _tt_abort(
+                b"Unrecognized paper format: %s\x00" as *const u8 as *const libc::c_char,
+                paperspec,
+            );
         }
         error = read_length(&mut paper_width, &mut p, comma);
         p = comma.offset(1);
         error = read_length(&mut paper_height, &mut p, endptr)
     }
     if error != 0 || paper_width <= 0.0f64 || paper_height <= 0.0f64 {
-        _tt_abort(b"Invalid paper size: %s (%.2fx%.2f)\x00" as *const u8 as
-                      *const libc::c_char, paperspec, paper_width,
-                  paper_height);
+        _tt_abort(
+            b"Invalid paper size: %s (%.2fx%.2f)\x00" as *const u8 as *const libc::c_char,
+            paperspec,
+            paper_width,
+            paper_height,
+        );
     };
 }
-unsafe extern "C" fn select_pages(mut pagespec: *const libc::c_char,
-                                  mut ret_page_ranges: *mut *mut PageRange,
-                                  mut ret_num_page_ranges:
-                                      *mut libc::c_uint) {
+unsafe extern "C" fn select_pages(
+    mut pagespec: *const libc::c_char,
+    mut ret_page_ranges: *mut *mut PageRange,
+    mut ret_num_page_ranges: *mut libc::c_uint,
+) {
     let mut page_ranges: *mut PageRange = 0 as *mut PageRange;
     let mut num_page_ranges: libc::c_uint = 0i32 as libc::c_uint;
     let mut max_page_ranges: libc::c_uint = 0i32 as libc::c_uint;
@@ -622,67 +654,63 @@ unsafe extern "C" fn select_pages(mut pagespec: *const libc::c_char,
     while *p as libc::c_int != '\u{0}' as i32 {
         /* Enlarge page range table if necessary */
         if num_page_ranges >= max_page_ranges {
-            max_page_ranges =
-                max_page_ranges.wrapping_add(4i32 as
-                                                 libc::c_uint); /* Can't be signed. */
-            page_ranges =
-                renew(page_ranges as *mut libc::c_void,
-                      (max_page_ranges as
-                           libc::c_ulong).wrapping_mul(::std::mem::size_of::<PageRange>()
-                                                           as libc::c_ulong)
-                          as uint32_t) as *mut PageRange
+            max_page_ranges = max_page_ranges.wrapping_add(4i32 as libc::c_uint); /* Can't be signed. */
+            page_ranges = renew(
+                page_ranges as *mut libc::c_void,
+                (max_page_ranges as libc::c_ulong)
+                    .wrapping_mul(::std::mem::size_of::<PageRange>() as libc::c_ulong)
+                    as uint32_t,
+            ) as *mut PageRange
         }
         (*page_ranges.offset(num_page_ranges as isize)).first = 0i32;
         (*page_ranges.offset(num_page_ranges as isize)).last = 0i32;
-        while *p as libc::c_int != 0 &&
-                  *(*__ctype_b_loc()).offset(*p as libc::c_uchar as
-                                                 libc::c_int as isize) as
-                      libc::c_int &
-                      _ISspace as libc::c_int as libc::c_ushort as libc::c_int
-                      != 0 {
+        while *p as libc::c_int != 0
+            && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                as libc::c_int
+                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                != 0
+        {
             p = p.offset(1)
         }
         q = parse_unsigned(&mut p, p.offset(strlen(p) as isize));
         if !q.is_null() {
             /* '-' is allowed here */
-            (*page_ranges.offset(num_page_ranges as isize)).first =
-                atoi(q) - 1i32; /* Root node */
+            (*page_ranges.offset(num_page_ranges as isize)).first = atoi(q) - 1i32; /* Root node */
             (*page_ranges.offset(num_page_ranges as isize)).last =
                 (*page_ranges.offset(num_page_ranges as isize)).first;
             free(q as *mut libc::c_void);
         }
-        while *p as libc::c_int != 0 &&
-                  *(*__ctype_b_loc()).offset(*p as libc::c_uchar as
-                                                 libc::c_int as isize) as
-                      libc::c_int &
-                      _ISspace as libc::c_int as libc::c_ushort as libc::c_int
-                      != 0 {
+        while *p as libc::c_int != 0
+            && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                as libc::c_int
+                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                != 0
+        {
             p = p.offset(1)
         }
         if *p as libc::c_int == '-' as i32 {
             p = p.offset(1);
-            while *p as libc::c_int != 0 &&
-                      *(*__ctype_b_loc()).offset(*p as libc::c_uchar as
-                                                     libc::c_int as isize) as
-                          libc::c_int &
-                          _ISspace as libc::c_int as libc::c_ushort as
-                              libc::c_int != 0 {
+            while *p as libc::c_int != 0
+                && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                    as libc::c_int
+                    & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                    != 0
+            {
                 p = p.offset(1)
             }
             (*page_ranges.offset(num_page_ranges as isize)).last = -1i32;
             if *p != 0 {
                 q = parse_unsigned(&mut p, p.offset(strlen(p) as isize));
                 if !q.is_null() {
-                    (*page_ranges.offset(num_page_ranges as isize)).last =
-                        atoi(q) - 1i32;
+                    (*page_ranges.offset(num_page_ranges as isize)).last = atoi(q) - 1i32;
                     free(q as *mut libc::c_void);
                 }
-                while *p as libc::c_int != 0 &&
-                          *(*__ctype_b_loc()).offset(*p as libc::c_uchar as
-                                                         libc::c_int as isize)
-                              as libc::c_int &
-                              _ISspace as libc::c_int as libc::c_ushort as
-                                  libc::c_int != 0 {
+                while *p as libc::c_int != 0
+                    && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                        as libc::c_int
+                        & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                        != 0
+                {
                     p = p.offset(1)
                 }
             }
@@ -694,17 +722,19 @@ unsafe extern "C" fn select_pages(mut pagespec: *const libc::c_char,
         if *p as libc::c_int == ',' as i32 {
             p = p.offset(1)
         } else {
-            while *p as libc::c_int != 0 &&
-                      *(*__ctype_b_loc()).offset(*p as libc::c_uchar as
-                                                     libc::c_int as isize) as
-                          libc::c_int &
-                          _ISspace as libc::c_int as libc::c_ushort as
-                              libc::c_int != 0 {
+            while *p as libc::c_int != 0
+                && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                    as libc::c_int
+                    & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                    != 0
+            {
                 p = p.offset(1)
             }
             if *p != 0 {
-                _tt_abort(b"Bad page range specification: %s\x00" as *const u8
-                              as *const libc::c_char, p);
+                _tt_abort(
+                    b"Bad page range specification: %s\x00" as *const u8 as *const libc::c_char,
+                    p,
+                );
             }
         }
     }
@@ -718,8 +748,10 @@ unsafe extern "C" fn system_default() {
         select_paper(b"a4\x00" as *const u8 as *const libc::c_char);
     };
 }
-unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange,
-                                  mut num_page_ranges: libc::c_uint) {
+unsafe extern "C" fn do_dvi_pages(
+    mut page_ranges: *mut PageRange,
+    mut num_page_ranges: libc::c_uint,
+) {
     let mut page_no: libc::c_int = 0;
     let mut step: libc::c_int = 0;
     let mut page_count: libc::c_uint = 0;
@@ -728,8 +760,12 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange,
     let mut page_height: libc::c_double = 0.;
     let mut init_paper_width: libc::c_double = 0.;
     let mut init_paper_height: libc::c_double = 0.;
-    let mut mediabox: pdf_rect =
-        pdf_rect{llx: 0., lly: 0., urx: 0., ury: 0.,};
+    let mut mediabox: pdf_rect = pdf_rect {
+        llx: 0.,
+        lly: 0.,
+        urx: 0.,
+        ury: 0.,
+    };
     spc_exec_at_begin_document();
     page_width = paper_width;
     init_paper_width = page_width;
@@ -746,14 +782,14 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange,
         if (*page_ranges.offset(i as isize)).last < 0i32 {
             let ref mut fresh0 = (*page_ranges.offset(i as isize)).last;
             *fresh0 =
-                (*fresh0 as libc::c_uint).wrapping_add(dvi_npages()) as
-                    libc::c_int as libc::c_int
+                (*fresh0 as libc::c_uint).wrapping_add(dvi_npages()) as libc::c_int as libc::c_int
         }
-        step =
-            if (*page_ranges.offset(i as isize)).first <=
-                   (*page_ranges.offset(i as isize)).last {
-                1i32
-            } else { -1i32 };
+        step = if (*page_ranges.offset(i as isize)).first <= (*page_ranges.offset(i as isize)).last
+        {
+            1i32
+        } else {
+            -1i32
+        };
         page_no = (*page_ranges.offset(i as isize)).first;
         while dvi_npages() != 0 {
             if (page_no as libc::c_uint) < dvi_npages() {
@@ -762,8 +798,10 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange,
                 let mut xo: libc::c_double = 0.;
                 let mut yo: libc::c_double = 0.;
                 let mut lm: libc::c_int = 0;
-                dpx_message(b"[%d\x00" as *const u8 as *const libc::c_char,
-                            page_no + 1i32);
+                dpx_message(
+                    b"[%d\x00" as *const u8 as *const libc::c_char,
+                    page_no + 1i32,
+                );
                 /* Users want to change page size even after page is started! */
                 page_width = paper_width;
                 page_height = paper_height;
@@ -772,13 +810,21 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange,
                 lm = landscape_mode;
                 xo = x_offset;
                 yo = y_offset;
-                dvi_scan_specials(page_no, &mut w, &mut h, &mut xo, &mut yo,
-                                  &mut lm, 0 as *mut libc::c_int,
-                                  0 as *mut libc::c_int,
-                                  0 as *mut libc::c_int,
-                                  0 as *mut libc::c_int, 0 as *mut int32_t,
-                                  0 as *mut libc::c_char,
-                                  0 as *mut libc::c_char);
+                dvi_scan_specials(
+                    page_no,
+                    &mut w,
+                    &mut h,
+                    &mut xo,
+                    &mut yo,
+                    &mut lm,
+                    0 as *mut libc::c_int,
+                    0 as *mut libc::c_int,
+                    0 as *mut libc::c_int,
+                    0 as *mut libc::c_int,
+                    0 as *mut int32_t,
+                    0 as *mut libc::c_char,
+                    0 as *mut libc::c_char,
+                );
                 if lm != landscape_mode {
                     let mut _tmp: libc::c_double = w;
                     w = h;
@@ -793,35 +839,32 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange,
                     x_offset = xo;
                     y_offset = yo
                 }
-                if page_width != init_paper_width ||
-                       page_height != init_paper_height {
+                if page_width != init_paper_width || page_height != init_paper_height {
                     mediabox.llx = 0.0f64;
                     mediabox.lly = 0.0f64;
                     mediabox.urx = page_width;
                     mediabox.ury = page_height;
-                    pdf_doc_set_mediabox(page_count.wrapping_add(1i32 as
-                                                                     libc::c_uint),
-                                         &mut mediabox);
+                    pdf_doc_set_mediabox(
+                        page_count.wrapping_add(1i32 as libc::c_uint),
+                        &mut mediabox,
+                    );
                 }
                 dvi_do_page(page_height, x_offset, y_offset);
                 page_count = page_count.wrapping_add(1);
                 dpx_message(b"]\x00" as *const u8 as *const libc::c_char);
             }
-            if step > 0i32 &&
-                   page_no >= (*page_ranges.offset(i as isize)).last {
-                break ;
+            if step > 0i32 && page_no >= (*page_ranges.offset(i as isize)).last {
+                break;
             }
-            if step < 0i32 &&
-                   page_no <= (*page_ranges.offset(i as isize)).last {
-                break ;
+            if step < 0i32 && page_no <= (*page_ranges.offset(i as isize)).last {
+                break;
             }
             page_no += step
         }
         i = i.wrapping_add(1)
     }
     if page_count < 1i32 as libc::c_uint {
-        _tt_abort(b"No pages fall in range!\x00" as *const u8 as
-                      *const libc::c_char);
+        _tt_abort(b"No pages fall in range!\x00" as *const u8 as *const libc::c_char);
     }
     spc_exec_at_end_document();
 }
@@ -849,18 +892,18 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange,
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn dvipdfmx_main(mut pdf_filename: *const libc::c_char,
-                                       mut dvi_filename: *const libc::c_char,
-                                       mut pagespec: *const libc::c_char,
-                                       mut opt_flags: libc::c_int,
-                                       mut translate: bool,
-                                       mut compress: bool,
-                                       mut deterministic_tags: bool,
-                                       mut quiet: bool,
-                                       mut verbose: libc::c_uint)
- -> libc::c_int {
-    let mut enable_object_stream: bool =
-        1i32 != 0; /* This must come before parsing options... */
+pub unsafe extern "C" fn dvipdfmx_main(
+    mut pdf_filename: *const libc::c_char,
+    mut dvi_filename: *const libc::c_char,
+    mut pagespec: *const libc::c_char,
+    mut opt_flags: libc::c_int,
+    mut translate: bool,
+    mut compress: bool,
+    mut deterministic_tags: bool,
+    mut quiet: bool,
+    mut verbose: libc::c_uint,
+) -> libc::c_int {
+    let mut enable_object_stream: bool = 1i32 != 0; /* This must come before parsing options... */
     let mut dvi2pts: libc::c_double = 0.;
     let mut num_page_ranges: libc::c_uint = 0i32 as libc::c_uint;
     let mut page_ranges: *mut PageRange = 0 as *mut PageRange;
@@ -900,17 +943,20 @@ pub unsafe extern "C" fn dvipdfmx_main(mut pdf_filename: *const libc::c_char,
         tt_aux_set_verbose(verbose as libc::c_int);
     }
     pdf_set_compression(if compress as libc::c_int != 0 {
-                            9i32
-                        } else { 0i32 });
-    pdf_font_set_deterministic_unique_tags(if deterministic_tags as
-                                                  libc::c_int != 0 {
-                                               1i32
-                                           } else { 0i32 });
+        9i32
+    } else {
+        0i32
+    });
+    pdf_font_set_deterministic_unique_tags(if deterministic_tags as libc::c_int != 0 {
+        1i32
+    } else {
+        0i32
+    });
     system_default();
     pdf_init_fontmaps();
     /* We used to read the config file here. It synthesized command-line
-   * arguments, so we emulate the default TeXLive config file by copying those
-   * code bits. */
+     * arguments, so we emulate the default TeXLive config file by copying those
+     * code bits. */
     pdf_set_version(5i32 as libc::c_uint); /* last page */
     select_paper(b"letter\x00" as *const u8 as *const libc::c_char);
     annot_grow = 0i32 as libc::c_double;
@@ -920,21 +966,25 @@ pub unsafe extern "C" fn dvipdfmx_main(mut pdf_filename: *const libc::c_char,
     font_dpi = 600i32;
     pdfdecimaldigits = 5i32;
     image_cache_life = -2i32;
-    pdf_load_fontmap_file(b"pdftex.map\x00" as *const u8 as
-                              *const libc::c_char, '+' as i32);
-    pdf_load_fontmap_file(b"kanjix.map\x00" as *const u8 as
-                              *const libc::c_char, '+' as i32);
-    pdf_load_fontmap_file(b"ckx.map\x00" as *const u8 as *const libc::c_char,
-                          '+' as i32);
+    pdf_load_fontmap_file(
+        b"pdftex.map\x00" as *const u8 as *const libc::c_char,
+        '+' as i32,
+    );
+    pdf_load_fontmap_file(
+        b"kanjix.map\x00" as *const u8 as *const libc::c_char,
+        '+' as i32,
+    );
+    pdf_load_fontmap_file(
+        b"ckx.map\x00" as *const u8 as *const libc::c_char,
+        '+' as i32,
+    );
     if !pagespec.is_null() {
         select_pages(pagespec, &mut page_ranges, &mut num_page_ranges);
     }
     if page_ranges.is_null() {
-        page_ranges =
-            new((1i32 as uint32_t as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<PageRange>()
-                                                     as libc::c_ulong) as
-                    uint32_t) as *mut PageRange
+        page_ranges = new((1i32 as uint32_t as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<PageRange>() as libc::c_ulong)
+            as uint32_t) as *mut PageRange
     }
     if num_page_ranges == 0i32 as libc::c_uint {
         (*page_ranges.offset(0)).first = 0i32;
@@ -953,33 +1003,51 @@ pub unsafe extern "C" fn dvipdfmx_main(mut pdf_filename: *const libc::c_char,
     /* Dependency between DVI and PDF side is rather complicated... */
     dvi2pts = dvi_init(dvi_filename, mag);
     if dvi2pts == 0.0f64 {
-        _tt_abort(b"dvi_init() failed!\x00" as *const u8 as
-                      *const libc::c_char);
+        _tt_abort(b"dvi_init() failed!\x00" as *const u8 as *const libc::c_char);
     }
     pdf_doc_set_creator(dvi_comment());
-    dvi_scan_specials(0i32, &mut paper_width, &mut paper_height,
-                      &mut x_offset, &mut y_offset, &mut landscape_mode,
-                      &mut ver_major, &mut ver_minor, &mut do_encryption,
-                      &mut key_bits, &mut permission, owner_pw.as_mut_ptr(),
-                      user_pw.as_mut_ptr());
+    dvi_scan_specials(
+        0i32,
+        &mut paper_width,
+        &mut paper_height,
+        &mut x_offset,
+        &mut y_offset,
+        &mut landscape_mode,
+        &mut ver_major,
+        &mut ver_minor,
+        &mut do_encryption,
+        &mut key_bits,
+        &mut permission,
+        owner_pw.as_mut_ptr(),
+        user_pw.as_mut_ptr(),
+    );
     if ver_minor >= 3i32 && ver_minor <= 7i32 {
         pdf_set_version(ver_minor as libc::c_uint);
     }
     if do_encryption != 0 {
-        if !(key_bits >= 40i32 && key_bits <= 128i32 &&
-                 key_bits % 8i32 == 0i32) && key_bits != 256i32 {
-            _tt_abort(b"Invalid encryption key length specified: %u\x00" as
-                          *const u8 as *const libc::c_char, key_bits);
+        if !(key_bits >= 40i32 && key_bits <= 128i32 && key_bits % 8i32 == 0i32)
+            && key_bits != 256i32
+        {
+            _tt_abort(
+                b"Invalid encryption key length specified: %u\x00" as *const u8
+                    as *const libc::c_char,
+                key_bits,
+            );
         } else {
             if key_bits > 40i32 && pdf_get_version() < 4i32 as libc::c_uint {
-                _tt_abort(b"Chosen key length requires at least PDF 1.4. Use \"-V 4\" to change.\x00"
-                              as *const u8 as *const libc::c_char);
+                _tt_abort(
+                    b"Chosen key length requires at least PDF 1.4. Use \"-V 4\" to change.\x00"
+                        as *const u8 as *const libc::c_char,
+                );
             }
         }
         do_encryption = 1i32;
-        pdf_enc_set_passwd(key_bits as libc::c_uint,
-                           permission as libc::c_uint, owner_pw.as_mut_ptr(),
-                           user_pw.as_mut_ptr());
+        pdf_enc_set_passwd(
+            key_bits as libc::c_uint,
+            permission as libc::c_uint,
+            owner_pw.as_mut_ptr(),
+            user_pw.as_mut_ptr(),
+        );
     }
     if landscape_mode != 0 {
         let mut _tmp: libc::c_double = paper_width;
@@ -987,24 +1055,37 @@ pub unsafe extern "C" fn dvipdfmx_main(mut pdf_filename: *const libc::c_char,
         paper_height = _tmp
     }
     pdf_files_init();
-    if opt_flags & 1i32 << 6i32 != 0 { enable_object_stream = 0i32 != 0 }
+    if opt_flags & 1i32 << 6i32 != 0 {
+        enable_object_stream = 0i32 != 0
+    }
     /* Set default paper size here so that all page's can inherite it.
-   * annot_grow:    Margin of annotation.
-   * bookmark_open: Miximal depth of open bookmarks.
-   */
-    pdf_open_document(pdf_filename, do_encryption != 0, enable_object_stream,
-                      paper_width, paper_height, annot_grow, bookmark_open,
-                      (opt_flags & 1i32 << 4i32 == 0) as libc::c_int);
+     * annot_grow:    Margin of annotation.
+     * bookmark_open: Miximal depth of open bookmarks.
+     */
+    pdf_open_document(
+        pdf_filename,
+        do_encryption != 0,
+        enable_object_stream,
+        paper_width,
+        paper_height,
+        annot_grow,
+        bookmark_open,
+        (opt_flags & 1i32 << 4i32 == 0) as libc::c_int,
+    );
     /* Ignore_colors placed here since
-   * they are considered as device's capacity.
-   */
+     * they are considered as device's capacity.
+     */
     pdf_init_device(dvi2pts, pdfdecimaldigits, ignore_colors as libc::c_int);
-    if opt_flags & 1i32 << 2i32 != 0 { CIDFont_set_flags(1i32 << 1i32); }
+    if opt_flags & 1i32 << 2i32 != 0 {
+        CIDFont_set_flags(1i32 << 1i32);
+    }
     /* Please move this to spc_init_specials(). */
     if opt_flags & 1i32 << 1i32 != 0 {
         tpic_set_fill_mode(1i32); /* No prediction */
     }
-    if opt_flags & 1i32 << 5i32 != 0 { pdf_set_use_predictor(0i32); }
+    if opt_flags & 1i32 << 5i32 != 0 {
+        pdf_set_use_predictor(0i32);
+    }
     do_dvi_pages(page_ranges, num_page_ranges);
     pdf_files_close();
     /* Order of close... */

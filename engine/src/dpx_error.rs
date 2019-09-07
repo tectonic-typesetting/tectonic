@@ -12,22 +12,28 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     /* Global symbols that route through the global API variable. Hopefully we
- * will one day eliminate all of the global state and get rid of all of
- * these. */
+     * will one day eliminate all of the global state and get rid of all of
+     * these. */
     #[no_mangle]
     fn ttstub_issue_warning(format: *const libc::c_char, _: ...);
     #[no_mangle]
     fn ttstub_output_open_stdout() -> rust_output_handle_t;
     #[no_mangle]
-    fn ttstub_output_write(handle: rust_output_handle_t,
-                           data: *const libc::c_char, len: size_t) -> size_t;
+    fn ttstub_output_write(
+        handle: rust_output_handle_t,
+        data: *const libc::c_char,
+        len: size_t,
+    ) -> size_t;
     #[no_mangle]
-    fn vsnprintf(_: *mut libc::c_char, _: libc::c_ulong,
-                 _: *const libc::c_char, _: ::std::ffi::VaList)
-     -> libc::c_int;
+    fn vsnprintf(
+        _: *mut libc::c_char,
+        _: libc::c_ulong,
+        _: *const libc::c_char,
+        _: ::std::ffi::VaList,
+    ) -> libc::c_int;
 }
 pub type __builtin_va_list = [__va_list_tag; 1];
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct __va_list_tag {
     pub gp_offset: libc::c_uint,
@@ -75,41 +81,49 @@ static mut _dpx_message_buf: [libc::c_char; 1024] = [0; 1024];
 unsafe extern "C" fn _dpx_ensure_output_handle() -> rust_output_handle_t {
     _dpx_message_handle = ttstub_output_open_stdout();
     if _dpx_message_handle.is_null() {
-        _tt_abort(b"xdvipdfmx cannot get output logging handle?!\x00" as
-                      *const u8 as *const libc::c_char);
+        _tt_abort(
+            b"xdvipdfmx cannot get output logging handle?!\x00" as *const u8 as *const libc::c_char,
+        );
     }
     return _dpx_message_handle;
 }
-unsafe extern "C" fn _dpx_print_to_stdout(mut fmt: *const libc::c_char,
-                                          mut argp: ::std::ffi::VaList,
-                                          mut warn: libc::c_int) {
+unsafe extern "C" fn _dpx_print_to_stdout(
+    mut fmt: *const libc::c_char,
+    mut argp: ::std::ffi::VaList,
+    mut warn: libc::c_int,
+) {
     let mut n: libc::c_int = 0;
-    n =
-        vsnprintf(_dpx_message_buf.as_mut_ptr(),
-                  ::std::mem::size_of::<[libc::c_char; 1024]>() as
-                      libc::c_ulong, fmt, argp.as_va_list());
+    n = vsnprintf(
+        _dpx_message_buf.as_mut_ptr(),
+        ::std::mem::size_of::<[libc::c_char; 1024]>() as libc::c_ulong,
+        fmt,
+        argp.as_va_list(),
+    );
     /* n is the number of bytes the vsnprintf() wanted to write -- it might be
      * bigger than sizeof(buf). */
-    if n as libc::c_ulong >=
-           ::std::mem::size_of::<[libc::c_char; 1024]>() as libc::c_ulong {
-        n =
-            (::std::mem::size_of::<[libc::c_char; 1024]>() as
-                 libc::c_ulong).wrapping_sub(1i32 as libc::c_ulong) as
-                libc::c_int;
+    if n as libc::c_ulong >= ::std::mem::size_of::<[libc::c_char; 1024]>() as libc::c_ulong {
+        n = (::std::mem::size_of::<[libc::c_char; 1024]>() as libc::c_ulong)
+            .wrapping_sub(1i32 as libc::c_ulong) as libc::c_int;
         _dpx_message_buf[n as usize] = '\u{0}' as i32 as libc::c_char
     }
     if warn != 0 {
-        ttstub_issue_warning(b"%s\x00" as *const u8 as *const libc::c_char,
-                             _dpx_message_buf.as_mut_ptr());
+        ttstub_issue_warning(
+            b"%s\x00" as *const u8 as *const libc::c_char,
+            _dpx_message_buf.as_mut_ptr(),
+        );
     }
-    ttstub_output_write(_dpx_ensure_output_handle(),
-                        _dpx_message_buf.as_mut_ptr(), n as size_t);
+    ttstub_output_write(
+        _dpx_ensure_output_handle(),
+        _dpx_message_buf.as_mut_ptr(),
+        n as size_t,
+    );
 }
 #[no_mangle]
-pub unsafe extern "C" fn dpx_message(mut fmt: *const libc::c_char,
-                                     mut args: ...) {
+pub unsafe extern "C" fn dpx_message(mut fmt: *const libc::c_char, mut args: ...) {
     let mut argp: ::std::ffi::VaListImpl;
-    if _dpx_quietness > 0i32 { return }
+    if _dpx_quietness > 0i32 {
+        return;
+    }
     argp = args.clone();
     _dpx_print_to_stdout(fmt, argp.as_va_list(), 0i32);
     _last_message_type = DPX_MESG_INFO;
@@ -136,23 +150,29 @@ pub unsafe extern "C" fn dpx_message(mut fmt: *const libc::c_char,
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn dpx_warning(mut fmt: *const libc::c_char,
-                                     mut args: ...) {
+pub unsafe extern "C" fn dpx_warning(mut fmt: *const libc::c_char, mut args: ...) {
     let mut argp: ::std::ffi::VaListImpl;
-    if _dpx_quietness > 1i32 { return }
-    if _last_message_type as libc::c_uint ==
-           DPX_MESG_INFO as libc::c_int as libc::c_uint {
-        ttstub_output_write(_dpx_ensure_output_handle(),
-                            b"\n\x00" as *const u8 as *const libc::c_char,
-                            1i32 as size_t);
+    if _dpx_quietness > 1i32 {
+        return;
     }
-    ttstub_output_write(_dpx_ensure_output_handle(),
-                        b"warning: \x00" as *const u8 as *const libc::c_char,
-                        9i32 as size_t);
+    if _last_message_type as libc::c_uint == DPX_MESG_INFO as libc::c_int as libc::c_uint {
+        ttstub_output_write(
+            _dpx_ensure_output_handle(),
+            b"\n\x00" as *const u8 as *const libc::c_char,
+            1i32 as size_t,
+        );
+    }
+    ttstub_output_write(
+        _dpx_ensure_output_handle(),
+        b"warning: \x00" as *const u8 as *const libc::c_char,
+        9i32 as size_t,
+    );
     argp = args.clone();
     _dpx_print_to_stdout(fmt, argp.as_va_list(), 1i32);
-    ttstub_output_write(_dpx_ensure_output_handle(),
-                        b"\n\x00" as *const u8 as *const libc::c_char,
-                        1i32 as size_t);
+    ttstub_output_write(
+        _dpx_ensure_output_handle(),
+        b"\n\x00" as *const u8 as *const libc::c_char,
+        1i32 as size_t,
+    );
     _last_message_type = DPX_MESG_WARN;
 }

@@ -20,11 +20,13 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_output_open(path: *const libc::c_char, is_gz: libc::c_int)
-     -> rust_output_handle_t;
+    fn ttstub_output_open(path: *const libc::c_char, is_gz: libc::c_int) -> rust_output_handle_t;
     #[no_mangle]
-    fn ttstub_output_write(handle: rust_output_handle_t,
-                           data: *const libc::c_char, len: size_t) -> size_t;
+    fn ttstub_output_write(
+        handle: rust_output_handle_t,
+        data: *const libc::c_char,
+        len: size_t,
+    ) -> size_t;
     #[no_mangle]
     fn ttstub_output_flush(handle: rust_output_handle_t) -> libc::c_int;
     #[no_mangle]
@@ -223,11 +225,9 @@ extern "C" {
     #[no_mangle]
     fn maketexstring(s: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn apply_tfm_font_mapping(mapping: *mut libc::c_void, c: libc::c_int)
-     -> libc::c_int;
+    fn apply_tfm_font_mapping(mapping: *mut libc::c_void, c: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn effective_char(err_p: bool, f: internal_font_number, c: uint16_t)
-     -> int32_t;
+    fn effective_char(err_p: bool, f: internal_font_number, c: uint16_t) -> int32_t;
     #[no_mangle]
     fn scan_toks(macro_def: bool, xpand: bool) -> int32_t;
     #[no_mangle]
@@ -271,43 +271,43 @@ extern "C" {
     #[no_mangle]
     fn print_raw_char(s: UTF16_code, incr_offset: bool);
     /*  Recording the "{..." line.  In *tex.web, use synctex_sheet(pdf_output) at
- *  the very beginning of the ship_out procedure.
-*/
+     *  the very beginning of the ship_out procedure.
+     */
     #[no_mangle]
     fn synctex_sheet(mag: int32_t);
     /*  Recording the "}..." line.  In *tex.web, use synctex_teehs at
- *  the very end of the ship_out procedure.
-*/
+     *  the very end of the ship_out procedure.
+     */
     #[no_mangle]
     fn synctex_teehs();
     /*  This message is sent when a vlist will be shipped out, more precisely at
- *  the beginning of the vlist_out procedure in *TeX.web.  It will be balanced
- *  by a synctex_tsilv, sent at the end of the vlist_out procedure.  p is the
- *  address of the vlist We assume that p is really a vlist node! */
+     *  the beginning of the vlist_out procedure in *TeX.web.  It will be balanced
+     *  by a synctex_tsilv, sent at the end of the vlist_out procedure.  p is the
+     *  address of the vlist We assume that p is really a vlist node! */
     #[no_mangle]
     fn synctex_vlist(this_box: int32_t);
     /*  Recording a "}" line ending a vbox: this message is sent whenever a vlist
- *  has been shipped out. It is used to close the vlist nesting level. It is
- *  sent at the end of each vlist_out procedure in *TeX.web to balance a former
- *  synctex_vlist sent at the beginning of that procedure.    */
+     *  has been shipped out. It is used to close the vlist nesting level. It is
+     *  sent at the end of each vlist_out procedure in *TeX.web to balance a former
+     *  synctex_vlist sent at the beginning of that procedure.    */
     #[no_mangle]
     fn synctex_tsilv(this_box: int32_t);
     /*  This message is sent when a void vlist will be shipped out.
- *  There is no need to balance a void vlist.  */
+     *  There is no need to balance a void vlist.  */
     #[no_mangle]
     fn synctex_void_vlist(p: int32_t, this_box: int32_t);
     /*  Send this message when an hlist will be shipped out, more precisely at
- *  the beginning of the hlist_out procedure in *TeX.web.  It must be balanced
- *  by a synctex_tsilh, sent at the end of the hlist_out procedure.  p is the
- *  address of the hlist. */
+     *  the beginning of the hlist_out procedure in *TeX.web.  It must be balanced
+     *  by a synctex_tsilh, sent at the end of the hlist_out procedure.  p is the
+     *  address of the hlist. */
     #[no_mangle]
     fn synctex_hlist(this_box: int32_t);
     /*  Send this message at the end of the various hlist_out procedure in *TeX.web
- *  to balance a former synctex_hlist.    */
+     *  to balance a former synctex_hlist.    */
     #[no_mangle]
     fn synctex_tsilh(this_box: int32_t);
     /*  This message is sent when a void hlist will be shipped out.
- *  There is no need to balance a void hlist.  */
+     *  There is no need to balance a void hlist.  */
     #[no_mangle]
     fn synctex_void_hlist(p: int32_t, this_box: int32_t);
     /*  Send this message whenever an inline math node will ship out. */
@@ -353,7 +353,7 @@ pub type pool_pointer = int32_t;
 pub type str_number = int32_t;
 pub type packed_UTF16_code = libc::c_ushort;
 pub type small_number = libc::c_short;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
     pub s0: int32_t,
@@ -392,7 +392,7 @@ pub struct b32x2_le_t {
  *
  */
 pub type b32x2 = b32x2_le_t;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b16x4_le_t {
     pub s0: uint16_t,
@@ -401,8 +401,8 @@ pub struct b16x4_le_t {
     pub s3: uint16_t,
 }
 pub type b16x4 = b16x4_le_t;
-#[derive ( Copy , Clone )]
-#[repr ( C )]
+#[derive(Copy, Clone)]
+#[repr(C)]
 pub union memory_word {
     pub b32: b32x2,
     pub b16: b16x4,
@@ -577,7 +577,7 @@ pub union memory_word {
 /* \splitbotmarks<n> */
 pub type glue_ord = libc::c_uchar;
 pub type internal_font_number = int32_t;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
     pub mode: libc::c_short,
@@ -594,7 +594,7 @@ unsafe extern "C" fn print_c_string(mut str: *const libc::c_char) {
         let fresh0 = str;
         str = str.offset(1);
         print_char(*fresh0 as int32_t);
-    };
+    }
 }
 #[inline]
 unsafe extern "C" fn cur_length() -> pool_pointer {
@@ -605,11 +605,9 @@ unsafe extern "C" fn is_char_node(p: int32_t) -> bool {
     return p >= hi_mem_min;
 }
 /* DVI code */
-static mut dvi_file: rust_output_handle_t =
-    0 as *const libc::c_void as *mut libc::c_void;
+static mut dvi_file: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
 static mut output_file_name: str_number = 0;
-static mut dvi_buf: *mut eight_bits =
-    0 as *const eight_bits as *mut eight_bits;
+static mut dvi_buf: *mut eight_bits = 0 as *const eight_bits as *mut eight_bits;
 static mut dvi_limit: int32_t = 0;
 static mut g: int32_t = 0;
 static mut lq: int32_t = 0;
@@ -626,11 +624,10 @@ static mut cur_s: int32_t = 0;
 #[no_mangle]
 pub unsafe extern "C" fn initialize_shipout_variables() {
     output_file_name = 0i32;
-    dvi_buf =
-        xmalloc(((16384i32 + 1i32) as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<eight_bits>()
-                                                     as libc::c_ulong)) as
-            *mut eight_bits;
+    dvi_buf = xmalloc(
+        ((16384i32 + 1i32) as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<eight_bits>() as libc::c_ulong),
+    ) as *mut eight_bits;
     dvi_limit = 16384i32;
     dvi_ptr = 0i32;
     dvi_offset = 0i32;
@@ -649,7 +646,9 @@ unsafe extern "C" fn dvi_out(mut c: eight_bits) {
     let fresh1 = dvi_ptr;
     dvi_ptr = dvi_ptr + 1;
     *dvi_buf.offset(fresh1 as isize) = c;
-    if dvi_ptr == dvi_limit { dvi_swap(); };
+    if dvi_ptr == dvi_limit {
+        dvi_swap();
+    };
 }
 /*660: output the box `p` */
 #[no_mangle]
@@ -662,31 +661,73 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
     let mut l: libc::c_uchar = 0;
     let mut output_comment: *const libc::c_char =
         b"tectonic\x00" as *const u8 as *const libc::c_char;
-    synctex_sheet((*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                     12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                     256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                     256i32 + 1i32 + 3i32 * 256i32 +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) + 17i32) as
-                                    isize)).b32.s1);
-    if job_name == 0i32 { open_log_file(); }
-    if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                          19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                          256i32 + 1i32 + 3i32 * 256i32 + (0x10ffffi32 + 1i32)
-                          + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + 34i32) as isize)).b32.s1 >
-           0i32 {
+    synctex_sheet(
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 17i32) as isize,
+        ))
+        .b32
+        .s1,
+    );
+    if job_name == 0i32 {
+        open_log_file();
+    }
+    if (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 34i32) as isize,
+    ))
+    .b32
+    .s1 > 0i32
+    {
         print_nl_cstr(b"\x00" as *const u8 as *const libc::c_char);
         print_ln();
-        print_cstr(b"Completed box being shipped out\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b"Completed box being shipped out\x00" as *const u8 as *const libc::c_char);
     }
     if term_offset > max_print_line - 9i32 {
         print_ln();
@@ -695,45 +736,110 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
     }
     print_char('[' as i32);
     j = 9i32 as libc::c_uchar;
-    while j as libc::c_int > 0i32 &&
-              (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                 12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                 256i32 + 1i32 + 3i32 * 256i32 +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                                 85i32 + j as libc::c_int) as isize)).b32.s1
-                  == 0i32 {
+    while j as libc::c_int > 0i32
+        && (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 85i32
+                + j as libc::c_int) as isize,
+        ))
+        .b32
+        .s1 == 0i32
+    {
         j = j.wrapping_sub(1)
     }
     k = 0i32 as libc::c_uchar;
     while k as libc::c_int <= j as libc::c_int {
-        print_int((*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                     12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                     256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                     256i32 + 1i32 + 3i32 * 256i32 +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) +
-                                     (0x10ffffi32 + 1i32) + 85i32 +
-                                     k as libc::c_int) as isize)).b32.s1);
-        if (k as libc::c_int) < j as libc::c_int { print_char('.' as i32); }
+        print_int(
+            (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 85i32
+                    + k as libc::c_int) as isize,
+            ))
+            .b32
+            .s1,
+        );
+        if (k as libc::c_int) < j as libc::c_int {
+            print_char('.' as i32);
+        }
         k = k.wrapping_add(1)
     }
     ttstub_output_flush(rust_stdout);
-    if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                          19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                          256i32 + 1i32 + 3i32 * 256i32 + (0x10ffffi32 + 1i32)
-                          + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + 34i32) as isize)).b32.s1 >
-           0i32 {
+    if (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 34i32) as isize,
+    ))
+    .b32
+    .s1 > 0i32
+    {
         print_char(']' as i32);
         begin_diagnostic();
         show_box(p);
@@ -742,244 +848,565 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
     /*662: "Ship box `p` out." */
     /*663: "Update the values of max_h and max_v; but if the page is too
      * large, goto done". */
-    if (*mem.offset((p + 3i32) as isize)).b32.s1 > 0x3fffffffi32 ||
-           (*mem.offset((p + 2i32) as isize)).b32.s1 > 0x3fffffffi32 ||
-           (*mem.offset((p + 3i32) as isize)).b32.s1 +
-               (*mem.offset((p + 2i32) as isize)).b32.s1 +
-               (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                  (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                  12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                  256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                  256i32 + 1i32 + 3i32 * 256i32 +
-                                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                  + (0x10ffffi32 + 1i32) +
-                                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                  + (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                                  (0x10ffffi32 + 1i32) + 19i32) as
-                                 isize)).b32.s1 > 0x3fffffffi32 ||
-           (*mem.offset((p + 1i32) as isize)).b32.s1 +
-               (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                  (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                  12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                  256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                  256i32 + 1i32 + 3i32 * 256i32 +
-                                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                  + (0x10ffffi32 + 1i32) +
-                                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                  + (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                                  (0x10ffffi32 + 1i32) + 18i32) as
-                                 isize)).b32.s1 > 0x3fffffffi32 {
+    if (*mem.offset((p + 3i32) as isize)).b32.s1 > 0x3fffffffi32
+        || (*mem.offset((p + 2i32) as isize)).b32.s1 > 0x3fffffffi32
+        || (*mem.offset((p + 3i32) as isize)).b32.s1
+            + (*mem.offset((p + 2i32) as isize)).b32.s1
+            + (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 85i32
+                    + 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + 19i32) as isize,
+            ))
+            .b32
+            .s1
+            > 0x3fffffffi32
+        || (*mem.offset((p + 1i32) as isize)).b32.s1
+            + (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 85i32
+                    + 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + 18i32) as isize,
+            ))
+            .b32
+            .s1
+            > 0x3fffffffi32
+    {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
             print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
         }
-        print_cstr(b"Huge page cannot be shipped out\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b"Huge page cannot be shipped out\x00" as *const u8 as *const libc::c_char);
         help_ptr = 2i32 as libc::c_uchar;
-        help_line[1] =
-            b"The page just created is more than 18 feet tall or\x00" as
-                *const u8 as *const libc::c_char;
-        help_line[0] =
-            b"more than 18 feet wide, so I suspect something went wrong.\x00"
-                as *const u8 as *const libc::c_char;
+        help_line[1] = b"The page just created is more than 18 feet tall or\x00" as *const u8
+            as *const libc::c_char;
+        help_line[0] = b"more than 18 feet wide, so I suspect something went wrong.\x00"
+            as *const u8 as *const libc::c_char;
         error();
-        if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              34i32) as isize)).b32.s1 <= 0i32 {
+        if (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 34i32) as isize,
+        ))
+        .b32
+        .s1 <= 0i32
+        {
             begin_diagnostic();
-            print_nl_cstr(b"The following box has been deleted:\x00" as
-                              *const u8 as *const libc::c_char);
+            print_nl_cstr(
+                b"The following box has been deleted:\x00" as *const u8 as *const libc::c_char,
+            );
             show_box(p);
             end_diagnostic(1i32 != 0);
         }
     } else {
-        if (*mem.offset((p + 3i32) as isize)).b32.s1 +
-               (*mem.offset((p + 2i32) as isize)).b32.s1 +
-               (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                  (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                  12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                  256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                  256i32 + 1i32 + 3i32 * 256i32 +
-                                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                  + (0x10ffffi32 + 1i32) +
-                                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                  + (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                                  (0x10ffffi32 + 1i32) + 19i32) as
-                                 isize)).b32.s1 > max_v {
-            max_v =
-                (*mem.offset((p + 3i32) as isize)).b32.s1 +
-                    (*mem.offset((p + 2i32) as isize)).b32.s1 +
-                    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) + 1i32 + 15000i32
-                                       + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32
-                                       + 256i32 + 256i32 + 13i32 + 256i32 +
-                                       4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                                       (0x10ffffi32 + 1i32) + 19i32) as
-                                      isize)).b32.s1
+        if (*mem.offset((p + 3i32) as isize)).b32.s1
+            + (*mem.offset((p + 2i32) as isize)).b32.s1
+            + (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 85i32
+                    + 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + 19i32) as isize,
+            ))
+            .b32
+            .s1
+            > max_v
+        {
+            max_v = (*mem.offset((p + 3i32) as isize)).b32.s1
+                + (*mem.offset((p + 2i32) as isize)).b32.s1
+                + (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + 256i32
+                        + 1i32
+                        + 3i32 * 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 85i32
+                        + 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + 19i32) as isize,
+                ))
+                .b32
+                .s1
         }
-        if (*mem.offset((p + 1i32) as isize)).b32.s1 +
-               (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                  (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                  12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                  256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                  256i32 + 1i32 + 3i32 * 256i32 +
-                                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                  + (0x10ffffi32 + 1i32) +
-                                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                  + (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                                  (0x10ffffi32 + 1i32) + 18i32) as
-                                 isize)).b32.s1 > max_h {
-            max_h =
-                (*mem.offset((p + 1i32) as isize)).b32.s1 +
-                    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) + 1i32 + 15000i32
-                                       + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32
-                                       + 256i32 + 256i32 + 13i32 + 256i32 +
-                                       4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                                       (0x10ffffi32 + 1i32) + 18i32) as
-                                      isize)).b32.s1
+        if (*mem.offset((p + 1i32) as isize)).b32.s1
+            + (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 85i32
+                    + 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + 18i32) as isize,
+            ))
+            .b32
+            .s1
+            > max_h
+        {
+            max_h = (*mem.offset((p + 1i32) as isize)).b32.s1
+                + (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + 256i32
+                        + 1i32
+                        + 3i32 * 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 85i32
+                        + 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + 18i32) as isize,
+                ))
+                .b32
+                .s1
         }
         /*637: "Initialize variables as ship_out begins." */
         dvi_h = 0i32;
         dvi_v = 0i32;
-        cur_h =
-            (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                               + 1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 +
-                               1i32 + 19i32 + 256i32 + 256i32 + 13i32 + 256i32
-                               + 4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               85i32 + 256i32 + (0x10ffffi32 + 1i32) + 18i32)
-                              as isize)).b32.s1;
+        cur_h = (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 85i32
+                + 256i32
+                + (0x10ffffi32 + 1i32)
+                + 18i32) as isize,
+        ))
+        .b32
+        .s1;
         dvi_f = 0i32;
         /*1405: "Calculate page dimensions and margins" */
-    /* 4736287 = round(0xFFFF * 72.27) ; i.e., 1 inch expressed as a scaled_t */
-        cur_h_offset =
-            (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                               + 1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 +
-                               1i32 + 19i32 + 256i32 + 256i32 + 13i32 + 256i32
-                               + 4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               85i32 + 256i32 + (0x10ffffi32 + 1i32) + 18i32)
-                              as isize)).b32.s1 + 4736287i32;
-        cur_v_offset =
-            (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                               + 1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 +
-                               1i32 + 19i32 + 256i32 + 256i32 + 13i32 + 256i32
-                               + 4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                               85i32 + 256i32 + (0x10ffffi32 + 1i32) + 19i32)
-                              as isize)).b32.s1 + 4736287i32;
-        if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              85i32 + 256i32 + (0x10ffffi32 + 1i32) + 21i32)
-                             as isize)).b32.s1 != 0i32 {
-            cur_page_width =
-                (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                   12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                   256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                   256i32 + 1i32 + 3i32 * 256i32 +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                                   (0x10ffffi32 + 1i32) + 21i32) as
-                                  isize)).b32.s1
+        /* 4736287 = round(0xFFFF * 72.27) ; i.e., 1 inch expressed as a scaled_t */
+        cur_h_offset = (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 85i32
+                + 256i32
+                + (0x10ffffi32 + 1i32)
+                + 18i32) as isize,
+        ))
+        .b32
+        .s1 + 4736287i32;
+        cur_v_offset = (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 85i32
+                + 256i32
+                + (0x10ffffi32 + 1i32)
+                + 19i32) as isize,
+        ))
+        .b32
+        .s1 + 4736287i32;
+        if (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 85i32
+                + 256i32
+                + (0x10ffffi32 + 1i32)
+                + 21i32) as isize,
+        ))
+        .b32
+        .s1 != 0i32
+        {
+            cur_page_width = (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 85i32
+                    + 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + 21i32) as isize,
+            ))
+            .b32
+            .s1
         } else {
-            cur_page_width =
-                (*mem.offset((p + 1i32) as isize)).b32.s1 +
-                    2i32 * cur_h_offset
+            cur_page_width = (*mem.offset((p + 1i32) as isize)).b32.s1 + 2i32 * cur_h_offset
         }
-        if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              85i32 + 256i32 + (0x10ffffi32 + 1i32) + 22i32)
-                             as isize)).b32.s1 != 0i32 {
-            cur_page_height =
-                (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                   12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                   256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                   256i32 + 1i32 + 3i32 * 256i32 +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                                   (0x10ffffi32 + 1i32) + 22i32) as
-                                  isize)).b32.s1
+        if (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 85i32
+                + 256i32
+                + (0x10ffffi32 + 1i32)
+                + 22i32) as isize,
+        ))
+        .b32
+        .s1 != 0i32
+        {
+            cur_page_height = (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 85i32
+                    + 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + 22i32) as isize,
+            ))
+            .b32
+            .s1
         } else {
-            cur_page_height =
-                (*mem.offset((p + 3i32) as isize)).b32.s1 +
-                    (*mem.offset((p + 2i32) as isize)).b32.s1 +
-                    2i32 * cur_v_offset
+            cur_page_height = (*mem.offset((p + 3i32) as isize)).b32.s1
+                + (*mem.offset((p + 2i32) as isize)).b32.s1
+                + 2i32 * cur_v_offset
         }
         /* ... resuming 637 ... open up the DVI file if needed */
         if output_file_name == 0i32 {
-            if job_name == 0i32 { open_log_file(); }
+            if job_name == 0i32 {
+                open_log_file();
+            }
             pack_job_name(output_file_extension);
             dvi_file = ttstub_output_open(name_of_file, 0i32);
             if dvi_file.is_null() {
-                _tt_abort(b"cannot open output file \"%s\"\x00" as *const u8
-                              as *const libc::c_char, name_of_file);
+                _tt_abort(
+                    b"cannot open output file \"%s\"\x00" as *const u8 as *const libc::c_char,
+                    name_of_file,
+                );
             }
             output_file_name = make_name_string()
         }
         /* First page? Emit preamble items. */
         if total_pages == 0i32 {
-            dvi_out(247i32 as
-                        eight_bits); /* magic values: conversion ratio for sp */
+            dvi_out(247i32 as eight_bits); /* magic values: conversion ratio for sp */
             if semantic_pagination_enabled {
-                dvi_out(100i32 as
-                            eight_bits); /* magic values: conversion ratio for sp */
-            } else { dvi_out(7i32 as eight_bits); }
+                dvi_out(100i32 as eight_bits); /* magic values: conversion ratio for sp */
+            } else {
+                dvi_out(7i32 as eight_bits);
+            }
             dvi_four(25400000i64 as int32_t);
             dvi_four(473628672i64 as int32_t);
             prepare_mag();
-            dvi_four((*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                        (0x10ffffi32 + 1i32) + 1i32 + 15000i32
-                                        + 12i32 + 9000i32 + 1i32 + 1i32 +
-                                        19i32 + 256i32 + 256i32 + 13i32 +
-                                        256i32 + 4i32 + 256i32 + 1i32 +
-                                        3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                                        (0x10ffffi32 + 1i32) +
-                                        (0x10ffffi32 + 1i32) +
-                                        (0x10ffffi32 + 1i32) +
-                                        (0x10ffffi32 + 1i32) +
-                                        (0x10ffffi32 + 1i32) + 17i32) as
-                                       isize)).b32.s1);
+            dvi_four(
+                (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + 256i32
+                        + 1i32
+                        + 3i32 * 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 17i32) as isize,
+                ))
+                .b32
+                .s1,
+            );
             l = strlen(output_comment) as libc::c_uchar;
             dvi_out(l);
             s = 0i32;
@@ -993,18 +1420,38 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
         dvi_out(139i32 as eight_bits);
         k = 0i32 as libc::c_uchar;
         while (k as libc::c_int) < 10i32 {
-            dvi_four((*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                        (0x10ffffi32 + 1i32) + 1i32 + 15000i32
-                                        + 12i32 + 9000i32 + 1i32 + 1i32 +
-                                        19i32 + 256i32 + 256i32 + 13i32 +
-                                        256i32 + 4i32 + 256i32 + 1i32 +
-                                        3i32 * 256i32 + (0x10ffffi32 + 1i32) +
-                                        (0x10ffffi32 + 1i32) +
-                                        (0x10ffffi32 + 1i32) +
-                                        (0x10ffffi32 + 1i32) +
-                                        (0x10ffffi32 + 1i32) +
-                                        (0x10ffffi32 + 1i32) + 85i32 +
-                                        k as libc::c_int) as isize)).b32.s1);
+            dvi_four(
+                (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + 256i32
+                        + 1i32
+                        + 3i32 * 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 85i32
+                        + k as libc::c_int) as isize,
+                ))
+                .b32
+                .s1,
+            );
             k = k.wrapping_add(1)
         }
         dvi_four(last_bop);
@@ -1013,62 +1460,147 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
         old_setting = selector as libc::c_uchar;
         selector = SELECTOR_NEW_STRING;
         print_cstr(b"pdf:pagesize \x00" as *const u8 as *const libc::c_char);
-        if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              85i32 + 256i32 + (0x10ffffi32 + 1i32) + 21i32)
-                             as isize)).b32.s1 <= 0i32 ||
-               (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                  (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                  12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                  256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                  256i32 + 1i32 + 3i32 * 256i32 +
-                                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                  + (0x10ffffi32 + 1i32) +
-                                  (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                  + (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                                  (0x10ffffi32 + 1i32) + 22i32) as
-                                 isize)).b32.s1 <= 0i32 {
+        if (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 85i32
+                + 256i32
+                + (0x10ffffi32 + 1i32)
+                + 21i32) as isize,
+        ))
+        .b32
+        .s1 <= 0i32
+            || (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 85i32
+                    + 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + 22i32) as isize,
+            ))
+            .b32
+            .s1 <= 0i32
+        {
             print_cstr(b"default\x00" as *const u8 as *const libc::c_char);
         } else {
             print_cstr(b"width\x00" as *const u8 as *const libc::c_char);
             print(' ' as i32);
-            print_scaled((*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                            (0x10ffffi32 + 1i32) + 1i32 +
-                                            15000i32 + 12i32 + 9000i32 + 1i32
-                                            + 1i32 + 19i32 + 256i32 + 256i32 +
-                                            13i32 + 256i32 + 4i32 + 256i32 +
-                                            1i32 + 3i32 * 256i32 +
-                                            (0x10ffffi32 + 1i32) +
-                                            (0x10ffffi32 + 1i32) +
-                                            (0x10ffffi32 + 1i32) +
-                                            (0x10ffffi32 + 1i32) +
-                                            (0x10ffffi32 + 1i32) +
-                                            (0x10ffffi32 + 1i32) + 85i32 +
-                                            256i32 + (0x10ffffi32 + 1i32) +
-                                            21i32) as isize)).b32.s1);
+            print_scaled(
+                (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + 256i32
+                        + 1i32
+                        + 3i32 * 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 85i32
+                        + 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + 21i32) as isize,
+                ))
+                .b32
+                .s1,
+            );
             print_cstr(b"pt\x00" as *const u8 as *const libc::c_char);
             print(' ' as i32);
             print_cstr(b"height\x00" as *const u8 as *const libc::c_char);
             print(' ' as i32);
-            print_scaled((*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                            (0x10ffffi32 + 1i32) + 1i32 +
-                                            15000i32 + 12i32 + 9000i32 + 1i32
-                                            + 1i32 + 19i32 + 256i32 + 256i32 +
-                                            13i32 + 256i32 + 4i32 + 256i32 +
-                                            1i32 + 3i32 * 256i32 +
-                                            (0x10ffffi32 + 1i32) +
-                                            (0x10ffffi32 + 1i32) +
-                                            (0x10ffffi32 + 1i32) +
-                                            (0x10ffffi32 + 1i32) +
-                                            (0x10ffffi32 + 1i32) +
-                                            (0x10ffffi32 + 1i32) + 85i32 +
-                                            256i32 + (0x10ffffi32 + 1i32) +
-                                            22i32) as isize)).b32.s1);
+            print_scaled(
+                (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + 256i32
+                        + 1i32
+                        + 3i32 * 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 85i32
+                        + 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + 22i32) as isize,
+                ))
+                .b32
+                .s1,
+            );
             print_cstr(b"pt\x00" as *const u8 as *const libc::c_char);
         }
         selector = old_setting as selector_t;
@@ -1081,23 +1613,45 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
         }
         pool_ptr = *str_start.offset((str_ptr - 65536i32) as isize);
         /* Done with the synthesized special. The meat: emit this page box. */
-        cur_v =
-            (*mem.offset((p + 3i32) as isize)).b32.s1 +
-                (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                   12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                   256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                   256i32 + 1i32 + 3i32 * 256i32 +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                                   (0x10ffffi32 + 1i32) + 19i32) as
-                                  isize)).b32.s1; /*"Does this need changing for upwards mode???"*/
+        cur_v = (*mem.offset((p + 3i32) as isize)).b32.s1
+            + (*eqtb.offset(
+                (1i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 1i32
+                    + 15000i32
+                    + 12i32
+                    + 9000i32
+                    + 1i32
+                    + 1i32
+                    + 19i32
+                    + 256i32
+                    + 256i32
+                    + 13i32
+                    + 256i32
+                    + 4i32
+                    + 256i32
+                    + 1i32
+                    + 3i32 * 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + (0x10ffffi32 + 1i32)
+                    + 85i32
+                    + 256i32
+                    + (0x10ffffi32 + 1i32)
+                    + 19i32) as isize,
+            ))
+            .b32
+            .s1; /*"Does this need changing for upwards mode???"*/
         temp_ptr = p;
         if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 1i32 {
             vlist_out();
-        } else { hlist_out(); }
+        } else {
+            hlist_out();
+        }
         dvi_out(140i32 as eight_bits);
         total_pages += 1;
         cur_s = -1i32
@@ -1105,8 +1659,7 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
     /*1518: "Check for LR anomalies at the end of ship_out" */
     if LR_problems > 0i32 {
         print_ln();
-        print_nl_cstr(b"\\endL or \\endR problem (\x00" as *const u8 as
-                          *const libc::c_char);
+        print_nl_cstr(b"\\endL or \\endR problem (\x00" as *const u8 as *const libc::c_char);
         print_int(LR_problems / 10000i32);
         print_cstr(b" missing, \x00" as *const u8 as *const libc::c_char);
         print_int(LR_problems % 10000i32);
@@ -1118,14 +1671,36 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
     if LR_ptr != -0xfffffffi32 || cur_dir as libc::c_int != 0i32 {
         confusion(b"LR3\x00" as *const u8 as *const libc::c_char);
     }
-    if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                          19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                          256i32 + 1i32 + 3i32 * 256i32 + (0x10ffffi32 + 1i32)
-                          + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + 34i32) as isize)).b32.s1 <=
-           0i32 {
+    if (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 34i32) as isize,
+    ))
+    .b32
+    .s1 <= 0i32
+    {
         print_char(']' as i32);
     }
     dead_cycles = 0i32;
@@ -1165,177 +1740,156 @@ unsafe extern "C" fn hlist_out() {
     cur_glue = 0.0f64;
     this_box = temp_ptr;
     g_order = (*mem.offset((this_box + 5i32) as isize)).b16.s0 as glue_ord;
-    g_sign =
-        (*mem.offset((this_box + 5i32) as isize)).b16.s1 as libc::c_uchar;
-    if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                          19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                          256i32 + 1i32 + 3i32 * 256i32 + (0x10ffffi32 + 1i32)
-                          + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + 80i32) as isize)).b32.s1 >
-           1i32 {
+    g_sign = (*mem.offset((this_box + 5i32) as isize)).b16.s1 as libc::c_uchar;
+    if (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 80i32) as isize,
+    ))
+    .b32
+    .s1 > 1i32
+    {
         /*640: "Extra stuff for justifiable AAT text..." "Merge sequences of
          * words using native fonts and inter-word spaces into single
          * nodes" */
-        p =
-            (*mem.offset((this_box + 5i32) as
-                             isize)).b32.s1; /* this gets the list within the box */
+        p = (*mem.offset((this_box + 5i32) as isize)).b32.s1; /* this gets the list within the box */
         prev_p = this_box + 5i32;
         while p != -0xfffffffi32 {
             if (*mem.offset(p as isize)).b32.s1 != -0xfffffffi32 {
-                if p != -0xfffffffi32 && !is_char_node(p) &&
-                       (*mem.offset(p as isize)).b16.s1 as libc::c_int == 8i32
-                       &&
-                       ((*mem.offset(p as isize)).b16.s0 as libc::c_int ==
-                            40i32 ||
-                            (*mem.offset(p as isize)).b16.s0 as libc::c_int ==
-                                41i32) &&
-                       *font_letter_space.offset((*mem.offset((p + 4i32) as
-                                                                  isize)).b16.s2
-                                                     as isize) == 0i32 {
+                if p != -0xfffffffi32
+                    && !is_char_node(p)
+                    && (*mem.offset(p as isize)).b16.s1 as libc::c_int == 8i32
+                    && ((*mem.offset(p as isize)).b16.s0 as libc::c_int == 40i32
+                        || (*mem.offset(p as isize)).b16.s0 as libc::c_int == 41i32)
+                    && *font_letter_space.offset((*mem.offset((p + 4i32) as isize)).b16.s2 as isize)
+                        == 0i32
+                {
                     /* "got a word in an AAT font, might be the start of a run" */
                     r = p;
                     k = (*mem.offset((r + 4i32) as isize)).b16.s1 as int32_t;
                     q = (*mem.offset(p as isize)).b32.s1;
-                    loop  {
+                    loop {
                         /*641: "Advance `q` past ignorable nodes." This test is
-                     * mostly `node_is_invisible_to_interword_space`. 641 is
-                     * reused a few times here. */
-                        while q != -0xfffffffi32 && !is_char_node(q) &&
-                                  ((*mem.offset(q as isize)).b16.s1 as
-                                       libc::c_int == 12i32 ||
-                                       (*mem.offset(q as isize)).b16.s1 as
-                                           libc::c_int == 3i32 ||
-                                       (*mem.offset(q as isize)).b16.s1 as
-                                           libc::c_int == 4i32 ||
-                                       (*mem.offset(q as isize)).b16.s1 as
-                                           libc::c_int == 5i32 ||
-                                       (*mem.offset(q as isize)).b16.s1 as
-                                           libc::c_int == 8i32 &&
-                                           (*mem.offset(q as isize)).b16.s0 as
-                                               libc::c_int <= 4i32) {
+                         * mostly `node_is_invisible_to_interword_space`. 641 is
+                         * reused a few times here. */
+                        while q != -0xfffffffi32
+                            && !is_char_node(q)
+                            && ((*mem.offset(q as isize)).b16.s1 as libc::c_int == 12i32
+                                || (*mem.offset(q as isize)).b16.s1 as libc::c_int == 3i32
+                                || (*mem.offset(q as isize)).b16.s1 as libc::c_int == 4i32
+                                || (*mem.offset(q as isize)).b16.s1 as libc::c_int == 5i32
+                                || (*mem.offset(q as isize)).b16.s1 as libc::c_int == 8i32
+                                    && (*mem.offset(q as isize)).b16.s0 as libc::c_int <= 4i32)
+                        {
                             q = (*mem.offset(q as isize)).b32.s1
                         }
                         if !(q != -0xfffffffi32 && !is_char_node(q)) {
-                            break ;
+                            break;
                         }
-                        if (*mem.offset(q as isize)).b16.s1 as libc::c_int ==
-                               10i32 &&
-                               (*mem.offset(q as isize)).b16.s0 as libc::c_int
-                                   == 0i32 {
-                            if (*mem.offset((q + 1i32) as isize)).b32.s0 ==
-                                   *font_glue.offset((*mem.offset((r + 4i32)
-                                                                      as
-                                                                      isize)).b16.s2
-                                                         as isize) {
+                        if (*mem.offset(q as isize)).b16.s1 as libc::c_int == 10i32
+                            && (*mem.offset(q as isize)).b16.s0 as libc::c_int == 0i32
+                        {
+                            if (*mem.offset((q + 1i32) as isize)).b32.s0
+                                == *font_glue
+                                    .offset((*mem.offset((r + 4i32) as isize)).b16.s2 as isize)
+                            {
                                 /* "Found a normal space; if the next node is
                                  * another word in the same font, we'll
                                  * merge." */
                                 q = (*mem.offset(q as isize)).b32.s1;
-                                while q != -0xfffffffi32 && !is_char_node(q)
-                                          &&
-                                          ((*mem.offset(q as isize)).b16.s1 as
-                                               libc::c_int == 12i32 ||
-                                               (*mem.offset(q as
-                                                                isize)).b16.s1
-                                                   as libc::c_int == 3i32 ||
-                                               (*mem.offset(q as
-                                                                isize)).b16.s1
-                                                   as libc::c_int == 4i32 ||
-                                               (*mem.offset(q as
-                                                                isize)).b16.s1
-                                                   as libc::c_int == 5i32 ||
-                                               (*mem.offset(q as
-                                                                isize)).b16.s1
-                                                   as libc::c_int == 8i32 &&
-                                                   (*mem.offset(q as
-                                                                    isize)).b16.s0
-                                                       as libc::c_int <= 4i32)
-                                      {
+                                while q != -0xfffffffi32
+                                    && !is_char_node(q)
+                                    && ((*mem.offset(q as isize)).b16.s1 as libc::c_int == 12i32
+                                        || (*mem.offset(q as isize)).b16.s1 as libc::c_int == 3i32
+                                        || (*mem.offset(q as isize)).b16.s1 as libc::c_int == 4i32
+                                        || (*mem.offset(q as isize)).b16.s1 as libc::c_int == 5i32
+                                        || (*mem.offset(q as isize)).b16.s1 as libc::c_int == 8i32
+                                            && (*mem.offset(q as isize)).b16.s0 as libc::c_int
+                                                <= 4i32)
+                                {
                                     q = (*mem.offset(q as isize)).b32.s1
                                 }
-                                if q != -0xfffffffi32 && !is_char_node(q) &&
-                                       (*mem.offset(q as isize)).b16.s1 as
-                                           libc::c_int == 8i32 &&
-                                       ((*mem.offset(q as isize)).b16.s0 as
-                                            libc::c_int == 40i32 ||
-                                            (*mem.offset(q as isize)).b16.s0
-                                                as libc::c_int == 41i32) &&
-                                       (*mem.offset((q + 4i32) as
-                                                        isize)).b16.s2 as
-                                           libc::c_int ==
-                                           (*mem.offset((r + 4i32) as
-                                                            isize)).b16.s2 as
-                                               libc::c_int {
+                                if q != -0xfffffffi32
+                                    && !is_char_node(q)
+                                    && (*mem.offset(q as isize)).b16.s1 as libc::c_int == 8i32
+                                    && ((*mem.offset(q as isize)).b16.s0 as libc::c_int == 40i32
+                                        || (*mem.offset(q as isize)).b16.s0 as libc::c_int == 41i32)
+                                    && (*mem.offset((q + 4i32) as isize)).b16.s2 as libc::c_int
+                                        == (*mem.offset((r + 4i32) as isize)).b16.s2 as libc::c_int
+                                {
                                     p = q;
-                                    k +=
-                                        1i32 +
-                                            (*mem.offset((q + 4i32) as
-                                                             isize)).b16.s1 as
-                                                libc::c_int;
+                                    k += 1i32
+                                        + (*mem.offset((q + 4i32) as isize)).b16.s1 as libc::c_int;
                                     q = (*mem.offset(q as isize)).b32.s1;
-                                    continue ;
+                                    continue;
                                 }
-                            } else { q = (*mem.offset(q as isize)).b32.s1 }
-                            if !(q != -0xfffffffi32 && !is_char_node(q) &&
-                                     (*mem.offset(q as isize)).b16.s1 as
-                                         libc::c_int == 11i32 &&
-                                     (*mem.offset(q as isize)).b16.s0 as
-                                         libc::c_int == 3i32) {
-                                break ;
-                            }
-                            q = (*mem.offset(q as isize)).b32.s1;
-                            while q != -0xfffffffi32 && !is_char_node(q) &&
-                                      ((*mem.offset(q as isize)).b16.s1 as
-                                           libc::c_int == 12i32 ||
-                                           (*mem.offset(q as isize)).b16.s1 as
-                                               libc::c_int == 3i32 ||
-                                           (*mem.offset(q as isize)).b16.s1 as
-                                               libc::c_int == 4i32 ||
-                                           (*mem.offset(q as isize)).b16.s1 as
-                                               libc::c_int == 5i32 ||
-                                           (*mem.offset(q as isize)).b16.s1 as
-                                               libc::c_int == 8i32 &&
-                                               (*mem.offset(q as
-                                                                isize)).b16.s0
-                                                   as libc::c_int <= 4i32) {
+                            } else {
                                 q = (*mem.offset(q as isize)).b32.s1
                             }
-                            if !(q != -0xfffffffi32 && !is_char_node(q) &&
-                                     (*mem.offset(q as isize)).b16.s1 as
-                                         libc::c_int == 8i32 &&
-                                     ((*mem.offset(q as isize)).b16.s0 as
-                                          libc::c_int == 40i32 ||
-                                          (*mem.offset(q as isize)).b16.s0 as
-                                              libc::c_int == 41i32) &&
-                                     (*mem.offset((q + 4i32) as isize)).b16.s2
-                                         as libc::c_int ==
-                                         (*mem.offset((r + 4i32) as
-                                                          isize)).b16.s2 as
-                                             libc::c_int) {
-                                break ;
+                            if !(q != -0xfffffffi32
+                                && !is_char_node(q)
+                                && (*mem.offset(q as isize)).b16.s1 as libc::c_int == 11i32
+                                && (*mem.offset(q as isize)).b16.s0 as libc::c_int == 3i32)
+                            {
+                                break;
+                            }
+                            q = (*mem.offset(q as isize)).b32.s1;
+                            while q != -0xfffffffi32
+                                && !is_char_node(q)
+                                && ((*mem.offset(q as isize)).b16.s1 as libc::c_int == 12i32
+                                    || (*mem.offset(q as isize)).b16.s1 as libc::c_int == 3i32
+                                    || (*mem.offset(q as isize)).b16.s1 as libc::c_int == 4i32
+                                    || (*mem.offset(q as isize)).b16.s1 as libc::c_int == 5i32
+                                    || (*mem.offset(q as isize)).b16.s1 as libc::c_int == 8i32
+                                        && (*mem.offset(q as isize)).b16.s0 as libc::c_int <= 4i32)
+                            {
+                                q = (*mem.offset(q as isize)).b32.s1
+                            }
+                            if !(q != -0xfffffffi32
+                                && !is_char_node(q)
+                                && (*mem.offset(q as isize)).b16.s1 as libc::c_int == 8i32
+                                && ((*mem.offset(q as isize)).b16.s0 as libc::c_int == 40i32
+                                    || (*mem.offset(q as isize)).b16.s0 as libc::c_int == 41i32)
+                                && (*mem.offset((q + 4i32) as isize)).b16.s2 as libc::c_int
+                                    == (*mem.offset((r + 4i32) as isize)).b16.s2 as libc::c_int)
+                            {
+                                break;
                             }
                             p = q;
-                            k +=
-                                1i32 +
-                                    (*mem.offset((q + 4i32) as isize)).b16.s1
-                                        as libc::c_int;
+                            k += 1i32 + (*mem.offset((q + 4i32) as isize)).b16.s1 as libc::c_int;
                             q = (*mem.offset(q as isize)).b32.s1
                         } else {
-                            if !(q != -0xfffffffi32 && !is_char_node(q) &&
-                                     (*mem.offset(q as isize)).b16.s1 as
-                                         libc::c_int == 8i32 &&
-                                     ((*mem.offset(q as isize)).b16.s0 as
-                                          libc::c_int == 40i32 ||
-                                          (*mem.offset(q as isize)).b16.s0 as
-                                              libc::c_int == 41i32) &&
-                                     (*mem.offset((q + 4i32) as isize)).b16.s2
-                                         as libc::c_int ==
-                                         (*mem.offset((r + 4i32) as
-                                                          isize)).b16.s2 as
-                                             libc::c_int) {
-                                break ;
+                            if !(q != -0xfffffffi32
+                                && !is_char_node(q)
+                                && (*mem.offset(q as isize)).b16.s1 as libc::c_int == 8i32
+                                && ((*mem.offset(q as isize)).b16.s0 as libc::c_int == 40i32
+                                    || (*mem.offset(q as isize)).b16.s0 as libc::c_int == 41i32)
+                                && (*mem.offset((q + 4i32) as isize)).b16.s2 as libc::c_int
+                                    == (*mem.offset((r + 4i32) as isize)).b16.s2 as libc::c_int)
+                            {
+                                break;
                             }
                             p = q;
                             q = (*mem.offset(q as isize)).b32.s1
@@ -1345,119 +1899,88 @@ unsafe extern "C" fn hlist_out() {
                      * and p to the last." */
                     if p != r {
                         if pool_ptr + k > pool_size {
-                            overflow(b"pool size\x00" as *const u8 as
-                                         *const libc::c_char,
-                                     pool_size - init_pool_ptr);
+                            overflow(
+                                b"pool size\x00" as *const u8 as *const libc::c_char,
+                                pool_size - init_pool_ptr,
+                            );
                         }
                         k = 0i32;
                         q = r;
-                        loop  {
-                            if (*mem.offset(q as isize)).b16.s1 as libc::c_int
-                                   == 8i32 {
-                                if (*mem.offset(q as isize)).b16.s0 as
-                                       libc::c_int == 40i32 ||
-                                       (*mem.offset(q as isize)).b16.s0 as
-                                           libc::c_int == 41i32 {
+                        loop {
+                            if (*mem.offset(q as isize)).b16.s1 as libc::c_int == 8i32 {
+                                if (*mem.offset(q as isize)).b16.s0 as libc::c_int == 40i32
+                                    || (*mem.offset(q as isize)).b16.s0 as libc::c_int == 41i32
+                                {
                                     j = 0i32;
-                                    while j <
-                                              (*mem.offset((q + 4i32) as
-                                                               isize)).b16.s1
-                                                  as libc::c_int {
-                                        *str_pool.offset(pool_ptr as isize) =
-                                            *(&mut *mem.offset((q + 6i32) as
-                                                                   isize) as
-                                                  *mut memory_word as
-                                                  *mut libc::c_ushort).offset(j
-                                                                                  as
-                                                                                  isize);
+                                    while j
+                                        < (*mem.offset((q + 4i32) as isize)).b16.s1 as libc::c_int
+                                    {
+                                        *str_pool.offset(pool_ptr as isize) = *(&mut *mem
+                                            .offset((q + 6i32) as isize)
+                                            as *mut memory_word
+                                            as *mut libc::c_ushort)
+                                            .offset(j as isize);
                                         pool_ptr += 1;
                                         j += 1
                                     }
-                                    k +=
-                                        (*mem.offset((q + 1i32) as
-                                                         isize)).b32.s1
+                                    k += (*mem.offset((q + 1i32) as isize)).b32.s1
                                 }
-                            } else if (*mem.offset(q as isize)).b16.s1 as
-                                          libc::c_int == 10i32 {
+                            } else if (*mem.offset(q as isize)).b16.s1 as libc::c_int == 10i32 {
                                 *str_pool.offset(pool_ptr as isize) =
                                     ' ' as i32 as packed_UTF16_code;
                                 pool_ptr += 1;
                                 g = (*mem.offset((q + 1i32) as isize)).b32.s0;
-                                k +=
-                                    (*mem.offset((g + 1i32) as isize)).b32.s1;
+                                k += (*mem.offset((g + 1i32) as isize)).b32.s1;
                                 if g_sign as libc::c_int != 0i32 {
                                     if g_sign as libc::c_int == 1i32 {
-                                        if (*mem.offset(g as isize)).b16.s1 as
-                                               libc::c_int ==
-                                               g_order as libc::c_int {
-                                            k +=
-                                                tex_round((*mem.offset((this_box
-                                                                            +
-                                                                            6i32)
-                                                                           as
-                                                                           isize)).gr
-                                                              *
-                                                              (*mem.offset((g
-                                                                                +
-                                                                                2i32)
-                                                                               as
-                                                                               isize)).b32.s1
-                                                                  as
-                                                                  libc::c_double)
+                                        if (*mem.offset(g as isize)).b16.s1 as libc::c_int
+                                            == g_order as libc::c_int
+                                        {
+                                            k += tex_round(
+                                                (*mem.offset((this_box + 6i32) as isize)).gr
+                                                    * (*mem.offset((g + 2i32) as isize)).b32.s1
+                                                        as libc::c_double,
+                                            )
                                         }
-                                    } else if (*mem.offset(g as isize)).b16.s0
-                                                  as libc::c_int ==
-                                                  g_order as libc::c_int {
-                                        k -=
-                                            tex_round((*mem.offset((this_box +
-                                                                        6i32)
-                                                                       as
-                                                                       isize)).gr
-                                                          *
-                                                          (*mem.offset((g +
-                                                                            3i32)
-                                                                           as
-                                                                           isize)).b32.s1
-                                                              as
-                                                              libc::c_double)
+                                    } else if (*mem.offset(g as isize)).b16.s0 as libc::c_int
+                                        == g_order as libc::c_int
+                                    {
+                                        k -= tex_round(
+                                            (*mem.offset((this_box + 6i32) as isize)).gr
+                                                * (*mem.offset((g + 3i32) as isize)).b32.s1
+                                                    as libc::c_double,
+                                        )
                                     }
                                 }
-                            } else if (*mem.offset(q as isize)).b16.s1 as
-                                          libc::c_int == 11i32 {
+                            } else if (*mem.offset(q as isize)).b16.s1 as libc::c_int == 11i32 {
                                 k += (*mem.offset((q + 1i32) as isize)).b32.s1
                             }
-                            if q == p { break ; }
+                            if q == p {
+                                break;
+                            }
                             q = (*mem.offset(q as isize)).b32.s1
                         }
-                        q =
-                            new_native_word_node((*mem.offset((r + 4i32) as
-                                                                  isize)).b16.s2
-                                                     as internal_font_number,
-                                                 cur_length());
-                        (*mem.offset(q as isize)).b16.s0 =
-                            (*mem.offset(r as isize)).b16.s0;
+                        q = new_native_word_node(
+                            (*mem.offset((r + 4i32) as isize)).b16.s2 as internal_font_number,
+                            cur_length(),
+                        );
+                        (*mem.offset(q as isize)).b16.s0 = (*mem.offset(r as isize)).b16.s0;
                         j = 0i32;
                         while j < cur_length() {
-                            *(&mut *mem.offset((q + 6i32) as isize) as
-                                  *mut memory_word as
-                                  *mut libc::c_ushort).offset(j as isize) =
-                                *str_pool.offset((*str_start.offset((str_ptr -
-                                                                         65536i32)
-                                                                        as
-                                                                        isize)
-                                                      + j) as isize);
+                            *(&mut *mem.offset((q + 6i32) as isize) as *mut memory_word
+                                as *mut libc::c_ushort)
+                                .offset(j as isize) = *str_pool.offset(
+                                (*str_start.offset((str_ptr - 65536i32) as isize) + j) as isize,
+                            );
                             j += 1
                         }
                         /* "Link q into the list in place of r...p" */
                         (*mem.offset((q + 1i32) as isize)).b32.s1 = k;
-                        store_justified_native_glyphs(&mut *mem.offset(q as
-                                                                           isize)
-                                                          as *mut memory_word
-                                                          as
-                                                          *mut libc::c_void);
+                        store_justified_native_glyphs(&mut *mem.offset(q as isize)
+                            as *mut memory_word
+                            as *mut libc::c_void);
                         (*mem.offset(prev_p as isize)).b32.s1 = q;
-                        (*mem.offset(q as isize)).b32.s1 =
-                            (*mem.offset(p as isize)).b32.s1;
+                        (*mem.offset(q as isize)).b32.s1 = (*mem.offset(p as isize)).b32.s1;
                         (*mem.offset(p as isize)).b32.s1 = -0xfffffffi32;
                         prev_p = r;
                         p = (*mem.offset(r as isize)).b32.s1;
@@ -1467,23 +1990,17 @@ unsafe extern "C" fn hlist_out() {
                          * cannot be one of these, as we always start merging
                          * at a native_word node." */
                         while p != -0xfffffffi32 {
-                            if !is_char_node(p) &&
-                                   ((*mem.offset(p as isize)).b16.s1 as
-                                        libc::c_int == 12i32 ||
-                                        (*mem.offset(p as isize)).b16.s1 as
-                                            libc::c_int == 3i32 ||
-                                        (*mem.offset(p as isize)).b16.s1 as
-                                            libc::c_int == 4i32 ||
-                                        (*mem.offset(p as isize)).b16.s1 as
-                                            libc::c_int == 5i32 ||
-                                        (*mem.offset(p as isize)).b16.s1 as
-                                            libc::c_int == 8i32 &&
-                                            (*mem.offset(p as isize)).b16.s0
-                                                as libc::c_int <= 4i32) {
+                            if !is_char_node(p)
+                                && ((*mem.offset(p as isize)).b16.s1 as libc::c_int == 12i32
+                                    || (*mem.offset(p as isize)).b16.s1 as libc::c_int == 3i32
+                                    || (*mem.offset(p as isize)).b16.s1 as libc::c_int == 4i32
+                                    || (*mem.offset(p as isize)).b16.s1 as libc::c_int == 5i32
+                                    || (*mem.offset(p as isize)).b16.s1 as libc::c_int == 8i32
+                                        && (*mem.offset(p as isize)).b16.s0 as libc::c_int <= 4i32)
+                            {
                                 (*mem.offset(prev_p as isize)).b32.s1 =
                                     (*mem.offset(p as isize)).b32.s1;
-                                (*mem.offset(p as isize)).b32.s1 =
-                                    (*mem.offset(q as isize)).b32.s1;
+                                (*mem.offset(p as isize)).b32.s1 = (*mem.offset(q as isize)).b32.s1;
                                 (*mem.offset(q as isize)).b32.s1 = p;
                                 q = p
                             }
@@ -1491,8 +2008,7 @@ unsafe extern "C" fn hlist_out() {
                             p = (*mem.offset(p as isize)).b32.s1
                         }
                         flush_node_list(r);
-                        pool_ptr =
-                            *str_start.offset((str_ptr - 65536i32) as isize);
+                        pool_ptr = *str_start.offset((str_ptr - 65536i32) as isize);
                         p = q
                     }
                 }
@@ -1502,12 +2018,14 @@ unsafe extern "C" fn hlist_out() {
         }
     }
     /* ... resuming 639 ... */
-    p =
-        (*mem.offset((this_box + 5i32) as
-                         isize)).b32.s1; /* this is list_offset, the offset of the box list pointer */
+    p = (*mem.offset((this_box + 5i32) as isize)).b32.s1; /* this is list_offset, the offset of the box list pointer */
     cur_s += 1;
-    if cur_s > 0i32 { dvi_out(141i32 as eight_bits); }
-    if cur_s > max_push { max_push = cur_s }
+    if cur_s > 0i32 {
+        dvi_out(141i32 as eight_bits);
+    }
+    if cur_s > max_push {
+        max_push = cur_s
+    }
     save_loc = dvi_offset + dvi_ptr;
     base_line = cur_v;
     prev_p = this_box + 5i32;
@@ -1520,10 +2038,13 @@ unsafe extern "C" fn hlist_out() {
         if cur_dir as libc::c_int == 1i32 {
             cur_dir = 0i32 as small_number;
             cur_h -= (*mem.offset((this_box + 1i32) as isize)).b32.s1
-        } else { (*mem.offset(this_box as isize)).b16.s0 = 0i32 as uint16_t }
+        } else {
+            (*mem.offset(this_box as isize)).b16.s0 = 0i32 as uint16_t
+        }
     }
-    if cur_dir as libc::c_int == 1i32 &&
-           (*mem.offset(this_box as isize)).b16.s0 as libc::c_int != 1i32 {
+    if cur_dir as libc::c_int == 1i32
+        && (*mem.offset(this_box as isize)).b16.s0 as libc::c_int != 1i32
+    {
         /*1508: "Reverse the complete hlist and set the subtype to reversed." */
         save_h = cur_h; /* "SyncTeX: do nothing, it is too late" */
         temp_ptr = p;
@@ -1540,9 +2061,8 @@ unsafe extern "C" fn hlist_out() {
     /* ... resuming 639 ... */
     left_edge = cur_h;
     synctex_hlist(this_box);
-    's_726:
-        while p != -0xfffffffi32 {
-            loop 
+    's_726: while p != -0xfffffffi32 {
+        loop
                  /*642: "Output node `p` for `hlist_out` and move to the next node,
         * maintaining the condition `cur_v = base_line`." ... "We ought to
         * give special care to the efficiency [here] since it belongs to TeX's
@@ -2043,151 +2563,134 @@ unsafe extern "C" fn hlist_out() {
                     }
                 }
             }
-            match current_block {
-                14898553815918780345 => {
-                    /*648: "Output leaders into an hlist, goto fin_rule if a
-                     * rule or next_p if done." */
-                    leader_box =
-                        (*mem.offset((p + 1i32) as
-                                         isize)).b32.s1; /* "compensate for floating-point rounding" ?? */
-                    if (*mem.offset(leader_box as isize)).b16.s1 as
-                           libc::c_int == 2i32 {
-                        rule_ht =
-                            (*mem.offset((leader_box + 3i32) as
-                                             isize)).b32.s1;
-                        rule_dp =
-                            (*mem.offset((leader_box + 2i32) as
-                                             isize)).b32.s1;
-                        current_block = 18357984655869314713;
-                    } else {
-                        leader_wd =
-                            (*mem.offset((leader_box + 1i32) as
-                                             isize)).b32.s1;
-                        if leader_wd > 0i32 && rule_wd > 0i32 {
-                            rule_wd += 10i32;
-                            if cur_dir as libc::c_int == 1i32 {
-                                cur_h -= 10i32
-                            }
-                            edge = cur_h + rule_wd;
-                            lx = 0i32;
-                            /*649: "Let cur_h be the position of the first pox,
+        match current_block {
+            14898553815918780345 => {
+                /*648: "Output leaders into an hlist, goto fin_rule if a
+                 * rule or next_p if done." */
+                leader_box = (*mem.offset((p + 1i32) as isize)).b32.s1; /* "compensate for floating-point rounding" ?? */
+                if (*mem.offset(leader_box as isize)).b16.s1 as libc::c_int == 2i32 {
+                    rule_ht = (*mem.offset((leader_box + 3i32) as isize)).b32.s1;
+                    rule_dp = (*mem.offset((leader_box + 2i32) as isize)).b32.s1;
+                    current_block = 18357984655869314713;
+                } else {
+                    leader_wd = (*mem.offset((leader_box + 1i32) as isize)).b32.s1;
+                    if leader_wd > 0i32 && rule_wd > 0i32 {
+                        rule_wd += 10i32;
+                        if cur_dir as libc::c_int == 1i32 {
+                            cur_h -= 10i32
+                        }
+                        edge = cur_h + rule_wd;
+                        lx = 0i32;
+                        /*649: "Let cur_h be the position of the first pox,
                          * and set leader_wd + lx to the spacing between
                          * corresponding parts of boxes". Additional
                          * explanator comments in XTTP. */
-                            if (*mem.offset(p as isize)).b16.s0 as libc::c_int
-                                   == 100i32 {
-                                save_h = cur_h;
-                                cur_h =
-                                    left_edge +
-                                        leader_wd *
-                                            ((cur_h - left_edge) / leader_wd);
-                                if cur_h < save_h {
-                                    cur_h = cur_h + leader_wd
-                                }
+                        if (*mem.offset(p as isize)).b16.s0 as libc::c_int == 100i32 {
+                            save_h = cur_h;
+                            cur_h = left_edge + leader_wd * ((cur_h - left_edge) / leader_wd);
+                            if cur_h < save_h {
+                                cur_h = cur_h + leader_wd
+                            }
+                        } else {
+                            lq = rule_wd / leader_wd;
+                            lr = rule_wd % leader_wd;
+                            if (*mem.offset(p as isize)).b16.s0 as libc::c_int == 101i32 {
+                                cur_h = cur_h + lr / 2i32
                             } else {
-                                lq = rule_wd / leader_wd;
-                                lr = rule_wd % leader_wd;
-                                if (*mem.offset(p as isize)).b16.s0 as
-                                       libc::c_int == 101i32 {
-                                    cur_h = cur_h + lr / 2i32
-                                } else {
-                                    lx = lr / (lq + 1i32);
-                                    cur_h =
-                                        cur_h + (lr - (lq - 1i32) * lx) / 2i32
-                                }
+                                lx = lr / (lq + 1i32);
+                                cur_h = cur_h + (lr - (lq - 1i32) * lx) / 2i32
                             }
-                            while cur_h + leader_wd <= edge {
-                                /*650: "Output a leader box at cur_h, then advance cur_h by leader_wd + lx" */
-                                cur_v =
-                                    base_line +
-                                        (*mem.offset((leader_box + 4i32) as
-                                                         isize)).b32.s1;
-                                if cur_v != dvi_v {
-                                    movement(cur_v - dvi_v,
-                                             157i32 as eight_bits);
-                                    dvi_v = cur_v
-                                }
-                                save_v = dvi_v;
-                                if cur_h != dvi_h {
-                                    movement(cur_h - dvi_h,
-                                             143i32 as eight_bits);
-                                    dvi_h = cur_h
-                                }
-                                save_h = dvi_h;
-                                temp_ptr = leader_box;
-                                if cur_dir as libc::c_int == 1i32 {
-                                    cur_h += leader_wd
-                                }
-                                outer_doing_leaders = doing_leaders;
-                                doing_leaders = 1i32 != 0;
-                                if (*mem.offset(leader_box as isize)).b16.s1
-                                       as libc::c_int == 1i32 {
-                                    vlist_out();
-                                } else { hlist_out(); }
-                                doing_leaders = outer_doing_leaders;
-                                dvi_v = save_v;
-                                dvi_h = save_h;
-                                cur_v = base_line;
-                                cur_h = save_h + leader_wd + lx
+                        }
+                        while cur_h + leader_wd <= edge {
+                            /*650: "Output a leader box at cur_h, then advance cur_h by leader_wd + lx" */
+                            cur_v = base_line + (*mem.offset((leader_box + 4i32) as isize)).b32.s1;
+                            if cur_v != dvi_v {
+                                movement(cur_v - dvi_v, 157i32 as eight_bits);
+                                dvi_v = cur_v
                             }
+                            save_v = dvi_v;
+                            if cur_h != dvi_h {
+                                movement(cur_h - dvi_h, 143i32 as eight_bits);
+                                dvi_h = cur_h
+                            }
+                            save_h = dvi_h;
+                            temp_ptr = leader_box;
                             if cur_dir as libc::c_int == 1i32 {
-                                cur_h = edge
-                            } else { cur_h = edge - 10i32 }
-                            current_block = 13889995436552222973;
-                        } else { current_block = 7364881209357675324; }
-                    }
-                }
-                330672039582001856 => {
-                    (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
-                    cur_h += (*mem.offset((p + 1i32) as isize)).b32.s1;
-                    current_block = 13889995436552222973;
-                }
-                _ => { }
-            }
-            match current_block {
-                18357984655869314713 => {
-                    /*646: "Output a rule in an hlist" */
-                    if rule_ht == -0x40000000i32 {
-                        rule_ht =
-                            (*mem.offset((this_box + 3i32) as isize)).b32.s1
-                    }
-                    if rule_dp == -0x40000000i32 {
-                        rule_dp =
-                            (*mem.offset((this_box + 2i32) as isize)).b32.s1
-                    }
-                    rule_ht += rule_dp;
-                    if rule_ht > 0i32 && rule_wd > 0i32 {
-                        if cur_h != dvi_h {
-                            movement(cur_h - dvi_h, 143i32 as eight_bits);
-                            dvi_h = cur_h
+                                cur_h += leader_wd
+                            }
+                            outer_doing_leaders = doing_leaders;
+                            doing_leaders = 1i32 != 0;
+                            if (*mem.offset(leader_box as isize)).b16.s1 as libc::c_int == 1i32 {
+                                vlist_out();
+                            } else {
+                                hlist_out();
+                            }
+                            doing_leaders = outer_doing_leaders;
+                            dvi_v = save_v;
+                            dvi_h = save_h;
+                            cur_v = base_line;
+                            cur_h = save_h + leader_wd + lx
                         }
-                        cur_v = base_line + rule_dp;
-                        if cur_v != dvi_v {
-                            movement(cur_v - dvi_v, 157i32 as eight_bits);
-                            dvi_v = cur_v
+                        if cur_dir as libc::c_int == 1i32 {
+                            cur_h = edge
+                        } else {
+                            cur_h = edge - 10i32
                         }
-                        dvi_out(132i32 as eight_bits);
-                        dvi_four(rule_ht);
-                        dvi_four(rule_wd);
-                        cur_v = base_line;
-                        dvi_h += rule_wd
+                        current_block = 13889995436552222973;
+                    } else {
+                        current_block = 7364881209357675324;
                     }
-                    current_block = 7364881209357675324;
                 }
-                _ => { }
             }
-            match current_block {
-                7364881209357675324 =>
-                /* ... resuming 644 ... */
-                {
-                    cur_h += rule_wd; /* end GLUE_NODE case */
-                    synctex_horizontal_rule_or_glue(p, this_box);
-                }
-                _ => { }
+            330672039582001856 => {
+                (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
+                cur_h += (*mem.offset((p + 1i32) as isize)).b32.s1;
+                current_block = 13889995436552222973;
             }
-            prev_p = p;
-            p = (*mem.offset(p as isize)).b32.s1
+            _ => {}
         }
+        match current_block {
+            18357984655869314713 => {
+                /*646: "Output a rule in an hlist" */
+                if rule_ht == -0x40000000i32 {
+                    rule_ht = (*mem.offset((this_box + 3i32) as isize)).b32.s1
+                }
+                if rule_dp == -0x40000000i32 {
+                    rule_dp = (*mem.offset((this_box + 2i32) as isize)).b32.s1
+                }
+                rule_ht += rule_dp;
+                if rule_ht > 0i32 && rule_wd > 0i32 {
+                    if cur_h != dvi_h {
+                        movement(cur_h - dvi_h, 143i32 as eight_bits);
+                        dvi_h = cur_h
+                    }
+                    cur_v = base_line + rule_dp;
+                    if cur_v != dvi_v {
+                        movement(cur_v - dvi_v, 157i32 as eight_bits);
+                        dvi_v = cur_v
+                    }
+                    dvi_out(132i32 as eight_bits);
+                    dvi_four(rule_ht);
+                    dvi_four(rule_wd);
+                    cur_v = base_line;
+                    dvi_h += rule_wd
+                }
+                current_block = 7364881209357675324;
+            }
+            _ => {}
+        }
+        match current_block {
+            7364881209357675324 =>
+            /* ... resuming 644 ... */
+            {
+                cur_h += rule_wd; /* end GLUE_NODE case */
+                synctex_horizontal_rule_or_glue(p, this_box);
+            }
+            _ => {}
+        }
+        prev_p = p;
+        p = (*mem.offset(p as isize)).b32.s1
+    }
     synctex_tsilh(this_box);
     /*1502: "Finish hlist_out for mixed direction typesetting" */
     /*1505: "Check for LR anomalies" */
@@ -2209,7 +2712,9 @@ unsafe extern "C" fn hlist_out() {
     }
     /* ... finishing 639 */
     prune_movements(save_loc);
-    if cur_s > 0i32 { dvi_pop(save_loc); }
+    if cur_s > 0i32 {
+        dvi_pop(save_loc);
+    }
     cur_s -= 1;
 }
 /*651: "When vlist_out is called, its duty is to output the box represented by
@@ -2240,19 +2745,24 @@ unsafe extern "C" fn vlist_out() {
     cur_glue = 0.0f64;
     this_box = temp_ptr;
     g_order = (*mem.offset((this_box + 5i32) as isize)).b16.s0 as glue_ord;
-    g_sign =
-        (*mem.offset((this_box + 5i32) as isize)).b16.s1 as libc::c_uchar;
+    g_sign = (*mem.offset((this_box + 5i32) as isize)).b16.s1 as libc::c_uchar;
     p = (*mem.offset((this_box + 5i32) as isize)).b32.s1;
     upwards = (*mem.offset(this_box as isize)).b16.s0 as libc::c_int == 1i32;
     cur_s += 1;
-    if cur_s > 0i32 { dvi_out(141i32 as eight_bits); }
-    if cur_s > max_push { max_push = cur_s }
+    if cur_s > 0i32 {
+        dvi_out(141i32 as eight_bits);
+    }
+    if cur_s > max_push {
+        max_push = cur_s
+    }
     save_loc = dvi_offset + dvi_ptr;
     left_edge = cur_h;
     synctex_vlist(this_box);
     if upwards {
         cur_v += (*mem.offset((this_box + 2i32) as isize)).b32.s1
-    } else { cur_v -= (*mem.offset((this_box + 3i32) as isize)).b32.s1 }
+    } else {
+        cur_v -= (*mem.offset((this_box + 3i32) as isize)).b32.s1
+    }
     top_edge = cur_v;
     while p != -0xfffffffi32 {
         /*652: "Output node p and move to the next node, maintaining the
@@ -2264,17 +2774,17 @@ unsafe extern "C" fn vlist_out() {
             match (*mem.offset(p as isize)).b16.s1 as libc::c_int {
                 0 | 1 => {
                     /*654: "Output a box in a vlist" */
-                    if (*mem.offset((p + 5i32) as isize)).b32.s1 ==
-                           -0xfffffffi32 {
+                    if (*mem.offset((p + 5i32) as isize)).b32.s1 == -0xfffffffi32 {
                         if upwards {
                             cur_v -= (*mem.offset((p + 2i32) as isize)).b32.s1
                         } else {
                             cur_v += (*mem.offset((p + 3i32) as isize)).b32.s1
                         }
-                        if (*mem.offset(p as isize)).b16.s1 as libc::c_int ==
-                               1i32 {
+                        if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 1i32 {
                             synctex_void_vlist(p, this_box);
-                        } else { synctex_void_hlist(p, this_box); }
+                        } else {
+                            synctex_void_hlist(p, this_box);
+                        }
                         if upwards {
                             cur_v -= (*mem.offset((p + 3i32) as isize)).b32.s1
                         } else {
@@ -2293,29 +2803,22 @@ unsafe extern "C" fn vlist_out() {
                         save_h = dvi_h;
                         save_v = dvi_v;
                         if cur_dir as libc::c_int == 1i32 {
-                            cur_h =
-                                left_edge -
-                                    (*mem.offset((p + 4i32) as isize)).b32.s1
+                            cur_h = left_edge - (*mem.offset((p + 4i32) as isize)).b32.s1
                         } else {
-                            cur_h =
-                                left_edge +
-                                    (*mem.offset((p + 4i32) as isize)).b32.s1
+                            cur_h = left_edge + (*mem.offset((p + 4i32) as isize)).b32.s1
                         }
                         temp_ptr = p;
-                        if (*mem.offset(p as isize)).b16.s1 as libc::c_int ==
-                               1i32 {
+                        if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 1i32 {
                             vlist_out();
-                        } else { hlist_out(); }
+                        } else {
+                            hlist_out();
+                        }
                         dvi_h = save_h;
                         dvi_v = save_v;
                         if upwards {
-                            cur_v =
-                                save_v -
-                                    (*mem.offset((p + 3i32) as isize)).b32.s1
+                            cur_v = save_v - (*mem.offset((p + 3i32) as isize)).b32.s1
                         } else {
-                            cur_v =
-                                save_v +
-                                    (*mem.offset((p + 2i32) as isize)).b32.s1
+                            cur_v = save_v + (*mem.offset((p + 2i32) as isize)).b32.s1
                         }
                         cur_h = left_edge
                     }
@@ -2331,9 +2834,7 @@ unsafe extern "C" fn vlist_out() {
                     /*1403: "Output the whatsit node p in a vlist" */
                     match (*mem.offset(p as isize)).b16.s0 as libc::c_int {
                         42 => {
-                            cur_v =
-                                cur_v +
-                                    (*mem.offset((p + 3i32) as isize)).b32.s1;
+                            cur_v = cur_v + (*mem.offset((p + 3i32) as isize)).b32.s1;
                             cur_h = left_edge;
                             if cur_h != dvi_h {
                                 movement(cur_h - dvi_h, 143i32 as eight_bits);
@@ -2343,9 +2844,7 @@ unsafe extern "C" fn vlist_out() {
                                 movement(cur_v - dvi_v, 157i32 as eight_bits);
                                 dvi_v = cur_v
                             }
-                            f =
-                                (*mem.offset((p + 4i32) as isize)).b16.s2 as
-                                    internal_font_number;
+                            f = (*mem.offset((p + 4i32) as isize)).b16.s2 as internal_font_number;
                             if f != dvi_f {
                                 /*643:*/
                                 if !*font_used.offset(f as isize) {
@@ -2353,18 +2852,14 @@ unsafe extern "C" fn vlist_out() {
                                     *font_used.offset(f as isize) = 1i32 != 0
                                 } /* glyph count */
                                 if f <= 64i32 {
-                                    dvi_out((f + 170i32) as
-                                                eight_bits); /* x offset as fixed-point */
+                                    dvi_out((f + 170i32) as eight_bits); /* x offset as fixed-point */
                                 } else if f <= 256i32 {
-                                    dvi_out(235i32 as
-                                                eight_bits); /* y offset as fixed-point */
+                                    dvi_out(235i32 as eight_bits); /* y offset as fixed-point */
                                     dvi_out((f - 1i32) as eight_bits);
                                 } else {
                                     dvi_out((235i32 + 1i32) as eight_bits);
-                                    dvi_out(((f - 1i32) / 256i32) as
-                                                eight_bits);
-                                    dvi_out(((f - 1i32) % 256i32) as
-                                                eight_bits);
+                                    dvi_out(((f - 1i32) / 256i32) as eight_bits);
+                                    dvi_out(((f - 1i32) % 256i32) as eight_bits);
                                 }
                                 dvi_f = f
                             }
@@ -2373,50 +2868,42 @@ unsafe extern "C" fn vlist_out() {
                             dvi_two(1i32 as UTF16_code);
                             dvi_four(0i32);
                             dvi_four(0i32);
-                            dvi_two((*mem.offset((p + 4i32) as
-                                                     isize)).b16.s1);
-                            cur_v +=
-                                (*mem.offset((p + 2i32) as isize)).b32.s1;
+                            dvi_two((*mem.offset((p + 4i32) as isize)).b16.s1);
+                            cur_v += (*mem.offset((p + 2i32) as isize)).b32.s1;
                             cur_h = left_edge
                         }
                         43 | 44 => {
                             save_h = dvi_h;
                             save_v = dvi_v;
-                            cur_v =
-                                cur_v +
-                                    (*mem.offset((p + 3i32) as isize)).b32.s1;
+                            cur_v = cur_v + (*mem.offset((p + 3i32) as isize)).b32.s1;
                             pic_out(p);
                             dvi_h = save_h;
                             dvi_v = save_v;
-                            cur_v =
-                                save_v +
-                                    (*mem.offset((p + 2i32) as isize)).b32.s1;
+                            cur_v = save_v + (*mem.offset((p + 2i32) as isize)).b32.s1;
                             cur_h = left_edge
                         }
                         6 => {
                             pdf_last_x_pos = cur_h + cur_h_offset;
-                            pdf_last_y_pos =
-                                cur_page_height - cur_v - cur_v_offset
+                            pdf_last_y_pos = cur_page_height - cur_v - cur_v_offset
                         }
-                        _ => { out_what(p); }
+                        _ => {
+                            out_what(p);
+                        }
                     }
                     current_block = 5241535548500397784;
                 }
                 10 => {
                     /*656: "Move down or output leaders" */
                     g = (*mem.offset((p + 1i32) as isize)).b32.s0;
-                    rule_ht =
-                        (*mem.offset((g + 1i32) as isize)).b32.s1 - cur_g;
+                    rule_ht = (*mem.offset((g + 1i32) as isize)).b32.s1 - cur_g;
                     if g_sign as libc::c_int != 0i32 {
                         if g_sign as libc::c_int == 1i32 {
                             if (*mem.offset(g as isize)).b16.s1 as libc::c_int
-                                   == g_order as libc::c_int {
+                                == g_order as libc::c_int
+                            {
                                 cur_glue +=
-                                    (*mem.offset((g + 2i32) as isize)).b32.s1
-                                        as libc::c_double;
-                                glue_temp =
-                                    (*mem.offset((this_box + 6i32) as
-                                                     isize)).gr * cur_glue;
+                                    (*mem.offset((g + 2i32) as isize)).b32.s1 as libc::c_double;
+                                glue_temp = (*mem.offset((this_box + 6i32) as isize)).gr * cur_glue;
                                 if glue_temp > 1000000000.0f64 {
                                     glue_temp = 1000000000.0f64
                                 } else if glue_temp < -1000000000.0f64 {
@@ -2424,14 +2911,11 @@ unsafe extern "C" fn vlist_out() {
                                 }
                                 cur_g = tex_round(glue_temp)
                             }
-                        } else if (*mem.offset(g as isize)).b16.s0 as
-                                      libc::c_int == g_order as libc::c_int {
-                            cur_glue -=
-                                (*mem.offset((g + 3i32) as isize)).b32.s1 as
-                                    libc::c_double;
-                            glue_temp =
-                                (*mem.offset((this_box + 6i32) as isize)).gr *
-                                    cur_glue;
+                        } else if (*mem.offset(g as isize)).b16.s0 as libc::c_int
+                            == g_order as libc::c_int
+                        {
+                            cur_glue -= (*mem.offset((g + 3i32) as isize)).b32.s1 as libc::c_double;
+                            glue_temp = (*mem.offset((this_box + 6i32) as isize)).gr * cur_glue;
                             if glue_temp > 1000000000.0f64 {
                                 glue_temp = 1000000000.0f64
                             } else if glue_temp < -1000000000.0f64 {
@@ -2441,120 +2925,100 @@ unsafe extern "C" fn vlist_out() {
                         }
                     }
                     rule_ht += cur_g;
-                    if (*mem.offset(p as isize)).b16.s0 as libc::c_int >=
-                           100i32 {
+                    if (*mem.offset(p as isize)).b16.s0 as libc::c_int >= 100i32 {
                         /*657: "Output leaders in a vlist, goto fin_rule if a rule
-                     * or next_p if done" */
-                        leader_box =
-                            (*mem.offset((p + 1i32) as
-                                             isize)).b32.s1; /* "compensate for floating-point rounding" */
-                        if (*mem.offset(leader_box as isize)).b16.s1 as
-                               libc::c_int == 2i32 {
-                            rule_wd =
-                                (*mem.offset((leader_box + 1i32) as
-                                                 isize)).b32.s1;
+                         * or next_p if done" */
+                        leader_box = (*mem.offset((p + 1i32) as isize)).b32.s1; /* "compensate for floating-point rounding" */
+                        if (*mem.offset(leader_box as isize)).b16.s1 as libc::c_int == 2i32 {
+                            rule_wd = (*mem.offset((leader_box + 1i32) as isize)).b32.s1;
                             rule_dp = 0i32;
                             current_block = 9653381107620864133;
                         } else {
-                            leader_ht =
-                                (*mem.offset((leader_box + 3i32) as
-                                                 isize)).b32.s1 +
-                                    (*mem.offset((leader_box + 2i32) as
-                                                     isize)).b32.s1;
+                            leader_ht = (*mem.offset((leader_box + 3i32) as isize)).b32.s1
+                                + (*mem.offset((leader_box + 2i32) as isize)).b32.s1;
                             if leader_ht > 0i32 && rule_ht > 0i32 {
                                 rule_ht += 10i32;
                                 edge = cur_v + rule_ht;
                                 lx = 0i32;
                                 /*658: "Let cur_v be the position of the first box,
-                         * and set leader_ht + lx to the spacing between
-                         * corresponding parts of boxes" */
-                                if (*mem.offset(p as isize)).b16.s0 as
-                                       libc::c_int == 100i32 {
+                                 * and set leader_ht + lx to the spacing between
+                                 * corresponding parts of boxes" */
+                                if (*mem.offset(p as isize)).b16.s0 as libc::c_int == 100i32 {
                                     save_v = cur_v;
-                                    cur_v =
-                                        top_edge +
-                                            leader_ht *
-                                                ((cur_v - top_edge) /
-                                                     leader_ht);
+                                    cur_v = top_edge + leader_ht * ((cur_v - top_edge) / leader_ht);
                                     if cur_v < save_v {
                                         cur_v = cur_v + leader_ht
                                     }
                                 } else {
                                     lq = rule_ht / leader_ht;
                                     lr = rule_ht % leader_ht;
-                                    if (*mem.offset(p as isize)).b16.s0 as
-                                           libc::c_int == 101i32 {
+                                    if (*mem.offset(p as isize)).b16.s0 as libc::c_int == 101i32 {
                                         cur_v = cur_v + lr / 2i32
                                     } else {
                                         lx = lr / (lq + 1i32);
-                                        cur_v =
-                                            cur_v +
-                                                (lr - (lq - 1i32) * lx) / 2i32
+                                        cur_v = cur_v + (lr - (lq - 1i32) * lx) / 2i32
                                     }
                                 }
                                 while cur_v + leader_ht <= edge {
                                     /*659: "Output a leader box at cur_v, then advance
-                             * cur_v by leader_ht + lx". "When we reach this
-                             * part of the program, cur_v indicates the top of
-                             * a leader box, not its baseline." */
+                                     * cur_v by leader_ht + lx". "When we reach this
+                                     * part of the program, cur_v indicates the top of
+                                     * a leader box, not its baseline." */
                                     if cur_dir as libc::c_int == 1i32 {
-                                        cur_h =
-                                            left_edge -
-                                                (*mem.offset((leader_box +
-                                                                  4i32) as
-                                                                 isize)).b32.s1
+                                        cur_h = left_edge
+                                            - (*mem.offset((leader_box + 4i32) as isize)).b32.s1
                                     } else {
-                                        cur_h =
-                                            left_edge +
-                                                (*mem.offset((leader_box +
-                                                                  4i32) as
-                                                                 isize)).b32.s1
+                                        cur_h = left_edge
+                                            + (*mem.offset((leader_box + 4i32) as isize)).b32.s1
                                     }
                                     if cur_h != dvi_h {
-                                        movement(cur_h - dvi_h,
-                                                 143i32 as eight_bits);
+                                        movement(cur_h - dvi_h, 143i32 as eight_bits);
                                         dvi_h = cur_h
                                     }
                                     save_h = dvi_h;
-                                    cur_v +=
-                                        (*mem.offset((leader_box + 3i32) as
-                                                         isize)).b32.s1;
+                                    cur_v += (*mem.offset((leader_box + 3i32) as isize)).b32.s1;
                                     if cur_v != dvi_v {
-                                        movement(cur_v - dvi_v,
-                                                 157i32 as eight_bits);
+                                        movement(cur_v - dvi_v, 157i32 as eight_bits);
                                         dvi_v = cur_v
                                     }
                                     save_v = dvi_v;
                                     temp_ptr = leader_box;
                                     outer_doing_leaders = doing_leaders;
                                     doing_leaders = 1i32 != 0;
-                                    if (*mem.offset(leader_box as
-                                                        isize)).b16.s1 as
-                                           libc::c_int == 1i32 {
+                                    if (*mem.offset(leader_box as isize)).b16.s1 as libc::c_int
+                                        == 1i32
+                                    {
                                         vlist_out();
-                                    } else { hlist_out(); }
+                                    } else {
+                                        hlist_out();
+                                    }
                                     doing_leaders = outer_doing_leaders;
                                     dvi_v = save_v;
                                     dvi_h = save_h;
                                     cur_h = left_edge;
-                                    cur_v =
-                                        save_v -
-                                            (*mem.offset((leader_box + 3i32)
-                                                             as isize)).b32.s1
-                                            + leader_ht + lx
+                                    cur_v = save_v
+                                        - (*mem.offset((leader_box + 3i32) as isize)).b32.s1
+                                        + leader_ht
+                                        + lx
                                 }
                                 cur_v = edge - 10i32;
                                 current_block = 5241535548500397784;
-                            } else { current_block = 5246966788635068203; }
+                            } else {
+                                current_block = 5246966788635068203;
+                            }
                         }
-                    } else { current_block = 5246966788635068203; }
+                    } else {
+                        current_block = 5246966788635068203;
+                    }
                     match current_block {
-                        5241535548500397784 => { }
-                        9653381107620864133 => { }
+                        5241535548500397784 => {}
+                        9653381107620864133 => {}
                         _ => {
                             if upwards {
                                 cur_v -= rule_ht
-                            } else { cur_v += rule_ht }
+                            } else {
+                                cur_v += rule_ht
+                            }
                             current_block = 5241535548500397784;
                         }
                     }
@@ -2567,19 +3031,26 @@ unsafe extern "C" fn vlist_out() {
                     }
                     current_block = 5241535548500397784;
                 }
-                _ => { current_block = 5241535548500397784; }
+                _ => {
+                    current_block = 5241535548500397784;
+                }
             }
             match current_block {
                 9653381107620864133 => {
                     /*655: "Output a rule in a vlist, goto next_p */
                     if rule_wd == -0x40000000i32 {
-                        rule_wd =
-                            (*mem.offset((this_box + 1i32) as isize)).b32.s1
+                        rule_wd = (*mem.offset((this_box + 1i32) as isize)).b32.s1
                     } /* end WHATSIT_NODE case */
                     rule_ht += rule_dp;
-                    if upwards { cur_v -= rule_ht } else { cur_v += rule_ht }
+                    if upwards {
+                        cur_v -= rule_ht
+                    } else {
+                        cur_v += rule_ht
+                    }
                     if rule_ht > 0i32 && rule_wd > 0i32 {
-                        if cur_dir as libc::c_int == 1i32 { cur_h -= rule_wd }
+                        if cur_dir as libc::c_int == 1i32 {
+                            cur_h -= rule_wd
+                        }
                         if cur_h != dvi_h {
                             movement(cur_h - dvi_h, 143i32 as eight_bits);
                             dvi_h = cur_h
@@ -2594,14 +3065,16 @@ unsafe extern "C" fn vlist_out() {
                         cur_h = left_edge
                     }
                 }
-                _ => { }
+                _ => {}
             }
             p = (*mem.offset(p as isize)).b32.s1
         }
     }
     synctex_tsilv(this_box);
     prune_movements(save_loc);
-    if cur_s > 0i32 { dvi_pop(save_loc); }
+    if cur_s > 0i32 {
+        dvi_pop(save_loc);
+    }
     cur_s -= 1;
 }
 /*1510: "The reverse function defined here is responsible for reversing the
@@ -2611,9 +3084,12 @@ unsafe extern "C" fn vlist_out() {
  * glue rounding state variables, to be updated by this function. We remove
  * nodes from the original list and add them to the head of the new one."
  */
-unsafe extern "C" fn reverse(mut this_box: int32_t, mut t: int32_t,
-                             mut cur_g: *mut scaled_t,
-                             mut cur_glue: *mut libc::c_double) -> int32_t {
+unsafe extern "C" fn reverse(
+    mut this_box: int32_t,
+    mut t: int32_t,
+    mut cur_g: *mut scaled_t,
+    mut cur_glue: *mut libc::c_double,
+) -> int32_t {
     let mut current_block: u64;
     let mut l: int32_t = 0;
     let mut p: int32_t = 0;
@@ -2626,311 +3102,247 @@ unsafe extern "C" fn reverse(mut this_box: int32_t, mut t: int32_t,
     let mut c: uint16_t = 0;
     let mut f: internal_font_number = 0;
     g_order = (*mem.offset((this_box + 5i32) as isize)).b16.s0 as glue_ord;
-    g_sign =
-        (*mem.offset((this_box + 5i32) as isize)).b16.s1 as libc::c_uchar;
+    g_sign = (*mem.offset((this_box + 5i32) as isize)).b16.s1 as libc::c_uchar;
     l = t;
     p = temp_ptr;
     m = -0xfffffffi32;
     n = -0xfffffffi32;
-    's_58:
-        loop  {
-            if p != -0xfffffffi32 {
-                loop 
-                     /*1511: "Move node p to the new list and go to the next node; or
+    's_58: loop {
+        if p != -0xfffffffi32 {
+            loop
+            /*1511: "Move node p to the new list and go to the next node; or
              * goto done if the end of the reflected segment has been
              * reached." */
-                     {
-                    if is_char_node(p) {
-                        loop  {
-                            f =
-                                (*mem.offset(p as isize)).b16.s1 as
-                                    internal_font_number;
-                            c = (*mem.offset(p as isize)).b16.s0;
-                            cur_h +=
-                                (*font_info.offset((*width_base.offset(f as
-                                                                           isize)
-                                                        +
-                                                        (*font_info.offset((*char_base.offset(f
-                                                                                                  as
-                                                                                                  isize)
-                                                                                +
-                                                                                effective_char(1i32
-                                                                                                   !=
-                                                                                                   0,
-                                                                                               f,
-                                                                                               c))
-                                                                               as
-                                                                               isize)).b16.s3
-                                                            as libc::c_int) as
-                                                       isize)).b32.s1;
-                            q = (*mem.offset(p as isize)).b32.s1;
-                            (*mem.offset(p as isize)).b32.s1 = l;
-                            l = p;
-                            p = q;
-                            if !is_char_node(p) { break ; }
-                        }
-                        continue 's_58 ;
-                    } else {
+            {
+                if is_char_node(p) {
+                    loop {
+                        f = (*mem.offset(p as isize)).b16.s1 as internal_font_number;
+                        c = (*mem.offset(p as isize)).b16.s0;
+                        cur_h += (*font_info.offset(
+                            (*width_base.offset(f as isize)
+                                + (*font_info.offset(
+                                    (*char_base.offset(f as isize)
+                                        + effective_char(1i32 != 0, f, c))
+                                        as isize,
+                                ))
+                                .b16
+                                .s3 as libc::c_int) as isize,
+                        ))
+                        .b32
+                        .s1;
                         q = (*mem.offset(p as isize)).b32.s1;
-                        match (*mem.offset(p as isize)).b16.s1 as libc::c_int
+                        (*mem.offset(p as isize)).b32.s1 = l;
+                        l = p;
+                        p = q;
+                        if !is_char_node(p) {
+                            break;
+                        }
+                    }
+                    continue 's_58;
+                } else {
+                    q = (*mem.offset(p as isize)).b32.s1;
+                    match (*mem.offset(p as isize)).b16.s1 as libc::c_int {
+                        0 | 1 | 2 | 11 => {
+                            rule_wd = (*mem.offset((p + 1i32) as isize)).b32.s1;
+                            current_block = 3812947724376655173;
+                            break;
+                        }
+                        8 => {
+                            if (*mem.offset(p as isize)).b16.s0 as libc::c_int == 40i32
+                                || (*mem.offset(p as isize)).b16.s0 as libc::c_int == 41i32
+                                || (*mem.offset(p as isize)).b16.s0 as libc::c_int == 42i32
+                                || (*mem.offset(p as isize)).b16.s0 as libc::c_int == 43i32
+                                || (*mem.offset(p as isize)).b16.s0 as libc::c_int == 44i32
                             {
-                            0 | 1 | 2 | 11 => {
-                                rule_wd =
-                                    (*mem.offset((p + 1i32) as isize)).b32.s1;
-                                current_block = 3812947724376655173;
-                                break ;
+                                current_block = 7056779235015430508;
+                                break;
+                            } else {
+                                current_block = 10883403804712335414;
+                                break;
                             }
-                            8 => {
-                                if (*mem.offset(p as isize)).b16.s0 as
-                                       libc::c_int == 40i32 ||
-                                       (*mem.offset(p as isize)).b16.s0 as
-                                           libc::c_int == 41i32 ||
-                                       (*mem.offset(p as isize)).b16.s0 as
-                                           libc::c_int == 42i32 ||
-                                       (*mem.offset(p as isize)).b16.s0 as
-                                           libc::c_int == 43i32 ||
-                                       (*mem.offset(p as isize)).b16.s0 as
-                                           libc::c_int == 44i32 {
-                                    current_block = 7056779235015430508;
-                                    break ;
-                                } else {
-                                    current_block = 10883403804712335414;
-                                    break ;
-                                }
-                            }
-                            10 => {
-                                /*1486: "Handle a glue node for mixed direction typesetting" */
-                                g =
-                                    (*mem.offset((p + 1i32) as
-                                                     isize)).b32.s0; /* "will never match" */
-                                rule_wd =
-                                    (*mem.offset((g + 1i32) as isize)).b32.s1
-                                        -
-                                        *cur_g; /* = mem[lig_char(temp_ptr)] */
-                                if g_sign as libc::c_int != 0i32 {
-                                    if g_sign as libc::c_int == 1i32 {
-                                        if (*mem.offset(g as isize)).b16.s1 as
-                                               libc::c_int ==
-                                               g_order as libc::c_int {
-                                            *cur_glue =
-                                                *cur_glue +
-                                                    (*mem.offset((g + 2i32) as
-                                                                     isize)).b32.s1
-                                                        as libc::c_double;
-                                            glue_temp =
-                                                (*mem.offset((this_box + 6i32)
-                                                                 as isize)).gr
-                                                    * *cur_glue;
-                                            if glue_temp > 1000000000.0f64 {
-                                                glue_temp = 1000000000.0f64
-                                            } else if glue_temp <
-                                                          -1000000000.0f64 {
-                                                glue_temp = -1000000000.0f64
-                                            }
-                                            *cur_g = tex_round(glue_temp)
-                                        }
-                                    } else if (*mem.offset(g as isize)).b16.s0
-                                                  as libc::c_int ==
-                                                  g_order as libc::c_int {
-                                        *cur_glue =
-                                            *cur_glue -
-                                                (*mem.offset((g + 3i32) as
-                                                                 isize)).b32.s1
-                                                    as libc::c_double;
-                                        glue_temp =
-                                            (*mem.offset((this_box + 6i32) as
-                                                             isize)).gr *
-                                                *cur_glue;
+                        }
+                        10 => {
+                            /*1486: "Handle a glue node for mixed direction typesetting" */
+                            g = (*mem.offset((p + 1i32) as isize)).b32.s0; /* "will never match" */
+                            rule_wd = (*mem.offset((g + 1i32) as isize)).b32.s1 - *cur_g; /* = mem[lig_char(temp_ptr)] */
+                            if g_sign as libc::c_int != 0i32 {
+                                if g_sign as libc::c_int == 1i32 {
+                                    if (*mem.offset(g as isize)).b16.s1 as libc::c_int
+                                        == g_order as libc::c_int
+                                    {
+                                        *cur_glue = *cur_glue
+                                            + (*mem.offset((g + 2i32) as isize)).b32.s1
+                                                as libc::c_double;
+                                        glue_temp = (*mem.offset((this_box + 6i32) as isize)).gr
+                                            * *cur_glue;
                                         if glue_temp > 1000000000.0f64 {
                                             glue_temp = 1000000000.0f64
-                                        } else if glue_temp < -1000000000.0f64
-                                         {
+                                        } else if glue_temp < -1000000000.0f64 {
                                             glue_temp = -1000000000.0f64
                                         }
                                         *cur_g = tex_round(glue_temp)
                                     }
-                                }
-                                rule_wd += *cur_g;
-                                if g_sign as libc::c_int == 1i32 &&
-                                       (*mem.offset(g as isize)).b16.s1 as
-                                           libc::c_int ==
-                                           g_order as libc::c_int ||
-                                       g_sign as libc::c_int == 2i32 &&
-                                           (*mem.offset(g as isize)).b16.s0 as
-                                               libc::c_int ==
-                                               g_order as libc::c_int {
-                                    if (*mem.offset(g as isize)).b32.s1 ==
-                                           -0xfffffffi32 {
-                                        free_node(g, 4i32);
-                                    } else {
-                                        let ref mut fresh3 =
-                                            (*mem.offset(g as isize)).b32.s1;
-                                        *fresh3 -= 1
+                                } else if (*mem.offset(g as isize)).b16.s0 as libc::c_int
+                                    == g_order as libc::c_int
+                                {
+                                    *cur_glue = *cur_glue
+                                        - (*mem.offset((g + 3i32) as isize)).b32.s1
+                                            as libc::c_double;
+                                    glue_temp =
+                                        (*mem.offset((this_box + 6i32) as isize)).gr * *cur_glue;
+                                    if glue_temp > 1000000000.0f64 {
+                                        glue_temp = 1000000000.0f64
+                                    } else if glue_temp < -1000000000.0f64 {
+                                        glue_temp = -1000000000.0f64
                                     }
-                                    if ((*mem.offset(p as isize)).b16.s0 as
-                                            libc::c_int) < 100i32 {
-                                        (*mem.offset(p as isize)).b16.s1 =
-                                            11i32 as uint16_t;
-                                        (*mem.offset((p + 1i32) as
-                                                         isize)).b32.s1 =
-                                            rule_wd
-                                    } else {
-                                        g = get_node(4i32);
-                                        (*mem.offset(g as isize)).b16.s1 =
-                                            (3i32 + 1i32) as uint16_t;
-                                        (*mem.offset(g as isize)).b16.s0 =
-                                            (3i32 + 1i32) as uint16_t;
-                                        (*mem.offset((g + 1i32) as
-                                                         isize)).b32.s1 =
-                                            rule_wd;
-                                        (*mem.offset((g + 2i32) as
-                                                         isize)).b32.s1 =
-                                            0i32;
-                                        (*mem.offset((g + 3i32) as
-                                                         isize)).b32.s1 =
-                                            0i32;
-                                        (*mem.offset((p + 1i32) as
-                                                         isize)).b32.s0 = g
-                                    }
+                                    *cur_g = tex_round(glue_temp)
                                 }
-                                current_block = 3812947724376655173;
-                                break ;
                             }
-                            6 => {
-                                flush_node_list((*mem.offset((p + 1i32) as
-                                                                 isize)).b32.s1);
-                                temp_ptr = p;
-                                p = get_avail();
-                                *mem.offset(p as isize) =
-                                    *mem.offset((temp_ptr + 1i32) as isize);
-                                (*mem.offset(p as isize)).b32.s1 = q;
-                                free_node(temp_ptr, 2i32);
-                            }
-                            9 => {
-                                /*1516: "Math nodes in an inner reflected segment are
-                     * modified, those at the outer level are changed into
-                     * kern nodes." */
-                                rule_wd =
-                                    (*mem.offset((p + 1i32) as isize)).b32.s1;
-                                if (*mem.offset(p as isize)).b16.s0 as
-                                       libc::c_int & 1i32 != 0 {
-                                    current_block = 5873035170358615968;
-                                    break ;
+                            rule_wd += *cur_g;
+                            if g_sign as libc::c_int == 1i32
+                                && (*mem.offset(g as isize)).b16.s1 as libc::c_int
+                                    == g_order as libc::c_int
+                                || g_sign as libc::c_int == 2i32
+                                    && (*mem.offset(g as isize)).b16.s0 as libc::c_int
+                                        == g_order as libc::c_int
+                            {
+                                if (*mem.offset(g as isize)).b32.s1 == -0xfffffffi32 {
+                                    free_node(g, 4i32);
                                 } else {
-                                    current_block = 17239133558811367971;
-                                    break ;
+                                    let ref mut fresh3 = (*mem.offset(g as isize)).b32.s1;
+                                    *fresh3 -= 1
+                                }
+                                if ((*mem.offset(p as isize)).b16.s0 as libc::c_int) < 100i32 {
+                                    (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
+                                    (*mem.offset((p + 1i32) as isize)).b32.s1 = rule_wd
+                                } else {
+                                    g = get_node(4i32);
+                                    (*mem.offset(g as isize)).b16.s1 = (3i32 + 1i32) as uint16_t;
+                                    (*mem.offset(g as isize)).b16.s0 = (3i32 + 1i32) as uint16_t;
+                                    (*mem.offset((g + 1i32) as isize)).b32.s1 = rule_wd;
+                                    (*mem.offset((g + 2i32) as isize)).b32.s1 = 0i32;
+                                    (*mem.offset((g + 3i32) as isize)).b32.s1 = 0i32;
+                                    (*mem.offset((p + 1i32) as isize)).b32.s0 = g
                                 }
                             }
-                            14 => {
-                                confusion(b"LR2\x00" as *const u8 as
-                                              *const libc::c_char);
-                            }
-                            _ => {
-                                current_block = 10883403804712335414;
-                                break ;
-                            }
+                            current_block = 3812947724376655173;
+                            break;
                         }
-                    }
-                }
-                match current_block {
-                    5873035170358615968 => {
-                        if (*mem.offset(LR_ptr as isize)).b32.s0 !=
-                               4i32 *
-                                   ((*mem.offset(p as isize)).b16.s0 as
-                                        libc::c_int / 4i32) + 3i32 {
-                            (*mem.offset(p as isize)).b16.s1 =
-                                11i32 as uint16_t;
-                            LR_problems += 1
-                        } else {
-                            temp_ptr = LR_ptr;
-                            LR_ptr = (*mem.offset(temp_ptr as isize)).b32.s1;
-                            (*mem.offset(temp_ptr as isize)).b32.s1 = avail;
-                            avail = temp_ptr;
-                            if n > -0xfffffffi32 {
-                                n -= 1;
-                                let ref mut fresh4 =
-                                    (*mem.offset(p as isize)).b16.s0;
-                                *fresh4 = (*fresh4).wrapping_sub(1)
+                        6 => {
+                            flush_node_list((*mem.offset((p + 1i32) as isize)).b32.s1);
+                            temp_ptr = p;
+                            p = get_avail();
+                            *mem.offset(p as isize) = *mem.offset((temp_ptr + 1i32) as isize);
+                            (*mem.offset(p as isize)).b32.s1 = q;
+                            free_node(temp_ptr, 2i32);
+                        }
+                        9 => {
+                            /*1516: "Math nodes in an inner reflected segment are
+                             * modified, those at the outer level are changed into
+                             * kern nodes." */
+                            rule_wd = (*mem.offset((p + 1i32) as isize)).b32.s1;
+                            if (*mem.offset(p as isize)).b16.s0 as libc::c_int & 1i32 != 0 {
+                                current_block = 5873035170358615968;
+                                break;
                             } else {
-                                (*mem.offset(p as isize)).b16.s1 =
-                                    11i32 as uint16_t;
-                                if m > -0xfffffffi32 {
-                                    m -= 1
-                                } else {
-                                    /*1517: "Finish the reverse hlist segment and goto done" */
-                                    free_node(p,
-                                              3i32); /* end GLUE_NODE case */
-                                    (*mem.offset(t as isize)).b32.s1 = q;
-                                    (*mem.offset((t + 1i32) as isize)).b32.s1
-                                        = rule_wd;
-                                    (*mem.offset((t + 2i32) as isize)).b32.s1
-                                        = -cur_h - rule_wd;
-                                    break ;
-                                }
+                                current_block = 17239133558811367971;
+                                break;
                             }
                         }
-                        current_block = 3812947724376655173;
-                    }
-                    17239133558811367971 => {
-                        temp_ptr = get_avail();
-                        (*mem.offset(temp_ptr as isize)).b32.s0 =
-                            4i32 *
-                                ((*mem.offset(p as isize)).b16.s0 as
-                                     libc::c_int / 4i32) + 3i32;
-                        (*mem.offset(temp_ptr as isize)).b32.s1 = LR_ptr;
-                        LR_ptr = temp_ptr;
-                        if n > -0xfffffffi32 ||
-                               (*mem.offset(p as isize)).b16.s0 as libc::c_int
-                                   / 8i32 != cur_dir as libc::c_int {
-                            n += 1;
-                            let ref mut fresh5 =
-                                (*mem.offset(p as isize)).b16.s0;
-                            *fresh5 = (*fresh5).wrapping_add(1)
-                        } else {
-                            (*mem.offset(p as isize)).b16.s1 =
-                                11i32 as uint16_t;
-                            m += 1
+                        14 => {
+                            confusion(b"LR2\x00" as *const u8 as *const libc::c_char);
                         }
-                        current_block = 3812947724376655173;
-                    }
-                    7056779235015430508 => {
-                        rule_wd = (*mem.offset((p + 1i32) as isize)).b32.s1;
-                        current_block = 3812947724376655173;
-                    }
-                    _ => { }
-                }
-                match current_block {
-                    3812947724376655173 => { cur_h += rule_wd }
-                    _ => { }
-                }
-                (*mem.offset(p as isize)).b32.s1 = l;
-                if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 11i32 {
-                    if rule_wd == 0i32 || l == -0xfffffffi32 {
-                        free_node(p, 3i32);
-                        p = l
+                        _ => {
+                            current_block = 10883403804712335414;
+                            break;
+                        }
                     }
                 }
-                l = p;
-                p = q
-            } else {
-                /* ... resuming 1510 ... */
-                if t == -0xfffffffi32 && m == -0xfffffffi32 &&
-                       n == -0xfffffffi32 {
-                    break ; /* "Manufacture a missing math node" */
-                }
-                p =
-                    new_math(0i32,
-                             (*mem.offset(LR_ptr as isize)).b32.s0 as
-                                 small_number);
-                LR_problems += 10000i32
             }
+            match current_block {
+                5873035170358615968 => {
+                    if (*mem.offset(LR_ptr as isize)).b32.s0
+                        != 4i32 * ((*mem.offset(p as isize)).b16.s0 as libc::c_int / 4i32) + 3i32
+                    {
+                        (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
+                        LR_problems += 1
+                    } else {
+                        temp_ptr = LR_ptr;
+                        LR_ptr = (*mem.offset(temp_ptr as isize)).b32.s1;
+                        (*mem.offset(temp_ptr as isize)).b32.s1 = avail;
+                        avail = temp_ptr;
+                        if n > -0xfffffffi32 {
+                            n -= 1;
+                            let ref mut fresh4 = (*mem.offset(p as isize)).b16.s0;
+                            *fresh4 = (*fresh4).wrapping_sub(1)
+                        } else {
+                            (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
+                            if m > -0xfffffffi32 {
+                                m -= 1
+                            } else {
+                                /*1517: "Finish the reverse hlist segment and goto done" */
+                                free_node(p, 3i32); /* end GLUE_NODE case */
+                                (*mem.offset(t as isize)).b32.s1 = q;
+                                (*mem.offset((t + 1i32) as isize)).b32.s1 = rule_wd;
+                                (*mem.offset((t + 2i32) as isize)).b32.s1 = -cur_h - rule_wd;
+                                break;
+                            }
+                        }
+                    }
+                    current_block = 3812947724376655173;
+                }
+                17239133558811367971 => {
+                    temp_ptr = get_avail();
+                    (*mem.offset(temp_ptr as isize)).b32.s0 =
+                        4i32 * ((*mem.offset(p as isize)).b16.s0 as libc::c_int / 4i32) + 3i32;
+                    (*mem.offset(temp_ptr as isize)).b32.s1 = LR_ptr;
+                    LR_ptr = temp_ptr;
+                    if n > -0xfffffffi32
+                        || (*mem.offset(p as isize)).b16.s0 as libc::c_int / 8i32
+                            != cur_dir as libc::c_int
+                    {
+                        n += 1;
+                        let ref mut fresh5 = (*mem.offset(p as isize)).b16.s0;
+                        *fresh5 = (*fresh5).wrapping_add(1)
+                    } else {
+                        (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
+                        m += 1
+                    }
+                    current_block = 3812947724376655173;
+                }
+                7056779235015430508 => {
+                    rule_wd = (*mem.offset((p + 1i32) as isize)).b32.s1;
+                    current_block = 3812947724376655173;
+                }
+                _ => {}
+            }
+            match current_block {
+                3812947724376655173 => cur_h += rule_wd,
+                _ => {}
+            }
+            (*mem.offset(p as isize)).b32.s1 = l;
+            if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 11i32 {
+                if rule_wd == 0i32 || l == -0xfffffffi32 {
+                    free_node(p, 3i32);
+                    p = l
+                }
+            }
+            l = p;
+            p = q
+        } else {
+            /* ... resuming 1510 ... */
+            if t == -0xfffffffi32 && m == -0xfffffffi32 && n == -0xfffffffi32 {
+                break; /* "Manufacture a missing math node" */
+            }
+            p = new_math(0i32, (*mem.offset(LR_ptr as isize)).b32.s0 as small_number);
+            LR_problems += 10000i32
         }
+    }
     return l;
 }
 /*1506: Create a new edge node of subtype `s` and width `w` */
 #[no_mangle]
-pub unsafe extern "C" fn new_edge(mut s: small_number, mut w: scaled_t)
- -> int32_t {
+pub unsafe extern "C" fn new_edge(mut s: small_number, mut w: scaled_t) -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(3i32);
     (*mem.offset(p as isize)).b16.s1 = 14i32 as uint16_t;
@@ -2953,56 +3365,67 @@ pub unsafe extern "C" fn out_what(mut p: int32_t) {
                     if write_open[j as usize] {
                         ttstub_output_close(write_file[j as usize]);
                     }
-                    if (*mem.offset(p as isize)).b16.s0 as libc::c_int == 2i32
-                       {
+                    if (*mem.offset(p as isize)).b16.s0 as libc::c_int == 2i32 {
                         write_open[j as usize] = 0i32 != 0
                     } else if !(j as libc::c_int >= 16i32) {
                         cur_name = (*mem.offset((p + 1i32) as isize)).b32.s1;
                         cur_area = (*mem.offset((p + 2i32) as isize)).b32.s0;
                         cur_ext = (*mem.offset((p + 2i32) as isize)).b32.s1;
                         if length(cur_ext) == 0i32 {
-                            cur_ext =
-                                maketexstring(b".tex\x00" as *const u8 as
-                                                  *const libc::c_char)
+                            cur_ext = maketexstring(b".tex\x00" as *const u8 as *const libc::c_char)
                         }
                         pack_file_name(cur_name, cur_area, cur_ext);
-                        write_file[j as usize] =
-                            ttstub_output_open(name_of_file, 0i32);
+                        write_file[j as usize] = ttstub_output_open(name_of_file, 0i32);
                         if write_file[j as usize].is_null() {
-                            _tt_abort(b"cannot open output file \"%s\"\x00" as
-                                          *const u8 as *const libc::c_char,
-                                      name_of_file);
+                            _tt_abort(
+                                b"cannot open output file \"%s\"\x00" as *const u8
+                                    as *const libc::c_char,
+                                name_of_file,
+                            );
                         }
                         write_open[j as usize] = 1i32 != 0;
                         if log_opened {
                             old_setting = selector as libc::c_uchar;
-                            if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) + 1i32
-                                                  + 15000i32 + 12i32 + 9000i32
-                                                  + 1i32 + 1i32 + 19i32 +
-                                                  256i32 + 256i32 + 13i32 +
-                                                  256i32 + 4i32 + 256i32 +
-                                                  1i32 + 3i32 * 256i32 +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  (0x10ffffi32 + 1i32) +
-                                                  29i32) as isize)).b32.s1 <=
-                                   0i32 {
+                            if (*eqtb.offset(
+                                (1i32
+                                    + (0x10ffffi32 + 1i32)
+                                    + (0x10ffffi32 + 1i32)
+                                    + 1i32
+                                    + 15000i32
+                                    + 12i32
+                                    + 9000i32
+                                    + 1i32
+                                    + 1i32
+                                    + 19i32
+                                    + 256i32
+                                    + 256i32
+                                    + 13i32
+                                    + 256i32
+                                    + 4i32
+                                    + 256i32
+                                    + 1i32
+                                    + 3i32 * 256i32
+                                    + (0x10ffffi32 + 1i32)
+                                    + (0x10ffffi32 + 1i32)
+                                    + (0x10ffffi32 + 1i32)
+                                    + (0x10ffffi32 + 1i32)
+                                    + (0x10ffffi32 + 1i32)
+                                    + (0x10ffffi32 + 1i32)
+                                    + 29i32) as isize,
+                            ))
+                            .b32
+                            .s1 <= 0i32
+                            {
                                 selector = SELECTOR_LOG_ONLY
-                            } else { selector = SELECTOR_TERM_AND_LOG }
-                            print_nl_cstr(b"\\openout\x00" as *const u8 as
-                                              *const libc::c_char);
+                            } else {
+                                selector = SELECTOR_TERM_AND_LOG
+                            }
+                            print_nl_cstr(b"\\openout\x00" as *const u8 as *const libc::c_char);
                             print_int(j as int32_t);
-                            print_cstr(b" = `\x00" as *const u8 as
-                                           *const libc::c_char);
+                            print_cstr(b" = `\x00" as *const u8 as *const libc::c_char);
                             print_file_name(cur_name, cur_area, cur_ext);
-                            print_cstr(b"\'.\x00" as *const u8 as
-                                           *const libc::c_char);
-                            print_nl_cstr(b"\x00" as *const u8 as
-                                              *const libc::c_char);
+                            print_cstr(b"\'.\x00" as *const u8 as *const libc::c_char);
+                            print_nl_cstr(b"\x00" as *const u8 as *const libc::c_char);
                             print_ln();
                             selector = old_setting as selector_t
                         }
@@ -3010,9 +3433,13 @@ pub unsafe extern "C" fn out_what(mut p: int32_t) {
                 }
             }
         }
-        3 => { special_out(p); }
-        4 => { }
-        _ => { confusion(b"ext4\x00" as *const u8 as *const libc::c_char); }
+        3 => {
+            special_out(p);
+        }
+        4 => {}
+        _ => {
+            confusion(b"ext4\x00" as *const u8 as *const libc::c_char);
+        }
     };
 }
 unsafe extern "C" fn dvi_native_font_def(mut f: internal_font_number) {
@@ -3025,13 +3452,14 @@ unsafe extern "C" fn dvi_native_font_def(mut f: internal_font_number) {
     while i < font_def_length {
         dvi_out(*xdv_buffer.offset(i as isize) as eight_bits);
         i += 1
-    };
+    }
 }
 unsafe extern "C" fn dvi_font_def(mut f: internal_font_number) {
     let mut k: pool_pointer = 0;
     let mut l: int32_t = 0;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xffffu32 ||
-           *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
+    if *font_area.offset(f as isize) as libc::c_uint == 0xffffu32
+        || *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
+    {
         dvi_native_font_def(f);
     } else {
         if f <= 256i32 {
@@ -3050,53 +3478,51 @@ unsafe extern "C" fn dvi_font_def(mut f: internal_font_number) {
         dvi_four(*font_dsize.offset(f as isize));
         dvi_out(length(*font_area.offset(f as isize)) as eight_bits);
         l = 0i32;
-        k =
-            *str_start.offset((*font_name.offset(f as isize) as libc::c_long -
-                                   65536i64) as isize);
-        while l == 0i32 &&
-                  k <
-                      *str_start.offset(((*font_name.offset(f as isize) +
-                                              1i32) as libc::c_long -
-                                             65536i64) as isize) {
+        k = *str_start.offset((*font_name.offset(f as isize) as libc::c_long - 65536i64) as isize);
+        while l == 0i32
+            && k < *str_start.offset(
+                ((*font_name.offset(f as isize) + 1i32) as libc::c_long - 65536i64) as isize,
+            )
+        {
             if *str_pool.offset(k as isize) as libc::c_int == ':' as i32 {
-                l =
-                    k -
-                        *str_start.offset((*font_name.offset(f as isize) as
-                                               libc::c_long - 65536i64) as
-                                              isize)
+                l = k - *str_start
+                    .offset((*font_name.offset(f as isize) as libc::c_long - 65536i64) as isize)
             }
             k += 1
         }
-        if l == 0i32 { l = length(*font_name.offset(f as isize)) }
+        if l == 0i32 {
+            l = length(*font_name.offset(f as isize))
+        }
         dvi_out(l as eight_bits);
         let mut for_end: int32_t = 0;
-        k =
-            *str_start.offset((*font_area.offset(f as isize) as libc::c_long -
-                                   65536i64) as isize);
-        for_end =
-            *str_start.offset(((*font_area.offset(f as isize) + 1i32) as
-                                   libc::c_long - 65536i64) as isize) - 1i32;
+        k = *str_start.offset((*font_area.offset(f as isize) as libc::c_long - 65536i64) as isize);
+        for_end = *str_start
+            .offset(((*font_area.offset(f as isize) + 1i32) as libc::c_long - 65536i64) as isize)
+            - 1i32;
         if k <= for_end {
-            loop  {
+            loop {
                 dvi_out(*str_pool.offset(k as isize) as eight_bits);
                 let fresh6 = k;
                 k = k + 1;
-                if !(fresh6 < for_end) { break ; }
+                if !(fresh6 < for_end) {
+                    break;
+                }
             }
         }
         let mut for_end_0: int32_t = 0;
-        k =
-            *str_start.offset((*font_name.offset(f as isize) as libc::c_long -
-                                   65536i64) as isize);
-        for_end_0 =
-            *str_start.offset((*font_name.offset(f as isize) as libc::c_long -
-                                   65536i64) as isize) + l - 1i32;
+        k = *str_start.offset((*font_name.offset(f as isize) as libc::c_long - 65536i64) as isize);
+        for_end_0 = *str_start
+            .offset((*font_name.offset(f as isize) as libc::c_long - 65536i64) as isize)
+            + l
+            - 1i32;
         if k <= for_end_0 {
-            loop  {
+            loop {
                 dvi_out(*str_pool.offset(k as isize) as eight_bits);
                 let fresh7 = k;
                 k = k + 1;
-                if !(fresh7 < for_end_0) { break ; }
+                if !(fresh7 < for_end_0) {
+                    break;
+                }
             }
         }
     };
@@ -3113,13 +3539,16 @@ unsafe extern "C" fn movement(mut w: scaled_t, mut o: eight_bits) {
     if o as libc::c_int == 157i32 {
         (*mem.offset(q as isize)).b32.s1 = down_ptr;
         down_ptr = q
-    } else { (*mem.offset(q as isize)).b32.s1 = right_ptr; right_ptr = q }
+    } else {
+        (*mem.offset(q as isize)).b32.s1 = right_ptr;
+        right_ptr = q
+    }
     p = (*mem.offset(q as isize)).b32.s1;
     mstate = 0i32 as small_number;
-    loop  {
+    loop {
         if !(p != -0xfffffffi32) {
             current_block = 18071914750955744041;
-            break ;
+            break;
         }
         if (*mem.offset((p + 1i32) as isize)).b32.s1 == w {
             /* By this point must be OPEN_NODE */
@@ -3129,38 +3558,35 @@ unsafe extern "C" fn movement(mut w: scaled_t, mut o: eight_bits) {
                     current_block = 2415380317517078313; /*633:*/
                     match current_block {
                         15378387224937501455 => {
-                            if (*mem.offset((p + 2i32) as isize)).b32.s1 <
-                                   dvi_gone {
+                            if (*mem.offset((p + 2i32) as isize)).b32.s1 < dvi_gone {
                                 current_block = 18071914750955744041;
-                                break ;
+                                break;
                             }
-                            k =
-                                (*mem.offset((p + 2i32) as isize)).b32.s1 -
-                                    dvi_offset;
-                            if k < 0i32 { k = k + 16384i32 }
+                            k = (*mem.offset((p + 2i32) as isize)).b32.s1 - dvi_offset;
+                            if k < 0i32 {
+                                k = k + 16384i32
+                            }
                             *dvi_buf.offset(k as isize) =
-                                (*dvi_buf.offset(k as isize) as libc::c_int +
-                                     10i32) as eight_bits;
+                                (*dvi_buf.offset(k as isize) as libc::c_int + 10i32) as eight_bits;
                             (*mem.offset(p as isize)).b32.s0 = 2i32;
                             current_block = 8542251818650148540;
-                            break ;
+                            break;
                         }
                         _ => {
-                            if (*mem.offset((p + 2i32) as isize)).b32.s1 <
-                                   dvi_gone {
+                            if (*mem.offset((p + 2i32) as isize)).b32.s1 < dvi_gone {
                                 current_block = 18071914750955744041;
-                                break ;
+                                break;
                             } else {
-                                k =
-                                    (*mem.offset((p + 2i32) as isize)).b32.s1
-                                        - dvi_offset;
-                                if k < 0i32 { k = k + 16384i32 }
+                                k = (*mem.offset((p + 2i32) as isize)).b32.s1 - dvi_offset;
+                                if k < 0i32 {
+                                    k = k + 16384i32
+                                }
                                 *dvi_buf.offset(k as isize) =
-                                    (*dvi_buf.offset(k as isize) as
-                                         libc::c_int + 5i32) as eight_bits;
+                                    (*dvi_buf.offset(k as isize) as libc::c_int + 5i32)
+                                        as eight_bits;
                                 (*mem.offset(p as isize)).b32.s0 = 1i32;
                                 current_block = 8542251818650148540;
-                                break ;
+                                break;
                             }
                         }
                     }
@@ -3169,70 +3595,66 @@ unsafe extern "C" fn movement(mut w: scaled_t, mut o: eight_bits) {
                     current_block = 15378387224937501455;
                     match current_block {
                         15378387224937501455 => {
-                            if (*mem.offset((p + 2i32) as isize)).b32.s1 <
-                                   dvi_gone {
+                            if (*mem.offset((p + 2i32) as isize)).b32.s1 < dvi_gone {
                                 current_block = 18071914750955744041;
-                                break ;
+                                break;
                             }
-                            k =
-                                (*mem.offset((p + 2i32) as isize)).b32.s1 -
-                                    dvi_offset;
-                            if k < 0i32 { k = k + 16384i32 }
+                            k = (*mem.offset((p + 2i32) as isize)).b32.s1 - dvi_offset;
+                            if k < 0i32 {
+                                k = k + 16384i32
+                            }
                             *dvi_buf.offset(k as isize) =
-                                (*dvi_buf.offset(k as isize) as libc::c_int +
-                                     10i32) as eight_bits;
+                                (*dvi_buf.offset(k as isize) as libc::c_int + 10i32) as eight_bits;
                             (*mem.offset(p as isize)).b32.s0 = 2i32;
                             current_block = 8542251818650148540;
-                            break ;
+                            break;
                         }
                         _ => {
-                            if (*mem.offset((p + 2i32) as isize)).b32.s1 <
-                                   dvi_gone {
+                            if (*mem.offset((p + 2i32) as isize)).b32.s1 < dvi_gone {
                                 current_block = 18071914750955744041;
-                                break ;
+                                break;
                             } else {
-                                k =
-                                    (*mem.offset((p + 2i32) as isize)).b32.s1
-                                        - dvi_offset;
-                                if k < 0i32 { k = k + 16384i32 }
+                                k = (*mem.offset((p + 2i32) as isize)).b32.s1 - dvi_offset;
+                                if k < 0i32 {
+                                    k = k + 16384i32
+                                }
                                 *dvi_buf.offset(k as isize) =
-                                    (*dvi_buf.offset(k as isize) as
-                                         libc::c_int + 5i32) as eight_bits;
+                                    (*dvi_buf.offset(k as isize) as libc::c_int + 5i32)
+                                        as eight_bits;
                                 (*mem.offset(p as isize)).b32.s0 = 1i32;
                                 current_block = 8542251818650148540;
-                                break ;
+                                break;
                             }
                         }
                     }
                 }
                 1 | 2 | 8 | 13 => {
                     current_block = 8542251818650148540;
-                    break ;
+                    break;
                 }
-                _ => { }
+                _ => {}
             }
         } else {
             match mstate as libc::c_int + (*mem.offset(p as isize)).b32.s0 {
                 1 => {
                     current_block = 8114521223357534250;
                     match current_block {
-                        15905285856240674276 => {
-                            mstate = 12i32 as small_number
-                        }
-                        _ => { mstate = 6i32 as small_number }
+                        15905285856240674276 => mstate = 12i32 as small_number,
+                        _ => mstate = 6i32 as small_number,
                     }
                 }
                 2 => {
                     current_block = 15905285856240674276;
                     match current_block {
-                        15905285856240674276 => {
-                            mstate = 12i32 as small_number
-                        }
-                        _ => { mstate = 6i32 as small_number }
+                        15905285856240674276 => mstate = 12i32 as small_number,
+                        _ => mstate = 6i32 as small_number,
                     }
                 }
-                8 | 13 => { current_block = 18071914750955744041; break ; }
-                _ => { }
+                8 | 13 => {
+                    current_block = 18071914750955744041;
+                    break;
+                }
+                _ => {}
             }
         }
         p = (*mem.offset(p as isize)).b32.s1
@@ -3240,17 +3662,15 @@ unsafe extern "C" fn movement(mut w: scaled_t, mut o: eight_bits) {
     match current_block {
         8542251818650148540 => {
             /*629:*/
-            (*mem.offset(q as isize)).b32.s0 =
-                (*mem.offset(p as isize)).b32.s0; /*634:*/
+            (*mem.offset(q as isize)).b32.s0 = (*mem.offset(p as isize)).b32.s0; /*634:*/
             if (*mem.offset(q as isize)).b32.s0 == 1i32 {
-                dvi_out((o as libc::c_int + 4i32) as
-                            eight_bits); /* max_selector enum */
+                dvi_out((o as libc::c_int + 4i32) as eight_bits); /* max_selector enum */
                 while (*mem.offset(q as isize)).b32.s1 != p {
                     q = (*mem.offset(q as isize)).b32.s1;
                     match (*mem.offset(q as isize)).b32.s0 {
-                        3 => { (*mem.offset(q as isize)).b32.s0 = 5i32 }
-                        4 => { (*mem.offset(q as isize)).b32.s0 = 6i32 }
-                        _ => { }
+                        3 => (*mem.offset(q as isize)).b32.s0 = 5i32,
+                        4 => (*mem.offset(q as isize)).b32.s0 = 6i32,
+                        _ => {}
                     }
                 }
             } else {
@@ -3258,9 +3678,9 @@ unsafe extern "C" fn movement(mut w: scaled_t, mut o: eight_bits) {
                 while (*mem.offset(q as isize)).b32.s1 != p {
                     q = (*mem.offset(q as isize)).b32.s1;
                     match (*mem.offset(q as isize)).b32.s0 {
-                        3 => { (*mem.offset(q as isize)).b32.s0 = 4i32 }
-                        5 => { (*mem.offset(q as isize)).b32.s0 = 6i32 }
-                        _ => { }
+                        3 => (*mem.offset(q as isize)).b32.s0 = 4i32,
+                        5 => (*mem.offset(q as isize)).b32.s0 = 6i32,
+                        _ => {}
                     }
                 }
             }
@@ -3271,48 +3691,58 @@ unsafe extern "C" fn movement(mut w: scaled_t, mut o: eight_bits) {
             if abs(w) >= 0x800000i32 {
                 dvi_out((o as libc::c_int + 3i32) as eight_bits);
                 dvi_four(w);
-                return
+                return;
             }
             if abs(w) >= 0x8000i32 {
                 dvi_out((o as libc::c_int + 2i32) as eight_bits);
-                if w < 0i32 { w = w + 0x1000000i32 }
+                if w < 0i32 {
+                    w = w + 0x1000000i32
+                }
                 dvi_out((w / 0x10000i32) as eight_bits);
                 w = w % 0x10000i32;
                 current_block = 14567512515169274304;
             } else if abs(w) >= 128i32 {
                 dvi_out((o as libc::c_int + 1i32) as eight_bits);
-                if w < 0i32 { w = w + 0x10000i32 }
+                if w < 0i32 {
+                    w = w + 0x10000i32
+                }
                 current_block = 14567512515169274304;
             } else {
                 dvi_out(o);
-                if w < 0i32 { w = w + 256i32 }
+                if w < 0i32 {
+                    w = w + 256i32
+                }
                 current_block = 18026793543132934442;
             }
             match current_block {
                 14567512515169274304 => {
                     dvi_out((w / 256i32) as eight_bits);
                 }
-                _ => { }
+                _ => {}
             }
             dvi_out((w % 256i32) as eight_bits);
-            return
+            return;
         }
     };
 }
 unsafe extern "C" fn prune_movements(mut l: int32_t) {
     let mut p: int32_t = 0;
     while down_ptr != -0xfffffffi32 {
-        if (*mem.offset((down_ptr + 2i32) as isize)).b32.s1 < l { break ; }
+        if (*mem.offset((down_ptr + 2i32) as isize)).b32.s1 < l {
+            break;
+        }
         p = down_ptr;
         down_ptr = (*mem.offset(p as isize)).b32.s1;
         free_node(p, 3i32);
     }
     while right_ptr != -0xfffffffi32 {
-        if (*mem.offset((right_ptr + 2i32) as isize)).b32.s1 < l { return }
+        if (*mem.offset((right_ptr + 2i32) as isize)).b32.s1 < l {
+            return;
+        }
         p = right_ptr;
         right_ptr = (*mem.offset(p as isize)).b32.s1;
         free_node(p, 3i32);
-    };
+    }
 }
 unsafe extern "C" fn special_out(mut p: int32_t) {
     let mut old_setting: libc::c_uchar = 0;
@@ -3328,27 +3758,38 @@ unsafe extern "C" fn special_out(mut p: int32_t) {
     doing_special = 1i32 != 0;
     old_setting = selector as libc::c_uchar;
     selector = SELECTOR_NEW_STRING;
-    show_token_list((*mem.offset((*mem.offset((p + 1i32) as isize)).b32.s1 as
-                                     isize)).b32.s1, -0xfffffffi32,
-                    pool_size - pool_ptr);
+    show_token_list(
+        (*mem.offset((*mem.offset((p + 1i32) as isize)).b32.s1 as isize))
+            .b32
+            .s1,
+        -0xfffffffi32,
+        pool_size - pool_ptr,
+    );
     selector = old_setting as selector_t;
     if pool_ptr + 1i32 > pool_size {
-        overflow(b"pool size\x00" as *const u8 as *const libc::c_char,
-                 pool_size - init_pool_ptr);
+        overflow(
+            b"pool size\x00" as *const u8 as *const libc::c_char,
+            pool_size - init_pool_ptr,
+        );
     }
     if cur_length() < 256i32 {
         dvi_out(239i32 as eight_bits);
         dvi_out(cur_length() as eight_bits);
-    } else { dvi_out(242i32 as eight_bits); dvi_four(cur_length()); }
+    } else {
+        dvi_out(242i32 as eight_bits);
+        dvi_four(cur_length());
+    }
     let mut for_end: int32_t = 0;
     k = *str_start.offset((str_ptr - 65536i32) as isize);
     for_end = pool_ptr - 1i32;
     if k <= for_end {
-        loop  {
+        loop {
             dvi_out(*str_pool.offset(k as isize) as eight_bits);
             let fresh8 = k;
             k = k + 1;
-            if !(fresh8 < for_end) { break ; }
+            if !(fresh8 < for_end) {
+                break;
+            }
         }
     }
     pool_ptr = *str_start.offset((str_ptr - 65536i32) as isize);
@@ -3365,13 +3806,10 @@ unsafe extern "C" fn write_out(mut p: int32_t) {
     (*mem.offset(q as isize)).b32.s0 = 0x400000i32 + '}' as i32;
     r = get_avail();
     (*mem.offset(q as isize)).b32.s1 = r;
-    (*mem.offset(r as isize)).b32.s0 =
-        0x1ffffffi32 +
-            (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                 15000i32 + 8i32);
+    (*mem.offset(r as isize)).b32.s0 = 0x1ffffffi32
+        + (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32);
     begin_token_list(q, 5i32 as uint16_t);
-    begin_token_list((*mem.offset((p + 1i32) as isize)).b32.s1,
-                     18i32 as uint16_t);
+    begin_token_list((*mem.offset((p + 1i32) as isize)).b32.s1, 18i32 as uint16_t);
     q = get_avail();
     (*mem.offset(q as isize)).b32.s0 = 0x200000i32 + '{' as i32;
     begin_token_list(q, 5i32 as uint16_t);
@@ -3380,33 +3818,30 @@ unsafe extern "C" fn write_out(mut p: int32_t) {
     cur_cs = write_loc;
     q = scan_toks(0i32 != 0, 1i32 != 0);
     get_token();
-    if cur_tok !=
-           0x1ffffffi32 +
-               (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                    15000i32 + 8i32) {
+    if cur_tok
+        != 0x1ffffffi32
+            + (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32)
+    {
         /*1412:*/
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
             print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
         }
-        print_cstr(b"Unbalanced write command\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b"Unbalanced write command\x00" as *const u8 as *const libc::c_char);
         help_ptr = 2i32 as libc::c_uchar;
-        help_line[1] =
-            b"On this page there\'s a \\write with fewer real {\'s than }\'s.\x00"
-                as *const u8 as *const libc::c_char;
+        help_line[1] = b"On this page there\'s a \\write with fewer real {\'s than }\'s.\x00"
+            as *const u8 as *const libc::c_char;
         help_line[0] =
-            b"I can\'t handle that very well; good luck.\x00" as *const u8 as
-                *const libc::c_char;
+            b"I can\'t handle that very well; good luck.\x00" as *const u8 as *const libc::c_char;
         error();
-        loop  {
+        loop {
             get_token();
-            if !(cur_tok !=
-                     0x1ffffffi32 +
-                         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 8i32)) {
-                break ;
+            if !(cur_tok
+                != 0x1ffffffi32
+                    + (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32))
+            {
+                break;
             }
         }
     }
@@ -3419,9 +3854,9 @@ unsafe extern "C" fn write_out(mut p: int32_t) {
     } else if write_open[j as usize] {
         selector = j as selector_t
     } else {
-        if j as libc::c_int == 17i32 &&
-               selector as libc::c_uint ==
-                   SELECTOR_TERM_AND_LOG as libc::c_int as libc::c_uint {
+        if j as libc::c_int == 17i32
+            && selector as libc::c_uint == SELECTOR_TERM_AND_LOG as libc::c_int as libc::c_uint
+        {
             selector = SELECTOR_LOG_ONLY
         }
         print_nl_cstr(b"\x00" as *const u8 as *const libc::c_char);
@@ -3430,23 +3865,50 @@ unsafe extern "C" fn write_out(mut p: int32_t) {
     print_ln();
     flush_list(def_ref);
     if j as libc::c_int == 18i32 {
-        if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              29i32) as isize)).b32.s1 <= 0i32 {
+        if (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 29i32) as isize,
+        ))
+        .b32
+        .s1 <= 0i32
+        {
             selector = SELECTOR_LOG_ONLY
-        } else { selector = SELECTOR_TERM_AND_LOG }
-        if !log_opened { selector = SELECTOR_TERM_ONLY }
+        } else {
+            selector = SELECTOR_TERM_AND_LOG
+        }
+        if !log_opened {
+            selector = SELECTOR_TERM_ONLY
+        }
         print_nl_cstr(b"runsystem(\x00" as *const u8 as *const libc::c_char);
         d = 0i32;
         while d <= cur_length() - 1i32 {
-            print(*str_pool.offset((*str_start.offset((str_ptr - 65536i32) as
-                                                          isize) + d) as
-                                       isize) as int32_t);
+            print(
+                *str_pool.offset((*str_start.offset((str_ptr - 65536i32) as isize) + d) as isize)
+                    as int32_t,
+            );
             d += 1
         }
         print_cstr(b")...\x00" as *const u8 as *const libc::c_char);
@@ -3491,34 +3953,30 @@ unsafe extern "C" fn pic_out(mut p: int32_t) {
     print(' ' as i32);
     match (*mem.offset((p + 8i32) as isize)).b16.s1 as libc::c_int {
         1 => {
-            print_cstr(b"pagebox cropbox \x00" as *const u8 as
-                           *const libc::c_char);
+            print_cstr(b"pagebox cropbox \x00" as *const u8 as *const libc::c_char);
         }
         2 => {
-            print_cstr(b"pagebox mediabox \x00" as *const u8 as
-                           *const libc::c_char);
+            print_cstr(b"pagebox mediabox \x00" as *const u8 as *const libc::c_char);
         }
         3 => {
-            print_cstr(b"pagebox bleedbox \x00" as *const u8 as
-                           *const libc::c_char);
+            print_cstr(b"pagebox bleedbox \x00" as *const u8 as *const libc::c_char);
         }
         5 => {
-            print_cstr(b"pagebox artbox \x00" as *const u8 as
-                           *const libc::c_char);
+            print_cstr(b"pagebox artbox \x00" as *const u8 as *const libc::c_char);
         }
         4 => {
-            print_cstr(b"pagebox trimbox \x00" as *const u8 as
-                           *const libc::c_char);
+            print_cstr(b"pagebox trimbox \x00" as *const u8 as *const libc::c_char);
         }
-        _ => { }
+        _ => {}
     }
     print('(' as i32);
     i = 0i32;
     while i < (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int {
-        print_raw_char(*(&mut *mem.offset((p + 9i32) as isize) as
-                             *mut memory_word as
-                             *mut libc::c_uchar).offset(i as isize) as
-                           UTF16_code, 1i32 != 0);
+        print_raw_char(
+            *(&mut *mem.offset((p + 9i32) as isize) as *mut memory_word as *mut libc::c_uchar)
+                .offset(i as isize) as UTF16_code,
+            1i32 != 0,
+        );
         i += 1
     }
     print(')' as i32);
@@ -3526,7 +3984,10 @@ unsafe extern "C" fn pic_out(mut p: int32_t) {
     if cur_length() < 256i32 {
         dvi_out(239i32 as eight_bits);
         dvi_out(cur_length() as eight_bits);
-    } else { dvi_out(242i32 as eight_bits); dvi_four(cur_length()); }
+    } else {
+        dvi_out(242i32 as eight_bits);
+        dvi_four(cur_length());
+    }
     k = *str_start.offset((str_ptr - 65536i32) as isize);
     while k < pool_ptr {
         dvi_out(*str_pool.offset(k as isize) as eight_bits);
@@ -3547,17 +4008,19 @@ pub unsafe extern "C" fn finalize_dvi_file() {
     while cur_s > -1i32 {
         if cur_s > 0i32 {
             dvi_out(142i32 as eight_bits);
-        } else { dvi_out(140i32 as eight_bits); total_pages += 1 }
+        } else {
+            dvi_out(140i32 as eight_bits);
+            total_pages += 1
+        }
         cur_s -= 1
     }
     if total_pages == 0i32 {
-        print_nl_cstr(b"No pages of output.\x00" as *const u8 as
-                          *const libc::c_char);
-        return
+        print_nl_cstr(b"No pages of output.\x00" as *const u8 as *const libc::c_char);
+        return;
     }
     if cur_s == -2i32 {
         /* This happens when the DVI gets too big; a message has already been printed */
-        return
+        return;
     } /* magic values: conversion ratio for sp */
     dvi_out(248i32 as eight_bits); /* magic values: conversion ratio for sp */
     dvi_four(last_bop);
@@ -3565,14 +4028,37 @@ pub unsafe extern "C" fn finalize_dvi_file() {
     dvi_four(25400000i64 as int32_t);
     dvi_four(473628672i64 as int32_t);
     prepare_mag();
-    dvi_four((*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                + 1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 +
-                                1i32 + 19i32 + 256i32 + 256i32 + 13i32 +
-                                256i32 + 4i32 + 256i32 + 1i32 + 3i32 * 256i32
-                                + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                + 17i32) as isize)).b32.s1);
+    dvi_four(
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 1i32
+                + 15000i32
+                + 12i32
+                + 9000i32
+                + 1i32
+                + 1i32
+                + 19i32
+                + 256i32
+                + 256i32
+                + 13i32
+                + 256i32
+                + 4i32
+                + 256i32
+                + 1i32
+                + 3i32 * 256i32
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + (0x10ffffi32 + 1i32)
+                + 17i32) as isize,
+        ))
+        .b32
+        .s1,
+    );
     dvi_four(max_v);
     dvi_four(max_h);
     dvi_out((max_push / 256i32) as eight_bits);
@@ -3580,30 +4066,36 @@ pub unsafe extern "C" fn finalize_dvi_file() {
     dvi_out((total_pages / 256i32 % 256i32) as eight_bits);
     dvi_out((total_pages % 256i32) as eight_bits);
     while font_ptr > 0i32 {
-        if *font_used.offset(font_ptr as isize) { dvi_font_def(font_ptr); }
+        if *font_used.offset(font_ptr as isize) {
+            dvi_font_def(font_ptr);
+        }
         font_ptr -= 1
     }
     dvi_out(249i32 as eight_bits);
     dvi_four(last_bop);
     if semantic_pagination_enabled {
         dvi_out(100i32 as eight_bits);
-    } else { dvi_out(7i32 as eight_bits); }
+    } else {
+        dvi_out(7i32 as eight_bits);
+    }
     k = (4i32 + (16384i32 - dvi_ptr) % 4i32) as libc::c_uchar;
     while k as libc::c_int > 0i32 {
         dvi_out(223i32 as eight_bits);
         k = k.wrapping_sub(1)
     }
-    if dvi_limit == 8192i32 { write_to_dvi(8192i32, 16384i32 - 1i32); }
+    if dvi_limit == 8192i32 {
+        write_to_dvi(8192i32, 16384i32 - 1i32);
+    }
     if dvi_ptr > 0x7fffffffi32 - dvi_offset {
         cur_s = -2i32;
-        fatal_error(b"dvi length exceeds 0x7FFFFFFF\x00" as *const u8 as
-                        *const libc::c_char);
+        fatal_error(b"dvi length exceeds 0x7FFFFFFF\x00" as *const u8 as *const libc::c_char);
     }
-    if dvi_ptr > 0i32 { write_to_dvi(0i32, dvi_ptr - 1i32); }
+    if dvi_ptr > 0i32 {
+        write_to_dvi(0i32, dvi_ptr - 1i32);
+    }
     k = ttstub_output_close(dvi_file) as libc::c_uchar;
     if k as libc::c_int == 0i32 {
-        print_nl_cstr(b"Output written on \x00" as *const u8 as
-                          *const libc::c_char);
+        print_nl_cstr(b"Output written on \x00" as *const u8 as *const libc::c_char);
         print(output_file_name);
         print_cstr(b" (\x00" as *const u8 as *const libc::c_char);
         print_int(total_pages);
@@ -3620,37 +4112,38 @@ pub unsafe extern "C" fn finalize_dvi_file() {
         print_int(k as int32_t);
         print_cstr(b" (\x00" as *const u8 as *const libc::c_char);
         print_c_string(strerror(k as libc::c_int));
-        print_cstr(b") generating output;\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b") generating output;\x00" as *const u8 as *const libc::c_char);
         print_nl_cstr(b"file \x00" as *const u8 as *const libc::c_char);
         print(output_file_name);
-        print_cstr(b" may not be valid.\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b" may not be valid.\x00" as *const u8 as *const libc::c_char);
         /* XeTeX adds history = OUTPUT_FAILURE = 4 here; I'm not implementing that. */
     };
 }
 unsafe extern "C" fn write_to_dvi(mut a: int32_t, mut b: int32_t) {
     let mut n: int32_t = b - a + 1i32;
-    if ttstub_output_write(dvi_file,
-                           &mut *dvi_buf.offset(a as isize) as *mut eight_bits
-                               as *mut libc::c_char, n as size_t) !=
-           n as libc::c_ulong {
-        _tt_abort(b"failed to write data to XDV file\x00" as *const u8 as
-                      *const libc::c_char);
+    if ttstub_output_write(
+        dvi_file,
+        &mut *dvi_buf.offset(a as isize) as *mut eight_bits as *mut libc::c_char,
+        n as size_t,
+    ) != n as libc::c_ulong
+    {
+        _tt_abort(b"failed to write data to XDV file\x00" as *const u8 as *const libc::c_char);
     };
 }
 unsafe extern "C" fn dvi_swap() {
     if dvi_ptr > 0x7fffffffi32 - dvi_offset {
         cur_s = -2i32;
-        fatal_error(b"dvi length exceeds 0x7FFFFFFF\x00" as *const u8 as
-                        *const libc::c_char);
+        fatal_error(b"dvi length exceeds 0x7FFFFFFF\x00" as *const u8 as *const libc::c_char);
     }
     if dvi_limit == 16384i32 {
         write_to_dvi(0i32, 8192i32 - 1i32);
         dvi_limit = 8192i32;
         dvi_offset = dvi_offset + 16384i32;
         dvi_ptr = 0i32
-    } else { write_to_dvi(8192i32, 16384i32 - 1i32); dvi_limit = 16384i32 }
+    } else {
+        write_to_dvi(8192i32, 16384i32 - 1i32);
+        dvi_limit = 16384i32
+    }
     dvi_gone = dvi_gone + 8192i32;
 }
 unsafe extern "C" fn dvi_four(mut x: int32_t) {
@@ -3674,5 +4167,7 @@ unsafe extern "C" fn dvi_two(mut s: UTF16_code) {
 unsafe extern "C" fn dvi_pop(mut l: int32_t) {
     if l == dvi_offset + dvi_ptr && dvi_ptr > 0i32 {
         dvi_ptr -= 1
-    } else { dvi_out(142i32 as eight_bits); };
+    } else {
+        dvi_out(142i32 as eight_bits);
+    };
 }

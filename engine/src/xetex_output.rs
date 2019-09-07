@@ -13,8 +13,7 @@ extern "C" {
     #[no_mangle]
     fn strlen(_: *const libc::c_char) -> libc::c_ulong;
     #[no_mangle]
-    fn ttstub_output_putc(handle: rust_output_handle_t, c: libc::c_int)
-     -> libc::c_int;
+    fn ttstub_output_putc(handle: rust_output_handle_t, c: libc::c_int) -> libc::c_int;
     /* Needed here for UFILE */
     /* variables! */
     /* All the following variables are defined in xetexini.c */
@@ -100,7 +99,7 @@ pub type pool_pointer = int32_t;
 pub type str_number = int32_t;
 pub type packed_UTF16_code = libc::c_ushort;
 pub type small_number = libc::c_short;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
     pub s0: int32_t,
@@ -139,7 +138,7 @@ pub struct b32x2_le_t {
  *
  */
 pub type b32x2 = b32x2_le_t;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b16x4_le_t {
     pub s0: uint16_t,
@@ -148,8 +147,8 @@ pub struct b16x4_le_t {
     pub s3: uint16_t,
 }
 pub type b16x4 = b16x4_le_t;
-#[derive ( Copy , Clone )]
-#[repr ( C )]
+#[derive(Copy, Clone)]
+#[repr(C)]
 pub union memory_word {
     pub b32: b32x2,
     pub b16: b16x4,
@@ -178,20 +177,22 @@ pub unsafe extern "C" fn print_ln() {
             ttstub_output_putc(rust_stdout, '\n' as i32);
             term_offset = 0i32
         }
-        16 | 20 | 21 => { }
+        16 | 20 | 21 => {}
         _ => {
             ttstub_output_putc(write_file[selector as usize], '\n' as i32);
         }
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code,
-                                        mut incr_offset: bool) {
+pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code, mut incr_offset: bool) {
     match selector as libc::c_uint {
         19 => {
             ttstub_output_putc(rust_stdout, s as libc::c_int);
             ttstub_output_putc(log_file, s as libc::c_int);
-            if incr_offset { term_offset += 1; file_offset += 1 }
+            if incr_offset {
+                term_offset += 1;
+                file_offset += 1
+            }
             if term_offset == max_print_line {
                 ttstub_output_putc(rust_stdout, '\n' as i32);
                 term_offset = 0i32
@@ -203,15 +204,23 @@ pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code,
         }
         18 => {
             ttstub_output_putc(log_file, s as libc::c_int);
-            if incr_offset { file_offset += 1 }
-            if file_offset == max_print_line { print_ln(); }
+            if incr_offset {
+                file_offset += 1
+            }
+            if file_offset == max_print_line {
+                print_ln();
+            }
         }
         17 => {
             ttstub_output_putc(rust_stdout, s as libc::c_int);
-            if incr_offset { term_offset += 1 }
-            if term_offset == max_print_line { print_ln(); }
+            if incr_offset {
+                term_offset += 1
+            }
+            if term_offset == max_print_line {
+                print_ln();
+            }
         }
-        16 => { }
+        16 => {}
         20 => {
             if tally < trick_count {
                 trick_buf[(tally % error_line) as usize] = s
@@ -224,8 +233,7 @@ pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code,
             }
         }
         _ => {
-            ttstub_output_putc(write_file[selector as usize],
-                               s as libc::c_int);
+            ttstub_output_putc(write_file[selector as usize], s as libc::c_int);
         }
     }
     tally += 1;
@@ -233,30 +241,55 @@ pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code,
 #[no_mangle]
 pub unsafe extern "C" fn print_char(mut s: int32_t) {
     let mut l: small_number = 0;
-    if selector as libc::c_uint >
-           SELECTOR_PSEUDO as libc::c_int as libc::c_uint && !doing_special {
+    if selector as libc::c_uint > SELECTOR_PSEUDO as libc::c_int as libc::c_uint && !doing_special {
         if s >= 0x10000i32 {
-            print_raw_char((0xd800i32 + (s - 0x10000i32) / 1024i32) as
-                               UTF16_code, 1i32 != 0);
-            print_raw_char((0xdc00i32 + (s - 0x10000i32) % 1024i32) as
-                               UTF16_code, 1i32 != 0);
-        } else { print_raw_char(s as UTF16_code, 1i32 != 0); }
-        return
+            print_raw_char(
+                (0xd800i32 + (s - 0x10000i32) / 1024i32) as UTF16_code,
+                1i32 != 0,
+            );
+            print_raw_char(
+                (0xdc00i32 + (s - 0x10000i32) % 1024i32) as UTF16_code,
+                1i32 != 0,
+            );
+        } else {
+            print_raw_char(s as UTF16_code, 1i32 != 0);
+        }
+        return;
     }
-    if s ==
-           (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
-                              + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                              49i32) as isize)).b32.s1 {
+    if s == (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 49i32) as isize,
+    ))
+    .b32
+    .s1
+    {
         /*:252 */
-        if (selector as libc::c_uint) <
-               SELECTOR_PSEUDO as libc::c_int as libc::c_uint {
+        if (selector as libc::c_uint) < SELECTOR_PSEUDO as libc::c_int as libc::c_uint {
             print_ln();
-            return
+            return;
         }
     }
     if s < 32i32 && !doing_special {
@@ -270,40 +303,41 @@ pub unsafe extern "C" fn print_char(mut s: int32_t) {
             print_raw_char('^' as i32 as UTF16_code, 1i32 != 0);
             print_raw_char('^' as i32 as UTF16_code, 1i32 != 0);
             print_raw_char('?' as i32 as UTF16_code, 1i32 != 0);
-        } else { print_raw_char(s as UTF16_code, 1i32 != 0); }
+        } else {
+            print_raw_char(s as UTF16_code, 1i32 != 0);
+        }
     } else if s < 160i32 && !doing_special {
         print_raw_char('^' as i32 as UTF16_code, 1i32 != 0);
         print_raw_char('^' as i32 as UTF16_code, 1i32 != 0);
         l = (s % 256i32 / 16i32) as small_number;
         if (l as libc::c_int) < 10i32 {
-            print_raw_char(('0' as i32 + l as libc::c_int) as UTF16_code,
-                           1i32 != 0);
+            print_raw_char(('0' as i32 + l as libc::c_int) as UTF16_code, 1i32 != 0);
         } else {
-            print_raw_char(('a' as i32 + l as libc::c_int - 10i32) as
-                               UTF16_code, 1i32 != 0);
+            print_raw_char(
+                ('a' as i32 + l as libc::c_int - 10i32) as UTF16_code,
+                1i32 != 0,
+            );
         }
         l = (s % 16i32) as small_number;
         if (l as libc::c_int) < 10i32 {
-            print_raw_char(('0' as i32 + l as libc::c_int) as UTF16_code,
-                           1i32 != 0);
+            print_raw_char(('0' as i32 + l as libc::c_int) as UTF16_code, 1i32 != 0);
         } else {
-            print_raw_char(('a' as i32 + l as libc::c_int - 10i32) as
-                               UTF16_code, 1i32 != 0);
+            print_raw_char(
+                ('a' as i32 + l as libc::c_int - 10i32) as UTF16_code,
+                1i32 != 0,
+            );
         }
     } else if s < 2048i32 {
         print_raw_char((192i32 + s / 64i32) as UTF16_code, 0i32 != 0);
         print_raw_char((128i32 + s % 64i32) as UTF16_code, 1i32 != 0);
     } else if s < 0x10000i32 {
         print_raw_char((224i32 + s / 4096i32) as UTF16_code, 0i32 != 0);
-        print_raw_char((128i32 + s % 4096i32 / 64i32) as UTF16_code,
-                       0i32 != 0);
+        print_raw_char((128i32 + s % 4096i32 / 64i32) as UTF16_code, 0i32 != 0);
         print_raw_char((128i32 + s % 64i32) as UTF16_code, 1i32 != 0);
     } else {
         print_raw_char((240i32 + s / 0x40000i32) as UTF16_code, 0i32 != 0);
-        print_raw_char((128i32 + s % 0x40000i32 / 4096i32) as UTF16_code,
-                       0i32 != 0);
-        print_raw_char((128i32 + s % 4096i32 / 64i32) as UTF16_code,
-                       0i32 != 0);
+        print_raw_char((128i32 + s % 0x40000i32 / 4096i32) as UTF16_code, 0i32 != 0);
+        print_raw_char((128i32 + s % 4096i32 / 64i32) as UTF16_code, 0i32 != 0);
         print_raw_char((128i32 + s % 64i32) as UTF16_code, 1i32 != 0);
     };
 }
@@ -311,96 +345,165 @@ pub unsafe extern "C" fn print_char(mut s: int32_t) {
 pub unsafe extern "C" fn print(mut s: int32_t) {
     let mut nl: int32_t = 0;
     if s >= str_ptr {
-        return print_cstr(b"???\x00" as *const u8 as *const libc::c_char)
+        return print_cstr(b"???\x00" as *const u8 as *const libc::c_char);
     } else {
         if s < 0xffffi32 {
             if s < 0i32 {
-                return print_cstr(b"???\x00" as *const u8 as
-                                      *const libc::c_char)
+                return print_cstr(b"???\x00" as *const u8 as *const libc::c_char);
             } else {
-                if selector as libc::c_uint >
-                       SELECTOR_PSEUDO as libc::c_int as libc::c_uint {
+                if selector as libc::c_uint > SELECTOR_PSEUDO as libc::c_int as libc::c_uint {
                     print_char(s);
-                    return
+                    return;
                 }
-                if s ==
-                       (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                          (0x10ffffi32 + 1i32) + 1i32 +
-                                          15000i32 + 12i32 + 9000i32 + 1i32 +
-                                          1i32 + 19i32 + 256i32 + 256i32 +
-                                          13i32 + 256i32 + 4i32 + 256i32 +
-                                          1i32 + 3i32 * 256i32 +
-                                          (0x10ffffi32 + 1i32) +
-                                          (0x10ffffi32 + 1i32) +
-                                          (0x10ffffi32 + 1i32) +
-                                          (0x10ffffi32 + 1i32) +
-                                          (0x10ffffi32 + 1i32) +
-                                          (0x10ffffi32 + 1i32) + 49i32) as
-                                         isize)).b32.s1 {
+                if s == (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + 256i32
+                        + 1i32
+                        + 3i32 * 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 49i32) as isize,
+                ))
+                .b32
+                .s1
+                {
                     /*:252 */
-                    if (selector as libc::c_uint) <
-                           SELECTOR_PSEUDO as libc::c_int as libc::c_uint {
+                    if (selector as libc::c_uint) < SELECTOR_PSEUDO as libc::c_int as libc::c_uint {
                         print_ln();
-                        return
+                        return;
                     }
                 }
-                nl =
-                    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) + 1i32 + 15000i32
-                                       + 12i32 + 9000i32 + 1i32 + 1i32 + 19i32
-                                       + 256i32 + 256i32 + 13i32 + 256i32 +
-                                       4i32 + 256i32 + 1i32 + 3i32 * 256i32 +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) +
-                                       (0x10ffffi32 + 1i32) + 49i32) as
-                                      isize)).b32.s1;
-                (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                   12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                   256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                   256i32 + 1i32 + 3i32 * 256i32 +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32) + 49i32) as
-                                  isize)).b32.s1 = -1i32;
+                nl = (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + 256i32
+                        + 1i32
+                        + 3i32 * 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 49i32) as isize,
+                ))
+                .b32
+                .s1;
+                (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + 256i32
+                        + 1i32
+                        + 3i32 * 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 49i32) as isize,
+                ))
+                .b32
+                .s1 = -1i32;
                 print_char(s);
-                (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                   12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                   256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                                   256i32 + 1i32 + 3i32 * 256i32 +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32) +
-                                   (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
-                                   + (0x10ffffi32 + 1i32) + 49i32) as
-                                  isize)).b32.s1 = nl;
-                return
+                (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + 256i32
+                        + 1i32
+                        + 3i32 * 256i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 49i32) as isize,
+                ))
+                .b32
+                .s1 = nl;
+                return;
             }
         }
     }
     let mut pool_idx: int32_t = s - 0x10000i32;
     let mut i: pool_pointer = *str_start.offset(pool_idx as isize);
     while i < *str_start.offset((pool_idx + 1i32) as isize) {
-        if *str_pool.offset(i as isize) as libc::c_int >= 0xd800i32 &&
-               (*str_pool.offset(i as isize) as libc::c_int) < 0xdc00i32 &&
-               i + 1i32 < *str_start.offset((pool_idx + 1i32) as isize) &&
-               *str_pool.offset((i + 1i32) as isize) as libc::c_int >=
-                   0xdc00i32 &&
-               (*str_pool.offset((i + 1i32) as isize) as libc::c_int) <
-                   0xe000i32 {
-            print_char(0x10000i32 +
-                           (*str_pool.offset(i as isize) as libc::c_int -
-                                0xd800i32) * 1024i32 +
-                           *str_pool.offset((i + 1i32) as isize) as
-                               libc::c_int - 0xdc00i32);
+        if *str_pool.offset(i as isize) as libc::c_int >= 0xd800i32
+            && (*str_pool.offset(i as isize) as libc::c_int) < 0xdc00i32
+            && i + 1i32 < *str_start.offset((pool_idx + 1i32) as isize)
+            && *str_pool.offset((i + 1i32) as isize) as libc::c_int >= 0xdc00i32
+            && (*str_pool.offset((i + 1i32) as isize) as libc::c_int) < 0xe000i32
+        {
+            print_char(
+                0x10000i32
+                    + (*str_pool.offset(i as isize) as libc::c_int - 0xd800i32) * 1024i32
+                    + *str_pool.offset((i + 1i32) as isize) as libc::c_int
+                    - 0xdc00i32,
+            );
             i += 1
-        } else { print_char(*str_pool.offset(i as isize) as int32_t); }
+        } else {
+            print_char(*str_pool.offset(i as isize) as int32_t);
+        }
         i += 1
-    };
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_cstr(mut str: *const libc::c_char) {
@@ -408,56 +511,98 @@ pub unsafe extern "C" fn print_cstr(mut str: *const libc::c_char) {
     while (i as libc::c_ulong) < strlen(str) {
         print_char(*str.offset(i as isize) as int32_t);
         i = i.wrapping_add(1)
-    };
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_nl(mut s: str_number) {
-    if term_offset > 0i32 &&
-           selector as libc::c_uint & 1i32 as libc::c_uint != 0 ||
-           file_offset > 0i32 &&
-               selector as libc::c_uint >=
-                   SELECTOR_LOG_ONLY as libc::c_int as libc::c_uint {
+    if term_offset > 0i32 && selector as libc::c_uint & 1i32 as libc::c_uint != 0
+        || file_offset > 0i32
+            && selector as libc::c_uint >= SELECTOR_LOG_ONLY as libc::c_int as libc::c_uint
+    {
         print_ln();
     }
     print(s);
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_nl_cstr(mut str: *const libc::c_char) {
-    if term_offset > 0i32 &&
-           selector as libc::c_uint & 1i32 as libc::c_uint != 0 ||
-           file_offset > 0i32 &&
-               selector as libc::c_uint >=
-                   SELECTOR_LOG_ONLY as libc::c_int as libc::c_uint {
+    if term_offset > 0i32 && selector as libc::c_uint & 1i32 as libc::c_uint != 0
+        || file_offset > 0i32
+            && selector as libc::c_uint >= SELECTOR_LOG_ONLY as libc::c_int as libc::c_uint
+    {
         print_ln();
     }
     print_cstr(str);
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_esc(mut s: str_number) {
-    let mut c: int32_t =
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           45i32) as isize)).b32.s1;
-    if c >= 0i32 && c <= 0x10ffffi32 { print_char(c); }
+    let mut c: int32_t = (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 45i32) as isize,
+    ))
+    .b32
+    .s1;
+    if c >= 0i32 && c <= 0x10ffffi32 {
+        print_char(c);
+    }
     print(s);
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_esc_cstr(mut s: *const libc::c_char) {
-    let mut c: int32_t =
-        (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                           19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                           256i32 + 1i32 + 3i32 * 256i32 +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                           45i32) as isize)).b32.s1;
-    if c >= 0i32 && c <= 0x10ffffi32 { print_char(c); }
+    let mut c: int32_t = (*eqtb.offset(
+        (1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 45i32) as isize,
+    ))
+    .b32
+    .s1;
+    if c >= 0i32 && c <= 0x10ffffi32 {
+        print_char(c);
+    }
     print_cstr(s);
 }
 unsafe extern "C" fn print_the_digs(mut k: eight_bits) {
@@ -465,8 +610,10 @@ unsafe extern "C" fn print_the_digs(mut k: eight_bits) {
         k = k.wrapping_sub(1);
         if (dig[k as usize] as libc::c_int) < 10i32 {
             print_char('0' as i32 + dig[k as usize] as libc::c_int);
-        } else { print_char(55i32 + dig[k as usize] as libc::c_int); }
-    };
+        } else {
+            print_char(55i32 + dig[k as usize] as libc::c_int);
+        }
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_int(mut n: int32_t) {
@@ -483,14 +630,19 @@ pub unsafe extern "C" fn print_int(mut n: int32_t) {
             k = 1i32 as libc::c_uchar;
             if m < 10i32 {
                 dig[0] = m as libc::c_uchar
-            } else { dig[0] = 0i32 as libc::c_uchar; n += 1 }
+            } else {
+                dig[0] = 0i32 as libc::c_uchar;
+                n += 1
+            }
         }
     }
-    loop  {
+    loop {
         dig[k as usize] = (n % 10i32) as libc::c_uchar;
         n = n / 10i32;
         k = k.wrapping_add(1);
-        if n == 0i32 { break ; }
+        if n == 0i32 {
+            break;
+        }
     }
     print_the_digs(k);
 }
@@ -499,45 +651,87 @@ pub unsafe extern "C" fn print_cs(mut p: int32_t) {
     if p < 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 {
         if p >= 1i32 + (0x10ffffi32 + 1i32) {
             if p == 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) {
-                print_esc_cstr(b"csname\x00" as *const u8 as
-                                   *const libc::c_char);
-                print_esc_cstr(b"endcsname\x00" as *const u8 as
-                                   *const libc::c_char);
+                print_esc_cstr(b"csname\x00" as *const u8 as *const libc::c_char);
+                print_esc_cstr(b"endcsname\x00" as *const u8 as *const libc::c_char);
                 print_char(' ' as i32);
             } else {
                 print_esc(p - (1i32 + (0x10ffffi32 + 1i32)));
-                if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
-                                      (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
-                                      12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
-                                      256i32 + 256i32 + 13i32 + 256i32 + 4i32
-                                      + 256i32 + 1i32 + 3i32 * 256i32 +
-                                      (p - (1i32 + (0x10ffffi32 + 1i32)))) as
-                                     isize)).b32.s1 == 11i32 {
+                if (*eqtb.offset(
+                    (1i32
+                        + (0x10ffffi32 + 1i32)
+                        + (0x10ffffi32 + 1i32)
+                        + 1i32
+                        + 15000i32
+                        + 12i32
+                        + 9000i32
+                        + 1i32
+                        + 1i32
+                        + 19i32
+                        + 256i32
+                        + 256i32
+                        + 13i32
+                        + 256i32
+                        + 4i32
+                        + 256i32
+                        + 1i32
+                        + 3i32 * 256i32
+                        + (p - (1i32 + (0x10ffffi32 + 1i32)))) as isize,
+                ))
+                .b32
+                .s1 == 11i32
+                {
                     print_char(' ' as i32);
                 }
             }
         } else if p < 1i32 {
-            print_esc_cstr(b"IMPOSSIBLE.\x00" as *const u8 as
-                               *const libc::c_char);
-        } else { print_char(p - 1i32); }
-    } else if p >=
-                  1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 +
-                      15000i32 + 12i32 + 9000i32 + 1i32 &&
-                  p <=
-                      1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
-                          19i32 + 256i32 + 256i32 + 13i32 + 256i32 + 4i32 +
-                          256i32 + 1i32 + 3i32 * 256i32 + (0x10ffffi32 + 1i32)
-                          + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
-                          (0x10ffffi32 + 1i32) + 85i32 + 256i32 +
-                          (0x10ffffi32 + 1i32) + 23i32 + 256i32 - 1i32 ||
-                  p > eqtb_top {
-        print_esc_cstr(b"IMPOSSIBLE.\x00" as *const u8 as
-                           *const libc::c_char);
+            print_esc_cstr(b"IMPOSSIBLE.\x00" as *const u8 as *const libc::c_char);
+        } else {
+            print_char(p - 1i32);
+        }
+    } else if p
+        >= 1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+        && p <= 1i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 1i32
+            + 15000i32
+            + 12i32
+            + 9000i32
+            + 1i32
+            + 1i32
+            + 19i32
+            + 256i32
+            + 256i32
+            + 13i32
+            + 256i32
+            + 4i32
+            + 256i32
+            + 1i32
+            + 3i32 * 256i32
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + (0x10ffffi32 + 1i32)
+            + 85i32
+            + 256i32
+            + (0x10ffffi32 + 1i32)
+            + 23i32
+            + 256i32
+            - 1i32
+        || p > eqtb_top
+    {
+        print_esc_cstr(b"IMPOSSIBLE.\x00" as *const u8 as *const libc::c_char);
     } else if (*hash.offset(p as isize)).s1 >= str_ptr {
-        print_esc_cstr(b"NONEXISTENT.\x00" as *const u8 as
-                           *const libc::c_char);
+        print_esc_cstr(b"NONEXISTENT.\x00" as *const u8 as *const libc::c_char);
     } else {
         print_esc((*hash.offset(p as isize)).s1);
         print_char(' ' as i32);
@@ -552,70 +746,69 @@ pub unsafe extern "C" fn sprint_cs(mut p: int32_t) {
             print_esc(p - (1i32 + (0x10ffffi32 + 1i32)));
         } else {
             print_esc_cstr(b"csname\x00" as *const u8 as *const libc::c_char);
-            print_esc_cstr(b"endcsname\x00" as *const u8 as
-                               *const libc::c_char);
+            print_esc_cstr(b"endcsname\x00" as *const u8 as *const libc::c_char);
         }
-    } else { print_esc((*hash.offset(p as isize)).s1); };
+    } else {
+        print_esc((*hash.offset(p as isize)).s1);
+    };
 }
 #[no_mangle]
-pub unsafe extern "C" fn print_file_name(mut n: int32_t, mut a: int32_t,
-                                         mut e: int32_t) {
+pub unsafe extern "C" fn print_file_name(mut n: int32_t, mut a: int32_t, mut e: int32_t) {
     let mut must_quote: bool = 0i32 != 0;
     let mut quote_char: int32_t = 0i32;
     let mut j: pool_pointer = 0;
     if a != 0i32 {
         j = *str_start.offset((a - 0x10000i32) as isize);
-        while (!must_quote || quote_char == 0i32) &&
-                  j < *str_start.offset((a + 1i32 - 0x10000i32) as isize) {
+        while (!must_quote || quote_char == 0i32)
+            && j < *str_start.offset((a + 1i32 - 0x10000i32) as isize)
+        {
             if *str_pool.offset(j as isize) as libc::c_int == ' ' as i32 {
                 must_quote = 1i32 != 0
-            } else if *str_pool.offset(j as isize) as libc::c_int ==
-                          '\"' as i32 ||
-                          *str_pool.offset(j as isize) as libc::c_int ==
-                              '\'' as i32 {
+            } else if *str_pool.offset(j as isize) as libc::c_int == '\"' as i32
+                || *str_pool.offset(j as isize) as libc::c_int == '\'' as i32
+            {
                 must_quote = 1i32 != 0;
-                quote_char =
-                    73i32 - *str_pool.offset(j as isize) as libc::c_int
+                quote_char = 73i32 - *str_pool.offset(j as isize) as libc::c_int
             }
             j += 1
         }
     }
     if n != 0i32 {
         j = *str_start.offset((n - 0x10000i32) as isize);
-        while (!must_quote || quote_char == 0i32) &&
-                  j < *str_start.offset((n + 1i32 - 0x10000i32) as isize) {
+        while (!must_quote || quote_char == 0i32)
+            && j < *str_start.offset((n + 1i32 - 0x10000i32) as isize)
+        {
             if *str_pool.offset(j as isize) as libc::c_int == ' ' as i32 {
                 must_quote = 1i32 != 0
-            } else if *str_pool.offset(j as isize) as libc::c_int ==
-                          '\"' as i32 ||
-                          *str_pool.offset(j as isize) as libc::c_int ==
-                              '\'' as i32 {
+            } else if *str_pool.offset(j as isize) as libc::c_int == '\"' as i32
+                || *str_pool.offset(j as isize) as libc::c_int == '\'' as i32
+            {
                 must_quote = 1i32 != 0;
-                quote_char =
-                    73i32 - *str_pool.offset(j as isize) as libc::c_int
+                quote_char = 73i32 - *str_pool.offset(j as isize) as libc::c_int
             }
             j += 1
         }
     }
     if e != 0i32 {
         j = *str_start.offset((e - 0x10000i32) as isize);
-        while (!must_quote || quote_char == 0i32) &&
-                  j < *str_start.offset((e + 1i32 - 0x10000i32) as isize) {
+        while (!must_quote || quote_char == 0i32)
+            && j < *str_start.offset((e + 1i32 - 0x10000i32) as isize)
+        {
             if *str_pool.offset(j as isize) as libc::c_int == ' ' as i32 {
                 must_quote = 1i32 != 0
-            } else if *str_pool.offset(j as isize) as libc::c_int ==
-                          '\"' as i32 ||
-                          *str_pool.offset(j as isize) as libc::c_int ==
-                              '\'' as i32 {
+            } else if *str_pool.offset(j as isize) as libc::c_int == '\"' as i32
+                || *str_pool.offset(j as isize) as libc::c_int == '\'' as i32
+            {
                 must_quote = 1i32 != 0;
-                quote_char =
-                    73i32 - *str_pool.offset(j as isize) as libc::c_int
+                quote_char = 73i32 - *str_pool.offset(j as isize) as libc::c_int
             }
             j += 1
         }
     }
     if must_quote {
-        if quote_char == 0i32 { quote_char = '\"' as i32 }
+        if quote_char == 0i32 {
+            quote_char = '\"' as i32
+        }
         print_char(quote_char);
     }
     if a != 0i32 {
@@ -623,7 +816,7 @@ pub unsafe extern "C" fn print_file_name(mut n: int32_t, mut a: int32_t,
         j = *str_start.offset((a - 0x10000i32) as isize);
         for_end = *str_start.offset((a + 1i32 - 0x10000i32) as isize) - 1i32;
         if j <= for_end {
-            loop  {
+            loop {
                 if *str_pool.offset(j as isize) as libc::c_int == quote_char {
                     print(quote_char);
                     quote_char = 73i32 - quote_char;
@@ -632,17 +825,18 @@ pub unsafe extern "C" fn print_file_name(mut n: int32_t, mut a: int32_t,
                 print(*str_pool.offset(j as isize) as int32_t);
                 let fresh0 = j;
                 j = j + 1;
-                if !(fresh0 < for_end) { break ; }
+                if !(fresh0 < for_end) {
+                    break;
+                }
             }
         }
     }
     if n != 0i32 {
         let mut for_end_0: int32_t = 0;
         j = *str_start.offset((n - 0x10000i32) as isize);
-        for_end_0 =
-            *str_start.offset((n + 1i32 - 0x10000i32) as isize) - 1i32;
+        for_end_0 = *str_start.offset((n + 1i32 - 0x10000i32) as isize) - 1i32;
         if j <= for_end_0 {
-            loop  {
+            loop {
                 if *str_pool.offset(j as isize) as libc::c_int == quote_char {
                     print(quote_char);
                     quote_char = 73i32 - quote_char;
@@ -651,17 +845,18 @@ pub unsafe extern "C" fn print_file_name(mut n: int32_t, mut a: int32_t,
                 print(*str_pool.offset(j as isize) as int32_t);
                 let fresh1 = j;
                 j = j + 1;
-                if !(fresh1 < for_end_0) { break ; }
+                if !(fresh1 < for_end_0) {
+                    break;
+                }
             }
         }
     }
     if e != 0i32 {
         let mut for_end_1: int32_t = 0;
         j = *str_start.offset((e - 0x10000i32) as isize);
-        for_end_1 =
-            *str_start.offset((e + 1i32 - 0x10000i32) as isize) - 1i32;
+        for_end_1 = *str_start.offset((e + 1i32 - 0x10000i32) as isize) - 1i32;
         if j <= for_end_1 {
-            loop  {
+            loop {
                 if *str_pool.offset(j as isize) as libc::c_int == quote_char {
                     print(quote_char);
                     quote_char = 73i32 - quote_char;
@@ -670,11 +865,15 @@ pub unsafe extern "C" fn print_file_name(mut n: int32_t, mut a: int32_t,
                 print(*str_pool.offset(j as isize) as int32_t);
                 let fresh2 = j;
                 j = j + 1;
-                if !(fresh2 < for_end_1) { break ; }
+                if !(fresh2 < for_end_1) {
+                    break;
+                }
             }
         }
     }
-    if quote_char != 0i32 { print_char(quote_char); };
+    if quote_char != 0i32 {
+        print_char(quote_char);
+    };
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_size(mut s: int32_t) {
@@ -683,52 +882,50 @@ pub unsafe extern "C" fn print_size(mut s: int32_t) {
     } else if s == 256i32 {
         print_esc_cstr(b"scriptfont\x00" as *const u8 as *const libc::c_char);
     } else {
-        print_esc_cstr(b"scriptscriptfont\x00" as *const u8 as
-                           *const libc::c_char);
+        print_esc_cstr(b"scriptscriptfont\x00" as *const u8 as *const libc::c_char);
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn print_write_whatsit(mut s: *const libc::c_char,
-                                             mut p: int32_t) {
+pub unsafe extern "C" fn print_write_whatsit(mut s: *const libc::c_char, mut p: int32_t) {
     print_esc_cstr(s);
     if (*mem.offset((p + 1i32) as isize)).b32.s0 < 16i32 {
         print_int((*mem.offset((p + 1i32) as isize)).b32.s0);
     } else if (*mem.offset((p + 1i32) as isize)).b32.s0 == 16i32 {
         print_char('*' as i32);
-    } else { print_char('-' as i32); };
+    } else {
+        print_char('-' as i32);
+    };
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_native_word(mut p: int32_t) {
     let mut i: int32_t = 0;
     let mut c: int32_t = 0;
     let mut cc: int32_t = 0;
-    let mut for_end: int32_t =
-        (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int - 1i32;
+    let mut for_end: int32_t = (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int - 1i32;
     i = 0i32;
     while i <= for_end {
-        c =
-            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as
-                  *mut libc::c_ushort).offset(i as isize) as int32_t;
+        c = *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut libc::c_ushort)
+            .offset(i as isize) as int32_t;
         if c >= 0xd800i32 && c < 0xdc00i32 {
-            if i <
-                   (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int -
-                       1i32 {
-                cc =
-                    *(&mut *mem.offset((p + 6i32) as isize) as
-                          *mut memory_word as
-                          *mut libc::c_ushort).offset((i + 1i32) as isize) as
-                        int32_t;
+            if i < (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int - 1i32 {
+                cc = *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word
+                    as *mut libc::c_ushort)
+                    .offset((i + 1i32) as isize) as int32_t;
                 if cc >= 0xdc00i32 && cc < 0xe000i32 {
-                    c =
-                        0x10000i32 + (c - 0xd800i32) * 1024i32 +
-                            (cc - 0xdc00i32);
+                    c = 0x10000i32 + (c - 0xd800i32) * 1024i32 + (cc - 0xdc00i32);
                     print_char(c);
                     i += 1
-                } else { print('.' as i32); }
-            } else { print('.' as i32); }
-        } else { print_char(c); }
+                } else {
+                    print('.' as i32);
+                }
+            } else {
+                print('.' as i32);
+            }
+        } else {
+            print_char(c);
+        }
         i += 1
-    };
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_sa_num(mut q: int32_t) {
@@ -740,21 +937,20 @@ pub unsafe extern "C" fn print_sa_num(mut q: int32_t) {
         q = (*mem.offset(q as isize)).b32.s1;
         n = n + 64i32 * (*mem.offset(q as isize)).b16.s1 as libc::c_int;
         q = (*mem.offset(q as isize)).b32.s1;
-        n =
-            n +
-                64i32 * 64i32 *
-                    ((*mem.offset(q as isize)).b16.s1 as libc::c_int +
-                         64i32 *
-                             (*mem.offset((*mem.offset(q as isize)).b32.s1 as
-                                              isize)).b16.s1 as libc::c_int)
+        n = n + 64i32
+            * 64i32
+            * ((*mem.offset(q as isize)).b16.s1 as libc::c_int
+                + 64i32
+                    * (*mem.offset((*mem.offset(q as isize)).b32.s1 as isize))
+                        .b16
+                        .s1 as libc::c_int)
     }
     print_int(n);
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_file_line() {
     let mut level: int32_t = in_open;
-    while level > 0i32 &&
-              *full_source_filename_stack.offset(level as isize) == 0i32 {
+    while level > 0i32 && *full_source_filename_stack.offset(level as isize) == 0i32 {
         level -= 1
     }
     if level == 0i32 {
@@ -765,7 +961,9 @@ pub unsafe extern "C" fn print_file_line() {
         print(':' as i32);
         if level == in_open {
             print_int(line);
-        } else { print_int(*line_stack.offset((level + 1i32) as isize)); }
+        } else {
+            print_int(*line_stack.offset((level + 1i32) as isize));
+        }
         print_cstr(b": \x00" as *const u8 as *const libc::c_char);
     };
 }
@@ -782,11 +980,13 @@ pub unsafe extern "C" fn print_two(mut n: int32_t) {
 pub unsafe extern "C" fn print_hex(mut n: int32_t) {
     let mut k: libc::c_uchar = 0i32 as libc::c_uchar;
     print_char('\"' as i32);
-    loop  {
+    loop {
         dig[k as usize] = (n % 16i32) as libc::c_uchar;
         n = n / 16i32;
         k = k.wrapping_add(1);
-        if !(n != 0i32) { break ; }
+        if !(n != 0i32) {
+            break;
+        }
     }
     print_the_digs(k);
 }
@@ -799,59 +999,62 @@ pub unsafe extern "C" fn print_roman_int(mut n: int32_t) {
     let mut j: libc::c_uchar = 0i32 as libc::c_uchar;
     let mut k: libc::c_uchar = 0i32 as libc::c_uchar;
     v = 1000i32;
-    loop  {
+    loop {
         while n >= v {
             print_char(*roman_data.offset(j as isize) as int32_t);
             n = n - v
         }
-        if n <= 0i32 { return }
+        if n <= 0i32 {
+            return;
+        }
         k = (j as libc::c_int + 2i32) as libc::c_uchar;
-        u =
-            v /
-                (*roman_data.offset((k as libc::c_int - 1i32) as isize) as
-                     libc::c_int - '0' as i32);
-        if *roman_data.offset((k as libc::c_int - 1i32) as isize) as
-               libc::c_int == '2' as i32 {
+        u = v
+            / (*roman_data.offset((k as libc::c_int - 1i32) as isize) as libc::c_int - '0' as i32);
+        if *roman_data.offset((k as libc::c_int - 1i32) as isize) as libc::c_int == '2' as i32 {
             k = (k as libc::c_int + 2i32) as libc::c_uchar;
-            u =
-                u /
-                    (*roman_data.offset((k as libc::c_int - 1i32) as isize) as
-                         libc::c_int - '0' as i32)
+            u = u
+                / (*roman_data.offset((k as libc::c_int - 1i32) as isize) as libc::c_int
+                    - '0' as i32)
         }
         if n + u >= v {
             print_char(*roman_data.offset(k as isize) as int32_t);
             n = n + u
         } else {
             j = (j as libc::c_int + 2i32) as libc::c_uchar;
-            v =
-                v /
-                    (*roman_data.offset((j as libc::c_int - 1i32) as isize) as
-                         libc::c_int - '0' as i32)
+            v = v
+                / (*roman_data.offset((j as libc::c_int - 1i32) as isize) as libc::c_int
+                    - '0' as i32)
         }
-    };
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_current_string() {
-    let mut j: pool_pointer =
-        *str_start.offset((str_ptr - 0x10000i32) as isize);
+    let mut j: pool_pointer = *str_start.offset((str_ptr - 0x10000i32) as isize);
     while j < pool_ptr {
         print_char(*str_pool.offset(j as isize) as int32_t);
         j += 1
-    };
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_scaled(mut s: scaled_t) {
     let mut delta: scaled_t = 0;
-    if s < 0i32 { print_char('-' as i32); s = -s }
+    if s < 0i32 {
+        print_char('-' as i32);
+        s = -s
+    }
     print_int(s / 0x10000i32);
     print_char('.' as i32);
     s = 10i32 * (s % 0x10000i32) + 5i32;
     delta = 10i32;
-    loop  {
-        if delta > 0x10000i32 { s = s + 0x8000i32 - 50000i32 }
+    loop {
+        if delta > 0x10000i32 {
+            s = s + 0x8000i32 - 50000i32
+        }
         print_char('0' as i32 + s / 0x10000i32);
         s = 10i32 * (s % 0x10000i32);
         delta = delta * 10i32;
-        if !(s > delta) { break ; }
-    };
+        if !(s > delta) {
+            break;
+        }
+    }
 }

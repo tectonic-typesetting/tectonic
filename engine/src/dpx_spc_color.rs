@@ -9,9 +9,12 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn __assert_fail(__assertion: *const libc::c_char,
-                     __file: *const libc::c_char, __line: libc::c_uint,
-                     __function: *const libc::c_char) -> !;
+    fn __assert_fail(
+        __assertion: *const libc::c_char,
+        __file: *const libc::c_char,
+        __line: libc::c_uint,
+        __function: *const libc::c_char,
+    ) -> !;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const libc::c_ushort;
     #[no_mangle]
@@ -21,11 +24,13 @@ extern "C" {
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const libc::c_char, _: ...);
     #[no_mangle]
-    fn parse_c_ident(pp: *mut *const libc::c_char,
-                     endptr: *const libc::c_char) -> *mut libc::c_char;
+    fn parse_c_ident(
+        pp: *mut *const libc::c_char,
+        endptr: *const libc::c_char,
+    ) -> *mut libc::c_char;
     /* Color special
- * See remark in spc_color.c.
- */
+     * See remark in spc_color.c.
+     */
     #[no_mangle]
     fn pdf_color_set(sc: *mut pdf_color, fc: *mut pdf_color);
     #[no_mangle]
@@ -33,13 +38,16 @@ extern "C" {
     #[no_mangle]
     fn pdf_color_pop();
     /* Color stack
- */
+     */
     #[no_mangle]
     fn pdf_color_clear_stack();
     #[no_mangle]
-    fn spc_util_read_colorspec(spe: *mut spc_env, colorspec: *mut pdf_color,
-                               args: *mut spc_arg, syntax: libc::c_int)
-     -> libc::c_int;
+    fn spc_util_read_colorspec(
+        spe: *mut spc_env,
+        colorspec: *mut pdf_color,
+        args: *mut spc_arg,
+        syntax: libc::c_int,
+    ) -> libc::c_int;
     /* Similar to bop_content */
     #[no_mangle]
     fn pdf_doc_set_bgcolor(color: *const pdf_color);
@@ -57,7 +65,7 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_env {
     pub x_user: libc::c_double,
@@ -65,7 +73,7 @@ pub struct spc_env {
     pub mag: libc::c_double,
     pub pg: libc::c_int,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_arg {
     pub curptr: *const libc::c_char,
@@ -73,17 +81,15 @@ pub struct spc_arg {
     pub base: *const libc::c_char,
     pub command: *const libc::c_char,
 }
-pub type spc_handler_fn_ptr
-    =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg)
-               -> libc::c_int>;
-#[derive ( Copy , Clone )]
+pub type spc_handler_fn_ptr =
+    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int>;
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
     pub key: *const libc::c_char,
     pub exec: spc_handler_fn_ptr,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
     pub num_components: libc::c_int,
@@ -98,9 +104,10 @@ pub struct pdf_color {
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char,
-                               mut s2: *const libc::c_char) -> bool {
-    if !s1.is_null() && !s2.is_null() { return strcmp(s1, s2) == 0i32 }
+unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+    if !s1.is_null() && !s2.is_null() {
+        return strcmp(s1, s2) == 0i32;
+    }
     return 0i32 != 0;
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -130,35 +137,42 @@ unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char,
  * other operations that can change current color
  * implicitely.
  */
-unsafe extern "C" fn spc_handler_color_push(mut spe: *mut spc_env,
-                                            mut args: *mut spc_arg)
- -> libc::c_int {
+unsafe extern "C" fn spc_handler_color_push(
+    mut spe: *mut spc_env,
+    mut args: *mut spc_arg,
+) -> libc::c_int {
     let mut error: libc::c_int = 0;
-    let mut colorspec: pdf_color =
-        pdf_color{num_components: 0,
-                  spot_color_name: 0 as *mut libc::c_char,
-                  values: [0.; 4],};
+    let mut colorspec: pdf_color = pdf_color {
+        num_components: 0,
+        spot_color_name: 0 as *mut libc::c_char,
+        values: [0.; 4],
+    };
     error = spc_util_read_colorspec(spe, &mut colorspec, args, 1i32);
-    if error == 0 { pdf_color_push(&mut colorspec, &mut colorspec); }
+    if error == 0 {
+        pdf_color_push(&mut colorspec, &mut colorspec);
+    }
     return error;
 }
-unsafe extern "C" fn spc_handler_color_pop(mut spe: *mut spc_env,
-                                           mut args: *mut spc_arg)
- -> libc::c_int {
+unsafe extern "C" fn spc_handler_color_pop(
+    mut spe: *mut spc_env,
+    mut args: *mut spc_arg,
+) -> libc::c_int {
     pdf_color_pop();
     return 0i32;
 }
 /* Invoked by the special command "color rgb .625 0 0".
  * DVIPS clears the color stack, and then saves and sets the given color.
  */
-unsafe extern "C" fn spc_handler_color_default(mut spe: *mut spc_env,
-                                               mut args: *mut spc_arg)
- -> libc::c_int {
+unsafe extern "C" fn spc_handler_color_default(
+    mut spe: *mut spc_env,
+    mut args: *mut spc_arg,
+) -> libc::c_int {
     let mut error: libc::c_int = 0;
-    let mut colorspec: pdf_color =
-        pdf_color{num_components: 0,
-                  spot_color_name: 0 as *mut libc::c_char,
-                  values: [0.; 4],};
+    let mut colorspec: pdf_color = pdf_color {
+        num_components: 0,
+        spot_color_name: 0 as *mut libc::c_char,
+        values: [0.; 4],
+    };
     error = spc_util_read_colorspec(spe, &mut colorspec, args, 1i32);
     if error == 0 {
         pdf_color_clear_stack();
@@ -167,36 +181,40 @@ unsafe extern "C" fn spc_handler_color_default(mut spe: *mut spc_env,
     return error;
 }
 /* This is from color special? */
-unsafe extern "C" fn spc_handler_background(mut spe: *mut spc_env,
-                                            mut args: *mut spc_arg)
- -> libc::c_int {
+unsafe extern "C" fn spc_handler_background(
+    mut spe: *mut spc_env,
+    mut args: *mut spc_arg,
+) -> libc::c_int {
     let mut error: libc::c_int = 0;
-    let mut colorspec: pdf_color =
-        pdf_color{num_components: 0,
-                  spot_color_name: 0 as *mut libc::c_char,
-                  values: [0.; 4],};
+    let mut colorspec: pdf_color = pdf_color {
+        num_components: 0,
+        spot_color_name: 0 as *mut libc::c_char,
+        values: [0.; 4],
+    };
     error = spc_util_read_colorspec(spe, &mut colorspec, args, 1i32);
-    if error == 0 { pdf_doc_set_bgcolor(&mut colorspec); }
+    if error == 0 {
+        pdf_doc_set_bgcolor(&mut colorspec);
+    }
     return error;
 }
-unsafe extern "C" fn skip_blank(mut pp: *mut *const libc::c_char,
-                                mut endptr: *const libc::c_char) {
+unsafe extern "C" fn skip_blank(mut pp: *mut *const libc::c_char, mut endptr: *const libc::c_char) {
     let mut p: *const libc::c_char = *pp;
-    while p < endptr &&
-              (*p as libc::c_int & !0x7fi32 == 0i32 &&
-                   *(*__ctype_b_loc()).offset(*p as libc::c_uchar as
-                                                  libc::c_int as isize) as
-                       libc::c_int &
-                       _ISblank as libc::c_int as libc::c_ushort as
-                           libc::c_int != 0) {
+    while p < endptr
+        && (*p as libc::c_int & !0x7fi32 == 0i32
+            && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                as libc::c_int
+                & _ISblank as libc::c_int as libc::c_ushort as libc::c_int
+                != 0)
+    {
         p = p.offset(1)
     }
     *pp = p;
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_color_check_special(mut buf: *const libc::c_char,
-                                                 mut len: libc::c_int)
- -> bool {
+pub unsafe extern "C" fn spc_color_check_special(
+    mut buf: *const libc::c_char,
+    mut len: libc::c_int,
+) -> bool {
     let mut r: bool = 0i32 != 0;
     let mut p: *const libc::c_char = 0 as *const libc::c_char;
     let mut endptr: *const libc::c_char = 0 as *const libc::c_char;
@@ -206,13 +224,11 @@ pub unsafe extern "C" fn spc_color_check_special(mut buf: *const libc::c_char,
     skip_blank(&mut p, endptr);
     q = parse_c_ident(&mut p, endptr);
     if q.is_null() {
-        return 0i32 != 0
+        return 0i32 != 0;
     } else {
         if streq_ptr(q, b"color\x00" as *const u8 as *const libc::c_char) {
             r = 1i32 != 0
-        } else if streq_ptr(q,
-                            b"background\x00" as *const u8 as
-                                *const libc::c_char) {
+        } else if streq_ptr(q, b"background\x00" as *const u8 as *const libc::c_char) {
             r = 1i32 != 0
         }
     }
@@ -241,10 +257,11 @@ pub unsafe extern "C" fn spc_color_check_special(mut buf: *const libc::c_char,
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn spc_color_setup_handler(mut sph: *mut spc_handler,
-                                                 mut spe: *mut spc_env,
-                                                 mut ap: *mut spc_arg)
- -> libc::c_int {
+pub unsafe extern "C" fn spc_color_setup_handler(
+    mut sph: *mut spc_handler,
+    mut spe: *mut spc_env,
+    mut ap: *mut spc_arg,
+) -> libc::c_int {
     let mut p: *const libc::c_char = 0 as *const libc::c_char;
     let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
     if !sph.is_null() && !spe.is_null() && !ap.is_null() {
@@ -258,14 +275,16 @@ pub unsafe extern "C" fn spc_color_setup_handler(mut sph: *mut spc_handler,
     }
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     q = parse_c_ident(&mut (*ap).curptr, (*ap).endptr);
-    if q.is_null() { return -1i32 }
+    if q.is_null() {
+        return -1i32;
+    }
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     if streq_ptr(q, b"background\x00" as *const u8 as *const libc::c_char) {
         (*ap).command = b"background\x00" as *const u8 as *const libc::c_char;
-        (*sph).exec =
-            Some(spc_handler_background as
-                     unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg)
-                         -> libc::c_int);
+        (*sph).exec = Some(
+            spc_handler_background
+                as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+        );
         free(q as *mut libc::c_void);
     } else if streq_ptr(q, b"color\x00" as *const u8 as *const libc::c_char) {
         /* color */
@@ -273,44 +292,38 @@ pub unsafe extern "C" fn spc_color_setup_handler(mut sph: *mut spc_handler,
         p = (*ap).curptr;
         q = parse_c_ident(&mut p, (*ap).endptr);
         if q.is_null() {
-            return -1i32
+            return -1i32;
         } else {
             if streq_ptr(q, b"push\x00" as *const u8 as *const libc::c_char) {
-                (*ap).command =
-                    b"push\x00" as *const u8 as *const libc::c_char;
-                (*sph).exec =
-                    Some(spc_handler_color_push as
-                             unsafe extern "C" fn(_: *mut spc_env,
-                                                  _: *mut spc_arg)
-                                 -> libc::c_int);
+                (*ap).command = b"push\x00" as *const u8 as *const libc::c_char;
+                (*sph).exec = Some(
+                    spc_handler_color_push
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                );
                 (*ap).curptr = p
-            } else if streq_ptr(q,
-                                b"pop\x00" as *const u8 as
-                                    *const libc::c_char) {
-                (*ap).command =
-                    b"pop\x00" as *const u8 as *const libc::c_char;
-                (*sph).exec =
-                    Some(spc_handler_color_pop as
-                             unsafe extern "C" fn(_: *mut spc_env,
-                                                  _: *mut spc_arg)
-                                 -> libc::c_int);
+            } else if streq_ptr(q, b"pop\x00" as *const u8 as *const libc::c_char) {
+                (*ap).command = b"pop\x00" as *const u8 as *const libc::c_char;
+                (*sph).exec = Some(
+                    spc_handler_color_pop
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                );
                 (*ap).curptr = p
             } else {
                 (*ap).command = b"\x00" as *const u8 as *const libc::c_char;
-                (*sph).exec =
-                    Some(spc_handler_color_default as
-                             unsafe extern "C" fn(_: *mut spc_env,
-                                                  _: *mut spc_arg)
-                                 -> libc::c_int)
+                (*sph).exec = Some(
+                    spc_handler_color_default
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                )
             }
         }
         free(q as *mut libc::c_void);
     } else {
-        spc_warn(spe,
-                 b"Not color/background special?\x00" as *const u8 as
-                     *const libc::c_char);
+        spc_warn(
+            spe,
+            b"Not color/background special?\x00" as *const u8 as *const libc::c_char,
+        );
         free(q as *mut libc::c_void);
-        return -1i32
+        return -1i32;
     }
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     return 0i32;

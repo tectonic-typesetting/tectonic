@@ -44,8 +44,10 @@ pub type size_t = libc::c_ulong;
 pub unsafe extern "C" fn new(mut size: uint32_t) -> *mut libc::c_void {
     let mut result: *mut libc::c_void = malloc(size as size_t);
     if result.is_null() {
-        _tt_abort(b"Out of memory - asked for %u bytes\n\x00" as *const u8 as
-                      *const libc::c_char, size);
+        _tt_abort(
+            b"Out of memory - asked for %u bytes\n\x00" as *const u8 as *const libc::c_char,
+            size,
+        );
     }
     return result;
 }
@@ -71,18 +73,22 @@ pub unsafe extern "C" fn new(mut size: uint32_t) -> *mut libc::c_void {
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn renew(mut mem: *mut libc::c_void, mut size: uint32_t)
- -> *mut libc::c_void {
+pub unsafe extern "C" fn renew(
+    mut mem: *mut libc::c_void,
+    mut size: uint32_t,
+) -> *mut libc::c_void {
     if size != 0 {
         let mut result: *mut libc::c_void = realloc(mem, size as size_t);
         if result.is_null() {
-            _tt_abort(b"Out of memory - asked for %u bytes\n\x00" as *const u8
-                          as *const libc::c_char, size);
+            _tt_abort(
+                b"Out of memory - asked for %u bytes\n\x00" as *const u8 as *const libc::c_char,
+                size,
+            );
         }
-        return result
+        return result;
     } else {
         /* realloc may not return NULL if size == 0 */
         free(mem);
-        return 0 as *mut libc::c_void
+        return 0 as *mut libc::c_void;
     };
 }

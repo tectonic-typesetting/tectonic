@@ -10,37 +10,39 @@ extern crate libc;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     /* Here is the complete list of PDF object types */
     /* A deeper object hierarchy will be considered as (illegal) loop. */
     pub type pdf_obj;
     #[no_mangle]
-    fn __assert_fail(__assertion: *const libc::c_char,
-                     __file: *const libc::c_char, __line: libc::c_uint,
-                     __function: *const libc::c_char) -> !;
+    fn __assert_fail(
+        __assertion: *const libc::c_char,
+        __file: *const libc::c_char,
+        __line: libc::c_uint,
+        __function: *const libc::c_char,
+    ) -> !;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char)
-     -> *mut libc::c_char;
+    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
@@ -58,25 +60,25 @@ extern "C" {
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn new(size: uint32_t) -> *mut libc::c_void;
     #[no_mangle]
@@ -84,7 +86,7 @@ extern "C" {
 }
 pub type __uint32_t = libc::c_uint;
 pub type uint32_t = __uint32_t;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_res {
     pub ident: *mut libc::c_char,
@@ -94,14 +96,14 @@ pub struct pdf_res {
     pub object: *mut pdf_obj,
     pub reference: *mut pdf_obj,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct res_cache {
     pub count: libc::c_int,
     pub capacity: libc::c_int,
     pub resources: *mut pdf_res,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
     pub name: *const libc::c_char,
@@ -120,96 +122,94 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char,
-                               mut s2: *const libc::c_char) -> bool {
-    if !s1.is_null() && !s2.is_null() { return strcmp(s1, s2) == 0i32 }
+unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+    if !s1.is_null() && !s2.is_null() {
+        return strcmp(s1, s2) == 0i32;
+    }
     return 0i32 != 0;
 }
-static mut pdf_resource_categories: [C2RustUnnamed; 9] =
-    [{
-         let mut init =
-             C2RustUnnamed{name:
-                               b"Font\x00" as *const u8 as
-                                   *const libc::c_char,
-                           cat_id: 0i32,};
-         init
-     },
-     {
-         let mut init =
-             C2RustUnnamed{name:
-                               b"CIDFont\x00" as *const u8 as
-                                   *const libc::c_char,
-                           cat_id: 1i32,};
-         init
-     },
-     {
-         let mut init =
-             C2RustUnnamed{name:
-                               b"Encoding\x00" as *const u8 as
-                                   *const libc::c_char,
-                           cat_id: 2i32,};
-         init
-     },
-     {
-         let mut init =
-             C2RustUnnamed{name:
-                               b"CMap\x00" as *const u8 as
-                                   *const libc::c_char,
-                           cat_id: 3i32,};
-         init
-     },
-     {
-         let mut init =
-             C2RustUnnamed{name:
-                               b"XObject\x00" as *const u8 as
-                                   *const libc::c_char,
-                           cat_id: 4i32,};
-         init
-     },
-     {
-         let mut init =
-             C2RustUnnamed{name:
-                               b"ColorSpace\x00" as *const u8 as
-                                   *const libc::c_char,
-                           cat_id: 5i32,};
-         init
-     },
-     {
-         let mut init =
-             C2RustUnnamed{name:
-                               b"Shading\x00" as *const u8 as
-                                   *const libc::c_char,
-                           cat_id: 6i32,};
-         init
-     },
-     {
-         let mut init =
-             C2RustUnnamed{name:
-                               b"Pattern\x00" as *const u8 as
-                                   *const libc::c_char,
-                           cat_id: 7i32,};
-         init
-     },
-     {
-         let mut init =
-             C2RustUnnamed{name:
-                               b"ExtGState\x00" as *const u8 as
-                                   *const libc::c_char,
-                           cat_id: 8i32,};
-         init
-     }];
-static mut resources: [res_cache; 9] =
-    [res_cache{count: 0,
-               capacity: 0,
-               resources: 0 as *const pdf_res as *mut pdf_res,}; 9];
+static mut pdf_resource_categories: [C2RustUnnamed; 9] = [
+    {
+        let mut init = C2RustUnnamed {
+            name: b"Font\x00" as *const u8 as *const libc::c_char,
+            cat_id: 0i32,
+        };
+        init
+    },
+    {
+        let mut init = C2RustUnnamed {
+            name: b"CIDFont\x00" as *const u8 as *const libc::c_char,
+            cat_id: 1i32,
+        };
+        init
+    },
+    {
+        let mut init = C2RustUnnamed {
+            name: b"Encoding\x00" as *const u8 as *const libc::c_char,
+            cat_id: 2i32,
+        };
+        init
+    },
+    {
+        let mut init = C2RustUnnamed {
+            name: b"CMap\x00" as *const u8 as *const libc::c_char,
+            cat_id: 3i32,
+        };
+        init
+    },
+    {
+        let mut init = C2RustUnnamed {
+            name: b"XObject\x00" as *const u8 as *const libc::c_char,
+            cat_id: 4i32,
+        };
+        init
+    },
+    {
+        let mut init = C2RustUnnamed {
+            name: b"ColorSpace\x00" as *const u8 as *const libc::c_char,
+            cat_id: 5i32,
+        };
+        init
+    },
+    {
+        let mut init = C2RustUnnamed {
+            name: b"Shading\x00" as *const u8 as *const libc::c_char,
+            cat_id: 6i32,
+        };
+        init
+    },
+    {
+        let mut init = C2RustUnnamed {
+            name: b"Pattern\x00" as *const u8 as *const libc::c_char,
+            cat_id: 7i32,
+        };
+        init
+    },
+    {
+        let mut init = C2RustUnnamed {
+            name: b"ExtGState\x00" as *const u8 as *const libc::c_char,
+            cat_id: 8i32,
+        };
+        init
+    },
+];
+static mut resources: [res_cache; 9] = [res_cache {
+    count: 0,
+    capacity: 0,
+    resources: 0 as *const pdf_res as *mut pdf_res,
+}; 9];
 unsafe extern "C" fn pdf_init_resource(mut res: *mut pdf_res) {
     if !res.is_null() {
     } else {
-        __assert_fail(b"res\x00" as *const u8 as *const libc::c_char,
-                      b"dpx-pdfresource.c\x00" as *const u8 as
-                          *const libc::c_char, 94i32 as libc::c_uint,
-                      (*::std::mem::transmute::<&[u8; 34],
-                                                &[libc::c_char; 34]>(b"void pdf_init_resource(pdf_res *)\x00")).as_ptr());
+        __assert_fail(
+            b"res\x00" as *const u8 as *const libc::c_char,
+            b"dpx-pdfresource.c\x00" as *const u8 as *const libc::c_char,
+            94i32 as libc::c_uint,
+            (*::std::mem::transmute::<&[u8; 34], &[libc::c_char; 34]>(
+                b"void pdf_init_resource(pdf_res *)\x00",
+            ))
+            .as_ptr(),
+        );
     }
     (*res).ident = 0 as *mut libc::c_char;
     (*res).category = -1i32;
@@ -229,13 +229,13 @@ unsafe extern "C" fn pdf_flush_resource(mut res: *mut pdf_res) {
 unsafe extern "C" fn pdf_clean_resource(mut res: *mut pdf_res) {
     if !res.is_null() {
         if !(*res).reference.is_null() || !(*res).object.is_null() {
-            dpx_warning(b"Trying to release un-flushed object.\x00" as
-                            *const u8 as *const libc::c_char);
+            dpx_warning(
+                b"Trying to release un-flushed object.\x00" as *const u8 as *const libc::c_char,
+            );
         }
         pdf_release_obj((*res).reference);
         pdf_release_obj((*res).object);
-        (*res).ident =
-            mfree((*res).ident as *mut libc::c_void) as *mut libc::c_char;
+        (*res).ident = mfree((*res).ident as *mut libc::c_void) as *mut libc::c_char;
         (*res).category = -1i32;
         (*res).flags = 0i32
     };
@@ -244,28 +244,27 @@ unsafe extern "C" fn pdf_clean_resource(mut res: *mut pdf_res) {
 pub unsafe extern "C" fn pdf_init_resources() {
     let mut i: libc::c_uint = 0;
     i = 0i32 as libc::c_uint;
-    while (i as libc::c_ulong) <
-              (::std::mem::size_of::<[C2RustUnnamed; 9]>() as
-                   libc::c_ulong).wrapping_div(::std::mem::size_of::<C2RustUnnamed>()
-                                                   as libc::c_ulong) {
+    while (i as libc::c_ulong)
+        < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as libc::c_ulong)
+            .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as libc::c_ulong)
+    {
         resources[i as usize].count = 0i32;
         resources[i as usize].capacity = 0i32;
         resources[i as usize].resources = 0 as *mut pdf_res;
         i = i.wrapping_add(1)
-    };
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_close_resources() {
     let mut i: libc::c_uint = 0;
     i = 0i32 as libc::c_uint;
-    while (i as libc::c_ulong) <
-              (::std::mem::size_of::<[C2RustUnnamed; 9]>() as
-                   libc::c_ulong).wrapping_div(::std::mem::size_of::<C2RustUnnamed>()
-                                                   as libc::c_ulong) {
+    while (i as libc::c_ulong)
+        < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as libc::c_ulong)
+            .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as libc::c_ulong)
+    {
         let mut rc: *mut res_cache = 0 as *mut res_cache;
         let mut j: libc::c_int = 0;
-        rc =
-            &mut *resources.as_mut_ptr().offset(i as isize) as *mut res_cache;
+        rc = &mut *resources.as_mut_ptr().offset(i as isize) as *mut res_cache;
         j = 0i32;
         while j < (*rc).count {
             pdf_flush_resource(&mut *(*rc).resources.offset(j as isize));
@@ -277,92 +276,98 @@ pub unsafe extern "C" fn pdf_close_resources() {
         (*rc).capacity = 0i32;
         (*rc).resources = 0 as *mut pdf_res;
         i = i.wrapping_add(1)
-    };
+    }
 }
-unsafe extern "C" fn get_category(mut category: *const libc::c_char)
- -> libc::c_int {
+unsafe extern "C" fn get_category(mut category: *const libc::c_char) -> libc::c_int {
     let mut i: libc::c_uint = 0;
     i = 0i32 as libc::c_uint;
-    while (i as libc::c_ulong) <
-              (::std::mem::size_of::<[C2RustUnnamed; 9]>() as
-                   libc::c_ulong).wrapping_div(::std::mem::size_of::<C2RustUnnamed>()
-                                                   as libc::c_ulong) {
+    while (i as libc::c_ulong)
+        < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as libc::c_ulong)
+            .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as libc::c_ulong)
+    {
         if streq_ptr(category, pdf_resource_categories[i as usize].name) {
-            return pdf_resource_categories[i as usize].cat_id
+            return pdf_resource_categories[i as usize].cat_id;
         }
         i = i.wrapping_add(1)
     }
     return -1i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_defineresource(mut category: *const libc::c_char,
-                                            mut resname: *const libc::c_char,
-                                            mut object: *mut pdf_obj,
-                                            mut flags: libc::c_int)
- -> libc::c_int {
+pub unsafe extern "C" fn pdf_defineresource(
+    mut category: *const libc::c_char,
+    mut resname: *const libc::c_char,
+    mut object: *mut pdf_obj,
+    mut flags: libc::c_int,
+) -> libc::c_int {
     let mut res_id: libc::c_int = 0;
     let mut rc: *mut res_cache = 0 as *mut res_cache;
     let mut cat_id: libc::c_int = 0;
     let mut res: *mut pdf_res = 0 as *mut pdf_res;
     if !category.is_null() && !object.is_null() {
     } else {
-        __assert_fail(b"category && object\x00" as *const u8 as
-                          *const libc::c_char,
-                      b"dpx-pdfresource.c\x00" as *const u8 as
-                          *const libc::c_char, 192i32 as libc::c_uint,
-                      (*::std::mem::transmute::<&[u8; 67],
-                                                &[libc::c_char; 67]>(b"int pdf_defineresource(const char *, const char *, pdf_obj *, int)\x00")).as_ptr());
+        __assert_fail(
+            b"category && object\x00" as *const u8 as *const libc::c_char,
+            b"dpx-pdfresource.c\x00" as *const u8 as *const libc::c_char,
+            192i32 as libc::c_uint,
+            (*::std::mem::transmute::<&[u8; 67], &[libc::c_char; 67]>(
+                b"int pdf_defineresource(const char *, const char *, pdf_obj *, int)\x00",
+            ))
+            .as_ptr(),
+        );
     }
     cat_id = get_category(category);
     if cat_id < 0i32 {
-        _tt_abort(b"Unknown resource category: %s\x00" as *const u8 as
-                      *const libc::c_char, category);
+        _tt_abort(
+            b"Unknown resource category: %s\x00" as *const u8 as *const libc::c_char,
+            category,
+        );
     }
-    rc =
-        &mut *resources.as_mut_ptr().offset(cat_id as isize) as
-            *mut res_cache;
+    rc = &mut *resources.as_mut_ptr().offset(cat_id as isize) as *mut res_cache;
     if !resname.is_null() {
         res_id = 0i32;
         while res_id < (*rc).count {
-            res =
-                &mut *(*rc).resources.offset(res_id as isize) as *mut pdf_res;
+            res = &mut *(*rc).resources.offset(res_id as isize) as *mut pdf_res;
             if streq_ptr(resname, (*res).ident) {
-                dpx_warning(b"Resource %s (category: %s) already defined...\x00"
-                                as *const u8 as *const libc::c_char, resname,
-                            category);
+                dpx_warning(
+                    b"Resource %s (category: %s) already defined...\x00" as *const u8
+                        as *const libc::c_char,
+                    resname,
+                    category,
+                );
                 pdf_flush_resource(res);
                 (*res).flags = flags;
                 if flags & 1i32 != 0 {
                     (*res).reference = pdf_ref_obj(object);
                     pdf_release_obj(object);
-                } else { (*res).object = object }
-                return cat_id << 16i32 | res_id
+                } else {
+                    (*res).object = object
+                }
+                return cat_id << 16i32 | res_id;
             }
             res_id += 1
         }
-    } else { res_id = (*rc).count }
+    } else {
+        res_id = (*rc).count
+    }
     if res_id == (*rc).count {
         if (*rc).count >= (*rc).capacity {
             (*rc).capacity =
-                ((*rc).capacity as libc::c_uint).wrapping_add(16u32) as
-                    libc::c_int as libc::c_int;
-            (*rc).resources =
-                renew((*rc).resources as *mut libc::c_void,
-                      ((*rc).capacity as uint32_t as
-                           libc::c_ulong).wrapping_mul(::std::mem::size_of::<pdf_res>()
-                                                           as libc::c_ulong)
-                          as uint32_t) as *mut pdf_res
+                ((*rc).capacity as libc::c_uint).wrapping_add(16u32) as libc::c_int as libc::c_int;
+            (*rc).resources = renew(
+                (*rc).resources as *mut libc::c_void,
+                ((*rc).capacity as uint32_t as libc::c_ulong)
+                    .wrapping_mul(::std::mem::size_of::<pdf_res>() as libc::c_ulong)
+                    as uint32_t,
+            ) as *mut pdf_res
         }
         res = &mut *(*rc).resources.offset(res_id as isize) as *mut pdf_res;
         pdf_init_resource(res);
-        if !resname.is_null() &&
-               *resname.offset(0) as libc::c_int != '\u{0}' as i32 {
-            (*res).ident =
-                new((strlen(resname).wrapping_add(1i32 as libc::c_ulong) as
-                         uint32_t as
-                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_char>()
-                                                         as libc::c_ulong) as
-                        uint32_t) as *mut libc::c_char;
+        if !resname.is_null() && *resname.offset(0) as libc::c_int != '\u{0}' as i32 {
+            (*res).ident = new(
+                (strlen(resname).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                    as uint32_t,
+            ) as *mut libc::c_char;
             strcpy((*res).ident, resname);
         }
         (*res).category = cat_id;
@@ -370,41 +375,47 @@ pub unsafe extern "C" fn pdf_defineresource(mut category: *const libc::c_char,
         if flags & 1i32 != 0 {
             (*res).reference = pdf_ref_obj(object);
             pdf_release_obj(object);
-        } else { (*res).object = object }
+        } else {
+            (*res).object = object
+        }
         (*rc).count += 1
     }
     return cat_id << 16i32 | res_id;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_findresource(mut category: *const libc::c_char,
-                                          mut resname: *const libc::c_char)
- -> libc::c_int {
+pub unsafe extern "C" fn pdf_findresource(
+    mut category: *const libc::c_char,
+    mut resname: *const libc::c_char,
+) -> libc::c_int {
     let mut res: *mut pdf_res = 0 as *mut pdf_res;
     let mut res_id: libc::c_int = 0;
     let mut cat_id: libc::c_int = 0;
     let mut rc: *mut res_cache = 0 as *mut res_cache;
     if !resname.is_null() && !category.is_null() {
     } else {
-        __assert_fail(b"resname && category\x00" as *const u8 as
-                          *const libc::c_char,
-                      b"dpx-pdfresource.c\x00" as *const u8 as
-                          *const libc::c_char, 254i32 as libc::c_uint,
-                      (*::std::mem::transmute::<&[u8; 49],
-                                                &[libc::c_char; 49]>(b"int pdf_findresource(const char *, const char *)\x00")).as_ptr());
+        __assert_fail(
+            b"resname && category\x00" as *const u8 as *const libc::c_char,
+            b"dpx-pdfresource.c\x00" as *const u8 as *const libc::c_char,
+            254i32 as libc::c_uint,
+            (*::std::mem::transmute::<&[u8; 49], &[libc::c_char; 49]>(
+                b"int pdf_findresource(const char *, const char *)\x00",
+            ))
+            .as_ptr(),
+        );
     }
     cat_id = get_category(category);
     if cat_id < 0i32 {
-        _tt_abort(b"Unknown resource category: %s\x00" as *const u8 as
-                      *const libc::c_char, category);
+        _tt_abort(
+            b"Unknown resource category: %s\x00" as *const u8 as *const libc::c_char,
+            category,
+        );
     }
-    rc =
-        &mut *resources.as_mut_ptr().offset(cat_id as isize) as
-            *mut res_cache;
+    rc = &mut *resources.as_mut_ptr().offset(cat_id as isize) as *mut res_cache;
     res_id = 0i32;
     while res_id < (*rc).count {
         res = &mut *(*rc).resources.offset(res_id as isize) as *mut pdf_res;
         if streq_ptr(resname, (*res).ident) {
-            return cat_id << 16i32 | res_id
+            return cat_id << 16i32 | res_id;
         }
         res_id += 1
     }
@@ -432,35 +443,37 @@ pub unsafe extern "C" fn pdf_findresource(mut category: *const libc::c_char,
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_get_resource_reference(mut rc_id: libc::c_int)
- -> *mut pdf_obj {
+pub unsafe extern "C" fn pdf_get_resource_reference(mut rc_id: libc::c_int) -> *mut pdf_obj {
     let mut cat_id: libc::c_int = 0;
     let mut res_id: libc::c_int = 0;
     let mut rc: *mut res_cache = 0 as *mut res_cache;
     let mut res: *mut pdf_res = 0 as *mut pdf_res;
     cat_id = rc_id >> 16i32 & 0xffffi32;
     res_id = rc_id & 0xffffi32;
-    if cat_id < 0i32 ||
-           cat_id as libc::c_ulong >=
-               (::std::mem::size_of::<[C2RustUnnamed; 9]>() as
-                    libc::c_ulong).wrapping_div(::std::mem::size_of::<C2RustUnnamed>()
-                                                    as libc::c_ulong) {
-        _tt_abort(b"Invalid category ID: %d\x00" as *const u8 as
-                      *const libc::c_char, cat_id);
+    if cat_id < 0i32
+        || cat_id as libc::c_ulong
+            >= (::std::mem::size_of::<[C2RustUnnamed; 9]>() as libc::c_ulong)
+                .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as libc::c_ulong)
+    {
+        _tt_abort(
+            b"Invalid category ID: %d\x00" as *const u8 as *const libc::c_char,
+            cat_id,
+        );
     }
-    rc =
-        &mut *resources.as_mut_ptr().offset(cat_id as isize) as
-            *mut res_cache;
+    rc = &mut *resources.as_mut_ptr().offset(cat_id as isize) as *mut res_cache;
     if res_id < 0i32 || res_id >= (*rc).count {
-        _tt_abort(b"Invalid resource ID: %d\x00" as *const u8 as
-                      *const libc::c_char, res_id);
+        _tt_abort(
+            b"Invalid resource ID: %d\x00" as *const u8 as *const libc::c_char,
+            res_id,
+        );
     }
     res = &mut *(*rc).resources.offset(res_id as isize) as *mut pdf_res;
     if (*res).reference.is_null() {
         if (*res).object.is_null() {
-            _tt_abort(b"Undefined object...\x00" as *const u8 as
-                          *const libc::c_char);
-        } else { (*res).reference = pdf_ref_obj((*res).object) }
+            _tt_abort(b"Undefined object...\x00" as *const u8 as *const libc::c_char);
+        } else {
+            (*res).reference = pdf_ref_obj((*res).object)
+        }
     }
     return pdf_link_obj((*res).reference);
 }

@@ -13,33 +13,34 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong)
-     -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char)
-     -> *mut libc::c_char;
+    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char,
-               _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
     #[no_mangle]
     fn strlen(_: *const libc::c_char) -> libc::c_ulong;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_input_open(path: *const libc::c_char,
-                         format: tt_input_format_type, is_gz: libc::c_int)
-     -> rust_input_handle_t;
+    fn ttstub_input_open(
+        path: *const libc::c_char,
+        format: tt_input_format_type,
+        is_gz: libc::c_int,
+    ) -> rust_input_handle_t;
     #[no_mangle]
-    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t,
-                         whence: libc::c_int) -> size_t;
+    fn ttstub_input_seek(
+        handle: rust_input_handle_t,
+        offset: ssize_t,
+        whence: libc::c_int,
+    ) -> size_t;
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...)
-     -> libc::c_int;
+    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
@@ -56,49 +57,50 @@ extern "C" {
     #[no_mangle]
     fn pdf_merge_dict(dict1: *mut pdf_obj, dict2: *mut pdf_obj);
     /* pdf_add_dict() want pdf_obj as key, however, key must always be name
- * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
- * key. This strange difference seems come from pdfdoc that first allocate
- * name objects frequently used (maybe 1000 times) such as /Type and does
- * pdf_link_obj() it rather than allocate/free-ing them each time. But I
- * already removed that.
- */
+     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
+     * key. This strange difference seems come from pdfdoc that first allocate
+     * name objects frequently used (maybe 1000 times) such as /Type and does
+     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
+     * already removed that.
+     */
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj,
-                    value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
     #[no_mangle]
     fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
     fn check_for_pdf(handle: rust_input_handle_t) -> libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     static mut work_buffer: [libc::c_char; 0];
     /* Tectonic-enabled versions */
     #[no_mangle]
-    fn tt_mfgets(buffer: *mut libc::c_char, length: libc::c_int,
-                 file: rust_input_handle_t) -> *mut libc::c_char;
+    fn tt_mfgets(
+        buffer: *mut libc::c_char,
+        length: libc::c_int,
+        file: rust_input_handle_t,
+    ) -> *mut libc::c_char;
     #[no_mangle]
-    fn bmp_include_image(ximage: *mut pdf_ximage, handle: rust_input_handle_t)
-     -> libc::c_int;
+    fn bmp_include_image(ximage: *mut pdf_ximage, handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
     fn check_for_bmp(handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
@@ -108,107 +110,117 @@ extern "C" {
     static mut keep_cache: libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
-    fn min4(v1: libc::c_double, v2: libc::c_double, v3: libc::c_double,
-            v4: libc::c_double) -> libc::c_double;
+    fn min4(
+        v1: libc::c_double,
+        v2: libc::c_double,
+        v3: libc::c_double,
+        v4: libc::c_double,
+    ) -> libc::c_double;
     #[no_mangle]
-    fn max4(v1: libc::c_double, v2: libc::c_double, v3: libc::c_double,
-            v4: libc::c_double) -> libc::c_double;
+    fn max4(
+        v1: libc::c_double,
+        v2: libc::c_double,
+        v3: libc::c_double,
+        v4: libc::c_double,
+    ) -> libc::c_double;
     #[no_mangle]
-    fn pdf_include_page(ximage: *mut pdf_ximage, handle: rust_input_handle_t,
-                        ident: *const libc::c_char, options: load_options)
-     -> libc::c_int;
+    fn pdf_include_page(
+        ximage: *mut pdf_ximage,
+        handle: rust_input_handle_t,
+        ident: *const libc::c_char,
+        options: load_options,
+    ) -> libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn dpx_message(fmt: *const libc::c_char, _: ...);
     #[no_mangle]
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn check_for_jpeg(handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
-    fn jpeg_include_image(ximage: *mut pdf_ximage,
-                          handle: rust_input_handle_t) -> libc::c_int;
+    fn jpeg_include_image(ximage: *mut pdf_ximage, handle: rust_input_handle_t) -> libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn new(size: uint32_t) -> *mut libc::c_void;
     #[no_mangle]
@@ -217,28 +229,27 @@ extern "C" {
     fn pdf_dev_transform(p: *mut pdf_coord, M: *const pdf_tmatrix);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
-    fn png_include_image(ximage: *mut pdf_ximage, handle: rust_input_handle_t)
-     -> libc::c_int;
+    fn png_include_image(ximage: *mut pdf_ximage, handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
     fn check_for_png(handle: rust_input_handle_t) -> libc::c_int;
 }
@@ -275,7 +286,7 @@ pub const TTIF_BIB: tt_input_format_type = 6;
 pub const TTIF_AFM: tt_input_format_type = 4;
 pub const TTIF_TFM: tt_input_format_type = 3;
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
     pub a: libc::c_double,
@@ -285,7 +296,7 @@ pub struct pdf_tmatrix {
     pub e: libc::c_double,
     pub f: libc::c_double,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
     pub llx: libc::c_double,
@@ -293,13 +304,13 @@ pub struct pdf_rect {
     pub urx: libc::c_double,
     pub ury: libc::c_double,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_coord {
     pub x: libc::c_double,
     pub y: libc::c_double,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct transform_info {
     pub width: libc::c_double,
@@ -309,7 +320,7 @@ pub struct transform_info {
     pub bbox: pdf_rect,
     pub flags: libc::c_int,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ximage_info {
     pub flags: libc::c_int,
@@ -321,21 +332,21 @@ pub struct ximage_info {
     pub xdensity: libc::c_double,
     pub ydensity: libc::c_double,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct xform_info {
     pub flags: libc::c_int,
     pub bbox: pdf_rect,
     pub matrix: pdf_tmatrix,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct load_options {
     pub page_no: libc::c_int,
     pub bbox_type: libc::c_int,
     pub dict: *mut pdf_obj,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_ximage_ {
     pub ident: *mut libc::c_char,
@@ -346,7 +357,7 @@ pub struct pdf_ximage_ {
     pub reference: *mut pdf_obj,
     pub resource: *mut pdf_obj,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct attr_ {
     pub width: libc::c_int,
@@ -363,13 +374,13 @@ pub struct attr_ {
 pub type pdf_ximage = pdf_ximage_;
 /* quasi-hack to get the primary input */
 /* verbose, verbose, verbose... */
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct opt_ {
     pub verbose: libc::c_int,
     pub cmdtmpl: *mut libc::c_char,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ic_ {
     pub count: libc::c_int,
@@ -389,47 +400,52 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char,
-                               mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
     if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32
+        return strcmp(s1, s2) == 0i32;
     } /* unsafe? */
     return 0i32 != 0;
 }
 #[inline]
-unsafe extern "C" fn strstartswith(mut s: *const libc::c_char,
-                                   mut prefix: *const libc::c_char)
- -> *const libc::c_char {
+unsafe extern "C" fn strstartswith(
+    mut s: *const libc::c_char,
+    mut prefix: *const libc::c_char,
+) -> *const libc::c_char {
     let mut length: size_t = 0;
     length = strlen(prefix);
-    if strncmp(s, prefix, length) == 0i32 { return s.offset(length as isize) }
+    if strncmp(s, prefix, length) == 0i32 {
+        return s.offset(length as isize);
+    }
     return 0 as *const libc::c_char;
 }
-static mut _opts: opt_ =
-    {
-        let mut init =
-            opt_{verbose: 0i32,
-                 cmdtmpl: 0 as *const libc::c_char as *mut libc::c_char,};
-        init
+static mut _opts: opt_ = {
+    let mut init = opt_ {
+        verbose: 0i32,
+        cmdtmpl: 0 as *const libc::c_char as *mut libc::c_char,
     };
+    init
+};
 #[no_mangle]
 pub unsafe extern "C" fn pdf_ximage_set_verbose(mut level: libc::c_int) {
     _opts.verbose = level;
 }
-static mut _ic: ic_ =
-    {
-        let mut init =
-            ic_{count: 0i32,
-                capacity: 0i32,
-                ximages: 0 as *const pdf_ximage as *mut pdf_ximage,};
-        init
+static mut _ic: ic_ = {
+    let mut init = ic_ {
+        count: 0i32,
+        capacity: 0i32,
+        ximages: 0 as *const pdf_ximage as *mut pdf_ximage,
     };
+    init
+};
 unsafe extern "C" fn pdf_init_ximage_struct(mut I: *mut pdf_ximage) {
     (*I).ident = 0 as *mut libc::c_char;
     (*I).filename = 0 as *mut libc::c_char;
     (*I).subtype = -1i32;
-    memset((*I).res_name.as_mut_ptr() as *mut libc::c_void, 0i32,
-           16i32 as libc::c_ulong);
+    memset(
+        (*I).res_name.as_mut_ptr() as *mut libc::c_void,
+        0i32,
+        16i32 as libc::c_ulong,
+    );
     (*I).reference = 0 as *mut pdf_obj;
     (*I).resource = 0 as *mut pdf_obj;
     (*I).attr.height = 0i32;
@@ -479,9 +495,11 @@ pub unsafe extern "C" fn pdf_close_images() {
                  * pages are imported from that file.
                  */
                 if _opts.verbose > 1i32 && keep_cache != 1i32 {
-                    dpx_message(b"pdf_image>> deleting temporary file \"%s\"\n\x00"
-                                    as *const u8 as *const libc::c_char,
-                                (*I).filename); /* temporary filename freed here */
+                    dpx_message(
+                        b"pdf_image>> deleting temporary file \"%s\"\n\x00" as *const u8
+                            as *const libc::c_char,
+                        (*I).filename,
+                    ); /* temporary filename freed here */
                 }
                 dpx_delete_temp_file((*I).filename, 0i32);
                 (*I).filename = 0 as *mut libc::c_char
@@ -489,16 +507,13 @@ pub unsafe extern "C" fn pdf_close_images() {
             pdf_clean_ximage_struct(I);
             i += 1
         }
-        (*ic).ximages =
-            mfree((*ic).ximages as *mut libc::c_void) as *mut pdf_ximage;
+        (*ic).ximages = mfree((*ic).ximages as *mut libc::c_void) as *mut pdf_ximage;
         (*ic).capacity = 0i32;
         (*ic).count = (*ic).capacity
     }
-    _opts.cmdtmpl =
-        mfree(_opts.cmdtmpl as *mut libc::c_void) as *mut libc::c_char;
+    _opts.cmdtmpl = mfree(_opts.cmdtmpl as *mut libc::c_void) as *mut libc::c_char;
 }
-unsafe extern "C" fn source_image_type(mut handle: rust_input_handle_t)
- -> libc::c_int {
+unsafe extern "C" fn source_image_type(mut handle: rust_input_handle_t) -> libc::c_int {
     let mut format: libc::c_int = -1i32;
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     /* Original check order: jpeg, jp2, png, bmp, pdf, ps */
@@ -513,18 +528,22 @@ unsafe extern "C" fn source_image_type(mut handle: rust_input_handle_t)
     } else if check_for_ps(handle) != 0 {
         format = 5i32
     } else {
-        dpx_warning(b"Tectonic was unable to detect an image\'s format\x00" as
-                        *const u8 as *const libc::c_char);
+        dpx_warning(
+            b"Tectonic was unable to detect an image\'s format\x00" as *const u8
+                as *const libc::c_char,
+        );
         format = -1i32
     }
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     return format;
 }
-unsafe extern "C" fn load_image(mut ident: *const libc::c_char,
-                                mut fullname: *const libc::c_char,
-                                mut format: libc::c_int,
-                                mut handle: rust_input_handle_t,
-                                mut options: load_options) -> libc::c_int {
+unsafe extern "C" fn load_image(
+    mut ident: *const libc::c_char,
+    mut fullname: *const libc::c_char,
+    mut format: libc::c_int,
+    mut handle: rust_input_handle_t,
+    mut options: load_options,
+) -> libc::c_int {
     let mut current_block: u64;
     let mut ic: *mut ic_ = &mut _ic;
     let mut id: libc::c_int = -1i32;
@@ -532,31 +551,29 @@ unsafe extern "C" fn load_image(mut ident: *const libc::c_char,
     id = (*ic).count;
     if (*ic).count >= (*ic).capacity {
         (*ic).capacity += 16i32;
-        (*ic).ximages =
-            renew((*ic).ximages as *mut libc::c_void,
-                  ((*ic).capacity as uint32_t as
-                       libc::c_ulong).wrapping_mul(::std::mem::size_of::<pdf_ximage>()
-                                                       as libc::c_ulong) as
-                      uint32_t) as *mut pdf_ximage
+        (*ic).ximages = renew(
+            (*ic).ximages as *mut libc::c_void,
+            ((*ic).capacity as uint32_t as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<pdf_ximage>() as libc::c_ulong)
+                as uint32_t,
+        ) as *mut pdf_ximage
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     pdf_init_ximage_struct(I);
     if !ident.is_null() {
-        (*I).ident =
-            new((strlen(ident).wrapping_add(1i32 as libc::c_ulong) as uint32_t
-                     as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_char>()
-                                                     as libc::c_ulong) as
-                    uint32_t) as *mut libc::c_char;
+        (*I).ident = new(
+            (strlen(ident).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                as uint32_t,
+        ) as *mut libc::c_char;
         strcpy((*I).ident, ident);
     }
     if !fullname.is_null() {
-        (*I).filename =
-            new((strlen(fullname).wrapping_add(1i32 as libc::c_ulong) as
-                     uint32_t as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_char>()
-                                                     as libc::c_ulong) as
-                    uint32_t) as *mut libc::c_char;
+        (*I).filename = new(
+            (strlen(fullname).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                as uint32_t,
+        ) as *mut libc::c_char;
         strcpy((*I).filename, fullname);
     }
     (*I).attr.page_no = options.page_no;
@@ -567,8 +584,7 @@ unsafe extern "C" fn load_image(mut ident: *const libc::c_char,
     match format {
         1 => {
             if _opts.verbose != 0 {
-                dpx_message(b"[JPEG]\x00" as *const u8 as
-                                *const libc::c_char);
+                dpx_message(b"[JPEG]\x00" as *const u8 as *const libc::c_char);
             }
             if jpeg_include_image(I, handle) < 0i32 {
                 current_block = 15386155914718490365;
@@ -582,13 +598,12 @@ unsafe extern "C" fn load_image(mut ident: *const libc::c_char,
                 dpx_message(b"[JP2]\x00" as *const u8 as *const libc::c_char);
             }
             /*if (jp2_include_image(I, fp) < 0)*/
-            dpx_warning(b"Tectonic: JP2 not yet supported\x00" as *const u8 as
-                            *const libc::c_char);
+            dpx_warning(b"Tectonic: JP2 not yet supported\x00" as *const u8 as *const libc::c_char);
             current_block = 15386155914718490365;
         }
         2 => {
             /*I->subtype = PDF_XOBJECT_TYPE_IMAGE;
-          break;*/
+            break;*/
             if _opts.verbose != 0 {
                 dpx_message(b"[PNG]\x00" as *const u8 as *const libc::c_char);
             }
@@ -614,15 +629,16 @@ unsafe extern "C" fn load_image(mut ident: *const libc::c_char,
             if _opts.verbose != 0 {
                 dpx_message(b"[PDF]\x00" as *const u8 as *const libc::c_char);
             }
-            let mut result: libc::c_int =
-                pdf_include_page(I, handle, fullname, options);
+            let mut result: libc::c_int = pdf_include_page(I, handle, fullname, options);
             /* Tectonic: this used to try ps_include_page() */
             if result != 0i32 {
                 current_block = 15386155914718490365;
             } else {
                 if _opts.verbose != 0 {
-                    dpx_message(b",Page:%d\x00" as *const u8 as
-                                    *const libc::c_char, (*I).attr.page_no);
+                    dpx_message(
+                        b",Page:%d\x00" as *const u8 as *const libc::c_char,
+                        (*I).attr.page_no,
+                    );
                 }
                 (*I).subtype = 0i32;
                 current_block = 14945149239039849694;
@@ -632,16 +648,17 @@ unsafe extern "C" fn load_image(mut ident: *const libc::c_char,
             if _opts.verbose != 0 {
                 dpx_message(b"[EPS]\x00" as *const u8 as *const libc::c_char);
             }
-            dpx_warning(b"sorry, PostScript images are not supported by Tectonic\x00"
-                            as *const u8 as *const libc::c_char);
+            dpx_warning(
+                b"sorry, PostScript images are not supported by Tectonic\x00" as *const u8
+                    as *const libc::c_char,
+            );
             dpx_warning(b"for details, please see https://github.com/tectonic-typesetting/tectonic/issues/27\x00"
                             as *const u8 as *const libc::c_char);
             current_block = 15386155914718490365;
         }
         _ => {
             if _opts.verbose != 0 {
-                dpx_message(b"[UNKNOWN]\x00" as *const u8 as
-                                *const libc::c_char);
+                dpx_message(b"[UNKNOWN]\x00" as *const u8 as *const libc::c_char);
             }
             current_block = 15386155914718490365;
         }
@@ -651,35 +668,41 @@ unsafe extern "C" fn load_image(mut ident: *const libc::c_char,
         /* Tectonic: this used to try ps_include_page() */
         {
             pdf_clean_ximage_struct(I);
-            return -1i32
+            return -1i32;
         }
         _ => {
             match (*I).subtype {
                 1 => {
-                    sprintf((*I).res_name.as_mut_ptr(),
-                            b"Im%d\x00" as *const u8 as *const libc::c_char,
-                            id);
+                    sprintf(
+                        (*I).res_name.as_mut_ptr(),
+                        b"Im%d\x00" as *const u8 as *const libc::c_char,
+                        id,
+                    );
                 }
                 0 => {
-                    sprintf((*I).res_name.as_mut_ptr(),
-                            b"Fm%d\x00" as *const u8 as *const libc::c_char,
-                            id);
+                    sprintf(
+                        (*I).res_name.as_mut_ptr(),
+                        b"Fm%d\x00" as *const u8 as *const libc::c_char,
+                        id,
+                    );
                 }
                 _ => {
-                    _tt_abort(b"Unknown XObject subtype: %d\x00" as *const u8
-                                  as *const libc::c_char, (*I).subtype);
+                    _tt_abort(
+                        b"Unknown XObject subtype: %d\x00" as *const u8 as *const libc::c_char,
+                        (*I).subtype,
+                    );
                 }
             }
             (*ic).count += 1;
-            return id
+            return id;
         }
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_findresource(mut ident:
-                                                     *const libc::c_char,
-                                                 mut options: load_options)
- -> libc::c_int {
+pub unsafe extern "C" fn pdf_ximage_findresource(
+    mut ident: *const libc::c_char,
+    mut options: load_options,
+) -> libc::c_int {
     let mut ic: *mut ic_ = &mut _ic;
     let mut id: libc::c_int = -1i32;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
@@ -691,12 +714,12 @@ pub unsafe extern "C" fn pdf_ximage_findresource(mut ident:
     id = 0i32;
     while id < (*ic).count {
         I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
-        if !(*I).ident.is_null() &&
-               streq_ptr(ident, (*I).ident) as libc::c_int != 0 {
-            if (*I).attr.page_no == options.page_no &&
-                   (*I).attr.dict == options.dict &&
-                   (*I).attr.bbox_type == options.bbox_type {
-                return id
+        if !(*I).ident.is_null() && streq_ptr(ident, (*I).ident) as libc::c_int != 0 {
+            if (*I).attr.page_no == options.page_no
+                && (*I).attr.dict == options.dict
+                && (*I).attr.bbox_type == options.bbox_type
+            {
+                return id;
             }
         }
         id += 1
@@ -713,13 +736,14 @@ pub unsafe extern "C" fn pdf_ximage_findresource(mut ident:
      */
     handle = ttstub_input_open(ident, TTIF_PICT, 0i32);
     if handle.is_null() {
-        dpx_warning(b"Error locating image file \"%s\"\x00" as *const u8 as
-                        *const libc::c_char, ident);
-        return -1i32
+        dpx_warning(
+            b"Error locating image file \"%s\"\x00" as *const u8 as *const libc::c_char,
+            ident,
+        );
+        return -1i32;
     }
     if _opts.verbose != 0 {
-        dpx_message(b"(Image:%s\x00" as *const u8 as *const libc::c_char,
-                    ident);
+        dpx_message(b"(Image:%s\x00" as *const u8 as *const libc::c_char, ident);
     }
     format = source_image_type(handle);
     id = load_image(ident, ident, format, handle, options);
@@ -728,8 +752,10 @@ pub unsafe extern "C" fn pdf_ximage_findresource(mut ident:
         dpx_message(b")\x00" as *const u8 as *const libc::c_char);
     }
     if id < 0i32 {
-        dpx_warning(b"pdf: image inclusion failed for \"%s\".\x00" as
-                        *const u8 as *const libc::c_char, ident);
+        dpx_warning(
+            b"pdf: image inclusion failed for \"%s\".\x00" as *const u8 as *const libc::c_char,
+            ident,
+        );
     }
     return id;
 }
@@ -748,8 +774,7 @@ pub unsafe extern "C" fn pdf_ximage_findresource(mut ident:
  *                Default value: the identity matrix [1 0 0 1 0 0].
  */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_init_form_info(mut info:
-                                                       *mut xform_info) {
+pub unsafe extern "C" fn pdf_ximage_init_form_info(mut info: *mut xform_info) {
     (*info).flags = 0i32;
     (*info).bbox.llx = 0i32 as libc::c_double;
     (*info).bbox.lly = 0i32 as libc::c_double;
@@ -793,8 +818,7 @@ pub unsafe extern "C" fn pdf_ximage_init_form_info(mut info:
  *                determined in the process of decoding the JPEG2000 image.
  */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_init_image_info(mut info:
-                                                        *mut ximage_info) {
+pub unsafe extern "C" fn pdf_ximage_init_image_info(mut info: *mut ximage_info) {
     (*info).flags = 0i32; /* The width of the image, in samples */
     (*info).width = 0i32; /* The height of the image, in samples */
     (*info).height = 0i32;
@@ -805,15 +829,15 @@ pub unsafe extern "C" fn pdf_ximage_init_image_info(mut info:
     (*info).xdensity = (*info).ydensity;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_set_image(mut I: *mut pdf_ximage,
-                                              mut image_info:
-                                                  *mut libc::c_void,
-                                              mut resource: *mut pdf_obj) {
+pub unsafe extern "C" fn pdf_ximage_set_image(
+    mut I: *mut pdf_ximage,
+    mut image_info: *mut libc::c_void,
+    mut resource: *mut pdf_obj,
+) {
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut info: *mut ximage_info = image_info as *mut ximage_info;
     if !(!resource.is_null() && pdf_obj_typeof(resource) == 7i32) {
-        _tt_abort(b"Image XObject must be of stream type.\x00" as *const u8 as
-                      *const libc::c_char);
+        _tt_abort(b"Image XObject must be of stream type.\x00" as *const u8 as *const libc::c_char);
     }
     (*I).subtype = 1i32;
     (*I).attr.width = (*info).width;
@@ -822,45 +846,51 @@ pub unsafe extern "C" fn pdf_ximage_set_image(mut I: *mut pdf_ximage,
     (*I).attr.ydensity = (*info).ydensity;
     (*I).reference = pdf_ref_obj(resource);
     dict = pdf_stream_dict(resource);
-    pdf_add_dict(dict,
-                 pdf_new_name(b"Type\x00" as *const u8 as
-                                  *const libc::c_char),
-                 pdf_new_name(b"XObject\x00" as *const u8 as
-                                  *const libc::c_char));
-    pdf_add_dict(dict,
-                 pdf_new_name(b"Subtype\x00" as *const u8 as
-                                  *const libc::c_char),
-                 pdf_new_name(b"Image\x00" as *const u8 as
-                                  *const libc::c_char));
-    pdf_add_dict(dict,
-                 pdf_new_name(b"Width\x00" as *const u8 as
-                                  *const libc::c_char),
-                 pdf_new_number((*info).width as libc::c_double));
-    pdf_add_dict(dict,
-                 pdf_new_name(b"Height\x00" as *const u8 as
-                                  *const libc::c_char),
-                 pdf_new_number((*info).height as libc::c_double));
+    pdf_add_dict(
+        dict,
+        pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"XObject\x00" as *const u8 as *const libc::c_char),
+    );
+    pdf_add_dict(
+        dict,
+        pdf_new_name(b"Subtype\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Image\x00" as *const u8 as *const libc::c_char),
+    );
+    pdf_add_dict(
+        dict,
+        pdf_new_name(b"Width\x00" as *const u8 as *const libc::c_char),
+        pdf_new_number((*info).width as libc::c_double),
+    );
+    pdf_add_dict(
+        dict,
+        pdf_new_name(b"Height\x00" as *const u8 as *const libc::c_char),
+        pdf_new_number((*info).height as libc::c_double),
+    );
     if (*info).bits_per_component > 0i32 {
         /* Ignored for JPXDecode filter. FIXME */
-        pdf_add_dict(dict,
-                     pdf_new_name(b"BitsPerComponent\x00" as *const u8 as
-                                      *const libc::c_char),
-                     pdf_new_number((*info).bits_per_component as
-                                        libc::c_double)); /* Caller don't know we are using reference. */
+        pdf_add_dict(
+            dict,
+            pdf_new_name(b"BitsPerComponent\x00" as *const u8 as *const libc::c_char),
+            pdf_new_number((*info).bits_per_component as libc::c_double),
+        ); /* Caller don't know we are using reference. */
     }
-    if !(*I).attr.dict.is_null() { pdf_merge_dict(dict, (*I).attr.dict); }
+    if !(*I).attr.dict.is_null() {
+        pdf_merge_dict(dict, (*I).attr.dict);
+    }
     pdf_release_obj(resource);
     (*I).resource = 0 as *mut pdf_obj;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_set_form(mut I: *mut pdf_ximage,
-                                             mut form_info: *mut libc::c_void,
-                                             mut resource: *mut pdf_obj) {
+pub unsafe extern "C" fn pdf_ximage_set_form(
+    mut I: *mut pdf_ximage,
+    mut form_info: *mut libc::c_void,
+    mut resource: *mut pdf_obj,
+) {
     let mut info: *mut xform_info = form_info as *mut xform_info;
-    let mut p1: pdf_coord = pdf_coord{x: 0., y: 0.,};
-    let mut p2: pdf_coord = pdf_coord{x: 0., y: 0.,};
-    let mut p3: pdf_coord = pdf_coord{x: 0., y: 0.,};
-    let mut p4: pdf_coord = pdf_coord{x: 0., y: 0.,};
+    let mut p1: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut p2: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut p3: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut p4: pdf_coord = pdf_coord { x: 0., y: 0. };
     (*I).subtype = 0i32;
     /* Image's attribute "bbox" here is affected by /Rotate entry of included
      * PDF page.
@@ -886,18 +916,18 @@ pub unsafe extern "C" fn pdf_ximage_set_form(mut I: *mut pdf_ximage,
     (*I).resource = 0 as *mut pdf_obj;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_get_page(mut I: *mut pdf_ximage)
- -> libc::c_int {
+pub unsafe extern "C" fn pdf_ximage_get_page(mut I: *mut pdf_ximage) -> libc::c_int {
     return (*I).attr.page_no;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_get_reference(mut id: libc::c_int)
- -> *mut pdf_obj {
+pub unsafe extern "C" fn pdf_ximage_get_reference(mut id: libc::c_int) -> *mut pdf_obj {
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as
-                      *const libc::c_char, id);
+        _tt_abort(
+            b"Invalid XObject ID: %d\x00" as *const u8 as *const libc::c_char,
+            id,
+        );
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     if (*I).reference.is_null() {
@@ -907,96 +937,108 @@ pub unsafe extern "C" fn pdf_ximage_get_reference(mut id: libc::c_int)
 }
 /* called from pdfdoc.c only for late binding */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_defineresource(mut ident:
-                                                       *const libc::c_char,
-                                                   mut subtype: libc::c_int,
-                                                   mut info:
-                                                       *mut libc::c_void,
-                                                   mut resource: *mut pdf_obj)
- -> libc::c_int {
+pub unsafe extern "C" fn pdf_ximage_defineresource(
+    mut ident: *const libc::c_char,
+    mut subtype: libc::c_int,
+    mut info: *mut libc::c_void,
+    mut resource: *mut pdf_obj,
+) -> libc::c_int {
     let mut ic: *mut ic_ = &mut _ic;
     let mut id: libc::c_int = 0;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     id = (*ic).count;
     if (*ic).count >= (*ic).capacity {
         (*ic).capacity += 16i32;
-        (*ic).ximages =
-            renew((*ic).ximages as *mut libc::c_void,
-                  ((*ic).capacity as uint32_t as
-                       libc::c_ulong).wrapping_mul(::std::mem::size_of::<pdf_ximage>()
-                                                       as libc::c_ulong) as
-                      uint32_t) as *mut pdf_ximage
+        (*ic).ximages = renew(
+            (*ic).ximages as *mut libc::c_void,
+            ((*ic).capacity as uint32_t as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<pdf_ximage>() as libc::c_ulong)
+                as uint32_t,
+        ) as *mut pdf_ximage
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     pdf_init_ximage_struct(I);
     if !ident.is_null() {
-        (*I).ident =
-            new((strlen(ident).wrapping_add(1i32 as libc::c_ulong) as uint32_t
-                     as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_char>()
-                                                     as libc::c_ulong) as
-                    uint32_t) as *mut libc::c_char;
+        (*I).ident = new(
+            (strlen(ident).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                as uint32_t,
+        ) as *mut libc::c_char;
         strcpy((*I).ident, ident);
     }
     match subtype {
         1 => {
             pdf_ximage_set_image(I, info, resource);
-            sprintf((*I).res_name.as_mut_ptr(),
-                    b"Im%d\x00" as *const u8 as *const libc::c_char, id);
+            sprintf(
+                (*I).res_name.as_mut_ptr(),
+                b"Im%d\x00" as *const u8 as *const libc::c_char,
+                id,
+            );
         }
         0 => {
             pdf_ximage_set_form(I, info, resource);
-            sprintf((*I).res_name.as_mut_ptr(),
-                    b"Fm%d\x00" as *const u8 as *const libc::c_char, id);
+            sprintf(
+                (*I).res_name.as_mut_ptr(),
+                b"Fm%d\x00" as *const u8 as *const libc::c_char,
+                id,
+            );
         }
         _ => {
-            _tt_abort(b"Unknown XObject subtype: %d\x00" as *const u8 as
-                          *const libc::c_char, subtype);
+            _tt_abort(
+                b"Unknown XObject subtype: %d\x00" as *const u8 as *const libc::c_char,
+                subtype,
+            );
         }
     }
     (*ic).count += 1;
     return id;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_get_resname(mut id: libc::c_int)
- -> *mut libc::c_char {
+pub unsafe extern "C" fn pdf_ximage_get_resname(mut id: libc::c_int) -> *mut libc::c_char {
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as
-                      *const libc::c_char, id);
+        _tt_abort(
+            b"Invalid XObject ID: %d\x00" as *const u8 as *const libc::c_char,
+            id,
+        );
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     return (*I).res_name.as_mut_ptr();
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_get_subtype(mut id: libc::c_int)
- -> libc::c_int {
+pub unsafe extern "C" fn pdf_ximage_get_subtype(mut id: libc::c_int) -> libc::c_int {
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as
-                      *const libc::c_char, id);
+        _tt_abort(
+            b"Invalid XObject ID: %d\x00" as *const u8 as *const libc::c_char,
+            id,
+        );
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     return (*I).subtype;
 }
 /* from spc_pdfm.c */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_set_attr(mut id: libc::c_int,
-                                             mut width: libc::c_int,
-                                             mut height: libc::c_int,
-                                             mut xdensity: libc::c_double,
-                                             mut ydensity: libc::c_double,
-                                             mut llx: libc::c_double,
-                                             mut lly: libc::c_double,
-                                             mut urx: libc::c_double,
-                                             mut ury: libc::c_double) {
+pub unsafe extern "C" fn pdf_ximage_set_attr(
+    mut id: libc::c_int,
+    mut width: libc::c_int,
+    mut height: libc::c_int,
+    mut xdensity: libc::c_double,
+    mut ydensity: libc::c_double,
+    mut llx: libc::c_double,
+    mut lly: libc::c_double,
+    mut urx: libc::c_double,
+    mut ury: libc::c_double,
+) {
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as
-                      *const libc::c_char, id);
+        _tt_abort(
+            b"Invalid XObject ID: %d\x00" as *const u8 as *const libc::c_char,
+            id,
+        );
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     (*I).attr.width = width;
@@ -1013,9 +1055,11 @@ pub unsafe extern "C" fn pdf_ximage_set_attr(mut id: libc::c_int,
  * not as vertical dimension of scaled image. (And there are bugs.)
  * This part contains incompatibile behaviour than dvipdfm!
  */
-unsafe extern "C" fn scale_to_fit_I(mut T: *mut pdf_tmatrix,
-                                    mut p: *mut transform_info,
-                                    mut I: *mut pdf_ximage) {
+unsafe extern "C" fn scale_to_fit_I(
+    mut T: *mut pdf_tmatrix,
+    mut p: *mut transform_info,
+    mut I: *mut pdf_ximage,
+) {
     let mut s_x: libc::c_double = 0.;
     let mut s_y: libc::c_double = 0.;
     let mut d_x: libc::c_double = 0.;
@@ -1029,8 +1073,7 @@ unsafe extern "C" fn scale_to_fit_I(mut T: *mut pdf_tmatrix,
         wd0 = (*p).bbox.urx - (*p).bbox.llx;
         ht0 = (*p).bbox.ury - (*p).bbox.lly;
         xscale = (*I).attr.width as libc::c_double * (*I).attr.xdensity / wd0;
-        yscale =
-            (*I).attr.height as libc::c_double * (*I).attr.ydensity / ht0;
+        yscale = (*I).attr.height as libc::c_double * (*I).attr.ydensity / ht0;
         d_x = -(*p).bbox.llx / wd0;
         d_y = -(*p).bbox.lly / ht0
     } else {
@@ -1042,13 +1085,11 @@ unsafe extern "C" fn scale_to_fit_I(mut T: *mut pdf_tmatrix,
         d_y = 0.0f64
     }
     if wd0 == 0.0f64 {
-        dpx_warning(b"Image width=0.0!\x00" as *const u8 as
-                        *const libc::c_char);
+        dpx_warning(b"Image width=0.0!\x00" as *const u8 as *const libc::c_char);
         wd0 = 1.0f64
     }
     if ht0 == 0.0f64 {
-        dpx_warning(b"Image height=0.0!\x00" as *const u8 as
-                        *const libc::c_char);
+        dpx_warning(b"Image height=0.0!\x00" as *const u8 as *const libc::c_char);
         ht0 = 1.0f64
     }
     if (*p).flags & 1i32 << 1i32 != 0 && (*p).flags & 1i32 << 2i32 != 0 {
@@ -1057,19 +1098,17 @@ unsafe extern "C" fn scale_to_fit_I(mut T: *mut pdf_tmatrix,
         dp = (*p).depth * yscale
     } else if (*p).flags & 1i32 << 1i32 != 0 {
         s_x = (*p).width * xscale;
-        s_y =
-            s_x *
-                ((*I).attr.height as libc::c_double /
-                     (*I).attr.width as libc::c_double);
+        s_y = s_x * ((*I).attr.height as libc::c_double / (*I).attr.width as libc::c_double);
         dp = 0.0f64
     } else if (*p).flags & 1i32 << 2i32 != 0 {
         s_y = ((*p).height + (*p).depth) * yscale;
-        s_x =
-            s_y *
-                ((*I).attr.width as libc::c_double /
-                     (*I).attr.height as libc::c_double);
+        s_x = s_y * ((*I).attr.width as libc::c_double / (*I).attr.height as libc::c_double);
         dp = (*p).depth * yscale
-    } else { s_x = wd0; s_y = ht0; dp = 0.0f64 }
+    } else {
+        s_x = wd0;
+        s_y = ht0;
+        dp = 0.0f64
+    }
     (*T).a = s_x;
     (*T).c = 0.0f64;
     (*T).b = 0.0f64;
@@ -1077,9 +1116,11 @@ unsafe extern "C" fn scale_to_fit_I(mut T: *mut pdf_tmatrix,
     (*T).e = d_x * s_x / xscale;
     (*T).f = d_y * s_y / yscale - dp;
 }
-unsafe extern "C" fn scale_to_fit_F(mut T: *mut pdf_tmatrix,
-                                    mut p: *mut transform_info,
-                                    mut I: *mut pdf_ximage) {
+unsafe extern "C" fn scale_to_fit_F(
+    mut T: *mut pdf_tmatrix,
+    mut p: *mut transform_info,
+    mut I: *mut pdf_ximage,
+) {
     let mut s_x: libc::c_double = 0.;
     let mut s_y: libc::c_double = 0.;
     let mut d_x: libc::c_double = 0.;
@@ -1099,13 +1140,11 @@ unsafe extern "C" fn scale_to_fit_F(mut T: *mut pdf_tmatrix,
         d_y = 0.0f64
     }
     if wd0 == 0.0f64 {
-        dpx_warning(b"Image width=0.0!\x00" as *const u8 as
-                        *const libc::c_char);
+        dpx_warning(b"Image width=0.0!\x00" as *const u8 as *const libc::c_char);
         wd0 = 1.0f64
     }
     if ht0 == 0.0f64 {
-        dpx_warning(b"Image height=0.0!\x00" as *const u8 as
-                        *const libc::c_char);
+        dpx_warning(b"Image height=0.0!\x00" as *const u8 as *const libc::c_char);
         ht0 = 1.0f64
     }
     if (*p).flags & 1i32 << 1i32 != 0 && (*p).flags & 1i32 << 2i32 != 0 {
@@ -1120,7 +1159,11 @@ unsafe extern "C" fn scale_to_fit_F(mut T: *mut pdf_tmatrix,
         s_y = ((*p).height + (*p).depth) / ht0;
         s_x = s_y;
         dp = (*p).depth
-    } else { s_y = 1.0f64; s_x = s_y; dp = 0.0f64 }
+    } else {
+        s_y = 1.0f64;
+        s_x = s_y;
+        dp = 0.0f64
+    }
     (*T).a = s_x;
     (*T).c = 0.0f64;
     (*T).b = 0.0f64;
@@ -1130,18 +1173,20 @@ unsafe extern "C" fn scale_to_fit_F(mut T: *mut pdf_tmatrix,
 }
 /* called from pdfdev.c and spc_html.c */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_scale_image(mut id: libc::c_int,
-                                                mut M: *mut pdf_tmatrix,
-                                                mut r: *mut pdf_rect,
-                                                mut p: *mut transform_info)
- -> libc::c_int 
- /* argument from specials */
- {
+pub unsafe extern "C" fn pdf_ximage_scale_image(
+    mut id: libc::c_int,
+    mut M: *mut pdf_tmatrix,
+    mut r: *mut pdf_rect,
+    mut p: *mut transform_info,
+) -> libc::c_int
+/* argument from specials */ {
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as
-                      *const libc::c_char, id);
+        _tt_abort(
+            b"Invalid XObject ID: %d\x00" as *const u8 as *const libc::c_char,
+            id,
+        );
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     (*M).a = 1.0f64;
@@ -1153,48 +1198,37 @@ pub unsafe extern "C" fn pdf_ximage_scale_image(mut id: libc::c_int,
     match (*I).subtype {
         1 => {
             /* Reference: PDF Reference 1.5 v6, p.302
-         *
-         * An image can be placed on the output page in any desired position,
-         * orientation, and size by using the cm operator to modify the current
-         * transformation matrix (CTM) so as to map the unit square of user space
-         * to the rectangle or parallelogram in which the image is to be painted.
-         *
-         * There is neither BBox nor Matrix key in the image XObject.
-         * Everything must be controlled by the cm operator.
-         *
-         * The argument [p] contains the user-defined bounding box, the scailing
-         * factor of which is bp as EPS and PDF. On the other hand, I->attr
-         * contains the (sampling) width and the (sampling) height of the image.
-         *
-         * There is no problem if a bitmap image has density information.
-         * Otherwise, DVIPDFM's ebb generates bounding box as 100px = 72bp = 1in.
-         * In this case, screen captured images look bad. Moreover, DVIPDFM's ebb
-         * ignores all density information and use just 100px = 72bp = 1in.
-         *
-         * On the other hand, pdfTeX uses 100px = 100bp to get a better quality
-         * for screen captured images.
-         *
-         * DVIPDFMx's xbb generates bounding box as 100px = 100bp in the same
-         * way as pdfTeX. Furthermore, it takes care of density information too.
-         */
+             *
+             * An image can be placed on the output page in any desired position,
+             * orientation, and size by using the cm operator to modify the current
+             * transformation matrix (CTM) so as to map the unit square of user space
+             * to the rectangle or parallelogram in which the image is to be painted.
+             *
+             * There is neither BBox nor Matrix key in the image XObject.
+             * Everything must be controlled by the cm operator.
+             *
+             * The argument [p] contains the user-defined bounding box, the scailing
+             * factor of which is bp as EPS and PDF. On the other hand, I->attr
+             * contains the (sampling) width and the (sampling) height of the image.
+             *
+             * There is no problem if a bitmap image has density information.
+             * Otherwise, DVIPDFM's ebb generates bounding box as 100px = 72bp = 1in.
+             * In this case, screen captured images look bad. Moreover, DVIPDFM's ebb
+             * ignores all density information and use just 100px = 72bp = 1in.
+             *
+             * On the other hand, pdfTeX uses 100px = 100bp to get a better quality
+             * for screen captured images.
+             *
+             * DVIPDFMx's xbb generates bounding box as 100px = 100bp in the same
+             * way as pdfTeX. Furthermore, it takes care of density information too.
+             */
             scale_to_fit_I(M, p, I);
             if (*p).flags & 1i32 << 0i32 != 0 {
-                (*r).llx =
-                    (*p).bbox.llx /
-                        ((*I).attr.width as libc::c_double *
-                             (*I).attr.xdensity);
+                (*r).llx = (*p).bbox.llx / ((*I).attr.width as libc::c_double * (*I).attr.xdensity);
                 (*r).lly =
-                    (*p).bbox.lly /
-                        ((*I).attr.height as libc::c_double *
-                             (*I).attr.ydensity);
-                (*r).urx =
-                    (*p).bbox.urx /
-                        ((*I).attr.width as libc::c_double *
-                             (*I).attr.xdensity);
-                (*r).ury =
-                    (*p).bbox.ury /
-                        ((*I).attr.height as libc::c_double *
-                             (*I).attr.ydensity)
+                    (*p).bbox.lly / ((*I).attr.height as libc::c_double * (*I).attr.ydensity);
+                (*r).urx = (*p).bbox.urx / ((*I).attr.width as libc::c_double * (*I).attr.xdensity);
+                (*r).ury = (*p).bbox.ury / ((*I).attr.height as libc::c_double * (*I).attr.ydensity)
             } else {
                 (*r).llx = 0.0f64;
                 (*r).lly = 0.0f64;
@@ -1204,9 +1238,8 @@ pub unsafe extern "C" fn pdf_ximage_scale_image(mut id: libc::c_int,
         }
         0 => {
             /* User-defined transformation and clipping are controlled by
-         * the cm operator and W operator, explicitly */
-            scale_to_fit_F(M, p,
-                           I); /* I->attr.bbox from the image bounding box */
+             * the cm operator and W operator, explicitly */
+            scale_to_fit_F(M, p, I); /* I->attr.bbox from the image bounding box */
             if (*p).flags & 1i32 << 0i32 != 0 {
                 (*r).llx = (*p).bbox.llx;
                 (*r).lly = (*p).bbox.lly;
@@ -1219,7 +1252,7 @@ pub unsafe extern "C" fn pdf_ximage_scale_image(mut id: libc::c_int,
                 (*r).ury = (*I).attr.bbox.ury
             }
         }
-        _ => { }
+        _ => {}
     }
     return 0i32;
 }
@@ -1230,11 +1263,10 @@ pub unsafe extern "C" fn set_distiller_template(mut s: *mut libc::c_char) {
     if s.is_null() || *s as libc::c_int == '\u{0}' as i32 {
         _opts.cmdtmpl = 0 as *mut libc::c_char
     } else {
-        _opts.cmdtmpl =
-            new((strlen(s).wrapping_add(1i32 as libc::c_ulong) as uint32_t as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_char>()
-                                                     as libc::c_ulong) as
-                    uint32_t) as *mut libc::c_char;
+        _opts.cmdtmpl = new((strlen(s).wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            as uint32_t) as *mut libc::c_char;
         strcpy(_opts.cmdtmpl, s);
     };
 }
@@ -1271,14 +1303,16 @@ pub unsafe extern "C" fn set_distiller_template(mut s: *mut libc::c_char) {
 pub unsafe extern "C" fn get_distiller_template() -> *mut libc::c_char {
     return _opts.cmdtmpl;
 }
-unsafe extern "C" fn check_for_ps(mut handle: rust_input_handle_t)
- -> libc::c_int {
+unsafe extern "C" fn check_for_ps(mut handle: rust_input_handle_t) -> libc::c_int {
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     tt_mfgets(work_buffer.as_mut_ptr(), 1024i32, handle);
-    if !strstartswith(work_buffer.as_mut_ptr(),
-                      b"%!\x00" as *const u8 as *const libc::c_char).is_null()
-       {
-        return 1i32
+    if !strstartswith(
+        work_buffer.as_mut_ptr(),
+        b"%!\x00" as *const u8 as *const libc::c_char,
+    )
+    .is_null()
+    {
+        return 1i32;
     }
     return 0i32;
 }

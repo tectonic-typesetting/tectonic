@@ -13,25 +13,25 @@ extern "C" {
     pub type _IO_marker;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     /* Here is the complete list of PDF object types */
     /* A deeper object hierarchy will be considered as (illegal) loop. */
     pub type pdf_obj;
@@ -49,18 +49,15 @@ extern "C" {
     #[no_mangle]
     fn atof(__nptr: *const libc::c_char) -> libc::c_double;
     #[no_mangle]
-    fn strtod(_: *const libc::c_char, _: *mut *mut libc::c_char)
-     -> libc::c_double;
+    fn strtod(_: *const libc::c_char, _: *mut *mut libc::c_char) -> libc::c_double;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char)
-     -> *mut libc::c_char;
+    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char,
-               _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
     #[no_mangle]
     fn strchr(_: *const libc::c_char, _: libc::c_int) -> *mut libc::c_char;
     #[no_mangle]
@@ -69,11 +66,14 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...)
-     -> libc::c_int;
+    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
     #[no_mangle]
-    fn fread(_: *mut libc::c_void, _: libc::c_ulong, _: libc::c_ulong,
-             _: *mut FILE) -> libc::c_ulong;
+    fn fread(
+        _: *mut libc::c_void,
+        _: libc::c_ulong,
+        _: libc::c_ulong,
+        _: *mut FILE,
+    ) -> libc::c_ulong;
     #[no_mangle]
     fn rewind(__stream: *mut FILE);
     #[no_mangle]
@@ -104,148 +104,165 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_dict() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const libc::c_char)
-     -> *mut pdf_obj;
+    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const libc::c_char) -> *mut pdf_obj;
     /* pdf_add_dict() want pdf_obj as key, however, key must always be name
- * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
- * key. This strange difference seems come from pdfdoc that first allocate
- * name objects frequently used (maybe 1000 times) such as /Type and does
- * pdf_link_obj() it rather than allocate/free-ing them each time. But I
- * already removed that.
- */
+     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
+     * key. This strange difference seems come from pdfdoc that first allocate
+     * name objects frequently used (maybe 1000 times) such as /Type and does
+     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
+     * already removed that.
+     */
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj,
-                    value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
     #[no_mangle]
-    fn pdf_color_rgbcolor(color: *mut pdf_color, r: libc::c_double,
-                          g: libc::c_double, b: libc::c_double)
-     -> libc::c_int;
+    fn pdf_color_rgbcolor(
+        color: *mut pdf_color,
+        r: libc::c_double,
+        g: libc::c_double,
+        b: libc::c_double,
+    ) -> libc::c_int;
     #[no_mangle]
-    fn pdf_color_cmykcolor(color: *mut pdf_color, c: libc::c_double,
-                           m: libc::c_double, y: libc::c_double,
-                           k: libc::c_double) -> libc::c_int;
+    fn pdf_color_cmykcolor(
+        color: *mut pdf_color,
+        c: libc::c_double,
+        m: libc::c_double,
+        y: libc::c_double,
+        k: libc::c_double,
+    ) -> libc::c_int;
     #[no_mangle]
-    fn pdf_color_graycolor(color: *mut pdf_color, g: libc::c_double)
-     -> libc::c_int;
+    fn pdf_color_graycolor(color: *mut pdf_color, g: libc::c_double) -> libc::c_int;
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
     /* returns 1.0/unit_conv */
     #[no_mangle]
     fn dev_unit_dviunit() -> libc::c_double;
     /* Draw texts and rules:
- *
- * xpos, ypos, width, and height are all fixed-point numbers
- * converted to big-points by multiplying unit_conv (dvi2pts).
- * They must be position in the user space.
- *
- * ctype:
- *   0 - input string is in multi-byte encoding.
- *   1 - input string is in 8-bit encoding.
- *   2 - input string is in 16-bit encoding.
- */
+     *
+     * xpos, ypos, width, and height are all fixed-point numbers
+     * converted to big-points by multiplying unit_conv (dvi2pts).
+     * They must be position in the user space.
+     *
+     * ctype:
+     *   0 - input string is in multi-byte encoding.
+     *   1 - input string is in 8-bit encoding.
+     *   2 - input string is in 16-bit encoding.
+     */
     #[no_mangle]
-    fn pdf_dev_set_string(xpos: spt_t, ypos: spt_t,
-                          instr_ptr: *const libc::c_void, instr_len: size_t,
-                          text_width: spt_t, font_id: libc::c_int,
-                          ctype: libc::c_int);
+    fn pdf_dev_set_string(
+        xpos: spt_t,
+        ypos: spt_t,
+        instr_ptr: *const libc::c_void,
+        instr_len: size_t,
+        text_width: spt_t,
+        font_id: libc::c_int,
+        ctype: libc::c_int,
+    );
     /* Place XObject */
     #[no_mangle]
-    fn pdf_dev_put_image(xobj_id: libc::c_int, p: *mut transform_info,
-                         ref_x: libc::c_double, ref_y: libc::c_double)
-     -> libc::c_int;
+    fn pdf_dev_put_image(
+        xobj_id: libc::c_int,
+        p: *mut transform_info,
+        ref_x: libc::c_double,
+        ref_y: libc::c_double,
+    ) -> libc::c_int;
     /* The design_size and ptsize required by PK font support...
- */
+     */
     #[no_mangle]
-    fn pdf_dev_locate_font(font_name: *const libc::c_char, ptsize: spt_t)
-     -> libc::c_int;
+    fn pdf_dev_locate_font(font_name: *const libc::c_char, ptsize: spt_t) -> libc::c_int;
     /* Access text state parameters. */
     #[no_mangle]
     fn pdf_dev_get_font_wmode(font_id: libc::c_int) -> libc::c_int;
     /* ps: special support want this (pTeX). */
     /* Text composition (direction) mode
- * This affects only when auto_rotate is enabled.
- */
+     * This affects only when auto_rotate is enabled.
+     */
     #[no_mangle]
     fn pdf_dev_get_dirmode() -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_set_dirmode(dir_mode: libc::c_int);
     /* Accessor to various device parameters.
- */
+     */
     #[no_mangle]
     fn pdf_dev_get_param(param_type: libc::c_int) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_set_param(param_type: libc::c_int, value: libc::c_int);
     /* Text is normal and line art is not normal in dvipdfmx. So we don't have
- * begin_text (BT in PDF) and end_text (ET), but instead we have graphics_mode()
- * to terminate text section. pdf_dev_flushpath() and others call this.
- */
+     * begin_text (BT in PDF) and end_text (ET), but instead we have graphics_mode()
+     * to terminate text section. pdf_dev_flushpath() and others call this.
+     */
     #[no_mangle]
     fn graphics_mode();
     #[no_mangle]
     static mut translate_origin: libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
     #[no_mangle]
     fn pdf_lookup_fontmap_record(kp: *const libc::c_char) -> *mut fontmap_rec;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn new(size: uint32_t) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_doc_current_page_number() -> libc::c_int;
     /* Page */
     #[no_mangle]
-    fn pdf_doc_begin_page(scale: libc::c_double, x_origin: libc::c_double,
-                          y_origin: libc::c_double);
+    fn pdf_doc_begin_page(
+        scale: libc::c_double,
+        x_origin: libc::c_double,
+        y_origin: libc::c_double,
+    );
     #[no_mangle]
     fn pdf_doc_end_page();
     #[no_mangle]
     fn pdf_doc_set_mediabox(page_no: libc::c_uint, mediabox: *const pdf_rect);
     /* Returns xobj_id of started xform. */
     #[no_mangle]
-    fn pdf_doc_begin_grabbing(ident: *const libc::c_char,
-                              ref_x: libc::c_double, ref_y: libc::c_double,
-                              cropbox: *const pdf_rect) -> libc::c_int;
+    fn pdf_doc_begin_grabbing(
+        ident: *const libc::c_char,
+        ref_x: libc::c_double,
+        ref_y: libc::c_double,
+        cropbox: *const pdf_rect,
+    ) -> libc::c_int;
     #[no_mangle]
     fn pdf_doc_end_grabbing(attrib: *mut pdf_obj);
     #[no_mangle]
@@ -261,8 +278,11 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_setlinejoin(style: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn pdf_dev_setdash(count: libc::c_int, pattern: *mut libc::c_double,
-                       offset: libc::c_double) -> libc::c_int;
+    fn pdf_dev_setdash(
+        count: libc::c_int,
+        pattern: *mut libc::c_double,
+        offset: libc::c_double,
+    ) -> libc::c_int;
     /* Path Construction */
     #[no_mangle]
     fn pdf_dev_moveto(x: libc::c_double, y: libc::c_double) -> libc::c_int;
@@ -275,22 +295,39 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_rlineto(x0: libc::c_double, y0: libc::c_double) -> libc::c_int;
     #[no_mangle]
-    fn pdf_dev_curveto(x0: libc::c_double, y0: libc::c_double,
-                       x1: libc::c_double, y1: libc::c_double,
-                       x2: libc::c_double, y2: libc::c_double) -> libc::c_int;
+    fn pdf_dev_curveto(
+        x0: libc::c_double,
+        y0: libc::c_double,
+        x1: libc::c_double,
+        y1: libc::c_double,
+        x2: libc::c_double,
+        y2: libc::c_double,
+    ) -> libc::c_int;
     #[no_mangle]
-    fn pdf_dev_rcurveto(x0: libc::c_double, y0: libc::c_double,
-                        x1: libc::c_double, y1: libc::c_double,
-                        x2: libc::c_double, y2: libc::c_double)
-     -> libc::c_int;
+    fn pdf_dev_rcurveto(
+        x0: libc::c_double,
+        y0: libc::c_double,
+        x1: libc::c_double,
+        y1: libc::c_double,
+        x2: libc::c_double,
+        y2: libc::c_double,
+    ) -> libc::c_int;
     #[no_mangle]
-    fn pdf_dev_arc(c_x: libc::c_double, c_y: libc::c_double,
-                   r: libc::c_double, a_0: libc::c_double,
-                   a_1: libc::c_double) -> libc::c_int;
+    fn pdf_dev_arc(
+        c_x: libc::c_double,
+        c_y: libc::c_double,
+        r: libc::c_double,
+        a_0: libc::c_double,
+        a_1: libc::c_double,
+    ) -> libc::c_int;
     #[no_mangle]
-    fn pdf_dev_arcn(c_x: libc::c_double, c_y: libc::c_double,
-                    r: libc::c_double, a_0: libc::c_double,
-                    a_1: libc::c_double) -> libc::c_int;
+    fn pdf_dev_arcn(
+        c_x: libc::c_double,
+        c_y: libc::c_double,
+        r: libc::c_double,
+        a_0: libc::c_double,
+        a_1: libc::c_double,
+    ) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_newpath() -> libc::c_int;
     /* Path Painting */
@@ -299,8 +336,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_eoclip() -> libc::c_int;
     #[no_mangle]
-    fn pdf_dev_flushpath(p_op: libc::c_char, fill_rule: libc::c_int)
-     -> libc::c_int;
+    fn pdf_dev_flushpath(p_op: libc::c_char, fill_rule: libc::c_int) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_concat(M: *const pdf_tmatrix) -> libc::c_int;
     /* NULL pointer of M mean apply current transformation */
@@ -313,71 +349,73 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_grestore() -> libc::c_int;
     #[no_mangle]
-    fn pdf_dev_set_color(color: *const pdf_color, mask: libc::c_char,
-                         force: libc::c_int);
+    fn pdf_dev_set_color(color: *const pdf_color, mask: libc::c_char, force: libc::c_int);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     /* Please remove this */
     #[no_mangle]
     fn dump(start: *const libc::c_char, end: *const libc::c_char);
     #[no_mangle]
-    fn pdfparse_skip_line(start: *mut *const libc::c_char,
-                          end: *const libc::c_char);
+    fn pdfparse_skip_line(start: *mut *const libc::c_char, end: *const libc::c_char);
     #[no_mangle]
     fn skip_white(start: *mut *const libc::c_char, end: *const libc::c_char);
     #[no_mangle]
     fn parse_number(start: *mut *const libc::c_char, end: *const libc::c_char)
-     -> *mut libc::c_char;
+        -> *mut libc::c_char;
     #[no_mangle]
-    fn parse_ident(start: *mut *const libc::c_char, end: *const libc::c_char)
-     -> *mut libc::c_char;
+    fn parse_ident(start: *mut *const libc::c_char, end: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn parse_pdf_name(pp: *mut *const libc::c_char,
-                      endptr: *const libc::c_char) -> *mut pdf_obj;
+    fn parse_pdf_name(pp: *mut *const libc::c_char, endptr: *const libc::c_char) -> *mut pdf_obj;
     #[no_mangle]
-    fn parse_pdf_string(pp: *mut *const libc::c_char,
-                        endptr: *const libc::c_char) -> *mut pdf_obj;
+    fn parse_pdf_string(pp: *mut *const libc::c_char, endptr: *const libc::c_char) -> *mut pdf_obj;
     #[no_mangle]
-    fn parse_pdf_dict(pp: *mut *const libc::c_char,
-                      endptr: *const libc::c_char, pf: *mut pdf_file)
-     -> *mut pdf_obj;
+    fn parse_pdf_dict(
+        pp: *mut *const libc::c_char,
+        endptr: *const libc::c_char,
+        pf: *mut pdf_file,
+    ) -> *mut pdf_obj;
     #[no_mangle]
-    fn parse_pdf_array(pp: *mut *const libc::c_char,
-                       endptr: *const libc::c_char, pf: *mut pdf_file)
-     -> *mut pdf_obj;
+    fn parse_pdf_array(
+        pp: *mut *const libc::c_char,
+        endptr: *const libc::c_char,
+        pf: *mut pdf_file,
+    ) -> *mut pdf_obj;
     #[no_mangle]
-    fn lookup_sfd_record(rec_id: libc::c_int, code: libc::c_uchar)
-     -> libc::c_ushort;
+    fn lookup_sfd_record(rec_id: libc::c_int, code: libc::c_uchar) -> libc::c_ushort;
     #[no_mangle]
-    fn sfd_load_record(sfd_name: *const libc::c_char,
-                       subfont_id: *const libc::c_char) -> libc::c_int;
+    fn sfd_load_record(
+        sfd_name: *const libc::c_char,
+        subfont_id: *const libc::c_char,
+    ) -> libc::c_int;
     #[no_mangle]
-    fn tfm_open(tex_name: *const libc::c_char, must_exist: libc::c_int)
-     -> libc::c_int;
+    fn tfm_open(tex_name: *const libc::c_char, must_exist: libc::c_int) -> libc::c_int;
     #[no_mangle]
     fn tfm_get_width(font_id: libc::c_int, ch: int32_t) -> libc::c_double;
     #[no_mangle]
-    fn tfm_string_width(font_id: libc::c_int, s: *const libc::c_uchar,
-                        len: libc::c_uint) -> fixword;
+    fn tfm_string_width(
+        font_id: libc::c_int,
+        s: *const libc::c_uchar,
+        len: libc::c_uint,
+    ) -> fixword;
     #[no_mangle]
     fn tfm_exists(tfm_name: *const libc::c_char) -> bool;
 }
@@ -401,7 +439,7 @@ pub const _ISupper: C2RustUnnamed = 256;
 pub type int32_t = __int32_t;
 pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
     pub _flags: libc::c_int,
@@ -458,7 +496,7 @@ pub type fixword = int32_t;
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
     pub num_components: libc::c_int,
@@ -487,7 +525,7 @@ pub struct pdf_color {
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 pub type spt_t = libc::c_int;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
     pub a: libc::c_double,
@@ -497,7 +535,7 @@ pub struct pdf_tmatrix {
     pub e: libc::c_double,
     pub f: libc::c_double,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
     pub llx: libc::c_double,
@@ -505,7 +543,7 @@ pub struct pdf_rect {
     pub urx: libc::c_double,
     pub ury: libc::c_double,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_coord {
     pub x: libc::c_double,
@@ -514,7 +552,7 @@ pub struct pdf_coord {
 /* The name transform_info is misleading.
  * I'll put this here for a moment...
  */
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct transform_info {
     pub width: libc::c_double,
@@ -524,7 +562,7 @@ pub struct transform_info {
     pub bbox: pdf_rect,
     pub flags: libc::c_int,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_rec {
     pub map_name: *mut libc::c_char,
@@ -533,7 +571,7 @@ pub struct fontmap_rec {
     pub charmap: C2RustUnnamed_0,
     pub opt: fontmap_opt,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_opt {
     pub slant: libc::c_double,
@@ -550,13 +588,13 @@ pub struct fontmap_opt {
     pub style: libc::c_int,
     pub stemv: libc::c_int,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
     pub sfd_name: *mut libc::c_char,
     pub subfont_id: *mut libc::c_char,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mp_font {
     pub font_name: *mut libc::c_char,
@@ -565,7 +603,7 @@ pub struct mp_font {
     pub subfont_id: libc::c_int,
     pub pt_size: libc::c_double,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct operators {
     pub token: *const libc::c_char,
@@ -584,18 +622,22 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char,
-                               mut s2: *const libc::c_char) -> bool {
-    if !s1.is_null() && !s2.is_null() { return strcmp(s1, s2) == 0i32 }
+unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+    if !s1.is_null() && !s2.is_null() {
+        return strcmp(s1, s2) == 0i32;
+    }
     return 0i32 != 0;
 }
 #[inline]
-unsafe extern "C" fn strstartswith(mut s: *const libc::c_char,
-                                   mut prefix: *const libc::c_char)
- -> *const libc::c_char {
+unsafe extern "C" fn strstartswith(
+    mut s: *const libc::c_char,
+    mut prefix: *const libc::c_char,
+) -> *const libc::c_char {
     let mut length: size_t = 0;
     length = strlen(prefix);
-    if strncmp(s, prefix, length) == 0i32 { return s.offset(length as isize) }
+    if strncmp(s, prefix, length) == 0i32 {
+        return s.offset(length as isize);
+    }
     return 0 as *const libc::c_char;
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -625,1310 +667,1822 @@ unsafe extern "C" fn strstartswith(mut s: *const libc::c_char,
  */
 static mut Xorigin: libc::c_double = 0.;
 static mut Yorigin: libc::c_double = 0.;
-static mut font_stack: [mp_font; 256] =
-    [{
-         let mut init =
-             mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-                     font_id: -1i32,
-                     tfm_id: -1i32,
-                     subfont_id: -1i32,
-                     pt_size: 0i32 as libc::c_double,}; /* No currentfont */
-         init
-     },
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,},
-     mp_font{font_name: 0 as *const libc::c_char as *mut libc::c_char,
-             font_id: 0,
-             tfm_id: 0,
-             subfont_id: 0,
-             pt_size: 0.,}];
+static mut font_stack: [mp_font; 256] = [
+    {
+        let mut init = mp_font {
+            font_name: 0 as *const libc::c_char as *mut libc::c_char,
+            font_id: -1i32,
+            tfm_id: -1i32,
+            subfont_id: -1i32,
+            pt_size: 0i32 as libc::c_double,
+        }; /* No currentfont */
+        init
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+    mp_font {
+        font_name: 0 as *const libc::c_char as *mut libc::c_char,
+        font_id: 0,
+        tfm_id: 0,
+        subfont_id: 0,
+        pt_size: 0.,
+    },
+];
 static mut currentfont: libc::c_int = -1i32;
 static mut mp_cmode: libc::c_int = 0i32;
-unsafe extern "C" fn mp_setfont(mut font_name: *const libc::c_char,
-                                mut pt_size: libc::c_double) -> libc::c_int {
+unsafe extern "C" fn mp_setfont(
+    mut font_name: *const libc::c_char,
+    mut pt_size: libc::c_double,
+) -> libc::c_int {
     let mut name: *const libc::c_char = font_name;
     let mut font: *mut mp_font = 0 as *mut mp_font;
     let mut subfont_id: libc::c_int = -1i32;
     let mut mrec: *mut fontmap_rec = 0 as *mut fontmap_rec;
-    font =
-        if currentfont < 0i32 {
-            0 as *mut mp_font
-        } else {
-            &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as
-                *mut mp_font
-        };
+    font = if currentfont < 0i32 {
+        0 as *mut mp_font
+    } else {
+        &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as *mut mp_font
+    };
     if !font.is_null() {
-        if streq_ptr((*font).font_name, font_name) as libc::c_int != 0 &&
-               (*font).pt_size == pt_size {
-            return 0i32
+        if streq_ptr((*font).font_name, font_name) as libc::c_int != 0 && (*font).pt_size == pt_size
+        {
+            return 0i32;
         }
     } else {
         /* ***TODO*** Here some problem exists! */
@@ -1937,32 +2491,34 @@ unsafe extern "C" fn mp_setfont(mut font_name: *const libc::c_char,
         currentfont = 0i32
     }
     mrec = pdf_lookup_fontmap_record(font_name);
-    if !mrec.is_null() && !(*mrec).charmap.sfd_name.is_null() &&
-           !(*mrec).charmap.subfont_id.is_null() {
-        subfont_id =
-            sfd_load_record((*mrec).charmap.sfd_name,
-                            (*mrec).charmap.subfont_id)
+    if !mrec.is_null()
+        && !(*mrec).charmap.sfd_name.is_null()
+        && !(*mrec).charmap.subfont_id.is_null()
+    {
+        subfont_id = sfd_load_record((*mrec).charmap.sfd_name, (*mrec).charmap.subfont_id)
     }
     /* See comments in dvi_locate_font() in dvi.c. */
     if !mrec.is_null() && !(*mrec).map_name.is_null() {
         name = (*mrec).map_name
-    } else { name = font_name } /* Need not exist in MP mode */
+    } else {
+        name = font_name
+    } /* Need not exist in MP mode */
     free((*font).font_name as *mut libc::c_void);
-    (*font).font_name =
-        new((strlen(font_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t
-                 as
-                 libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_char>()
-                                                 as libc::c_ulong) as
-                uint32_t) as *mut libc::c_char;
+    (*font).font_name = new(
+        (strlen(font_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            as uint32_t,
+    ) as *mut libc::c_char;
     strcpy((*font).font_name, font_name);
     (*font).subfont_id = subfont_id;
     (*font).pt_size = pt_size;
     (*font).tfm_id = tfm_open(font_name, 0i32);
-    (*font).font_id =
-        pdf_dev_locate_font(name, (pt_size * dev_unit_dviunit()) as spt_t);
+    (*font).font_id = pdf_dev_locate_font(name, (pt_size * dev_unit_dviunit()) as spt_t);
     if (*font).font_id < 0i32 {
-        _tt_abort(b"MPOST: No physical font assigned for \"%s\".\x00" as
-                      *const u8 as *const libc::c_char, font_name);
+        _tt_abort(
+            b"MPOST: No physical font assigned for \"%s\".\x00" as *const u8 as *const libc::c_char,
+            font_name,
+        );
     }
     return 0i32;
 }
@@ -1970,16 +2526,15 @@ unsafe extern "C" fn save_font() {
     let mut current: *mut mp_font = 0 as *mut mp_font;
     let mut next: *mut mp_font = 0 as *mut mp_font;
     if currentfont < 0i32 {
-        font_stack[0].font_name =
-            new((strlen(b"Courier\x00" as *const u8 as
-                            *const libc::c_char).wrapping_add(1i32 as
-                                                                  libc::c_ulong)
-                     as uint32_t as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_char>()
-                                                     as libc::c_ulong) as
-                    uint32_t) as *mut libc::c_char;
-        strcpy(font_stack[0].font_name,
-               b"Courier\x00" as *const u8 as *const libc::c_char);
+        font_stack[0].font_name = new((strlen(b"Courier\x00" as *const u8 as *const libc::c_char)
+            .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            as uint32_t) as *mut libc::c_char;
+        strcpy(
+            font_stack[0].font_name,
+            b"Courier\x00" as *const u8 as *const libc::c_char,
+        );
         font_stack[0].pt_size = 1i32 as libc::c_double;
         font_stack[0].tfm_id = 0i32;
         font_stack[0].subfont_id = 0i32;
@@ -1987,17 +2542,14 @@ unsafe extern "C" fn save_font() {
     }
     let fresh0 = currentfont;
     currentfont = currentfont + 1;
-    current =
-        &mut *font_stack.as_mut_ptr().offset(fresh0 as isize) as *mut mp_font;
-    next =
-        &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as
-            *mut mp_font;
-    (*next).font_name =
-        new((strlen((*current).font_name).wrapping_add(1i32 as libc::c_ulong)
-                 as uint32_t as
-                 libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_char>()
-                                                 as libc::c_ulong) as
-                uint32_t) as *mut libc::c_char;
+    current = &mut *font_stack.as_mut_ptr().offset(fresh0 as isize) as *mut mp_font;
+    next = &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as *mut mp_font;
+    (*next).font_name = new(
+        (strlen((*current).font_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            as uint32_t,
+    ) as *mut libc::c_char;
     strcpy((*next).font_name, (*current).font_name);
     (*next).pt_size = (*current).pt_size;
     (*next).subfont_id = (*current).subfont_id;
@@ -2005,20 +2557,15 @@ unsafe extern "C" fn save_font() {
 }
 unsafe extern "C" fn restore_font() {
     let mut current: *mut mp_font = 0 as *mut mp_font;
-    current =
-        if currentfont < 0i32 {
-            0 as *mut mp_font
-        } else {
-            &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as
-                *mut mp_font
-        };
-    if !current.is_null() {
-        (*current).font_name =
-            mfree((*current).font_name as *mut libc::c_void) as
-                *mut libc::c_char
+    current = if currentfont < 0i32 {
+        0 as *mut mp_font
     } else {
-        _tt_abort(b"No currentfont...\x00" as *const u8 as
-                      *const libc::c_char);
+        &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as *mut mp_font
+    };
+    if !current.is_null() {
+        (*current).font_name = mfree((*current).font_name as *mut libc::c_void) as *mut libc::c_char
+    } else {
+        _tt_abort(b"No currentfont...\x00" as *const u8 as *const libc::c_char);
     }
     currentfont -= 1;
 }
@@ -2026,48 +2573,56 @@ unsafe extern "C" fn clear_fonts() {
     while currentfont >= 0i32 {
         free(font_stack[currentfont as usize].font_name as *mut libc::c_void);
         currentfont -= 1
-    };
+    }
 }
 unsafe extern "C" fn is_fontname(mut token: *const libc::c_char) -> bool {
     let mut mrec: *mut fontmap_rec = 0 as *mut fontmap_rec;
     mrec = pdf_lookup_fontmap_record(token);
-    if !mrec.is_null() { return 1i32 != 0 }
+    if !mrec.is_null() {
+        return 1i32 != 0;
+    }
     return tfm_exists(token);
 }
 #[no_mangle]
-pub unsafe extern "C" fn mps_scan_bbox(mut pp: *mut *const libc::c_char,
-                                       mut endptr: *const libc::c_char,
-                                       mut bbox: *mut pdf_rect)
- -> libc::c_int {
+pub unsafe extern "C" fn mps_scan_bbox(
+    mut pp: *mut *const libc::c_char,
+    mut endptr: *const libc::c_char,
+    mut bbox: *mut pdf_rect,
+) -> libc::c_int {
     let mut number: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut values: [libc::c_double; 4] = [0.; 4];
     let mut i: libc::c_int = 0;
     /* skip_white() skips lines starting '%'... */
-    while *pp < endptr &&
-              *(*__ctype_b_loc()).offset(**pp as libc::c_uchar as libc::c_int
-                                             as isize) as libc::c_int &
-                  _ISspace as libc::c_int as libc::c_ushort as libc::c_int !=
-                  0 {
+    while *pp < endptr
+        && *(*__ctype_b_loc()).offset(**pp as libc::c_uchar as libc::c_int as isize) as libc::c_int
+            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            != 0
+    {
         *pp = (*pp).offset(1)
     }
     /* Scan for bounding box record */
     while *pp < endptr && **pp as libc::c_int == '%' as i32 {
-        if (*pp).offset(14) < endptr &&
-               !strstartswith(*pp,
-                              b"%%BoundingBox:\x00" as *const u8 as
-                                  *const libc::c_char).is_null() {
+        if (*pp).offset(14) < endptr
+            && !strstartswith(
+                *pp,
+                b"%%BoundingBox:\x00" as *const u8 as *const libc::c_char,
+            )
+            .is_null()
+        {
             *pp = (*pp).offset(14);
             i = 0i32;
             while i < 4i32 {
                 skip_white(pp, endptr);
                 number = parse_number(pp, endptr);
-                if number.is_null() { break ; }
+                if number.is_null() {
+                    break;
+                }
                 values[i as usize] = atof(number);
                 free(number as *mut libc::c_void);
                 i += 1
             }
             if i < 4i32 {
-                return -1i32
+                return -1i32;
             } else {
                 /* The new xetex.def and dvipdfmx.def require bbox->llx = bbox->lly = 0.  */
                 if translate_origin != 0 {
@@ -2085,592 +2640,624 @@ pub unsafe extern "C" fn mps_scan_bbox(mut pp: *mut *const libc::c_char,
                     Xorigin = 0.0f64;
                     Yorigin = 0.0f64
                 }
-                return 0i32
+                return 0i32;
             }
         }
         pdfparse_skip_line(pp, endptr);
-        while *pp < endptr &&
-                  *(*__ctype_b_loc()).offset(**pp as libc::c_uchar as
-                                                 libc::c_int as isize) as
-                      libc::c_int &
-                      _ISspace as libc::c_int as libc::c_ushort as libc::c_int
-                      != 0 {
+        while *pp < endptr
+            && *(*__ctype_b_loc()).offset(**pp as libc::c_uchar as libc::c_int as isize)
+                as libc::c_int
+                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                != 0
+        {
             *pp = (*pp).offset(1)
         }
     }
     return -1i32;
 }
-unsafe extern "C" fn skip_prolog(mut start: *mut *const libc::c_char,
-                                 mut end: *const libc::c_char) {
+unsafe extern "C" fn skip_prolog(
+    mut start: *mut *const libc::c_char,
+    mut end: *const libc::c_char,
+) {
     let mut found_prolog: libc::c_int = 0i32;
     let mut save: *const libc::c_char = 0 as *const libc::c_char;
     save = *start;
     while *start < end {
-        if **start as libc::c_int != '%' as i32 { skip_white(start, end); }
-        if *start >= end { break ; }
-        if !strstartswith(*start,
-                          b"%%EndProlog\x00" as *const u8 as
-                              *const libc::c_char).is_null() {
+        if **start as libc::c_int != '%' as i32 {
+            skip_white(start, end);
+        }
+        if *start >= end {
+            break;
+        }
+        if !strstartswith(
+            *start,
+            b"%%EndProlog\x00" as *const u8 as *const libc::c_char,
+        )
+        .is_null()
+        {
             found_prolog = 1i32;
             pdfparse_skip_line(start, end);
-            break ;
-        } else if !strstartswith(*start,
-                                 b"%%Page:\x00" as *const u8 as
-                                     *const libc::c_char).is_null() {
+            break;
+        } else if !strstartswith(*start, b"%%Page:\x00" as *const u8 as *const libc::c_char)
+            .is_null()
+        {
             pdfparse_skip_line(start, end);
-            break ;
-        } else { pdfparse_skip_line(start, end); }
+            break;
+        } else {
+            pdfparse_skip_line(start, end);
+        }
     }
-    if found_prolog == 0 { *start = save };
+    if found_prolog == 0 {
+        *start = save
+    };
 }
-static mut ps_operators: [operators; 48] =
-    [{
-         let mut init =
-             operators{token: b"add\x00" as *const u8 as *const libc::c_char,
-                       opcode: 1i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"mul\x00" as *const u8 as *const libc::c_char,
-                       opcode: 3i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"div\x00" as *const u8 as *const libc::c_char,
-                       opcode: 4i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"neg\x00" as *const u8 as *const libc::c_char,
-                       opcode: 5i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"sub\x00" as *const u8 as *const libc::c_char,
-                       opcode: 2i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"truncate\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 6i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"clear\x00" as *const u8 as *const libc::c_char,
-                       opcode: 10i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"exch\x00" as *const u8 as *const libc::c_char,
-                       opcode: 11i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"pop\x00" as *const u8 as *const libc::c_char,
-                       opcode: 12i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"clip\x00" as *const u8 as *const libc::c_char,
-                       opcode: 44i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"eoclip\x00" as *const u8 as *const libc::c_char,
-                       opcode: 45i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"closepath\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 32i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"concat\x00" as *const u8 as *const libc::c_char,
-                       opcode: 52i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"newpath\x00" as *const u8 as *const libc::c_char,
-                       opcode: 31i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"moveto\x00" as *const u8 as *const libc::c_char,
-                       opcode: 33i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"rmoveto\x00" as *const u8 as *const libc::c_char,
-                       opcode: 34i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"lineto\x00" as *const u8 as *const libc::c_char,
-                       opcode: 37i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"rlineto\x00" as *const u8 as *const libc::c_char,
-                       opcode: 38i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"curveto\x00" as *const u8 as *const libc::c_char,
-                       opcode: 35i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"rcurveto\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 36i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"arc\x00" as *const u8 as *const libc::c_char,
-                       opcode: 39i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"arcn\x00" as *const u8 as *const libc::c_char,
-                       opcode: 40i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"stroke\x00" as *const u8 as *const libc::c_char,
-                       opcode: 42i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"fill\x00" as *const u8 as *const libc::c_char,
-                       opcode: 41i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"show\x00" as *const u8 as *const libc::c_char,
-                       opcode: 43i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"showpage\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 49i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"gsave\x00" as *const u8 as *const libc::c_char,
-                       opcode: 50i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"grestore\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 51i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"translate\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 54i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"rotate\x00" as *const u8 as *const libc::c_char,
-                       opcode: 55i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"scale\x00" as *const u8 as *const libc::c_char,
-                       opcode: 53i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"setlinecap\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 62i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"setlinejoin\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 63i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"setlinewidth\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 60i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"setmiterlimit\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 64i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"setdash\x00" as *const u8 as *const libc::c_char,
-                       opcode: 61i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"setgray\x00" as *const u8 as *const libc::c_char,
-                       opcode: 70i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"setrgbcolor\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 71i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"setcmykcolor\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 72i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"currentpoint\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 80i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"dtransform\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 82i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"idtransform\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 81i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"findfont\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 201i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"scalefont\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 202i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"setfont\x00" as *const u8 as *const libc::c_char,
-                       opcode: 203i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"currentfont\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 204i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"stringwidth\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 210i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"def\x00" as *const u8 as *const libc::c_char,
-                       opcode: 999i32,};
-         init
-     }];
-static mut mps_operators: [operators; 28] =
-    [{
-         let mut init =
-             operators{token:
-                           b"fshow\x00" as *const u8 as *const libc::c_char,
-                       opcode: 1001i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"startTexFig\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 1002i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token:
-                           b"endTexFig\x00" as *const u8 as
-                               *const libc::c_char,
-                       opcode: 1003i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"hlw\x00" as *const u8 as *const libc::c_char,
-                       opcode: 1004i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"vlw\x00" as *const u8 as *const libc::c_char,
-                       opcode: 1005i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"l\x00" as *const u8 as *const libc::c_char,
-                       opcode: 37i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"r\x00" as *const u8 as *const libc::c_char,
-                       opcode: 38i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"c\x00" as *const u8 as *const libc::c_char,
-                       opcode: 35i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"m\x00" as *const u8 as *const libc::c_char,
-                       opcode: 33i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"p\x00" as *const u8 as *const libc::c_char,
-                       opcode: 32i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"n\x00" as *const u8 as *const libc::c_char,
-                       opcode: 31i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"C\x00" as *const u8 as *const libc::c_char,
-                       opcode: 72i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"G\x00" as *const u8 as *const libc::c_char,
-                       opcode: 70i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"R\x00" as *const u8 as *const libc::c_char,
-                       opcode: 71i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"lj\x00" as *const u8 as *const libc::c_char,
-                       opcode: 63i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"ml\x00" as *const u8 as *const libc::c_char,
-                       opcode: 64i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"lc\x00" as *const u8 as *const libc::c_char,
-                       opcode: 62i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"S\x00" as *const u8 as *const libc::c_char,
-                       opcode: 42i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"F\x00" as *const u8 as *const libc::c_char,
-                       opcode: 41i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"q\x00" as *const u8 as *const libc::c_char,
-                       opcode: 50i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"Q\x00" as *const u8 as *const libc::c_char,
-                       opcode: 51i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"s\x00" as *const u8 as *const libc::c_char,
-                       opcode: 53i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"t\x00" as *const u8 as *const libc::c_char,
-                       opcode: 52i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"sd\x00" as *const u8 as *const libc::c_char,
-                       opcode: 61i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"rd\x00" as *const u8 as *const libc::c_char,
-                       opcode: 1006i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"P\x00" as *const u8 as *const libc::c_char,
-                       opcode: 49i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"B\x00" as *const u8 as *const libc::c_char,
-                       opcode: 1007i32,};
-         init
-     },
-     {
-         let mut init =
-             operators{token: b"W\x00" as *const u8 as *const libc::c_char,
-                       opcode: 44i32,};
-         init
-     }];
-unsafe extern "C" fn get_opcode(mut token: *const libc::c_char)
- -> libc::c_int {
+static mut ps_operators: [operators; 48] = [
+    {
+        let mut init = operators {
+            token: b"add\x00" as *const u8 as *const libc::c_char,
+            opcode: 1i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"mul\x00" as *const u8 as *const libc::c_char,
+            opcode: 3i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"div\x00" as *const u8 as *const libc::c_char,
+            opcode: 4i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"neg\x00" as *const u8 as *const libc::c_char,
+            opcode: 5i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"sub\x00" as *const u8 as *const libc::c_char,
+            opcode: 2i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"truncate\x00" as *const u8 as *const libc::c_char,
+            opcode: 6i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"clear\x00" as *const u8 as *const libc::c_char,
+            opcode: 10i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"exch\x00" as *const u8 as *const libc::c_char,
+            opcode: 11i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"pop\x00" as *const u8 as *const libc::c_char,
+            opcode: 12i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"clip\x00" as *const u8 as *const libc::c_char,
+            opcode: 44i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"eoclip\x00" as *const u8 as *const libc::c_char,
+            opcode: 45i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"closepath\x00" as *const u8 as *const libc::c_char,
+            opcode: 32i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"concat\x00" as *const u8 as *const libc::c_char,
+            opcode: 52i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"newpath\x00" as *const u8 as *const libc::c_char,
+            opcode: 31i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"moveto\x00" as *const u8 as *const libc::c_char,
+            opcode: 33i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"rmoveto\x00" as *const u8 as *const libc::c_char,
+            opcode: 34i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"lineto\x00" as *const u8 as *const libc::c_char,
+            opcode: 37i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"rlineto\x00" as *const u8 as *const libc::c_char,
+            opcode: 38i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"curveto\x00" as *const u8 as *const libc::c_char,
+            opcode: 35i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"rcurveto\x00" as *const u8 as *const libc::c_char,
+            opcode: 36i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"arc\x00" as *const u8 as *const libc::c_char,
+            opcode: 39i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"arcn\x00" as *const u8 as *const libc::c_char,
+            opcode: 40i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"stroke\x00" as *const u8 as *const libc::c_char,
+            opcode: 42i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"fill\x00" as *const u8 as *const libc::c_char,
+            opcode: 41i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"show\x00" as *const u8 as *const libc::c_char,
+            opcode: 43i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"showpage\x00" as *const u8 as *const libc::c_char,
+            opcode: 49i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"gsave\x00" as *const u8 as *const libc::c_char,
+            opcode: 50i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"grestore\x00" as *const u8 as *const libc::c_char,
+            opcode: 51i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"translate\x00" as *const u8 as *const libc::c_char,
+            opcode: 54i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"rotate\x00" as *const u8 as *const libc::c_char,
+            opcode: 55i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"scale\x00" as *const u8 as *const libc::c_char,
+            opcode: 53i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"setlinecap\x00" as *const u8 as *const libc::c_char,
+            opcode: 62i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"setlinejoin\x00" as *const u8 as *const libc::c_char,
+            opcode: 63i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"setlinewidth\x00" as *const u8 as *const libc::c_char,
+            opcode: 60i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"setmiterlimit\x00" as *const u8 as *const libc::c_char,
+            opcode: 64i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"setdash\x00" as *const u8 as *const libc::c_char,
+            opcode: 61i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"setgray\x00" as *const u8 as *const libc::c_char,
+            opcode: 70i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"setrgbcolor\x00" as *const u8 as *const libc::c_char,
+            opcode: 71i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"setcmykcolor\x00" as *const u8 as *const libc::c_char,
+            opcode: 72i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"currentpoint\x00" as *const u8 as *const libc::c_char,
+            opcode: 80i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"dtransform\x00" as *const u8 as *const libc::c_char,
+            opcode: 82i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"idtransform\x00" as *const u8 as *const libc::c_char,
+            opcode: 81i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"findfont\x00" as *const u8 as *const libc::c_char,
+            opcode: 201i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"scalefont\x00" as *const u8 as *const libc::c_char,
+            opcode: 202i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"setfont\x00" as *const u8 as *const libc::c_char,
+            opcode: 203i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"currentfont\x00" as *const u8 as *const libc::c_char,
+            opcode: 204i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"stringwidth\x00" as *const u8 as *const libc::c_char,
+            opcode: 210i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"def\x00" as *const u8 as *const libc::c_char,
+            opcode: 999i32,
+        };
+        init
+    },
+];
+static mut mps_operators: [operators; 28] = [
+    {
+        let mut init = operators {
+            token: b"fshow\x00" as *const u8 as *const libc::c_char,
+            opcode: 1001i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"startTexFig\x00" as *const u8 as *const libc::c_char,
+            opcode: 1002i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"endTexFig\x00" as *const u8 as *const libc::c_char,
+            opcode: 1003i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"hlw\x00" as *const u8 as *const libc::c_char,
+            opcode: 1004i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"vlw\x00" as *const u8 as *const libc::c_char,
+            opcode: 1005i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"l\x00" as *const u8 as *const libc::c_char,
+            opcode: 37i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"r\x00" as *const u8 as *const libc::c_char,
+            opcode: 38i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"c\x00" as *const u8 as *const libc::c_char,
+            opcode: 35i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"m\x00" as *const u8 as *const libc::c_char,
+            opcode: 33i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"p\x00" as *const u8 as *const libc::c_char,
+            opcode: 32i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"n\x00" as *const u8 as *const libc::c_char,
+            opcode: 31i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"C\x00" as *const u8 as *const libc::c_char,
+            opcode: 72i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"G\x00" as *const u8 as *const libc::c_char,
+            opcode: 70i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"R\x00" as *const u8 as *const libc::c_char,
+            opcode: 71i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"lj\x00" as *const u8 as *const libc::c_char,
+            opcode: 63i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"ml\x00" as *const u8 as *const libc::c_char,
+            opcode: 64i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"lc\x00" as *const u8 as *const libc::c_char,
+            opcode: 62i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"S\x00" as *const u8 as *const libc::c_char,
+            opcode: 42i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"F\x00" as *const u8 as *const libc::c_char,
+            opcode: 41i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"q\x00" as *const u8 as *const libc::c_char,
+            opcode: 50i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"Q\x00" as *const u8 as *const libc::c_char,
+            opcode: 51i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"s\x00" as *const u8 as *const libc::c_char,
+            opcode: 53i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"t\x00" as *const u8 as *const libc::c_char,
+            opcode: 52i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"sd\x00" as *const u8 as *const libc::c_char,
+            opcode: 61i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"rd\x00" as *const u8 as *const libc::c_char,
+            opcode: 1006i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"P\x00" as *const u8 as *const libc::c_char,
+            opcode: 49i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"B\x00" as *const u8 as *const libc::c_char,
+            opcode: 1007i32,
+        };
+        init
+    },
+    {
+        let mut init = operators {
+            token: b"W\x00" as *const u8 as *const libc::c_char,
+            opcode: 44i32,
+        };
+        init
+    },
+];
+unsafe extern "C" fn get_opcode(mut token: *const libc::c_char) -> libc::c_int {
     let mut i: libc::c_uint = 0;
     i = 0i32 as libc::c_uint;
-    while (i as libc::c_ulong) <
-              (::std::mem::size_of::<[operators; 48]>() as
-                   libc::c_ulong).wrapping_div(::std::mem::size_of::<operators>()
-                                                   as libc::c_ulong) {
+    while (i as libc::c_ulong)
+        < (::std::mem::size_of::<[operators; 48]>() as libc::c_ulong)
+            .wrapping_div(::std::mem::size_of::<operators>() as libc::c_ulong)
+    {
         if streq_ptr(token, ps_operators[i as usize].token) {
-            return ps_operators[i as usize].opcode
+            return ps_operators[i as usize].opcode;
         }
         i = i.wrapping_add(1)
     }
     i = 0i32 as libc::c_uint;
-    while (i as libc::c_ulong) <
-              (::std::mem::size_of::<[operators; 28]>() as
-                   libc::c_ulong).wrapping_div(::std::mem::size_of::<operators>()
-                                                   as libc::c_ulong) {
+    while (i as libc::c_ulong)
+        < (::std::mem::size_of::<[operators; 28]>() as libc::c_ulong)
+            .wrapping_div(::std::mem::size_of::<operators>() as libc::c_ulong)
+    {
         if streq_ptr(token, mps_operators[i as usize].token) {
-            return mps_operators[i as usize].opcode
+            return mps_operators[i as usize].opcode;
         }
         i = i.wrapping_add(1)
     }
     return -1i32;
 }
-static mut stack: [*mut pdf_obj; 1024] =
-    [0 as *const pdf_obj as *mut pdf_obj; 1024];
+static mut stack: [*mut pdf_obj; 1024] = [0 as *const pdf_obj as *mut pdf_obj; 1024];
 static mut top_stack: libc::c_uint = 0i32 as libc::c_uint;
 unsafe extern "C" fn do_exch() -> libc::c_int {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-    if top_stack < 2i32 as libc::c_uint { return -1i32 }
+    if top_stack < 2i32 as libc::c_uint {
+        return -1i32;
+    }
     tmp = stack[top_stack.wrapping_sub(1i32 as libc::c_uint) as usize];
     stack[top_stack.wrapping_sub(1i32 as libc::c_uint) as usize] =
         stack[top_stack.wrapping_sub(2i32 as libc::c_uint) as usize];
@@ -2680,36 +3267,40 @@ unsafe extern "C" fn do_exch() -> libc::c_int {
 unsafe extern "C" fn do_clear() -> libc::c_int {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     while top_stack > 0i32 as libc::c_uint {
-        tmp =
-            if top_stack > 0i32 as libc::c_uint {
-                top_stack = top_stack.wrapping_sub(1);
-                stack[top_stack as usize]
-            } else { 0 as *mut pdf_obj };
+        tmp = if top_stack > 0i32 as libc::c_uint {
+            top_stack = top_stack.wrapping_sub(1);
+            stack[top_stack as usize]
+        } else {
+            0 as *mut pdf_obj
+        };
         pdf_release_obj(tmp);
     }
     return 0i32;
 }
-unsafe extern "C" fn pop_get_numbers(mut values: *mut libc::c_double,
-                                     mut count: libc::c_int) -> libc::c_int {
+unsafe extern "C" fn pop_get_numbers(
+    mut values: *mut libc::c_double,
+    mut count: libc::c_int,
+) -> libc::c_int {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-    loop  {
+    loop {
         let fresh1 = count;
         count = count - 1;
-        if !(fresh1 > 0i32) { break ; }
-        tmp =
-            if top_stack > 0i32 as libc::c_uint {
-                top_stack = top_stack.wrapping_sub(1);
-                stack[top_stack as usize]
-            } else { 0 as *mut pdf_obj };
+        if !(fresh1 > 0i32) {
+            break;
+        }
+        tmp = if top_stack > 0i32 as libc::c_uint {
+            top_stack = top_stack.wrapping_sub(1);
+            stack[top_stack as usize]
+        } else {
+            0 as *mut pdf_obj
+        };
         if tmp.is_null() {
-            dpx_warning(b"mpost: Stack underflow.\x00" as *const u8 as
-                            *const libc::c_char);
-            break ;
+            dpx_warning(b"mpost: Stack underflow.\x00" as *const u8 as *const libc::c_char);
+            break;
         } else if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
-            dpx_warning(b"mpost: Not a number!\x00" as *const u8 as
-                            *const libc::c_char);
+            dpx_warning(b"mpost: Not a number!\x00" as *const u8 as *const libc::c_char);
             pdf_release_obj(tmp);
-            break ;
+            break;
         } else {
             *values.offset(count as isize) = pdf_number_value(tmp);
             pdf_release_obj(tmp);
@@ -2717,24 +3308,28 @@ unsafe extern "C" fn pop_get_numbers(mut values: *mut libc::c_double,
     }
     return count + 1i32;
 }
-unsafe extern "C" fn cvr_array(mut array: *mut pdf_obj,
-                               mut values: *mut libc::c_double,
-                               mut count: libc::c_int) -> libc::c_int {
+unsafe extern "C" fn cvr_array(
+    mut array: *mut pdf_obj,
+    mut values: *mut libc::c_double,
+    mut count: libc::c_int,
+) -> libc::c_int {
     if !(!array.is_null() && pdf_obj_typeof(array) == 5i32) {
-        dpx_warning(b"mpost: Not an array!\x00" as *const u8 as
-                        *const libc::c_char);
+        dpx_warning(b"mpost: Not an array!\x00" as *const u8 as *const libc::c_char);
     } else {
         let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-        loop  {
+        loop {
             let fresh2 = count;
             count = count - 1;
-            if !(fresh2 > 0i32) { break ; }
+            if !(fresh2 > 0i32) {
+                break;
+            }
             tmp = pdf_get_array(array, count);
             if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
-                dpx_warning(b"mpost: Not a number!\x00" as *const u8 as
-                                *const libc::c_char);
-                break ;
-            } else { *values.offset(count as isize) = pdf_number_value(tmp) }
+                dpx_warning(b"mpost: Not a number!\x00" as *const u8 as *const libc::c_char);
+                break;
+            } else {
+                *values.offset(count as isize) = pdf_number_value(tmp)
+            }
         }
     }
     pdf_release_obj(array);
@@ -2742,26 +3337,26 @@ unsafe extern "C" fn cvr_array(mut array: *mut pdf_obj,
 }
 unsafe extern "C" fn is_fontdict(mut dict: *mut pdf_obj) -> bool {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !(!dict.is_null() && pdf_obj_typeof(dict) == 6i32) { return 0i32 != 0 }
-    tmp =
-        pdf_lookup_dict(dict,
-                        b"Type\x00" as *const u8 as *const libc::c_char);
-    if tmp.is_null() || !(!tmp.is_null() && pdf_obj_typeof(tmp) == 4i32) ||
-           strcmp(pdf_name_value(tmp),
-                  b"Font\x00" as *const u8 as *const libc::c_char) != 0 {
-        return 0i32 != 0
+    if !(!dict.is_null() && pdf_obj_typeof(dict) == 6i32) {
+        return 0i32 != 0;
     }
-    tmp =
-        pdf_lookup_dict(dict,
-                        b"FontName\x00" as *const u8 as *const libc::c_char);
+    tmp = pdf_lookup_dict(dict, b"Type\x00" as *const u8 as *const libc::c_char);
+    if tmp.is_null()
+        || !(!tmp.is_null() && pdf_obj_typeof(tmp) == 4i32)
+        || strcmp(
+            pdf_name_value(tmp),
+            b"Font\x00" as *const u8 as *const libc::c_char,
+        ) != 0
+    {
+        return 0i32 != 0;
+    }
+    tmp = pdf_lookup_dict(dict, b"FontName\x00" as *const u8 as *const libc::c_char);
     if tmp.is_null() || !(!tmp.is_null() && pdf_obj_typeof(tmp) == 4i32) {
-        return 0i32 != 0
+        return 0i32 != 0;
     }
-    tmp =
-        pdf_lookup_dict(dict,
-                        b"FontScale\x00" as *const u8 as *const libc::c_char);
+    tmp = pdf_lookup_dict(dict, b"FontScale\x00" as *const u8 as *const libc::c_char);
     if tmp.is_null() || !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
-        return 0i32 != 0
+        return 0i32 != 0;
     }
     return 1i32 != 0;
 }
@@ -2769,54 +3364,62 @@ unsafe extern "C" fn do_findfont() -> libc::c_int {
     let mut error: libc::c_int = 0i32;
     let mut font_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut font_name: *mut pdf_obj = 0 as *mut pdf_obj;
-    font_name =
-        if top_stack > 0i32 as libc::c_uint {
-            top_stack = top_stack.wrapping_sub(1);
-            stack[top_stack as usize]
-        } else { 0 as *mut pdf_obj };
-    if font_name.is_null() {
-        return 1i32
+    font_name = if top_stack > 0i32 as libc::c_uint {
+        top_stack = top_stack.wrapping_sub(1);
+        stack[top_stack as usize]
     } else {
-        if !font_name.is_null() && pdf_obj_typeof(font_name) == 3i32 ||
-               !font_name.is_null() && pdf_obj_typeof(font_name) == 4i32 {
+        0 as *mut pdf_obj
+    };
+    if font_name.is_null() {
+        return 1i32;
+    } else {
+        if !font_name.is_null() && pdf_obj_typeof(font_name) == 3i32
+            || !font_name.is_null() && pdf_obj_typeof(font_name) == 4i32
+        {
             /* Do not check the existence...
-     * The reason for this is that we cannot locate PK font without
-     * font scale.
-     */
+             * The reason for this is that we cannot locate PK font without
+             * font scale.
+             */
             font_dict = pdf_new_dict();
-            pdf_add_dict(font_dict,
-                         pdf_new_name(b"Type\x00" as *const u8 as
-                                          *const libc::c_char),
-                         pdf_new_name(b"Font\x00" as *const u8 as
-                                          *const libc::c_char));
+            pdf_add_dict(
+                font_dict,
+                pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"Font\x00" as *const u8 as *const libc::c_char),
+            );
             if !font_name.is_null() && pdf_obj_typeof(font_name) == 3i32 {
-                pdf_add_dict(font_dict,
-                             pdf_new_name(b"FontName\x00" as *const u8 as
-                                              *const libc::c_char),
-                             pdf_new_name(pdf_string_value(font_name) as
-                                              *const libc::c_char));
+                pdf_add_dict(
+                    font_dict,
+                    pdf_new_name(b"FontName\x00" as *const u8 as *const libc::c_char),
+                    pdf_new_name(pdf_string_value(font_name) as *const libc::c_char),
+                );
                 pdf_release_obj(font_name);
             } else {
-                pdf_add_dict(font_dict,
-                             pdf_new_name(b"FontName\x00" as *const u8 as
-                                              *const libc::c_char),
-                             font_name);
+                pdf_add_dict(
+                    font_dict,
+                    pdf_new_name(b"FontName\x00" as *const u8 as *const libc::c_char),
+                    font_name,
+                );
             }
-            pdf_add_dict(font_dict,
-                         pdf_new_name(b"FontScale\x00" as *const u8 as
-                                          *const libc::c_char),
-                         pdf_new_number(1.0f64));
+            pdf_add_dict(
+                font_dict,
+                pdf_new_name(b"FontScale\x00" as *const u8 as *const libc::c_char),
+                pdf_new_number(1.0f64),
+            );
             if top_stack < 1024i32 as libc::c_uint {
                 let fresh3 = top_stack;
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh3 as usize] = font_dict
             } else {
-                dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                as *const u8 as *const libc::c_char);
+                dpx_warning(
+                    b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
+                        as *const libc::c_char,
+                );
                 pdf_release_obj(font_dict);
                 error = 1i32
             }
-        } else { error = 1i32 }
+        } else {
+            error = 1i32
+        }
     }
     return error;
 }
@@ -2826,31 +3429,38 @@ unsafe extern "C" fn do_scalefont() -> libc::c_int {
     let mut font_scale: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut scale: libc::c_double = 0.;
     error = pop_get_numbers(&mut scale, 1i32);
-    if error != 0 { return error }
-    font_dict =
-        if top_stack > 0i32 as libc::c_uint {
-            top_stack = top_stack.wrapping_sub(1);
-            stack[top_stack as usize]
-        } else { 0 as *mut pdf_obj };
+    if error != 0 {
+        return error;
+    }
+    font_dict = if top_stack > 0i32 as libc::c_uint {
+        top_stack = top_stack.wrapping_sub(1);
+        stack[top_stack as usize]
+    } else {
+        0 as *mut pdf_obj
+    };
     if font_dict.is_null() {
         error = 1i32
     } else if is_fontdict(font_dict) {
-        font_scale =
-            pdf_lookup_dict(font_dict,
-                            b"FontScale\x00" as *const u8 as
-                                *const libc::c_char);
+        font_scale = pdf_lookup_dict(
+            font_dict,
+            b"FontScale\x00" as *const u8 as *const libc::c_char,
+        );
         pdf_set_number(font_scale, pdf_number_value(font_scale) * scale);
         if top_stack < 1024i32 as libc::c_uint {
             let fresh4 = top_stack;
             top_stack = top_stack.wrapping_add(1);
             stack[fresh4 as usize] = font_dict
         } else {
-            dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                            as *const u8 as *const libc::c_char);
+            dpx_warning(
+                b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
+                    as *const libc::c_char,
+            );
             pdf_release_obj(font_dict);
             error = 1i32
         }
-    } else { error = 1i32 }
+    } else {
+        error = 1i32
+    }
     return error;
 }
 unsafe extern "C" fn do_setfont() -> libc::c_int {
@@ -2858,25 +3468,26 @@ unsafe extern "C" fn do_setfont() -> libc::c_int {
     let mut font_name: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut font_scale: libc::c_double = 0.;
     let mut font_dict: *mut pdf_obj = 0 as *mut pdf_obj;
-    font_dict =
-        if top_stack > 0i32 as libc::c_uint {
-            top_stack = top_stack.wrapping_sub(1);
-            stack[top_stack as usize]
-        } else { 0 as *mut pdf_obj };
+    font_dict = if top_stack > 0i32 as libc::c_uint {
+        top_stack = top_stack.wrapping_sub(1);
+        stack[top_stack as usize]
+    } else {
+        0 as *mut pdf_obj
+    };
     if !is_fontdict(font_dict) {
         error = 1i32
     } else {
         /* Subfont support prevent us from managing
-     * font in a single place...
-     */
-        font_name =
-            pdf_name_value(pdf_lookup_dict(font_dict,
-                                           b"FontName\x00" as *const u8 as
-                                               *const libc::c_char));
-        font_scale =
-            pdf_number_value(pdf_lookup_dict(font_dict,
-                                             b"FontScale\x00" as *const u8 as
-                                                 *const libc::c_char));
+         * font in a single place...
+         */
+        font_name = pdf_name_value(pdf_lookup_dict(
+            font_dict,
+            b"FontName\x00" as *const u8 as *const libc::c_char,
+        ));
+        font_scale = pdf_number_value(pdf_lookup_dict(
+            font_dict,
+            b"FontScale\x00" as *const u8 as *const libc::c_char,
+        ));
         error = mp_setfont(font_name, font_scale)
     }
     pdf_release_obj(font_dict);
@@ -2885,42 +3496,39 @@ unsafe extern "C" fn do_setfont() -> libc::c_int {
 /* Push dummy font dict onto PS stack */
 unsafe extern "C" fn do_currentfont() -> libc::c_int {
     let mut error: libc::c_int = 0i32; /* Should not be error... */
-    let mut font: *mut mp_font =
-        0 as *mut mp_font; /* Should not be error... */
+    let mut font: *mut mp_font = 0 as *mut mp_font; /* Should not be error... */
     let mut font_dict: *mut pdf_obj = 0 as *mut pdf_obj;
-    font =
-        if currentfont < 0i32 {
-            0 as *mut mp_font
-        } else {
-            &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as
-                *mut mp_font
-        };
+    font = if currentfont < 0i32 {
+        0 as *mut mp_font
+    } else {
+        &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as *mut mp_font
+    };
     if font.is_null() {
-        dpx_warning(b"Currentfont undefined...\x00" as *const u8 as
-                        *const libc::c_char);
-        return 1i32
+        dpx_warning(b"Currentfont undefined...\x00" as *const u8 as *const libc::c_char);
+        return 1i32;
     } else {
         font_dict = pdf_new_dict();
-        pdf_add_dict(font_dict,
-                     pdf_new_name(b"Type\x00" as *const u8 as
-                                      *const libc::c_char),
-                     pdf_new_name(b"Font\x00" as *const u8 as
-                                      *const libc::c_char));
-        pdf_add_dict(font_dict,
-                     pdf_new_name(b"FontName\x00" as *const u8 as
-                                      *const libc::c_char),
-                     pdf_new_name((*font).font_name));
-        pdf_add_dict(font_dict,
-                     pdf_new_name(b"FontScale\x00" as *const u8 as
-                                      *const libc::c_char),
-                     pdf_new_number((*font).pt_size));
+        pdf_add_dict(
+            font_dict,
+            pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Font\x00" as *const u8 as *const libc::c_char),
+        );
+        pdf_add_dict(
+            font_dict,
+            pdf_new_name(b"FontName\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name((*font).font_name),
+        );
+        pdf_add_dict(
+            font_dict,
+            pdf_new_name(b"FontScale\x00" as *const u8 as *const libc::c_char),
+            pdf_new_number((*font).pt_size),
+        );
         if top_stack < 1024i32 as libc::c_uint {
             let fresh5 = top_stack;
             top_stack = top_stack.wrapping_add(1);
             stack[fresh5 as usize] = font_dict
         } else {
-            dpx_warning(b"PS stack overflow...\x00" as *const u8 as
-                            *const libc::c_char);
+            dpx_warning(b"PS stack overflow...\x00" as *const u8 as *const libc::c_char);
             pdf_release_obj(font_dict);
             error = 1i32
         }
@@ -2929,106 +3537,106 @@ unsafe extern "C" fn do_currentfont() -> libc::c_int {
 }
 unsafe extern "C" fn do_show() -> libc::c_int {
     let mut font: *mut mp_font = 0 as *mut mp_font;
-    let mut cp: pdf_coord = pdf_coord{x: 0., y: 0.,};
+    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
     let mut text_str: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut length: libc::c_int = 0;
     let mut strptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
     let mut text_width: libc::c_double = 0.;
-    font =
-        if currentfont < 0i32 {
-            0 as *mut mp_font
-        } else {
-            &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as
-                *mut mp_font
-        };
+    font = if currentfont < 0i32 {
+        0 as *mut mp_font
+    } else {
+        &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as *mut mp_font
+    };
     if font.is_null() {
-        dpx_warning(b"Currentfont not set.\x00" as *const u8 as
-                        *const libc::c_char);
-        return 1i32
+        dpx_warning(b"Currentfont not set.\x00" as *const u8 as *const libc::c_char);
+        return 1i32;
     }
     pdf_dev_currentpoint(&mut cp);
-    text_str =
-        if top_stack > 0i32 as libc::c_uint {
-            top_stack = top_stack.wrapping_sub(1);
-            stack[top_stack as usize]
-        } else { 0 as *mut pdf_obj };
+    text_str = if top_stack > 0i32 as libc::c_uint {
+        top_stack = top_stack.wrapping_sub(1);
+        stack[top_stack as usize]
+    } else {
+        0 as *mut pdf_obj
+    };
     if !(!text_str.is_null() && pdf_obj_typeof(text_str) == 3i32) {
         pdf_release_obj(text_str);
-        return 1i32
+        return 1i32;
     }
     if (*font).font_id < 0i32 {
-        dpx_warning(b"mpost: not set.\x00" as *const u8 as
-                        *const libc::c_char);
+        dpx_warning(b"mpost: not set.\x00" as *const u8 as *const libc::c_char);
         pdf_release_obj(text_str);
-        return 1i32
+        return 1i32;
     }
     strptr = pdf_string_value(text_str) as *mut libc::c_uchar;
     length = pdf_string_length(text_str) as libc::c_int;
     if (*font).tfm_id < 0i32 {
-        dpx_warning(b"mpost: TFM not found for \"%s\".\x00" as *const u8 as
-                        *const libc::c_char, (*font).font_name);
-        dpx_warning(b"mpost: Text width not calculated...\x00" as *const u8 as
-                        *const libc::c_char);
+        dpx_warning(
+            b"mpost: TFM not found for \"%s\".\x00" as *const u8 as *const libc::c_char,
+            (*font).font_name,
+        );
+        dpx_warning(b"mpost: Text width not calculated...\x00" as *const u8 as *const libc::c_char);
     }
     text_width = 0.0f64;
     if (*font).subfont_id >= 0i32 {
         let mut uch: libc::c_ushort = 0;
         let mut ustr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
         let mut i: libc::c_int = 0;
-        ustr =
-            new(((length * 2i32) as uint32_t as
-                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_uchar>()
-                                                     as libc::c_ulong) as
-                    uint32_t) as *mut libc::c_uchar;
+        ustr = new(((length * 2i32) as uint32_t as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+            as uint32_t) as *mut libc::c_uchar;
         i = 0i32;
         while i < length {
-            uch =
-                lookup_sfd_record((*font).subfont_id,
-                                  *strptr.offset(i as isize));
-            *ustr.offset((2i32 * i) as isize) =
-                (uch as libc::c_int >> 8i32) as libc::c_uchar;
+            uch = lookup_sfd_record((*font).subfont_id, *strptr.offset(i as isize));
+            *ustr.offset((2i32 * i) as isize) = (uch as libc::c_int >> 8i32) as libc::c_uchar;
             *ustr.offset((2i32 * i + 1i32) as isize) =
                 (uch as libc::c_int & 0xffi32) as libc::c_uchar;
             if (*font).tfm_id >= 0i32 {
-                text_width +=
-                    tfm_get_width((*font).tfm_id,
-                                  *strptr.offset(i as isize) as int32_t)
+                text_width += tfm_get_width((*font).tfm_id, *strptr.offset(i as isize) as int32_t)
             }
             i += 1
         }
         text_width *= (*font).pt_size;
-        pdf_dev_set_string((cp.x * dev_unit_dviunit()) as spt_t,
-                           (cp.y * dev_unit_dviunit()) as spt_t,
-                           ustr as *const libc::c_void,
-                           (length * 2i32) as size_t,
-                           (text_width * dev_unit_dviunit()) as spt_t,
-                           (*font).font_id, 0i32);
+        pdf_dev_set_string(
+            (cp.x * dev_unit_dviunit()) as spt_t,
+            (cp.y * dev_unit_dviunit()) as spt_t,
+            ustr as *const libc::c_void,
+            (length * 2i32) as size_t,
+            (text_width * dev_unit_dviunit()) as spt_t,
+            (*font).font_id,
+            0i32,
+        );
         free(ustr as *mut libc::c_void);
     } else {
         if (*font).tfm_id >= 0i32 {
-            text_width =
-                tfm_string_width((*font).tfm_id, strptr,
-                                 length as libc::c_uint) as libc::c_double /
-                    (1i32 << 20i32) as libc::c_double;
+            text_width = tfm_string_width((*font).tfm_id, strptr, length as libc::c_uint)
+                as libc::c_double
+                / (1i32 << 20i32) as libc::c_double;
             text_width *= (*font).pt_size
         }
-        pdf_dev_set_string((cp.x * dev_unit_dviunit()) as spt_t,
-                           (cp.y * dev_unit_dviunit()) as spt_t,
-                           strptr as *const libc::c_void, length as size_t,
-                           (text_width * dev_unit_dviunit()) as spt_t,
-                           (*font).font_id, 0i32);
+        pdf_dev_set_string(
+            (cp.x * dev_unit_dviunit()) as spt_t,
+            (cp.y * dev_unit_dviunit()) as spt_t,
+            strptr as *const libc::c_void,
+            length as size_t,
+            (text_width * dev_unit_dviunit()) as spt_t,
+            (*font).font_id,
+            0i32,
+        );
     }
     if pdf_dev_get_font_wmode((*font).font_id) != 0 {
         pdf_dev_rmoveto(0.0f64, -text_width);
-    } else { pdf_dev_rmoveto(text_width, 0.0f64); }
+    } else {
+        pdf_dev_rmoveto(text_width, 0.0f64);
+    }
     graphics_mode();
     pdf_release_obj(text_str);
     return 0i32;
 }
-unsafe extern "C" fn do_mpost_bind_def(mut ps_code: *const libc::c_char,
-                                       mut x_user: libc::c_double,
-                                       mut y_user: libc::c_double)
- -> libc::c_int {
+unsafe extern "C" fn do_mpost_bind_def(
+    mut ps_code: *const libc::c_char,
+    mut x_user: libc::c_double,
+    mut y_user: libc::c_double,
+) -> libc::c_int {
     let mut error: libc::c_int = 0i32;
     let mut start: *const libc::c_char = 0 as *const libc::c_char;
     let mut end: *const libc::c_char = 0 as *const libc::c_char;
@@ -3037,23 +3645,31 @@ unsafe extern "C" fn do_mpost_bind_def(mut ps_code: *const libc::c_char,
     error = mp_parse_body(&mut start, end, x_user, y_user);
     return error;
 }
-unsafe extern "C" fn do_texfig_operator(mut opcode: libc::c_int,
-                                        mut x_user: libc::c_double,
-                                        mut y_user: libc::c_double)
- -> libc::c_int {
-    static mut fig_p: transform_info =
-        transform_info{width: 0.,
-                       height: 0.,
-                       depth: 0.,
-                       matrix:
-                           pdf_tmatrix{a: 0.,
-                                       b: 0.,
-                                       c: 0.,
-                                       d: 0.,
-                                       e: 0.,
-                                       f: 0.,},
-                       bbox: pdf_rect{llx: 0., lly: 0., urx: 0., ury: 0.,},
-                       flags: 0,};
+unsafe extern "C" fn do_texfig_operator(
+    mut opcode: libc::c_int,
+    mut x_user: libc::c_double,
+    mut y_user: libc::c_double,
+) -> libc::c_int {
+    static mut fig_p: transform_info = transform_info {
+        width: 0.,
+        height: 0.,
+        depth: 0.,
+        matrix: pdf_tmatrix {
+            a: 0.,
+            b: 0.,
+            c: 0.,
+            d: 0.,
+            e: 0.,
+            f: 0.,
+        },
+        bbox: pdf_rect {
+            llx: 0.,
+            lly: 0.,
+            urx: 0.,
+            ury: 0.,
+        },
+        flags: 0,
+    };
     static mut in_tfig: libc::c_int = 0i32;
     static mut xobj_id: libc::c_int = -1i32;
     static mut count: libc::c_int = 0i32;
@@ -3074,27 +3690,33 @@ unsafe extern "C" fn do_texfig_operator(mut opcode: libc::c_int,
                 fig_p.bbox.urx = values[4] * dvi2pts;
                 fig_p.bbox.ury = -values[5] * dvi2pts;
                 fig_p.flags |= 1i32 << 0i32;
-                sprintf(resname.as_mut_ptr(),
-                        b"__tf%d__\x00" as *const u8 as *const libc::c_char,
-                        count);
-                xobj_id =
-                    pdf_doc_begin_grabbing(resname.as_mut_ptr(),
-                                           fig_p.bbox.llx, fig_p.bbox.ury,
-                                           &mut fig_p.bbox);
+                sprintf(
+                    resname.as_mut_ptr(),
+                    b"__tf%d__\x00" as *const u8 as *const libc::c_char,
+                    count,
+                );
+                xobj_id = pdf_doc_begin_grabbing(
+                    resname.as_mut_ptr(),
+                    fig_p.bbox.llx,
+                    fig_p.bbox.ury,
+                    &mut fig_p.bbox,
+                );
                 in_tfig = 1i32;
                 count += 1
             }
         }
         1003 => {
             if in_tfig == 0 {
-                _tt_abort(b"endTexFig without valid startTexFig!.\x00" as
-                              *const u8 as *const libc::c_char);
+                _tt_abort(
+                    b"endTexFig without valid startTexFig!.\x00" as *const u8
+                        as *const libc::c_char,
+                );
             }
             pdf_doc_end_grabbing(0 as *mut pdf_obj);
             pdf_dev_put_image(xobj_id, &mut fig_p, x_user, y_user);
             in_tfig = 0i32
         }
-        _ => { error = 1i32 }
+        _ => error = 1i32,
     }
     return error;
 }
@@ -3112,37 +3734,47 @@ unsafe extern "C" fn ps_dev_CTM(mut M: *mut pdf_tmatrix) -> libc::c_int {
  * Again, the only piece that needs x_user and y_user is
  * that piece dealing with texfig.
  */
-unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
-                                 mut x_user: libc::c_double,
-                                 mut y_user: libc::c_double) -> libc::c_int {
+unsafe extern "C" fn do_operator(
+    mut token: *const libc::c_char,
+    mut x_user: libc::c_double,
+    mut y_user: libc::c_double,
+) -> libc::c_int {
     let mut error: libc::c_int = 0i32;
     let mut opcode: libc::c_int = 0i32;
     let mut values: [libc::c_double; 12] = [0.; 12];
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut matrix: pdf_tmatrix =
-        pdf_tmatrix{a: 0., b: 0., c: 0., d: 0., e: 0., f: 0.,};
-    let mut cp: pdf_coord = pdf_coord{x: 0., y: 0.,};
-    let mut color: pdf_color =
-        pdf_color{num_components: 0,
-                  spot_color_name: 0 as *mut libc::c_char,
-                  values: [0.; 4],};
+    let mut matrix: pdf_tmatrix = pdf_tmatrix {
+        a: 0.,
+        b: 0.,
+        c: 0.,
+        d: 0.,
+        e: 0.,
+        f: 0.,
+    };
+    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut color: pdf_color = pdf_color {
+        num_components: 0,
+        spot_color_name: 0 as *mut libc::c_char,
+        values: [0.; 4],
+    };
     opcode = get_opcode(token);
     let mut current_block_294: u64;
     match opcode {
         1 => {
             /*
-     * Arithmetic operators
-     */
+             * Arithmetic operators
+             */
             error = pop_get_numbers(values.as_mut_ptr(), 2i32);
             if error == 0 {
                 if top_stack < 1024i32 as libc::c_uint {
                     let fresh6 = top_stack;
                     top_stack = top_stack.wrapping_add(1);
-                    stack[fresh6 as usize] =
-                        pdf_new_number(values[0] + values[1])
+                    stack[fresh6 as usize] = pdf_new_number(values[0] + values[1])
                 } else {
-                    dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                    as *const u8 as *const libc::c_char);
+                    dpx_warning(
+                        b"PS stack overflow including MetaPost file or inline PS code\x00"
+                            as *const u8 as *const libc::c_char,
+                    );
                     error = 1i32
                 }
             }
@@ -3153,11 +3785,12 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
                 if top_stack < 1024i32 as libc::c_uint {
                     let fresh7 = top_stack;
                     top_stack = top_stack.wrapping_add(1);
-                    stack[fresh7 as usize] =
-                        pdf_new_number(values[0] * values[1])
+                    stack[fresh7 as usize] = pdf_new_number(values[0] * values[1])
                 } else {
-                    dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                    as *const u8 as *const libc::c_char);
+                    dpx_warning(
+                        b"PS stack overflow including MetaPost file or inline PS code\x00"
+                            as *const u8 as *const libc::c_char,
+                    );
                     error = 1i32
                 }
             }
@@ -3170,8 +3803,10 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh8 as usize] = pdf_new_number(-values[0])
                 } else {
-                    dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                    as *const u8 as *const libc::c_char);
+                    dpx_warning(
+                        b"PS stack overflow including MetaPost file or inline PS code\x00"
+                            as *const u8 as *const libc::c_char,
+                    );
                     error = 1i32
                 }
             }
@@ -3182,11 +3817,12 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
                 if top_stack < 1024i32 as libc::c_uint {
                     let fresh9 = top_stack;
                     top_stack = top_stack.wrapping_add(1);
-                    stack[fresh9 as usize] =
-                        pdf_new_number(values[0] - values[1])
+                    stack[fresh9 as usize] = pdf_new_number(values[0] - values[1])
                 } else {
-                    dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                    as *const u8 as *const libc::c_char);
+                    dpx_warning(
+                        b"PS stack overflow including MetaPost file or inline PS code\x00"
+                            as *const u8 as *const libc::c_char,
+                    );
                     error = 1i32
                 }
             }
@@ -3197,11 +3833,12 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
                 if top_stack < 1024i32 as libc::c_uint {
                     let fresh10 = top_stack;
                     top_stack = top_stack.wrapping_add(1);
-                    stack[fresh10 as usize] =
-                        pdf_new_number(values[0] / values[1])
+                    stack[fresh10 as usize] = pdf_new_number(values[0] / values[1])
                 } else {
-                    dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                    as *const u8 as *const libc::c_char);
+                    dpx_warning(
+                        b"PS stack overflow including MetaPost file or inline PS code\x00"
+                            as *const u8 as *const libc::c_char,
+                    );
                     error = 1i32
                 }
             }
@@ -3215,11 +3852,15 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh11 as usize] =
                         pdf_new_number(if values[0] > 0i32 as libc::c_double {
-                                           floor(values[0])
-                                       } else { ceil(values[0]) })
+                            floor(values[0])
+                        } else {
+                            ceil(values[0])
+                        })
                 } else {
-                    dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                    as *const u8 as *const libc::c_char);
+                    dpx_warning(
+                        b"PS stack overflow including MetaPost file or inline PS code\x00"
+                            as *const u8 as *const libc::c_char,
+                    );
                     error = 1i32
                 }
             }
@@ -3229,89 +3870,103 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
             error = do_clear()
         }
         12 => {
-            tmp =
-                if top_stack > 0i32 as libc::c_uint {
-                    top_stack = top_stack.wrapping_sub(1);
-                    stack[top_stack as usize]
-                } else { 0 as *mut pdf_obj };
+            tmp = if top_stack > 0i32 as libc::c_uint {
+                top_stack = top_stack.wrapping_sub(1);
+                stack[top_stack as usize]
+            } else {
+                0 as *mut pdf_obj
+            };
             pdf_release_obj(tmp);
         }
-        11 => { error = do_exch() }
+        11 => error = do_exch(),
         33 => {
             /* Path construction */
             error = pop_get_numbers(values.as_mut_ptr(), 2i32);
-            if error == 0 { error = pdf_dev_moveto(values[0], values[1]) }
+            if error == 0 {
+                error = pdf_dev_moveto(values[0], values[1])
+            }
         }
         34 => {
             error = pop_get_numbers(values.as_mut_ptr(), 2i32);
-            if error == 0 { error = pdf_dev_rmoveto(values[0], values[1]) }
+            if error == 0 {
+                error = pdf_dev_rmoveto(values[0], values[1])
+            }
         }
         37 => {
             error = pop_get_numbers(values.as_mut_ptr(), 2i32);
-            if error == 0 { error = pdf_dev_lineto(values[0], values[1]) }
+            if error == 0 {
+                error = pdf_dev_lineto(values[0], values[1])
+            }
         }
         38 => {
             error = pop_get_numbers(values.as_mut_ptr(), 2i32);
-            if error == 0 { error = pdf_dev_rlineto(values[0], values[1]) }
+            if error == 0 {
+                error = pdf_dev_rlineto(values[0], values[1])
+            }
         }
         35 => {
             error = pop_get_numbers(values.as_mut_ptr(), 6i32);
             if error == 0 {
-                error =
-                    pdf_dev_curveto(values[0], values[1], values[2],
-                                    values[3], values[4], values[5])
+                error = pdf_dev_curveto(
+                    values[0], values[1], values[2], values[3], values[4], values[5],
+                )
             }
         }
         36 => {
             error = pop_get_numbers(values.as_mut_ptr(), 6i32);
             if error == 0 {
-                error =
-                    pdf_dev_rcurveto(values[0], values[1], values[2],
-                                     values[3], values[4], values[5])
+                error = pdf_dev_rcurveto(
+                    values[0], values[1], values[2], values[3], values[4], values[5],
+                )
             }
         }
-        32 => { error = pdf_dev_closepath() }
+        32 => error = pdf_dev_closepath(),
         39 => {
             error = pop_get_numbers(values.as_mut_ptr(), 5i32);
             if error == 0 {
-                error =
-                    pdf_dev_arc(values[0], values[1], values[2], values[3],
-                                values[4])
+                error = pdf_dev_arc(values[0], values[1], values[2], values[3], values[4])
             }
         }
         40 => {
             error = pop_get_numbers(values.as_mut_ptr(), 5i32);
             if error == 0 {
-                error =
-                    pdf_dev_arcn(values[0], values[1], values[2], values[3],
-                                 values[4])
+                error = pdf_dev_arcn(values[0], values[1], values[2], values[3], values[4])
             }
         }
-        31 => { pdf_dev_newpath(); }
+        31 => {
+            pdf_dev_newpath();
+        }
         42 => {
             /* fill rule not supported yet */
             pdf_dev_flushpath('S' as i32 as libc::c_char, 0i32);
         }
-        41 => { pdf_dev_flushpath('f' as i32 as libc::c_char, 0i32); }
-        44 => { error = pdf_dev_clip() }
-        45 => { error = pdf_dev_eoclip() }
+        41 => {
+            pdf_dev_flushpath('f' as i32 as libc::c_char, 0i32);
+        }
+        44 => error = pdf_dev_clip(),
+        45 => error = pdf_dev_eoclip(),
         50 => {
             /* Graphics state operators: */
             error = pdf_dev_gsave(); /* This does pdf_release_obj() */
             save_font();
         }
-        51 => { error = pdf_dev_grestore(); restore_font(); }
+        51 => {
+            error = pdf_dev_grestore();
+            restore_font();
+        }
         52 => {
-            tmp =
-                if top_stack > 0i32 as libc::c_uint {
-                    top_stack = top_stack.wrapping_sub(1);
-                    stack[top_stack as usize]
-                } else { 0 as *mut pdf_obj };
+            tmp = if top_stack > 0i32 as libc::c_uint {
+                top_stack = top_stack.wrapping_sub(1);
+                stack[top_stack as usize]
+            } else {
+                0 as *mut pdf_obj
+            };
             error = cvr_array(tmp, values.as_mut_ptr(), 6i32);
             tmp = 0 as *mut pdf_obj;
             if error != 0 {
-                dpx_warning(b"Missing array before \"concat\".\x00" as
-                                *const u8 as *const libc::c_char);
+                dpx_warning(
+                    b"Missing array before \"concat\".\x00" as *const u8 as *const libc::c_char,
+                );
             } else {
                 matrix.a = values[0];
                 matrix.b = values[1];
@@ -3325,7 +3980,9 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
         53 => {
             error = pop_get_numbers(values.as_mut_ptr(), 2i32);
             if error == 0 {
-                match mp_cmode { _ => { } }
+                match mp_cmode {
+                    _ => {}
+                }
                 matrix.a = values[0];
                 matrix.b = 0.0f64;
                 matrix.c = 0.0f64;
@@ -3339,9 +3996,7 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
             /* Positive angle means clock-wise direction in graphicx-dvips??? */
             error = pop_get_numbers(values.as_mut_ptr(), 1i32);
             if error == 0 {
-                values[0] =
-                    values[0] * 3.14159265358979323846f64 /
-                        180i32 as libc::c_double;
+                values[0] = values[0] * 3.14159265358979323846f64 / 180i32 as libc::c_double;
                 match mp_cmode {
                     1 | 0 => {
                         /* Really? */
@@ -3386,40 +4041,35 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
                 let mut dash_values: [libc::c_double; 16] = [0.; 16];
                 let mut offset: libc::c_double = 0.;
                 offset = values[0];
-                pattern =
-                    if top_stack > 0i32 as libc::c_uint {
-                        top_stack = top_stack.wrapping_sub(1);
-                        stack[top_stack as usize]
-                    } else { 0 as *mut pdf_obj };
+                pattern = if top_stack > 0i32 as libc::c_uint {
+                    top_stack = top_stack.wrapping_sub(1);
+                    stack[top_stack as usize]
+                } else {
+                    0 as *mut pdf_obj
+                };
                 if !(!pattern.is_null() && pdf_obj_typeof(pattern) == 5i32) {
                     pdf_release_obj(pattern);
                     error = 1i32
                 } else {
                     num_dashes = pdf_array_length(pattern) as libc::c_int;
                     if num_dashes > 16i32 {
-                        dpx_warning(b"Too many dashes...\x00" as *const u8 as
-                                        *const libc::c_char);
+                        dpx_warning(b"Too many dashes...\x00" as *const u8 as *const libc::c_char);
                         pdf_release_obj(pattern);
                         error = 1i32
                     } else {
                         i = 0i32;
                         while i < num_dashes && error == 0 {
                             dash = pdf_get_array(pattern, i);
-                            if !(!dash.is_null() &&
-                                     pdf_obj_typeof(dash) == 2i32) {
+                            if !(!dash.is_null() && pdf_obj_typeof(dash) == 2i32) {
                                 error = 1i32
                             } else {
-                                dash_values[i as usize] =
-                                    pdf_number_value(dash)
+                                dash_values[i as usize] = pdf_number_value(dash)
                             }
                             i += 1
                         }
                         pdf_release_obj(pattern);
                         if error == 0 {
-                            error =
-                                pdf_dev_setdash(num_dashes,
-                                                dash_values.as_mut_ptr(),
-                                                offset)
+                            error = pdf_dev_setdash(num_dashes, dash_values.as_mut_ptr(), offset)
                         }
                     }
                 }
@@ -3439,27 +4089,28 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
         }
         60 => {
             error = pop_get_numbers(values.as_mut_ptr(), 1i32);
-            if error == 0 { error = pdf_dev_setlinewidth(values[0]) }
+            if error == 0 {
+                error = pdf_dev_setlinewidth(values[0])
+            }
         }
         64 => {
             error = pop_get_numbers(values.as_mut_ptr(), 1i32);
-            if error == 0 { error = pdf_dev_setmiterlimit(values[0]) }
+            if error == 0 {
+                error = pdf_dev_setmiterlimit(values[0])
+            }
         }
         72 => {
             error = pop_get_numbers(values.as_mut_ptr(), 4i32);
             /* Not handled properly */
             if error == 0 {
-                pdf_color_cmykcolor(&mut color, values[0], values[1],
-                                    values[2], values[3]);
+                pdf_color_cmykcolor(&mut color, values[0], values[1], values[2], values[3]);
                 pdf_dev_set_color(&mut color, 0i32 as libc::c_char, 0i32);
                 pdf_dev_set_color(&mut color, 0x20i32 as libc::c_char, 0i32);
             }
         }
         70 => {
             /* Not handled properly */
-            error =
-                pop_get_numbers(values.as_mut_ptr(),
-                                1i32); /* This does pdf_release_obj() */
+            error = pop_get_numbers(values.as_mut_ptr(), 1i32); /* This does pdf_release_obj() */
             if error == 0 {
                 pdf_color_graycolor(&mut color, values[0]);
                 pdf_dev_set_color(&mut color, 0i32 as libc::c_char, 0i32);
@@ -3469,13 +4120,12 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
         71 => {
             error = pop_get_numbers(values.as_mut_ptr(), 3i32);
             if error == 0 {
-                pdf_color_rgbcolor(&mut color, values[0], values[1],
-                                   values[2]);
+                pdf_color_rgbcolor(&mut color, values[0], values[1], values[2]);
                 pdf_dev_set_color(&mut color, 0i32 as libc::c_char, 0i32);
                 pdf_dev_set_color(&mut color, 0x20i32 as libc::c_char, 0i32);
             }
         }
-        49 => { }
+        49 => {}
         80 => {
             error = pdf_dev_currentpoint(&mut cp);
             if error == 0 {
@@ -3488,24 +4138,29 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
                         top_stack = top_stack.wrapping_add(1);
                         stack[fresh13 as usize] = pdf_new_number(cp.y)
                     } else {
-                        dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                        as *const u8 as *const libc::c_char);
+                        dpx_warning(
+                            b"PS stack overflow including MetaPost file or inline PS code\x00"
+                                as *const u8 as *const libc::c_char,
+                        );
                         error = 1i32
                     }
                 } else {
-                    dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                    as *const u8 as *const libc::c_char);
+                    dpx_warning(
+                        b"PS stack overflow including MetaPost file or inline PS code\x00"
+                            as *const u8 as *const libc::c_char,
+                    );
                     error = 1i32
                 }
             }
         }
         82 => {
             let mut has_matrix: libc::c_int = 0i32;
-            tmp =
-                if top_stack > 0i32 as libc::c_uint {
-                    top_stack = top_stack.wrapping_sub(1);
-                    stack[top_stack as usize]
-                } else { 0 as *mut pdf_obj };
+            tmp = if top_stack > 0i32 as libc::c_uint {
+                top_stack = top_stack.wrapping_sub(1);
+                stack[top_stack as usize]
+            } else {
+                0 as *mut pdf_obj
+            };
             if !tmp.is_null() && pdf_obj_typeof(tmp) == 5i32 {
                 error = cvr_array(tmp, values.as_mut_ptr(), 6i32);
                 tmp = 0 as *mut pdf_obj;
@@ -3518,28 +4173,32 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
                     matrix.d = values[3];
                     matrix.e = values[4];
                     matrix.f = values[5];
-                    tmp =
-                        if top_stack > 0i32 as libc::c_uint {
-                            top_stack = top_stack.wrapping_sub(1);
-                            stack[top_stack as usize]
-                        } else { 0 as *mut pdf_obj };
+                    tmp = if top_stack > 0i32 as libc::c_uint {
+                        top_stack = top_stack.wrapping_sub(1);
+                        stack[top_stack as usize]
+                    } else {
+                        0 as *mut pdf_obj
+                    };
                     has_matrix = 1i32;
                     current_block_294 = 15375688482130298215;
                 }
-            } else { current_block_294 = 15375688482130298215; }
+            } else {
+                current_block_294 = 15375688482130298215;
+            }
             match current_block_294 {
-                9125367800366194000 => { }
+                9125367800366194000 => {}
                 _ => {
                     if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
                         error = 1i32
                     } else {
                         cp.y = pdf_number_value(tmp);
                         pdf_release_obj(tmp);
-                        tmp =
-                            if top_stack > 0i32 as libc::c_uint {
-                                top_stack = top_stack.wrapping_sub(1);
-                                stack[top_stack as usize]
-                            } else { 0 as *mut pdf_obj };
+                        tmp = if top_stack > 0i32 as libc::c_uint {
+                            top_stack = top_stack.wrapping_sub(1);
+                            stack[top_stack as usize]
+                        } else {
+                            0 as *mut pdf_obj
+                        };
                         if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
                             error = 1i32
                         } else {
@@ -3553,13 +4212,11 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
                             if top_stack < 1024i32 as libc::c_uint {
                                 let fresh14 = top_stack;
                                 top_stack = top_stack.wrapping_add(1);
-                                stack[fresh14 as usize] =
-                                    pdf_new_number(cp.x);
+                                stack[fresh14 as usize] = pdf_new_number(cp.x);
                                 if top_stack < 1024i32 as libc::c_uint {
                                     let fresh15 = top_stack;
                                     top_stack = top_stack.wrapping_add(1);
-                                    stack[fresh15 as usize] =
-                                        pdf_new_number(cp.y)
+                                    stack[fresh15 as usize] = pdf_new_number(cp.y)
                                 } else {
                                     dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
                                                     as *const u8 as
@@ -3579,11 +4236,12 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
         }
         81 => {
             let mut has_matrix_0: libc::c_int = 0i32;
-            tmp =
-                if top_stack > 0i32 as libc::c_uint {
-                    top_stack = top_stack.wrapping_sub(1);
-                    stack[top_stack as usize]
-                } else { 0 as *mut pdf_obj };
+            tmp = if top_stack > 0i32 as libc::c_uint {
+                top_stack = top_stack.wrapping_sub(1);
+                stack[top_stack as usize]
+            } else {
+                0 as *mut pdf_obj
+            };
             if !tmp.is_null() && pdf_obj_typeof(tmp) == 5i32 {
                 error = cvr_array(tmp, values.as_mut_ptr(), 6i32);
                 tmp = 0 as *mut pdf_obj;
@@ -3596,28 +4254,32 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
                     matrix.d = values[3];
                     matrix.e = values[4];
                     matrix.f = values[5];
-                    tmp =
-                        if top_stack > 0i32 as libc::c_uint {
-                            top_stack = top_stack.wrapping_sub(1);
-                            stack[top_stack as usize]
-                        } else { 0 as *mut pdf_obj };
+                    tmp = if top_stack > 0i32 as libc::c_uint {
+                        top_stack = top_stack.wrapping_sub(1);
+                        stack[top_stack as usize]
+                    } else {
+                        0 as *mut pdf_obj
+                    };
                     has_matrix_0 = 1i32;
                     current_block_294 = 9910899284672532069;
                 }
-            } else { current_block_294 = 9910899284672532069; }
+            } else {
+                current_block_294 = 9910899284672532069;
+            }
             match current_block_294 {
-                9125367800366194000 => { }
+                9125367800366194000 => {}
                 _ => {
                     if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
                         error = 1i32
                     } else {
                         cp.y = pdf_number_value(tmp);
                         pdf_release_obj(tmp);
-                        tmp =
-                            if top_stack > 0i32 as libc::c_uint {
-                                top_stack = top_stack.wrapping_sub(1);
-                                stack[top_stack as usize]
-                            } else { 0 as *mut pdf_obj };
+                        tmp = if top_stack > 0i32 as libc::c_uint {
+                            top_stack = top_stack.wrapping_sub(1);
+                            stack[top_stack as usize]
+                        } else {
+                            0 as *mut pdf_obj
+                        };
                         if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
                             error = 1i32
                         } else {
@@ -3631,13 +4293,11 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
                             if top_stack < 1024i32 as libc::c_uint {
                                 let fresh16 = top_stack;
                                 top_stack = top_stack.wrapping_add(1);
-                                stack[fresh16 as usize] =
-                                    pdf_new_number(cp.x);
+                                stack[fresh16 as usize] = pdf_new_number(cp.x);
                                 if top_stack < 1024i32 as libc::c_uint {
                                     let fresh17 = top_stack;
                                     top_stack = top_stack.wrapping_add(1);
-                                    stack[fresh17 as usize] =
-                                        pdf_new_number(cp.y)
+                                    stack[fresh17 as usize] = pdf_new_number(cp.y)
                                 } else {
                                     dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
                                                     as *const u8 as
@@ -3655,53 +4315,65 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
                 }
             }
         }
-        201 => { error = do_findfont() }
-        202 => { error = do_scalefont() }
-        203 => { error = do_setfont() }
-        204 => { error = do_currentfont() }
-        43 => { error = do_show() }
-        210 => { error = 1i32 }
+        201 => error = do_findfont(),
+        202 => error = do_scalefont(),
+        203 => error = do_setfont(),
+        204 => error = do_currentfont(),
+        43 => error = do_show(),
+        210 => error = 1i32,
         1001 => {
             /* Extensions */
-            error =
-                do_mpost_bind_def(b"exch findfont exch scalefont setfont show\x00"
-                                      as *const u8 as *const libc::c_char,
-                                  x_user, y_user)
+            error = do_mpost_bind_def(
+                b"exch findfont exch scalefont setfont show\x00" as *const u8
+                    as *const libc::c_char,
+                x_user,
+                y_user,
+            )
         }
-        1002 | 1003 => { error = do_texfig_operator(opcode, x_user, y_user) }
+        1002 | 1003 => error = do_texfig_operator(opcode, x_user, y_user),
         1004 => {
-            error =
-                do_mpost_bind_def(b"0 dtransform exch truncate exch idtransform pop setlinewidth\x00"
-                                      as *const u8 as *const libc::c_char,
-                                  x_user, y_user)
+            error = do_mpost_bind_def(
+                b"0 dtransform exch truncate exch idtransform pop setlinewidth\x00" as *const u8
+                    as *const libc::c_char,
+                x_user,
+                y_user,
+            )
         }
         1005 => {
-            error =
-                do_mpost_bind_def(b"0 exch dtransform truncate idtransform setlinewidth pop\x00"
-                                      as *const u8 as *const libc::c_char,
-                                  x_user, y_user)
+            error = do_mpost_bind_def(
+                b"0 exch dtransform truncate idtransform setlinewidth pop\x00" as *const u8
+                    as *const libc::c_char,
+                x_user,
+                y_user,
+            )
         }
         1006 => {
-            error =
-                do_mpost_bind_def(b"[] 0 setdash\x00" as *const u8 as
-                                      *const libc::c_char, x_user, y_user)
+            error = do_mpost_bind_def(
+                b"[] 0 setdash\x00" as *const u8 as *const libc::c_char,
+                x_user,
+                y_user,
+            )
         }
         1007 => {
-            error =
-                do_mpost_bind_def(b"gsave fill grestore\x00" as *const u8 as
-                                      *const libc::c_char, x_user, y_user)
+            error = do_mpost_bind_def(
+                b"gsave fill grestore\x00" as *const u8 as *const libc::c_char,
+                x_user,
+                y_user,
+            )
         }
         999 => {
-            tmp =
-                if top_stack > 0i32 as libc::c_uint {
-                    top_stack = top_stack.wrapping_sub(1);
-                    stack[top_stack as usize]
-                } else { 0 as *mut pdf_obj };
-            tmp =
-                if top_stack > 0i32 as libc::c_uint {
-                    top_stack = top_stack.wrapping_sub(1);
-                    stack[top_stack as usize]
-                } else { 0 as *mut pdf_obj }
+            tmp = if top_stack > 0i32 as libc::c_uint {
+                top_stack = top_stack.wrapping_sub(1);
+                stack[top_stack as usize]
+            } else {
+                0 as *mut pdf_obj
+            };
+            tmp = if top_stack > 0i32 as libc::c_uint {
+                top_stack = top_stack.wrapping_sub(1);
+                stack[top_stack as usize]
+            } else {
+                0 as *mut pdf_obj
+            }
         }
         _ => {
             if is_fontname(token) {
@@ -3710,13 +4382,17 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh18 as usize] = pdf_new_name(token)
                 } else {
-                    dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                    as *const u8 as *const libc::c_char);
+                    dpx_warning(
+                        b"PS stack overflow including MetaPost file or inline PS code\x00"
+                            as *const u8 as *const libc::c_char,
+                    );
                     error = 1i32
                 }
             } else {
-                dpx_warning(b"Unknown token \"%s\"\x00" as *const u8 as
-                                *const libc::c_char, token);
+                dpx_warning(
+                    b"Unknown token \"%s\"\x00" as *const u8 as *const libc::c_char,
+                    token,
+                );
                 error = 1i32
             }
         }
@@ -3743,37 +4419,41 @@ unsafe extern "C" fn do_operator(mut token: *const libc::c_char,
  * The only sections that need to know x_user and y _user are those
  * dealing with texfig.
  */
-unsafe extern "C" fn mp_parse_body(mut start: *mut *const libc::c_char,
-                                   mut end: *const libc::c_char,
-                                   mut x_user: libc::c_double,
-                                   mut y_user: libc::c_double)
- -> libc::c_int {
+unsafe extern "C" fn mp_parse_body(
+    mut start: *mut *const libc::c_char,
+    mut end: *const libc::c_char,
+    mut x_user: libc::c_double,
+    mut y_user: libc::c_double,
+) -> libc::c_int {
     let mut token: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut obj: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut error: libc::c_int = 0i32;
     skip_white(start, end);
     while *start < end && error == 0 {
-        if *(*__ctype_b_loc()).offset(**start as libc::c_uchar as libc::c_int
-                                          as isize) as libc::c_int &
-               _ISdigit as libc::c_int as libc::c_ushort as libc::c_int != 0
-               ||
-               *start < end.offset(-1) &&
-                   (**start as libc::c_int == '+' as i32 ||
-                        **start as libc::c_int == '-' as i32 ||
-                        **start as libc::c_int == '.' as i32) {
+        if *(*__ctype_b_loc()).offset(**start as libc::c_uchar as libc::c_int as isize)
+            as libc::c_int
+            & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            != 0
+            || *start < end.offset(-1)
+                && (**start as libc::c_int == '+' as i32
+                    || **start as libc::c_int == '-' as i32
+                    || **start as libc::c_int == '.' as i32)
+        {
             let mut value: libc::c_double = 0.;
             let mut next: *mut libc::c_char = 0 as *mut libc::c_char;
             value = strtod(*start, &mut next);
-            if next < end as *mut libc::c_char &&
-                   strchr(b"<([{/%\x00" as *const u8 as *const libc::c_char,
-                          *next as libc::c_int).is_null() &&
-                   *(*__ctype_b_loc()).offset(*next as libc::c_uchar as
-                                                  libc::c_int as isize) as
-                       libc::c_int &
-                       _ISspace as libc::c_int as libc::c_ushort as
-                           libc::c_int == 0 {
-                dpx_warning(b"Unkown PostScript operator.\x00" as *const u8 as
-                                *const libc::c_char);
+            if next < end as *mut libc::c_char
+                && strchr(
+                    b"<([{/%\x00" as *const u8 as *const libc::c_char,
+                    *next as libc::c_int,
+                )
+                .is_null()
+                && *(*__ctype_b_loc()).offset(*next as libc::c_uchar as libc::c_int as isize)
+                    as libc::c_int
+                    & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                    == 0
+            {
+                dpx_warning(b"Unkown PostScript operator.\x00" as *const u8 as *const libc::c_char);
                 dump(*start, next);
                 error = 1i32
             } else if top_stack < 1024i32 as libc::c_uint {
@@ -3782,75 +4462,87 @@ unsafe extern "C" fn mp_parse_body(mut start: *mut *const libc::c_char,
                 stack[fresh19 as usize] = pdf_new_number(value);
                 *start = next
             } else {
-                dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                as *const u8 as *const libc::c_char);
+                dpx_warning(
+                    b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
+                        as *const libc::c_char,
+                );
                 error = 1i32;
-                break ;
+                break;
             }
-            /*
-       * PDF parser can't handle PS operator inside arrays.
-       * This shouldn't use parse_pdf_array().
-       */
-        } else if **start as libc::c_int == '[' as i32 &&
-                      {
-                          obj =
-                              parse_pdf_array(start, end, 0 as *mut pdf_file);
-                          !obj.is_null()
-                      } {
+        /*
+         * PDF parser can't handle PS operator inside arrays.
+         * This shouldn't use parse_pdf_array().
+         */
+        } else if **start as libc::c_int == '[' as i32 && {
+            obj = parse_pdf_array(start, end, 0 as *mut pdf_file);
+            !obj.is_null()
+        } {
             if top_stack < 1024i32 as libc::c_uint {
                 let fresh20 = top_stack;
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh20 as usize] = obj
             } else {
-                dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                as *const u8 as *const libc::c_char);
+                dpx_warning(
+                    b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
+                        as *const libc::c_char,
+                );
                 error = 1i32;
-                break ;
+                break;
             }
-            /* This cannot handle ASCII85 string. */
-        } else if *start < end.offset(-1) &&
-                      (**start as libc::c_int == '<' as i32 &&
-                           *(*start).offset(1) as libc::c_int == '<' as i32)
-                      &&
-                      {
-                          obj =
-                              parse_pdf_dict(start, end, 0 as *mut pdf_file);
-                          !obj.is_null()
-                      } {
+        /* This cannot handle ASCII85 string. */
+        } else if *start < end.offset(-1)
+            && (**start as libc::c_int == '<' as i32
+                && *(*start).offset(1) as libc::c_int == '<' as i32)
+            && {
+                obj = parse_pdf_dict(start, end, 0 as *mut pdf_file);
+                !obj.is_null()
+            }
+        {
             if top_stack < 1024i32 as libc::c_uint {
                 let fresh21 = top_stack;
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh21 as usize] = obj
             } else {
-                dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                as *const u8 as *const libc::c_char);
+                dpx_warning(
+                    b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
+                        as *const libc::c_char,
+                );
                 error = 1i32;
-                break ;
+                break;
             }
-        } else if (**start as libc::c_int == '(' as i32 ||
-                       **start as libc::c_int == '<' as i32) &&
-                      { obj = parse_pdf_string(start, end); !obj.is_null() } {
+        } else if (**start as libc::c_int == '(' as i32 || **start as libc::c_int == '<' as i32)
+            && {
+                obj = parse_pdf_string(start, end);
+                !obj.is_null()
+            }
+        {
             if top_stack < 1024i32 as libc::c_uint {
                 let fresh22 = top_stack;
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh22 as usize] = obj
             } else {
-                dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                as *const u8 as *const libc::c_char);
+                dpx_warning(
+                    b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
+                        as *const libc::c_char,
+                );
                 error = 1i32;
-                break ;
+                break;
             }
-        } else if **start as libc::c_int == '/' as i32 &&
-                      { obj = parse_pdf_name(start, end); !obj.is_null() } {
+        } else if **start as libc::c_int == '/' as i32 && {
+            obj = parse_pdf_name(start, end);
+            !obj.is_null()
+        } {
             if top_stack < 1024i32 as libc::c_uint {
                 let fresh23 = top_stack;
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh23 as usize] = obj
             } else {
-                dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                as *const u8 as *const libc::c_char);
+                dpx_warning(
+                    b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
+                        as *const libc::c_char,
+                );
                 error = 1i32;
-                break ;
+                break;
             }
         } else {
             token = parse_ident(start, end);
@@ -3866,29 +4558,37 @@ unsafe extern "C" fn mp_parse_body(mut start: *mut *const libc::c_char,
     return error;
 }
 #[no_mangle]
-pub unsafe extern "C" fn mps_eop_cleanup() { clear_fonts(); do_clear(); }
+pub unsafe extern "C" fn mps_eop_cleanup() {
+    clear_fonts();
+    do_clear();
+}
 #[no_mangle]
 pub unsafe extern "C" fn mps_stack_depth() -> libc::c_int {
     return top_stack as libc::c_int;
 }
 #[no_mangle]
-pub unsafe extern "C" fn mps_exec_inline(mut p: *mut *const libc::c_char,
-                                         mut endptr: *const libc::c_char,
-                                         mut x_user: libc::c_double,
-                                         mut y_user: libc::c_double)
- -> libc::c_int {
+pub unsafe extern "C" fn mps_exec_inline(
+    mut p: *mut *const libc::c_char,
+    mut endptr: *const libc::c_char,
+    mut x_user: libc::c_double,
+    mut y_user: libc::c_double,
+) -> libc::c_int {
     let mut error: libc::c_int = 0;
     let mut dirmode: libc::c_int = 0;
     let mut autorotate: libc::c_int = 0;
     /* Compatibility for dvipsk. */
     dirmode = pdf_dev_get_dirmode();
-    if dirmode != 0 { mp_cmode = 2i32 } else { mp_cmode = 1i32 }
+    if dirmode != 0 {
+        mp_cmode = 2i32
+    } else {
+        mp_cmode = 1i32
+    }
     autorotate = pdf_dev_get_param(1i32);
     pdf_dev_set_param(1i32, 0i32);
     //pdf_color_push(); /* ... */
     /* Comment in dvipdfm:
-   * Remember that x_user and y_user are off by 0.02 %
-   */
+     * Remember that x_user and y_user are off by 0.02 %
+     */
     pdf_dev_moveto(x_user, y_user);
     error = mp_parse_body(p, endptr, x_user, y_user);
     //pdf_color_pop(); /* ... */
@@ -3918,10 +4618,14 @@ pub unsafe extern "C" fn mps_exec_inline(mut p: *mut *const libc::c_char,
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE)
- -> libc::c_int {
+pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> libc::c_int {
     let mut error: libc::c_int = 0i32; /* scale, xorig, yorig */
-    let mut bbox: pdf_rect = pdf_rect{llx: 0., lly: 0., urx: 0., ury: 0.,};
+    let mut bbox: pdf_rect = pdf_rect {
+        llx: 0.,
+        lly: 0.,
+        urx: 0.,
+        ury: 0.,
+    };
     let mut buffer: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut start: *const libc::c_char = 0 as *const libc::c_char;
     let mut end: *const libc::c_char = 0 as *const libc::c_char;
@@ -3930,47 +4634,52 @@ pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE)
     rewind(image_file);
     size = file_size(image_file);
     if size == 0i32 {
-        dpx_warning(b"Can\'t read any byte in the MPS file.\x00" as *const u8
-                        as *const libc::c_char);
-        return -1i32
+        dpx_warning(
+            b"Can\'t read any byte in the MPS file.\x00" as *const u8 as *const libc::c_char,
+        );
+        return -1i32;
     }
-    buffer =
-        new(((size + 1i32) as uint32_t as
-                 libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_char>()
-                                                 as libc::c_ulong) as
-                uint32_t) as *mut libc::c_char;
-    fread(buffer as *mut libc::c_void,
-          ::std::mem::size_of::<libc::c_char>() as libc::c_ulong,
-          size as libc::c_ulong, image_file);
+    buffer = new(((size + 1i32) as uint32_t as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        as uint32_t) as *mut libc::c_char;
+    fread(
+        buffer as *mut libc::c_void,
+        ::std::mem::size_of::<libc::c_char>() as libc::c_ulong,
+        size as libc::c_ulong,
+        image_file,
+    );
     *buffer.offset(size as isize) = 0i32 as libc::c_char;
     start = buffer;
     end = buffer.offset(size as isize);
     error = mps_scan_bbox(&mut start, end, &mut bbox);
     if error != 0 {
-        dpx_warning(b"Error occured while scanning MetaPost file headers: Could not find BoundingBox.\x00"
-                        as *const u8 as *const libc::c_char);
+        dpx_warning(
+            b"Error occured while scanning MetaPost file headers: Could not find BoundingBox.\x00"
+                as *const u8 as *const libc::c_char,
+        );
         free(buffer as *mut libc::c_void);
-        return -1i32
+        return -1i32;
     }
     mp_cmode = 0i32;
     pdf_doc_begin_page(1.0f64, -Xorigin, -Yorigin);
-    pdf_doc_set_mediabox(pdf_doc_current_page_number() as libc::c_uint,
-                         &mut bbox);
+    pdf_doc_set_mediabox(pdf_doc_current_page_number() as libc::c_uint, &mut bbox);
     dir_mode = pdf_dev_get_dirmode();
     pdf_dev_set_param(1i32, 0i32);
     skip_prolog(&mut start, end);
     error = mp_parse_body(&mut start, end, 0.0f64, 0.0f64);
     if error != 0 {
-        dpx_warning(b"Errors occured while interpreting MetaPost file.\x00" as
-                        *const u8 as *const libc::c_char);
+        dpx_warning(
+            b"Errors occured while interpreting MetaPost file.\x00" as *const u8
+                as *const libc::c_char,
+        );
     }
     pdf_dev_set_param(1i32, 1i32);
     pdf_dev_set_dirmode(dir_mode);
     pdf_doc_end_page();
     free(buffer as *mut libc::c_void);
     /*
-   * The reason why we don't return XObject itself is
-   * PDF inclusion may not be made so.
-   */
+     * The reason why we don't return XObject itself is
+     * PDF inclusion may not be made so.
+     */
     return if error != 0 { -1i32 } else { 0i32 };
 }

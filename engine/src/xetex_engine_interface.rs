@@ -26,9 +26,10 @@ extern "C" {
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char,
-                               mut s2: *const libc::c_char) -> bool {
-    if !s1.is_null() && !s2.is_null() { return strcmp(s1, s2) == 0i32 }
+unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+    if !s1.is_null() && !s2.is_null() {
+        return strcmp(s1, s2) == 0i32;
+    }
     return 0i32 != 0;
 }
 /* engine-interface.c: programmatic interface to control the engine behavior
@@ -38,35 +39,41 @@ unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char,
 /* These functions aren't used within the C/C++ library, but are called
  * by the Rust code to configure the XeTeX engine before launching it. */
 #[no_mangle]
-pub unsafe extern "C" fn tt_xetex_set_int_variable(mut var_name:
-                                                       *mut libc::c_char,
-                                                   mut value: libc::c_int)
- -> libc::c_int {
-    if streq_ptr(var_name,
-                 b"halt_on_error_p\x00" as *const u8 as *const libc::c_char) {
+pub unsafe extern "C" fn tt_xetex_set_int_variable(
+    mut var_name: *mut libc::c_char,
+    mut value: libc::c_int,
+) -> libc::c_int {
+    if streq_ptr(
+        var_name,
+        b"halt_on_error_p\x00" as *const u8 as *const libc::c_char,
+    ) {
         halt_on_error_p = value
-    } else if streq_ptr(var_name,
-                        b"in_initex_mode\x00" as *const u8 as
-                            *const libc::c_char) {
+    } else if streq_ptr(
+        var_name,
+        b"in_initex_mode\x00" as *const u8 as *const libc::c_char,
+    ) {
         in_initex_mode = value != 0i32
-    } else if streq_ptr(var_name,
-                        b"synctex_enabled\x00" as *const u8 as
-                            *const libc::c_char) {
+    } else if streq_ptr(
+        var_name,
+        b"synctex_enabled\x00" as *const u8 as *const libc::c_char,
+    ) {
         synctex_enabled = (value != 0i32) as libc::c_int
-    } else if streq_ptr(var_name,
-                        b"semantic_pagination_enabled\x00" as *const u8 as
-                            *const libc::c_char) {
+    } else if streq_ptr(
+        var_name,
+        b"semantic_pagination_enabled\x00" as *const u8 as *const libc::c_char,
+    ) {
         semantic_pagination_enabled = value != 0i32
-    } else { return 1i32 } /* Uh oh: unrecognized variable */
+    } else {
+        return 1i32;
+    } /* Uh oh: unrecognized variable */
     return 0i32;
     /* success */
 }
 #[no_mangle]
-pub unsafe extern "C" fn tt_xetex_set_string_variable(mut var_name:
-                                                          *mut libc::c_char,
-                                                      mut value:
-                                                          *mut libc::c_char)
- -> libc::c_int {
+pub unsafe extern "C" fn tt_xetex_set_string_variable(
+    mut var_name: *mut libc::c_char,
+    mut value: *mut libc::c_char,
+) -> libc::c_int {
     /* Currently unused; see Git history for how we used to set output_comment */
     return 1i32;
 }

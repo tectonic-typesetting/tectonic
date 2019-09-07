@@ -17,15 +17,13 @@ extern "C" {
     #[no_mangle]
     fn ttstub_input_getc(handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
-    fn ttstub_input_ungetc(handle: rust_input_handle_t, ch: libc::c_int)
-     -> libc::c_int;
+    fn ttstub_input_ungetc(handle: rust_input_handle_t, ch: libc::c_int) -> libc::c_int;
     #[no_mangle]
     fn fgetc(__stream: *mut FILE) -> libc::c_int;
     #[no_mangle]
     fn ungetc(__c: libc::c_int, __stream: *mut FILE) -> libc::c_int;
     #[no_mangle]
-    fn fseek(__stream: *mut FILE, __off: libc::c_long, __whence: libc::c_int)
-     -> libc::c_int;
+    fn fseek(__stream: *mut FILE, __off: libc::c_long, __whence: libc::c_int) -> libc::c_int;
     #[no_mangle]
     fn ftell(__stream: *mut FILE) -> libc::c_long;
     #[no_mangle]
@@ -37,7 +35,7 @@ pub type __off64_t = libc::c_long;
 pub type int32_t = __int32_t;
 pub type size_t = libc::c_ulong;
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
     pub _flags: libc::c_int,
@@ -94,23 +92,32 @@ pub type FILE = _IO_FILE;
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 unsafe extern "C" fn os_error() {
-    _tt_abort(b"io:  An OS command failed that should not have.\n\x00" as
-                  *const u8 as *const libc::c_char);
+    _tt_abort(
+        b"io:  An OS command failed that should not have.\n\x00" as *const u8
+            as *const libc::c_char,
+    );
 }
 #[no_mangle]
-pub unsafe extern "C" fn seek_relative(mut file: *mut FILE,
-                                       mut pos: int32_t) {
-    if fseek(file, pos as libc::c_long, 1i32) != 0 { os_error(); };
+pub unsafe extern "C" fn seek_relative(mut file: *mut FILE, mut pos: int32_t) {
+    if fseek(file, pos as libc::c_long, 1i32) != 0 {
+        os_error();
+    };
 }
 unsafe extern "C" fn seek_end(mut file: *mut FILE) {
-    if fseek(file, 0i64, 2i32) != 0 { os_error(); };
+    if fseek(file, 0i64, 2i32) != 0 {
+        os_error();
+    };
 }
 unsafe extern "C" fn tell_position(mut file: *mut FILE) -> int32_t {
     let mut size: libc::c_long = ftell(file);
-    if size < 0i32 as libc::c_long { os_error(); }
+    if size < 0i32 as libc::c_long {
+        os_error();
+    }
     if size > 0x7fffffffi32 as libc::c_long {
-        _tt_abort(b"ftell: file size %ld exceeds 0x7fffffff.\n\x00" as
-                      *const u8 as *const libc::c_char, size);
+        _tt_abort(
+            b"ftell: file size %ld exceeds 0x7fffffff.\n\x00" as *const u8 as *const libc::c_char,
+            size,
+        );
     }
     return size as int32_t;
 }
@@ -124,21 +131,36 @@ pub unsafe extern "C" fn file_size(mut file: *mut FILE) -> int32_t {
 }
 /* Unlike fgets, mfgets works with \r, \n, or \r\n end of lines. */
 #[no_mangle]
-pub unsafe extern "C" fn mfgets(mut buffer: *mut libc::c_char,
-                                mut length: libc::c_int, mut file: *mut FILE)
- -> *mut libc::c_char {
+pub unsafe extern "C" fn mfgets(
+    mut buffer: *mut libc::c_char,
+    mut length: libc::c_int,
+    mut file: *mut FILE,
+) -> *mut libc::c_char {
     let mut ch: libc::c_int = 0i32;
     let mut i: libc::c_int = 0i32;
-    while i < length - 1i32 && { ch = fgetc(file); ch >= 0i32 } &&
-              ch != '\n' as i32 && ch != '\r' as i32 {
+    while i < length - 1i32
+        && {
+            ch = fgetc(file);
+            ch >= 0i32
+        }
+        && ch != '\n' as i32
+        && ch != '\r' as i32
+    {
         let fresh0 = i;
         i = i + 1;
         *buffer.offset(fresh0 as isize) = ch as libc::c_char
     }
     *buffer.offset(i as isize) = 0i32 as libc::c_char;
-    if ch < 0i32 && i == 0i32 { return 0 as *mut libc::c_char }
-    if ch == '\r' as i32 && { ch = fgetc(file); ch >= 0i32 } &&
-           ch != '\n' as i32 {
+    if ch < 0i32 && i == 0i32 {
+        return 0 as *mut libc::c_char;
+    }
+    if ch == '\r' as i32
+        && {
+            ch = fgetc(file);
+            ch >= 0i32
+        }
+        && ch != '\n' as i32
+    {
         ungetc(ch, file);
     }
     return buffer;
@@ -170,22 +192,36 @@ pub static mut work_buffer: [libc::c_char; 1024] = [0; 1024];
 /* Tectonic-enabled versions */
 /* Modified versions of the above functions based on the Tectonic I/O system. */
 #[no_mangle]
-pub unsafe extern "C" fn tt_mfgets(mut buffer: *mut libc::c_char,
-                                   mut length: libc::c_int,
-                                   mut file: rust_input_handle_t)
- -> *mut libc::c_char {
+pub unsafe extern "C" fn tt_mfgets(
+    mut buffer: *mut libc::c_char,
+    mut length: libc::c_int,
+    mut file: rust_input_handle_t,
+) -> *mut libc::c_char {
     let mut ch: libc::c_int = 0i32;
     let mut i: libc::c_int = 0i32;
-    while i < length - 1i32 && { ch = ttstub_input_getc(file); ch >= 0i32 } &&
-              ch != '\n' as i32 && ch != '\r' as i32 {
+    while i < length - 1i32
+        && {
+            ch = ttstub_input_getc(file);
+            ch >= 0i32
+        }
+        && ch != '\n' as i32
+        && ch != '\r' as i32
+    {
         let fresh1 = i;
         i = i + 1;
         *buffer.offset(fresh1 as isize) = ch as libc::c_char
     }
     *buffer.offset(i as isize) = '\u{0}' as i32 as libc::c_char;
-    if ch < 0i32 && i == 0i32 { return 0 as *mut libc::c_char }
-    if ch == '\r' as i32 && { ch = ttstub_input_getc(file); ch >= 0i32 } &&
-           ch != '\n' as i32 {
+    if ch < 0i32 && i == 0i32 {
+        return 0 as *mut libc::c_char;
+    }
+    if ch == '\r' as i32
+        && {
+            ch = ttstub_input_getc(file);
+            ch >= 0i32
+        }
+        && ch != '\n' as i32
+    {
         ttstub_input_ungetc(file, ch);
     }
     return buffer;

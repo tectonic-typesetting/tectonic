@@ -92,27 +92,36 @@ unsafe extern "C" fn pre_error_message() {
     /* FKA normalize_selector(): */
     if log_opened {
         selector = SELECTOR_TERM_AND_LOG
-    } else { selector = SELECTOR_TERM_ONLY }
-    if job_name == 0i32 { open_log_file(); }
-    if interaction as libc::c_int == 0i32 { selector -= 1 }
+    } else {
+        selector = SELECTOR_TERM_ONLY
+    }
+    if job_name == 0i32 {
+        open_log_file();
+    }
+    if interaction as libc::c_int == 0i32 {
+        selector -= 1
+    }
     if file_line_error_style_p != 0 {
         print_file_line();
-    } else { print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char); };
+    } else {
+        print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+    };
 }
 /*82: */
 unsafe extern "C" fn post_error_message(mut need_to_print_it: libc::c_int) {
     if interaction as libc::c_int == 3i32 {
         interaction = 2i32 as libc::c_uchar
     }
-    if need_to_print_it != 0 && log_opened as libc::c_int != 0 { error(); }
+    if need_to_print_it != 0 && log_opened as libc::c_int != 0 {
+        error();
+    }
     history = HISTORY_FATAL_ERROR;
     close_files_and_terminate();
     ttstub_output_flush(rust_stdout);
 }
 #[no_mangle]
 pub unsafe extern "C" fn error() {
-    if (history as libc::c_uint) <
-           HISTORY_ERROR_ISSUED as libc::c_int as libc::c_uint {
+    if (history as libc::c_uint) < HISTORY_ERROR_ISSUED as libc::c_int as libc::c_uint {
         history = HISTORY_ERROR_ISSUED
     }
     print_char('.' as i32);
@@ -120,22 +129,29 @@ pub unsafe extern "C" fn error() {
     if halt_on_error_p != 0 {
         history = HISTORY_FATAL_ERROR;
         post_error_message(0i32);
-        _tt_abort(b"halted on potentially-recoverable error as specified\x00"
-                      as *const u8 as *const libc::c_char);
+        _tt_abort(
+            b"halted on potentially-recoverable error as specified\x00" as *const u8
+                as *const libc::c_char,
+        );
     }
     /* This used to be where there was a bunch of code if "interaction ==
      * error_stop_mode" that would let the use interactively try to solve the
      * error. */
     error_count += 1;
     if error_count as libc::c_int == 100i32 {
-        print_nl_cstr(b"(That makes 100 errors; please try again.)\x00" as
-                          *const u8 as *const libc::c_char);
+        print_nl_cstr(
+            b"(That makes 100 errors; please try again.)\x00" as *const u8 as *const libc::c_char,
+        );
         history = HISTORY_FATAL_ERROR;
         post_error_message(0i32);
-        _tt_abort(b"halted after 100 potentially-recoverable errors\x00" as
-                      *const u8 as *const libc::c_char);
+        _tt_abort(
+            b"halted after 100 potentially-recoverable errors\x00" as *const u8
+                as *const libc::c_char,
+        );
     }
-    if interaction as libc::c_int > 0i32 { selector -= 1 }
+    if interaction as libc::c_int > 0i32 {
+        selector -= 1
+    }
     if use_err_help {
         print_ln();
         give_err_help();
@@ -146,7 +162,9 @@ pub unsafe extern "C" fn error() {
         }
     }
     print_ln();
-    if interaction as libc::c_int > 0i32 { selector += 1 }
+    if interaction as libc::c_int > 0i32 {
+        selector += 1
+    }
     print_ln();
 }
 #[no_mangle]
@@ -159,58 +177,44 @@ pub unsafe extern "C" fn fatal_error(mut s: *const libc::c_char) -> ! {
     _tt_abort(b"%s\x00" as *const u8 as *const libc::c_char, s);
 }
 #[no_mangle]
-pub unsafe extern "C" fn overflow(mut s: *const libc::c_char, mut n: int32_t)
- -> ! {
+pub unsafe extern "C" fn overflow(mut s: *const libc::c_char, mut n: int32_t) -> ! {
     pre_error_message();
-    print_cstr(b"TeX capacity exceeded, sorry [\x00" as *const u8 as
-                   *const libc::c_char);
+    print_cstr(b"TeX capacity exceeded, sorry [\x00" as *const u8 as *const libc::c_char);
     print_cstr(s);
     print_char('=' as i32);
     print_int(n);
     print_char(']' as i32);
     help_ptr = 2i32 as libc::c_uchar;
     help_line[1] =
-        b"If you really absolutely need more capacity,\x00" as *const u8 as
-            *const libc::c_char;
-    help_line[0] =
-        b"you can ask a wizard to enlarge me.\x00" as *const u8 as
-            *const libc::c_char;
+        b"If you really absolutely need more capacity,\x00" as *const u8 as *const libc::c_char;
+    help_line[0] = b"you can ask a wizard to enlarge me.\x00" as *const u8 as *const libc::c_char;
     post_error_message(1i32);
-    _tt_abort(b"halted on overflow()\x00" as *const u8 as
-                  *const libc::c_char);
+    _tt_abort(b"halted on overflow()\x00" as *const u8 as *const libc::c_char);
 }
 #[no_mangle]
 pub unsafe extern "C" fn confusion(mut s: *const libc::c_char) -> ! {
     pre_error_message();
-    if (history as libc::c_uint) <
-           HISTORY_ERROR_ISSUED as libc::c_int as libc::c_uint {
-        print_cstr(b"This can\'t happen (\x00" as *const u8 as
-                       *const libc::c_char);
+    if (history as libc::c_uint) < HISTORY_ERROR_ISSUED as libc::c_int as libc::c_uint {
+        print_cstr(b"This can\'t happen (\x00" as *const u8 as *const libc::c_char);
         print_cstr(s);
         print_char(')' as i32);
         help_ptr = 1i32 as libc::c_uchar;
-        help_line[0] =
-            b"I\'m broken. Please show this to someone who can fix can fix\x00"
-                as *const u8 as *const libc::c_char
+        help_line[0] = b"I\'m broken. Please show this to someone who can fix can fix\x00"
+            as *const u8 as *const libc::c_char
     } else {
-        print_cstr(b"I can\'t go on meeting you like this\x00" as *const u8 as
-                       *const libc::c_char);
+        print_cstr(b"I can\'t go on meeting you like this\x00" as *const u8 as *const libc::c_char);
         help_ptr = 2i32 as libc::c_uchar;
-        help_line[1] =
-            b"One of your faux pas seems to have wounded me deeply...\x00" as
-                *const u8 as *const libc::c_char;
-        help_line[0] =
-            b"in fact, I\'m barely conscious. Please fix it and try again.\x00"
-                as *const u8 as *const libc::c_char
+        help_line[1] = b"One of your faux pas seems to have wounded me deeply...\x00" as *const u8
+            as *const libc::c_char;
+        help_line[0] = b"in fact, I\'m barely conscious. Please fix it and try again.\x00"
+            as *const u8 as *const libc::c_char
     }
     post_error_message(1i32);
-    _tt_abort(b"halted on confusion()\x00" as *const u8 as
-                  *const libc::c_char);
+    _tt_abort(b"halted on confusion()\x00" as *const u8 as *const libc::c_char);
 }
 /* xetex-errors */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_error(mut t: *const libc::c_char,
-                                   mut p: *const libc::c_char) -> ! {
+pub unsafe extern "C" fn pdf_error(mut t: *const libc::c_char, mut p: *const libc::c_char) -> ! {
     pre_error_message();
     print_cstr(b"Error\x00" as *const u8 as *const libc::c_char);
     if !t.is_null() {
@@ -221,6 +225,5 @@ pub unsafe extern "C" fn pdf_error(mut t: *const libc::c_char,
     print_cstr(b": \x00" as *const u8 as *const libc::c_char);
     print_cstr(p);
     post_error_message(1i32);
-    _tt_abort(b"halted on pdf_error()\x00" as *const u8 as
-                  *const libc::c_char);
+    _tt_abort(b"halted on pdf_error()\x00" as *const u8 as *const libc::c_char);
 }

@@ -13,81 +13,79 @@ extern "C" {
     #[no_mangle]
     fn floor(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
-    fn __assert_fail(__assertion: *const libc::c_char,
-                     __file: *const libc::c_char, __line: libc::c_uint,
-                     __function: *const libc::c_char) -> !;
+    fn __assert_fail(
+        __assertion: *const libc::c_char,
+        __file: *const libc::c_char,
+        __line: libc::c_uint,
+        __function: *const libc::c_char,
+    ) -> !;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t,
-             __compar: __compar_fn_t);
+    fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong)
-     -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
-     -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+        the dvipdfmx project team.
 
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+    */
     #[no_mangle]
     fn new(size: uint32_t) -> *mut libc::c_void;
 }
 pub type __uint32_t = libc::c_uint;
 pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
-pub type __compar_fn_t
-    =
-    Option<unsafe extern "C" fn(_: *const libc::c_void,
-                                _: *const libc::c_void) -> libc::c_int>;
+pub type __compar_fn_t =
+    Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> libc::c_int>;
 pub type card8 = libc::c_uchar;
 pub type card16 = libc::c_ushort;
 pub type c_offsize = libc::c_uchar;
 pub type l_offset = uint32_t;
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_index {
     pub count: card16,
@@ -95,7 +93,7 @@ pub struct cff_index {
     pub offset: *mut l_offset,
     pub data: *mut card8,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct t1_ginfo {
     pub use_seac: libc::c_int,
@@ -104,7 +102,7 @@ pub struct t1_ginfo {
     pub bbox: C2RustUnnamed_0,
     pub seac: C2RustUnnamed,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
     pub asb: libc::c_double,
@@ -113,7 +111,7 @@ pub struct C2RustUnnamed {
     pub bchar: card8,
     pub achar: card8,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
     pub llx: libc::c_double,
@@ -121,7 +119,7 @@ pub struct C2RustUnnamed_0 {
     pub urx: libc::c_double,
     pub ury: libc::c_double,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct t1_chardesc {
     pub flags: libc::c_int,
@@ -133,7 +131,7 @@ pub struct t1_chardesc {
     pub charpath: *mut t1_cpath,
     pub lastpath: *mut t1_cpath,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct t1_cpath {
     pub type_0: libc::c_int,
@@ -141,7 +139,7 @@ pub struct t1_cpath {
     pub args: [libc::c_double; 48],
     pub next: *mut t1_cpath,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct t1_stem {
     pub id: libc::c_int,
@@ -149,7 +147,7 @@ pub struct t1_stem {
     pub pos: libc::c_double,
     pub del: libc::c_double,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_1 {
     pub asb: libc::c_double,
@@ -158,7 +156,7 @@ pub struct C2RustUnnamed_1 {
     pub bchar: card8,
     pub achar: card8,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_2 {
     pub llx: libc::c_double,
@@ -166,7 +164,7 @@ pub struct C2RustUnnamed_2 {
     pub urx: libc::c_double,
     pub ury: libc::c_double,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_3 {
     pub sbx: libc::c_double,
@@ -174,7 +172,7 @@ pub struct C2RustUnnamed_3 {
     pub wx: libc::c_double,
     pub wy: libc::c_double,
 }
-#[derive ( Copy , Clone )]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct t1_stemgroup {
     pub num_stems: libc::c_int,
@@ -215,9 +213,10 @@ static mut ps_arg_stack: [libc::c_double; 194] = [0.; 194];
  *  Convert ghost hint to edge hint, Counter control for hstem3/vstem3.
  */
 #[inline]
-unsafe extern "C" fn stem_compare(mut v1: *const libc::c_void,
-                                  mut v2: *const libc::c_void)
- -> libc::c_int {
+unsafe extern "C" fn stem_compare(
+    mut v1: *const libc::c_void,
+    mut v2: *const libc::c_void,
+) -> libc::c_int {
     let mut cmp: libc::c_int = 0i32;
     let mut s1: *const t1_stem = 0 as *const t1_stem;
     let mut s2: *const t1_stem = 0 as *const t1_stem;
@@ -227,46 +226,66 @@ unsafe extern "C" fn stem_compare(mut v1: *const libc::c_void,
         if (*s1).pos == (*s2).pos {
             if (*s1).del == (*s2).del {
                 cmp = 0i32
-            } else { cmp = if (*s1).del < (*s2).del { -1i32 } else { 1i32 } }
-        } else { cmp = if (*s1).pos < (*s2).pos { -1i32 } else { 1i32 } }
-    } else { cmp = if (*s1).dir == 0i32 { -1i32 } else { 1i32 } }
+            } else {
+                cmp = if (*s1).del < (*s2).del { -1i32 } else { 1i32 }
+            }
+        } else {
+            cmp = if (*s1).pos < (*s2).pos { -1i32 } else { 1i32 }
+        }
+    } else {
+        cmp = if (*s1).dir == 0i32 { -1i32 } else { 1i32 }
+    }
     return cmp;
 }
-unsafe extern "C" fn get_stem(mut cd: *mut t1_chardesc,
-                              mut stem_id: libc::c_int) -> libc::c_int {
+unsafe extern "C" fn get_stem(mut cd: *mut t1_chardesc, mut stem_id: libc::c_int) -> libc::c_int {
     let mut i: libc::c_int = 0;
     i = 0i32;
     while i < (*cd).num_stems {
-        if (*cd).stems[i as usize].id == stem_id { break ; }
+        if (*cd).stems[i as usize].id == stem_id {
+            break;
+        }
         i += 1
     }
     return if i < (*cd).num_stems { i } else { -1i32 };
 }
-unsafe extern "C" fn add_stem(mut cd: *mut t1_chardesc,
-                              mut pos: libc::c_double,
-                              mut del: libc::c_double, mut dir: libc::c_int)
- -> libc::c_int {
+unsafe extern "C" fn add_stem(
+    mut cd: *mut t1_chardesc,
+    mut pos: libc::c_double,
+    mut del: libc::c_double,
+    mut dir: libc::c_int,
+) -> libc::c_int {
     let mut i: libc::c_int = 0;
     if !cd.is_null() {
     } else {
-        __assert_fail(b"cd\x00" as *const u8 as *const libc::c_char,
-                      b"dpx-t1_char.c\x00" as *const u8 as
-                          *const libc::c_char, 290i32 as libc::c_uint,
-                      (*::std::mem::transmute::<&[u8; 49],
-                                                &[libc::c_char; 49]>(b"int add_stem(t1_chardesc *, double, double, int)\x00")).as_ptr());
+        __assert_fail(
+            b"cd\x00" as *const u8 as *const libc::c_char,
+            b"dpx-t1_char.c\x00" as *const u8 as *const libc::c_char,
+            290i32 as libc::c_uint,
+            (*::std::mem::transmute::<&[u8; 49], &[libc::c_char; 49]>(
+                b"int add_stem(t1_chardesc *, double, double, int)\x00",
+            ))
+            .as_ptr(),
+        );
     }
-    pos += if dir == 0i32 { (*cd).sbw.sby } else { (*cd).sbw.sbx };
+    pos += if dir == 0i32 {
+        (*cd).sbw.sby
+    } else {
+        (*cd).sbw.sbx
+    };
     i = 0i32;
     while i < (*cd).num_stems {
-        if (*cd).stems[i as usize].dir == dir &&
-               (*cd).stems[i as usize].pos == pos &&
-               (*cd).stems[i as usize].del == del {
-            break ;
+        if (*cd).stems[i as usize].dir == dir
+            && (*cd).stems[i as usize].pos == pos
+            && (*cd).stems[i as usize].del == del
+        {
+            break;
         }
         i += 1
     }
     if i == (*cd).num_stems {
-        if (*cd).num_stems == 96i32 { return -1i32 }
+        if (*cd).num_stems == 96i32 {
+            return -1i32;
+        }
         (*cd).stems[i as usize].dir = dir;
         (*cd).stems[i as usize].pos = pos;
         (*cd).stems[i as usize].del = del;
@@ -275,17 +294,21 @@ unsafe extern "C" fn add_stem(mut cd: *mut t1_chardesc,
     }
     return (*cd).stems[i as usize].id;
 }
-unsafe extern "C" fn copy_args(mut args1: *mut libc::c_double,
-                               mut args2: *mut libc::c_double,
-                               mut count: libc::c_int) {
-    loop  {
+unsafe extern "C" fn copy_args(
+    mut args1: *mut libc::c_double,
+    mut args2: *mut libc::c_double,
+    mut count: libc::c_int,
+) {
+    loop {
         let fresh0 = count;
         count = count - 1;
-        if !(fresh0 > 0i32) { break ; }
+        if !(fresh0 > 0i32) {
+            break;
+        }
         *args1 = *args2;
         args1 = args1.offset(1);
         args2 = args2.offset(1)
-    };
+    }
 }
 /*
  * Stack:
@@ -294,49 +317,67 @@ unsafe extern "C" fn copy_args(mut args1: *mut libc::c_double,
  * Path construction:
  */
 /* Get operands from cs_arg_stack[] */
-unsafe extern "C" fn add_charpath(mut cd: *mut t1_chardesc,
-                                  mut type_0: libc::c_int,
-                                  mut argv: *mut libc::c_double,
-                                  mut argn: libc::c_int) {
+unsafe extern "C" fn add_charpath(
+    mut cd: *mut t1_chardesc,
+    mut type_0: libc::c_int,
+    mut argv: *mut libc::c_double,
+    mut argn: libc::c_int,
+) {
     let mut p: *mut t1_cpath = 0 as *mut t1_cpath;
     if !cd.is_null() {
     } else {
-        __assert_fail(b"cd\x00" as *const u8 as *const libc::c_char,
-                      b"dpx-t1_char.c\x00" as *const u8 as
-                          *const libc::c_char, 350i32 as libc::c_uint,
-                      (*::std::mem::transmute::<&[u8; 53],
-                                                &[libc::c_char; 53]>(b"void add_charpath(t1_chardesc *, int, double *, int)\x00")).as_ptr());
+        __assert_fail(
+            b"cd\x00" as *const u8 as *const libc::c_char,
+            b"dpx-t1_char.c\x00" as *const u8 as *const libc::c_char,
+            350i32 as libc::c_uint,
+            (*::std::mem::transmute::<&[u8; 53], &[libc::c_char; 53]>(
+                b"void add_charpath(t1_chardesc *, int, double *, int)\x00",
+            ))
+            .as_ptr(),
+        );
     }
     if argn <= 48i32 {
     } else {
-        __assert_fail(b"argn <= CS_ARG_STACK_MAX\x00" as *const u8 as
-                          *const libc::c_char,
-                      b"dpx-t1_char.c\x00" as *const u8 as
-                          *const libc::c_char, 351i32 as libc::c_uint,
-                      (*::std::mem::transmute::<&[u8; 53],
-                                                &[libc::c_char; 53]>(b"void add_charpath(t1_chardesc *, int, double *, int)\x00")).as_ptr());
+        __assert_fail(
+            b"argn <= CS_ARG_STACK_MAX\x00" as *const u8 as *const libc::c_char,
+            b"dpx-t1_char.c\x00" as *const u8 as *const libc::c_char,
+            351i32 as libc::c_uint,
+            (*::std::mem::transmute::<&[u8; 53], &[libc::c_char; 53]>(
+                b"void add_charpath(t1_chardesc *, int, double *, int)\x00",
+            ))
+            .as_ptr(),
+        );
     }
-    p =
-        new((1i32 as uint32_t as
-                 libc::c_ulong).wrapping_mul(::std::mem::size_of::<t1_cpath>()
-                                                 as libc::c_ulong) as
-                uint32_t) as *mut t1_cpath;
+    p = new((1i32 as uint32_t as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<t1_cpath>() as libc::c_ulong) as uint32_t)
+        as *mut t1_cpath;
     (*p).type_0 = type_0;
     (*p).num_args = argn;
     (*p).next = 0 as *mut t1_cpath;
-    loop  {
+    loop {
         let fresh1 = argn;
         argn = argn - 1;
-        if !(fresh1 > 0i32) { break ; }
+        if !(fresh1 > 0i32) {
+            break;
+        }
         (*p).args[argn as usize] = *argv.offset(argn as isize)
     }
-    if (*cd).charpath.is_null() { (*cd).charpath = p }
-    if !(*cd).lastpath.is_null() { (*(*cd).lastpath).next = p }
+    if (*cd).charpath.is_null() {
+        (*cd).charpath = p
+    }
+    if !(*cd).lastpath.is_null() {
+        (*(*cd).lastpath).next = p
+    }
     (*cd).lastpath = p;
-    if type_0 >= 0i32 && phase != 3i32 &&
-           (type_0 >= 4i32 && type_0 <= 9i32 ||
-                type_0 >= 21i32 && type_0 <= 31i32 && type_0 != 23i32 &&
-                    type_0 != 29i32 && type_0 != 28i32) {
+    if type_0 >= 0i32
+        && phase != 3i32
+        && (type_0 >= 4i32 && type_0 <= 9i32
+            || type_0 >= 21i32
+                && type_0 <= 31i32
+                && type_0 != 23i32
+                && type_0 != 29i32
+                && type_0 != 28i32)
+    {
         phase = 2i32
     };
 }
@@ -359,11 +400,15 @@ unsafe extern "C" fn release_charpath(mut cd: *mut t1_chardesc) {
     let mut next: *mut t1_cpath = 0 as *mut t1_cpath;
     if !cd.is_null() {
     } else {
-        __assert_fail(b"cd\x00" as *const u8 as *const libc::c_char,
-                      b"dpx-t1_char.c\x00" as *const u8 as
-                          *const libc::c_char, 388i32 as libc::c_uint,
-                      (*::std::mem::transmute::<&[u8; 37],
-                                                &[libc::c_char; 37]>(b"void release_charpath(t1_chardesc *)\x00")).as_ptr());
+        __assert_fail(
+            b"cd\x00" as *const u8 as *const libc::c_char,
+            b"dpx-t1_char.c\x00" as *const u8 as *const libc::c_char,
+            388i32 as libc::c_uint,
+            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+                b"void release_charpath(t1_chardesc *)\x00",
+            ))
+            .as_ptr(),
+        );
     }
     curr = (*cd).charpath;
     while !curr.is_null() {
@@ -380,24 +425,26 @@ unsafe extern "C" fn release_charpath(mut cd: *mut t1_chardesc) {
 /*
  * Single byte operators:
  */
-unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc,
-                                  mut data: *mut *mut card8) {
+unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc, mut data: *mut *mut card8) {
     let mut op: card8 = **data;
     *data = (*data).offset(1);
     match op as libc::c_int {
         9 => {
             /*
-     * From T1 spec.:
-     *  Note that, unlike the closepath command in the PostScript language,
-     *  this command does not reposition the current point. Any subsequent
-     *  rmoveto must be relative to the current point in force before the
-     *  Type 1 font format closepath command was given.
-     */
-    /* noop */
+             * From T1 spec.:
+             *  Note that, unlike the closepath command in the PostScript language,
+             *  this command does not reposition the current point. Any subsequent
+             *  rmoveto must be relative to the current point in force before the
+             *  Type 1 font format closepath command was given.
+             */
+            /* noop */
             cs_stack_top = 0i32
         }
         13 => {
-            if cs_stack_top < 2i32 { status = -2i32; return }
+            if cs_stack_top < 2i32 {
+                status = -2i32;
+                return;
+            }
             cs_stack_top -= 1;
             (*cd).sbw.wx = cs_arg_stack[cs_stack_top as usize];
             (*cd).sbw.wy = 0i32 as libc::c_double;
@@ -407,56 +454,75 @@ unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc,
             cs_stack_top = 0i32
         }
         1 | 3 => {
-            if cs_stack_top < 2i32 { status = -2i32; return }
+            if cs_stack_top < 2i32 {
+                status = -2i32;
+                return;
+            }
             let mut stem_id: libc::c_int = 0;
-            stem_id =
-                add_stem(cd, cs_arg_stack[(cs_stack_top - 2i32) as usize],
-                         cs_arg_stack[(cs_stack_top - 1i32) as usize],
-                         if op as libc::c_int == 1i32 { 0i32 } else { 1i32 });
+            stem_id = add_stem(
+                cd,
+                cs_arg_stack[(cs_stack_top - 2i32) as usize],
+                cs_arg_stack[(cs_stack_top - 1i32) as usize],
+                if op as libc::c_int == 1i32 {
+                    0i32
+                } else {
+                    1i32
+                },
+            );
             if stem_id < 0i32 {
-                dpx_warning(b"Too many hints...\x00" as *const u8 as
-                                *const libc::c_char);
+                dpx_warning(b"Too many hints...\x00" as *const u8 as *const libc::c_char);
                 status = -1i32;
-                return
+                return;
             }
             /* Put stem_id onto the stack... */
             let fresh2 = cs_stack_top;
             cs_stack_top = cs_stack_top + 1;
             cs_arg_stack[fresh2 as usize] = stem_id as libc::c_double;
-            add_charpath(cd, -1i32,
-                         &mut *cs_arg_stack.as_mut_ptr().offset((cs_stack_top
-                                                                     - 1i32)
-                                                                    as isize),
-                         1i32);
+            add_charpath(
+                cd,
+                -1i32,
+                &mut *cs_arg_stack
+                    .as_mut_ptr()
+                    .offset((cs_stack_top - 1i32) as isize),
+                1i32,
+            );
             cs_stack_top = 0i32
         }
         21 => {
             /*
-     * Reference point is (0, 0) in Type 2 charstring.
-     */
-            if cs_stack_top < 2i32 { status = -2i32; return }
+             * Reference point is (0, 0) in Type 2 charstring.
+             */
+            if cs_stack_top < 2i32 {
+                status = -2i32;
+                return;
+            }
             if phase < 2i32 {
                 cs_arg_stack[(cs_stack_top - 2i32) as usize] += (*cd).sbw.sbx;
                 cs_arg_stack[(cs_stack_top - 1i32) as usize] += (*cd).sbw.sby
             }
-            add_charpath(cd, op as libc::c_int,
-                         &mut *cs_arg_stack.as_mut_ptr().offset((cs_stack_top
-                                                                     - 2i32)
-                                                                    as isize),
-                         2i32);
+            add_charpath(
+                cd,
+                op as libc::c_int,
+                &mut *cs_arg_stack
+                    .as_mut_ptr()
+                    .offset((cs_stack_top - 2i32) as isize),
+                2i32,
+            );
             cs_stack_top = 0i32
         }
         22 | 4 => {
-            if cs_stack_top < 1i32 { status = -2i32; return }
+            if cs_stack_top < 1i32 {
+                status = -2i32;
+                return;
+            }
             let mut argn: libc::c_int = 1i32;
             if phase < 2i32 {
                 /*
-         * The reference point for the first moveto operator is diferrent
-         * between Type 1 charstring and Type 2 charstring. We compensate it.
-         */
+                 * The reference point for the first moveto operator is diferrent
+                 * between Type 1 charstring and Type 2 charstring. We compensate it.
+                 */
                 if op as libc::c_int == 22i32 {
-                    cs_arg_stack[(cs_stack_top - 1i32) as usize] +=
-                        (*cd).sbw.sbx;
+                    cs_arg_stack[(cs_stack_top - 1i32) as usize] += (*cd).sbw.sbx;
                     if (*cd).sbw.sby != 0.0f64 {
                         let fresh3 = cs_stack_top;
                         cs_stack_top = cs_stack_top + 1;
@@ -465,74 +531,102 @@ unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc,
                         op = 21i32 as card8
                     }
                 } else {
-                    cs_arg_stack[(cs_stack_top - 1i32) as usize] +=
-                        (*cd).sbw.sby;
+                    cs_arg_stack[(cs_stack_top - 1i32) as usize] += (*cd).sbw.sby;
                     if (*cd).sbw.sbx != 0.0f64 {
                         cs_arg_stack[cs_stack_top as usize] =
                             cs_arg_stack[(cs_stack_top - 1i32) as usize];
-                        cs_arg_stack[(cs_stack_top - 1i32) as usize] =
-                            (*cd).sbw.sbx;
+                        cs_arg_stack[(cs_stack_top - 1i32) as usize] = (*cd).sbw.sbx;
                         cs_stack_top += 1;
                         argn = 2i32;
                         op = 21i32 as card8
                     }
                 }
             }
-            add_charpath(cd, op as libc::c_int,
-                         &mut *cs_arg_stack.as_mut_ptr().offset((cs_stack_top
-                                                                     - argn)
-                                                                    as isize),
-                         argn);
+            add_charpath(
+                cd,
+                op as libc::c_int,
+                &mut *cs_arg_stack
+                    .as_mut_ptr()
+                    .offset((cs_stack_top - argn) as isize),
+                argn,
+            );
             cs_stack_top = 0i32
         }
-        14 => { status = 3i32; cs_stack_top = 0i32 }
+        14 => {
+            status = 3i32;
+            cs_stack_top = 0i32
+        }
         5 => {
             /* above oprators are candidate for first stack-clearing operator */
-            if cs_stack_top < 2i32 { status = -2i32; return }
-            add_charpath(cd, op as libc::c_int,
-                         &mut *cs_arg_stack.as_mut_ptr().offset((cs_stack_top
-                                                                     - 2i32)
-                                                                    as isize),
-                         2i32);
+            if cs_stack_top < 2i32 {
+                status = -2i32;
+                return;
+            }
+            add_charpath(
+                cd,
+                op as libc::c_int,
+                &mut *cs_arg_stack
+                    .as_mut_ptr()
+                    .offset((cs_stack_top - 2i32) as isize),
+                2i32,
+            );
             cs_stack_top = 0i32
         }
         6 | 7 => {
-            if cs_stack_top < 1i32 { status = -2i32; return }
-            add_charpath(cd, op as libc::c_int,
-                         &mut *cs_arg_stack.as_mut_ptr().offset((cs_stack_top
-                                                                     - 1i32)
-                                                                    as isize),
-                         1i32);
+            if cs_stack_top < 1i32 {
+                status = -2i32;
+                return;
+            }
+            add_charpath(
+                cd,
+                op as libc::c_int,
+                &mut *cs_arg_stack
+                    .as_mut_ptr()
+                    .offset((cs_stack_top - 1i32) as isize),
+                1i32,
+            );
             cs_stack_top = 0i32
         }
         8 => {
-            if cs_stack_top < 6i32 { status = -2i32; return }
-            add_charpath(cd, op as libc::c_int,
-                         &mut *cs_arg_stack.as_mut_ptr().offset((cs_stack_top
-                                                                     - 6i32)
-                                                                    as isize),
-                         6i32);
+            if cs_stack_top < 6i32 {
+                status = -2i32;
+                return;
+            }
+            add_charpath(
+                cd,
+                op as libc::c_int,
+                &mut *cs_arg_stack
+                    .as_mut_ptr()
+                    .offset((cs_stack_top - 6i32) as isize),
+                6i32,
+            );
             cs_stack_top = 0i32
         }
         30 | 31 => {
-            if cs_stack_top < 4i32 { status = -2i32; return }
-            add_charpath(cd, op as libc::c_int,
-                         &mut *cs_arg_stack.as_mut_ptr().offset((cs_stack_top
-                                                                     - 4i32)
-                                                                    as isize),
-                         4i32);
+            if cs_stack_top < 4i32 {
+                status = -2i32;
+                return;
+            }
+            add_charpath(
+                cd,
+                op as libc::c_int,
+                &mut *cs_arg_stack
+                    .as_mut_ptr()
+                    .offset((cs_stack_top - 4i32) as isize),
+                4i32,
+            );
             cs_stack_top = 0i32
         }
-        11 => { }
+        11 => {}
         10 => {
-            _tt_abort(b"Unexpected callsubr.\x00" as *const u8 as
-                          *const libc::c_char);
+            _tt_abort(b"Unexpected callsubr.\x00" as *const u8 as *const libc::c_char);
         }
         _ => {
             /* no-op ? */
-            dpx_warning(b"Unknown charstring operator: 0x%02x\x00" as
-                            *const u8 as *const libc::c_char,
-                        op as libc::c_int);
+            dpx_warning(
+                b"Unknown charstring operator: 0x%02x\x00" as *const u8 as *const libc::c_char,
+                op as libc::c_int,
+            );
             status = -1i32
         }
     };
@@ -564,41 +658,51 @@ unsafe extern "C" fn do_othersubr0(mut cd: *mut t1_chardesc) {
     let mut flex: *mut t1_cpath = 0 as *mut t1_cpath;
     let mut cur: *mut t1_cpath = 0 as *mut t1_cpath;
     let mut next: *mut t1_cpath = 0 as *mut t1_cpath;
-    if ps_stack_top < 1i32 { status = -1i32; return }
+    if ps_stack_top < 1i32 {
+        status = -1i32;
+        return;
+    }
     /* Seek first CS_FLEX_CTRL mark */
     cur = (*cd).charpath;
-    while !cur.is_null() && (*cur).type_0 != -2i32 { cur = (*cur).next }
+    while !cur.is_null() && (*cur).type_0 != -2i32 {
+        cur = (*cur).next
+    }
     flex = cur;
     let mut i: libc::c_uint = 0;
     cur = (*cur).next;
     i = 1i32 as libc::c_uint;
     while i < 7i32 as libc::c_uint {
-        if cur.is_null() || (*cur).type_0 != -2i32 || (*cur).num_args != 2i32
-           {
+        if cur.is_null() || (*cur).type_0 != -2i32 || (*cur).num_args != 2i32 {
             status = -1i32;
-            return
+            return;
         }
         if i == 1i32 as libc::c_uint {
             (*flex).args[0] += (*cur).args[0];
             (*flex).args[1] += (*cur).args[1]
         } else {
-            copy_args(&mut *(*flex).args.as_mut_ptr().offset((2i32 as
-                                                                  libc::c_uint).wrapping_mul(i).wrapping_sub(2i32
-                                                                                                                 as
-                                                                                                                 libc::c_uint)
-                                                                 as isize),
-                      (*cur).args.as_mut_ptr(), 2i32);
+            copy_args(
+                &mut *(*flex).args.as_mut_ptr().offset(
+                    (2i32 as libc::c_uint)
+                        .wrapping_mul(i)
+                        .wrapping_sub(2i32 as libc::c_uint) as isize,
+                ),
+                (*cur).args.as_mut_ptr(),
+                2i32,
+            );
         }
         next = (*cur).next;
         free(cur as *mut libc::c_void);
         cur = next;
         i = i.wrapping_add(1)
     }
-    if !cur.is_null() { status = -1i32; return }
+    if !cur.is_null() {
+        status = -1i32;
+        return;
+    }
     /*
-   * Now 'flex' have all six control points, the first pair is relative
-   * from starting point.
-   */
+     * Now 'flex' have all six control points, the first pair is relative
+     * from starting point.
+     */
     (*flex).type_0 = 35i32; /* flex depth */
     ps_stack_top -= 1;
     (*flex).args[12] = ps_arg_stack[ps_stack_top as usize];
@@ -608,12 +712,17 @@ unsafe extern "C" fn do_othersubr0(mut cd: *mut t1_chardesc) {
     phase = 2i32;
 }
 /* Start flex */
-unsafe extern "C" fn do_othersubr1() { phase = 3i32; }
+unsafe extern "C" fn do_othersubr1() {
+    phase = 3i32;
+}
 /* Mark flex control point */
 unsafe extern "C" fn do_othersubr2(mut cd: *mut t1_chardesc) {
-    if phase != 3i32 || (*cd).lastpath.is_null() { status = -1i32; return }
+    if phase != 3i32 || (*cd).lastpath.is_null() {
+        status = -1i32;
+        return;
+    }
     match (*(*cd).lastpath).type_0 {
-        21 => { }
+        21 => {}
         22 => {
             (*(*cd).lastpath).num_args = 2i32;
             (*(*cd).lastpath).args[1] = 0.0f64
@@ -623,7 +732,10 @@ unsafe extern "C" fn do_othersubr2(mut cd: *mut t1_chardesc) {
             (*(*cd).lastpath).args[1] = (*(*cd).lastpath).args[0];
             (*(*cd).lastpath).args[0] = 0.0f64
         }
-        _ => { status = -1i32; return }
+        _ => {
+            status = -1i32;
+            return;
+        }
     }
     (*(*cd).lastpath).type_0 = -2i32;
 }
@@ -636,12 +748,17 @@ unsafe extern "C" fn do_othersubr3(mut cd: *mut t1_chardesc) {
 }
 unsafe extern "C" fn do_othersubr12() {
     /* Othersubr12 call must immediately follow the hsbw or sbw. */
-    if phase != 0i32 { status = -1i32; return };
+    if phase != 0i32 {
+        status = -1i32;
+        return;
+    };
     /* noop */
 }
 unsafe extern "C" fn do_othersubr13(mut cd: *mut t1_chardesc) {
-    let mut stemgroups: [t1_stemgroup; 96] =
-        [t1_stemgroup{num_stems: 0, stems: [0.; 96],}; 96];
+    let mut stemgroups: [t1_stemgroup; 96] = [t1_stemgroup {
+        num_stems: 0,
+        stems: [0.; 96],
+    }; 96];
     let mut num_hgroups: libc::c_int = 0;
     let mut num_vgroups: libc::c_int = 0;
     let mut n: libc::c_int = 0;
@@ -649,12 +766,21 @@ unsafe extern "C" fn do_othersubr13(mut cd: *mut t1_chardesc) {
     let mut pos: libc::c_double = 0.;
     let mut del: libc::c_double = 0.;
     /* After #12 callothersubr or hsbw or sbw. */
-    if phase != 0i32 { status = -1i32; return }
+    if phase != 0i32 {
+        status = -1i32;
+        return;
+    }
     n = 0i32;
-    while n < 96i32 { stemgroups[n as usize].num_stems = 0i32; n += 1 }
+    while n < 96i32 {
+        stemgroups[n as usize].num_stems = 0i32;
+        n += 1
+    }
     ps_stack_top -= 1;
     num_hgroups = ps_arg_stack[ps_stack_top as usize] as libc::c_int;
-    if num_hgroups < 0i32 || num_hgroups > 96i32 { status = -1i32; return }
+    if num_hgroups < 0i32 || num_hgroups > 96i32 {
+        status = -1i32;
+        return;
+    }
     n = 0i32;
     pos = 0.0f64;
     while ps_stack_top >= 2i32 && n < num_hgroups {
@@ -663,20 +789,31 @@ unsafe extern "C" fn do_othersubr13(mut cd: *mut t1_chardesc) {
         pos += ps_arg_stack[ps_stack_top as usize];
         ps_stack_top -= 1;
         del = ps_arg_stack[ps_stack_top as usize];
-        stem_id =
-            add_stem(cd, if del < 0.0f64 { pos + del } else { pos },
-                     if del < 0.0f64 { -del } else { del }, 0i32);
-        stemgroups[n as
-                       usize].stems[stemgroups[n as usize].num_stems as usize]
-            = stem_id as libc::c_double;
+        stem_id = add_stem(
+            cd,
+            if del < 0.0f64 { pos + del } else { pos },
+            if del < 0.0f64 { -del } else { del },
+            0i32,
+        );
+        stemgroups[n as usize].stems[stemgroups[n as usize].num_stems as usize] =
+            stem_id as libc::c_double;
         stemgroups[n as usize].num_stems += 1i32;
         pos += del;
-        if del < 0.0f64 { pos = 0.0f64; n += 1 }
+        if del < 0.0f64 {
+            pos = 0.0f64;
+            n += 1
+        }
     }
-    if n != num_hgroups { status = -2i32; return }
+    if n != num_hgroups {
+        status = -2i32;
+        return;
+    }
     ps_stack_top -= 1;
     num_vgroups = ps_arg_stack[ps_stack_top as usize] as libc::c_int;
-    if num_vgroups < 0i32 || num_vgroups > 96i32 { status = -1i32; return }
+    if num_vgroups < 0i32 || num_vgroups > 96i32 {
+        status = -1i32;
+        return;
+    }
     n = 0i32;
     pos = 0.0f64;
     while ps_stack_top >= 2i32 && n < num_vgroups {
@@ -685,24 +822,39 @@ unsafe extern "C" fn do_othersubr13(mut cd: *mut t1_chardesc) {
         pos += ps_arg_stack[ps_stack_top as usize];
         ps_stack_top -= 1;
         del = ps_arg_stack[ps_stack_top as usize];
-        stem_id =
-            add_stem(cd, if del < 0.0f64 { pos + del } else { pos },
-                     if del < 0.0f64 { -del } else { del }, 1i32);
-        stemgroups[n as
-                       usize].stems[stemgroups[n as usize].num_stems as usize]
-            = stem_id as libc::c_double;
+        stem_id = add_stem(
+            cd,
+            if del < 0.0f64 { pos + del } else { pos },
+            if del < 0.0f64 { -del } else { del },
+            1i32,
+        );
+        stemgroups[n as usize].stems[stemgroups[n as usize].num_stems as usize] =
+            stem_id as libc::c_double;
         stemgroups[n as usize].num_stems += 1i32;
         pos += del;
-        if del < 0.0f64 { pos = 0.0f64; n += 1 }
+        if del < 0.0f64 {
+            pos = 0.0f64;
+            n += 1
+        }
     }
-    if n != num_vgroups { status = -2i32; return }
+    if n != num_vgroups {
+        status = -2i32;
+        return;
+    }
     n = 0i32;
-    while n <
-              (if num_hgroups > num_vgroups {
-                   num_hgroups
-               } else { num_vgroups }) {
-        add_charpath(cd, 20i32, stemgroups[n as usize].stems.as_mut_ptr(),
-                     stemgroups[n as usize].num_stems);
+    while n
+        < (if num_hgroups > num_vgroups {
+            num_hgroups
+        } else {
+            num_vgroups
+        })
+    {
+        add_charpath(
+            cd,
+            20i32,
+            stemgroups[n as usize].stems.as_mut_ptr(),
+            stemgroups[n as usize].num_stems,
+        );
         n += 1
     }
     (*cd).flags |= 1i32 << 1i32;
@@ -710,49 +862,82 @@ unsafe extern "C" fn do_othersubr13(mut cd: *mut t1_chardesc) {
 unsafe extern "C" fn do_callothersubr(mut cd: *mut t1_chardesc) {
     let mut argn: libc::c_int = 0;
     let mut subrno: libc::c_int = 0;
-    if cs_stack_top < 2i32 { status = -2i32; return }
+    if cs_stack_top < 2i32 {
+        status = -2i32;
+        return;
+    }
     cs_stack_top -= 1;
     subrno = cs_arg_stack[cs_stack_top as usize] as libc::c_int;
     cs_stack_top -= 1;
     argn = cs_arg_stack[cs_stack_top as usize] as libc::c_int;
-    if cs_stack_top < argn { status = -2i32; return }
-    if ps_stack_top + argn > 96i32 * 2i32 + 2i32 { status = -1i32; return }
-    loop  {
+    if cs_stack_top < argn {
+        status = -2i32;
+        return;
+    }
+    if ps_stack_top + argn > 96i32 * 2i32 + 2i32 {
+        status = -1i32;
+        return;
+    }
+    loop {
         let fresh4 = argn;
         argn = argn - 1;
-        if !(fresh4 > 0i32) { break ; }
+        if !(fresh4 > 0i32) {
+            break;
+        }
         cs_stack_top -= 1;
         let fresh5 = ps_stack_top;
         ps_stack_top = ps_stack_top + 1;
         ps_arg_stack[fresh5 as usize] = cs_arg_stack[cs_stack_top as usize]
     }
     match subrno {
-        0 => { do_othersubr0(cd); }
-        1 => { do_othersubr1(); }
-        2 => { do_othersubr2(cd); }
-        3 => { do_othersubr3(cd); }
-        12 => { do_othersubr12(); }
-        13 => { do_othersubr13(cd); }
+        0 => {
+            do_othersubr0(cd);
+        }
+        1 => {
+            do_othersubr1();
+        }
+        2 => {
+            do_othersubr2(cd);
+        }
+        3 => {
+            do_othersubr3(cd);
+        }
+        12 => {
+            do_othersubr12();
+        }
+        13 => {
+            do_othersubr13(cd);
+        }
         _ => {
-            _tt_abort(b"Unknown othersubr #%d.\x00" as *const u8 as
-                          *const libc::c_char, subrno);
+            _tt_abort(
+                b"Unknown othersubr #%d.\x00" as *const u8 as *const libc::c_char,
+                subrno,
+            );
         }
     };
 }
 /*
  * Double byte operators:
  */
-unsafe extern "C" fn do_operator2(mut cd: *mut t1_chardesc,
-                                  mut data: *mut *mut card8,
-                                  mut endptr: *mut card8) {
+unsafe extern "C" fn do_operator2(
+    mut cd: *mut t1_chardesc,
+    mut data: *mut *mut card8,
+    mut endptr: *mut card8,
+) {
     let mut op: card8 = 0;
     *data = (*data).offset(1);
-    if endptr < (*data).offset(1) { status = -1i32; return }
+    if endptr < (*data).offset(1) {
+        status = -1i32;
+        return;
+    }
     op = **data;
     *data = (*data).offset(1);
     match op as libc::c_int {
         7 => {
-            if cs_stack_top < 4i32 { status = -2i32; return }
+            if cs_stack_top < 4i32 {
+                status = -2i32;
+                return;
+            }
             cs_stack_top -= 1;
             (*cd).sbw.wy = cs_arg_stack[cs_stack_top as usize];
             cs_stack_top -= 1;
@@ -765,76 +950,96 @@ unsafe extern "C" fn do_operator2(mut cd: *mut t1_chardesc,
         }
         2 | 1 => {
             /*
-     * TODO:
-     *  The counter control can be used for hstem3 and vstem3
-     *  operator if LanguageGroup is not equal to 1.
-     */
-            if cs_stack_top < 6i32 { status = -2i32; return }
+             * TODO:
+             *  The counter control can be used for hstem3 and vstem3
+             *  operator if LanguageGroup is not equal to 1.
+             */
+            if cs_stack_top < 6i32 {
+                status = -2i32;
+                return;
+            }
             let mut i: libc::c_int = 0;
             i = 2i32;
             while i >= 0i32 {
                 let mut stem_id: libc::c_int = 0;
-                stem_id =
-                    add_stem(cd,
-                             cs_arg_stack[(cs_stack_top - 2i32 * i - 2i32) as
-                                              usize],
-                             cs_arg_stack[(cs_stack_top - 2i32 * i - 1i32) as
-                                              usize],
-                             if op as libc::c_int == 2i32 {
-                                 0i32
-                             } else { 1i32 });
+                stem_id = add_stem(
+                    cd,
+                    cs_arg_stack[(cs_stack_top - 2i32 * i - 2i32) as usize],
+                    cs_arg_stack[(cs_stack_top - 2i32 * i - 1i32) as usize],
+                    if op as libc::c_int == 2i32 {
+                        0i32
+                    } else {
+                        1i32
+                    },
+                );
                 if stem_id < 0i32 {
-                    dpx_warning(b"Too many hints...\x00" as *const u8 as
-                                    *const libc::c_char);
+                    dpx_warning(b"Too many hints...\x00" as *const u8 as *const libc::c_char);
                     status = -1i32;
-                    return
+                    return;
                 }
                 /* Put stem_id onto the stack... */
                 let fresh6 = cs_stack_top;
                 cs_stack_top = cs_stack_top + 1;
                 cs_arg_stack[fresh6 as usize] = stem_id as libc::c_double;
-                add_charpath(cd, -1i32,
-                             &mut *cs_arg_stack.as_mut_ptr().offset((cs_stack_top
-                                                                         -
-                                                                         1i32)
-                                                                        as
-                                                                        isize),
-                             1i32);
+                add_charpath(
+                    cd,
+                    -1i32,
+                    &mut *cs_arg_stack
+                        .as_mut_ptr()
+                        .offset((cs_stack_top - 1i32) as isize),
+                    1i32,
+                );
                 cs_stack_top -= 1;
                 i -= 1
             }
             cs_stack_top = 0i32
         }
         33 => {
-            if cs_stack_top < 2i32 { status = -2i32; return }
+            if cs_stack_top < 2i32 {
+                status = -2i32;
+                return;
+            }
             /* noop */
             cs_stack_top = 0i32
         }
         17 => {
             /* all operator above are stack-clearing */
             /*
-     * Transfer a operand from PS interpreter operand stack to BuildChar
-     * operand stack.
-     */
-            if ps_stack_top < 1i32 { status = -1i32; return }
-            if cs_stack_top + 1i32 > 48i32 { status = -2i32; return }
+             * Transfer a operand from PS interpreter operand stack to BuildChar
+             * operand stack.
+             */
+            if ps_stack_top < 1i32 {
+                status = -1i32;
+                return;
+            }
+            if cs_stack_top + 1i32 > 48i32 {
+                status = -2i32;
+                return;
+            }
             ps_stack_top -= 1;
             let fresh7 = cs_stack_top;
             cs_stack_top = cs_stack_top + 1;
-            cs_arg_stack[fresh7 as usize] =
-                ps_arg_stack[ps_stack_top as usize]
+            cs_arg_stack[fresh7 as usize] = ps_arg_stack[ps_stack_top as usize]
         }
-        0 => { }
+        0 => {}
         12 => {
             /* TODO: check overflow */
-            if cs_stack_top < 2i32 { status = -2i32; return }
+            if cs_stack_top < 2i32 {
+                status = -2i32;
+                return;
+            }
             cs_arg_stack[(cs_stack_top - 2i32) as usize] /=
                 cs_arg_stack[(cs_stack_top - 1i32) as usize];
             cs_stack_top -= 1
         }
-        16 => { do_callothersubr(cd); }
+        16 => {
+            do_callothersubr(cd);
+        }
         6 => {
-            if cs_stack_top < 5i32 { status = -2i32; return }
+            if cs_stack_top < 5i32 {
+                status = -2i32;
+                return;
+            }
             (*cd).flags |= 1i32 << 2i32;
             cs_stack_top -= 1;
             (*cd).seac.achar = cs_arg_stack[cs_stack_top as usize] as card8;
@@ -847,15 +1052,15 @@ unsafe extern "C" fn do_operator2(mut cd: *mut t1_chardesc,
             /* We must compensate the difference of the glyph origin. */
             (*cd).seac.ady += (*cd).sbw.sby;
             cs_stack_top -= 1;
-            (*cd).seac.adx +=
-                (*cd).sbw.sbx - cs_arg_stack[cs_stack_top as usize];
+            (*cd).seac.adx += (*cd).sbw.sbx - cs_arg_stack[cs_stack_top as usize];
             cs_stack_top = 0i32
         }
         _ => {
             /* no-op ? */
-            dpx_warning(b"Unknown charstring operator: 0x0c%02x\x00" as
-                            *const u8 as *const libc::c_char,
-                        op as libc::c_int);
+            dpx_warning(
+                b"Unknown charstring operator: 0x0c%02x\x00" as *const u8 as *const libc::c_char,
+                op as libc::c_int,
+            );
             status = -1i32
         }
     };
@@ -869,10 +1074,12 @@ unsafe extern "C" fn do_operator2(mut cd: *mut t1_chardesc,
  *   Type 1 format.
  */
 /* Type 2 5-bytes encoding used. */
-unsafe extern "C" fn put_numbers(mut argv: *mut libc::c_double,
-                                 mut argn: libc::c_int,
-                                 mut dest: *mut *mut card8,
-                                 mut limit: *mut card8) {
+unsafe extern "C" fn put_numbers(
+    mut argv: *mut libc::c_double,
+    mut argn: libc::c_int,
+    mut dest: *mut *mut card8,
+    mut limit: *mut card8,
+) {
     let mut i: libc::c_int = 0;
     i = 0i32;
     while i < argn {
@@ -881,19 +1088,23 @@ unsafe extern "C" fn put_numbers(mut argv: *mut libc::c_double,
         value = *argv.offset(i as isize);
         /* Nearest integer value */
         ivalue = floor(value + 0.5f64) as libc::c_int;
-        if value >= 0x8000i64 as libc::c_double ||
-               value <= (-0x8000i64 - 1i32 as libc::c_long) as libc::c_double
-           {
+        if value >= 0x8000i64 as libc::c_double
+            || value <= (-0x8000i64 - 1i32 as libc::c_long) as libc::c_double
+        {
             /*
-       * This number cannot be represented as a single operand.
-       * We must use `a b mul ...' or `a c div' to represent large values.
-       */
-            _tt_abort(b"Argument value too large. (This is bug)\x00" as
-                          *const u8 as *const libc::c_char);
+             * This number cannot be represented as a single operand.
+             * We must use `a b mul ...' or `a c div' to represent large values.
+             */
+            _tt_abort(
+                b"Argument value too large. (This is bug)\x00" as *const u8 as *const libc::c_char,
+            );
         } else {
             if fabs(value - ivalue as libc::c_double) > 3.0e-5f64 {
                 /* 16.16-bit signed fixed value  */
-                if limit < (*dest).offset(5) { status = -3i32; return }
+                if limit < (*dest).offset(5) {
+                    status = -3i32;
+                    return;
+                }
                 let fresh8 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh8 = 255i32 as card8;
@@ -905,9 +1116,8 @@ unsafe extern "C" fn put_numbers(mut argv: *mut libc::c_double,
                 let fresh10 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh10 = (ivalue & 0xffi32) as card8;
-                ivalue =
-                    ((value - ivalue as libc::c_double) *
-                         0x10000i64 as libc::c_double) as libc::c_int;
+                ivalue = ((value - ivalue as libc::c_double) * 0x10000i64 as libc::c_double)
+                    as libc::c_int;
                 let fresh11 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh11 = (ivalue >> 8i32 & 0xffi32) as card8;
@@ -915,18 +1125,21 @@ unsafe extern "C" fn put_numbers(mut argv: *mut libc::c_double,
                 *dest = (*dest).offset(1);
                 *fresh12 = (ivalue & 0xffi32) as card8
             } else if ivalue >= -107i32 && ivalue <= 107i32 {
-                if limit < (*dest).offset(1) { status = -3i32; return }
+                if limit < (*dest).offset(1) {
+                    status = -3i32;
+                    return;
+                }
                 let fresh13 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh13 = (ivalue + 139i32) as card8
             } else if ivalue >= 108i32 && ivalue <= 1131i32 {
-                if limit < (*dest).offset(2) { status = -3i32; return }
-                ivalue =
-                    0xf700u32.wrapping_add(ivalue as
-                                               libc::c_uint).wrapping_sub(108i32
-                                                                              as
-                                                                              libc::c_uint)
-                        as libc::c_int;
+                if limit < (*dest).offset(2) {
+                    status = -3i32;
+                    return;
+                }
+                ivalue = 0xf700u32
+                    .wrapping_add(ivalue as libc::c_uint)
+                    .wrapping_sub(108i32 as libc::c_uint) as libc::c_int;
                 let fresh14 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh14 = (ivalue >> 8i32 & 0xffi32) as card8;
@@ -934,13 +1147,13 @@ unsafe extern "C" fn put_numbers(mut argv: *mut libc::c_double,
                 *dest = (*dest).offset(1);
                 *fresh15 = (ivalue & 0xffi32) as card8
             } else if ivalue >= -1131i32 && ivalue <= -108i32 {
-                if limit < (*dest).offset(2) { status = -3i32; return }
-                ivalue =
-                    0xfb00u32.wrapping_sub(ivalue as
-                                               libc::c_uint).wrapping_sub(108i32
-                                                                              as
-                                                                              libc::c_uint)
-                        as libc::c_int;
+                if limit < (*dest).offset(2) {
+                    status = -3i32;
+                    return;
+                }
+                ivalue = 0xfb00u32
+                    .wrapping_sub(ivalue as libc::c_uint)
+                    .wrapping_sub(108i32 as libc::c_uint) as libc::c_int;
                 let fresh16 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh16 = (ivalue >> 8i32 & 0xffi32) as card8;
@@ -949,7 +1162,10 @@ unsafe extern "C" fn put_numbers(mut argv: *mut libc::c_double,
                 *fresh17 = (ivalue & 0xffi32) as card8
             } else if ivalue >= -32768i32 && ivalue <= 32767i32 {
                 /* shortint */
-                if limit < (*dest).offset(3) { status = -3i32; return }
+                if limit < (*dest).offset(3) {
+                    status = -3i32;
+                    return;
+                }
                 let fresh18 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh18 = 28i32 as card8;
@@ -960,15 +1176,13 @@ unsafe extern "C" fn put_numbers(mut argv: *mut libc::c_double,
                 *dest = (*dest).offset(1);
                 *fresh20 = (ivalue & 0xffi32) as card8
             } else {
-                _tt_abort(b"Unexpected error.\x00" as *const u8 as
-                              *const libc::c_char);
+                _tt_abort(b"Unexpected error.\x00" as *const u8 as *const libc::c_char);
             }
         }
         i += 1
-    };
+    }
 }
-unsafe extern "C" fn get_integer(mut data: *mut *mut card8,
-                                 mut endptr: *mut card8) {
+unsafe extern "C" fn get_integer(mut data: *mut *mut card8, mut endptr: *mut card8) {
     let mut result: libc::c_int = 0i32;
     let mut b0: card8 = **data;
     let mut b1: card8 = 0;
@@ -976,7 +1190,10 @@ unsafe extern "C" fn get_integer(mut data: *mut *mut card8,
     *data = (*data).offset(1);
     if b0 as libc::c_int == 28i32 {
         /* shortint */
-        if endptr < (*data).offset(2) { status = -1i32; return }
+        if endptr < (*data).offset(2) {
+            status = -1i32;
+            return;
+        }
         b1 = **data;
         b2 = *(*data).offset(1);
         result = b1 as libc::c_int * 256i32 + b2 as libc::c_int;
@@ -989,32 +1206,42 @@ unsafe extern "C" fn get_integer(mut data: *mut *mut card8,
         result = b0 as libc::c_int - 139i32
     } else if b0 as libc::c_int >= 247i32 && b0 as libc::c_int <= 250i32 {
         /* int (2) */
-        if endptr < (*data).offset(1) { status = -1i32; return }
+        if endptr < (*data).offset(1) {
+            status = -1i32;
+            return;
+        }
         b1 = **data;
-        result =
-            (b0 as libc::c_int - 247i32) * 256i32 + b1 as libc::c_int +
-                108i32;
+        result = (b0 as libc::c_int - 247i32) * 256i32 + b1 as libc::c_int + 108i32;
         *data = (*data).offset(1)
     } else if b0 as libc::c_int >= 251i32 && b0 as libc::c_int <= 254i32 {
-        if endptr < (*data).offset(1) { status = -1i32; return }
+        if endptr < (*data).offset(1) {
+            status = -1i32;
+            return;
+        }
         b1 = **data;
-        result =
-            -(b0 as libc::c_int - 251i32) * 256i32 - b1 as libc::c_int -
-                108i32;
+        result = -(b0 as libc::c_int - 251i32) * 256i32 - b1 as libc::c_int - 108i32;
         *data = (*data).offset(1)
-    } else { status = -1i32; return }
-    if cs_stack_top + 1i32 > 48i32 { status = -2i32; return }
+    } else {
+        status = -1i32;
+        return;
+    }
+    if cs_stack_top + 1i32 > 48i32 {
+        status = -2i32;
+        return;
+    }
     let fresh21 = cs_stack_top;
     cs_stack_top = cs_stack_top + 1;
     cs_arg_stack[fresh21 as usize] = result as libc::c_double;
 }
 /* Type 1 */
-unsafe extern "C" fn get_longint(mut data: *mut *mut card8,
-                                 mut endptr: *mut card8) {
+unsafe extern "C" fn get_longint(mut data: *mut *mut card8, mut endptr: *mut card8) {
     let mut result: libc::c_int = 0i32;
     let mut i: libc::c_uint = 0;
     *data = (*data).offset(1);
-    if endptr < (*data).offset(4) { status = -1i32; return }
+    if endptr < (*data).offset(4) {
+        status = -1i32;
+        return;
+    }
     result = **data as libc::c_int;
     if result as libc::c_long >= 0x80i64 {
         result = (result as libc::c_long - 0x100i64) as libc::c_int
@@ -1026,7 +1253,10 @@ unsafe extern "C" fn get_longint(mut data: *mut *mut card8,
         *data = (*data).offset(1);
         i = i.wrapping_add(1)
     }
-    if cs_stack_top + 1i32 > 48i32 { status = -2i32; return }
+    if cs_stack_top + 1i32 > 48i32 {
+        status = -2i32;
+        return;
+    }
     let fresh22 = cs_stack_top;
     cs_stack_top = cs_stack_top + 1;
     cs_arg_stack[fresh22 as usize] = result as libc::c_double;
@@ -1037,23 +1267,24 @@ unsafe extern "C" fn get_longint(mut data: *mut *mut card8,
  *   We cannot do backword parsing due to subroutine, div etc.
  */
 /* Parse charstring and build charpath. */
-unsafe extern "C" fn t1char_build_charpath(mut cd: *mut t1_chardesc,
-                                           mut data: *mut *mut card8,
-                                           mut endptr: *mut card8,
-                                           mut subrs: *mut cff_index) {
+unsafe extern "C" fn t1char_build_charpath(
+    mut cd: *mut t1_chardesc,
+    mut data: *mut *mut card8,
+    mut endptr: *mut card8,
+    mut subrs: *mut cff_index,
+) {
     let mut b0: card8 = 0i32 as card8;
     let mut subr: *mut card8 = 0 as *mut card8;
     let mut len: libc::c_int = 0;
     if nest > 10i32 {
-        _tt_abort(b"Subroutine nested too deeply.\x00" as *const u8 as
-                      *const libc::c_char);
+        _tt_abort(b"Subroutine nested too deeply.\x00" as *const u8 as *const libc::c_char);
     }
     nest += 1;
     while *data < endptr && status == 0i32 {
         b0 = **data;
         if b0 as libc::c_int == 255i32 {
             get_longint(data, endptr);
-            /* Type 1 */
+        /* Type 1 */
         } else if b0 as libc::c_int == 11i32 {
             status = 2i32
         } else if b0 as libc::c_int == 10i32 {
@@ -1064,20 +1295,16 @@ unsafe extern "C" fn t1char_build_charpath(mut cd: *mut t1_chardesc,
                 cs_stack_top -= 1;
                 idx = cs_arg_stack[cs_stack_top as usize] as libc::c_int;
                 if subrs.is_null() || idx >= (*subrs).count as libc::c_int {
-                    _tt_abort(b"Invalid Subr#.\x00" as *const u8 as
-                                  *const libc::c_char);
+                    _tt_abort(b"Invalid Subr#.\x00" as *const u8 as *const libc::c_char);
                 }
-                subr =
-                    (*subrs).data.offset(*(*subrs).offset.offset(idx as isize)
-                                             as isize).offset(-1);
-                len =
-                    (*(*subrs).offset.offset((idx + 1i32) as
-                                                 isize)).wrapping_sub(*(*subrs).offset.offset(idx
-                                                                                                  as
-                                                                                                  isize))
-                        as libc::c_int;
-                t1char_build_charpath(cd, &mut subr,
-                                      subr.offset(len as isize), subrs);
+                subr = (*subrs)
+                    .data
+                    .offset(*(*subrs).offset.offset(idx as isize) as isize)
+                    .offset(-1);
+                len = (*(*subrs).offset.offset((idx + 1i32) as isize))
+                    .wrapping_sub(*(*subrs).offset.offset(idx as isize))
+                    as libc::c_int;
+                t1char_build_charpath(cd, &mut subr, subr.offset(len as isize), subrs);
                 *data = (*data).offset(1)
             }
         } else if b0 as libc::c_int == 12i32 {
@@ -1085,26 +1312,33 @@ unsafe extern "C" fn t1char_build_charpath(mut cd: *mut t1_chardesc,
         } else if (b0 as libc::c_int) < 32i32 && b0 as libc::c_int != 28i32 {
             /* 19, 20 need mask */
             do_operator1(cd, data);
-        } else if b0 as libc::c_int >= 22i32 && b0 as libc::c_int <= 27i32 ||
-                      b0 as libc::c_int == 31i32 {
+        } else if b0 as libc::c_int >= 22i32 && b0 as libc::c_int <= 27i32
+            || b0 as libc::c_int == 31i32
+        {
             /* reserved */
             status = -1i32
-            /* not an error ? */
-        } else { get_integer(data, endptr); }
+        /* not an error ? */
+        } else {
+            get_integer(data, endptr);
+        }
     }
     if status == 2i32 {
         status = 0i32
     } else if status == 3i32 && *data < endptr {
         if !(*data == endptr.offset(-1) && **data as libc::c_int == 11i32) {
-            dpx_warning(b"Garbage after endchar. (%d bytes)\x00" as *const u8
-                            as *const libc::c_char,
-                        endptr.wrapping_offset_from(*data) as libc::c_long as
-                            libc::c_int);
+            dpx_warning(
+                b"Garbage after endchar. (%d bytes)\x00" as *const u8 as *const libc::c_char,
+                endptr.wrapping_offset_from(*data) as libc::c_long as libc::c_int,
+            );
         }
     } else if status < 0i32 {
         /* error */
-        _tt_abort(b"Parsing charstring failed: (status=%d, stack=%d)\x00" as
-                      *const u8 as *const libc::c_char, status, cs_stack_top);
+        _tt_abort(
+            b"Parsing charstring failed: (status=%d, stack=%d)\x00" as *const u8
+                as *const libc::c_char,
+            status,
+            cs_stack_top,
+        );
     }
     nest -= 1;
 }
@@ -1121,7 +1355,9 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
     let mut next: *mut t1_cpath = 0 as *mut t1_cpath;
     let mut x: libc::c_double = 0.;
     let mut y: libc::c_double = 0.;
-    if (*cd).charpath.is_null() { return }
+    if (*cd).charpath.is_null() {
+        return;
+    }
     /* Set dummy large value. */
     (*cd).bbox.lly = 100000.0f64;
     (*cd).bbox.llx = (*cd).bbox.lly;
@@ -1137,33 +1373,50 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
             21 => {
                 x += (*cur).args[0];
                 y += (*cur).args[1];
-                if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
+                if (*cd).bbox.llx > x {
+                    (*cd).bbox.llx = x
+                }
+                if (*cd).bbox.urx < x {
+                    (*cd).bbox.urx = x
+                }
+                if (*cd).bbox.lly > y {
+                    (*cd).bbox.lly = y
+                }
+                if (*cd).bbox.ury < y {
+                    (*cd).bbox.ury = y
+                }
             }
             5 => {
                 x += (*cur).args[0];
                 y += (*cur).args[1];
-                if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
-                if !prev.is_null() && !cur.is_null() &&
-                       (*prev).num_args + (*cur).num_args < 48i32 {
+                if (*cd).bbox.llx > x {
+                    (*cd).bbox.llx = x
+                }
+                if (*cd).bbox.urx < x {
+                    (*cd).bbox.urx = x
+                }
+                if (*cd).bbox.lly > y {
+                    (*cd).bbox.lly = y
+                }
+                if (*cd).bbox.ury < y {
+                    (*cd).bbox.ury = y
+                }
+                if !prev.is_null() && !cur.is_null() && (*prev).num_args + (*cur).num_args < 48i32 {
                     if (*prev).type_0 == 5i32 {
-                        copy_args((*prev).args.as_mut_ptr().offset((*prev).num_args
-                                                                       as
-                                                                       isize),
-                                  (*cur).args.as_mut_ptr(), (*cur).num_args);
+                        copy_args(
+                            (*prev).args.as_mut_ptr().offset((*prev).num_args as isize),
+                            (*cur).args.as_mut_ptr(),
+                            (*cur).num_args,
+                        );
                         (*prev).num_args += (*cur).num_args;
                         (*prev).next = next;
                         cur = mfree(cur as *mut libc::c_void) as *mut t1_cpath
                     } else if (*prev).type_0 == 8i32 {
-                        copy_args((*prev).args.as_mut_ptr().offset((*prev).num_args
-                                                                       as
-                                                                       isize),
-                                  (*cur).args.as_mut_ptr(), (*cur).num_args);
+                        copy_args(
+                            (*prev).args.as_mut_ptr().offset((*prev).num_args as isize),
+                            (*cur).args.as_mut_ptr(),
+                            (*cur).num_args,
+                        );
                         (*prev).num_args += (*cur).num_args;
                         (*prev).type_0 = 24i32;
                         (*prev).next = next;
@@ -1173,27 +1426,42 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
             }
             22 => {
                 x += (*cur).args[0];
-                if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
+                if (*cd).bbox.llx > x {
+                    (*cd).bbox.llx = x
+                }
+                if (*cd).bbox.urx < x {
+                    (*cd).bbox.urx = x
+                }
+                if (*cd).bbox.lly > y {
+                    (*cd).bbox.lly = y
+                }
+                if (*cd).bbox.ury < y {
+                    (*cd).bbox.ury = y
+                }
             }
             6 => {
                 x += (*cur).args[0];
-                if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
-                if !prev.is_null() && !cur.is_null() &&
-                       (*prev).num_args + (*cur).num_args < 48i32 {
-                    if (*prev).type_0 == 7i32 &&
-                           (*prev).num_args % 2i32 == 1i32 ||
-                           (*prev).type_0 == 6i32 &&
-                               (*prev).num_args % 2i32 == 0i32 {
-                        copy_args((*prev).args.as_mut_ptr().offset((*prev).num_args
-                                                                       as
-                                                                       isize),
-                                  (*cur).args.as_mut_ptr(), (*cur).num_args);
+                if (*cd).bbox.llx > x {
+                    (*cd).bbox.llx = x
+                }
+                if (*cd).bbox.urx < x {
+                    (*cd).bbox.urx = x
+                }
+                if (*cd).bbox.lly > y {
+                    (*cd).bbox.lly = y
+                }
+                if (*cd).bbox.ury < y {
+                    (*cd).bbox.ury = y
+                }
+                if !prev.is_null() && !cur.is_null() && (*prev).num_args + (*cur).num_args < 48i32 {
+                    if (*prev).type_0 == 7i32 && (*prev).num_args % 2i32 == 1i32
+                        || (*prev).type_0 == 6i32 && (*prev).num_args % 2i32 == 0i32
+                    {
+                        copy_args(
+                            (*prev).args.as_mut_ptr().offset((*prev).num_args as isize),
+                            (*cur).args.as_mut_ptr(),
+                            (*cur).num_args,
+                        );
                         (*prev).num_args += (*cur).num_args;
                         (*prev).next = next;
                         cur = mfree(cur as *mut libc::c_void) as *mut t1_cpath
@@ -1202,27 +1470,42 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
             }
             4 => {
                 y += (*cur).args[0];
-                if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
+                if (*cd).bbox.llx > x {
+                    (*cd).bbox.llx = x
+                }
+                if (*cd).bbox.urx < x {
+                    (*cd).bbox.urx = x
+                }
+                if (*cd).bbox.lly > y {
+                    (*cd).bbox.lly = y
+                }
+                if (*cd).bbox.ury < y {
+                    (*cd).bbox.ury = y
+                }
             }
             7 => {
                 y += (*cur).args[0];
-                if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
-                if !prev.is_null() && !cur.is_null() &&
-                       (*prev).num_args + (*cur).num_args < 48i32 {
-                    if (*prev).type_0 == 6i32 &&
-                           (*prev).num_args % 2i32 == 1i32 ||
-                           (*prev).type_0 == 7i32 &&
-                               (*prev).num_args % 2i32 == 0i32 {
-                        copy_args((*prev).args.as_mut_ptr().offset((*prev).num_args
-                                                                       as
-                                                                       isize),
-                                  (*cur).args.as_mut_ptr(), (*cur).num_args);
+                if (*cd).bbox.llx > x {
+                    (*cd).bbox.llx = x
+                }
+                if (*cd).bbox.urx < x {
+                    (*cd).bbox.urx = x
+                }
+                if (*cd).bbox.lly > y {
+                    (*cd).bbox.lly = y
+                }
+                if (*cd).bbox.ury < y {
+                    (*cd).bbox.ury = y
+                }
+                if !prev.is_null() && !cur.is_null() && (*prev).num_args + (*cur).num_args < 48i32 {
+                    if (*prev).type_0 == 6i32 && (*prev).num_args % 2i32 == 1i32
+                        || (*prev).type_0 == 7i32 && (*prev).num_args % 2i32 == 0i32
+                    {
+                        copy_args(
+                            (*prev).args.as_mut_ptr().offset((*prev).num_args as isize),
+                            (*cur).args.as_mut_ptr(),
+                            (*cur).num_args,
+                        );
                         (*prev).num_args += (*cur).num_args;
                         (*prev).next = next;
                         cur = mfree(cur as *mut libc::c_void) as *mut t1_cpath
@@ -1232,36 +1515,41 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
             8 => {
                 i = 0i32 as libc::c_uint;
                 while i < 3i32 as libc::c_uint {
-                    x +=
-                        (*cur).args[(2i32 as libc::c_uint).wrapping_mul(i) as
-                                        usize];
-                    y +=
-                        (*cur).args[(2i32 as
-                                         libc::c_uint).wrapping_mul(i).wrapping_add(1i32
-                                                                                        as
-                                                                                        libc::c_uint)
-                                        as usize];
-                    if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                    if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                    if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                    if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
+                    x += (*cur).args[(2i32 as libc::c_uint).wrapping_mul(i) as usize];
+                    y += (*cur).args[(2i32 as libc::c_uint)
+                        .wrapping_mul(i)
+                        .wrapping_add(1i32 as libc::c_uint)
+                        as usize];
+                    if (*cd).bbox.llx > x {
+                        (*cd).bbox.llx = x
+                    }
+                    if (*cd).bbox.urx < x {
+                        (*cd).bbox.urx = x
+                    }
+                    if (*cd).bbox.lly > y {
+                        (*cd).bbox.lly = y
+                    }
+                    if (*cd).bbox.ury < y {
+                        (*cd).bbox.ury = y
+                    }
                     i = i.wrapping_add(1)
                 }
-                if !prev.is_null() && !cur.is_null() &&
-                       (*prev).num_args + (*cur).num_args < 48i32 {
+                if !prev.is_null() && !cur.is_null() && (*prev).num_args + (*cur).num_args < 48i32 {
                     if (*prev).type_0 == 8i32 {
-                        copy_args((*prev).args.as_mut_ptr().offset((*prev).num_args
-                                                                       as
-                                                                       isize),
-                                  (*cur).args.as_mut_ptr(), (*cur).num_args);
+                        copy_args(
+                            (*prev).args.as_mut_ptr().offset((*prev).num_args as isize),
+                            (*cur).args.as_mut_ptr(),
+                            (*cur).num_args,
+                        );
                         (*prev).num_args += (*cur).num_args;
                         (*prev).next = next;
                         cur = mfree(cur as *mut libc::c_void) as *mut t1_cpath
                     } else if (*prev).type_0 == 5i32 {
-                        copy_args((*prev).args.as_mut_ptr().offset((*prev).num_args
-                                                                       as
-                                                                       isize),
-                                  (*cur).args.as_mut_ptr(), (*cur).num_args);
+                        copy_args(
+                            (*prev).args.as_mut_ptr().offset((*prev).num_args as isize),
+                            (*cur).args.as_mut_ptr(),
+                            (*cur).num_args,
+                        );
                         (*prev).num_args += (*cur).num_args;
                         (*prev).type_0 = 25i32;
                         (*prev).next = next;
@@ -1271,31 +1559,54 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
             }
             30 => {
                 y += (*cur).args[0];
-                if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
+                if (*cd).bbox.llx > x {
+                    (*cd).bbox.llx = x
+                }
+                if (*cd).bbox.urx < x {
+                    (*cd).bbox.urx = x
+                }
+                if (*cd).bbox.lly > y {
+                    (*cd).bbox.lly = y
+                }
+                if (*cd).bbox.ury < y {
+                    (*cd).bbox.ury = y
+                }
                 x += (*cur).args[1];
                 y += (*cur).args[2];
-                if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
+                if (*cd).bbox.llx > x {
+                    (*cd).bbox.llx = x
+                }
+                if (*cd).bbox.urx < x {
+                    (*cd).bbox.urx = x
+                }
+                if (*cd).bbox.lly > y {
+                    (*cd).bbox.lly = y
+                }
+                if (*cd).bbox.ury < y {
+                    (*cd).bbox.ury = y
+                }
                 x += (*cur).args[3];
-                if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
-                if !prev.is_null() && !cur.is_null() &&
-                       (*prev).num_args + (*cur).num_args < 48i32 {
-                    if (*prev).type_0 == 31i32 &&
-                           (*prev).num_args / 4i32 % 2i32 == 1i32 ||
-                           (*prev).type_0 == 30i32 &&
-                               (*prev).num_args / 4i32 % 2i32 == 0i32 {
-                        copy_args((*prev).args.as_mut_ptr().offset((*prev).num_args
-                                                                       as
-                                                                       isize),
-                                  (*cur).args.as_mut_ptr(), (*cur).num_args);
+                if (*cd).bbox.llx > x {
+                    (*cd).bbox.llx = x
+                }
+                if (*cd).bbox.urx < x {
+                    (*cd).bbox.urx = x
+                }
+                if (*cd).bbox.lly > y {
+                    (*cd).bbox.lly = y
+                }
+                if (*cd).bbox.ury < y {
+                    (*cd).bbox.ury = y
+                }
+                if !prev.is_null() && !cur.is_null() && (*prev).num_args + (*cur).num_args < 48i32 {
+                    if (*prev).type_0 == 31i32 && (*prev).num_args / 4i32 % 2i32 == 1i32
+                        || (*prev).type_0 == 30i32 && (*prev).num_args / 4i32 % 2i32 == 0i32
+                    {
+                        copy_args(
+                            (*prev).args.as_mut_ptr().offset((*prev).num_args as isize),
+                            (*cur).args.as_mut_ptr(),
+                            (*cur).num_args,
+                        );
                         (*prev).num_args += (*cur).num_args;
                         (*prev).next = next;
                         cur = mfree(cur as *mut libc::c_void) as *mut t1_cpath
@@ -1304,31 +1615,54 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
             }
             31 => {
                 x += (*cur).args[0];
-                if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
+                if (*cd).bbox.llx > x {
+                    (*cd).bbox.llx = x
+                }
+                if (*cd).bbox.urx < x {
+                    (*cd).bbox.urx = x
+                }
+                if (*cd).bbox.lly > y {
+                    (*cd).bbox.lly = y
+                }
+                if (*cd).bbox.ury < y {
+                    (*cd).bbox.ury = y
+                }
                 x += (*cur).args[1];
                 y += (*cur).args[2];
-                if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
+                if (*cd).bbox.llx > x {
+                    (*cd).bbox.llx = x
+                }
+                if (*cd).bbox.urx < x {
+                    (*cd).bbox.urx = x
+                }
+                if (*cd).bbox.lly > y {
+                    (*cd).bbox.lly = y
+                }
+                if (*cd).bbox.ury < y {
+                    (*cd).bbox.ury = y
+                }
                 y += (*cur).args[3];
-                if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
-                if !prev.is_null() && !cur.is_null() &&
-                       (*prev).num_args + (*cur).num_args < 48i32 {
-                    if (*prev).type_0 == 30i32 &&
-                           (*prev).num_args / 4i32 % 2i32 == 1i32 ||
-                           (*prev).type_0 == 31i32 &&
-                               (*prev).num_args / 4i32 % 2i32 == 0i32 {
-                        copy_args((*prev).args.as_mut_ptr().offset((*prev).num_args
-                                                                       as
-                                                                       isize),
-                                  (*cur).args.as_mut_ptr(), (*cur).num_args);
+                if (*cd).bbox.llx > x {
+                    (*cd).bbox.llx = x
+                }
+                if (*cd).bbox.urx < x {
+                    (*cd).bbox.urx = x
+                }
+                if (*cd).bbox.lly > y {
+                    (*cd).bbox.lly = y
+                }
+                if (*cd).bbox.ury < y {
+                    (*cd).bbox.ury = y
+                }
+                if !prev.is_null() && !cur.is_null() && (*prev).num_args + (*cur).num_args < 48i32 {
+                    if (*prev).type_0 == 30i32 && (*prev).num_args / 4i32 % 2i32 == 1i32
+                        || (*prev).type_0 == 31i32 && (*prev).num_args / 4i32 % 2i32 == 0i32
+                    {
+                        copy_args(
+                            (*prev).args.as_mut_ptr().offset((*prev).num_args as isize),
+                            (*cur).args.as_mut_ptr(),
+                            (*cur).num_args,
+                        );
                         (*prev).num_args += (*cur).num_args;
                         (*prev).next = next;
                         cur = mfree(cur as *mut libc::c_void) as *mut t1_cpath
@@ -1338,21 +1672,29 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
             35 => {
                 i = 0i32 as libc::c_uint;
                 while i < 6i32 as libc::c_uint {
-                    x +=
-                        (*cur).args[(2i32 as libc::c_uint).wrapping_mul(i) as
-                                        usize];
+                    x += (*cur).args[(2i32 as libc::c_uint).wrapping_mul(i) as usize];
                     y += (*cur).args[(2i32 * 1i32 + 1i32) as usize];
-                    if (*cd).bbox.llx > x { (*cd).bbox.llx = x }
-                    if (*cd).bbox.urx < x { (*cd).bbox.urx = x }
-                    if (*cd).bbox.lly > y { (*cd).bbox.lly = y }
-                    if (*cd).bbox.ury < y { (*cd).bbox.ury = y }
+                    if (*cd).bbox.llx > x {
+                        (*cd).bbox.llx = x
+                    }
+                    if (*cd).bbox.urx < x {
+                        (*cd).bbox.urx = x
+                    }
+                    if (*cd).bbox.lly > y {
+                        (*cd).bbox.lly = y
+                    }
+                    if (*cd).bbox.ury < y {
+                        (*cd).bbox.ury = y
+                    }
                     i = i.wrapping_add(1)
                 }
                 if (*cur).args[12] == 50.0f64 {
-                    if (*cur).args[1] == 0.0f64 && (*cur).args[11] == 0.0f64
-                           && (*cur).args[5] == 0.0f64 &&
-                           (*cur).args[7] == 0.0f64 &&
-                           (*cur).args[3] + (*cur).args[9] == 0.0f64 {
+                    if (*cur).args[1] == 0.0f64
+                        && (*cur).args[11] == 0.0f64
+                        && (*cur).args[5] == 0.0f64
+                        && (*cur).args[7] == 0.0f64
+                        && (*cur).args[3] + (*cur).args[9] == 0.0f64
+                    {
                         /* cur->args[0] = cur->args[0];  dx1 */
                         (*cur).args[1] = (*cur).args[2]; /* dx2 */
                         (*cur).args[2] = (*cur).args[3]; /* dy2 */
@@ -1362,16 +1704,16 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
                         (*cur).args[6] = (*cur).args[10]; /* dx6 */
                         (*cur).num_args = 7i32;
                         (*cur).type_0 = 34i32
-                    } else if (*cur).args[5] == 0.0f64 &&
-                                  (*cur).args[7] == 0.0f64 &&
-                                  (*cur).args[1] + (*cur).args[3] +
-                                      (*cur).args[9] + (*cur).args[11] ==
-                                      0i32 as libc::c_double {
+                    } else if (*cur).args[5] == 0.0f64
+                        && (*cur).args[7] == 0.0f64
+                        && (*cur).args[1] + (*cur).args[3] + (*cur).args[9] + (*cur).args[11]
+                            == 0i32 as libc::c_double
+                    {
                         /* cur->args[0] = cur->args[0];  dx1 */
-          /* cur->args[1] = cur->args[1];  dy1 */
-          /* cur->args[2] = cur->args[2];  dx2 */
-          /* cur->args[3] = cur->args[3];  dy2 */
-          /* cur->args[4] = cur->args[4];  dx3 */
+                        /* cur->args[1] = cur->args[1];  dy1 */
+                        /* cur->args[2] = cur->args[2];  dx2 */
+                        /* cur->args[3] = cur->args[3];  dy2 */
+                        /* cur->args[4] = cur->args[4];  dx3 */
                         (*cur).args[5] = (*cur).args[6]; /* dx4 */
                         (*cur).args[6] = (*cur).args[8]; /* dx5 */
                         (*cur).args[7] = (*cur).args[9]; /* dy5 */
@@ -1381,14 +1723,18 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
                     }
                 }
             }
-            -1 | 20 => { }
+            -1 | 20 => {}
             _ => {
-                _tt_abort(b"Unexpected Type 2 charstring command %d.\x00" as
-                              *const u8 as *const libc::c_char,
-                          (*cur).type_0);
+                _tt_abort(
+                    b"Unexpected Type 2 charstring command %d.\x00" as *const u8
+                        as *const libc::c_char,
+                    (*cur).type_0,
+                );
             }
         }
-        if !cur.is_null() { prev = cur }
+        if !cur.is_null() {
+            prev = cur
+        }
         cur = next
     }
     /* Had no path. Fix lower-left point. */
@@ -1402,26 +1748,43 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn t1char_get_metrics(mut src: *mut card8,
-                                            mut srclen: libc::c_int,
-                                            mut subrs: *mut cff_index,
-                                            mut ginfo: *mut t1_ginfo)
- -> libc::c_int {
-    let mut t1char: t1_chardesc =
-        t1_chardesc{flags: 0,
-                    sbw: C2RustUnnamed_3{sbx: 0., sby: 0., wx: 0., wy: 0.,},
-                    bbox:
-                        C2RustUnnamed_2{llx: 0., lly: 0., urx: 0., ury: 0.,},
-                    seac:
-                        C2RustUnnamed_1{asb: 0.,
-                                        adx: 0.,
-                                        ady: 0.,
-                                        bchar: 0,
-                                        achar: 0,},
-                    num_stems: 0,
-                    stems: [t1_stem{id: 0, dir: 0, pos: 0., del: 0.,}; 96],
-                    charpath: 0 as *mut t1_cpath,
-                    lastpath: 0 as *mut t1_cpath,};
+pub unsafe extern "C" fn t1char_get_metrics(
+    mut src: *mut card8,
+    mut srclen: libc::c_int,
+    mut subrs: *mut cff_index,
+    mut ginfo: *mut t1_ginfo,
+) -> libc::c_int {
+    let mut t1char: t1_chardesc = t1_chardesc {
+        flags: 0,
+        sbw: C2RustUnnamed_3 {
+            sbx: 0.,
+            sby: 0.,
+            wx: 0.,
+            wy: 0.,
+        },
+        bbox: C2RustUnnamed_2 {
+            llx: 0.,
+            lly: 0.,
+            urx: 0.,
+            ury: 0.,
+        },
+        seac: C2RustUnnamed_1 {
+            asb: 0.,
+            adx: 0.,
+            ady: 0.,
+            bchar: 0,
+            achar: 0,
+        },
+        num_stems: 0,
+        stems: [t1_stem {
+            id: 0,
+            dir: 0,
+            pos: 0.,
+            del: 0.,
+        }; 96],
+        charpath: 0 as *mut t1_cpath,
+        lastpath: 0 as *mut t1_cpath,
+    };
     let mut cd: *mut t1_chardesc = 0 as *mut t1_chardesc;
     cd = &mut t1char;
     init_charpath(cd);
@@ -1432,8 +1795,11 @@ pub unsafe extern "C" fn t1char_get_metrics(mut src: *mut card8,
     cs_stack_top = 0i32;
     t1char_build_charpath(cd, &mut src, src.offset(srclen as isize), subrs);
     if cs_stack_top != 0i32 || ps_stack_top != 0i32 {
-        dpx_warning(b"Stack not empty. (%d, %d)\x00" as *const u8 as
-                        *const libc::c_char, cs_stack_top, ps_stack_top);
+        dpx_warning(
+            b"Stack not empty. (%d, %d)\x00" as *const u8 as *const libc::c_char,
+            cs_stack_top,
+            ps_stack_top,
+        );
     }
     do_postproc(cd);
     if !ginfo.is_null() {
@@ -1449,7 +1815,9 @@ pub unsafe extern "C" fn t1char_get_metrics(mut src: *mut card8,
             (*ginfo).seac.ady = (*cd).seac.ady;
             (*ginfo).seac.bchar = (*cd).seac.bchar;
             (*ginfo).seac.achar = (*cd).seac.achar
-        } else { (*ginfo).use_seac = 0i32 }
+        } else {
+            (*ginfo).use_seac = 0i32
+        }
     }
     release_charpath(cd);
     return 0i32;
@@ -1457,21 +1825,26 @@ pub unsafe extern "C" fn t1char_get_metrics(mut src: *mut card8,
 /*
  * Encode Charpath as a Type 2 Charstring
  */
-unsafe extern "C" fn t1char_encode_charpath(mut cd: *mut t1_chardesc,
-                                            mut default_width: libc::c_double,
-                                            mut nominal_width: libc::c_double,
-                                            mut dst: *mut card8,
-                                            mut endptr: *mut card8)
- -> libc::c_int {
+unsafe extern "C" fn t1char_encode_charpath(
+    mut cd: *mut t1_chardesc,
+    mut default_width: libc::c_double,
+    mut nominal_width: libc::c_double,
+    mut dst: *mut card8,
+    mut endptr: *mut card8,
+) -> libc::c_int {
     let mut save: *mut card8 = 0 as *mut card8;
     let mut curr: *mut t1_cpath = 0 as *mut t1_cpath;
     if !cd.is_null() {
     } else {
-        __assert_fail(b"cd\x00" as *const u8 as *const libc::c_char,
-                      b"dpx-t1_char.c\x00" as *const u8 as
-                          *const libc::c_char, 1360i32 as libc::c_uint,
-                      (*::std::mem::transmute::<&[u8; 76],
-                                                &[libc::c_char; 76]>(b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00")).as_ptr());
+        __assert_fail(
+            b"cd\x00" as *const u8 as *const libc::c_char,
+            b"dpx-t1_char.c\x00" as *const u8 as *const libc::c_char,
+            1360i32 as libc::c_uint,
+            (*::std::mem::transmute::<&[u8; 76], &[libc::c_char; 76]>(
+                b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00",
+            ))
+            .as_ptr(),
+        );
     }
     save = dst;
     curr = (*cd).charpath;
@@ -1481,19 +1854,21 @@ unsafe extern "C" fn t1char_encode_charpath(mut cd: *mut t1_chardesc,
     ps_stack_top = 0i32;
     cs_stack_top = 0i32;
     /*
-   * Advance Width
-   */
+     * Advance Width
+     */
     if (*cd).sbw.wx != default_width {
         let mut wx: libc::c_double = (*cd).sbw.wx - nominal_width;
         put_numbers(&mut wx, 1i32, &mut dst, endptr);
         if status != 0i32 {
-            _tt_abort(b"Charstring encoder error: %d\x00" as *const u8 as
-                          *const libc::c_char, status);
+            _tt_abort(
+                b"Charstring encoder error: %d\x00" as *const u8 as *const libc::c_char,
+                status,
+            );
         }
     }
     /*
-   * Hint Declaration
-   */
+     * Hint Declaration
+     */
     let mut num_hstems: libc::c_int = 0i32;
     let mut num_vstems: libc::c_int = 0i32;
     let mut i: libc::c_int = 0;
@@ -1502,93 +1877,93 @@ unsafe extern "C" fn t1char_encode_charpath(mut cd: *mut t1_chardesc,
     i = 0i32;
     while i < (*cd).num_stems && (*cd).stems[i as usize].dir == 0i32 {
         num_hstems += 1;
-        stem[0] =
-            if reset != 0 {
-                (*cd).stems[i as usize].pos
-            } else {
-                (*cd).stems[i as usize].pos -
-                    ((*cd).stems[(i - 1i32) as usize].pos +
-                         (*cd).stems[(i - 1i32) as usize].del)
-            };
+        stem[0] = if reset != 0 {
+            (*cd).stems[i as usize].pos
+        } else {
+            (*cd).stems[i as usize].pos
+                - ((*cd).stems[(i - 1i32) as usize].pos + (*cd).stems[(i - 1i32) as usize].del)
+        };
         stem[1] = (*cd).stems[i as usize].del;
         put_numbers(stem.as_mut_ptr(), 2i32, &mut dst, endptr);
         if status != 0i32 {
-            _tt_abort(b"Charstring encoder error: %d\x00" as *const u8 as
-                          *const libc::c_char, status);
+            _tt_abort(
+                b"Charstring encoder error: %d\x00" as *const u8 as *const libc::c_char,
+                status,
+            );
         }
         reset = 0i32;
         if 2i32 * num_hstems > 48i32 - 3i32 {
             if dst.offset(1) >= endptr {
-                _tt_abort(b"Buffer overflow.\x00" as *const u8 as
-                              *const libc::c_char);
+                _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
             }
             let fresh23 = dst;
             dst = dst.offset(1);
-            *fresh23 =
-                (if (*cd).flags & 1i32 << 0i32 != 0 { 18i32 } else { 1i32 })
-                    as card8;
+            *fresh23 = (if (*cd).flags & 1i32 << 0i32 != 0 {
+                18i32
+            } else {
+                1i32
+            }) as card8;
             reset = 1i32
         }
         i += 1
     }
     if reset == 0i32 {
         if dst.offset(1) >= endptr {
-            _tt_abort(b"Buffer overflow.\x00" as *const u8 as
-                          *const libc::c_char);
+            _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
         }
         let fresh24 = dst;
         dst = dst.offset(1);
-        *fresh24 =
-            (if (*cd).flags & 1i32 << 0i32 != 0 { 18i32 } else { 1i32 }) as
-                card8
+        *fresh24 = (if (*cd).flags & 1i32 << 0i32 != 0 {
+            18i32
+        } else {
+            1i32
+        }) as card8
     }
     reset = 1i32;
     if (*cd).num_stems - num_hstems > 0i32 {
         i = num_hstems;
         while i < (*cd).num_stems {
             num_vstems += 1;
-            stem[0] =
-                if reset != 0 {
-                    (*cd).stems[i as usize].pos
-                } else {
-                    (*cd).stems[i as usize].pos -
-                        ((*cd).stems[(i - 1i32) as usize].pos +
-                             (*cd).stems[(i - 1i32) as usize].del)
-                };
+            stem[0] = if reset != 0 {
+                (*cd).stems[i as usize].pos
+            } else {
+                (*cd).stems[i as usize].pos
+                    - ((*cd).stems[(i - 1i32) as usize].pos + (*cd).stems[(i - 1i32) as usize].del)
+            };
             stem[1] = (*cd).stems[i as usize].del;
             put_numbers(stem.as_mut_ptr(), 2i32, &mut dst, endptr);
             if status != 0i32 {
-                _tt_abort(b"Charstring encoder error: %d\x00" as *const u8 as
-                              *const libc::c_char, status);
+                _tt_abort(
+                    b"Charstring encoder error: %d\x00" as *const u8 as *const libc::c_char,
+                    status,
+                );
             }
             reset = 0i32;
             if 2i32 * num_vstems > 48i32 - 3i32 {
                 if dst.offset(1) >= endptr {
-                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as
-                                  *const libc::c_char);
+                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
                 }
                 let fresh25 = dst;
                 dst = dst.offset(1);
-                *fresh25 =
-                    (if (*cd).flags & 1i32 << 0i32 != 0 {
-                         23i32
-                     } else { 3i32 }) as card8;
+                *fresh25 = (if (*cd).flags & 1i32 << 0i32 != 0 {
+                    23i32
+                } else {
+                    3i32
+                }) as card8;
                 reset = 1i32
             }
             i += 1
         }
         if reset == 0i32 {
             if dst.offset(1) >= endptr {
-                _tt_abort(b"Buffer overflow.\x00" as *const u8 as
-                              *const libc::c_char);
+                _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
             }
-            if (*cd).flags & 1i32 << 0i32 != 0 ||
-                   (*cd).flags & 1i32 << 1i32 != 0 {
+            if (*cd).flags & 1i32 << 0i32 != 0 || (*cd).flags & 1i32 << 1i32 != 0 {
                 /*
-           * The vstem hint operator can be ommited if hstem and vstem hints
-           * are both declared at the beginning of a charstring, and is
-           * followed directly by the hintmask or cntrmask operators.
-           */
+                 * The vstem hint operator can be ommited if hstem and vstem hints
+                 * are both declared at the beginning of a charstring, and is
+                 * followed directly by the hintmask or cntrmask operators.
+                 */
                 if (*curr).type_0 != -1i32 && (*curr).type_0 != 20i32 {
                     let fresh26 = dst;
                     dst = dst.offset(1);
@@ -1602,14 +1977,17 @@ unsafe extern "C" fn t1char_encode_charpath(mut cd: *mut t1_chardesc,
         }
     }
     /*
-   * Path Construction and Hint Replacement
-   */
+     * Path Construction and Hint Replacement
+     */
     while !curr.is_null() && (*curr).type_0 != 14i32 {
         match (*curr).type_0 {
             -1 => {
                 let mut hintmask: [card8; 12] = [0; 12];
-                memset(hintmask.as_mut_ptr() as *mut libc::c_void, 0i32,
-                       (((*cd).num_stems + 7i32) / 8i32) as libc::c_ulong);
+                memset(
+                    hintmask.as_mut_ptr() as *mut libc::c_void,
+                    0i32,
+                    (((*cd).num_stems + 7i32) / 8i32) as libc::c_ulong,
+                );
                 while !curr.is_null() && (*curr).type_0 == -1i32 {
                     let mut stem_idx: libc::c_int = 0;
                     stem_idx = get_stem(cd, (*curr).args[0] as libc::c_int);
@@ -1624,38 +2002,37 @@ unsafe extern "C" fn t1char_encode_charpath(mut cd: *mut t1_chardesc,
                                                                 &[libc::c_char; 76]>(b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00")).as_ptr());
                     }
                     hintmask[(stem_idx / 8i32) as usize] =
-                        (hintmask[(stem_idx / 8i32) as usize] as libc::c_int |
-                             1i32 << 7i32 - stem_idx % 8i32) as card8;
+                        (hintmask[(stem_idx / 8i32) as usize] as libc::c_int
+                            | 1i32 << 7i32 - stem_idx % 8i32) as card8;
                     curr = (*curr).next
                 }
                 if (*cd).flags & 1i32 << 0i32 != 0 {
-                    if dst.offset((((*cd).num_stems + 7i32) / 8i32 + 1i32) as
-                                      isize) >= endptr {
-                        _tt_abort(b"Buffer overflow.\x00" as *const u8 as
-                                      *const libc::c_char);
+                    if dst.offset((((*cd).num_stems + 7i32) / 8i32 + 1i32) as isize) >= endptr {
+                        _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
                     }
                     let fresh28 = dst;
                     dst = dst.offset(1);
                     *fresh28 = 19i32 as card8;
-                    memcpy(dst as *mut libc::c_void,
-                           hintmask.as_mut_ptr() as *const libc::c_void,
-                           (((*cd).num_stems + 7i32) / 8i32) as
-                               libc::c_ulong);
-                    dst =
-                        dst.offset((((*cd).num_stems + 7i32) / 8i32) as isize)
+                    memcpy(
+                        dst as *mut libc::c_void,
+                        hintmask.as_mut_ptr() as *const libc::c_void,
+                        (((*cd).num_stems + 7i32) / 8i32) as libc::c_ulong,
+                    );
+                    dst = dst.offset((((*cd).num_stems + 7i32) / 8i32) as isize)
                 }
             }
             20 => {
                 let mut cntrmask: [card8; 12] = [0; 12];
                 let mut stem_idx_0: libc::c_int = 0;
                 let mut i_0: libc::c_int = 0;
-                memset(cntrmask.as_mut_ptr() as *mut libc::c_void, 0i32,
-                       (((*cd).num_stems + 7i32) / 8i32) as libc::c_ulong);
+                memset(
+                    cntrmask.as_mut_ptr() as *mut libc::c_void,
+                    0i32,
+                    (((*cd).num_stems + 7i32) / 8i32) as libc::c_ulong,
+                );
                 i_0 = 0i32;
                 while i_0 < (*curr).num_args {
-                    stem_idx_0 =
-                        get_stem(cd,
-                                 (*curr).args[i_0 as usize] as libc::c_int);
+                    stem_idx_0 = get_stem(cd, (*curr).args[i_0 as usize] as libc::c_int);
                     if stem_idx_0 < (*cd).num_stems {
                     } else {
                         __assert_fail(b"stem_idx < cd->num_stems\x00" as
@@ -1668,33 +2045,38 @@ unsafe extern "C" fn t1char_encode_charpath(mut cd: *mut t1_chardesc,
                     }
                     cntrmask[(stem_idx_0 / 8i32) as usize] =
                         (cntrmask[(stem_idx_0 / 8i32) as usize] as libc::c_int
-                             | 1i32 << 7i32 - stem_idx_0 % 8i32) as card8;
+                            | 1i32 << 7i32 - stem_idx_0 % 8i32) as card8;
                     i_0 += 1
                 }
-                if dst.offset((((*cd).num_stems + 7i32) / 8i32 + 1i32) as
-                                  isize) >= endptr {
-                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as
-                                  *const libc::c_char);
+                if dst.offset((((*cd).num_stems + 7i32) / 8i32 + 1i32) as isize) >= endptr {
+                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
                 }
                 let fresh29 = dst;
                 dst = dst.offset(1);
                 *fresh29 = 20i32 as card8;
-                memcpy(dst as *mut libc::c_void,
-                       cntrmask.as_mut_ptr() as *const libc::c_void,
-                       (((*cd).num_stems + 7i32) / 8i32) as libc::c_ulong);
+                memcpy(
+                    dst as *mut libc::c_void,
+                    cntrmask.as_mut_ptr() as *const libc::c_void,
+                    (((*cd).num_stems + 7i32) / 8i32) as libc::c_ulong,
+                );
                 dst = dst.offset((((*cd).num_stems + 7i32) / 8i32) as isize);
                 curr = (*curr).next
             }
             21 | 22 | 4 | 5 | 6 | 7 | 8 | 31 | 30 | 25 | 24 => {
-                put_numbers((*curr).args.as_mut_ptr(), (*curr).num_args,
-                            &mut dst, endptr);
+                put_numbers(
+                    (*curr).args.as_mut_ptr(),
+                    (*curr).num_args,
+                    &mut dst,
+                    endptr,
+                );
                 if status != 0i32 {
-                    _tt_abort(b"Charstring encoder error: %d\x00" as *const u8
-                                  as *const libc::c_char, status);
+                    _tt_abort(
+                        b"Charstring encoder error: %d\x00" as *const u8 as *const libc::c_char,
+                        status,
+                    );
                 }
                 if dst.offset(1) >= endptr {
-                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as
-                                  *const libc::c_char);
+                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
                 }
                 let fresh30 = dst;
                 dst = dst.offset(1);
@@ -1702,15 +2084,20 @@ unsafe extern "C" fn t1char_encode_charpath(mut cd: *mut t1_chardesc,
                 curr = (*curr).next
             }
             35 | 34 | 36 => {
-                put_numbers((*curr).args.as_mut_ptr(), (*curr).num_args,
-                            &mut dst, endptr);
+                put_numbers(
+                    (*curr).args.as_mut_ptr(),
+                    (*curr).num_args,
+                    &mut dst,
+                    endptr,
+                );
                 if status != 0i32 {
-                    _tt_abort(b"Charstring encoder error: %d\x00" as *const u8
-                                  as *const libc::c_char, status);
+                    _tt_abort(
+                        b"Charstring encoder error: %d\x00" as *const u8 as *const libc::c_char,
+                        status,
+                    );
                 }
                 if dst.offset(2) >= endptr {
-                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as
-                                  *const libc::c_char);
+                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
                 }
                 let fresh31 = dst;
                 dst = dst.offset(1);
@@ -1721,15 +2108,17 @@ unsafe extern "C" fn t1char_encode_charpath(mut cd: *mut t1_chardesc,
                 curr = (*curr).next
             }
             _ => {
-                _tt_abort(b"Unknown Type 2 charstring command: %d\x00" as
-                              *const u8 as *const libc::c_char,
-                          (*curr).type_0);
+                _tt_abort(
+                    b"Unknown Type 2 charstring command: %d\x00" as *const u8
+                        as *const libc::c_char,
+                    (*curr).type_0,
+                );
             }
         }
     }
     /*
-   * (adx ady bchar achar) endchar
-   */
+     * (adx ady bchar achar) endchar
+     */
     if (*cd).flags & 1i32 << 2i32 != 0 {
         let mut seac: [libc::c_double; 4] = [0.; 4];
         seac[0] = (*cd).seac.adx;
@@ -1738,19 +2127,21 @@ unsafe extern "C" fn t1char_encode_charpath(mut cd: *mut t1_chardesc,
         seac[3] = (*cd).seac.achar as libc::c_double;
         put_numbers(seac.as_mut_ptr(), 4i32, &mut dst, endptr);
         if status != 0i32 {
-            _tt_abort(b"Charstring encoder error: %d\x00" as *const u8 as
-                          *const libc::c_char, status);
+            _tt_abort(
+                b"Charstring encoder error: %d\x00" as *const u8 as *const libc::c_char,
+                status,
+            );
         }
         if dst.offset(2) >= endptr {
-            _tt_abort(b"Buffer overflow.\x00" as *const u8 as
-                          *const libc::c_char);
+            _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
         }
-        dpx_warning(b"Obsolete four arguments of \"endchar\" will be used for Type 1 \"seac\" operator.\x00"
-                        as *const u8 as *const libc::c_char);
+        dpx_warning(
+            b"Obsolete four arguments of \"endchar\" will be used for Type 1 \"seac\" operator.\x00"
+                as *const u8 as *const libc::c_char,
+        );
     }
     if dst.offset(1) >= endptr {
-        _tt_abort(b"Buffer overflow.\x00" as *const u8 as
-                      *const libc::c_char);
+        _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
     }
     let fresh33 = dst;
     dst = dst.offset(1);
@@ -1758,33 +2149,48 @@ unsafe extern "C" fn t1char_encode_charpath(mut cd: *mut t1_chardesc,
     return dst.wrapping_offset_from(save) as libc::c_long as libc::c_int;
 }
 #[no_mangle]
-pub unsafe extern "C" fn t1char_convert_charstring(mut dst: *mut card8,
-                                                   mut dstlen: libc::c_int,
-                                                   mut src: *mut card8,
-                                                   mut srclen: libc::c_int,
-                                                   mut subrs: *mut cff_index,
-                                                   mut default_width:
-                                                       libc::c_double,
-                                                   mut nominal_width:
-                                                       libc::c_double,
-                                                   mut ginfo: *mut t1_ginfo)
- -> libc::c_int {
+pub unsafe extern "C" fn t1char_convert_charstring(
+    mut dst: *mut card8,
+    mut dstlen: libc::c_int,
+    mut src: *mut card8,
+    mut srclen: libc::c_int,
+    mut subrs: *mut cff_index,
+    mut default_width: libc::c_double,
+    mut nominal_width: libc::c_double,
+    mut ginfo: *mut t1_ginfo,
+) -> libc::c_int {
     let mut length: libc::c_int = 0;
-    let mut t1char: t1_chardesc =
-        t1_chardesc{flags: 0,
-                    sbw: C2RustUnnamed_3{sbx: 0., sby: 0., wx: 0., wy: 0.,},
-                    bbox:
-                        C2RustUnnamed_2{llx: 0., lly: 0., urx: 0., ury: 0.,},
-                    seac:
-                        C2RustUnnamed_1{asb: 0.,
-                                        adx: 0.,
-                                        ady: 0.,
-                                        bchar: 0,
-                                        achar: 0,},
-                    num_stems: 0,
-                    stems: [t1_stem{id: 0, dir: 0, pos: 0., del: 0.,}; 96],
-                    charpath: 0 as *mut t1_cpath,
-                    lastpath: 0 as *mut t1_cpath,};
+    let mut t1char: t1_chardesc = t1_chardesc {
+        flags: 0,
+        sbw: C2RustUnnamed_3 {
+            sbx: 0.,
+            sby: 0.,
+            wx: 0.,
+            wy: 0.,
+        },
+        bbox: C2RustUnnamed_2 {
+            llx: 0.,
+            lly: 0.,
+            urx: 0.,
+            ury: 0.,
+        },
+        seac: C2RustUnnamed_1 {
+            asb: 0.,
+            adx: 0.,
+            ady: 0.,
+            bchar: 0,
+            achar: 0,
+        },
+        num_stems: 0,
+        stems: [t1_stem {
+            id: 0,
+            dir: 0,
+            pos: 0.,
+            del: 0.,
+        }; 96],
+        charpath: 0 as *mut t1_cpath,
+        lastpath: 0 as *mut t1_cpath,
+    };
     let mut cd: *mut t1_chardesc = 0 as *mut t1_chardesc;
     cd = &mut t1char;
     init_charpath(cd);
@@ -1795,20 +2201,32 @@ pub unsafe extern "C" fn t1char_convert_charstring(mut dst: *mut card8,
     cs_stack_top = 0i32;
     t1char_build_charpath(cd, &mut src, src.offset(srclen as isize), subrs);
     if cs_stack_top != 0i32 || ps_stack_top != 0i32 {
-        dpx_warning(b"Stack not empty. (%d, %d)\x00" as *const u8 as
-                        *const libc::c_char, cs_stack_top, ps_stack_top);
+        dpx_warning(
+            b"Stack not empty. (%d, %d)\x00" as *const u8 as *const libc::c_char,
+            cs_stack_top,
+            ps_stack_top,
+        );
     }
     do_postproc(cd);
-    qsort((*cd).stems.as_mut_ptr() as *mut libc::c_void,
-          (*cd).num_stems as size_t,
-          ::std::mem::size_of::<t1_stem>() as libc::c_ulong,
-          Some(stem_compare as
-                   unsafe extern "C" fn(_: *const libc::c_void,
-                                        _: *const libc::c_void)
-                       -> libc::c_int));
-    length =
-        t1char_encode_charpath(cd, default_width, nominal_width, dst,
-                               dst.offset(dstlen as isize));
+    qsort(
+        (*cd).stems.as_mut_ptr() as *mut libc::c_void,
+        (*cd).num_stems as size_t,
+        ::std::mem::size_of::<t1_stem>() as libc::c_ulong,
+        Some(
+            stem_compare
+                as unsafe extern "C" fn(
+                    _: *const libc::c_void,
+                    _: *const libc::c_void,
+                ) -> libc::c_int,
+        ),
+    );
+    length = t1char_encode_charpath(
+        cd,
+        default_width,
+        nominal_width,
+        dst,
+        dst.offset(dstlen as isize),
+    );
     if !ginfo.is_null() {
         (*ginfo).wx = (*cd).sbw.wx;
         (*ginfo).wy = (*cd).sbw.wy;
@@ -1822,7 +2240,9 @@ pub unsafe extern "C" fn t1char_convert_charstring(mut dst: *mut card8,
             (*ginfo).seac.ady = (*cd).seac.ady;
             (*ginfo).seac.bchar = (*cd).seac.bchar;
             (*ginfo).seac.achar = (*cd).seac.achar
-        } else { (*ginfo).use_seac = 0i32 }
+        } else {
+            (*ginfo).use_seac = 0i32
+        }
     }
     release_charpath(cd);
     return length;
