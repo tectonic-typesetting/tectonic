@@ -33,7 +33,7 @@ impl BibtexEngine {
         let bridge = TectonicBridgeApi::new(&state);
 
         unsafe {
-            match super::bibtex_simple_main(&bridge, caux.as_ptr()) {
+            match super::bibtex_simple_main(&*bridge, caux.as_ptr()) {
                 0 => Ok(TexResult::Spotless),
                 1 => Ok(TexResult::Warnings),
                 2 => Ok(TexResult::Errors),

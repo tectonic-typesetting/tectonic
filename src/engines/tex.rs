@@ -130,7 +130,7 @@ impl TexEngine {
         }
 
         unsafe {
-            match super::tex_simple_main(&bridge, cformat.as_ptr(), cinput.as_ptr()) {
+            match super::tex_simple_main(&*bridge, cformat.as_ptr(), cinput.as_ptr()) {
                 0 => Ok(TexResult::Spotless),
                 1 => Ok(TexResult::Warnings),
                 2 => Ok(TexResult::Errors),

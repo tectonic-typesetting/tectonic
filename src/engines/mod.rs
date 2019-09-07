@@ -465,6 +465,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 // function pointers that we pass to the C/C++ entry points so that they can
 // call back into our code. Keep synchronized with **tectonic/core-bridge.h**.
 
+/*
 #[repr(C)]
 struct TectonicBridgeApi {
     context: *const libc::c_void,
@@ -487,28 +488,18 @@ struct TectonicBridgeApi {
     input_ungetc: *const libc::c_void,
     input_close: *const libc::c_void,
 }
+*/
+#[repr(transparent)]
+pub struct TectonicBridgeApi(tectonic_engine::tt_bridge_api_t);
 
-extern "C" {
-    fn tt_get_error_message() -> *const libc::c_char;
-    fn tt_xetex_set_int_variable(var_name: *const libc::c_char, value: libc::c_int) -> libc::c_int;
-    //fn tt_xetex_set_string_variable(var_name: *const libc::c_char, value: *const libc::c_char) -> libc::c_int;
-    fn tex_simple_main(
-        api: *const TectonicBridgeApi,
-        dump_name: *const libc::c_char,
-        input_file_name: *const libc::c_char,
-    ) -> libc::c_int;
-    fn dvipdfmx_simple_main(
-        api: *const TectonicBridgeApi,
-        dviname: *const libc::c_char,
-        pdfname: *const libc::c_char,
-        enable_compression: bool,
-        deterministic_tags: bool,
-    ) -> libc::c_int;
-    fn bibtex_simple_main(
-        api: *const TectonicBridgeApi,
-        aux_file_name: *const libc::c_char,
-    ) -> libc::c_int;
+impl std::ops::Deref for TectonicBridgeApi {
+    type Target = tectonic_engine::tt_bridge_api_t;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
 }
+
+use tectonic_engine::{tt_get_error_message, tt_xetex_set_int_variable, tex_simple_main, dvipdfmx_simple_main, bibtex_simple_main};
 
 // Entry points for the C/C++ API functions.
 
@@ -807,26 +798,30 @@ extern "C" fn input_close<'a, I: 'a + IoProvider>(
 
 impl TectonicBridgeApi {
     fn new<'a, I: 'a + IoProvider>(exec_state: &ExecutionState<'a, I>) -> TectonicBridgeApi {
-        TectonicBridgeApi {
-            context: (exec_state as *const ExecutionState<'a, I>) as *const libc::c_void,
-            issue_warning: issue_warning::<'a, I> as *const libc::c_void,
-            issue_error: issue_error::<'a, I> as *const libc::c_void,
-            get_file_md5: get_file_md5::<'a, I> as *const libc::c_void,
-            get_data_md5: get_data_md5::<'a, I> as *const libc::c_void,
-            output_open: output_open::<'a, I> as *const libc::c_void,
-            output_open_stdout: output_open_stdout::<'a, I> as *const libc::c_void,
-            output_putc: output_putc::<'a, I> as *const libc::c_void,
-            output_write: output_write::<'a, I> as *const libc::c_void,
-            output_flush: output_flush::<'a, I> as *const libc::c_void,
-            output_close: output_close::<'a, I> as *const libc::c_void,
-            input_open: input_open::<'a, I> as *const libc::c_void,
-            input_open_primary: input_open_primary::<'a, I> as *const libc::c_void,
-            input_get_size: input_get_size::<'a, I> as *const libc::c_void,
-            input_seek: input_seek::<'a, I> as *const libc::c_void,
-            input_read: input_read::<'a, I> as *const libc::c_void,
-            input_getc: input_getc::<'a, I> as *const libc::c_void,
-            input_ungetc: input_ungetc::<'a, I> as *const libc::c_void,
-            input_close: input_close::<'a, I> as *const libc::c_void,
+        use tectonic_engine::tt_bridge_api_t;
+        use std::mem::transmute;
+        unsafe {
+            TectonicBridgeApi(tt_bridge_api_t {
+                context: transmute((exec_state as *const ExecutionState<'a, I>) as *const libc::c_void),
+                issue_warning: transmute(issue_warning::<'a, I> as *const libc::c_void),
+                issue_error: transmute(issue_error::<'a, I> as *const libc::c_void),
+                get_file_md5: transmute(get_file_md5::<'a, I> as *const libc::c_void),
+                get_data_md5: transmute(get_data_md5::<'a, I> as *const libc::c_void),
+                output_open: transmute(output_open::<'a, I> as *const libc::c_void),
+                output_open_stdout: transmute(output_open_stdout::<'a, I> as *const libc::c_void),
+                output_putc: transmute(output_putc::<'a, I> as *const libc::c_void),
+                output_write: transmute(output_write::<'a, I> as *const libc::c_void),
+                output_flush: transmute(output_flush::<'a, I> as *const libc::c_void),
+                output_close: transmute(output_close::<'a, I> as *const libc::c_void),
+                input_open: transmute(input_open::<'a, I> as *const libc::c_void),
+                input_open_primary: transmute(input_open_primary::<'a, I> as *const libc::c_void),
+                input_get_size: transmute(input_get_size::<'a, I> as *const libc::c_void),
+                input_seek: transmute(input_seek::<'a, I> as *const libc::c_void),
+                input_read: transmute(input_read::<'a, I> as *const libc::c_void),
+                input_getc: transmute(input_getc::<'a, I> as *const libc::c_void),
+                input_ungetc: transmute(input_ungetc::<'a, I> as *const libc::c_void),
+                input_close: transmute(input_close::<'a, I> as *const libc::c_void),
+            })
         }
     }
 }

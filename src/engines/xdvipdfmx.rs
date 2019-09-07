@@ -50,7 +50,7 @@ impl XdvipdfmxEngine {
 
         unsafe {
             match super::dvipdfmx_simple_main(
-                &bridge,
+                &*bridge,
                 cdvi.as_ptr(),
                 cpdf.as_ptr(),
                 self.enable_compression,
