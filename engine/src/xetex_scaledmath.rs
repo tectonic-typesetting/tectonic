@@ -122,14 +122,14 @@ pub unsafe extern "C" fn xn_over_d(mut x: scaled_t, mut n: int32_t, mut d: int32
         x = -x;
         positive = 0i32 != 0
     }
-    t = (x as libc::c_long % 32768i64 * n as libc::c_long) as int32_t;
-    u = (x as libc::c_long / 32768i64 * n as libc::c_long + t as libc::c_long / 32768i64)
+    t = (x as libc::c_long % 32768 * n as libc::c_long) as int32_t;
+    u = (x as libc::c_long / 32768 * n as libc::c_long + t as libc::c_long / 32768)
         as int32_t;
-    v = ((u % d) as libc::c_long * 32768i64 + t as libc::c_long % 32768i64) as int32_t;
-    if (u / d) as libc::c_long >= 32768i64 {
+    v = ((u % d) as libc::c_long * 32768 + t as libc::c_long % 32768) as int32_t;
+    if (u / d) as libc::c_long >= 32768 {
         arith_error = 1i32 != 0
     } else {
-        u = (32768i64 * (u / d) as libc::c_long + (v / d) as libc::c_long) as int32_t
+        u = (32768 * (u / d) as libc::c_long + (v / d) as libc::c_long) as int32_t
     }
     if positive {
         tex_remainder = v % d;
@@ -155,14 +155,14 @@ pub unsafe extern "C" fn round_xn_over_d(
         x = -x;
         positive = 0i32 != 0
     }
-    t = (x as libc::c_long % 32768i64 * n as libc::c_long) as int32_t;
-    u = (x as libc::c_long / 32768i64 * n as libc::c_long + t as libc::c_long / 32768i64)
+    t = (x as libc::c_long % 32768 * n as libc::c_long) as int32_t;
+    u = (x as libc::c_long / 32768 * n as libc::c_long + t as libc::c_long / 32768)
         as int32_t;
-    v = ((u % d) as libc::c_long * 32768i64 + t as libc::c_long % 32768i64) as int32_t;
-    if (u / d) as libc::c_long >= 32768i64 {
+    v = ((u % d) as libc::c_long * 32768 + t as libc::c_long % 32768) as int32_t;
+    if (u / d) as libc::c_long >= 32768 {
         arith_error = 1i32 != 0
     } else {
-        u = (32768i64 * (u / d) as libc::c_long + (v / d) as libc::c_long) as int32_t
+        u = (32768 * (u / d) as libc::c_long + (v / d) as libc::c_long) as int32_t
     }
     v = v % d;
     if 2i32 * v >= d {

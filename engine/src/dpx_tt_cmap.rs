@@ -1298,7 +1298,7 @@ pub unsafe extern "C" fn tt_cmap_lookup(mut cmap: *mut tt_cmap, mut cc: SFNT_ULO
             .as_ptr(),
         );
     }
-    if cc as libc::c_long > 0xffffi64 && ((*cmap).format as libc::c_int) < 12i32 {
+    if cc as libc::c_long > 0xffff && ((*cmap).format as libc::c_int) < 12i32 {
         dpx_warning(
             b"Four bytes charcode not supported in OpenType/TrueType cmap format 0...6.\x00"
                 as *const u8 as *const libc::c_char,

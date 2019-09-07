@@ -1239,7 +1239,7 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
     (*p).P = (perm | 0xc0u32) as int32_t;
     match (*p).V {
         1 => {
-            (*p).R = if ((*p).P as libc::c_long) < 0x100i64 {
+            (*p).R = if ((*p).P as libc::c_long) < 0x100 {
                 2i32
             } else {
                 3i32

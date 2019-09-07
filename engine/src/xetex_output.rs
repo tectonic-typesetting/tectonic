@@ -621,7 +621,7 @@ pub unsafe extern "C" fn print_int(mut n: int32_t) {
     let mut m: int32_t = 0;
     if n < 0i32 {
         print_char('-' as i32);
-        if n as libc::c_long > -100000000i64 {
+        if n as libc::c_long > -100000000 {
             n = -n
         } else {
             m = -1i32 - n;

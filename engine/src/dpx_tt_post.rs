@@ -302,15 +302,15 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
     (*post).glyphNamePtr = 0 as *mut *const libc::c_char;
     (*post).count = 0i32 as USHORT;
     (*post).names = 0 as *mut *mut libc::c_char;
-    if (*post).Version as libc::c_ulong == 0x10000u64 {
+    if (*post).Version as libc::c_ulong == 0x10000 {
         (*post).numberOfGlyphs = 258i32 as USHORT;
         (*post).glyphNamePtr = macglyphorder.as_mut_ptr()
-    } else if (*post).Version as libc::c_ulong == 0x28000u64 {
+    } else if (*post).Version as libc::c_ulong == 0x28000 {
         dpx_warning(
             b"TrueType \'post\' version 2.5 found (deprecated)\x00" as *const u8
                 as *const libc::c_char,
         );
-    } else if (*post).Version as libc::c_ulong == 0x20000u64 {
+    } else if (*post).Version as libc::c_ulong == 0x20000 {
         if read_v2_post_names(post, sfont) < 0i32 {
             dpx_warning(
                 b"Invalid version 2.0 \'post\' table\x00" as *const u8 as *const libc::c_char,
@@ -318,8 +318,8 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
             tt_release_post_table(post);
             post = 0 as *mut tt_post_table
         }
-    } else if !((*post).Version as libc::c_ulong == 0x30000u64
-        || (*post).Version as libc::c_ulong == 0x40000u64)
+    } else if !((*post).Version as libc::c_ulong == 0x30000
+        || (*post).Version as libc::c_ulong == 0x40000)
     {
         dpx_warning(
             b"Unknown \'post\' version: %08X, assuming version 3.0\x00" as *const u8
@@ -407,7 +407,7 @@ pub unsafe extern "C" fn tt_release_post_table(mut post: *mut tt_post_table) {
             .as_ptr(),
         );
     }
-    if !(*post).glyphNamePtr.is_null() && (*post).Version as libc::c_ulong != 0x10000u64 {
+    if !(*post).glyphNamePtr.is_null() && (*post).Version as libc::c_ulong != 0x10000 {
         free((*post).glyphNamePtr as *mut libc::c_void);
     }
     if !(*post).names.is_null() {

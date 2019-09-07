@@ -948,7 +948,7 @@ unsafe extern "C" fn doc_get_page_entry(
     mut page_no: libc::c_uint,
 ) -> *mut pdf_page {
     let mut page: *mut pdf_page = 0 as *mut pdf_page;
-    if page_no as libc::c_ulong > 65535u64 {
+    if page_no as libc::c_ulong > 65535 {
         _tt_abort(
             b"Page number %ul too large!\x00" as *const u8 as *const libc::c_char,
             page_no,
@@ -3579,7 +3579,7 @@ unsafe extern "C" fn pdf_doc_finish_page(mut p: *mut pdf_doc) {
             (*p).pages
                 .num_entries
                 .wrapping_rem(99999i32 as libc::c_uint) as libc::c_long
-                + 1i64,
+                + 1,
         );
         thumb_ref = read_thumbnail(thumb_filename);
         free(thumb_filename as *mut libc::c_void);

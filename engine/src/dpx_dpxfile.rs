@@ -270,7 +270,7 @@ unsafe extern "C" fn check_stream_is_dfont(mut handle: rust_input_handle_t) -> b
     n = tt_get_unsigned_pair(handle) as libc::c_int;
     i = 0i32;
     while i <= n {
-        if tt_get_unsigned_quad(handle) as libc::c_ulong == 0x73666e74u64 {
+        if tt_get_unsigned_quad(handle) as libc::c_ulong == 0x73666e74 {
             /* "sfnt" */
             return 1i32 != 0;
         }

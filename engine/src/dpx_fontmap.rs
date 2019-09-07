@@ -918,7 +918,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                         }
                     }
                     v = strtol(q, 0 as *mut *mut libc::c_char, 16i32) as libc::c_int;
-                    (*mrec).opt.mapc = ((v << 8i32) as libc::c_long & 0xff00i64) as libc::c_int;
+                    (*mrec).opt.mapc = ((v << 8i32) as libc::c_long & 0xff00) as libc::c_int;
                     free(q as *mut libc::c_void);
                     p = p.offset(1)
                 } else if p.offset(4) <= endptr
@@ -1001,7 +1001,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                         }
                     }
                     v = strtol(q, 0 as *mut *mut libc::c_char, 16i32) as libc::c_int;
-                    (*mrec).opt.mapc = ((v << 8i32) as libc::c_long & 0xff00i64) as libc::c_int;
+                    (*mrec).opt.mapc = ((v << 8i32) as libc::c_long & 0xff00) as libc::c_int;
                     free(q as *mut libc::c_void);
                 } else {
                     dpx_warning(

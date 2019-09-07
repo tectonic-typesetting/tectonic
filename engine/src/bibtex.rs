@@ -674,10 +674,10 @@ unsafe extern "C" fn print_a_pool_str(mut s: str_number) {
 unsafe extern "C" fn pool_overflow() {
     str_pool = xrealloc(
         str_pool as *mut libc::c_void,
-        ((pool_size as libc::c_long + 65000i64 + 1i32 as libc::c_long) as libc::c_ulong)
+        ((pool_size as libc::c_long + 65000 + 1i32 as libc::c_long) as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<ASCII_code>() as libc::c_ulong),
     ) as *mut ASCII_code;
-    pool_size = (pool_size as libc::c_long + 65000i64) as int32_t;
+    pool_size = (pool_size as libc::c_long + 65000) as int32_t;
 }
 unsafe extern "C" fn out_token(mut handle: rust_output_handle_t) {
     let mut i: buf_pointer = buf_ptr1;
@@ -13685,7 +13685,7 @@ unsafe extern "C" fn initialize(mut aux_file_name: *const libc::c_char) -> libc:
 */
 #[no_mangle]
 pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const libc::c_char) -> tt_history_t {
-    pool_size = 65000i64 as int32_t;
+    pool_size = 65000 as int32_t;
     buf_size = 20000i32;
     max_bib_files = 20i32;
     max_glob_strs = 10i32;

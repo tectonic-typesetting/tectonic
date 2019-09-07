@@ -1099,7 +1099,7 @@ pub unsafe extern "C" fn tfm_open(
         }
     }
     tfm_file_size = ttstub_input_get_size(tfm_handle) as off_t;
-    if tfm_file_size > 0x1ffffffffi64 {
+    if tfm_file_size > 0x1ffffffff {
         _tt_abort(b"TFM/OFM file size exceeds 33-bit\x00" as *const u8 as *const libc::c_char);
     }
     if tfm_file_size < 24i32 as libc::c_long {

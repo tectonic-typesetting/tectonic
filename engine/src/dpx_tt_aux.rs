@@ -548,11 +548,11 @@ pub unsafe extern "C" fn tt_get_fontdesc(
         descriptor,
         pdf_new_name(b"ItalicAngle\x00" as *const u8 as *const libc::c_char),
         pdf_new_number(
-            ((*post).italicAngle as libc::c_long % 0x10000i64) as libc::c_double
+            ((*post).italicAngle as libc::c_long % 0x10000) as libc::c_double
                 / 0x10000i64 as libc::c_double
-                + ((*post).italicAngle as libc::c_long / 0x10000i64) as libc::c_double
-                - (if (*post).italicAngle as libc::c_long / 0x10000i64 > 0x7fffi64 {
-                    0x10000i64
+                + ((*post).italicAngle as libc::c_long / 0x10000) as libc::c_double
+                - (if (*post).italicAngle as libc::c_long / 0x10000 > 0x7fff {
+                    0x10000
                 } else {
                     0i32 as libc::c_long
                 }) as libc::c_double,

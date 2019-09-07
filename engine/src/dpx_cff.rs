@@ -1174,7 +1174,7 @@ pub unsafe extern "C" fn cff_pack_index(
     let fresh6 = dest;
     dest = dest.offset(1);
     *fresh6 = ((*idx).count as libc::c_int & 0xffi32) as card8;
-    if datalen < 0xffu64 {
+    if datalen < 0xff {
         (*idx).offsize = 1i32 as c_offsize;
         let fresh7 = dest;
         dest = dest.offset(1);
@@ -1186,7 +1186,7 @@ pub unsafe extern "C" fn cff_pack_index(
             *fresh8 = (*(*idx).offset.offset(i as isize) & 0xffi32 as libc::c_uint) as card8;
             i = i.wrapping_add(1)
         }
-    } else if datalen < 0xffffu64 {
+    } else if datalen < 0xffff {
         (*idx).offsize = 2i32 as c_offsize;
         let fresh9 = dest;
         dest = dest.offset(1);
@@ -1202,7 +1202,7 @@ pub unsafe extern "C" fn cff_pack_index(
             *fresh11 = (*(*idx).offset.offset(i as isize) & 0xffi32 as libc::c_uint) as card8;
             i = i.wrapping_add(1)
         }
-    } else if datalen < 0xffffffu64 {
+    } else if datalen < 0xffffff {
         (*idx).offsize = 3i32 as c_offsize;
         let fresh12 = dest;
         dest = dest.offset(1);
@@ -1260,11 +1260,11 @@ pub unsafe extern "C" fn cff_index_size(mut idx: *mut cff_index) -> libc::c_int 
     if (*idx).count as libc::c_int > 0i32 {
         let mut datalen: l_offset = 0;
         datalen = (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1i32 as libc::c_uint);
-        if (datalen as libc::c_ulong) < 0xffu64 {
+        if (datalen as libc::c_ulong) < 0xff {
             (*idx).offsize = 1i32 as c_offsize
-        } else if (datalen as libc::c_ulong) < 0xffffu64 {
+        } else if (datalen as libc::c_ulong) < 0xffff {
             (*idx).offsize = 2i32 as c_offsize
-        } else if (datalen as libc::c_ulong) < 0xffffffu64 {
+        } else if (datalen as libc::c_ulong) < 0xffffff {
             (*idx).offsize = 3i32 as c_offsize
         } else {
             (*idx).offsize = 4i32 as c_offsize

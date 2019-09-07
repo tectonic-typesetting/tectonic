@@ -368,9 +368,9 @@ unsafe extern "C" fn read_sfd_record(
                 v2 = strtol(p, &mut r, 0i32) as libc::c_int;
                 q = r;
                 if v1 < 0i32
-                    || v1 as libc::c_long > 0xffffi64
+                    || v1 as libc::c_long > 0xffff
                     || v2 < 0i32
-                    || v2 as libc::c_long > 0xffffi64
+                    || v2 as libc::c_long > 0xffff
                 {
                     dpx_warning(
                         b"Invalid value in subfont mapping table: 0x%x_0x%x\x00" as *const u8
@@ -398,7 +398,7 @@ unsafe extern "C" fn read_sfd_record(
                 }
             }
             _ => {
-                if v1 < 0i32 || v1 as libc::c_long > 0xffffi64 {
+                if v1 < 0i32 || v1 as libc::c_long > 0xffff {
                     dpx_warning(
                         b"Invalid character code in subfont mapping table: 0x%x\x00" as *const u8
                             as *const libc::c_char,

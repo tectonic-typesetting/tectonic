@@ -1763,7 +1763,7 @@ pub unsafe extern "C" fn math_ac() {
             .wrapping_add((cur_val % 256i32) as libc::c_uint) as int32_t
     }
     (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s0 =
-        (cur_val as libc::c_long % 65536i64) as uint16_t;
+        (cur_val as libc::c_long % 65536) as uint16_t;
     if cur_val as libc::c_uint >> 21i32 & 0x7i32 as libc::c_uint == 7i32 as libc::c_uint
         && ((*eqtb.offset(
             (1i32
@@ -1859,7 +1859,7 @@ pub unsafe extern "C" fn math_ac() {
     }
     (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 =
         ((*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 as libc::c_long
-            + (cur_val as libc::c_uint & 0x1fffffi32 as libc::c_uint) as libc::c_long / 65536i64
+            + (cur_val as libc::c_uint & 0x1fffffi32 as libc::c_uint) as libc::c_long / 65536
                 * 256i32 as libc::c_long) as uint16_t;
     scan_math(cur_list.tail + 1i32);
 }
@@ -3924,7 +3924,7 @@ pub unsafe extern "C" fn resume_after_display() {
             .b32
             .s1,
         ) as libc::c_int) as libc::c_long
-        * 65536i64
+        * 65536
         + cur_lang as libc::c_long) as int32_t;
     get_x_token();
     if cur_cmd as libc::c_int != 10i32 {
@@ -4833,11 +4833,11 @@ unsafe extern "C" fn math_glue(mut g: int32_t, mut m: scaled_t) -> int32_t {
     let mut p: int32_t = 0;
     let mut n: int32_t = 0;
     let mut f: scaled_t = 0;
-    n = x_over_n(m, 65536i64 as int32_t);
+    n = x_over_n(m, 65536 as int32_t);
     f = tex_remainder;
     if f < 0i32 {
         n -= 1;
-        f = (f as libc::c_long + 65536i64) as scaled_t
+        f = (f as libc::c_long + 65536) as scaled_t
     }
     p = get_node(4i32);
     (*mem.offset((p + 1i32) as isize)).b32.s1 = mult_and_add(
@@ -4846,7 +4846,7 @@ unsafe extern "C" fn math_glue(mut g: int32_t, mut m: scaled_t) -> int32_t {
         xn_over_d(
             (*mem.offset((g + 1i32) as isize)).b32.s1,
             f,
-            65536i64 as int32_t,
+            65536 as int32_t,
         ),
         0x3fffffffi32,
     );
@@ -4858,7 +4858,7 @@ unsafe extern "C" fn math_glue(mut g: int32_t, mut m: scaled_t) -> int32_t {
             xn_over_d(
                 (*mem.offset((g + 2i32) as isize)).b32.s1,
                 f,
-                65536i64 as int32_t,
+                65536 as int32_t,
             ),
             0x3fffffffi32,
         )
@@ -4873,7 +4873,7 @@ unsafe extern "C" fn math_glue(mut g: int32_t, mut m: scaled_t) -> int32_t {
             xn_over_d(
                 (*mem.offset((g + 3i32) as isize)).b32.s1,
                 f,
-                65536i64 as int32_t,
+                65536 as int32_t,
             ),
             0x3fffffffi32,
         )
@@ -4886,11 +4886,11 @@ unsafe extern "C" fn math_kern(mut p: int32_t, mut m: scaled_t) {
     let mut n: int32_t = 0;
     let mut f: scaled_t = 0;
     if (*mem.offset(p as isize)).b16.s0 as libc::c_int == 99i32 {
-        n = x_over_n(m, 65536i64 as int32_t);
+        n = x_over_n(m, 65536 as int32_t);
         f = tex_remainder;
         if f < 0i32 {
             n -= 1;
-            f = (f as libc::c_long + 65536i64) as scaled_t
+            f = (f as libc::c_long + 65536) as scaled_t
         }
         (*mem.offset((p + 1i32) as isize)).b32.s1 = mult_and_add(
             n,
@@ -4898,7 +4898,7 @@ unsafe extern "C" fn math_kern(mut p: int32_t, mut m: scaled_t) {
             xn_over_d(
                 (*mem.offset((p + 1i32) as isize)).b32.s1,
                 f,
-                65536i64 as int32_t,
+                65536 as int32_t,
             ),
             0x3fffffffi32,
         );
@@ -5007,7 +5007,7 @@ unsafe extern "C" fn fetch(mut a: int32_t) {
     .b32
     .s1;
     cur_c = (cur_c as libc::c_long
-        + ((*mem.offset(a as isize)).b16.s1 as libc::c_int / 256i32) as libc::c_long * 65536i64)
+        + ((*mem.offset(a as isize)).b16.s1 as libc::c_int / 256i32) as libc::c_long * 65536)
         as int32_t;
     if cur_f == 0i32 {
         /*749: */
@@ -5263,7 +5263,7 @@ unsafe extern "C" fn make_math_accent(mut q: int32_t) {
                     a = ((*lig_kern_base.offset(cur_f as isize)
                         + 256i32 * cur_i.s1 as libc::c_int
                         + cur_i.s0 as libc::c_int) as libc::c_long
-                        + 32768i64
+                        + 32768
                         - (256i32 * 128i32) as libc::c_long) as int32_t;
                     cur_i = (*font_info.offset(a as isize)).b16
                 }
@@ -5900,7 +5900,7 @@ unsafe extern "C" fn make_ord(mut q: int32_t) {
             a = ((*lig_kern_base.offset(cur_f as isize)
                 + 256i32 * cur_i.s1 as libc::c_int
                 + cur_i.s0 as libc::c_int) as libc::c_long
-                + 32768i64
+                + 32768
                 - (256i32 * 128i32) as libc::c_long) as int32_t;
             cur_i = (*font_info.offset(a as isize)).b16
         }
@@ -7157,7 +7157,7 @@ unsafe extern "C" fn var_delimiter(mut d: int32_t, mut s: int32_t, mut v: scaled
     large_attempt = 0i32 != 0;
     z = (*mem.offset(d as isize)).b16.s3 as libc::c_int % 256i32;
     x = ((*mem.offset(d as isize)).b16.s2 as libc::c_long
-        + ((*mem.offset(d as isize)).b16.s3 as libc::c_int / 256i32) as libc::c_long * 65536i64)
+        + ((*mem.offset(d as isize)).b16.s3 as libc::c_int / 256i32) as libc::c_long * 65536)
         as uint16_t;
     ot_assembly_ptr = 0 as *mut libc::c_void;
     's_62: loop {
@@ -7277,7 +7277,7 @@ unsafe extern "C" fn var_delimiter(mut d: int32_t, mut s: int32_t, mut v: scaled
         large_attempt = 1i32 != 0;
         z = (*mem.offset(d as isize)).b16.s1 as libc::c_int % 256i32;
         x = ((*mem.offset(d as isize)).b16.s0 as libc::c_long
-            + ((*mem.offset(d as isize)).b16.s1 as libc::c_int / 256i32) as libc::c_long * 65536i64)
+            + ((*mem.offset(d as isize)).b16.s1 as libc::c_int / 256i32) as libc::c_long * 65536)
             as uint16_t
     }
     if f != 0i32 {

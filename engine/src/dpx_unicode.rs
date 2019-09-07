@@ -24,8 +24,8 @@ pub type size_t = libc::c_ulong;
 #[no_mangle]
 pub unsafe extern "C" fn UC_is_valid(mut ucv: int32_t) -> bool {
     return !(ucv < 0i32
-        || ucv as libc::c_long > 0x10ffffi64
-        || ucv as libc::c_long >= 0xd800i64 && ucv as libc::c_long <= 0xdfffi64);
+        || ucv as libc::c_long > 0x10ffff
+        || ucv as libc::c_long >= 0xd800 && ucv as libc::c_long <= 0xdfff);
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF16BE_is_valid_string(

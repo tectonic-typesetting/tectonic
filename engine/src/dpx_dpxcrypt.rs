@@ -37,12 +37,9 @@ extern "C" {
     #[no_mangle]
     fn new(size: uint32_t) -> *mut libc::c_void;
 }
-pub type __uint8_t = libc::c_uchar;
-pub type __uint32_t = libc::c_uint;
-pub type __uint64_t = libc::c_ulong;
-pub type uint8_t = __uint8_t;
-pub type uint32_t = __uint32_t;
-pub type uint64_t = __uint64_t;
+pub type uint8_t = u8;
+pub type uint32_t = u32;
+pub type uint64_t = u64;
 pub type size_t = libc::c_ulong;
 /* This is DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
 
@@ -1584,7 +1581,7 @@ unsafe extern "C" fn __transform(
             ^ (f >> 34i32 | f << 64i32 - 34i32)
             ^ (f >> 39i32 | f << 64i32 - 39i32))
             .wrapping_add(f & g ^ f & h ^ g & h);
-        a = (a as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        a = a.wrapping_add(t1) as uint64_t as uint64_t;
         e = t1.wrapping_add(t2);
         t1 = d
             .wrapping_add(
@@ -1610,7 +1607,7 @@ unsafe extern "C" fn __transform(
             ^ (e >> 34i32 | e << 64i32 - 34i32)
             ^ (e >> 39i32 | e << 64i32 - 39i32))
             .wrapping_add(e & f ^ e & g ^ f & g);
-        h = (h as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        h = h.wrapping_add(t1) as uint64_t as uint64_t;
         d = t1.wrapping_add(t2);
         t1 = c
             .wrapping_add(
@@ -1636,7 +1633,7 @@ unsafe extern "C" fn __transform(
             ^ (d >> 34i32 | d << 64i32 - 34i32)
             ^ (d >> 39i32 | d << 64i32 - 39i32))
             .wrapping_add(d & e ^ d & f ^ e & f);
-        g = (g as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        g = g.wrapping_add(t1) as uint64_t as uint64_t;
         c = t1.wrapping_add(t2);
         t1 = b
             .wrapping_add(

@@ -375,9 +375,9 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
     *fresh2 = new_param_glue(14i32 as small_number);
     last_line_fill = *fresh2;
     /* Yet more initialization of various kinds */
-    init_cur_lang = (cur_list.prev_graf as libc::c_long % 65536i64) as libc::c_uchar;
+    init_cur_lang = (cur_list.prev_graf as libc::c_long % 65536) as libc::c_uchar;
     init_l_hyf = cur_list.prev_graf / 0x400000i32;
-    init_r_hyf = (cur_list.prev_graf as libc::c_long / 65536i64 % 64i32 as libc::c_long) as int32_t;
+    init_r_hyf = (cur_list.prev_graf as libc::c_long / 65536 % 64i32 as libc::c_long) as int32_t;
     pop_nest();
     no_shrink_error_yet = 1i32 != 0;
     if (*mem.offset(
@@ -1487,7 +1487,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                 current_block = 16581706250867416845;
                                                 break 's_786;
                                             } else {
-                                                if c as libc::c_long >= 65536i64 {
+                                                if c as libc::c_long >= 65536 {
                                                     l += 1
                                                 }
                                                 l += 1
@@ -2210,14 +2210,14 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                                             }
                                                                         hn += 1;
                                                                         if (c as libc::c_long)
-                                                                            < 65536i64
+                                                                            < 65536
                                                                         {
                                                                             hu[hn as usize] = c;
                                                                             hc[hn as usize] = hc[0]
                                                                         } else {
                                                                             hu[hn as usize] = ((c
                                                                                 as libc::c_long
-                                                                                - 65536i64)
+                                                                                - 65536)
                                                                                 / 1024i32
                                                                                     as libc::c_long
                                                                                 + 0xd800i32
@@ -2226,7 +2226,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                                             hc[hn as usize] = ((hc
                                                                                 [0]
                                                                                 as libc::c_long
-                                                                                - 65536i64)
+                                                                                - 65536)
                                                                                 / 1024i32
                                                                                     as libc::c_long
                                                                                 + 0xd800i32
@@ -4461,9 +4461,9 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                                         if g > shortfall {
                                             g = shortfall
                                         }
-                                        if g as libc::c_long > 7230584i64 {
+                                        if g as libc::c_long > 7230584 {
                                             /* XXX: magic number in original WEB code */
-                                            if (cur_active_width[2] as libc::c_long) < 1663497i64 {
+                                            if (cur_active_width[2] as libc::c_long) < 1663497 {
                                                 /* XXX: magic number in original WEB code */
                                                 b = 10000i32;
                                                 fit_class = 0i32 as libc::c_uchar;
@@ -4533,9 +4533,9 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                     }
                 } else {
                     let mut current_block_230: u64;
-                    if shortfall as libc::c_long > 7230584i64 {
+                    if shortfall as libc::c_long > 7230584 {
                         /* XXX: magic number in original WEB code */
-                        if (cur_active_width[2] as libc::c_long) < 1663497i64 {
+                        if (cur_active_width[2] as libc::c_long) < 1663497 {
                             /* XXX: magic number in original WEB code */
                             b = 10000i32;
                             fit_class = 0i32 as libc::c_uchar;
@@ -4662,7 +4662,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                         .b32
                         .s1 + b; /* algorithmic constant */
                         if abs(d) >= 10000i32 {
-                            d = 100000000i64 as int32_t
+                            d = 100000000 as int32_t
                         } else {
                             d = d * d
                         }
@@ -4917,7 +4917,7 @@ unsafe extern "C" fn hyphenate() {
         }
         if length(k) == hn as libc::c_int {
             j = 1i32 as libc::c_short;
-            u = *str_start.offset((k as libc::c_long - 65536i64) as isize);
+            u = *str_start.offset((k as libc::c_long - 65536) as isize);
             loop {
                 if *str_pool.offset(u as isize) as libc::c_int != hc[j as usize] {
                     current_block = 1763490972649755258;
@@ -5513,7 +5513,7 @@ unsafe extern "C" fn reconstitute(
                     k = ((*lig_kern_base.offset(hf as isize)
                         + 256i32 * q.s1 as libc::c_int
                         + q.s0 as libc::c_int) as libc::c_long
-                        + 32768i64
+                        + 32768
                         - (256i32 * 128i32) as libc::c_long) as font_index;
                     q = (*font_info.offset(k as isize)).b16
                 }

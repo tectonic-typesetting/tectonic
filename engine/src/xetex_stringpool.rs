@@ -84,9 +84,9 @@ pub unsafe extern "C" fn load_pool_strings(mut spare_size: int32_t) -> libc::c_i
 }
 #[no_mangle]
 pub unsafe extern "C" fn length(mut s: str_number) -> int32_t {
-    if s as libc::c_long >= 65536i64 {
-        return *str_start.offset(((s + 1i32) as libc::c_long - 65536i64) as isize)
-            - *str_start.offset((s as libc::c_long - 65536i64) as isize);
+    if s as libc::c_long >= 65536 {
+        return *str_start.offset(((s + 1i32) as libc::c_long - 65536) as isize)
+            - *str_start.offset((s as libc::c_long - 65536) as isize);
     } else if s >= 32i32 && s < 127i32 {
         return 1i32;
     } else if s <= 127i32 {
@@ -120,7 +120,7 @@ pub unsafe extern "C" fn append_str(mut s: str_number) {
             pool_size - init_pool_ptr,
         );
     }
-    j = *str_start.offset((s as libc::c_long - 65536i64) as isize);
+    j = *str_start.offset((s as libc::c_long - 65536) as isize);
     while i > 0i32 {
         *str_pool.offset(pool_ptr as isize) = *str_pool.offset(j as isize);
         pool_ptr += 1;
@@ -131,20 +131,20 @@ pub unsafe extern "C" fn append_str(mut s: str_number) {
 #[no_mangle]
 pub unsafe extern "C" fn str_eq_buf(mut s: str_number, mut k: int32_t) -> bool {
     let mut j: pool_pointer = 0;
-    j = *str_start.offset((s as libc::c_long - 65536i64) as isize);
-    while j < *str_start.offset(((s + 1i32) as libc::c_long - 65536i64) as isize) {
-        if *buffer.offset(k as isize) as libc::c_long >= 65536i64 {
+    j = *str_start.offset((s as libc::c_long - 65536) as isize);
+    while j < *str_start.offset(((s + 1i32) as libc::c_long - 65536) as isize) {
+        if *buffer.offset(k as isize) as libc::c_long >= 65536 {
             if *str_pool.offset(j as isize) as libc::c_long
-                != 55296i64
-                    + (*buffer.offset(k as isize) as libc::c_long - 65536i64)
-                        / 1024i32 as libc::c_long
+                != 55296
+                    + (*buffer.offset(k as isize) as libc::c_long - 65536)
+                        / 1024 as libc::c_long
             {
                 return 0i32 != 0;
             } else {
                 if *str_pool.offset((j + 1i32) as isize) as libc::c_long
-                    != 56320i64
-                        + (*buffer.offset(k as isize) as libc::c_long - 65536i64)
-                            % 1024i32 as libc::c_long
+                    != 56320
+                        + (*buffer.offset(k as isize) as libc::c_long - 65536)
+                            % 1024 as libc::c_long
                 {
                     return 0i32 != 0;
                 } else {
@@ -167,37 +167,37 @@ pub unsafe extern "C" fn str_eq_str(mut s: str_number, mut t: str_number) -> boo
         return 0i32 != 0;
     }
     if length(s) == 1i32 {
-        if (s as libc::c_long) < 65536i64 {
-            if (t as libc::c_long) < 65536i64 {
+        if (s as libc::c_long) < 65536 {
+            if (t as libc::c_long) < 65536 {
                 if s != t {
                     return 0i32 != 0;
                 }
             } else if s
                 != *str_pool
-                    .offset(*str_start.offset((t as libc::c_long - 65536i64) as isize) as isize)
+                    .offset(*str_start.offset((t as libc::c_long - 65536) as isize) as isize)
                     as libc::c_int
             {
                 return 0i32 != 0;
             }
-        } else if (t as libc::c_long) < 65536i64 {
-            if *str_pool.offset(*str_start.offset((s as libc::c_long - 65536i64) as isize) as isize)
+        } else if (t as libc::c_long) < 65536 {
+            if *str_pool.offset(*str_start.offset((s as libc::c_long - 65536) as isize) as isize)
                 as libc::c_int
                 != t
             {
                 return 0i32 != 0;
             }
         } else if *str_pool
-            .offset(*str_start.offset((s as libc::c_long - 65536i64) as isize) as isize)
+            .offset(*str_start.offset((s as libc::c_long - 65536) as isize) as isize)
             as libc::c_int
-            != *str_pool.offset(*str_start.offset((t as libc::c_long - 65536i64) as isize) as isize)
+            != *str_pool.offset(*str_start.offset((t as libc::c_long - 65536) as isize) as isize)
                 as libc::c_int
         {
             return 0i32 != 0;
         }
     } else {
-        j = *str_start.offset((s as libc::c_long - 65536i64) as isize);
-        k = *str_start.offset((t as libc::c_long - 65536i64) as isize);
-        while j < *str_start.offset(((s + 1i32) as libc::c_long - 65536i64) as isize) {
+        j = *str_start.offset((s as libc::c_long - 65536) as isize);
+        k = *str_start.offset((t as libc::c_long - 65536) as isize);
+        while j < *str_start.offset(((s + 1i32) as libc::c_long - 65536) as isize) {
             if *str_pool.offset(j as isize) as libc::c_int
                 != *str_pool.offset(k as isize) as libc::c_int
             {
@@ -215,10 +215,10 @@ pub unsafe extern "C" fn search_string(mut search: str_number) -> str_number {
     let mut len: int32_t = 0;
     len = length(search);
     if len == 0i32 {
-        return (65536i64 + 1i32 as libc::c_long) as str_number;
+        return (65536 + 1i32 as libc::c_long) as str_number;
     } else {
         s = search - 1i32;
-        while s as libc::c_long > 65535i64 {
+        while s as libc::c_long > 65535 {
             if length(s) == len {
                 if str_eq_str(s, search) {
                     return s;

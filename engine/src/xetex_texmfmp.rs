@@ -117,7 +117,7 @@ pub unsafe extern "C" fn maketexstring(mut s: *const libc::c_char) -> libc::c_in
     let mut rval: UInt32 = 0;
     let mut cp: *const libc::c_uchar = s as *const libc::c_uchar;
     if s.is_null() || *s as libc::c_int == 0i32 {
-        return (65536i64 + 1i32 as libc::c_long) as libc::c_int;
+        return (65536 + 1i32 as libc::c_long) as libc::c_int;
     }
     len = strlen(s);
     checkpool_pointer(pool_ptr, len);
@@ -240,9 +240,9 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut libc::c_char {
     let mut i: pool_pointer = 0;
     let mut j: pool_pointer = 0;
     let mut name: *mut libc::c_char = 0 as *mut libc::c_char;
-    if s as libc::c_long >= 65536i64 {
-        len = *str_start.offset(((s + 1i32) as libc::c_long - 65536i64) as isize)
-            - *str_start.offset((s as libc::c_long - 65536i64) as isize)
+    if s as libc::c_long >= 65536 {
+        len = *str_start.offset(((s + 1i32) as libc::c_long - 65536) as isize)
+            - *str_start.offset((s as libc::c_long - 65536) as isize)
     } else {
         len = 0i32
     }
@@ -251,12 +251,12 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut libc::c_char {
     j = 0i32;
     while i < len {
         let mut c: uint32_t = *str_pool
-            .offset((i + *str_start.offset((s as libc::c_long - 65536i64) as isize)) as isize)
+            .offset((i + *str_start.offset((s as libc::c_long - 65536) as isize)) as isize)
             as uint32_t;
         if c >= 0xd800i32 as libc::c_uint && c <= 0xdbffi32 as libc::c_uint {
             i += 1;
             let mut lo: uint32_t = *str_pool
-                .offset((i + *str_start.offset((s as libc::c_long - 65536i64) as isize)) as isize)
+                .offset((i + *str_start.offset((s as libc::c_long - 65536) as isize)) as isize)
                 as uint32_t;
             if lo >= 0xdc00i32 as libc::c_uint && lo <= 0xdfffi32 as libc::c_uint {
                 c = c

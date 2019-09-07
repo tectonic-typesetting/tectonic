@@ -153,13 +153,13 @@ pub unsafe extern "C" fn sfnt_open(mut handle: rust_input_handle_t) -> *mut sfnt
         as *mut sfnt;
     (*sfont).handle = handle;
     type_0 = tt_get_unsigned_quad((*sfont).handle);
-    if type_0 as libc::c_ulong == 0x10000u64 || type_0 as libc::c_ulong == 0x74727565u64 {
+    if type_0 as libc::c_ulong == 0x10000 || type_0 as libc::c_ulong == 0x74727565 {
         (*sfont).type_0 = 1i32 << 0i32
-    } else if type_0 as libc::c_ulong == 0x10000u64 {
+    } else if type_0 as libc::c_ulong == 0x10000 {
         (*sfont).type_0 = 1i32 << 1i32
-    } else if type_0 as libc::c_ulong == 0x4f54544fu64 {
+    } else if type_0 as libc::c_ulong == 0x4f54544f {
         (*sfont).type_0 = 1i32 << 2i32
-    } else if type_0 as libc::c_ulong == 0x74746366u64 {
+    } else if type_0 as libc::c_ulong == 0x74746366 {
         (*sfont).type_0 = 1i32 << 4i32
     }
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
@@ -214,7 +214,7 @@ pub unsafe extern "C" fn dfont_open(
         tag = tt_get_unsigned_quad((*sfont).handle);
         types_num = tt_get_unsigned_pair((*sfont).handle);
         types_pos = tags_pos.wrapping_add(tt_get_unsigned_pair((*sfont).handle) as libc::c_uint);
-        if tag as libc::c_ulong == 0x73666e74u64 {
+        if tag as libc::c_ulong == 0x73666e74 {
             break;
         }
         i = i.wrapping_add(1)
@@ -244,7 +244,7 @@ pub unsafe extern "C" fn dfont_open(
     ttstub_input_seek((*sfont).handle, 0i32 as ssize_t, 0i32);
     (*sfont).type_0 = 1i32 << 8i32;
     (*sfont).directory = 0 as *mut sfnt_table_directory;
-    (*sfont).offset = (res_pos as libc::c_ulong & 0xffffffu64)
+    (*sfont).offset = (res_pos as libc::c_ulong & 0xffffff)
         .wrapping_add(rdata_pos as libc::c_ulong)
         .wrapping_add(4i32 as libc::c_ulong) as SFNT_ULONG;
     return sfont;

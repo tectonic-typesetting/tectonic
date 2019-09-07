@@ -2961,8 +2961,7 @@ unsafe extern "C" fn do_dir() {
 }
 unsafe extern "C" fn lr_width_push() {
     if lr_width_stack_depth >= 256u32 {
-        _tt_abort(b"Segment width stack exceeded limit.\x00" as *const u8 as *const libc::c_char);
-        /* must precede dvi_right */
+        _tt_abort(b"Segment width stack exceeded limit.\x00" as *const u8 as *const libc::c_char); /* must precede dvi_right */
     }
     let fresh22 = lr_width_stack_depth;
     lr_width_stack_depth = lr_width_stack_depth.wrapping_add(1);

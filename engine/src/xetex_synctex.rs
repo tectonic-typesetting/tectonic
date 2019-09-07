@@ -965,8 +965,7 @@ pub unsafe extern "C" fn synctex_void_hlist(mut p: int32_t, mut this_box: int32_
     /*  the sync context has changed  */
     if synctex_ctxt.recorder.is_some() {
         /*  but was not yet recorded  */
-        synctex_ctxt.recorder.expect("non-null function pointer")(synctex_ctxt.node);
-        /*  0 to reset  */
+        synctex_ctxt.recorder.expect("non-null function pointer")(synctex_ctxt.node); /*  0 to reset  */
     } /*  reset  */
     synctex_ctxt.node = p;
     synctex_ctxt.tag = (*mem.offset((p + 8i32 - 1i32) as isize)).b32.s0;
@@ -1025,8 +1024,7 @@ pub unsafe extern "C" fn synctex_math(mut p: int32_t, mut this_box: int32_t) {
             || (*mem.offset((p + 3i32 - 1i32) as isize)).b32.s1 != synctex_ctxt.line)
     {
         /*  the sync context did change  */
-        synctex_ctxt.recorder.expect("non-null function pointer")(synctex_ctxt.node);
-        /*  no need to record once more  */
+        synctex_ctxt.recorder.expect("non-null function pointer")(synctex_ctxt.node); /*  no need to record once more  */
     }
     synctex_ctxt.node = p;
     synctex_ctxt.tag = (*mem.offset((p + 3i32 - 1i32) as isize)).b32.s0;

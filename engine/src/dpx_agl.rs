@@ -1457,12 +1457,12 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
             agln1 = agl_lookup_list(name);
             if agln1.is_null()
                 || (*agln1).n_components == 1i32
-                    && ((*agln1).unicodes[0] as libc::c_long >= 0xe000i64
-                        && (*agln1).unicodes[0] as libc::c_long <= 0xf8ffi64
-                        || (*agln1).unicodes[0] as libc::c_long >= 0xf0000i64
-                            && (*agln1).unicodes[0] as libc::c_long <= 0xffffdi64
-                        || (*agln1).unicodes[0] as libc::c_long >= 0x100000i64
-                            && (*agln1).unicodes[0] as libc::c_long <= 0x10fffdi64)
+                    && ((*agln1).unicodes[0] as libc::c_long >= 0xe000
+                        && (*agln1).unicodes[0] as libc::c_long <= 0xf8ff
+                        || (*agln1).unicodes[0] as libc::c_long >= 0xf0000
+                            && (*agln1).unicodes[0] as libc::c_long <= 0xffffd
+                        || (*agln1).unicodes[0] as libc::c_long >= 0x100000
+                            && (*agln1).unicodes[0] as libc::c_long <= 0x10fffd)
             {
                 agln0 = agl_normalized_name(name);
                 if !agln0.is_null() {
@@ -1605,12 +1605,12 @@ pub unsafe extern "C" fn agl_get_unicodes(
             agln1 = agl_lookup_list(name);
             if agln1.is_null()
                 || (*agln1).n_components == 1i32
-                    && ((*agln1).unicodes[0] as libc::c_long >= 0xe000i64
-                        && (*agln1).unicodes[0] as libc::c_long <= 0xf8ffi64
-                        || (*agln1).unicodes[0] as libc::c_long >= 0xf0000i64
-                            && (*agln1).unicodes[0] as libc::c_long <= 0xffffdi64
-                        || (*agln1).unicodes[0] as libc::c_long >= 0x100000i64
-                            && (*agln1).unicodes[0] as libc::c_long <= 0x10fffdi64)
+                    && ((*agln1).unicodes[0] as libc::c_long >= 0xe000
+                        && (*agln1).unicodes[0] as libc::c_long <= 0xf8ff
+                        || (*agln1).unicodes[0] as libc::c_long >= 0xf0000
+                            && (*agln1).unicodes[0] as libc::c_long <= 0xffffd
+                        || (*agln1).unicodes[0] as libc::c_long >= 0x100000
+                            && (*agln1).unicodes[0] as libc::c_long <= 0x10fffd)
             {
                 agln0 = agl_normalized_name(name);
                 if !agln0.is_null() {

@@ -898,7 +898,7 @@ pub unsafe extern "C" fn tt_build_tables(
      * Choosing short format does not always give good result
      * when compressed. Sometimes increases size.
      */
-    if (glyf_table_size as libc::c_ulong) < 0x20000u64 {
+    if (glyf_table_size as libc::c_ulong) < 0x20000 {
         (*head).indexToLocFormat = 0i32 as SHORT;
         loca_table_size = (((*g).last_gid as libc::c_int + 2i32) * 2i32) as SFNT_ULONG
     } else {

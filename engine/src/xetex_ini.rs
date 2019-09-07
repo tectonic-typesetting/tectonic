@@ -1625,22 +1625,22 @@ pub unsafe extern "C" fn new_trie_op(
         + 313i32 * d as libc::c_int
         + 361i32 * v as libc::c_int
         + 1009i32 * cur_lang as libc::c_int) as libc::c_long
-        % (35111i64 - -35111i64)
-        + -35111i64) as int32_t;
+        % (35111 - -35111)
+        + -35111) as int32_t;
     loop {
-        l = _trie_op_hash_array[(h as libc::c_long - -35111i64) as usize];
+        l = _trie_op_hash_array[(h as libc::c_long - -35111) as usize];
         if l == 0i32 {
-            if trie_op_ptr as libc::c_long == 35111i64 {
+            if trie_op_ptr as libc::c_long == 35111 {
                 overflow(
                     b"pattern memory ops\x00" as *const u8 as *const libc::c_char,
-                    35111i64 as int32_t,
+                    35111 as int32_t,
                 );
             }
             u = trie_used[cur_lang as usize];
-            if u as libc::c_long == 65535i64 {
+            if u as libc::c_long == 65535 {
                 overflow(
                     b"pattern memory ops per language\x00" as *const u8 as *const libc::c_char,
-                    (65535i64 - 0i32 as libc::c_long) as int32_t,
+                    (65535 - 0i32 as libc::c_long) as int32_t,
                 );
             }
             trie_op_ptr += 1;
@@ -1653,7 +1653,7 @@ pub unsafe extern "C" fn new_trie_op(
             hyf_num[trie_op_ptr as usize] = n;
             hyf_next[trie_op_ptr as usize] = v;
             trie_op_lang[trie_op_ptr as usize] = cur_lang;
-            _trie_op_hash_array[(h as libc::c_long - -35111i64) as usize] = trie_op_ptr;
+            _trie_op_hash_array[(h as libc::c_long - -35111) as usize] = trie_op_ptr;
             trie_op_val[trie_op_ptr as usize] = u;
             return u;
         }
@@ -1664,10 +1664,10 @@ pub unsafe extern "C" fn new_trie_op(
         {
             return trie_op_val[l as usize];
         }
-        if h > -(35111i64 as int32_t) {
+        if h > -(35111 as int32_t) {
             h -= 1
         } else {
-            h = 35111i64 as int32_t
+            h = 35111 as int32_t
         }
     }
 }
@@ -2291,7 +2291,7 @@ pub unsafe extern "C" fn init_trie() {
     for_end_0 = trie_op_ptr;
     if j <= for_end_0 {
         loop {
-            _trie_op_hash_array[(j as libc::c_long - -35111i64) as usize] = op_start
+            _trie_op_hash_array[(j as libc::c_long - -35111) as usize] = op_start
                 [trie_op_lang[j as usize] as usize]
                 + trie_op_val[j as usize] as libc::c_int;
             let fresh5 = j;
@@ -2306,8 +2306,8 @@ pub unsafe extern "C" fn init_trie() {
     for_end_1 = trie_op_ptr;
     if j <= for_end_1 {
         loop {
-            while _trie_op_hash_array[(j as libc::c_long - -35111i64) as usize] > j {
-                k = _trie_op_hash_array[(j as libc::c_long - -35111i64) as usize];
+            while _trie_op_hash_array[(j as libc::c_long - -35111) as usize] > j {
+                k = _trie_op_hash_array[(j as libc::c_long - -35111) as usize];
                 t = hyf_distance[k as usize] as int32_t;
                 hyf_distance[k as usize] = hyf_distance[j as usize];
                 hyf_distance[j as usize] = t as small_number;
@@ -2317,9 +2317,9 @@ pub unsafe extern "C" fn init_trie() {
                 t = hyf_next[k as usize] as int32_t;
                 hyf_next[k as usize] = hyf_next[j as usize];
                 hyf_next[j as usize] = t as trie_opcode;
-                _trie_op_hash_array[(j as libc::c_long - -35111i64) as usize] =
-                    _trie_op_hash_array[(k as libc::c_long - -35111i64) as usize];
-                _trie_op_hash_array[(k as libc::c_long - -35111i64) as usize] = k
+                _trie_op_hash_array[(j as libc::c_long - -35111) as usize] =
+                    _trie_op_hash_array[(k as libc::c_long - -35111) as usize];
+                _trie_op_hash_array[(k as libc::c_long - -35111) as usize] = k
             }
             let fresh6 = j;
             j = j + 1;
@@ -2617,15 +2617,15 @@ unsafe extern "C" fn new_hyph_exceptions() {
                             error();
                         } else if (n as libc::c_int) < max_hyphenatable_length() {
                             n += 1;
-                            if (hc[0] as libc::c_long) < 65536i64 {
+                            if (hc[0] as libc::c_long) < 65536 {
                                 hc[n as usize] = hc[0]
                             } else {
                                 hc[n as usize] =
-                                    ((hc[0] as libc::c_long - 65536i64) / 1024i32 as libc::c_long
-                                        + 55296i64) as int32_t;
+                                    ((hc[0] as libc::c_long - 65536) / 1024i32 as libc::c_long
+                                        + 55296) as int32_t;
                                 n += 1;
                                 hc[n as usize] =
-                                    ((hc[0] % 1024i32) as libc::c_long + 56320i64) as int32_t
+                                    ((hc[0] % 1024i32) as libc::c_long + 56320) as int32_t
                             }
                         }
                     }
@@ -2701,8 +2701,8 @@ unsafe extern "C" fn new_hyph_exceptions() {
                 while *hyph_word.offset(h as isize) != 0i32 {
                     k = *hyph_word.offset(h as isize);
                     if !(length(k) != length(s)) {
-                        u = *str_start.offset((k as libc::c_long - 65536i64) as isize);
-                        v = *str_start.offset((s as libc::c_long - 65536i64) as isize);
+                        u = *str_start.offset((k as libc::c_long - 65536) as isize);
+                        v = *str_start.offset((s as libc::c_long - 65536) as isize);
                         loop {
                             if *str_pool.offset(u as isize) as libc::c_int
                                 != *str_pool.offset(v as isize) as libc::c_int
@@ -2714,7 +2714,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                             v += 1;
                             if !(u
                                 != *str_start
-                                    .offset(((k + 1i32) as libc::c_long - 65536i64) as isize))
+                                    .offset(((k + 1i32) as libc::c_long - 65536) as isize))
                             {
                                 current_block = 8732226822098929438;
                                 break;
@@ -3659,16 +3659,16 @@ pub unsafe extern "C" fn prefixed_command() {
                                         (0x10ffffi32 + 1i32) +
                                         (0x10ffffi32 + 1i32) + cur_val) as
                                        isize)).b32.s1 as libc::c_long %
-                         65536i64) as int32_t;
+                         65536) as int32_t;
                 scan_optional_equals();
                 scan_char_class();
                 if a as libc::c_int >= 4i32 {
                     geq_define(p, 122i32 as uint16_t,
-                               (cur_val as libc::c_long * 65536i64 +
+                               (cur_val as libc::c_long * 65536 +
                                     n as libc::c_long) as int32_t);
                 } else {
                     eq_define(p, 122i32 as uint16_t,
-                              (cur_val as libc::c_long * 65536i64 +
+                              (cur_val as libc::c_long * 65536 +
                                    n as libc::c_long) as int32_t);
                 }
             } else if cur_chr ==
@@ -3843,14 +3843,14 @@ pub unsafe extern "C" fn prefixed_command() {
                            (0x10ffffi32 + 1i32) {
                     n =
                         ((*eqtb.offset(p as isize)).b32.s1 as libc::c_long /
-                             65536i64) as int32_t;
+                             65536) as int32_t;
                     if a as libc::c_int >= 4i32 {
                         geq_define(p, 122i32 as uint16_t,
-                                   (n as libc::c_long * 65536i64 +
+                                   (n as libc::c_long * 65536 +
                                         cur_val as libc::c_long) as int32_t);
                     } else {
                         eq_define(p, 122i32 as uint16_t,
-                                  (n as libc::c_long * 65536i64 +
+                                  (n as libc::c_long * 65536 +
                                        cur_val as libc::c_long) as int32_t);
                     }
                 } else if a as libc::c_int >= 4i32 {
@@ -3865,7 +3865,7 @@ pub unsafe extern "C" fn prefixed_command() {
                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
                               (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
                               85i32 + 256i32 {
-                if cur_val as libc::c_long == 32768i64 {
+                if cur_val as libc::c_long == 32768 {
                     cur_val = 0x1fffffi32
                 } else {
                     cur_val =
@@ -5104,8 +5104,8 @@ unsafe extern "C" fn store_fmt_file() {
         {
             print_file_name(
                 *font_name.offset(k as isize),
-                (65536i64 + 1i32 as libc::c_long) as int32_t,
-                (65536i64 + 1i32 as libc::c_long) as int32_t,
+                (65536 + 1i32 as libc::c_long) as int32_t,
+                (65536 + 1i32 as libc::c_long) as int32_t,
             );
             if file_line_error_style_p != 0 {
                 print_file_line();
@@ -5128,7 +5128,7 @@ unsafe extern "C" fn store_fmt_file() {
             print_file_name(
                 *font_name.offset(k as isize),
                 *font_area.offset(k as isize),
-                (65536i64 + 1i32 as libc::c_long) as int32_t,
+                (65536 + 1i32 as libc::c_long) as int32_t,
             );
         }
         if *font_size.offset(k as isize) != *font_dsize.offset(k as isize) {
@@ -5169,7 +5169,7 @@ unsafe extern "C" fn store_fmt_file() {
     while k <= hyph_size {
         if *hyph_word.offset(k as isize) != 0i32 {
             let mut x_val_28: int32_t = (k as libc::c_long
-                + 65536i64 * *hyph_link.offset(k as isize) as libc::c_long)
+                + 65536 * *hyph_link.offset(k as isize) as libc::c_long)
                 as int32_t;
             do_dump(
                 &mut x_val_28 as *mut int32_t as *mut libc::c_char,
@@ -5278,7 +5278,7 @@ unsafe extern "C" fn store_fmt_file() {
         print_cstr(b" op\x00" as *const u8 as *const libc::c_char);
     }
     print_cstr(b" out of \x00" as *const u8 as *const libc::c_char);
-    print_int(35111i64 as int32_t);
+    print_int(35111 as int32_t);
     k = 255i32;
     while k >= 0i32 {
         if trie_used[k as usize] as libc::c_int > 0i32 {
@@ -5410,7 +5410,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
             1i32 as size_t,
             fmt_in,
         );
-        if !(hash_high < 0i32 || hash_high as libc::c_long > 2097151i64) {
+        if !(hash_high < 0i32 || hash_high as libc::c_long > 2097151) {
             if hash_extra < hash_high {
                 hash_extra = hash_high
             }
@@ -5634,7 +5634,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                 fmt_in,
                             ); /*:1345 */
                             if !(x < 0i32) {
-                                if x as libc::c_long > 40000000i64 - pool_free as libc::c_long {
+                                if x as libc::c_long > 40000000 - pool_free as libc::c_long {
                                     _tt_abort(
                                         b"must increase string_pool_size\x00" as *const u8
                                             as *const libc::c_char,
@@ -5651,7 +5651,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                     fmt_in,
                                 );
                                 if !(x < 0i32) {
-                                    if x as libc::c_long > 2097151i64 - strings_free as libc::c_long
+                                    if x as libc::c_long > 2097151 - strings_free as libc::c_long
                                     {
                                         _tt_abort(
                                             b"must increase sup_strings\x00" as *const u8
@@ -6318,7 +6318,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                 1i32
                                                                                                 -
                                                                                                 1i32;
-                                                                                        loop
+                                                                                        loop 
                                                                                              {
                                                                                             do_undump(&mut x
                                                                                                           as
@@ -6555,7 +6555,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                            as
                                                                                                            libc::c_long
                                                                                                            >
-                                                                                                           147483647i64
+                                                                                                           147483647
                                                                                                        {
                                                                                                         _tt_abort(b"must increase font_mem_size\x00"
                                                                                                                       as
@@ -7714,7 +7714,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                 k
                                                                                                                     =
                                                                                                                     1i32;
-                                                                                                                loop
+                                                                                                                loop 
                                                                                                                      {
                                                                                                                     if !(k
                                                                                                                              <=
@@ -7752,7 +7752,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                            as
                                                                                                                            libc::c_long
                                                                                                                            >
-                                                                                                                           65535i64
+                                                                                                                           65535
                                                                                                                        {
                                                                                                                         hyph_next
                                                                                                                             =
@@ -7760,7 +7760,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                  as
                                                                                                                                  libc::c_long
                                                                                                                                  /
-                                                                                                                                 65536i64)
+                                                                                                                                 65536)
                                                                                                                                 as
                                                                                                                                 int32_t;
                                                                                                                         j
@@ -7773,7 +7773,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                      as
                                                                                                                                      libc::c_long
                                                                                                                                      *
-                                                                                                                                     65536i64)
+                                                                                                                                     65536)
                                                                                                                                 as
                                                                                                                                 int32_t
                                                                                                                     } else {
@@ -8083,7 +8083,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                            as
                                                                                                                                            libc::c_long
                                                                                                                                            >
-                                                                                                                                           35111i64
+                                                                                                                                           35111
                                                                                                                                        {
                                                                                                                                         _tt_abort(b"must increase TRIE_OP_SIZE\x00"
                                                                                                                                                       as
@@ -8151,7 +8151,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                as
                                                                                                                                                libc::c_long
                                                                                                                                                >
-                                                                                                                                               65535i64
+                                                                                                                                               65535
                                                                                                                                            {
                                                                                                                                             _tt_abort(b"Item %u (=%ld) of .fmt array at %lx >%ld\x00"
                                                                                                                                                           as
@@ -8171,7 +8171,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                           *mut trie_opcode
                                                                                                                                                           as
                                                                                                                                                           uintptr_t,
-                                                                                                                                                      65535i64
+                                                                                                                                                      65535
                                                                                                                                                           as
                                                                                                                                                           uintptr_t);
                                                                                                                                         }
@@ -8202,7 +8202,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                         255i32
                                                                                                                                             +
                                                                                                                                             1i32;
-                                                                                                                                    loop
+                                                                                                                                    loop 
                                                                                                                                          {
                                                                                                                                         if !(j
                                                                                                                                                  >
@@ -8725,15 +8725,15 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         (*mem.offset(k as isize)).b16.s0 = 0i32 as uint16_t;
         k += 4i32
     }
-    (*mem.offset(6)).b32.s1 = 65536i64 as int32_t;
+    (*mem.offset(6)).b32.s1 = 65536 as int32_t;
     (*mem.offset(4)).b16.s1 = 1i32 as uint16_t;
-    (*mem.offset(10)).b32.s1 = 65536i64 as int32_t;
+    (*mem.offset(10)).b32.s1 = 65536 as int32_t;
     (*mem.offset(8)).b16.s1 = 2i32 as uint16_t;
-    (*mem.offset(14)).b32.s1 = 65536i64 as int32_t;
+    (*mem.offset(14)).b32.s1 = 65536 as int32_t;
     (*mem.offset(12)).b16.s1 = 1i32 as uint16_t;
-    (*mem.offset(15)).b32.s1 = 65536i64 as int32_t;
+    (*mem.offset(15)).b32.s1 = 65536 as int32_t;
     (*mem.offset(12)).b16.s0 = 1i32 as uint16_t;
-    (*mem.offset(18)).b32.s1 = -65536i64 as int32_t;
+    (*mem.offset(18)).b32.s1 = -65536 as int32_t;
     (*mem.offset(16)).b16.s1 = 1i32 as uint16_t;
     rover = 20i32;
     (*mem.offset(rover as isize)).b32.s1 = 0x3fffffffi32;
@@ -10331,9 +10331,9 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 11i32) as isize,
     ))
     .s1 = maketexstring(b"primitive\x00" as *const u8 as *const libc::c_char);
-    k = -(35111i64 as int32_t);
-    while k as libc::c_long <= 35111i64 {
-        _trie_op_hash_array[(k as libc::c_long - -35111i64) as usize] = 0i32;
+    k = -(35111 as int32_t);
+    while k as libc::c_long <= 35111 {
+        _trie_op_hash_array[(k as libc::c_long - -35111) as usize] = 0i32;
         k += 1
     }
     k = 0i32;
@@ -16942,7 +16942,7 @@ pub unsafe extern "C" fn tt_run_engine(
         font_ptr = 0i32;
         fmem_ptr = 7i32;
         *font_name.offset(0) = maketexstring(b"nullfont\x00" as *const u8 as *const libc::c_char);
-        *font_area.offset(0) = (65536i64 + 1i32 as libc::c_long) as str_number;
+        *font_area.offset(0) = (65536 + 1i32 as libc::c_long) as str_number;
         *hyphen_char.offset(0) = '-' as i32;
         *skew_char.offset(0) = -1i32;
         *bchar_label.offset(0) = 0i32;

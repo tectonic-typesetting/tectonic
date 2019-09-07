@@ -88,7 +88,7 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
         /* Nearest integer value */
         ivalue = floor(value + 0.5f64) as libc::c_int;
         if value >= 0x8000i64 as libc::c_double
-            || value <= (-0x8000i64 - 1i32 as libc::c_long) as libc::c_double
+            || value <= (-0x8000 - 1 as libc::c_long) as libc::c_double
         {
             /*
              * This number cannot be represented as a single operand.
@@ -688,7 +688,7 @@ unsafe extern "C" fn get_integer(mut data: *mut *mut card8, mut endptr: *mut car
         b2 = *(*data).offset(1);
         result = b1 as libc::c_int * 256i32 + b2 as libc::c_int;
         if result > 0x7fffi32 {
-            result = (result as libc::c_long - 0x10000i64) as libc::c_int
+            result = (result as libc::c_long - 0x10000) as libc::c_int
         }
         *data = (*data).offset(2)
     } else if b0 as libc::c_int >= 32i32 && b0 as libc::c_int <= 246i32 {
@@ -735,8 +735,8 @@ unsafe extern "C" fn get_fixed(mut data: *mut *mut card8, mut endptr: *mut card8
         return;
     }
     ivalue = **data as libc::c_int * 0x100i32 + *(*data).offset(1) as libc::c_int;
-    rvalue = (if ivalue as libc::c_long > 0x7fffi64 {
-        ivalue as libc::c_long - 0x10000i64
+    rvalue = (if ivalue as libc::c_long > 0x7fff {
+        ivalue as libc::c_long - 0x10000
     } else {
         ivalue as libc::c_long
     }) as libc::c_double;

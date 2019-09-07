@@ -104,7 +104,7 @@ pub unsafe extern "C" fn seek_relative(mut file: *mut FILE, mut pos: int32_t) {
     };
 }
 unsafe extern "C" fn seek_end(mut file: *mut FILE) {
-    if fseek(file, 0i64, 2i32) != 0 {
+    if fseek(file, 0, 2i32) != 0 {
         os_error();
     };
 }

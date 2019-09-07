@@ -17,7 +17,7 @@ mod dpx_cmap_read;
 mod dpx_cmap_write;
 mod dpx_cs_type2;
 mod dpx_dpxconf;
-mod dpx_dpxcrypt;
+//mod dpx_dpxcrypt;
 mod dpx_dpxfile;
 mod dpx_dpxutil;
 mod dpx_dvi;
