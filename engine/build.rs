@@ -262,7 +262,8 @@ fn main() {
 
     if cfg!(target_os = "macos") {
         ccfg.define("XETEX_MAC", Some("1"));
-        ccfg.file("tectonic/xetex-macos.c");
+        ccfg.file("tectonic/xetex-macos.c")
+            .include(".");
 
         cppcfg.define("XETEX_MAC", Some("1"));
         cppcfg.file("tectonic/xetex-XeTeXFontInst_Mac.cpp");
