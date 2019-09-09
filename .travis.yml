@@ -12,27 +12,12 @@ matrix:
     - os: linux
       sudo: required
       dist: xenial
-      rust: stable
-      env: RUSTFLAGS="-C link-dead-code"
-    # Linux, Rust beta: just a smoke test
-    - os: linux
-      sudo: required
-      dist: xenial
-      rust: beta
-    # Linux, Rust nightly: not even a smoke test; failure is allowed
-    - os: linux
-      sudo: required
-      dist: xenial
       rust: nightly
+      env: RUSTFLAGS="-C link-dead-code"
     # MacOS, Rust stable: just a smoke test
     - os: osx
       osx_image: xcode10.2
-      rust: stable
-    # Static build for Linux/x86_64
-    - os: linux
-      sudo: required
-      dist: xenial
-      env: IMAGE=x86_64-alpine-linux-musl
+      rust: nightly
   allow_failures:
     - rust: nightly
 
@@ -41,7 +26,7 @@ matrix:
 # being CI'd twice.
 branches:
   only:
-    - master
+    - oxidize
 
 addons:
   apt:
