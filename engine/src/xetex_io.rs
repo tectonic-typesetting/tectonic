@@ -6,9 +6,9 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use crate::stub_icu as icu;
 extern "C" {
     pub type Opaque_TECkit_Converter;
-    pub type UConverter;
     #[no_mangle]
     fn __errno_location() -> *mut libc::c_int;
     #[no_mangle]
@@ -145,32 +145,9 @@ extern "C" {
     fn pack_file_name(n: str_number, a: str_number, e: str_number);
     #[no_mangle]
     fn scan_file_name();
-    #[no_mangle]
-    fn ucnv_open_64(converterName: *const libc::c_char, err: *mut UErrorCode) -> *mut UConverter;
-    #[no_mangle]
-    fn ucnv_close_64(converter: *mut UConverter);
-    #[no_mangle]
-    fn ucnv_toAlgorithmic_64(
-        algorithmicType: UConverterType,
-        cnv: *mut UConverter,
-        target: *mut libc::c_char,
-        targetCapacity: int32_t,
-        source: *const libc::c_char,
-        sourceLength: int32_t,
-        pErrorCode: *mut UErrorCode,
-    ) -> int32_t;
 }
-pub type __uint8_t = libc::c_uchar;
-pub type __uint16_t = libc::c_ushort;
-pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
-pub type __ssize_t = libc::c_long;
-pub type int32_t = __int32_t;
-pub type uint8_t = __uint8_t;
-pub type uint16_t = __uint16_t;
-pub type uint32_t = __uint32_t;
-pub type size_t = libc::c_ulong;
-pub type ssize_t = __ssize_t;
+
+use crate::*;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
@@ -472,6 +449,7 @@ pub union memory_word {
     pub gr: libc::c_double,
     pub ptr: *mut libc::c_void,
 }
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct UFILE {
@@ -481,44 +459,7 @@ pub struct UFILE {
     pub encodingMode: libc::c_short,
     pub conversionData: *mut libc::c_void,
 }
-pub type UConverterType = libc::c_int;
-pub const UCNV_NUMBER_OF_SUPPORTED_CONVERTER_TYPES: UConverterType = 34;
-pub const UCNV_COMPOUND_TEXT: UConverterType = 33;
-pub const UCNV_IMAP_MAILBOX: UConverterType = 32;
-pub const UCNV_CESU8: UConverterType = 31;
-pub const UCNV_UTF32: UConverterType = 30;
-pub const UCNV_UTF16: UConverterType = 29;
-pub const UCNV_BOCU1: UConverterType = 28;
-pub const UCNV_UTF7: UConverterType = 27;
-pub const UCNV_US_ASCII: UConverterType = 26;
-pub const UCNV_ISCII: UConverterType = 25;
-pub const UCNV_SCSU: UConverterType = 24;
-pub const UCNV_HZ: UConverterType = 23;
-pub const UCNV_LMBCS_LAST: UConverterType = 22;
-pub const UCNV_LMBCS_19: UConverterType = 22;
-pub const UCNV_LMBCS_18: UConverterType = 21;
-pub const UCNV_LMBCS_17: UConverterType = 20;
-pub const UCNV_LMBCS_16: UConverterType = 19;
-pub const UCNV_LMBCS_11: UConverterType = 18;
-pub const UCNV_LMBCS_8: UConverterType = 17;
-pub const UCNV_LMBCS_6: UConverterType = 16;
-pub const UCNV_LMBCS_5: UConverterType = 15;
-pub const UCNV_LMBCS_4: UConverterType = 14;
-pub const UCNV_LMBCS_3: UConverterType = 13;
-pub const UCNV_LMBCS_2: UConverterType = 12;
-pub const UCNV_LMBCS_1: UConverterType = 11;
-pub const UCNV_ISO_2022: UConverterType = 10;
-pub const UCNV_EBCDIC_STATEFUL: UConverterType = 9;
-pub const UCNV_UTF32_LittleEndian: UConverterType = 8;
-pub const UCNV_UTF32_BigEndian: UConverterType = 7;
-pub const UCNV_UTF16_LittleEndian: UConverterType = 6;
-pub const UCNV_UTF16_BigEndian: UConverterType = 5;
-pub const UCNV_UTF8: UConverterType = 4;
-pub const UCNV_LATIN_1: UConverterType = 3;
-pub const UCNV_MBCS: UConverterType = 2;
-pub const UCNV_DBCS: UConverterType = 1;
-pub const UCNV_SBCS: UConverterType = 0;
-pub const UCNV_UNSUPPORTED_CONVERTER: UConverterType = -1;
+
 #[inline]
 unsafe extern "C" fn print_c_string(mut str: *const libc::c_char) {
     while *str != 0 {
@@ -838,7 +779,7 @@ pub unsafe extern "C" fn set_input_file_encoding(
     mut encodingData: int32_t,
 ) {
     if (*f).encodingMode as libc::c_int == 5i32 && !(*f).conversionData.is_null() {
-        ucnv_close_64((*f).conversionData as *mut UConverter);
+        icu::ucnv_close((*f).conversionData as *mut icu::UConverter);
     }
     (*f).conversionData = 0 as *mut libc::c_void;
     match mode {
@@ -846,7 +787,7 @@ pub unsafe extern "C" fn set_input_file_encoding(
         5 => {
             let mut name: *mut libc::c_char = gettexstring(encodingData);
             let mut err: UErrorCode = U_ZERO_ERROR;
-            let mut cnv: *mut UConverter = ucnv_open_64(name, &mut err);
+            let mut cnv: *mut icu::UConverter = icu::ucnv_open(name, &mut err);
             if cnv.is_null() {
                 begin_diagnostic();
                 print_nl('E' as i32);
@@ -1001,7 +942,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
     last = first;
     if (*f).encodingMode as libc::c_int == 5i32 {
         let mut bytesRead: uint32_t = 0i32 as uint32_t;
-        let mut cnv: *mut UConverter = 0 as *mut UConverter;
+        let mut cnv: *mut icu::UConverter = 0 as *mut icu::UConverter;
         let mut outLen: libc::c_int = 0;
         let mut errorCode: UErrorCode = U_ZERO_ERROR;
         if byteBuffer.is_null() {
@@ -1041,7 +982,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
             buffer_overflow();
         }
         /* now apply the mapping to turn external bytes into Unicode characters in buffer */
-        cnv = (*f).conversionData as *mut UConverter;
+        cnv = (*f).conversionData as *mut icu::UConverter;
         match norm {
             1 | 2 => {
                 // NFC
@@ -1052,8 +993,8 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                         ::std::mem::size_of::<uint32_t>() as libc::c_ulong,
                     ) as *mut uint32_t
                 } // sets 'last' correctly
-                tmpLen = ucnv_toAlgorithmic_64(
-                    UCNV_UTF32_LittleEndian,
+                tmpLen = icu::ucnv_toAlgorithmic(
+                    icu::UCNV_UTF32_LittleEndian,
                     cnv,
                     utf32Buf as *mut libc::c_char,
                     (buf_size as libc::c_ulong)
@@ -1077,8 +1018,8 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
             }
             _ => {
                 // none
-                outLen = ucnv_toAlgorithmic_64(
-                    UCNV_UTF32_LittleEndian,
+                outLen = icu::ucnv_toAlgorithmic(
+                    icu::UCNV_UTF32_LittleEndian,
                     cnv,
                     &mut *buffer.offset(first as isize) as *mut UnicodeScalar as *mut libc::c_char,
                     (::std::mem::size_of::<UnicodeScalar>() as libc::c_ulong)
@@ -1204,7 +1145,7 @@ pub unsafe extern "C" fn u_close(mut f: *mut UFILE) {
     }
     ttstub_input_close((*f).handle);
     if (*f).encodingMode as libc::c_int == 5i32 && !(*f).conversionData.is_null() {
-        ucnv_close_64((*f).conversionData as *mut UConverter);
+        icu::ucnv_close((*f).conversionData as *mut icu::UConverter);
     }
     free(f as *mut libc::c_void);
 }

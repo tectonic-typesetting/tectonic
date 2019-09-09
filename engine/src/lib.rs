@@ -8,8 +8,21 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
+pub type __uint8_t = libc::c_uchar;
+pub type uint8_t = __uint8_t;
+pub type __uint16_t = libc::c_ushort;
+pub type __int32_t = libc::c_int;
+pub type __uint32_t = libc::c_uint;
+pub type __off_t = libc::c_long;
+pub type __off64_t = libc::c_long;
+pub type __ssize_t = libc::c_long;
+pub type int32_t = __int32_t;
+pub type uint16_t = __uint16_t;
+pub type uint32_t = __uint32_t;
+pub type size_t = libc::c_ulong;
+pub type off_t = __off_t;
+pub type ssize_t = __ssize_t;
 
-extern crate libc;
 extern "C" {
     #[no_mangle]
     fn _setjmp(_: *mut __jmp_buf_tag) -> libc::c_int;
@@ -321,10 +334,7 @@ pub struct __va_list_tag {
     pub overflow_arg_area: *mut libc::c_void,
     pub reg_save_area: *mut libc::c_void,
 }
-pub type __ssize_t = libc::c_long;
 pub type va_list = __builtin_va_list;
-pub type size_t = libc::c_ulong;
-pub type ssize_t = __ssize_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct __sigset_t {
@@ -1062,5 +1072,7 @@ mod xetex_stringpool;
 mod xetex_synctex;
 mod xetex_texmfmp;
 mod xetex_xetex0;
+
+mod stub_icu;
 
 pub use xetex_engine_interface::tt_xetex_set_int_variable;

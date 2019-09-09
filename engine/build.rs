@@ -242,6 +242,10 @@ fn main() {
     for flag in &cppflags {
         cppcfg.flag_if_supported(flag);
     }
+    ccfg
+        .flag("-Wall")
+        .file("tectonic/stub_icu.c")
+        .include(".");
 
     cppcfg
         .cpp(true)
@@ -262,8 +266,7 @@ fn main() {
 
     if cfg!(target_os = "macos") {
         ccfg.define("XETEX_MAC", Some("1"));
-        ccfg.file("tectonic/xetex-macos.c")
-            .include(".");
+        ccfg.file("tectonic/xetex-macos.c");
 
         cppcfg.define("XETEX_MAC", Some("1"));
         cppcfg.file("tectonic/xetex-XeTeXFontInst_Mac.cpp");
@@ -296,9 +299,7 @@ fn main() {
     }
 
     // OK, back to generic build rules.
-    if cfg!(target_os = "macos") {
-        ccfg.compile("libtectonic_c.a");
-    }
+    ccfg.compile("libtectonic_c.a");
     cppcfg.compile("libtectonic_cpp.a");
 
     dep_state.emit_late_extras(&target);
