@@ -1196,7 +1196,7 @@ pub unsafe extern "C" fn init_math() {
             l = (*mem.offset(p as isize)).b32.s1
         }
         push_math(15i32 as group_code);
-        cur_list.mode = 207i32 as i16;
+        cur_list.mode = 207_i16;
         eq_word_define(
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -1547,7 +1547,7 @@ pub unsafe extern "C" fn math_limit_switch() {
         print_nl_cstr(b"! \x00" as *const u8 as *const i8);
     }
     print_cstr(b"Limit controls must follow a math operator\x00" as *const u8 as *const i8);
-    help_ptr = 1i32 as u8;
+    help_ptr = 1_u8;
     help_line[0] = b"I\'m ignoring this misplaced \\limits or \\nolimits command.\x00" as *const u8
         as *const i8;
     error();
@@ -1626,7 +1626,7 @@ unsafe extern "C" fn scan_delimiter(mut p: i32, mut r: bool) {
             print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
         print_cstr(b"Missing delimiter (. inserted)\x00" as *const u8 as *const i8);
-        help_ptr = 6i32 as u8;
+        help_ptr = 6_u8;
         help_line[5] = b"I was expecting to see something like `(\' or `\\{\' or\x00" as *const u8
             as *const i8;
         help_line[4] = b"`\\}\' here. If you typed, e.g., `{\' instead of `\\{\', you\x00"
@@ -1680,7 +1680,7 @@ pub unsafe extern "C" fn math_ac() {
         print_cstr(b"Please use \x00" as *const u8 as *const i8);
         print_esc_cstr(b"mathaccent\x00" as *const u8 as *const i8);
         print_cstr(b" for accents in math mode\x00" as *const u8 as *const i8);
-        help_ptr = 2i32 as u8;
+        help_ptr = 2_u8;
         help_line[1] = b"I\'m changing \\accent to \\mathaccent here; wish me luck.\x00"
             as *const u8 as *const i8;
         help_line[0] = b"(Accents are not the same in formulas as they are in text.)\x00"
@@ -1902,7 +1902,7 @@ pub unsafe extern "C" fn sub_sup() {
                     print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
                 print_cstr(b"Double superscript\x00" as *const u8 as *const i8);
-                help_ptr = 1i32 as u8;
+                help_ptr = 1_u8;
                 help_line[0] =
                     b"I treat `x^1^2\' essentially like `x^1{}^2\'.\x00" as *const u8 as *const i8
             } else {
@@ -1912,7 +1912,7 @@ pub unsafe extern "C" fn sub_sup() {
                     print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
                 print_cstr(b"Double subscript\x00" as *const u8 as *const i8);
-                help_ptr = 1i32 as u8;
+                help_ptr = 1_u8;
                 help_line[0] =
                     b"I treat `x_1_2\' essentially like `x_1{}_2\'.\x00" as *const u8 as *const i8
             }
@@ -1940,7 +1940,7 @@ pub unsafe extern "C" fn math_fraction() {
             print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
         print_cstr(b"Ambiguous; you need another { and }\x00" as *const u8 as *const i8);
-        help_ptr = 3i32 as u8;
+        help_ptr = 3_u8;
         help_line[2] = b"I\'m ignoring this fraction specification, since I don\'t\x00" as *const u8
             as *const i8;
         help_line[1] = b"know whether a construction like `x \\over y \\over z\'\x00" as *const u8
@@ -1993,12 +1993,12 @@ pub unsafe extern "C" fn math_left_right() {
             print_cstr(b"Extra \x00" as *const u8 as *const i8);
             if t as i32 == 1i32 {
                 print_esc_cstr(b"middle\x00" as *const u8 as *const i8);
-                help_ptr = 1i32 as u8;
+                help_ptr = 1_u8;
                 help_line[0] = b"I\'m ignoring a \\middle that had no matching \\left.\x00"
                     as *const u8 as *const i8
             } else {
                 print_esc_cstr(b"right\x00" as *const u8 as *const i8);
-                help_ptr = 1i32 as u8;
+                help_ptr = 1_u8;
                 help_line[0] = b"I\'m ignoring a \\right that had no matching \\left.\x00"
                     as *const u8 as *const i8
             }
@@ -2503,7 +2503,7 @@ pub unsafe extern "C" fn after_math() {
         print_cstr(
             b"Math formula deleted: Insufficient symbol fonts\x00" as *const u8 as *const i8,
         );
-        help_ptr = 3i32 as u8;
+        help_ptr = 3_u8;
         help_line[2] =
             b"Sorry, but I can\'t typeset math unless \\textfont 2\x00" as *const u8 as *const i8;
         help_line[1] =
@@ -2750,7 +2750,7 @@ pub unsafe extern "C" fn after_math() {
         print_cstr(
             b"Math formula deleted: Insufficient extension fonts\x00" as *const u8 as *const i8,
         );
-        help_ptr = 3i32 as u8;
+        help_ptr = 3_u8;
         help_line[2] =
             b"Sorry, but I can\'t typeset math unless \\textfont 3\x00" as *const u8 as *const i8;
         help_line[1] =
@@ -2773,7 +2773,7 @@ pub unsafe extern "C" fn after_math() {
                 print_nl_cstr(b"! \x00" as *const u8 as *const i8);
             }
             print_cstr(b"Display math should end with $$\x00" as *const u8 as *const i8);
-            help_ptr = 2i32 as u8;
+            help_ptr = 2_u8;
             help_line[1] = b"The `$\' that I just saw supposedly matches a previous `$$\'.\x00"
                 as *const u8 as *const i8;
             help_line[0] =
@@ -3037,7 +3037,7 @@ pub unsafe extern "C" fn after_math() {
             print_cstr(
                 b"Math formula deleted: Insufficient symbol fonts\x00" as *const u8 as *const i8,
             );
-            help_ptr = 3i32 as u8;
+            help_ptr = 3_u8;
             help_line[2] = b"Sorry, but I can\'t typeset math unless \\textfont 2\x00" as *const u8
                 as *const i8;
             help_line[1] = b"and \\scriptfont 2 and \\scriptscriptfont 2 have all\x00" as *const u8
@@ -3285,7 +3285,7 @@ pub unsafe extern "C" fn after_math() {
             print_cstr(
                 b"Math formula deleted: Insufficient extension fonts\x00" as *const u8 as *const i8,
             );
-            help_ptr = 3i32 as u8;
+            help_ptr = 3_u8;
             help_line[2] = b"Sorry, but I can\'t typeset math unless \\textfont 3\x00" as *const u8
                 as *const i8;
             help_line[1] = b"and \\scriptfont 3 and \\scriptscriptfont 3 have all\x00" as *const u8
@@ -3397,7 +3397,7 @@ pub unsafe extern "C" fn after_math() {
                     print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
                 print_cstr(b"Display math should end with $$\x00" as *const u8 as *const i8);
-                help_ptr = 2i32 as u8;
+                help_ptr = 2_u8;
                 help_line[1] = b"The `$\' that I just saw supposedly matches a previous `$$\'.\x00"
                     as *const u8 as *const i8;
                 help_line[0] = b"So I shall assume that you typed `$$\' both times.\x00"
@@ -3712,7 +3712,7 @@ pub unsafe extern "C" fn resume_after_display() {
     unsave();
     cur_list.prev_graf = cur_list.prev_graf + 3i32;
     push_nest();
-    cur_list.mode = 104i32 as i16;
+    cur_list.mode = 104_i16;
     cur_list.aux.b32.s0 = 1000i32;
     if (*eqtb.offset(
         (1i32
@@ -3744,7 +3744,7 @@ pub unsafe extern "C" fn resume_after_display() {
     .b32
     .s1 <= 0i32
     {
-        cur_lang = 0i32 as u8
+        cur_lang = 0_u8
     } else if (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -3775,7 +3775,7 @@ pub unsafe extern "C" fn resume_after_display() {
     .b32
     .s1 > 255i32
     {
-        cur_lang = 0i32 as u8
+        cur_lang = 0_u8
     } else {
         cur_lang = (*eqtb.offset(
             (1i32
@@ -4929,7 +4929,7 @@ unsafe extern "C" fn fetch(mut a: i32) {
         print_cstr(b" is undefined (character \x00" as *const u8 as *const i8);
         print(cur_c);
         print_char(')' as i32);
-        help_ptr = 4i32 as u8;
+        help_ptr = 4_u8;
         help_line[3] =
             b"Somewhere in the math formula just ended, you used the\x00" as *const u8 as *const i8;
         help_line[2] = b"stated character from an undefined font family. For example,\x00"

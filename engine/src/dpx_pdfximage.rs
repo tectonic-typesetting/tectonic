@@ -437,7 +437,7 @@ unsafe extern "C" fn pdf_init_ximage_struct(mut I: *mut pdf_ximage) {
     (*I).attr.page_count = 1i32;
     (*I).attr.bbox_type = 0i32;
     (*I).attr.dict = 0 as *mut pdf_obj;
-    (*I).attr.tempfile = 0i32 as i8;
+    (*I).attr.tempfile = 0_i8;
 }
 unsafe extern "C" fn pdf_clean_ximage_struct(mut I: *mut pdf_ximage) {
     free((*I).ident as *mut libc::c_void);

@@ -725,7 +725,7 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
         print_char(' ' as i32);
     }
     print_char('[' as i32);
-    j = 9i32 as u8;
+    j = 9_u8;
     while j as i32 > 0i32
         && (*eqtb.offset(
             (1i32
@@ -760,7 +760,7 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
     {
         j = j.wrapping_sub(1)
     }
-    k = 0i32 as u8;
+    k = 0_u8;
     while k as i32 <= j as i32 {
         print_int(
             (*eqtb.offset(
@@ -916,7 +916,7 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
             print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
         print_cstr(b"Huge page cannot be shipped out\x00" as *const u8 as *const i8);
-        help_ptr = 2i32 as u8;
+        help_ptr = 2_u8;
         help_line[1] =
             b"The page just created is more than 18 feet tall or\x00" as *const u8 as *const i8;
         help_line[0] = b"more than 18 feet wide, so I suspect something went wrong.\x00"
@@ -1406,7 +1406,7 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
         /* ... resuming 662 ... Emit per-page preamble. */
         page_loc = dvi_offset + dvi_ptr;
         dvi_out(139i32 as eight_bits);
-        k = 0i32 as u8;
+        k = 0_u8;
         while (k as i32) < 10i32 {
             dvi_four(
                 (*eqtb.offset(
@@ -3773,7 +3773,7 @@ unsafe extern "C" fn write_out(mut p: i32) {
     (*mem.offset(q as isize)).b32.s0 = 0x200000i32 + '{' as i32;
     begin_token_list(q, 5_u16);
     old_mode = cur_list.mode as i32;
-    cur_list.mode = 0i32 as i16;
+    cur_list.mode = 0_i16;
     cur_cs = write_loc;
     q = scan_toks(0i32 != 0, 1i32 != 0);
     get_token();
@@ -3788,7 +3788,7 @@ unsafe extern "C" fn write_out(mut p: i32) {
             print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
         print_cstr(b"Unbalanced write command\x00" as *const u8 as *const i8);
-        help_ptr = 2i32 as u8;
+        help_ptr = 2_u8;
         help_line[1] = b"On this page there\'s a \\write with fewer real {\'s than }\'s.\x00"
             as *const u8 as *const i8;
         help_line[0] = b"I can\'t handle that very well; good luck.\x00" as *const u8 as *const i8;

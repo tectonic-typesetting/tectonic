@@ -1018,8 +1018,8 @@ unsafe extern "C" fn reencodestring(mut cmap: *mut CMap, mut instring: *mut pdf_
     }
     inbufleft = pdf_string_length(instring) as size_t;
     inbufcur = pdf_string_value(instring) as *const u8;
-    wbuf[0] = 0xfei32 as u8;
-    wbuf[1] = 0xffi32 as u8;
+    wbuf[0] = 0xfe_u8;
+    wbuf[1] = 0xff_u8;
     obufcur = wbuf.as_mut_ptr().offset(2);
     obufleft = (4096i32 - 2i32) as size_t;
     CMap_decode(
@@ -1081,10 +1081,10 @@ unsafe extern "C" fn maybe_reencode_utf8(mut instring: *mut pdf_obj) -> i32 {
     op = wbuf.as_mut_ptr();
     let fresh0 = op;
     op = op.offset(1);
-    *fresh0 = 0xfei32 as u8;
+    *fresh0 = 0xfe_u8;
     let fresh1 = op;
     op = op.offset(1);
-    *fresh1 = 0xffi32 as u8;
+    *fresh1 = 0xff_u8;
     while cp < inbuf.offset(inlen as isize) as *const u8 {
         let mut usv: i32 = 0;
         let mut len: i32 = 0;

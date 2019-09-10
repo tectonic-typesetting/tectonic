@@ -443,7 +443,7 @@ pub unsafe extern "C" fn tt_build_init() -> *mut tt_glyphs {
     (*g).last_gid = 0_u16;
     (*g).emsize = 1_u16;
     (*g).default_advh = 0_u16;
-    (*g).default_tsb = 0i32 as i16;
+    (*g).default_tsb = 0_i16;
     (*g).gd = 0 as *mut tt_glyph_desc;
     (*g).used_slot =
         new((8192_u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
@@ -828,10 +828,10 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
      * when compressed. Sometimes increases size.
      */
     if (glyf_table_size as u64) < 0x20000 {
-        (*head).indexToLocFormat = 0i32 as i16;
+        (*head).indexToLocFormat = 0_i16;
         loca_table_size = (((*g).last_gid as i32 + 2i32) * 2i32) as u32
     } else {
-        (*head).indexToLocFormat = 1i32 as i16;
+        (*head).indexToLocFormat = 1_i16;
         loca_table_size = (((*g).last_gid as i32 + 2i32) * 4i32) as u32
     }
     p_0 = new((hmtx_table_size as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)

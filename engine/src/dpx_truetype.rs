@@ -1187,7 +1187,7 @@ unsafe extern "C" fn composeglyph(
         ' ' as i32 as i8,
         ' ' as i32 as i8,
         ' ' as i32 as i8,
-        0i32 as i8,
+        0_i8,
     ];
     if !glyphs.is_null() && n_glyphs > 0i32 && !gm.is_null() && !gid.is_null() {
     } else {

@@ -536,9 +536,9 @@ pub unsafe extern "C" fn set_input_file_encoding(
                 print_c_string(name);
                 print_c_string(b"\'; reading as raw bytes\x00" as *const u8 as *const i8);
                 end_diagnostic(1i32 != 0);
-                (*f).encodingMode = 4i32 as i16
+                (*f).encodingMode = 4_i16
             } else {
-                (*f).encodingMode = 5i32 as i16;
+                (*f).encodingMode = 5_i16;
                 (*f).conversionData = cnv as *mut libc::c_void
             }
             free(name as *mut libc::c_void);
@@ -562,10 +562,10 @@ pub unsafe extern "C" fn u_open_in(
         return 0i32;
     }
     *f = xmalloc(::std::mem::size_of::<UFILE>() as u64) as *mut UFILE;
-    (**f).encodingMode = 0i32 as i16;
+    (**f).encodingMode = 0_i16;
     (**f).conversionData = 0 as *mut libc::c_void;
     (**f).savedChar = -1i32 as i64;
-    (**f).skipNextLF = 0i32 as i16;
+    (**f).skipNextLF = 0_i16;
     (**f).handle = handle;
     if mode == 0i32 {
         /* sniff encoding form */
@@ -679,7 +679,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
         /* Recognize either LF or CR as a line terminator; skip initial LF if prev line ended with CR.  */
         i = ttstub_input_getc((*f).handle);
         if (*f).skipNextLF != 0 {
-            (*f).skipNextLF = 0i32 as i16;
+            (*f).skipNextLF = 0_i16;
             if i == '\n' as i32 {
                 i = ttstub_input_getc((*f).handle)
             }
@@ -763,7 +763,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
         /* Recognize either LF or CR as a line terminator; skip initial LF if prev line ended with CR.  */
         i = get_uni_c(f);
         if (*f).skipNextLF != 0 {
-            (*f).skipNextLF = 0i32 as i16;
+            (*f).skipNextLF = 0_i16;
             if i == '\n' as i32 {
                 i = get_uni_c(f)
             }
@@ -839,7 +839,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
     }
     /* If line ended with CR, remember to skip following LF. */
     if i == '\r' as i32 {
-        (*f).skipNextLF = 1i32 as i16
+        (*f).skipNextLF = 1_i16
     }
     *buffer.offset(last as isize) = ' ' as i32;
     if last >= max_buf_stack {
@@ -1134,7 +1134,7 @@ pub unsafe extern "C" fn open_or_close_in() {
     n = cur_val as u8;
     if read_open[n as usize] as i32 != 2i32 {
         u_close(read_file[n as usize]);
-        read_open[n as usize] = 2i32 as u8
+        read_open[n as usize] = 2_u8
     }
     if c as i32 != 0i32 {
         scan_optional_equals();
@@ -1215,7 +1215,7 @@ pub unsafe extern "C" fn open_or_close_in() {
             stop_at_space = 1i32 != 0;
             end_name();
             name_in_progress = 0i32 != 0;
-            read_open[n as usize] = 1i32 as u8
+            read_open[n as usize] = 1_u8
         }
     };
 }

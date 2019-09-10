@@ -1756,11 +1756,11 @@ unsafe extern "C" fn scan_otl_tag(
         return -1i32;
     }
     memset(script as *mut libc::c_void, ' ' as i32, 4i32 as u64);
-    *script.offset(4) = 0i32 as i8;
+    *script.offset(4) = 0_i8;
     memset(language as *mut libc::c_void, ' ' as i32, 4i32 as u64);
-    *language.offset(4) = 0i32 as i8;
+    *language.offset(4) = 0_i8;
     memset(feature as *mut libc::c_void, ' ' as i32, 4i32 as u64);
-    *feature.offset(4) = 0i32 as i8;
+    *feature.offset(4) = 0_i8;
     /* First parse otl_tags variable */
     p = otl_tags;
     period = strchr(p, '.' as i32);

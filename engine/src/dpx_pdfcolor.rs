@@ -769,10 +769,7 @@ pub unsafe extern "C" fn pdf_color_get_current(
         .as_mut_ptr()
         .offset(color_stack.current as isize) as *mut pdf_color;
 }
-static mut nullbytes16: [u8; 16] = [
-    0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8,
-    0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8,
-];
+static mut nullbytes16: [u8; 16] = [0; 16];
 static mut icc_versions: [C2RustUnnamed_1; 8] = [
     {
         let mut init = C2RustUnnamed_1 {

@@ -917,7 +917,7 @@ unsafe extern "C" fn create_xgstate(mut a: f64, mut f_ais: i32) -> *mut pdf_obj
         pdf_add_dict(
             dict,
             pdf_new_name(b"AIS\x00" as *const u8 as *const i8),
-            pdf_new_boolean(1i32 as i8),
+            pdf_new_boolean(1_i8),
         );
     }
     pdf_add_dict(

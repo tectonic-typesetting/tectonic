@@ -349,8 +349,8 @@ static mut doc_enc_mode: bool = false;
 static mut trailer_dict: *mut pdf_obj = 0 as *const pdf_obj as *mut pdf_obj;
 static mut xref_stream: *mut pdf_obj = 0 as *const pdf_obj as *mut pdf_obj;
 static mut verbose: i32 = 0i32;
-static mut compression_level: i8 = 9i32 as i8;
-static mut compression_use_predictor: i8 = 1i32 as i8;
+static mut compression_level: i8 = 9_i8;
+static mut compression_use_predictor: i8 = 1_i8;
 #[no_mangle]
 pub unsafe extern "C" fn pdf_set_compression(mut level: i32) {
     _tt_abort(
@@ -418,7 +418,7 @@ pub unsafe extern "C" fn pdf_out_init(
     let mut v: i8 = 0;
     output_xref = 0 as *mut xref_entry;
     pdf_max_ind_objects = 0_u32;
-    add_xref_entry(0_u32, 0i32 as u8, 0_u32, 0xffff_u16);
+    add_xref_entry(0_u32, 0_u8, 0_u32, 0xffff_u16);
     next_label = 1_u32;
     if pdf_version >= 5_u32 {
         if enable_object_stream {
@@ -550,9 +550,7 @@ unsafe extern "C" fn dump_xref_stream() {
     let mut pos: u32 = 0;
     let mut i: u32 = 0;
     let mut poslen: u32 = 0;
-    let mut buf: [u8; 7] = [
-        0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8, 0, 0,
-    ];
+    let mut buf: [u8; 7] = [0; 7];
     let mut w: *mut pdf_obj = 0 as *mut pdf_obj;
     /* determine the necessary size of the offset field */
     pos = startxref; /* maximal offset value */
@@ -574,7 +572,7 @@ unsafe extern "C" fn dump_xref_stream() {
         w,
     );
     /* We need the xref entry for the xref stream right now */
-    add_xref_entry(next_label.wrapping_sub(1_u32), 1i32 as u8, startxref, 0_u16);
+    add_xref_entry(next_label.wrapping_sub(1_u32), 1_u8, startxref, 0_u16);
     i = 0_u32;
     while i < next_label {
         let mut j: u32 = 0;
@@ -2182,7 +2180,7 @@ unsafe extern "C" fn pdf_flush_obj(mut object: *mut pdf_obj, mut handle: rust_ou
      */
     add_xref_entry(
         (*object).label,
-        1i32 as u8,
+        1_u8,
         pdf_output_file_position as u32,
         (*object).generation,
     );
@@ -2228,12 +2226,7 @@ unsafe extern "C" fn pdf_add_objstm(mut objstm: *mut pdf_obj, mut object: *mut p
     pos = *fresh15;
     *data.offset((2i32 * pos) as isize) = (*object).label as i32;
     *data.offset((2i32 * pos + 1i32) as isize) = pdf_stream_length(objstm);
-    add_xref_entry(
-        (*object).label,
-        2i32 as u8,
-        (*objstm).label,
-        (pos - 1i32) as u16,
-    );
+    add_xref_entry((*object).label, 2_u8, (*objstm).label, (pos - 1i32) as u16);
     /* redirect output into objstm */
     output_stream = objstm;
     enc_mode = 0i32 != 0;
@@ -2722,7 +2715,7 @@ unsafe extern "C" fn read_objstm(mut pf: *mut pdf_file, mut num: u32) -> *mut pd
                                 pdf_stream_dataptr(objstm),
                                 first as u64,
                             );
-                            *data.offset(first as isize) = 0i32 as i8;
+                            *data.offset(first as isize) = 0_i8;
                             p = data;
                             endptr = p.offset(first as isize);
                             i = 2i32 * n;
@@ -2930,7 +2923,7 @@ unsafe extern "C" fn extend_xref(mut pf: *mut pdf_file, mut new_size: i32) {
         *fresh29 = 0 as *mut pdf_obj;
         let ref mut fresh30 = (*(*pf).xref_table.offset(i as isize)).indirect;
         *fresh30 = 0 as *mut pdf_obj;
-        (*(*pf).xref_table.offset(i as isize)).type_0 = 0i32 as u8;
+        (*(*pf).xref_table.offset(i as isize)).type_0 = 0_u8;
         (*(*pf).xref_table.offset(i as isize)).field3 = 0_u16;
         (*(*pf).xref_table.offset(i as isize)).field2 = 0i64 as u32;
         i = i.wrapping_add(1)
@@ -3092,7 +3085,7 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
                              */
                             offset = 0u64 as u32;
                             obj_gen = 0_u32;
-                            flag = 0i32 as i8;
+                            flag = 0_i8;
                             let mut q_0: *mut i8 = 0 as *mut i8;
                             /* Offset value -- 10 digits (0 padded) */
                             q_0 = parse_unsigned(&mut p, endptr);

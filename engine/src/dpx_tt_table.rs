@@ -616,7 +616,7 @@ pub unsafe extern "C" fn tt_read_longMetrics(
     let mut m: *mut tt_longMetrics = 0 as *mut tt_longMetrics;
     let mut gid: u16 = 0;
     let mut last_adv: u16 = 0_u16;
-    let mut last_esb: i16 = 0i32 as i16;
+    let mut last_esb: i16 = 0_i16;
     m = new(
         (numGlyphs as u32 as u64).wrapping_mul(::std::mem::size_of::<tt_longMetrics>() as u64)
             as u32,
@@ -703,18 +703,18 @@ pub unsafe extern "C" fn tt_read_os2__table(mut sfont: *mut sfnt) -> *mut tt_os2
         }
     } else {
         /* used in add_CIDVMetrics() of cidtype0.c */
-        (*table).sTypoAscender = 880i32 as i16;
-        (*table).sTypoDescender = -120i32 as i16;
+        (*table).sTypoAscender = 880_i16;
+        (*table).sTypoDescender = -120_i16;
         /* used in tt_get_fontdesc() of tt_aux.c */
         (*table).usWeightClass = 400u32 as u16; /* Normal(Regular) */
-        (*table).xAvgCharWidth = 0i32 as i16; /* ignore */
+        (*table).xAvgCharWidth = 0_i16; /* ignore */
         (*table).version = 0_u16; /* TrueType rev 1.5 */
-        (*table).fsType = 0i32 as i16; /* Installable Embedding */
+        (*table).fsType = 0_i16; /* Installable Embedding */
         (*table).fsSelection = 0u32 as u16; /* All undefined */
-        (*table).sFamilyClass = 0i32 as i16; /* No Classification */
+        (*table).sFamilyClass = 0_i16; /* No Classification */
         i = 0i32;
         while i < 10i32 {
-            (*table).panose[i as usize] = 0i32 as u8;
+            (*table).panose[i as usize] = 0_u8;
             i += 1
             /* All Any */
         }

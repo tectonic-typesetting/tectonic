@@ -676,7 +676,7 @@ unsafe extern "C" fn p_dtoa(mut value: f64, mut prec: i32, mut buf: *mut i8) -> 
         }
     }
     c = c.offset(1);
-    *c = 0i32 as i8;
+    *c = 0_i8;
     return n;
 }
 unsafe extern "C" fn dev_sprint_bp(
@@ -1668,7 +1668,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
         while i < length {
             *(*real_font)
                 .used_chars
-                .offset(*str_ptr.offset(i as isize) as isize) = 1i32 as i8;
+                .offset(*str_ptr.offset(i as isize) as isize) = 1_i8;
             i = i.wrapping_add(1)
         }
     }
@@ -1890,8 +1890,8 @@ pub unsafe extern "C" fn pdf_dev_reset_color(mut force: i32) {
     let mut sc: *mut pdf_color = 0 as *mut pdf_color;
     let mut fc: *mut pdf_color = 0 as *mut pdf_color;
     pdf_color_get_current(&mut sc, &mut fc);
-    pdf_dev_set_color(sc, 0i32 as i8, force);
-    pdf_dev_set_color(fc, 0x20i32 as i8, force);
+    pdf_dev_set_color(sc, 0_i8, force);
+    pdf_dev_set_color(fc, 0x20_i8, force);
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_bop(mut M: *const pdf_tmatrix) {

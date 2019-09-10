@@ -191,13 +191,13 @@ unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont:
                 /* Although this is strictly speaking out of spec, it seems to work
                 and there are real-life fonts that use it.
                 We show a warning only once, instead of thousands of times */
-                static mut warning_issued: i8 = 0i32 as i8;
+                static mut warning_issued: i8 = 0_i8;
                 if warning_issued == 0 {
                     dpx_warning(
                         b"TrueType post table name index %u > 32767\x00" as *const u8 as *const i8,
                         idx as i32,
                     );
-                    warning_issued = 1i32 as i8
+                    warning_issued = 1_i8
                 }
                 /* In a real-life large font, (x)dvipdfmx crashes if we use
                 nonvanishing idx in the case of idx > 32767.
@@ -231,7 +231,7 @@ unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont:
                     *(*post).names.offset(i as isize),
                     len as size_t,
                 );
-                *(*(*post).names.offset(i as isize)).offset(len as isize) = 0i32 as i8
+                *(*(*post).names.offset(i as isize)).offset(len as isize) = 0_i8
             } else {
                 let ref mut fresh1 = *(*post).names.offset(i as isize);
                 *fresh1 = 0 as *mut i8

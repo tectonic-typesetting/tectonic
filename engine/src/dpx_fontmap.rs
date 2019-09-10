@@ -861,7 +861,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                         free(q as *mut libc::c_void);
                         return -1i32;
                     }
-                    *r = 0i32 as i8;
+                    *r = 0_i8;
                     r = r.offset(1);
                     rr = r;
                     skip_blank(&mut rr, r.offset(strlen(r) as isize));

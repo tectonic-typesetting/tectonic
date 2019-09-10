@@ -553,7 +553,7 @@ pub unsafe extern "C" fn parse_pdf_boolean(
                     || *(*pp).offset(4) as i32 == '%' as i32))
         {
             *pp = (*pp).offset(4);
-            return pdf_new_boolean(1i32 as i8);
+            return pdf_new_boolean(1_i8);
         }
     } else if (*pp).offset(5) <= endptr
         && !strstartswith(*pp, b"false\x00" as *const u8 as *const i8).is_null()
@@ -575,7 +575,7 @@ pub unsafe extern "C" fn parse_pdf_boolean(
                     || *(*pp).offset(5) as i32 == '%' as i32))
         {
             *pp = (*pp).offset(5);
-            return pdf_new_boolean(0i32 as i8);
+            return pdf_new_boolean(0_i8);
         }
     }
     dpx_warning(b"Not a boolean object.\x00" as *const u8 as *const i8);

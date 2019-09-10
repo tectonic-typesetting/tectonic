@@ -513,7 +513,7 @@ pub unsafe extern "C" fn sfnt_read_table_directory(mut sfont: *mut sfnt, mut off
         let ref mut fresh1 = (*(*td).tables.offset(i as isize)).data;
         *fresh1 = 0 as *mut i8;
         //fprintf(stderr, "[%4s:%x]", td->tables[i].tag, td->tables[i].offset);
-        *(*td).flags.offset(i as isize) = 0i32 as i8;
+        *(*td).flags.offset(i as isize) = 0_i8;
         i = i.wrapping_add(1)
     }
     (*td).num_kept_tables = 0_u16;

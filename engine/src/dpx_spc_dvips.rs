@@ -316,7 +316,7 @@ unsafe extern "C" fn spc_handler_ps_header(mut spe: *mut spc_env, mut args: *mut
         (*args).curptr,
         (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as u64,
     );
-    *pro.offset((*args).endptr.wrapping_offset_from((*args).curptr) as i64 as isize) = 0i32 as i8;
+    *pro.offset((*args).endptr.wrapping_offset_from((*args).curptr) as i64 as isize) = 0_i8;
     ps_header = ttstub_input_open(pro, TTIF_TEX_PS_HEADER, 0i32) as *mut rust_input_handle_t;
     if ps_header.is_null() {
         spc_warn(

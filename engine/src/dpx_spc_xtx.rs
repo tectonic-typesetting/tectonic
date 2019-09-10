@@ -596,7 +596,7 @@ unsafe extern "C" fn spc_handler_xtx_initoverlay(
         (*args).curptr,
         (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as u64,
     );
-    overlay_name[(*args).endptr.wrapping_offset_from((*args).curptr) as i64 as usize] = 0i32 as i8;
+    overlay_name[(*args).endptr.wrapping_offset_from((*args).curptr) as i64 as usize] = 0_i8;
     (*args).curptr = (*args).endptr;
     return 0i32;
 }

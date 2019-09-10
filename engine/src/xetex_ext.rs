@@ -835,7 +835,7 @@ unsafe extern "C" fn load_mapping_file(
         xmalloc((e.wrapping_offset_from(s) as i64 + 5i32 as i64) as size_t) as *mut i8;
     let mut map: rust_input_handle_t = 0 as *mut libc::c_void;
     strncpy(buffer, s, e.wrapping_offset_from(s) as i64 as u64);
-    *buffer.offset(e.wrapping_offset_from(s) as i64 as isize) = 0i32 as i8;
+    *buffer.offset(e.wrapping_offset_from(s) as i64 as isize) = 0_i8;
     strcat(buffer, b".tec\x00" as *const u8 as *const i8);
     map = ttstub_input_open(buffer, TTIF_MISCFONTS, 0i32);
     if !map.is_null() {
@@ -888,7 +888,7 @@ pub unsafe extern "C" fn check_for_tfm_font_mapping() {
     let mut cp: *mut i8 = strstr(name_of_file, b":mapping=\x00" as *const u8 as *const i8);
     saved_mapping_name = mfree(saved_mapping_name as *mut libc::c_void) as *mut i8;
     if !cp.is_null() {
-        *cp = 0i32 as i8;
+        *cp = 0_i8;
         cp = cp.offset(9);
         while *cp as i32 != 0 && *cp as i32 <= ' ' as i32 {
             cp = cp.offset(1)
@@ -905,7 +905,7 @@ pub unsafe extern "C" fn load_tfm_font_mapping() -> *mut libc::c_void {
         rval = load_mapping_file(
             saved_mapping_name,
             saved_mapping_name.offset(strlen(saved_mapping_name) as isize),
-            1i32 as i8,
+            1_i8,
         );
         saved_mapping_name = mfree(saved_mapping_name as *mut libc::c_void) as *mut i8
     }
@@ -1072,7 +1072,7 @@ pub unsafe extern "C" fn readCommonFeatures(
         if *sep as i32 != '=' as i32 {
             return -1i32;
         }
-        loaded_font_mapping = load_mapping_file(sep.offset(1), end, 0i32 as i8);
+        loaded_font_mapping = load_mapping_file(sep.offset(1), end, 0_i8);
         return 1i32;
     }
     sep = strstartswith(feat, b"extend\x00" as *const u8 as *const i8);
@@ -1550,7 +1550,7 @@ pub unsafe extern "C" fn find_native_font(
     let mut font: XeTeXFont = 0 as XeTeXFont;
     let mut index: i32 = 0i32;
     loaded_font_mapping = 0 as *mut libc::c_void;
-    loaded_font_flags = 0i32 as i8;
+    loaded_font_flags = 0_i8;
     loaded_font_letter_space = 0i32;
     splitFontName(name, &mut var, &mut feat, &mut end, &mut index);
     nameString =
@@ -1560,7 +1560,7 @@ pub unsafe extern "C" fn find_native_font(
         name,
         var.wrapping_offset_from(name) as i64 as u64,
     );
-    *nameString.offset(var.wrapping_offset_from(name) as i64 as isize) = 0i32 as i8;
+    *nameString.offset(var.wrapping_offset_from(name) as i64 as isize) = 0_i8;
     if feat > var {
         varString = xmalloc(feat.wrapping_offset_from(var) as i64 as size_t) as *mut i8;
         strncpy(
@@ -1568,8 +1568,7 @@ pub unsafe extern "C" fn find_native_font(
             var.offset(1),
             (feat.wrapping_offset_from(var) as i64 - 1i32 as i64) as u64,
         );
-        *varString.offset((feat.wrapping_offset_from(var) as i64 - 1i32 as i64) as isize) =
-            0i32 as i8
+        *varString.offset((feat.wrapping_offset_from(var) as i64 - 1i32 as i64) as isize) = 0_i8
     }
     if end > feat {
         featString = xmalloc(end.wrapping_offset_from(feat) as i64 as size_t) as *mut i8;
@@ -1578,8 +1577,7 @@ pub unsafe extern "C" fn find_native_font(
             feat.offset(1),
             (end.wrapping_offset_from(feat) as i64 - 1i32 as i64) as u64,
         );
-        *featString.offset((end.wrapping_offset_from(feat) as i64 - 1i32 as i64) as isize) =
-            0i32 as i8
+        *featString.offset((end.wrapping_offset_from(feat) as i64 - 1i32 as i64) as isize) = 0_i8
     }
     // check for "[filename]" form, don't search maps in this case
     if *nameString.offset(0) as i32 == '[' as i32 {
@@ -1599,7 +1597,7 @@ pub unsafe extern "C" fn find_native_font(
         if !font.is_null() {
             loaded_font_design_size = D2Fix(getDesignSize(font));
             /* This is duplicated in XeTeXFontMgr::findFont! */
-            setReqEngine(0i32 as i8);
+            setReqEngine(0_i8);
             if !varString.is_null() {
                 if !strstartswith(varString, b"/AAT\x00" as *const u8 as *const i8).is_null() {
                     setReqEngine('A' as i32 as i8);

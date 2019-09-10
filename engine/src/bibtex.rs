@@ -2230,19 +2230,19 @@ unsafe extern "C" fn scan_identifier(
         }
     } /*id_null */
     if buf_ptr2 - buf_ptr1 == 0i32 {
-        scan_result = 0i32 as u8
+        scan_result = 0_u8
     } else if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32
         || buf_ptr2 == last
     {
-        scan_result = 3i32 as u8
+        scan_result = 3_u8
     } else if *buffer.offset(buf_ptr2 as isize) as i32 == char1 as i32
         || *buffer.offset(buf_ptr2 as isize) as i32 == char2 as i32
         || *buffer.offset(buf_ptr2 as isize) as i32 == char3 as i32
     {
         /*white_adjacent */
-        scan_result = 1i32 as u8
+        scan_result = 1_u8
     } else {
-        scan_result = 2i32 as u8
+        scan_result = 2_u8
     }; /*specified_char_adjacent */
     /*other_char_adjacent */
 }
@@ -2260,10 +2260,10 @@ unsafe extern "C" fn scan_integer() -> bool {
     buf_ptr1 = buf_ptr2;
     if *buffer.offset(buf_ptr2 as isize) as i32 == 45i32 {
         /*minus_sign */
-        sign_length = 1i32 as u8;
+        sign_length = 1_u8;
         buf_ptr2 = buf_ptr2 + 1i32
     } else {
-        sign_length = 0i32 as u8
+        sign_length = 0_u8
     }
     token_value = 0i32;
     while buf_ptr2 < last && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 3i32 {
@@ -4166,19 +4166,19 @@ unsafe extern "C" fn x_change_case() {
         push_lit_stk(s_null, 1i32 as stk_type); /*all_lowers */
     } else {
         match *str_pool.offset(*str_start.offset(pop_lit1 as isize) as isize) as i32 {
-            116 | 84 => conversion_type = 0i32 as u8,
-            108 | 76 => conversion_type = 1i32 as u8,
-            117 | 85 => conversion_type = 2i32 as u8,
+            116 | 84 => conversion_type = 0_u8,
+            108 | 76 => conversion_type = 1_u8,
+            117 | 85 => conversion_type = 2_u8,
             _ => {
                 /*all_uppers */
-                conversion_type = 3i32 as u8
+                conversion_type = 3_u8
             }
         } /*bad_conversion */
         if *str_start.offset((pop_lit1 + 1i32) as isize) - *str_start.offset(pop_lit1 as isize)
             != 1i32
             || conversion_type as i32 == 3i32
         {
-            conversion_type = 3i32 as u8; /*bad_conversion */
+            conversion_type = 3_u8; /*bad_conversion */
             print_a_pool_str(pop_lit1);
             puts_log(b" is an illegal case-conversion string\x00" as *const u8 as *const i8);
             bst_ex_warn_print();

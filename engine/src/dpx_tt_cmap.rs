@@ -1263,10 +1263,10 @@ pub unsafe extern "C" fn tt_cmap_lookup(mut cmap: *mut tt_cmap, mut cc: u32) -> 
     return gid;
 }
 static mut wbuf: [u8; 1024] = [0; 1024];
-static mut srange_min: [u8; 2] = [0i32 as u8, 0i32 as u8];
-static mut srange_max: [u8; 2] = [0xffi32 as u8, 0xffi32 as u8];
-static mut lrange_min: [u8; 4] = [0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8];
-static mut lrange_max: [u8; 4] = [0x7fi32 as u8, 0xffi32 as u8, 0xffi32 as u8, 0xffi32 as u8];
+static mut srange_min: [u8; 2] = [0; 2];
+static mut srange_max: [u8; 2] = [0xff_u8, 0xff_u8];
+static mut lrange_min: [u8; 4] = [0; 4];
+static mut lrange_max: [u8; 4] = [0x7f_u8, 0xff_u8, 0xff_u8, 0xff_u8];
 unsafe extern "C" fn load_cmap4(
     mut map: *mut cmap4,
     mut GIDToCIDMap: *mut u8,
@@ -1330,8 +1330,8 @@ unsafe extern "C" fn load_cmap4(
                 } else {
                     cid = gid
                 }
-                wbuf[0] = 0i32 as u8;
-                wbuf[1] = 0i32 as u8;
+                wbuf[0] = 0_u8;
+                wbuf[1] = 0_u8;
                 wbuf[2] = (ch as i32 >> 8i32 & 0xffi32) as u8;
                 wbuf[3] = (ch as i32 & 0xffi32) as u8;
                 wbuf[4] = (cid as i32 >> 8i32 & 0xffi32) as u8;
@@ -2032,36 +2032,36 @@ unsafe extern "C" fn create_ToUnicode_cmap(
 static mut cmap_plat_encs: [cmap_plat_enc_rec; 5] = [
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 3i32 as i16,
-            encoding: 10i32 as i16,
+            platform: 3_i16,
+            encoding: 10_i16,
         };
         init
     },
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 0i32 as i16,
-            encoding: 3i32 as i16,
+            platform: 0_i16,
+            encoding: 3_i16,
         };
         init
     },
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 0i32 as i16,
-            encoding: 0i32 as i16,
+            platform: 0_i16,
+            encoding: 0_i16,
         };
         init
     },
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 3i32 as i16,
-            encoding: 1i32 as i16,
+            platform: 3_i16,
+            encoding: 1_i16,
         };
         init
     },
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 0i32 as i16,
-            encoding: 1i32 as i16,
+            platform: 0_i16,
+            encoding: 1_i16,
         };
         init
     },

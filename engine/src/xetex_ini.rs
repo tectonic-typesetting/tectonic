@@ -1838,7 +1838,7 @@ unsafe extern "C" fn new_patterns() {
         .b32
         .s1 <= 0i32
         {
-            cur_lang = 0i32 as u8
+            cur_lang = 0_u8
         } else if (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -1869,7 +1869,7 @@ unsafe extern "C" fn new_patterns() {
         .b32
         .s1 > 255i32
         {
-            cur_lang = 0i32 as u8
+            cur_lang = 0_u8
         } else {
             cur_lang = (*eqtb.offset(
                 (1i32
@@ -1902,8 +1902,8 @@ unsafe extern "C" fn new_patterns() {
             .s1 as u8
         }
         scan_left_brace();
-        k = 0i32 as i16;
-        hyf[0] = 0i32 as u8;
+        k = 0_i16;
+        hyf[0] = 0_u8;
         digit_sensed = 0i32 != 0;
         loop {
             get_x_token();
@@ -1944,7 +1944,7 @@ unsafe extern "C" fn new_patterns() {
                                     print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                                 }
                                 print_cstr(b"Nonletter\x00" as *const u8 as *const i8);
-                                help_ptr = 1i32 as u8;
+                                help_ptr = 1_u8;
                                 help_line[0] = b"(See Appendix H.)\x00" as *const u8 as *const i8;
                                 error();
                             }
@@ -1955,7 +1955,7 @@ unsafe extern "C" fn new_patterns() {
                         if (k as i32) < max_hyphenatable_length() {
                             k += 1;
                             hc[k as usize] = cur_chr;
-                            hyf[k as usize] = 0i32 as u8;
+                            hyf[k as usize] = 0_u8;
                             digit_sensed = 0i32 != 0
                         }
                     } else if (k as i32) < max_hyphenatable_length() {
@@ -1967,10 +1967,10 @@ unsafe extern "C" fn new_patterns() {
                     if k as i32 > 0i32 {
                         /*998:*/
                         if hc[1] == 0i32 {
-                            hyf[0] = 0i32 as u8
+                            hyf[0] = 0_u8
                         }
                         if hc[k as usize] == 0i32 {
-                            hyf[k as usize] = 0i32 as u8
+                            hyf[k as usize] = 0_u8
                         }
                         l = k;
                         v = 0i32 as trie_opcode;
@@ -2028,7 +2028,7 @@ unsafe extern "C" fn new_patterns() {
                                 print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                             }
                             print_cstr(b"Duplicate pattern\x00" as *const u8 as *const i8);
-                            help_ptr = 1i32 as u8;
+                            help_ptr = 1_u8;
                             help_line[0] = b"(See Appendix H.)\x00" as *const u8 as *const i8;
                             error();
                         }
@@ -2037,8 +2037,8 @@ unsafe extern "C" fn new_patterns() {
                     if cur_cmd as i32 == 2i32 {
                         break;
                     }
-                    k = 0i32 as i16;
-                    hyf[0] = 0i32 as u8;
+                    k = 0_i16;
+                    hyf[0] = 0_u8;
                     digit_sensed = 0i32 != 0
                 }
                 _ => {
@@ -2049,7 +2049,7 @@ unsafe extern "C" fn new_patterns() {
                     }
                     print_cstr(b"Bad \x00" as *const u8 as *const i8);
                     print_esc_cstr(b"patterns\x00" as *const u8 as *const i8);
-                    help_ptr = 1i32 as u8;
+                    help_ptr = 1_u8;
                     help_line[0] = b"(See Appendix H.)\x00" as *const u8 as *const i8;
                     error();
                 }
@@ -2210,7 +2210,7 @@ unsafe extern "C" fn new_patterns() {
         }
         print_cstr(b"Too late for \x00" as *const u8 as *const i8);
         print_esc_cstr(b"patterns\x00" as *const u8 as *const i8);
-        help_ptr = 1i32 as u8;
+        help_ptr = 1_u8;
         help_line[0] =
             b"All patterns must be given before typesetting begins.\x00" as *const u8 as *const i8;
         error();
@@ -2433,7 +2433,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
     .b32
     .s1 <= 0i32
     {
-        cur_lang = 0i32 as u8
+        cur_lang = 0_u8
     } else if (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -2464,7 +2464,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
     .b32
     .s1 > 255i32
     {
-        cur_lang = 0i32 as u8
+        cur_lang = 0_u8
     } else {
         cur_lang = (*eqtb.offset(
             (1i32
@@ -2504,7 +2504,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
         hyph_index = *trie_trl.offset((hyph_start + cur_lang as i32) as isize)
     }
     /*970:*/
-    n = 0i32 as i16;
+    n = 0_i16;
     p = -0xfffffffi32;
     's_91: loop {
         get_x_token();
@@ -2559,7 +2559,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                                 print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                             }
                             print_cstr(b"Not a letter\x00" as *const u8 as *const i8);
-                            help_ptr = 2i32 as u8;
+                            help_ptr = 2_u8;
                             help_line[1] =
                                 b"Letters in \\hyphenation words must have \\lccode>0.\x00"
                                     as *const u8 as *const i8;
@@ -2604,7 +2604,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                     print_cstr(b"Improper \x00" as *const u8 as *const i8);
                     print_esc_cstr(b"hyphenation\x00" as *const u8 as *const i8);
                     print_cstr(b" will be flushed\x00" as *const u8 as *const i8);
-                    help_ptr = 2i32 as u8;
+                    help_ptr = 2_u8;
                     help_line[1] = b"Hyphenation exceptions must contain only letters\x00"
                         as *const u8 as *const i8;
                     help_line[0] = b"and hyphens. But continue; I\'ll forgive and forget.\x00"
@@ -2626,7 +2626,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                     );
                 }
                 h = 0i32 as hyph_pointer;
-                j = 1i32 as i16;
+                j = 1_i16;
                 while j as i32 <= n as i32 {
                     h = ((h as i32 + h as i32 + hc[j as usize]) % 607i32) as hyph_pointer;
                     *str_pool.offset(pool_ptr as isize) = hc[j as usize] as packed_UTF16_code;
@@ -2698,7 +2698,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
         if cur_cmd as i32 == 2i32 {
             return;
         }
-        n = 0i32 as i16;
+        n = 0_i16;
         p = -0xfffffffi32
     }
 }
@@ -2734,7 +2734,7 @@ pub unsafe extern "C" fn prefixed_command() {
             print_cstr(b"You can\'t use a prefix with `\x00" as *const u8 as *const i8);
             print_cmd_chr(cur_cmd as u16, cur_chr);
             print_char('\'' as i32);
-            help_ptr = 1i32 as u8;
+            help_ptr = 1_u8;
             help_line[0] =
                 b"I\'ll pretend you didn\'t say \\long or \\outer or \\global or \\protected.\x00"
                     as *const u8 as *const i8;
@@ -2790,7 +2790,7 @@ pub unsafe extern "C" fn prefixed_command() {
         print_esc_cstr(b"long\x00" as *const u8 as *const i8);
         print_cstr(b"\' or `\x00" as *const u8 as *const i8);
         print_esc_cstr(b"outer\x00" as *const u8 as *const i8);
-        help_ptr = 1i32 as u8;
+        help_ptr = 1_u8;
         help_line[0] = b"I\'ll pretend you didn\'t say \\long or \\outer or \\protected here.\x00"
             as *const u8 as *const i8;
         print_cstr(b"\' or `\x00" as *const u8 as *const i8);
@@ -3376,7 +3376,7 @@ pub unsafe extern "C" fn prefixed_command() {
                 }
                 print_cstr(b"Missing `to\' inserted\x00" as *const u8 as
                                *const i8);
-                help_ptr = 2i32 as u8;
+                help_ptr = 2_u8;
                 help_line[1] =
                     b"You should have said `\\read<number> to \\cs\'.\x00" as
                         *const u8 as *const i8;
@@ -3766,7 +3766,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                    *const i8);
                 }
                 print_int(n);
-                help_ptr = 1i32 as u8;
+                help_ptr = 1_u8;
                 help_line[0] =
                     b"I\'m going to use 0 instead of that illegal code value.\x00"
                         as *const u8 as *const i8;
@@ -3865,7 +3865,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                *const i8);
                 print_esc_cstr(b"setbox\x00" as *const u8 as
                                    *const i8);
-                help_ptr = 2i32 as u8;
+                help_ptr = 2_u8;
                 help_line[1] =
                     b"Sorry, \\setbox is not allowed after \\halign in a display,\x00"
                         as *const u8 as *const i8;
@@ -3935,7 +3935,7 @@ pub unsafe extern "C" fn prefixed_command() {
                     }
                     print_cstr(b"Patterns can be loaded only by INITEX\x00" as
                                    *const u8 as *const i8);
-                    help_ptr = 0i32 as u8;
+                    help_ptr = 0_u8;
                     error();
                     loop  {
                         get_token();
@@ -4008,10 +4008,10 @@ unsafe extern "C" fn store_fmt_file() {
             print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
         print_cstr(b"You can\'t dump inside a group\x00" as *const u8 as *const i8);
-        help_ptr = 1i32 as u8;
+        help_ptr = 1_u8;
         help_line[0] = b"`{...\\dump}\' is a no-no.\x00" as *const u8 as *const i8;
         if interaction as i32 == 3i32 {
-            interaction = 2i32 as u8
+            interaction = 2_u8
         }
         if log_opened {
             error();
@@ -5059,7 +5059,7 @@ unsafe extern "C" fn store_fmt_file() {
                 b"Can\'t \\dump a format with native fonts or font-mappings\x00" as *const u8
                     as *const i8,
             );
-            help_ptr = 3i32 as u8;
+            help_ptr = 3_u8;
             help_line[2] =
                 b"You really, really don\'t want to do this.\x00" as *const u8 as *const i8;
             help_line[1] = b"It won\'t work, and only confuses me.\x00" as *const u8 as *const i8;
@@ -8391,8 +8391,8 @@ unsafe extern "C" fn init_io() {
     /* This is largely vestigial at this point */
     stdin_ufile.handle = 0 as *mut libc::c_void;
     stdin_ufile.savedChar = -1i32 as i64;
-    stdin_ufile.skipNextLF = 0i32 as i16;
-    stdin_ufile.encodingMode = 1i32 as i16;
+    stdin_ufile.skipNextLF = 0_i16;
+    stdin_ufile.encodingMode = 1_i16;
     stdin_ufile.conversionData = 0 as *mut libc::c_void;
     let ref mut fresh19 = *input_file.offset(0);
     *fresh19 = &mut stdin_ufile;
@@ -8410,23 +8410,23 @@ unsafe extern "C" fn initialize_more_variables() {
     native_text =
         xmalloc((native_text_size as u64).wrapping_mul(::std::mem::size_of::<UTF16_code>() as u64))
             as *mut UTF16_code;
-    interaction = 3i32 as u8;
+    interaction = 3_u8;
     deletions_allowed = 1i32 != 0;
     set_box_allowed = 1i32 != 0;
-    error_count = 0i32 as i8;
-    help_ptr = 0i32 as u8;
+    error_count = 0_i8;
+    help_ptr = 0_u8;
     use_err_help = 0i32 != 0;
     nest_ptr = 0i32;
     max_nest_stack = 0i32;
-    cur_list.mode = 1i32 as i16;
+    cur_list.mode = 1_i16;
     cur_list.head = 4999999i32 - 1i32;
     cur_list.tail = 4999999i32 - 1i32;
     cur_list.eTeX_aux = -0xfffffffi32;
     cur_list.aux.b32.s1 = -65536000i32;
     cur_list.mode_line = 0i32;
     cur_list.prev_graf = 0i32;
-    shown_mode = 0i32 as i16;
-    page_contents = 0i32 as u8;
+    shown_mode = 0_i16;
+    page_contents = 0_u8;
     page_tail = 4999999i32 - 2i32;
     last_glue = 0x3fffffffi32;
     last_penalty = 0i32;
@@ -8545,16 +8545,16 @@ unsafe extern "C" fn initialize_more_variables() {
     cur_mark[3] = -0xfffffffi32;
     cur_mark[4] = -0xfffffffi32;
     cur_val = 0i32;
-    cur_val_level = 0i32 as u8;
+    cur_val_level = 0_u8;
     radix = 0i32 as small_number;
     cur_order = 0i32 as glue_ord;
     k = 0i32;
     while k <= 16i32 {
-        read_open[k as usize] = 2i32 as u8;
+        read_open[k as usize] = 2_u8;
         k += 1
     }
     cond_ptr = -0xfffffffi32;
-    if_limit = 0i32 as u8;
+    if_limit = 0_u8;
     cur_if = 0i32 as small_number;
     if_line = 0i32;
     null_character.s3 = 0_u16;
@@ -14352,7 +14352,7 @@ pub unsafe extern "C" fn tt_run_engine(
         (buf_size as u64).wrapping_mul(::std::mem::size_of::<UnicodeScalar>() as u64),
     );
     first = 0i32;
-    scanner_status = 0i32 as u8;
+    scanner_status = 0_u8;
     warning_index = -0xfffffffi32;
     first = 1i32;
     cur_input.state = 33_u16;

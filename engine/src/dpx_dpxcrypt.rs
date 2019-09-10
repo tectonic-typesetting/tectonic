@@ -778,21 +778,21 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut u8, mut hd: *mut MD5_CONTEXT
         /* enough room */
         let fresh20 = (*hd).count; /* pad */
         (*hd).count = (*hd).count + 1;
-        (*hd).buf[fresh20 as usize] = 0x80i32 as u8;
+        (*hd).buf[fresh20 as usize] = 0x80_u8;
         while (*hd).count < 56i32 {
             let fresh21 = (*hd).count;
             (*hd).count = (*hd).count + 1;
-            (*hd).buf[fresh21 as usize] = 0i32 as u8
+            (*hd).buf[fresh21 as usize] = 0_u8
         }
     /* pad */
     } else {
         let fresh22 = (*hd).count; /* pad character */
         (*hd).count = (*hd).count + 1;
-        (*hd).buf[fresh22 as usize] = 0x80i32 as u8;
+        (*hd).buf[fresh22 as usize] = 0x80_u8;
         while (*hd).count < 64i32 {
             let fresh23 = (*hd).count;
             (*hd).count = (*hd).count + 1;
-            (*hd).buf[fresh23 as usize] = 0i32 as u8
+            (*hd).buf[fresh23 as usize] = 0_u8
         }
         /* fill next block with zeroes */
         MD5_write(hd, 0 as *const u8, 0_u32); /* flush */
@@ -1183,22 +1183,22 @@ pub unsafe extern "C" fn SHA256_final(mut outbuf: *mut u8, mut hd: *mut SHA256_C
         /* enough room */
         let fresh28 = (*hd).count; /* pad */
         (*hd).count = (*hd).count + 1;
-        (*hd).buf[fresh28 as usize] = 0x80i32 as u8;
+        (*hd).buf[fresh28 as usize] = 0x80_u8;
         while (*hd).count < 56i32 {
             let fresh29 = (*hd).count;
             (*hd).count = (*hd).count + 1;
-            (*hd).buf[fresh29 as usize] = 0i32 as u8
+            (*hd).buf[fresh29 as usize] = 0_u8
         }
     /* pad */
     } else {
         /* need one extra block */
         let fresh30 = (*hd).count; /* pad character */
         (*hd).count = (*hd).count + 1;
-        (*hd).buf[fresh30 as usize] = 0x80i32 as u8;
+        (*hd).buf[fresh30 as usize] = 0x80_u8;
         while (*hd).count < 64i32 {
             let fresh31 = (*hd).count;
             (*hd).count = (*hd).count + 1;
-            (*hd).buf[fresh31 as usize] = 0i32 as u8
+            (*hd).buf[fresh31 as usize] = 0_u8
         }
         SHA256_write(hd, 0 as *const u8, 0_u32);
         /* fill next block with zeroes */
@@ -2172,22 +2172,22 @@ pub unsafe extern "C" fn SHA512_final(mut outbuf: *mut u8, mut hd: *mut SHA512_C
         /* enough room */
         let fresh36 = (*hd).count; /* pad */
         (*hd).count = (*hd).count + 1;
-        (*hd).buf[fresh36 as usize] = 0x80i32 as u8;
+        (*hd).buf[fresh36 as usize] = 0x80_u8;
         while (*hd).count < 112i32 {
             let fresh37 = (*hd).count;
             (*hd).count = (*hd).count + 1;
-            (*hd).buf[fresh37 as usize] = 0i32 as u8
+            (*hd).buf[fresh37 as usize] = 0_u8
         }
     /* pad */
     } else {
         /* need one extra block */
         let fresh38 = (*hd).count; /* pad character */
         (*hd).count = (*hd).count + 1;
-        (*hd).buf[fresh38 as usize] = 0x80i32 as u8;
+        (*hd).buf[fresh38 as usize] = 0x80_u8;
         while (*hd).count < 128i32 {
             let fresh39 = (*hd).count;
             (*hd).count = (*hd).count + 1;
-            (*hd).buf[fresh39 as usize] = 0i32 as u8
+            (*hd).buf[fresh39 as usize] = 0_u8
         }
         SHA512_write(hd, 0 as *const u8, 0_u32);
         /* fill next block with zeroes */

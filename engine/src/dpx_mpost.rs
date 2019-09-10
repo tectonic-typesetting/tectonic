@@ -3976,8 +3976,8 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
             /* Not handled properly */
             if error == 0 {
                 pdf_color_cmykcolor(&mut color, values[0], values[1], values[2], values[3]);
-                pdf_dev_set_color(&mut color, 0i32 as i8, 0i32);
-                pdf_dev_set_color(&mut color, 0x20i32 as i8, 0i32);
+                pdf_dev_set_color(&mut color, 0_i8, 0i32);
+                pdf_dev_set_color(&mut color, 0x20_i8, 0i32);
             }
         }
         70 => {
@@ -3985,16 +3985,16 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
             error = pop_get_numbers(values.as_mut_ptr(), 1i32); /* This does pdf_release_obj() */
             if error == 0 {
                 pdf_color_graycolor(&mut color, values[0]);
-                pdf_dev_set_color(&mut color, 0i32 as i8, 0i32);
-                pdf_dev_set_color(&mut color, 0x20i32 as i8, 0i32);
+                pdf_dev_set_color(&mut color, 0_i8, 0i32);
+                pdf_dev_set_color(&mut color, 0x20_i8, 0i32);
             }
         }
         71 => {
             error = pop_get_numbers(values.as_mut_ptr(), 3i32);
             if error == 0 {
                 pdf_color_rgbcolor(&mut color, values[0], values[1], values[2]);
-                pdf_dev_set_color(&mut color, 0i32 as i8, 0i32);
-                pdf_dev_set_color(&mut color, 0x20i32 as i8, 0i32);
+                pdf_dev_set_color(&mut color, 0_i8, 0i32);
+                pdf_dev_set_color(&mut color, 0x20_i8, 0i32);
             }
         }
         49 => {}
@@ -4505,7 +4505,7 @@ pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> i32 {
         size as u64,
         image_file,
     );
-    *buffer.offset(size as isize) = 0i32 as i8;
+    *buffer.offset(size as isize) = 0_i8;
     start = buffer;
     end = buffer.offset(size as isize);
     error = mps_scan_bbox(&mut start, end, &mut bbox);

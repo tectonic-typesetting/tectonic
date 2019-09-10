@@ -455,7 +455,7 @@ pub unsafe extern "C" fn CMap_decode_char(
     let mut t: *mut mapDef = 0 as *mut mapDef;
     let mut p: *const u8 = 0 as *const u8;
     let mut save: *const u8 = 0 as *const u8;
-    let mut c: u8 = 0i32 as u8;
+    let mut c: u8 = 0_u8;
     let mut count: size_t = 0i32 as size_t;
     save = *inbuf;
     p = save;
@@ -1467,8 +1467,8 @@ unsafe extern "C" fn check_range(
 static mut __cache: *mut CMap_cache = 0 as *const CMap_cache as *mut CMap_cache;
 #[no_mangle]
 pub unsafe extern "C" fn CMap_cache_init() {
-    static mut range_min: [u8; 2] = [0i32 as u8, 0i32 as u8];
-    static mut range_max: [u8; 2] = [0xffi32 as u8, 0xffi32 as u8];
+    static mut range_min: [u8; 2] = [0; 2];
+    static mut range_max: [u8; 2] = [0xff_u8, 0xff_u8];
     if !__cache.is_null() {
         _tt_abort(
             b"%s: Already initialized.\x00" as *const u8 as *const i8,

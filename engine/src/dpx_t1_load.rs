@@ -2587,7 +2587,7 @@ unsafe extern "C" fn get_pfb_segment(
         buffer as *mut libc::c_void,
         ((bytesread + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32,
     ) as *mut u8;
-    *buffer.offset(bytesread as isize) = 0i32 as u8;
+    *buffer.offset(bytesread as isize) = 0_u8;
     if !length.is_null() {
         *length = bytesread
     }

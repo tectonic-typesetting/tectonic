@@ -1437,7 +1437,7 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
                     b"Character mapped to .notdef used in font: %s\x00" as *const u8 as *const i8,
                     fontname,
                 );
-                *usedchars.offset(code as isize) = 0i32 as i8
+                *usedchars.offset(code as isize) = 0_i8
             } else {
                 gid = cff_glyph_lookup(cffont, glyph) as i32;
                 if gid < 1i32 || gid >= (*(*cffont).cstrings).count as i32 {
@@ -1446,7 +1446,7 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
                         glyph,
                         fontname,
                     );
-                    *usedchars.offset(code as isize) = 0i32 as i8
+                    *usedchars.offset(code as isize) = 0_i8
                 } else {
                     duplicate = 0i32;
                     while duplicate < code {
