@@ -210,7 +210,7 @@ extern "C" {
     #[no_mangle]
     static mut cur_list: list_state_record;
     #[no_mangle]
-    static mut shown_mode: libc::c_short;
+    static mut shown_mode: i16;
     #[no_mangle]
     static mut old_setting: u8;
     #[no_mangle]
@@ -1027,7 +1027,7 @@ pub type eight_bits = u8;
 pub type pool_pointer = i32;
 pub type str_number = i32;
 pub type packed_UTF16_code = u16;
-pub type small_number = libc::c_short;
+pub type small_number = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
@@ -1260,7 +1260,7 @@ pub type save_pointer = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
-    pub mode: libc::c_short,
+    pub mode: i16,
     pub head: i32,
     pub tail: i32,
     pub eTeX_aux: i32,
@@ -1284,8 +1284,8 @@ pub struct input_state_t {
 pub struct UFILE {
     pub handle: rust_input_handle_t,
     pub savedChar: i64,
-    pub skipNextLF: libc::c_short,
-    pub encodingMode: libc::c_short,
+    pub skipNextLF: i16,
+    pub encodingMode: i16,
     pub conversionData: *mut libc::c_void,
 }
 #[inline]
@@ -3207,7 +3207,7 @@ pub unsafe extern "C" fn pop_nest() {
 #[no_mangle]
 pub unsafe extern "C" fn show_activities() {
     let mut p: i32 = 0;
-    let mut m: libc::c_short = 0;
+    let mut m: i16 = 0;
     let mut a: memory_word = memory_word {
         b32: b32x2 { s0: 0, s1: 0 },
     };
@@ -18037,7 +18037,7 @@ pub unsafe extern "C" fn read_font_info(
     };
     let mut sw: scaled_t = 0;
     let mut bch_label: i32 = 0;
-    let mut bchar_0: libc::c_short = 0;
+    let mut bchar_0: i16 = 0;
     let mut z: scaled_t = 0;
     let mut alpha: i32 = 0;
     let mut beta: u8 = 0;
@@ -18857,7 +18857,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                                     =
                                                                                                                     256i32
                                                                                                                         as
-                                                                                                                        libc::c_short;
+                                                                                                                        i16;
                                                                                                                 if nl
                                                                                                                        >
                                                                                                                        0i32
@@ -18978,7 +18978,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                                                     =
                                                                                                                                     b
                                                                                                                                         as
-                                                                                                                                        libc::c_short
+                                                                                                                                        i16
                                                                                                                             }
                                                                                                                         } else {
                                                                                                                             if b
@@ -21949,10 +21949,10 @@ pub unsafe extern "C" fn init_align() {
     }
     push_nest();
     if cur_list.mode as i32 == 207i32 {
-        cur_list.mode = -1i32 as libc::c_short;
+        cur_list.mode = -1i32 as i16;
         cur_list.aux.b32.s1 = (*nest.offset((nest_ptr - 2i32) as isize)).aux.b32.s1
     } else if cur_list.mode as i32 > 0i32 {
-        cur_list.mode = -(cur_list.mode as i32) as libc::c_short
+        cur_list.mode = -(cur_list.mode as i32) as i16
         /*:804*/
     }
     scan_spec(6i32 as group_code, 0i32 != 0);
@@ -22114,7 +22114,7 @@ pub unsafe extern "C" fn init_span(mut p: i32) {
 #[no_mangle]
 pub unsafe extern "C" fn init_row() {
     push_nest();
-    cur_list.mode = (-105i32 - cur_list.mode as i32) as libc::c_short;
+    cur_list.mode = (-105i32 - cur_list.mode as i32) as i16;
     if cur_list.mode as i32 == -104i32 {
         cur_list.aux.b32.s0 = 0i32
     } else {
@@ -23154,7 +23154,7 @@ pub unsafe extern "C" fn eTeX_enabled(mut b: bool, mut j: u16, mut k: i32) -> bo
 pub unsafe extern "C" fn show_save_groups() {
     let mut current_block: u64;
     let mut p: i32 = 0;
-    let mut m: libc::c_short = 0;
+    let mut m: i16 = 0;
     let mut v: save_pointer = 0;
     let mut l: u16 = 0;
     let mut c: group_code = 0;
@@ -23183,7 +23183,7 @@ pub unsafe extern "C" fn show_save_groups() {
             if p > 0i32 {
                 p -= 1
             } else {
-                m = 1i32 as libc::c_short
+                m = 1i32 as i16
             }
             if !(m as i32 == 104i32) {
                 break;
@@ -25252,7 +25252,7 @@ pub unsafe extern "C" fn begin_box(mut box_context: i32) {
                 normal_paragraph();
             }
             push_nest();
-            cur_list.mode = -k as libc::c_short;
+            cur_list.mode = -k as i16;
             if k == 1i32 {
                 cur_list.aux.b32.s1 = -65536000i32;
                 if (*eqtb.offset(
@@ -25579,7 +25579,7 @@ pub unsafe extern "C" fn new_graf(mut indented: bool) {
         cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1
     }
     push_nest();
-    cur_list.mode = 104i32 as libc::c_short;
+    cur_list.mode = 104i32 as i16;
     cur_list.aux.b32.s0 = 1000i32;
     if (*eqtb.offset(
         (1i32
@@ -25949,7 +25949,7 @@ pub unsafe extern "C" fn begin_insert_or_adjust() {
     scan_left_brace();
     normal_paragraph();
     push_nest();
-    cur_list.mode = -1i32 as libc::c_short;
+    cur_list.mode = -1i32 as i16;
     cur_list.aux.b32.s1 = -65536000i32;
 }
 #[no_mangle]
@@ -26309,7 +26309,7 @@ pub unsafe extern "C" fn append_discretionary() {
         new_save_level(10i32 as group_code);
         scan_left_brace();
         push_nest();
-        cur_list.mode = -104i32 as libc::c_short;
+        cur_list.mode = -104i32 as i16;
         cur_list.aux.b32.s0 = 1000i32
     };
 }
@@ -26423,7 +26423,7 @@ pub unsafe extern "C" fn build_discretionary() {
     new_save_level(10i32 as group_code);
     scan_left_brace();
     push_nest();
-    cur_list.mode = -104i32 as libc::c_short;
+    cur_list.mode = -104i32 as i16;
     cur_list.aux.b32.s0 = 1000i32;
 }
 #[no_mangle]
@@ -26739,7 +26739,7 @@ pub unsafe extern "C" fn cs_error() {
 #[no_mangle]
 pub unsafe extern "C" fn push_math(mut c: group_code) {
     push_nest();
-    cur_list.mode = -207i32 as libc::c_short;
+    cur_list.mode = -207i32 as i16;
     cur_list.aux.b32.s1 = -0xfffffffi32;
     new_save_level(c);
 }
@@ -30174,7 +30174,7 @@ pub unsafe extern "C" fn main_control() {
                             scan_spec(12i32 as group_code, 0i32 != 0);
                             normal_paragraph();
                             push_nest();
-                            cur_list.mode = -1i32 as libc::c_short;
+                            cur_list.mode = -1i32 as i16;
                             cur_list.aux.b32.s1 = -65536000i32;
                             if insert_src_special_every_vbox {
                                 insert_src_special();

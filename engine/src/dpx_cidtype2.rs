@@ -470,7 +470,7 @@ pub struct tt_glyph_desc {
     pub data: *mut BYTE,
 }
 pub type BYTE = u8;
-pub type SHORT = libc::c_short;
+pub type SHORT = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_2 {

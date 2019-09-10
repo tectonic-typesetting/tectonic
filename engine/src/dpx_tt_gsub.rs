@@ -72,7 +72,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
-    fn tt_get_signed_pair(handle: rust_input_handle_t) -> libc::c_short;
+    fn tt_get_signed_pair(handle: rust_input_handle_t) -> i16;
     #[no_mangle]
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
@@ -113,7 +113,7 @@ pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type SFNT_CHAR = libc::c_schar;
 pub type USHORT = u16;
-pub type SHORT = libc::c_short;
+pub type SHORT = i16;
 pub type SFNT_ULONG = u32;
 pub type Fixed = u32;
 #[derive(Copy, Clone)]

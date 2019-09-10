@@ -145,7 +145,7 @@ extern "C" {
     #[no_mangle]
     fn get_unsigned_pair(_: *mut FILE) -> u16;
     #[no_mangle]
-    fn get_signed_pair(_: *mut FILE) -> libc::c_short;
+    fn get_signed_pair(_: *mut FILE) -> i16;
     #[no_mangle]
     fn get_unsigned_triple(_: *mut FILE) -> u32;
     #[no_mangle]

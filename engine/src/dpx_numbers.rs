@@ -127,10 +127,10 @@ pub unsafe extern "C" fn sget_unsigned_pair(mut s: *mut u8) -> u16 {
     return pair;
 }
 #[no_mangle]
-pub unsafe extern "C" fn get_signed_pair(mut file: *mut FILE) -> libc::c_short {
-    let mut pair: libc::c_short = get_signed_byte(file) as libc::c_short;
+pub unsafe extern "C" fn get_signed_pair(mut file: *mut FILE) -> i16 {
+    let mut pair: i16 = get_signed_byte(file) as i16;
     pair =
-        ((pair as i32) << 8i32 | get_unsigned_byte(file) as i32) as libc::c_short;
+        ((pair as i32) << 8i32 | get_unsigned_byte(file) as i32) as i16;
     return pair;
 }
 #[no_mangle]
@@ -321,10 +321,10 @@ pub unsafe extern "C" fn tt_get_unsigned_pair(mut handle: rust_input_handle_t) -
     return pair;
 }
 #[no_mangle]
-pub unsafe extern "C" fn tt_get_signed_pair(mut handle: rust_input_handle_t) -> libc::c_short {
-    let mut pair: libc::c_short = tt_get_signed_byte(handle) as libc::c_short;
+pub unsafe extern "C" fn tt_get_signed_pair(mut handle: rust_input_handle_t) -> i16 {
+    let mut pair: i16 = tt_get_signed_byte(handle) as i16;
     pair = ((pair as i32) << 8i32 | tt_get_unsigned_byte(handle) as i32)
-        as libc::c_short;
+        as i16;
     return pair;
 }
 #[no_mangle]

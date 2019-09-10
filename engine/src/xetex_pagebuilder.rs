@@ -127,7 +127,7 @@ extern "C" {
 }
 pub type scaled_t = i32;
 pub type eight_bits = u8;
-pub type small_number = libc::c_short;
+pub type small_number = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
@@ -189,7 +189,7 @@ pub type group_code = u8;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
-    pub mode: libc::c_short,
+    pub mode: i16,
     pub head: i32,
     pub tail: i32,
     pub eTeX_aux: i32,
@@ -1163,7 +1163,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
             output_active = 1i32 != 0; /* this is `prev_depth` */
             dead_cycles += 1;
             push_nest();
-            cur_list.mode = -1i32 as libc::c_short;
+            cur_list.mode = -1i32 as i16;
             cur_list.aux.b32.s1 = -65536000i32;
             cur_list.mode_line = -line;
             begin_token_list(

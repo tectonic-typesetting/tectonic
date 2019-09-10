@@ -358,7 +358,7 @@ pub struct tt_post_table {
     pub count: USHORT,
     /* Number of glyph names in names[] */
 }
-pub type FWord = libc::c_short;
+pub type FWord = i16;
 pub type Fixed = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -458,7 +458,7 @@ pub type BYTE = u8;
 */
 /* Acoid conflict with CHAR ... from <winnt.h>.  */
 /* Data Types as described in Apple's TTRefMan */
-pub type SHORT = libc::c_short;
+pub type SHORT = i16;
 /* Order of lookup should be
  *  post, unicode+otl
  */

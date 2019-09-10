@@ -812,7 +812,7 @@ pub struct tt_longMetrics {
     pub advance: USHORT,
     pub sideBearing: SHORT,
 }
-pub type SHORT = libc::c_short;
+pub type SHORT = i16;
 pub type USHORT = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -963,7 +963,7 @@ pub struct tt_head_table {
     pub glyphDataFormat: SHORT,
 }
 /* 16.16-bit signed fixed-point number */
-pub type FWord = libc::c_short;
+pub type FWord = i16;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

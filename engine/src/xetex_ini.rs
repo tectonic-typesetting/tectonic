@@ -363,7 +363,7 @@ pub type eight_bits = u8;
 pub type pool_pointer = i32;
 pub type str_number = i32;
 pub type packed_UTF16_code = u16;
-pub type small_number = libc::c_short;
+pub type small_number = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
@@ -600,7 +600,7 @@ pub type save_pointer = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
-    pub mode: libc::c_short,
+    pub mode: i16,
     pub head: i32,
     pub tail: i32,
     pub eTeX_aux: i32,
@@ -628,8 +628,8 @@ pub struct input_state_t {
 pub struct UFILE {
     pub handle: rust_input_handle_t,
     pub savedChar: i64,
-    pub skipNextLF: libc::c_short,
-    pub encodingMode: libc::c_short,
+    pub skipNextLF: i16,
+    pub encodingMode: i16,
     pub conversionData: *mut libc::c_void,
 }
 #[inline]
@@ -804,7 +804,7 @@ pub static mut last_rightmost_char: i32 = 0;
 #[no_mangle]
 pub static mut hlist_stack: [i32; 513] = [0; 513];
 #[no_mangle]
-pub static mut hlist_stack_level: libc::c_short = 0;
+pub static mut hlist_stack_level: i16 = 0;
 #[no_mangle]
 pub static mut first_p: i32 = 0;
 #[no_mangle]
@@ -835,7 +835,7 @@ pub static mut cur_list: list_state_record = list_state_record {
     },
 };
 #[no_mangle]
-pub static mut shown_mode: libc::c_short = 0;
+pub static mut shown_mode: i16 = 0;
 #[no_mangle]
 pub static mut old_setting: u8 = 0;
 #[no_mangle]
@@ -1823,8 +1823,8 @@ pub unsafe extern "C" fn trie_fix(mut p: trie_pointer) {
     }
 }
 unsafe extern "C" fn new_patterns() {
-    let mut k: libc::c_short = 0;
-    let mut l: libc::c_short = 0;
+    let mut k: i16 = 0;
+    let mut l: i16 = 0;
     let mut digit_sensed: bool = false;
     let mut v: trie_opcode = 0;
     let mut p: trie_pointer = 0;
@@ -1926,7 +1926,7 @@ unsafe extern "C" fn new_patterns() {
             .s1 as u8
         }
         scan_left_brace();
-        k = 0i32 as libc::c_short;
+        k = 0i32 as i16;
         hyf[0] = 0i32 as u8;
         digit_sensed = 0i32 != 0;
         loop {
@@ -2072,7 +2072,7 @@ unsafe extern "C" fn new_patterns() {
                     if cur_cmd as i32 == 2i32 {
                         break;
                     }
-                    k = 0i32 as libc::c_short;
+                    k = 0i32 as i16;
                     hyf[0] = 0i32 as u8;
                     digit_sensed = 0i32 != 0
                 }
@@ -2434,8 +2434,8 @@ pub unsafe extern "C" fn init_trie() {
 /*:1001*/
 unsafe extern "C" fn new_hyph_exceptions() {
     let mut current_block: u64;
-    let mut n: libc::c_short = 0;
-    let mut j: libc::c_short = 0;
+    let mut n: i16 = 0;
+    let mut j: i16 = 0;
     let mut h: hyph_pointer = 0;
     let mut k: str_number = 0;
     let mut p: i32 = 0;
@@ -2547,7 +2547,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
         hyph_index = *trie_trl.offset((hyph_start + cur_lang as i32) as isize)
     }
     /*970:*/
-    n = 0i32 as libc::c_short;
+    n = 0i32 as i16;
     p = -0xfffffffi32;
     's_91: loop {
         get_x_token();
@@ -2672,7 +2672,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                     );
                 }
                 h = 0i32 as hyph_pointer;
-                j = 1i32 as libc::c_short;
+                j = 1i32 as i16;
                 while j as i32 <= n as i32 {
                     h = ((h as i32 + h as i32 + hc[j as usize]) % 607i32)
                         as hyph_pointer;
@@ -2747,7 +2747,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
         if cur_cmd as i32 == 2i32 {
             return;
         }
-        n = 0i32 as libc::c_short;
+        n = 0i32 as i16;
         p = -0xfffffffi32
     }
 }
@@ -8469,8 +8469,8 @@ unsafe extern "C" fn init_io() {
     /* This is largely vestigial at this point */
     stdin_ufile.handle = 0 as *mut libc::c_void;
     stdin_ufile.savedChar = -1i32 as i64;
-    stdin_ufile.skipNextLF = 0i32 as libc::c_short;
-    stdin_ufile.encodingMode = 1i32 as libc::c_short;
+    stdin_ufile.skipNextLF = 0i32 as i16;
+    stdin_ufile.encodingMode = 1i32 as i16;
     stdin_ufile.conversionData = 0 as *mut libc::c_void;
     let ref mut fresh19 = *input_file.offset(0);
     *fresh19 = &mut stdin_ufile;
@@ -8497,14 +8497,14 @@ unsafe extern "C" fn initialize_more_variables() {
     use_err_help = 0i32 != 0;
     nest_ptr = 0i32;
     max_nest_stack = 0i32;
-    cur_list.mode = 1i32 as libc::c_short;
+    cur_list.mode = 1i32 as i16;
     cur_list.head = 4999999i32 - 1i32;
     cur_list.tail = 4999999i32 - 1i32;
     cur_list.eTeX_aux = -0xfffffffi32;
     cur_list.aux.b32.s1 = -65536000i32;
     cur_list.mode_line = 0i32;
     cur_list.prev_graf = 0i32;
-    shown_mode = 0i32 as libc::c_short;
+    shown_mode = 0i32 as i16;
     page_contents = 0i32 as u8;
     page_tail = 4999999i32 - 2i32;
     last_glue = 0x3fffffffi32;

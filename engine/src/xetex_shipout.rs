@@ -348,7 +348,7 @@ pub type eight_bits = u8;
 pub type pool_pointer = i32;
 pub type str_number = i32;
 pub type packed_UTF16_code = u16;
-pub type small_number = libc::c_short;
+pub type small_number = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
@@ -576,7 +576,7 @@ pub type internal_font_number = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
-    pub mode: libc::c_short,
+    pub mode: i16,
     pub head: i32,
     pub tail: i32,
     pub eTeX_aux: i32,
@@ -3808,7 +3808,7 @@ unsafe extern "C" fn write_out(mut p: i32) {
     (*mem.offset(q as isize)).b32.s0 = 0x200000i32 + '{' as i32;
     begin_token_list(q, 5i32 as u16);
     old_mode = cur_list.mode as i32;
-    cur_list.mode = 0i32 as libc::c_short;
+    cur_list.mode = 0i32 as i16;
     cur_cs = write_loc;
     q = scan_toks(0i32 != 0, 1i32 != 0);
     get_token();
@@ -3839,7 +3839,7 @@ unsafe extern "C" fn write_out(mut p: i32) {
             }
         }
     }
-    cur_list.mode = old_mode as libc::c_short;
+    cur_list.mode = old_mode as i16;
     end_token_list();
     old_setting = selector as u8;
     j = (*mem.offset((p + 1i32) as isize)).b32.s0 as small_number;

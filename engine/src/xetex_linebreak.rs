@@ -41,7 +41,7 @@ extern "C" {
     #[no_mangle]
     static mut hlist_stack: [i32; 513];
     #[no_mangle]
-    static mut hlist_stack_level: libc::c_short;
+    static mut hlist_stack_level: i16;
     #[no_mangle]
     static mut first_p: i32;
     #[no_mangle]
@@ -217,7 +217,7 @@ pub type UnicodeScalar = i32;
 pub type pool_pointer = i32;
 pub type str_number = i32;
 pub type packed_UTF16_code = u16;
-pub type small_number = libc::c_short;
+pub type small_number = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
@@ -251,7 +251,7 @@ pub type hyph_pointer = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
-    pub mode: libc::c_short,
+    pub mode: i16,
     pub head: i32,
     pub tail: i32,
     pub eTeX_aux: i32,
@@ -4858,9 +4858,9 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
 }
 unsafe extern "C" fn hyphenate() {
     let mut current_block: u64;
-    let mut i: libc::c_short = 0;
-    let mut j: libc::c_short = 0;
-    let mut l: libc::c_short = 0;
+    let mut i: i16 = 0;
+    let mut j: i16 = 0;
+    let mut l: i16 = 0;
     let mut q: i32 = 0;
     let mut r: i32 = 0;
     let mut s: i32 = 0;
@@ -4868,7 +4868,7 @@ unsafe extern "C" fn hyphenate() {
     let mut major_tail: i32 = 0;
     let mut minor_tail: i32 = 0;
     let mut c: UnicodeScalar = 0i32;
-    let mut c_loc: libc::c_short = 0;
+    let mut c_loc: i16 = 0;
     let mut r_count: i32 = 0;
     let mut hyf_node: i32 = 0;
     let mut z: trie_pointer = 0;
@@ -4877,7 +4877,7 @@ unsafe extern "C" fn hyphenate() {
     let mut k: str_number = 0;
     let mut u: pool_pointer = 0;
     let mut for_end: i32 = 0;
-    j = 0i32 as libc::c_short;
+    j = 0i32 as i16;
     for_end = hn as i32;
     if j as i32 <= for_end {
         loop {
@@ -4893,7 +4893,7 @@ unsafe extern "C" fn hyphenate() {
     hn += 1;
     hc[hn as usize] = cur_lang as i32;
     let mut for_end_0: i32 = 0;
-    j = 2i32 as libc::c_short;
+    j = 2i32 as i16;
     for_end_0 = hn as i32;
     if j as i32 <= for_end_0 {
         loop {
@@ -4912,7 +4912,7 @@ unsafe extern "C" fn hyphenate() {
             break;
         }
         if length(k) == hn as i32 {
-            j = 1i32 as libc::c_short;
+            j = 1i32 as i16;
             u = *str_start.offset((k as i64 - 65536) as isize);
             loop {
                 if *str_pool.offset(u as isize) as i32 != hc[j as usize] {
@@ -4959,7 +4959,7 @@ unsafe extern "C" fn hyphenate() {
             hc[(hn as i32 + 1i32) as usize] = 0i32;
             hc[(hn as i32 + 2i32) as usize] = max_hyph_char;
             let mut for_end_1: i32 = 0;
-            j = 0i32 as libc::c_short;
+            j = 0i32 as i16;
             for_end_1 = hn as i32 - r_hyf + 1i32;
             if j as i32 <= for_end_1 {
                 loop {
@@ -4973,7 +4973,7 @@ unsafe extern "C" fn hyphenate() {
                             loop {
                                 v = v + op_start[cur_lang as usize];
                                 i = (l as i32 - hyf_distance[v as usize] as i32)
-                                    as libc::c_short;
+                                    as i16;
                                 if hyf_num[v as usize] as i32
                                     > hyf[i as usize] as i32
                                 {
@@ -4999,7 +4999,7 @@ unsafe extern "C" fn hyphenate() {
         _ => {}
     }
     let mut for_end_2: i32 = 0;
-    j = 0i32 as libc::c_short;
+    j = 0i32 as i16;
     for_end_2 = l_hyf - 1i32;
     if j as i32 <= for_end_2 {
         loop {
@@ -5012,7 +5012,7 @@ unsafe extern "C" fn hyphenate() {
         }
     }
     let mut for_end_3: i32 = 0;
-    j = 0i32 as libc::c_short;
+    j = 0i32 as i16;
     for_end_3 = r_hyf - 1i32;
     if j as i32 <= for_end_3 {
         loop {
@@ -5025,7 +5025,7 @@ unsafe extern "C" fn hyphenate() {
         }
     }
     let mut for_end_4: i32 = 0;
-    j = l_hyf as libc::c_short;
+    j = l_hyf as i16;
     for_end_4 = hn as i32 - r_hyf;
     if j as i32 <= for_end_4 {
         current_block = 5207889489643863322;
@@ -5061,7 +5061,7 @@ unsafe extern "C" fn hyphenate() {
         }
         hyphen_passed = 0i32 as small_number;
         let mut for_end_5: i32 = 0;
-        j = l_hyf as libc::c_short;
+        j = l_hyf as i16;
         for_end_5 = hn as i32 - r_hyf;
         if j as i32 <= for_end_5 {
             loop {
@@ -5069,7 +5069,7 @@ unsafe extern "C" fn hyphenate() {
                     q = new_native_word_node(hf, j as i32 - hyphen_passed as i32);
                     (*mem.offset(q as isize)).b16.s0 = (*mem.offset(ha as isize)).b16.s0;
                     let mut for_end_6: i32 = 0;
-                    i = 0i32 as libc::c_short;
+                    i = 0i32 as i16;
                     for_end_6 = j as i32 - hyphen_passed as i32 - 1i32;
                     if i as i32 <= for_end_6 {
                         loop {
@@ -5137,7 +5137,7 @@ unsafe extern "C" fn hyphenate() {
         q = new_native_word_node(hf, hn as i32 - hyphen_passed as i32);
         (*mem.offset(q as isize)).b16.s0 = (*mem.offset(ha as isize)).b16.s0;
         let mut for_end_7: i32 = 0;
-        i = 0i32 as libc::c_short;
+        i = 0i32 as i16;
         for_end_7 = hn as i32 - hyphen_passed as i32 - 1i32;
         if i as i32 <= for_end_7 {
             loop {
@@ -5241,7 +5241,7 @@ unsafe extern "C" fn hyphenate() {
             match current_block {
                 6826215413708131726 => {}
                 _ => {
-                    j = 1i32 as libc::c_short;
+                    j = 1i32 as i16;
                     s = ha;
                     init_list = -0xfffffffi32;
                     current_block = 5209103994167801282;
@@ -5254,11 +5254,11 @@ unsafe extern "C" fn hyphenate() {
                 while (*mem.offset(s as isize)).b32.s1 != ha {
                     s = (*mem.offset(s as isize)).b32.s1
                 }
-                j = 0i32 as libc::c_short
+                j = 0i32 as i16
             }
             6826215413708131726 => {
                 s = ha;
-                j = 0i32 as libc::c_short;
+                j = 0i32 as i16;
                 hu[0] = max_hyph_char;
                 init_lig = 0i32 != 0;
                 init_list = -0xfffffffi32
@@ -5268,7 +5268,7 @@ unsafe extern "C" fn hyphenate() {
         flush_node_list(r);
         loop {
             l = j;
-            j = (reconstitute(j, hn, bchar, hyf_char) as i32 + 1i32) as libc::c_short;
+            j = (reconstitute(j, hn, bchar, hyf_char) as i32 + 1i32) as i16;
             if hyphen_passed as i32 == 0i32 {
                 (*mem.offset(s as isize)).b32.s1 =
                     (*mem.offset((4999999i32 - 4i32) as isize)).b32.s1;
@@ -5310,7 +5310,7 @@ unsafe extern "C" fn hyphenate() {
                     while l as i32 <= i as i32 {
                         l = (reconstitute(l, i, *font_bchar.offset(hf as isize), 65536i32)
                             as i32
-                            + 1i32) as libc::c_short;
+                            + 1i32) as i16;
                         if (*mem.offset((4999999i32 - 4i32) as isize)).b32.s1 > -0xfffffffi32 {
                             if minor_tail == -0xfffffffi32 {
                                 (*mem.offset((r + 1i32) as isize)).b32.s0 =
@@ -5332,7 +5332,7 @@ unsafe extern "C" fn hyphenate() {
                     }
                     minor_tail = -0xfffffffi32;
                     (*mem.offset((r + 1i32) as isize)).b32.s1 = -0xfffffffi32;
-                    c_loc = 0i32 as libc::c_short;
+                    c_loc = 0i32 as i16;
                     if *bchar_label.offset(hf as isize) != 0i32 {
                         l -= 1;
                         c = hu[l as usize];
@@ -5342,10 +5342,10 @@ unsafe extern "C" fn hyphenate() {
                     while (l as i32) < j as i32 {
                         loop {
                             l = (reconstitute(l, hn, bchar, 65536i32) as i32 + 1i32)
-                                as libc::c_short;
+                                as i16;
                             if c_loc as i32 > 0i32 {
                                 hu[c_loc as usize] = c;
-                                c_loc = 0i32 as libc::c_short
+                                c_loc = 0i32 as i16
                             }
                             if (*mem.offset((4999999i32 - 4i32) as isize)).b32.s1 > -0xfffffffi32 {
                                 if minor_tail == -0xfffffffi32 {
@@ -5367,7 +5367,7 @@ unsafe extern "C" fn hyphenate() {
                         while l as i32 > j as i32 {
                             /*952: */
                             j = (reconstitute(j, hn, bchar, 65536i32) as i32 + 1i32)
-                                as libc::c_short; /*:944*/
+                                as i16; /*:944*/
                             (*mem.offset(major_tail as isize)).b32.s1 =
                                 (*mem.offset((4999999i32 - 4i32) as isize)).b32.s1;
                             while (*mem.offset(major_tail as isize)).b32.s1 > -0xfffffffi32 {
@@ -5814,7 +5814,7 @@ unsafe extern "C" fn find_protchar_left(mut l: i32, mut d: bool) -> i32 {
             l = (*mem.offset(l as isize)).b32.s1
         }
     }
-    hlist_stack_level = 0i32 as libc::c_short;
+    hlist_stack_level = 0i32 as i16;
     run = 1i32 != 0;
     loop {
         t = l;
@@ -5871,7 +5871,7 @@ unsafe extern "C" fn find_protchar_right(mut l: i32, mut r: i32) -> i32 {
     if r == -0xfffffffi32 {
         return -0xfffffffi32;
     }
-    hlist_stack_level = 0i32 as libc::c_short;
+    hlist_stack_level = 0i32 as i16;
     run = 1i32 != 0;
     loop {
         t = r;
@@ -5934,10 +5934,10 @@ unsafe extern "C" fn push_node(mut p: i32) {
         );
     }
     hlist_stack[hlist_stack_level as usize] = p;
-    hlist_stack_level = (hlist_stack_level as i32 + 1i32) as libc::c_short;
+    hlist_stack_level = (hlist_stack_level as i32 + 1i32) as i16;
 }
 unsafe extern "C" fn pop_node() -> i32 {
-    hlist_stack_level = (hlist_stack_level as i32 - 1i32) as libc::c_short;
+    hlist_stack_level = (hlist_stack_level as i32 - 1i32) as i16;
     if (hlist_stack_level as i32) < 0i32 {
         pdf_error(
             b"pop_node\x00" as *const u8 as *const i8,

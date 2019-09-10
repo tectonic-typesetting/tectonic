@@ -290,7 +290,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 pub type scaled_t = i32;
 pub type Fixed = scaled_t;
 pub type str_number = i32;
-pub type small_number = libc::c_short;
+pub type small_number = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
@@ -351,7 +351,7 @@ pub union memory_word {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
-    pub mode: libc::c_short,
+    pub mode: i16,
     pub head: i32,
     pub tail: i32,
     pub eTeX_aux: i32,

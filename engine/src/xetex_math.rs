@@ -369,7 +369,7 @@ pub type UTF16_code = u16;
 pub type UnicodeScalar = i32;
 pub type eight_bits = u8;
 pub type str_number = i32;
-pub type small_number = libc::c_short;
+pub type small_number = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
@@ -400,7 +400,7 @@ pub type font_index = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
-    pub mode: libc::c_short,
+    pub mode: i16,
     pub head: i32,
     pub tail: i32,
     pub eTeX_aux: i32,
@@ -1228,7 +1228,7 @@ pub unsafe extern "C" fn init_math() {
             l = (*mem.offset(p as isize)).b32.s1
         }
         push_math(15i32 as group_code);
-        cur_list.mode = 207i32 as libc::c_short;
+        cur_list.mode = 207i32 as i16;
         eq_word_define(
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -3759,7 +3759,7 @@ pub unsafe extern "C" fn resume_after_display() {
     unsave();
     cur_list.prev_graf = cur_list.prev_graf + 3i32;
     push_nest();
-    cur_list.mode = 104i32 as libc::c_short;
+    cur_list.mode = 104i32 as i16;
     cur_list.aux.b32.s0 = 1000i32;
     if (*eqtb.offset(
         (1i32

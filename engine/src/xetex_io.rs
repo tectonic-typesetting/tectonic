@@ -455,8 +455,8 @@ pub union memory_word {
 pub struct UFILE {
     pub handle: rust_input_handle_t,
     pub savedChar: i64,
-    pub skipNextLF: libc::c_short,
-    pub encodingMode: libc::c_short,
+    pub skipNextLF: i16,
+    pub encodingMode: i16,
     pub conversionData: *mut libc::c_void,
 }
 
@@ -783,7 +783,7 @@ pub unsafe extern "C" fn set_input_file_encoding(
     }
     (*f).conversionData = 0 as *mut libc::c_void;
     match mode {
-        1 | 2 | 3 | 4 => (*f).encodingMode = mode as libc::c_short,
+        1 | 2 | 3 | 4 => (*f).encodingMode = mode as i16,
         5 => {
             let mut name: *mut i8 = gettexstring(encodingData);
             let mut err: UErrorCode = U_ZERO_ERROR;
@@ -799,9 +799,9 @@ pub unsafe extern "C" fn set_input_file_encoding(
                 print_c_string(name);
                 print_c_string(b"\'; reading as raw bytes\x00" as *const u8 as *const i8);
                 end_diagnostic(1i32 != 0);
-                (*f).encodingMode = 4i32 as libc::c_short
+                (*f).encodingMode = 4i32 as i16
             } else {
-                (*f).encodingMode = 5i32 as libc::c_short;
+                (*f).encodingMode = 5i32 as i16;
                 (*f).conversionData = cnv as *mut libc::c_void
             }
             free(name as *mut libc::c_void);
@@ -825,10 +825,10 @@ pub unsafe extern "C" fn u_open_in(
         return 0i32;
     }
     *f = xmalloc(::std::mem::size_of::<UFILE>() as u64) as *mut UFILE;
-    (**f).encodingMode = 0i32 as libc::c_short;
+    (**f).encodingMode = 0i32 as i16;
     (**f).conversionData = 0 as *mut libc::c_void;
     (**f).savedChar = -1i32 as i64;
-    (**f).skipNextLF = 0i32 as libc::c_short;
+    (**f).skipNextLF = 0i32 as i16;
     (**f).handle = handle;
     if mode == 0i32 {
         /* sniff encoding form */
@@ -951,7 +951,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
         /* Recognize either LF or CR as a line terminator; skip initial LF if prev line ended with CR.  */
         i = ttstub_input_getc((*f).handle);
         if (*f).skipNextLF != 0 {
-            (*f).skipNextLF = 0i32 as libc::c_short;
+            (*f).skipNextLF = 0i32 as i16;
             if i == '\n' as i32 {
                 i = ttstub_input_getc((*f).handle)
             }
@@ -1043,7 +1043,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
         /* Recognize either LF or CR as a line terminator; skip initial LF if prev line ended with CR.  */
         i = get_uni_c(f);
         if (*f).skipNextLF != 0 {
-            (*f).skipNextLF = 0i32 as libc::c_short;
+            (*f).skipNextLF = 0i32 as i16;
             if i == '\n' as i32 {
                 i = get_uni_c(f)
             }
@@ -1121,7 +1121,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
     }
     /* If line ended with CR, remember to skip following LF. */
     if i == '\r' as i32 {
-        (*f).skipNextLF = 1i32 as libc::c_short
+        (*f).skipNextLF = 1i32 as i16
     }
     *buffer.offset(last as isize) = ' ' as i32;
     if last >= max_buf_stack {

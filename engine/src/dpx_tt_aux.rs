@@ -97,10 +97,10 @@ pub type rust_input_handle_t = *mut libc::c_void;
 pub type BYTE = u8;
 pub type SFNT_CHAR = libc::c_schar;
 pub type USHORT = u16;
-pub type SHORT = libc::c_short;
+pub type SHORT = i16;
 pub type SFNT_ULONG = u32;
 pub type Fixed = u32;
-pub type FWord = libc::c_short;
+pub type FWord = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table {

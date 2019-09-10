@@ -68,7 +68,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
-    fn tt_get_signed_pair(handle: rust_input_handle_t) -> libc::c_short;
+    fn tt_get_signed_pair(handle: rust_input_handle_t) -> i16;
     #[no_mangle]
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
@@ -364,11 +364,11 @@ pub type rust_input_handle_t = *mut libc::c_void;
 /* Data Types as described in Apple's TTRefMan */
 pub type BYTE = u8;
 pub type USHORT = u16;
-pub type SHORT = libc::c_short;
+pub type SHORT = i16;
 pub type SFNT_ULONG = u32;
 pub type Fixed = u32;
 /* 16.16-bit signed fixed-point number */
-pub type FWord = libc::c_short;
+pub type FWord = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table {
@@ -788,8 +788,8 @@ pub type CID = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cmap_plat_enc_rec {
-    pub platform: libc::c_short,
-    pub encoding: libc::c_short,
+    pub platform: i16,
+    pub encoding: i16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -2134,36 +2134,36 @@ unsafe extern "C" fn create_ToUnicode_cmap(
 static mut cmap_plat_encs: [cmap_plat_enc_rec; 5] = [
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 3i32 as libc::c_short,
-            encoding: 10i32 as libc::c_short,
+            platform: 3i32 as i16,
+            encoding: 10i32 as i16,
         };
         init
     },
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 0i32 as libc::c_short,
-            encoding: 3i32 as libc::c_short,
+            platform: 0i32 as i16,
+            encoding: 3i32 as i16,
         };
         init
     },
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 0i32 as libc::c_short,
-            encoding: 0i32 as libc::c_short,
+            platform: 0i32 as i16,
+            encoding: 0i32 as i16,
         };
         init
     },
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 3i32 as libc::c_short,
-            encoding: 1i32 as libc::c_short,
+            platform: 3i32 as i16,
+            encoding: 1i32 as i16,
         };
         init
     },
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 0i32 as libc::c_short,
-            encoding: 1i32 as libc::c_short,
+            platform: 0i32 as i16,
+            encoding: 1i32 as i16,
         };
         init
     },
