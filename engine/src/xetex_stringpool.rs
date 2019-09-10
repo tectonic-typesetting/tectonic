@@ -133,15 +133,12 @@ pub unsafe extern "C" fn str_eq_buf(mut s: str_number, mut k: i32) -> bool {
     while j < *str_start.offset(((s + 1i32) as i64 - 65536) as isize) {
         if *buffer.offset(k as isize) as i64 >= 65536 {
             if *str_pool.offset(j as isize) as i64
-                != 55296
-                    + (*buffer.offset(k as isize) as i64 - 65536) / 1024 as i64
+                != 55296 + (*buffer.offset(k as isize) as i64 - 65536) / 1024 as i64
             {
                 return 0i32 != 0;
             } else {
                 if *str_pool.offset((j + 1i32) as isize) as i64
-                    != 56320
-                        + (*buffer.offset(k as isize) as i64 - 65536)
-                            % 1024 as i64
+                    != 56320 + (*buffer.offset(k as isize) as i64 - 65536) % 1024 as i64
                 {
                     return 0i32 != 0;
                 } else {
@@ -170,23 +167,17 @@ pub unsafe extern "C" fn str_eq_str(mut s: str_number, mut t: str_number) -> boo
                     return 0i32 != 0;
                 }
             } else if s
-                != *str_pool
-                    .offset(*str_start.offset((t as i64 - 65536) as isize) as isize)
-                    as i32
+                != *str_pool.offset(*str_start.offset((t as i64 - 65536) as isize) as isize) as i32
             {
                 return 0i32 != 0;
             }
         } else if (t as i64) < 65536 {
-            if *str_pool.offset(*str_start.offset((s as i64 - 65536) as isize) as isize)
-                as i32
-                != t
+            if *str_pool.offset(*str_start.offset((s as i64 - 65536) as isize) as isize) as i32 != t
             {
                 return 0i32 != 0;
             }
-        } else if *str_pool.offset(*str_start.offset((s as i64 - 65536) as isize) as isize)
-            as i32
-            != *str_pool.offset(*str_start.offset((t as i64 - 65536) as isize) as isize)
-                as i32
+        } else if *str_pool.offset(*str_start.offset((s as i64 - 65536) as isize) as isize) as i32
+            != *str_pool.offset(*str_start.offset((t as i64 - 65536) as isize) as isize) as i32
         {
             return 0i32 != 0;
         }
@@ -194,9 +185,7 @@ pub unsafe extern "C" fn str_eq_str(mut s: str_number, mut t: str_number) -> boo
         j = *str_start.offset((s as i64 - 65536) as isize);
         k = *str_start.offset((t as i64 - 65536) as isize);
         while j < *str_start.offset(((s + 1i32) as i64 - 65536) as isize) {
-            if *str_pool.offset(j as isize) as i32
-                != *str_pool.offset(k as isize) as i32
-            {
+            if *str_pool.offset(j as isize) as i32 != *str_pool.offset(k as isize) as i32 {
                 return 0i32 != 0;
             }
             j += 1;

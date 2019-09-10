@@ -18,11 +18,7 @@ extern "C" {
     #[no_mangle]
     fn ttstub_get_file_md5(path: *const i8, digest: *mut i8) -> i32;
     #[no_mangle]
-    fn ttstub_get_data_md5(
-        data: *const i8,
-        len: size_t,
-        digest: *mut i8,
-    ) -> i32;
+    fn ttstub_get_data_md5(data: *const i8, len: size_t, digest: *mut i8) -> i32;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
@@ -117,7 +113,7 @@ pub unsafe extern "C" fn maketexstring(mut s: *const i8) -> i32 {
         let fresh0 = cp;
         cp = cp.offset(1);
         rval = *fresh0 as UInt32;
-        if !(rval != 0i32 as u32) {
+        if !(rval != 0_u32) {
             break;
         }
         let mut extraBytes: UInt16 = bytesFromUTF8[rval as usize] as UInt16;
@@ -130,8 +126,7 @@ pub unsafe extern "C" fn maketexstring(mut s: *const i8) -> i32 {
                 if *cp != 0 {
                     let fresh1 = cp;
                     cp = cp.offset(1);
-                    rval = (rval as u32).wrapping_add(*fresh1 as u32) as UInt32
-                        as UInt32
+                    rval = (rval as u32).wrapping_add(*fresh1 as u32) as UInt32 as UInt32
                 }
                 current_block_19 = 15420705083065539194;
             }
@@ -157,8 +152,7 @@ pub unsafe extern "C" fn maketexstring(mut s: *const i8) -> i32 {
                 if *cp != 0 {
                     let fresh2 = cp;
                     cp = cp.offset(1);
-                    rval = (rval as u32).wrapping_add(*fresh2 as u32) as UInt32
-                        as UInt32
+                    rval = (rval as u32).wrapping_add(*fresh2 as u32) as UInt32 as UInt32
                 }
                 current_block_19 = 17593909170536150684;
             }
@@ -170,8 +164,7 @@ pub unsafe extern "C" fn maketexstring(mut s: *const i8) -> i32 {
                 if *cp != 0 {
                     let fresh3 = cp;
                     cp = cp.offset(1);
-                    rval = (rval as u32).wrapping_add(*fresh3 as u32) as UInt32
-                        as UInt32
+                    rval = (rval as u32).wrapping_add(*fresh3 as u32) as UInt32 as UInt32
                 }
                 current_block_19 = 9565569445570550704;
             }
@@ -183,8 +176,7 @@ pub unsafe extern "C" fn maketexstring(mut s: *const i8) -> i32 {
                 if *cp != 0 {
                     let fresh4 = cp;
                     cp = cp.offset(1);
-                    rval = (rval as u32).wrapping_add(*fresh4 as u32) as UInt32
-                        as UInt32
+                    rval = (rval as u32).wrapping_add(*fresh4 as u32) as UInt32 as UInt32
                 }
                 current_block_19 = 4209676304665092873;
             }
@@ -196,27 +188,22 @@ pub unsafe extern "C" fn maketexstring(mut s: *const i8) -> i32 {
                 if *cp != 0 {
                     let fresh5 = cp;
                     cp = cp.offset(1);
-                    rval = (rval as u32).wrapping_add(*fresh5 as u32) as UInt32
-                        as UInt32
+                    rval = (rval as u32).wrapping_add(*fresh5 as u32) as UInt32 as UInt32
                 }
             }
             _ => {}
         }
-        rval = (rval as u32).wrapping_sub(offsetsFromUTF8[extraBytes as usize]) as UInt32
-            as UInt32;
-        if rval > 0xffffi32 as u32 {
-            rval =
-                (rval as u32).wrapping_sub(0x10000i32 as u32) as UInt32 as UInt32;
+        rval = (rval as u32).wrapping_sub(offsetsFromUTF8[extraBytes as usize]) as UInt32 as UInt32;
+        if rval > 0xffff_u32 {
+            rval = (rval as u32).wrapping_sub(0x10000_u32) as UInt32 as UInt32;
             let fresh6 = pool_ptr;
             pool_ptr = pool_ptr + 1;
-            *str_pool.offset(fresh6 as isize) = (0xd800i32 as u32)
-                .wrapping_add(rval.wrapping_div(0x400i32 as u32))
-                as packed_UTF16_code;
+            *str_pool.offset(fresh6 as isize) =
+                (0xd800_u32).wrapping_add(rval.wrapping_div(0x400_u32)) as packed_UTF16_code;
             let fresh7 = pool_ptr;
             pool_ptr = pool_ptr + 1;
-            *str_pool.offset(fresh7 as isize) = (0xdc00i32 as u32)
-                .wrapping_add(rval.wrapping_rem(0x400i32 as u32))
-                as packed_UTF16_code
+            *str_pool.offset(fresh7 as isize) =
+                (0xdc00_u32).wrapping_add(rval.wrapping_rem(0x400_u32)) as packed_UTF16_code
         } else {
             let fresh8 = pool_ptr;
             pool_ptr = pool_ptr + 1;
@@ -227,7 +214,7 @@ pub unsafe extern "C" fn maketexstring(mut s: *const i8) -> i32 {
 }
 #[no_mangle]
 pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut i8 {
-    let mut bytesToWrite: u32 = 0i32 as u32;
+    let mut bytesToWrite: u32 = 0_u32;
     let mut len: pool_pointer = 0;
     let mut i: pool_pointer = 0;
     let mut j: pool_pointer = 0;
@@ -242,36 +229,35 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut i8 {
     i = 0i32;
     j = 0i32;
     while i < len {
-        let mut c: u32 = *str_pool
-            .offset((i + *str_start.offset((s as i64 - 65536) as isize)) as isize)
-            as u32;
-        if c >= 0xd800i32 as u32 && c <= 0xdbffi32 as u32 {
+        let mut c: u32 =
+            *str_pool.offset((i + *str_start.offset((s as i64 - 65536) as isize)) as isize) as u32;
+        if c >= 0xd800_u32 && c <= 0xdbff_u32 {
             i += 1;
             let mut lo: u32 = *str_pool
                 .offset((i + *str_start.offset((s as i64 - 65536) as isize)) as isize)
                 as u32;
-            if lo >= 0xdc00i32 as u32 && lo <= 0xdfffi32 as u32 {
+            if lo >= 0xdc00_u32 && lo <= 0xdfff_u32 {
                 c = c
-                    .wrapping_sub(0xd800i32 as u32)
-                    .wrapping_mul(0x400i32 as u32)
+                    .wrapping_sub(0xd800_u32)
+                    .wrapping_mul(0x400_u32)
                     .wrapping_add(lo)
-                    .wrapping_sub(0xdc00i32 as u32)
-                    .wrapping_add(0x10000i32 as u32)
+                    .wrapping_sub(0xdc00_u32)
+                    .wrapping_add(0x10000_u32)
             } else {
-                c = 0xfffdi32 as u32
+                c = 0xfffd_u32
             }
         }
-        if c < 0x80i32 as u32 {
-            bytesToWrite = 1i32 as u32
-        } else if c < 0x800i32 as u32 {
-            bytesToWrite = 2i32 as u32
-        } else if c < 0x10000i32 as u32 {
-            bytesToWrite = 3i32 as u32
-        } else if c < 0x110000i32 as u32 {
-            bytesToWrite = 4i32 as u32
+        if c < 0x80_u32 {
+            bytesToWrite = 1_u32
+        } else if c < 0x800_u32 {
+            bytesToWrite = 2_u32
+        } else if c < 0x10000_u32 {
+            bytesToWrite = 3_u32
+        } else if c < 0x110000_u32 {
+            bytesToWrite = 4_u32
         } else {
-            bytesToWrite = 3i32 as u32;
-            c = 0xfffdi32 as u32
+            bytesToWrite = 3_u32;
+            c = 0xfffd_u32
         }
         j = (j as u32).wrapping_add(bytesToWrite) as pool_pointer as pool_pointer;
         let mut current_block_28: u64;
@@ -279,8 +265,7 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut i8 {
             4 => {
                 /* note: everything falls through. */
                 j -= 1;
-                *name.offset(j as isize) =
-                    ((c | 0x80i32 as u32) & 0xbfi32 as u32) as i8;
+                *name.offset(j as isize) = ((c | 0x80_u32) & 0xbf_u32) as i8;
                 c >>= 6i32;
                 current_block_28 = 9281751456159701257;
             }
@@ -300,8 +285,7 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut i8 {
         match current_block_28 {
             9281751456159701257 => {
                 j -= 1;
-                *name.offset(j as isize) =
-                    ((c | 0x80i32 as u32) & 0xbfi32 as u32) as i8;
+                *name.offset(j as isize) = ((c | 0x80_u32) & 0xbf_u32) as i8;
                 c >>= 6i32;
                 current_block_28 = 13645261163415976511;
             }
@@ -310,8 +294,7 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut i8 {
         match current_block_28 {
             13645261163415976511 => {
                 j -= 1;
-                *name.offset(j as isize) =
-                    ((c | 0x80i32 as u32) & 0xbfi32 as u32) as i8;
+                *name.offset(j as isize) = ((c | 0x80_u32) & 0xbf_u32) as i8;
                 c >>= 6i32;
                 current_block_28 = 4925739576308592327;
             }
@@ -320,8 +303,7 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut i8 {
         match current_block_28 {
             4925739576308592327 => {
                 j -= 1;
-                *name.offset(j as isize) =
-                    (c | firstByteMark[bytesToWrite as usize] as u32) as i8
+                *name.offset(j as isize) = (c | firstByteMark[bytesToWrite as usize] as u32) as i8
             }
             _ => {}
         }
@@ -331,10 +313,7 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut i8 {
     *name.offset(j as isize) = 0i32 as i8;
     return name;
 }
-unsafe extern "C" fn compare_paths(
-    mut p1: *const i8,
-    mut p2: *const i8,
-) -> i32 {
+unsafe extern "C" fn compare_paths(mut p1: *const i8, mut p2: *const i8) -> i32 {
     let mut ret: i32 = 0;
     loop {
         ret = *p1 as i32 - *p2 as i32;
@@ -356,18 +335,12 @@ unsafe extern "C" fn compare_paths(
     return ret;
 }
 #[no_mangle]
-pub unsafe extern "C" fn is_new_source(
-    mut srcfilename: str_number,
-    mut lineno: i32,
-) -> bool {
+pub unsafe extern "C" fn is_new_source(mut srcfilename: str_number, mut lineno: i32) -> bool {
     let mut name: *mut i8 = gettexstring(srcfilename);
     return compare_paths(name, last_source_name) != 0i32 || lineno != last_lineno;
 }
 #[no_mangle]
-pub unsafe extern "C" fn remember_source_info(
-    mut srcfilename: str_number,
-    mut lineno: i32,
-) {
+pub unsafe extern "C" fn remember_source_info(mut srcfilename: str_number, mut lineno: i32) {
     free(last_source_name as *mut libc::c_void);
     last_source_name = gettexstring(srcfilename);
     last_lineno = lineno;
@@ -419,11 +392,7 @@ pub unsafe extern "C" fn make_src_special(
  * hexadecimal encoded;
  * sizeof(out) should be at least lin*2+1.
  */
-unsafe extern "C" fn convertStringToHexString(
-    mut in_0: *const i8,
-    mut out: *mut i8,
-    mut lin: i32,
-) {
+unsafe extern "C" fn convertStringToHexString(mut in_0: *const i8, mut out: *mut i8, mut lin: i32) {
     static mut hexchars: [i8; 17] = [
         48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 0,
     ];

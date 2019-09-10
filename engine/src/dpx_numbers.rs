@@ -94,7 +94,7 @@ pub unsafe extern "C" fn skip_bytes(mut n: u32, mut file: *mut FILE) {
     loop {
         let fresh0 = n;
         n = n.wrapping_sub(1);
-        if !(fresh0 > 0i32 as u32) {
+        if !(fresh0 > 0_u32) {
             break;
         }
         get_unsigned_byte(file);
@@ -112,8 +112,7 @@ pub unsafe extern "C" fn get_signed_byte(mut file: *mut FILE) -> i8 {
 #[no_mangle]
 pub unsafe extern "C" fn get_unsigned_pair(mut file: *mut FILE) -> u16 {
     let mut pair: u16 = get_unsigned_byte(file) as u16;
-    pair =
-        ((pair as i32) << 8i32 | get_unsigned_byte(file) as i32) as u16;
+    pair = ((pair as i32) << 8i32 | get_unsigned_byte(file) as i32) as u16;
     return pair;
 }
 #[no_mangle]
@@ -129,14 +128,13 @@ pub unsafe extern "C" fn sget_unsigned_pair(mut s: *mut u8) -> u16 {
 #[no_mangle]
 pub unsafe extern "C" fn get_signed_pair(mut file: *mut FILE) -> i16 {
     let mut pair: i16 = get_signed_byte(file) as i16;
-    pair =
-        ((pair as i32) << 8i32 | get_unsigned_byte(file) as i32) as i16;
+    pair = ((pair as i32) << 8i32 | get_unsigned_byte(file) as i32) as i16;
     return pair;
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_unsigned_triple(mut file: *mut FILE) -> u32 {
     let mut i: i32 = 0;
-    let mut triple: u32 = 0i32 as u32;
+    let mut triple: u32 = 0_u32;
     i = 0i32;
     while i < 3i32 {
         triple = triple << 8i32 | get_unsigned_byte(file) as u32;
@@ -183,8 +181,8 @@ pub unsafe extern "C" fn get_unsigned_num(mut file: *mut FILE, mut num: u8) -> u
     let mut current_block_4: u64;
     match num as i32 {
         3 => {
-            if val > 0x7fi32 as u32 {
-                val = (val as u32).wrapping_sub(0x100i32 as u32) as u32
+            if val > 0x7f_u32 {
+                val = (val as u32).wrapping_sub(0x100_u32) as u32
             }
             val = val << 8i32 | get_unsigned_byte(file) as u32;
             current_block_4 = 10942825333195857913;
@@ -278,8 +276,7 @@ pub unsafe extern "C" fn sqxfw(mut sq: i32, mut fw: fixword) -> i32 {
         .wrapping_add(i)
         .wrapping_add((1i32 << 3i32) as u32)
         >> 4i32) as i32;
-    result = (result as u32).wrapping_add(f.wrapping_add(h).wrapping_add(k) << 12i32)
-        as i32 as i32;
+    result = (result as u32).wrapping_add(f.wrapping_add(h).wrapping_add(k) << 12i32) as i32 as i32;
     result = (result as u32).wrapping_add(j << 28i32) as i32 as i32;
     return if sign > 0i32 { result } else { -result };
 }
@@ -289,7 +286,7 @@ pub unsafe extern "C" fn tt_skip_bytes(mut n: u32, mut handle: rust_input_handle
     loop {
         let fresh3 = n;
         n = n.wrapping_sub(1);
-        if !(fresh3 > 0i32 as u32) {
+        if !(fresh3 > 0_u32) {
             break;
         }
         tt_get_unsigned_byte(handle);
@@ -316,21 +313,19 @@ pub unsafe extern "C" fn tt_get_signed_byte(mut handle: rust_input_handle_t) -> 
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_unsigned_pair(mut handle: rust_input_handle_t) -> u16 {
     let mut pair: u16 = tt_get_unsigned_byte(handle) as u16;
-    pair = ((pair as i32) << 8i32 | tt_get_unsigned_byte(handle) as i32)
-        as u16;
+    pair = ((pair as i32) << 8i32 | tt_get_unsigned_byte(handle) as i32) as u16;
     return pair;
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_signed_pair(mut handle: rust_input_handle_t) -> i16 {
     let mut pair: i16 = tt_get_signed_byte(handle) as i16;
-    pair = ((pair as i32) << 8i32 | tt_get_unsigned_byte(handle) as i32)
-        as i16;
+    pair = ((pair as i32) << 8i32 | tt_get_unsigned_byte(handle) as i32) as i16;
     return pair;
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_unsigned_quad(mut handle: rust_input_handle_t) -> u32 {
     let mut i: i32 = 0;
-    let mut quad: u32 = 0i32 as u32;
+    let mut quad: u32 = 0_u32;
     i = 0i32;
     while i < 4i32 {
         quad = quad << 8i32 | tt_get_unsigned_byte(handle) as u32;
@@ -350,17 +345,13 @@ pub unsafe extern "C" fn tt_get_signed_quad(mut handle: rust_input_handle_t) -> 
     return quad;
 }
 #[no_mangle]
-pub unsafe extern "C" fn tt_get_unsigned_num(
-    mut handle: rust_input_handle_t,
-    mut num: u8,
-) -> u32 {
+pub unsafe extern "C" fn tt_get_unsigned_num(mut handle: rust_input_handle_t, mut num: u8) -> u32 {
     let mut val: u32 = tt_get_unsigned_byte(handle) as u32;
     let mut current_block_4: u64;
     match num as i32 {
         3 => {
-            if val > 0x7fi32 as u32 {
-                val = (val as u32).wrapping_sub(0x100i32 as u32) as u32
-                    as u32
+            if val > 0x7f_u32 {
+                val = (val as u32).wrapping_sub(0x100_u32) as u32 as u32
             }
             val = val << 8i32 | tt_get_unsigned_byte(handle) as u32;
             current_block_4 = 13589375657124263157;

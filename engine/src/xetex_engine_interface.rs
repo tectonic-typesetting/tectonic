@@ -39,24 +39,12 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 /* These functions aren't used within the C/C++ library, but are called
  * by the Rust code to configure the XeTeX engine before launching it. */
 #[no_mangle]
-pub unsafe extern "C" fn tt_xetex_set_int_variable(
-    mut var_name: *mut i8,
-    mut value: i32,
-) -> i32 {
-    if streq_ptr(
-        var_name,
-        b"halt_on_error_p\x00" as *const u8 as *const i8,
-    ) {
+pub unsafe extern "C" fn tt_xetex_set_int_variable(mut var_name: *mut i8, mut value: i32) -> i32 {
+    if streq_ptr(var_name, b"halt_on_error_p\x00" as *const u8 as *const i8) {
         halt_on_error_p = value
-    } else if streq_ptr(
-        var_name,
-        b"in_initex_mode\x00" as *const u8 as *const i8,
-    ) {
+    } else if streq_ptr(var_name, b"in_initex_mode\x00" as *const u8 as *const i8) {
         in_initex_mode = value != 0i32
-    } else if streq_ptr(
-        var_name,
-        b"synctex_enabled\x00" as *const u8 as *const i8,
-    ) {
+    } else if streq_ptr(var_name, b"synctex_enabled\x00" as *const u8 as *const i8) {
         synctex_enabled = (value != 0i32) as i32
     } else if streq_ptr(
         var_name,

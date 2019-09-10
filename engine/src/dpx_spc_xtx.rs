@@ -25,8 +25,7 @@ extern "C" {
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64)
-        -> *mut i8;
+    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
@@ -40,10 +39,7 @@ extern "C" {
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
-    fn parse_c_ident(
-        pp: *mut *const i8,
-        endptr: *const i8,
-    ) -> *mut i8;
+    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
     #[no_mangle]
     fn pdf_init_fontmap_record(mrec: *mut fontmap_rec);
     #[no_mangle]
@@ -62,10 +58,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_remove_fontmap_record(kp: *const i8) -> i32;
     #[no_mangle]
-    fn pdf_insert_fontmap_record(
-        kp: *const i8,
-        mrec: *const fontmap_rec,
-    ) -> *mut fontmap_rec;
+    fn pdf_insert_fontmap_record(kp: *const i8, mrec: *const fontmap_rec) -> *mut fontmap_rec;
     #[no_mangle]
     fn is_pdfm_mapline(mline: *const i8) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -127,10 +120,7 @@ extern "C" {
     #[no_mangle]
     fn parse_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
     #[no_mangle]
-    fn parse_val_ident(
-        start: *mut *const i8,
-        end: *const i8,
-    ) -> *mut i8;
+    fn parse_val_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -165,11 +155,7 @@ extern "C" {
         syntax: i32,
     ) -> i32;
     #[no_mangle]
-    fn spc_util_read_numbers(
-        values: *mut f64,
-        num_values: i32,
-        args: *mut spc_arg,
-    ) -> i32;
+    fn spc_util_read_numbers(values: *mut f64, num_values: i32, args: *mut spc_arg) -> i32;
 }
 pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -210,8 +196,7 @@ pub struct spc_arg {
     pub base: *const i8,
     pub command: *const i8,
 }
-pub type spc_handler_fn_ptr =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
+pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
@@ -350,10 +335,7 @@ pub unsafe extern "C" fn spc_handler_xtx_do_transform(
     pdf_dev_set_fixed_point(x_user - pt.x, y_user - pt.y);
     return 0i32;
 }
-unsafe extern "C" fn spc_handler_xtx_scale(
-    mut spe: *mut spc_env,
-    mut args: *mut spc_arg,
-) -> i32 {
+unsafe extern "C" fn spc_handler_xtx_scale(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut values: [f64; 2] = [0.; 2];
     if spc_util_read_numbers(&mut *values.as_mut_ptr().offset(0), 2i32, args) < 2i32 {
         return -1i32;
@@ -373,10 +355,7 @@ unsafe extern "C" fn spc_handler_xtx_scale(
 /* Scaling without gsave/grestore. */
 static mut scaleFactors: *mut pdf_coord = 0 as *const pdf_coord as *mut pdf_coord;
 static mut scaleFactorCount: i32 = -1i32;
-unsafe extern "C" fn spc_handler_xtx_bscale(
-    mut spe: *mut spc_env,
-    mut args: *mut spc_arg,
-) -> i32 {
+unsafe extern "C" fn spc_handler_xtx_bscale(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut values: [f64; 2] = [0.; 2];
     scaleFactorCount += 1;
     if scaleFactorCount & 0xfi32 == 0 {
@@ -406,10 +385,7 @@ unsafe extern "C" fn spc_handler_xtx_bscale(
         0i32 as f64,
     );
 }
-unsafe extern "C" fn spc_handler_xtx_escale(
-    mut spe: *mut spc_env,
-    mut args: *mut spc_arg,
-) -> i32 {
+unsafe extern "C" fn spc_handler_xtx_escale(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let fresh0 = scaleFactorCount;
     scaleFactorCount = scaleFactorCount - 1;
     let mut factor: pdf_coord = *scaleFactors.offset(fresh0 as isize);
@@ -425,10 +401,7 @@ unsafe extern "C" fn spc_handler_xtx_escale(
         0i32 as f64,
     );
 }
-unsafe extern "C" fn spc_handler_xtx_rotate(
-    mut spe: *mut spc_env,
-    mut args: *mut spc_arg,
-) -> i32 {
+unsafe extern "C" fn spc_handler_xtx_rotate(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut value: f64 = 0.;
     if spc_util_read_numbers(&mut value, 1i32, args) < 1i32 {
         return -1i32;
@@ -534,8 +507,7 @@ unsafe extern "C" fn spc_handler_xtx_fontmapline(
             } else {
                 spc_warn(
                     spe,
-                    b"Invalid fontmap line: Missing TFM name.\x00" as *const u8
-                        as *const i8,
+                    b"Invalid fontmap line: Missing TFM name.\x00" as *const u8 as *const i8,
                 );
                 error = -1i32
             }
@@ -551,9 +523,8 @@ unsafe extern "C" fn spc_handler_xtx_fontmapline(
                 *fresh2 = *fresh1
             }
             *q = '\u{0}' as i32 as i8;
-            mrec = new((1i32 as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as u64)
-                as u32) as *mut fontmap_rec;
+            mrec = new((1_u64).wrapping_mul(::std::mem::size_of::<fontmap_rec>() as u64) as u32)
+                as *mut fontmap_rec;
             pdf_init_fontmap_record(mrec);
             error = pdf_read_fontmap_line(
                 mrec,
@@ -562,10 +533,7 @@ unsafe extern "C" fn spc_handler_xtx_fontmapline(
                 is_pdfm_mapline(buffer.as_mut_ptr()),
             );
             if error != 0 {
-                spc_warn(
-                    spe,
-                    b"Invalid fontmap line.\x00" as *const u8 as *const i8,
-                );
+                spc_warn(spe, b"Invalid fontmap line.\x00" as *const u8 as *const i8);
             } else if opchr as i32 == '+' as i32 {
                 pdf_append_fontmap_record((*mrec).map_name, mrec);
             } else {
@@ -628,8 +596,7 @@ unsafe extern "C" fn spc_handler_xtx_initoverlay(
         (*args).curptr,
         (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as u64,
     );
-    overlay_name[(*args).endptr.wrapping_offset_from((*args).curptr) as i64 as usize] =
-        0i32 as i8;
+    overlay_name[(*args).endptr.wrapping_offset_from((*args).curptr) as i64 as usize] = 0i32 as i8;
     (*args).curptr = (*args).endptr;
     return 0i32;
 }
@@ -654,10 +621,7 @@ unsafe extern "C" fn spc_handler_xtx_clipoverlay(
             strlen(b"all\x00" as *const u8 as *const i8),
         ) != 0i32
     {
-        pdf_doc_add_page_content(
-            b" 0 0 m W n\x00" as *const u8 as *const i8,
-            10i32 as u32,
-        );
+        pdf_doc_add_page_content(b" 0 0 m W n\x00" as *const u8 as *const i8, 10_u32);
     }
     (*args).curptr = (*args).endptr;
     return 0i32;
@@ -689,10 +653,7 @@ unsafe extern "C" fn spc_handler_xtx_renderingmode(
     );
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr < (*args).endptr {
-        pdf_doc_add_page_content(
-            b" \x00" as *const u8 as *const i8,
-            1i32 as u32,
-        );
+        pdf_doc_add_page_content(b" \x00" as *const u8 as *const i8, 1_u32);
         pdf_doc_add_page_content(
             (*args).curptr,
             (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as u32,
@@ -939,10 +900,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
     ]
 };
 #[no_mangle]
-pub unsafe extern "C" fn spc_xtx_check_special(
-    mut buf: *const i8,
-    mut len: i32,
-) -> bool {
+pub unsafe extern "C" fn spc_xtx_check_special(mut buf: *const i8, mut len: i32) -> bool {
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     p = buf;
@@ -1000,7 +958,7 @@ pub unsafe extern "C" fn spc_xtx_setup_handler(
         __assert_fail(b"sph && spe && ap\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_xtx.c\x00" as *const u8 as
-                          *const i8, 413i32 as u32,
+                          *const i8, 413_u32,
                       (*::std::mem::transmute::<&[u8; 84],
                                                 &[i8; 84]>(b"int spc_xtx_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }
@@ -1015,10 +973,7 @@ pub unsafe extern "C" fn spc_xtx_setup_handler(
             strlen(b"x:\x00" as *const u8 as *const i8),
         ) != 0
     {
-        spc_warn(
-            spe,
-            b"Not x: special???\x00" as *const u8 as *const i8,
-        );
+        spc_warn(spe, b"Not x: special???\x00" as *const u8 as *const i8);
         return -1i32;
     }
     (*ap).curptr = (*ap)
@@ -1027,7 +982,7 @@ pub unsafe extern "C" fn spc_xtx_setup_handler(
     skip_white(&mut (*ap).curptr, (*ap).endptr);
     q = parse_c_ident(&mut (*ap).curptr, (*ap).endptr);
     if !q.is_null() {
-        i = 0i32 as u32;
+        i = 0_u32;
         while (i as u64)
             < (::std::mem::size_of::<[spc_handler; 21]>() as u64)
                 .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)

@@ -21,22 +21,11 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_colorspace_reference(cspc_id: i32) -> *mut pdf_obj;
     #[no_mangle]
-    fn iccp_load_profile(
-        ident: *const i8,
-        profile: *const libc::c_void,
-        proflen: i32,
-    ) -> i32;
+    fn iccp_load_profile(ident: *const i8, profile: *const libc::c_void, proflen: i32) -> i32;
     #[no_mangle]
-    fn iccp_check_colorspace(
-        colortype: i32,
-        profile: *const libc::c_void,
-        proflen: i32,
-    ) -> i32;
+    fn iccp_check_colorspace(colortype: i32, profile: *const libc::c_void, proflen: i32) -> i32;
     #[no_mangle]
-    fn iccp_get_rendering_intent(
-        profile: *const libc::c_void,
-        proflen: i32,
-    ) -> *mut pdf_obj;
+    fn iccp_get_rendering_intent(profile: *const libc::c_void, proflen: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_stream_dataptr(stream: *mut pdf_obj) -> *const libc::c_void;
     #[no_mangle]
@@ -78,17 +67,9 @@ extern "C" {
     #[no_mangle]
     fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    fn ttstub_input_read(
-        handle: rust_input_handle_t,
-        data: *mut i8,
-        len: size_t,
-    ) -> ssize_t;
+    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
-    fn ttstub_input_seek(
-        handle: rust_input_handle_t,
-        offset: ssize_t,
-        whence: i32,
-    ) -> size_t;
+    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
     #[no_mangle]
     fn ttstub_input_get_size(handle: rust_input_handle_t) -> size_t;
     #[no_mangle]
@@ -257,17 +238,10 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 pub unsafe extern "C" fn check_for_jpeg(mut handle: rust_input_handle_t) -> i32 {
     let mut jpeg_sig: [u8; 2] = [0; 2];
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
-    if ttstub_input_read(
-        handle,
-        jpeg_sig.as_mut_ptr() as *mut i8,
-        2i32 as size_t,
-    ) != 2i32 as i64
-    {
+    if ttstub_input_read(handle, jpeg_sig.as_mut_ptr() as *mut i8, 2i32 as size_t) != 2i32 as i64 {
         return 0i32;
     } else {
-        if jpeg_sig[0] as i32 != 0xffi32
-            || jpeg_sig[1] as i32 != JM_SOI as i32
-        {
+        if jpeg_sig[0] as i32 != 0xffi32 || jpeg_sig[1] as i32 != JM_SOI as i32 {
             return 0i32;
         }
     }
@@ -330,8 +304,7 @@ pub unsafe extern "C" fn jpeg_include_image(
         4 => colortype = -4i32,
         _ => {
             dpx_warning(
-                b"%s: Unknown color space (num components: %d)\x00" as *const u8
-                    as *const i8,
+                b"%s: Unknown color space (num components: %d)\x00" as *const u8 as *const i8,
                 b"JPEG\x00" as *const u8 as *const i8,
                 info.num_components,
             );
@@ -348,7 +321,7 @@ pub unsafe extern "C" fn jpeg_include_image(
         pdf_new_name(b"DCTDecode\x00" as *const u8 as *const i8),
     );
     /* XMP Metadata */
-    if pdf_get_version() >= 4i32 as u32 {
+    if pdf_get_version() >= 4_u32 {
         if j_info.flags & 1i32 << 4i32 != 0 {
             let mut XMP_stream: *mut pdf_obj = 0 as *mut pdf_obj;
             XMP_stream = JPEG_get_XMP(&mut j_info);
@@ -420,11 +393,9 @@ pub unsafe extern "C" fn jpeg_include_image(
     if j_info.flags & 1i32 << 1i32 != 0 && j_info.num_components as i32 == 4i32 {
         let mut decode: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut i: u32 = 0;
-        dpx_warning(
-            b"Adobe CMYK JPEG: Inverted color assumed.\x00" as *const u8 as *const i8,
-        );
+        dpx_warning(b"Adobe CMYK JPEG: Inverted color assumed.\x00" as *const u8 as *const i8);
         decode = pdf_new_array();
-        i = 0i32 as u32;
+        i = 0_u32;
         while i < j_info.num_components as u32 {
             pdf_add_array(decode, pdf_new_number(1.0f64));
             pdf_add_array(decode, pdf_new_number(0.0f64));
@@ -492,15 +463,12 @@ unsafe extern "C" fn JPEG_release_APPn_data(
     mut app_sig: JPEG_APPn_sig,
     mut app_data: *mut libc::c_void,
 ) {
-    if marker as u32 == JM_APP0 as i32 as u32
-        && app_sig as u32 == JS_APPn_JFIF as i32 as u32
-    {
+    if marker as u32 == JM_APP0 as i32 as u32 && app_sig as u32 == JS_APPn_JFIF as i32 as u32 {
         let mut data: *mut JPEG_APPn_JFIF = 0 as *mut JPEG_APPn_JFIF;
         data = app_data as *mut JPEG_APPn_JFIF;
         (*data).thumbnail = mfree((*data).thumbnail as *mut libc::c_void) as *mut u8;
         free(data as *mut libc::c_void);
-    } else if marker as u32 == JM_APP2 as i32 as u32
-        && app_sig as u32 == JS_APPn_ICC as i32 as u32
+    } else if marker as u32 == JM_APP2 as i32 as u32 && app_sig as u32 == JS_APPn_ICC as i32 as u32
     {
         let mut data_0: *mut JPEG_APPn_ICC = 0 as *mut JPEG_APPn_ICC;
         data_0 = app_data as *mut JPEG_APPn_ICC;
@@ -512,8 +480,7 @@ unsafe extern "C" fn JPEG_release_APPn_data(
         let mut data_1: *mut JPEG_APPn_Adobe = 0 as *mut JPEG_APPn_Adobe;
         data_1 = app_data as *mut JPEG_APPn_Adobe;
         free(data_1 as *mut libc::c_void);
-    } else if marker as u32 == JM_APP1 as i32 as u32
-        && app_sig as u32 == JS_APPn_XMP as i32 as u32
+    } else if marker as u32 == JM_APP1 as i32 as u32 && app_sig as u32 == JS_APPn_XMP as i32 as u32
     {
         let mut data_2: *mut JPEG_APPn_XMP = 0 as *mut JPEG_APPn_XMP;
         data_2 = app_data as *mut JPEG_APPn_XMP;
@@ -549,10 +516,8 @@ unsafe extern "C" fn JPEG_get_iccp(mut j_info: *mut JPEG_info) -> *mut pdf_obj {
     icc_stream = pdf_new_stream(1i32 << 0i32);
     i = 0i32;
     while i < (*j_info).num_appn {
-        if !((*(*j_info).appn.offset(i as isize)).marker as u32
-            != JM_APP2 as i32 as u32
-            || (*(*j_info).appn.offset(i as isize)).app_sig as u32
-                != JS_APPn_ICC as i32 as u32)
+        if !((*(*j_info).appn.offset(i as isize)).marker as u32 != JM_APP2 as i32 as u32
+            || (*(*j_info).appn.offset(i as isize)).app_sig as u32 != JS_APPn_ICC as i32 as u32)
         {
             icc = (*(*j_info).appn.offset(i as isize)).app_data as *mut JPEG_APPn_ICC;
             if num_icc_seg < 0i32 && prev_id == 0i32 {
@@ -563,8 +528,7 @@ unsafe extern "C" fn JPEG_get_iccp(mut j_info: *mut JPEG_info) -> *mut pdf_obj {
                 || (*icc).seq_id as i32 > (*icc).num_chunks as i32
             {
                 dpx_warning(
-                    b"Invalid JPEG ICC chunk: %d (p:%d, n:%d)\x00" as *const u8
-                        as *const i8,
+                    b"Invalid JPEG ICC chunk: %d (p:%d, n:%d)\x00" as *const u8 as *const i8,
                     (*icc).seq_id as i32,
                     prev_id,
                     (*icc).num_chunks as i32,
@@ -607,10 +571,8 @@ unsafe extern "C" fn JPEG_get_XMP(mut j_info: *mut JPEG_info) -> *mut pdf_obj {
     i = 0i32;
     while i < (*j_info).num_appn {
         /* Not sure for the case of multiple segments */
-        if !((*(*j_info).appn.offset(i as isize)).marker as u32
-            != JM_APP1 as i32 as u32
-            || (*(*j_info).appn.offset(i as isize)).app_sig as u32
-                != JS_APPn_XMP as i32 as u32)
+        if !((*(*j_info).appn.offset(i as isize)).marker as u32 != JM_APP1 as i32 as u32
+            || (*(*j_info).appn.offset(i as isize)).app_sig as u32 != JS_APPn_XMP as i32 as u32)
         {
             XMP = (*(*j_info).appn.offset(i as isize)).app_data as *mut JPEG_APPn_XMP;
             pdf_add_stream(
@@ -660,8 +622,7 @@ unsafe extern "C" fn add_APPn_marker(
         (*j_info).appn = renew(
             (*j_info).appn as *mut libc::c_void,
             ((*j_info).max_appn as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<JPEG_ext>() as u64)
-                as u32,
+                .wrapping_mul(::std::mem::size_of::<JPEG_ext>() as u64) as u32,
         ) as *mut JPEG_ext
     }
     n = (*j_info).num_appn;
@@ -677,9 +638,8 @@ unsafe extern "C" fn read_APP14_Adobe(
     mut handle: rust_input_handle_t,
 ) -> u16 {
     let mut app_data: *mut JPEG_APPn_Adobe = 0 as *mut JPEG_APPn_Adobe;
-    app_data = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<JPEG_APPn_Adobe>() as u64)
-        as u32) as *mut JPEG_APPn_Adobe;
+    app_data = new((1_u64).wrapping_mul(::std::mem::size_of::<JPEG_APPn_Adobe>() as u64) as u32)
+        as *mut JPEG_APPn_Adobe;
     (*app_data).version = tt_get_unsigned_pair(handle);
     (*app_data).flag0 = tt_get_unsigned_pair(handle);
     (*app_data).flag1 = tt_get_unsigned_pair(handle);
@@ -692,11 +652,7 @@ unsafe extern "C" fn read_APP14_Adobe(
     );
     return 7i32 as u16;
 }
-unsafe extern "C" fn read_exif_bytes(
-    mut pp: *mut *mut u8,
-    mut n: i32,
-    mut endian: i32,
-) -> i32 {
+unsafe extern "C" fn read_exif_bytes(mut pp: *mut *mut u8, mut n: i32, mut endian: i32) -> i32 {
     let mut rval: i32 = 0i32;
     let mut p: *mut u8 = *pp;
     let mut i: i32 = 0;
@@ -742,8 +698,8 @@ unsafe extern "C" fn read_APP1_Exif(
     let mut xres: f64 = 0.0f64;
     let mut yres: f64 = 0.0f64;
     let mut res_unit: f64 = 1.0f64;
-    let mut xres_ms: u32 = 0i32 as u32;
-    let mut yres_ms: u32 = 0i32 as u32;
+    let mut xres_ms: u32 = 0_u32;
+    let mut yres_ms: u32 = 0_u32;
     let mut res_unit_ms: f64 = 0.0f64;
     let mut exifxdpi: f64 = 0.0f64;
     let mut exifydpi: f64 = 0.0f64;
@@ -766,8 +722,7 @@ unsafe extern "C" fn read_APP1_Exif(
                 current_block = 1109700713171191020;
             } else {
                 dpx_warning(
-                    b"JPEG: Invalid value in Exif TIFF header.\x00" as *const u8
-                        as *const i8,
+                    b"JPEG: Invalid value in Exif TIFF header.\x00" as *const u8 as *const i8,
                 );
                 current_block = 10568945602212496329;
             }
@@ -807,9 +762,7 @@ unsafe extern "C" fn read_APP1_Exif(
                                     value = read_exif_bytes(&mut p, 2i32, bigendian as i32);
                                     p = p.offset(2)
                                 }
-                                4 | 9 => {
-                                    value = read_exif_bytes(&mut p, 4i32, bigendian as i32)
-                                }
+                                4 | 9 => value = read_exif_bytes(&mut p, 4i32, bigendian as i32),
                                 5 | 10 => {
                                     value = read_exif_bytes(&mut p, 4i32, bigendian as i32);
                                     rp = tiff_header.offset(value as isize);
@@ -866,8 +819,7 @@ unsafe extern "C" fn read_APP1_Exif(
                                         current_block = 10568945602212496329;
                                         break;
                                     } else {
-                                        value =
-                                            read_exif_bytes(&mut p, 4i32, bigendian as i32);
+                                        value = read_exif_bytes(&mut p, 4i32, bigendian as i32);
                                         xres_ms = value as u32;
                                         continue;
                                     }
@@ -884,8 +836,7 @@ unsafe extern "C" fn read_APP1_Exif(
                                         current_block = 10568945602212496329;
                                         break;
                                     } else {
-                                        value =
-                                            read_exif_bytes(&mut p, 4i32, bigendian as i32);
+                                        value = read_exif_bytes(&mut p, 4i32, bigendian as i32);
                                         yres_ms = value as u32;
                                         continue;
                                     }
@@ -921,9 +872,7 @@ unsafe extern "C" fn read_APP1_Exif(
                                 if xres > 0.0f64 && yres > 0.0f64 {
                                     exifxdpi = xres * res_unit;
                                     exifydpi = yres * res_unit
-                                } else if xres_ms > 0i32 as u32
-                                    && yres_ms > 0i32 as u32
-                                    && res_unit_ms > 0.0f64
+                                } else if xres_ms > 0_u32 && yres_ms > 0_u32 && res_unit_ms > 0.0f64
                                 {
                                     exifxdpi = xres_ms as f64 * res_unit_ms;
                                     exifydpi = yres_ms as f64 * res_unit_ms
@@ -966,27 +915,21 @@ unsafe extern "C" fn read_APP0_JFIF(
 ) -> size_t {
     let mut app_data: *mut JPEG_APPn_JFIF = 0 as *mut JPEG_APPn_JFIF;
     let mut thumb_data_len: size_t = 0;
-    app_data = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<JPEG_APPn_JFIF>() as u64)
-        as u32) as *mut JPEG_APPn_JFIF;
+    app_data = new((1_u64).wrapping_mul(::std::mem::size_of::<JPEG_APPn_JFIF>() as u64) as u32)
+        as *mut JPEG_APPn_JFIF;
     (*app_data).version = tt_get_unsigned_pair(handle);
     (*app_data).units = tt_get_unsigned_byte(handle);
     (*app_data).Xdensity = tt_get_unsigned_pair(handle);
     (*app_data).Ydensity = tt_get_unsigned_pair(handle);
     (*app_data).Xthumbnail = tt_get_unsigned_byte(handle);
     (*app_data).Ythumbnail = tt_get_unsigned_byte(handle);
-    thumb_data_len = (3i32
-        * (*app_data).Xthumbnail as i32
-        * (*app_data).Ythumbnail as i32) as size_t;
+    thumb_data_len =
+        (3i32 * (*app_data).Xthumbnail as i32 * (*app_data).Ythumbnail as i32) as size_t;
     if thumb_data_len > 0i32 as u64 {
         (*app_data).thumbnail = new((thumb_data_len as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32) as *mut u8;
-        ttstub_input_read(
-            handle,
-            (*app_data).thumbnail as *mut i8,
-            thumb_data_len,
-        );
+        ttstub_input_read(handle, (*app_data).thumbnail as *mut i8, thumb_data_len);
     } else {
         (*app_data).thumbnail = 0 as *mut u8
     }
@@ -1022,11 +965,7 @@ unsafe extern "C" fn read_APP0_JFXX(mut handle: rust_input_handle_t, mut length:
      * 0x11: Thumbnail stored using 1 byte/pixel
      * 0x13: Thumbnail stored using 3 bytes/pixel
      */
-    ttstub_input_seek(
-        handle,
-        length.wrapping_sub(1i32 as u64) as ssize_t,
-        1i32,
-    ); /* Thunbnail image */
+    ttstub_input_seek(handle, length.wrapping_sub(1i32 as u64) as ssize_t, 1i32); /* Thunbnail image */
     /* Ignore */
     return length; /* Starting at 1 */
 }
@@ -1036,18 +975,13 @@ unsafe extern "C" fn read_APP1_XMP(
     mut length: size_t,
 ) -> size_t {
     let mut app_data: *mut JPEG_APPn_XMP = 0 as *mut JPEG_APPn_XMP;
-    app_data = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<JPEG_APPn_XMP>() as u64)
-        as u32) as *mut JPEG_APPn_XMP;
+    app_data = new((1_u64).wrapping_mul(::std::mem::size_of::<JPEG_APPn_XMP>() as u64) as u32)
+        as *mut JPEG_APPn_XMP;
     (*app_data).length = length;
-    (*app_data).packet = new(((*app_data).length as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-        as u32) as *mut u8;
-    ttstub_input_read(
-        handle,
-        (*app_data).packet as *mut i8,
-        (*app_data).length,
-    );
+    (*app_data).packet = new(
+        ((*app_data).length as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32
+    ) as *mut u8;
+    ttstub_input_read(handle, (*app_data).packet as *mut i8, (*app_data).length);
     add_APPn_marker(
         j_info,
         JM_APP1,
@@ -1062,20 +996,15 @@ unsafe extern "C" fn read_APP2_ICC(
     mut length: size_t,
 ) -> size_t {
     let mut app_data: *mut JPEG_APPn_ICC = 0 as *mut JPEG_APPn_ICC;
-    app_data = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<JPEG_APPn_ICC>() as u64)
-        as u32) as *mut JPEG_APPn_ICC;
+    app_data = new((1_u64).wrapping_mul(::std::mem::size_of::<JPEG_APPn_ICC>() as u64) as u32)
+        as *mut JPEG_APPn_ICC;
     (*app_data).seq_id = tt_get_unsigned_byte(handle);
     (*app_data).num_chunks = tt_get_unsigned_byte(handle);
     (*app_data).length = length.wrapping_sub(2i32 as u64);
-    (*app_data).chunk = new(((*app_data).length as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-        as u32) as *mut u8;
-    ttstub_input_read(
-        handle,
-        (*app_data).chunk as *mut i8,
-        (*app_data).length,
-    );
+    (*app_data).chunk = new(
+        ((*app_data).length as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32
+    ) as *mut u8;
+    ttstub_input_read(handle, (*app_data).chunk as *mut i8, (*app_data).length);
     add_APPn_marker(
         j_info,
         JM_APP2,
@@ -1101,8 +1030,7 @@ unsafe extern "C" fn JPEG_copy_stream(
         marker as u32 != 4294967295 as JPEG_marker as u32
     } {
         if marker as u32 == JM_SOI as i32 as u32
-            || marker as u32 >= JM_RST0 as i32 as u32
-                && marker as u32 <= JM_RST7 as i32 as u32
+            || marker as u32 >= JM_RST0 as i32 as u32 && marker as u32 <= JM_RST7 as i32 as u32
         {
             *work_buffer.as_mut_ptr().offset(0) = 0xffi32 as i8;
             *work_buffer.as_mut_ptr().offset(1) = marker as i8;
@@ -1117,8 +1045,7 @@ unsafe extern "C" fn JPEG_copy_stream(
                 192 | 193 | 194 | 195 | 197 | 198 | 199 | 201 | 202 | 203 | 205 | 206 | 207 => {
                     *work_buffer.as_mut_ptr().offset(0) = 0xffi32 as i8;
                     *work_buffer.as_mut_ptr().offset(1) = marker as i8;
-                    *work_buffer.as_mut_ptr().offset(2) =
-                        (length + 2i32 >> 8i32 & 0xffi32) as i8;
+                    *work_buffer.as_mut_ptr().offset(2) = (length + 2i32 >> 8i32 & 0xffi32) as i8;
                     *work_buffer.as_mut_ptr().offset(3) = (length + 2i32 & 0xffi32) as i8;
                     pdf_add_stream(
                         stream,
@@ -1153,8 +1080,7 @@ unsafe extern "C" fn JPEG_copy_stream(
                         *work_buffer.as_mut_ptr().offset(1) = marker as i8;
                         *work_buffer.as_mut_ptr().offset(2) =
                             (length + 2i32 >> 8i32 & 0xffi32) as i8;
-                        *work_buffer.as_mut_ptr().offset(3) =
-                            (length + 2i32 & 0xffi32) as i8;
+                        *work_buffer.as_mut_ptr().offset(3) = (length + 2i32 & 0xffi32) as i8;
                         pdf_add_stream(
                             stream,
                             work_buffer.as_mut_ptr() as *const libc::c_void,
@@ -1165,8 +1091,7 @@ unsafe extern "C" fn JPEG_copy_stream(
                                 handle,
                                 work_buffer.as_mut_ptr(),
                                 (if length < 1024i32 { length } else { 1024i32 }) as size_t,
-                            )
-                                as i32;
+                            ) as i32;
                             if nb_read_0 > 0i32 {
                                 pdf_add_stream(
                                     stream,
@@ -1222,8 +1147,7 @@ unsafe extern "C" fn JPEG_scan_file(
         marker as u32 != 4294967295 as JPEG_marker as u32
     } {
         if marker as u32 != JM_SOI as i32 as u32
-            && ((marker as u32) < JM_RST0 as i32 as u32
-                || marker as u32 > JM_RST7 as i32 as u32)
+            && ((marker as u32) < JM_RST0 as i32 as u32 || marker as u32 > JM_RST7 as i32 as u32)
         {
             let mut length: i32 = tt_get_unsigned_pair(handle) as i32 - 2i32;
             match marker as u32 {
@@ -1244,14 +1168,12 @@ unsafe extern "C" fn JPEG_scan_file(
                         length -= 5i32;
                         if memcmp(
                             app_sig.as_mut_ptr() as *const libc::c_void,
-                            b"JFIF\x00\x00" as *const u8 as *const i8
-                                as *const libc::c_void,
+                            b"JFIF\x00\x00" as *const u8 as *const i8 as *const libc::c_void,
                             5i32 as u64,
                         ) == 0
                         {
                             (*j_info).flags |= 1i32 << 0i32;
-                            length = (length as u64)
-                                .wrapping_sub(read_APP0_JFIF(j_info, handle))
+                            length = (length as u64).wrapping_sub(read_APP0_JFIF(j_info, handle))
                                 as i32 as i32
                         } else if memcmp(
                             app_sig.as_mut_ptr() as *const libc::c_void,
@@ -1276,8 +1198,7 @@ unsafe extern "C" fn JPEG_scan_file(
                         length -= 5i32;
                         if memcmp(
                             app_sig.as_mut_ptr() as *const libc::c_void,
-                            b"Exif\x00\x00" as *const u8 as *const i8
-                                as *const libc::c_void,
+                            b"Exif\x00\x00" as *const u8 as *const i8 as *const libc::c_void,
                             5i32 as u64,
                         ) == 0
                         {
@@ -1302,8 +1223,7 @@ unsafe extern "C" fn JPEG_scan_file(
                             length -= 24i32;
                             if memcmp(
                                 app_sig.as_mut_ptr() as *const libc::c_void,
-                                b"//ns.adobe.com/xap/1.0/\x00\x00" as *const u8
-                                    as *const i8
+                                b"//ns.adobe.com/xap/1.0/\x00\x00" as *const u8 as *const i8
                                     as *const libc::c_void,
                                 24i32 as u64,
                             ) == 0
@@ -1313,8 +1233,7 @@ unsafe extern "C" fn JPEG_scan_file(
                                     j_info,
                                     handle,
                                     length as size_t,
-                                )) as i32
-                                    as i32;
+                                )) as i32 as i32;
                                 if count < 1024i32 {
                                     (*j_info).skipbits[(count / 8i32) as usize] =
                                         ((*j_info).skipbits[(count / 8i32) as usize] as i32
@@ -1336,8 +1255,7 @@ unsafe extern "C" fn JPEG_scan_file(
                         length -= 12i32;
                         if memcmp(
                             app_sig.as_mut_ptr() as *const libc::c_void,
-                            b"ICC_PROFILE\x00\x00" as *const u8 as *const i8
-                                as *const libc::c_void,
+                            b"ICC_PROFILE\x00\x00" as *const u8 as *const i8 as *const libc::c_void,
                             12i32 as u64,
                         ) == 0
                         {

@@ -30,17 +30,9 @@ extern "C" {
         is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
-    fn ttstub_input_seek(
-        handle: rust_input_handle_t,
-        offset: ssize_t,
-        whence: i32,
-    ) -> size_t;
+    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
     #[no_mangle]
-    fn ttstub_input_read(
-        handle: rust_input_handle_t,
-        data: *mut i8,
-        len: size_t,
-    ) -> ssize_t;
+    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     /* tectonic/core-memory.h: basic dynamic memory helpers
@@ -255,11 +247,7 @@ unsafe extern "C" fn check_stream_is_dfont(mut handle: rust_input_handle_t) -> b
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     tt_get_unsigned_quad(handle);
     pos = tt_get_unsigned_quad(handle);
-    ttstub_input_seek(
-        handle,
-        pos.wrapping_add(0x18i32 as u32) as ssize_t,
-        0i32,
-    );
+    ttstub_input_seek(handle, pos.wrapping_add(0x18_u32) as ssize_t, 0i32);
     ttstub_input_seek(
         handle,
         pos.wrapping_add(tt_get_unsigned_pair(handle) as u32) as ssize_t,
@@ -278,17 +266,13 @@ unsafe extern "C" fn check_stream_is_dfont(mut handle: rust_input_handle_t) -> b
     return 0i32 != 0;
 }
 /* ensuresuffix() returns a copy of basename if sfx is "". */
-unsafe extern "C" fn ensuresuffix(
-    mut basename: *const i8,
-    mut sfx: *const i8,
-) -> *mut i8 {
+unsafe extern "C" fn ensuresuffix(mut basename: *const i8, mut sfx: *const i8) -> *mut i8 {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *mut i8 = 0 as *mut i8;
     p = new((strlen(basename)
         .wrapping_add(strlen(sfx))
         .wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy(p, basename);
     q = strrchr(p, '.' as i32);
     if q.is_null() && *sfx.offset(0) as i32 != 0 {
@@ -318,9 +302,7 @@ pub unsafe extern "C" fn dpx_tt_open(
  *   dvipdfm  (text file)
  */
 #[no_mangle]
-pub unsafe extern "C" fn dpx_open_type1_file(
-    mut filename: *const i8,
-) -> rust_input_handle_t {
+pub unsafe extern "C" fn dpx_open_type1_file(mut filename: *const i8) -> rust_input_handle_t {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     handle = ttstub_input_open(filename, TTIF_TYPE1, 0i32);
     if handle.is_null() {
@@ -333,9 +315,7 @@ pub unsafe extern "C" fn dpx_open_type1_file(
     return handle;
 }
 #[no_mangle]
-pub unsafe extern "C" fn dpx_open_truetype_file(
-    mut filename: *const i8,
-) -> rust_input_handle_t {
+pub unsafe extern "C" fn dpx_open_truetype_file(mut filename: *const i8) -> rust_input_handle_t {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     handle = ttstub_input_open(filename, TTIF_TRUETYPE, 0i32);
     if handle.is_null() {
@@ -348,9 +328,7 @@ pub unsafe extern "C" fn dpx_open_truetype_file(
     return handle;
 }
 #[no_mangle]
-pub unsafe extern "C" fn dpx_open_opentype_file(
-    mut filename: *const i8,
-) -> rust_input_handle_t {
+pub unsafe extern "C" fn dpx_open_opentype_file(mut filename: *const i8) -> rust_input_handle_t {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut q: *mut i8 = 0 as *mut i8;
     q = ensuresuffix(filename, b".otf\x00" as *const u8 as *const i8);
@@ -366,9 +344,7 @@ pub unsafe extern "C" fn dpx_open_opentype_file(
     return handle;
 }
 #[no_mangle]
-pub unsafe extern "C" fn dpx_open_dfont_file(
-    mut filename: *const i8,
-) -> rust_input_handle_t {
+pub unsafe extern "C" fn dpx_open_dfont_file(mut filename: *const i8) -> rust_input_handle_t {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut len: i32 = strlen(filename) as i32;
@@ -382,9 +358,9 @@ pub unsafe extern "C" fn dpx_open_dfont_file(
         /* I've double-checked that we're accurately representing the original
          * code -- the above strncmp() is *not* missing a logical negation.
          */
-        q = new(((len + 6i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+        q = new(
+            ((len + 6i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
+        ) as *mut i8;
         strcpy(q, filename);
         strcat(q, b"/rsrc\x00" as *const u8 as *const i8);
     } else {
@@ -411,11 +387,9 @@ unsafe extern "C" fn dpx_get_tmpdir() -> *mut i8 {
     }
     ret = xstrdup(_tmpd);
     i = strlen(ret);
-    while i > 1i32 as u64
-        && *ret.offset(i.wrapping_sub(1i32 as u64) as isize) as i32 == '/' as i32
+    while i > 1i32 as u64 && *ret.offset(i.wrapping_sub(1i32 as u64) as isize) as i32 == '/' as i32
     {
-        *ret.offset(i.wrapping_sub(1i32 as u64) as isize) =
-            '\u{0}' as i32 as i8;
+        *ret.offset(i.wrapping_sub(1i32 as u64) as isize) = '\u{0}' as i32 as i8;
         i = i.wrapping_sub(1)
     }
     return ret;
@@ -427,19 +401,12 @@ pub unsafe extern "C" fn dpx_create_temp_file() -> *mut i8 {
     let mut tmp: *mut i8 = 0 as *mut i8;
     tmpdir = dpx_get_tmpdir();
     n = strlen(tmpdir)
-        .wrapping_add(strlen(
-            b"/dvipdfmx.XXXXXX\x00" as *const u8 as *const i8,
-        ))
+        .wrapping_add(strlen(b"/dvipdfmx.XXXXXX\x00" as *const u8 as *const i8))
         .wrapping_add(1i32 as u64);
-    tmp = new((n as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+    tmp = new((n as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy(tmp, tmpdir);
     free(tmpdir as *mut libc::c_void);
-    strcat(
-        tmp,
-        b"/dvipdfmx.XXXXXX\x00" as *const u8 as *const i8,
-    );
+    strcat(tmp, b"/dvipdfmx.XXXXXX\x00" as *const u8 as *const i8);
     let mut _fd: i32 = mkstemp(tmp);
     if _fd != -1i32 {
         close(_fd);

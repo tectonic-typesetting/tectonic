@@ -331,10 +331,8 @@ unsafe extern "C" fn ensure_vbox(mut n: eight_bits) {
     }
     print_cstr(b"Insertions can only be added to a vbox\x00" as *const u8 as *const i8);
     help_ptr = 3i32 as u8;
-    help_line[2] =
-        b"Tut tut: You\'re trying to \\insert into a\x00" as *const u8 as *const i8;
-    help_line[1] =
-        b"\\box register that now contains an \\hbox.\x00" as *const u8 as *const i8;
+    help_line[2] = b"Tut tut: You\'re trying to \\insert into a\x00" as *const u8 as *const i8;
+    help_line[1] = b"\\box register that now contains an \\hbox.\x00" as *const u8 as *const i8;
     help_line[0] =
         b"Proceed, and I\'ll discard its present contents.\x00" as *const u8 as *const i8;
     box_error(n);
@@ -476,8 +474,8 @@ unsafe extern "C" fn fire_up(mut c: i32) {
         help_ptr = 2i32 as u8;
         help_line[1] = b"You shouldn\'t use \\box255 except in \\output routines.\x00" as *const u8
             as *const i8;
-        help_line[0] = b"Proceed, and I\'ll discard its present contents.\x00" as *const u8
-            as *const i8;
+        help_line[0] =
+            b"Proceed, and I\'ll discard its present contents.\x00" as *const u8 as *const i8;
         box_error(255i32 as eight_bits);
     }
     insert_penalties = 0i32;

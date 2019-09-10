@@ -17,25 +17,16 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
-        -> *mut libc::c_void;
+    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_input_seek(
-        handle: rust_input_handle_t,
-        offset: ssize_t,
-        whence: i32,
-    ) -> size_t;
+    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
     #[no_mangle]
-    fn ttstub_input_read(
-        handle: rust_input_handle_t,
-        data: *mut i8,
-        len: size_t,
-    ) -> ssize_t;
+    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -113,17 +104,9 @@ extern "C" {
         colors: i32,
     );
     #[no_mangle]
-    fn iccp_check_colorspace(
-        colortype: i32,
-        profile: *const libc::c_void,
-        proflen: i32,
-    ) -> i32;
+    fn iccp_check_colorspace(colortype: i32, profile: *const libc::c_void, proflen: i32) -> i32;
     #[no_mangle]
-    fn iccp_load_profile(
-        ident: *const i8,
-        profile: *const libc::c_void,
-        proflen: i32,
-    ) -> i32;
+    fn iccp_load_profile(ident: *const i8, profile: *const libc::c_void, proflen: i32) -> i32;
     #[no_mangle]
     fn pdf_get_colorspace_reference(cspc_id: i32) -> *mut pdf_obj;
     /* Called by pngimage, jpegimage, epdf, mpost, etc. */
@@ -163,11 +146,7 @@ extern "C" {
     #[no_mangle]
     fn png_set_strip_16(png_ptr: png_structrp);
     #[no_mangle]
-    fn png_set_gamma(
-        png_ptr: png_structrp,
-        screen_gamma: f64,
-        override_file_gamma: f64,
-    );
+    fn png_set_gamma(png_ptr: png_structrp, screen_gamma: f64, override_file_gamma: f64);
     #[no_mangle]
     fn png_read_update_info(png_ptr: png_structrp, info_ptr: png_inforp);
     #[no_mangle]
@@ -270,11 +249,7 @@ extern "C" {
         num_text: *mut i32,
     ) -> i32;
     #[no_mangle]
-    fn png_set_option(
-        png_ptr: png_structrp,
-        option: i32,
-        onoff: i32,
-    ) -> i32;
+    fn png_set_option(png_ptr: png_structrp, option: i32, onoff: i32) -> i32;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;
@@ -476,7 +451,7 @@ pub unsafe extern "C" fn png_include_image(
         png_info_ptr as *const png_info,
     );
     if bpc as i32 > 8i32 {
-        if pdf_get_version() < 5i32 as u32 {
+        if pdf_get_version() < 5_u32 {
             /* Ask libpng to convert down to 8-bpc. */
             dpx_warning(
                 b"%s: 16-bpc PNG requires PDF version 1.5.\x00" as *const u8 as *const i8,
@@ -547,17 +522,17 @@ pub unsafe extern "C" fn png_include_image(
         png_ptr as *const png_struct,
         png_info_ptr as *const png_info,
     );
-    if xppm > 0i32 as u32 {
+    if xppm > 0_u32 {
         info.xdensity = 72.0f64 / 0.0254f64 / xppm as f64
     }
-    if yppm > 0i32 as u32 {
+    if yppm > 0_u32 {
         info.ydensity = 72.0f64 / 0.0254f64 / yppm as f64
     }
     stream = pdf_new_stream(1i32 << 0i32);
     stream_dict = pdf_stream_dict(stream);
     stream_data_ptr = new((rowbytes.wrapping_mul(height) as u64)
-        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
-        as u32) as *mut png_byte;
+        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64) as u32)
+        as *mut png_byte;
     read_image_data(png_ptr, stream_data_ptr, height, rowbytes);
     /* Non-NULL intent means there is valid sRGB chunk. */
     intent = get_rendering_intent(png_ptr, png_info_ptr);
@@ -701,7 +676,7 @@ pub unsafe extern "C" fn png_include_image(
      * of libpng had a bug that incorrectly treat the compression
      * flag of iTxt chunks.
      */
-    if pdf_get_version() >= 4i32 as u32 {
+    if pdf_get_version() >= 4_u32 {
         let mut text_ptr: png_textp = 0 as *mut png_text;
         let mut XMP_stream: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut XMP_stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -782,10 +757,7 @@ pub unsafe extern "C" fn png_include_image(
     if !png_ptr.is_null() {
         png_destroy_read_struct(&mut png_ptr, 0 as png_infopp, 0 as png_infopp);
     }
-    if color_type as i32 != 2i32 | 1i32
-        && info.bits_per_component >= 8i32
-        && info.height > 64i32
-    {
+    if color_type as i32 != 2i32 | 1i32 && info.bits_per_component >= 8i32 && info.height > 64i32 {
         pdf_stream_set_predictor(
             stream,
             15i32,
@@ -824,10 +796,7 @@ pub unsafe extern "C" fn png_include_image(
  * Finally, in the case of PDF version 1.4, all kind of translucent pixels can
  * be represented with Soft-Mask.
  */
-unsafe extern "C" fn check_transparency(
-    mut png_ptr: png_structp,
-    mut info_ptr: png_infop,
-) -> i32 {
+unsafe extern "C" fn check_transparency(mut png_ptr: png_structp, mut info_ptr: png_infop) -> i32 {
     let mut trans_type: i32 = 0;
     let mut pdf_version: u32 = 0;
     let mut color_type: png_byte = 0;
@@ -893,9 +862,7 @@ unsafe extern "C" fn check_transparency(
      * We can convert alpha cahnnels to explicit mask via user supplied alpha-
      * threshold value. But I will not do that.
      */
-    if pdf_version < 3i32 as u32 && trans_type != 0i32
-        || pdf_version < 4i32 as u32 && trans_type == 2i32
-    {
+    if pdf_version < 3_u32 && trans_type != 0i32 || pdf_version < 4_u32 && trans_type == 2i32 {
         /*
          *   No transparency supported but PNG uses transparency, or Soft-Mask
          * required but no support for it is available in this version of PDF.
@@ -932,14 +899,14 @@ unsafe extern "C" fn check_transparency(
                 as *const i8,
             b"PNG\x00" as *const u8 as *const i8,
         );
-        if pdf_version < 3i32 as u32 {
+        if pdf_version < 3_u32 {
             dpx_warning(
                 b"%s: Please use -V 3 option to enable binary transparency support.\x00"
                     as *const u8 as *const i8,
                 b"PNG\x00" as *const u8 as *const i8,
             );
         }
-        if pdf_version < 4i32 as u32 {
+        if pdf_version < 4_u32 {
             dpx_warning(
                 b"%s: Please use -V 4 option to enable full alpha channel support.\x00" as *const u8
                     as *const i8,
@@ -976,18 +943,11 @@ unsafe extern "C" fn get_rendering_intent(
         match srgb_intent {
             2 => intent = pdf_new_name(b"Saturation\x00" as *const u8 as *const i8),
             0 => intent = pdf_new_name(b"Perceptual\x00" as *const u8 as *const i8),
-            3 => {
-                intent =
-                    pdf_new_name(b"AbsoluteColorimetric\x00" as *const u8 as *const i8)
-            }
-            1 => {
-                intent =
-                    pdf_new_name(b"RelativeColorimetric\x00" as *const u8 as *const i8)
-            }
+            3 => intent = pdf_new_name(b"AbsoluteColorimetric\x00" as *const u8 as *const i8),
+            1 => intent = pdf_new_name(b"RelativeColorimetric\x00" as *const u8 as *const i8),
             _ => {
                 dpx_warning(
-                    b"%s: Invalid value in PNG sRGB chunk: %d\x00" as *const u8
-                        as *const i8,
+                    b"%s: Invalid value in PNG sRGB chunk: %d\x00" as *const u8 as *const i8,
                     b"PNG\x00" as *const u8 as *const i8,
                     srgb_intent,
                 );
@@ -1083,12 +1043,7 @@ unsafe extern "C" fn create_cspace_ICCBased(
     } else {
         colortype = -1i32
     }
-    if iccp_check_colorspace(
-        colortype,
-        profile as *const libc::c_void,
-        proflen as i32,
-    ) < 0i32
-    {
+    if iccp_check_colorspace(colortype, profile as *const libc::c_void, proflen as i32) < 0i32 {
         colorspace = 0 as *mut pdf_obj
     } else {
         csp_id = iccp_load_profile(
@@ -1341,12 +1296,7 @@ unsafe extern "C" fn make_param_Cal(
     Zw = zw / yw;
     /* Matrix */
     det = xr * (yg * zb - zg * yb) - xg * (yr * zb - zr * yb) + xb * (yr * zg - zr * yg);
-    if (if det < 0i32 as f64 {
-        -det
-    } else {
-        det
-    }) < 1.0e-10f64
-    {
+    if (if det < 0i32 as f64 { -det } else { det }) < 1.0e-10f64 {
         dpx_warning(
             b"Non invertible matrix: Maybe invalid value(s) specified in cHRM chunk.\x00"
                 as *const u8 as *const i8,
@@ -1530,13 +1480,10 @@ unsafe extern "C" fn create_cspace_Indexed(
         base = pdf_new_name(b"DeviceRGB\x00" as *const u8 as *const i8)
     }
     pdf_add_array(colorspace, base);
-    pdf_add_array(
-        colorspace,
-        pdf_new_number((num_plte - 1i32) as f64),
-    );
+    pdf_add_array(colorspace, pdf_new_number((num_plte - 1i32) as f64));
     data_ptr = new(((num_plte * 3i32) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
-        as u32) as *mut png_byte;
+        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64) as u32)
+        as *mut png_byte;
     i = 0i32;
     while i < num_plte {
         *data_ptr.offset((3i32 * i) as isize) = (*plte.offset(i as isize)).red;
@@ -1596,8 +1543,7 @@ unsafe extern "C" fn create_ckey_mask(
                     pdf_add_array(colorkeys, pdf_new_number(i as f64));
                 } else if *trans.offset(i as isize) as i32 != 0xffi32 {
                     dpx_warning(
-                        b"%s: You found a bug in pngimage.c.\x00" as *const u8
-                            as *const i8,
+                        b"%s: You found a bug in pngimage.c.\x00" as *const u8 as *const i8,
                         b"PNG\x00" as *const u8 as *const i8,
                     );
                 }
@@ -1683,8 +1629,8 @@ unsafe extern "C" fn create_soft_mask(
     smask = pdf_new_stream(1i32 << 0i32);
     dict = pdf_stream_dict(smask);
     smask_data_ptr = new((width.wrapping_mul(height) as u64)
-        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
-        as u32) as *mut png_byte;
+        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64) as u32)
+        as *mut png_byte;
     pdf_add_dict(
         dict,
         pdf_new_name(b"Type\x00" as *const u8 as *const i8),
@@ -1751,11 +1697,7 @@ unsafe extern "C" fn strip_soft_mask(
     color_type = png_get_color_type(png_ptr as *const png_struct, info_ptr as *const png_info);
     bpc = png_get_bit_depth(png_ptr as *const png_struct, info_ptr as *const png_info);
     if color_type as i32 & 2i32 != 0 {
-        let mut bps: i32 = if bpc as i32 == 8i32 {
-            4i32
-        } else {
-            8i32
-        };
+        let mut bps: i32 = if bpc as i32 == 8i32 { 4i32 } else { 8i32 };
         if *rowbytes_ptr as u64
             != ((bps as u32).wrapping_mul(width) as u64)
                 .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
@@ -1768,11 +1710,7 @@ unsafe extern "C" fn strip_soft_mask(
             return 0 as *mut pdf_obj;
         }
     } else {
-        let mut bps_0: i32 = if bpc as i32 == 8i32 {
-            2i32
-        } else {
-            4i32
-        };
+        let mut bps_0: i32 = if bpc as i32 == 8i32 { 2i32 } else { 4i32 };
         if *rowbytes_ptr as u64
             != ((bps_0 as u32).wrapping_mul(width) as u64)
                 .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
@@ -1820,59 +1758,45 @@ unsafe extern "C" fn strip_soft_mask(
     smask_data_ptr = new((((bpc as i32 / 8i32) as u32)
         .wrapping_mul(width)
         .wrapping_mul(height) as u64)
-        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
-        as u32) as *mut png_byte;
+        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64) as u32)
+        as *mut png_byte;
     match color_type as i32 {
         6 => {
             if bpc as i32 == 8i32 {
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
                     memmove(
-                        image_data_ptr.offset((3i32 as u32).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((3_u32).wrapping_mul(i) as isize)
                             as *mut libc::c_void,
-                        image_data_ptr.offset((4i32 as u32).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((4_u32).wrapping_mul(i) as isize)
                             as *const libc::c_void,
                         3i32 as u64,
                     );
-                    *smask_data_ptr.offset(i as isize) = *image_data_ptr.offset(
-                        (4i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(3i32 as u32) as isize,
-                    );
+                    *smask_data_ptr.offset(i as isize) = *image_data_ptr
+                        .offset((4_u32).wrapping_mul(i).wrapping_add(3_u32) as isize);
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((3i32 as u32).wrapping_mul(width) as u64)
+                *rowbytes_ptr = ((3_u32).wrapping_mul(width) as u64)
                     .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             } else {
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
                     memmove(
-                        image_data_ptr.offset((6i32 as u32).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((6_u32).wrapping_mul(i) as isize)
                             as *mut libc::c_void,
-                        image_data_ptr.offset((8i32 as u32).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((8_u32).wrapping_mul(i) as isize)
                             as *const libc::c_void,
                         6i32 as u64,
                     );
-                    *smask_data_ptr.offset((2i32 as u32).wrapping_mul(i) as isize) =
-                        *image_data_ptr.offset(
-                            (8i32 as u32)
-                                .wrapping_mul(i)
-                                .wrapping_add(6i32 as u32)
-                                as isize,
-                        );
-                    *smask_data_ptr.offset(
-                        (2i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as u32) as isize,
-                    ) = *image_data_ptr.offset(
-                        (8i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(7i32 as u32) as isize,
-                    );
+                    *smask_data_ptr.offset((2_u32).wrapping_mul(i) as isize) = *image_data_ptr
+                        .offset((8_u32).wrapping_mul(i).wrapping_add(6_u32) as isize);
+                    *smask_data_ptr.offset((2_u32).wrapping_mul(i).wrapping_add(1_u32) as isize) =
+                        *image_data_ptr
+                            .offset((8_u32).wrapping_mul(i).wrapping_add(7_u32) as isize);
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((6i32 as u32).wrapping_mul(width) as u64)
+                *rowbytes_ptr = ((6_u32).wrapping_mul(width) as u64)
                     .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             }
@@ -1882,12 +1806,9 @@ unsafe extern "C" fn strip_soft_mask(
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
                     *image_data_ptr.offset(i as isize) =
-                        *image_data_ptr.offset((2i32 as u32).wrapping_mul(i) as isize);
-                    *smask_data_ptr.offset(i as isize) = *image_data_ptr.offset(
-                        (2i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as u32) as isize,
-                    );
+                        *image_data_ptr.offset((2_u32).wrapping_mul(i) as isize);
+                    *smask_data_ptr.offset(i as isize) = *image_data_ptr
+                        .offset((2_u32).wrapping_mul(i).wrapping_add(1_u32) as isize);
                     i = i.wrapping_add(1)
                 }
                 *rowbytes_ptr = (width as u64)
@@ -1896,36 +1817,19 @@ unsafe extern "C" fn strip_soft_mask(
             } else {
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
-                    *image_data_ptr.offset((2i32 as u32).wrapping_mul(i) as isize) =
-                        *image_data_ptr.offset((4i32 as u32).wrapping_mul(i) as isize);
-                    *image_data_ptr.offset(
-                        (2i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as u32) as isize,
-                    ) = *image_data_ptr.offset(
-                        (4i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as u32) as isize,
-                    );
-                    *smask_data_ptr.offset((2i32 as u32).wrapping_mul(i) as isize) =
-                        *image_data_ptr.offset(
-                            (4i32 as u32)
-                                .wrapping_mul(i)
-                                .wrapping_add(2i32 as u32)
-                                as isize,
-                        );
-                    *smask_data_ptr.offset(
-                        (2i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as u32) as isize,
-                    ) = *image_data_ptr.offset(
-                        (4i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(3i32 as u32) as isize,
-                    );
+                    *image_data_ptr.offset((2_u32).wrapping_mul(i) as isize) =
+                        *image_data_ptr.offset((4_u32).wrapping_mul(i) as isize);
+                    *image_data_ptr.offset((2_u32).wrapping_mul(i).wrapping_add(1_u32) as isize) =
+                        *image_data_ptr
+                            .offset((4_u32).wrapping_mul(i).wrapping_add(1_u32) as isize);
+                    *smask_data_ptr.offset((2_u32).wrapping_mul(i) as isize) = *image_data_ptr
+                        .offset((4_u32).wrapping_mul(i).wrapping_add(2_u32) as isize);
+                    *smask_data_ptr.offset((2_u32).wrapping_mul(i).wrapping_add(1_u32) as isize) =
+                        *image_data_ptr
+                            .offset((4_u32).wrapping_mul(i).wrapping_add(3_u32) as isize);
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((2i32 as u32).wrapping_mul(width) as u64)
+                *rowbytes_ptr = ((2_u32).wrapping_mul(width) as u64)
                     .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             }
@@ -1956,9 +1860,8 @@ unsafe extern "C" fn read_image_data(
 ) {
     let mut rows_p: png_bytepp = 0 as *mut *mut png_byte;
     let mut i: png_uint_32 = 0;
-    rows_p = new((height as u64)
-        .wrapping_mul(::std::mem::size_of::<png_bytep>() as u64)
-        as u32) as *mut png_bytep as png_bytepp;
+    rows_p = new((height as u64).wrapping_mul(::std::mem::size_of::<png_bytep>() as u64) as u32)
+        as *mut png_bytep as png_bytepp;
     i = 0i32 as png_uint_32;
     while i < height {
         let ref mut fresh1 = *rows_p.offset(i as isize);

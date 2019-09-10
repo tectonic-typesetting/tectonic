@@ -61,12 +61,7 @@ extern "C" {
     #[no_mangle]
     fn SHA512_final(outbuf: *mut u8, ctx: *mut SHA512_CONTEXT);
     #[no_mangle]
-    fn ARC4(
-        ctx: *mut ARC4_CONTEXT,
-        len: u32,
-        inbuf: *const u8,
-        outbuf: *mut u8,
-    );
+    fn ARC4(ctx: *mut ARC4_CONTEXT, len: u32, inbuf: *const u8, outbuf: *mut u8);
     #[no_mangle]
     fn ARC4_set_key(ctx: *mut ARC4_CONTEXT, keylen: u32, key: *const u8);
     #[no_mangle]
@@ -401,10 +396,7 @@ unsafe extern "C" fn pdf_enc_init(mut use_aes: i32, mut encrypt_metadata: i32) {
     (*p).setting.encrypt_metadata = encrypt_metadata;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_enc_compute_id_string(
-    mut dviname: *const i8,
-    mut pdfname: *const i8,
-) {
+pub unsafe extern "C" fn pdf_enc_compute_id_string(mut dviname: *const i8, mut pdfname: *const i8) {
     let mut p: *mut pdf_sec = &mut sec_data;
     let mut date_string: *mut i8 = 0 as *mut i8;
     let mut producer: *mut i8 = 0 as *mut i8;
@@ -422,9 +414,7 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
     /* FIXME: This should be placed in main() or somewhere. */
     pdf_enc_init(1i32, 1i32);
     MD5_init(&mut md5);
-    date_string = new((15i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+    date_string = new((15_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     current_time = get_unique_time_if_given();
     if current_time == -1i32 as time_t {
         time(&mut current_time);
@@ -442,21 +432,15 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
         (*bd_time).tm_min,
         (*bd_time).tm_sec,
     );
-    MD5_write(
-        &mut md5,
-        date_string as *mut u8,
-        strlen(date_string) as u32,
-    );
+    MD5_write(&mut md5, date_string as *mut u8, strlen(date_string) as u32);
     free(date_string as *mut libc::c_void);
     producer = new((strlen(
         b"%s-%s, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata\x00"
             as *const u8 as *const i8,
     )
     .wrapping_add(strlen(b"xdvipdfmx\x00" as *const u8 as *const i8))
-    .wrapping_add(strlen(b"0.1\x00" as *const u8 as *const i8))
-        as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+    .wrapping_add(strlen(b"0.1\x00" as *const u8 as *const i8)) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     sprintf(
         producer,
         b"%s-%s, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata\x00"
@@ -464,25 +448,13 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
         b"xdvipdfmx\x00" as *const u8 as *const i8,
         b"0.1\x00" as *const u8 as *const i8,
     );
-    MD5_write(
-        &mut md5,
-        producer as *mut u8,
-        strlen(producer) as u32,
-    );
+    MD5_write(&mut md5, producer as *mut u8, strlen(producer) as u32);
     free(producer as *mut libc::c_void);
     if !dviname.is_null() {
-        MD5_write(
-            &mut md5,
-            dviname as *const u8,
-            strlen(dviname) as u32,
-        );
+        MD5_write(&mut md5, dviname as *const u8, strlen(dviname) as u32);
     }
     if !pdfname.is_null() {
-        MD5_write(
-            &mut md5,
-            pdfname as *const u8,
-            strlen(pdfname) as u32,
-        );
+        MD5_write(&mut md5, pdfname as *const u8, strlen(pdfname) as u32);
     }
     MD5_final((*p).ID.as_mut_ptr(), &mut md5);
 }
@@ -536,7 +508,7 @@ unsafe extern "C" fn compute_owner_password(
         padded.as_mut_ptr(),
     );
     MD5_init(&mut md5);
-    MD5_write(&mut md5, padded.as_mut_ptr(), 32i32 as u32);
+    MD5_write(&mut md5, padded.as_mut_ptr(), 32_u32);
     MD5_final(hash.as_mut_ptr(), &mut md5);
     if (*p).R >= 3i32 {
         i = 0i32;
@@ -556,12 +528,7 @@ unsafe extern "C" fn compute_owner_password(
     let mut tmp1: [u8; 32] = [0; 32];
     let mut tmp2: [u8; 32] = [0; 32];
     let mut key: [u8; 16] = [0; 16];
-    ARC4(
-        &mut arc4,
-        32i32 as u32,
-        padded.as_mut_ptr(),
-        tmp1.as_mut_ptr(),
-    );
+    ARC4(&mut arc4, 32_u32, padded.as_mut_ptr(), tmp1.as_mut_ptr());
     if (*p).R >= 3i32 {
         i = 1i32;
         while i <= 19i32 {
@@ -576,12 +543,7 @@ unsafe extern "C" fn compute_owner_password(
                 j += 1
             }
             ARC4_set_key(&mut arc4, (*p).key_size as u32, key.as_mut_ptr());
-            ARC4(
-                &mut arc4,
-                32i32 as u32,
-                tmp2.as_mut_ptr(),
-                tmp1.as_mut_ptr(),
-            );
+            ARC4(&mut arc4, 32_u32, tmp2.as_mut_ptr(), tmp1.as_mut_ptr());
             i += 1
         }
     }
@@ -606,15 +568,15 @@ unsafe extern "C" fn compute_encryption_key(mut p: *mut pdf_sec, mut passwd: *co
     };
     passwd_padding(passwd, padded.as_mut_ptr());
     MD5_init(&mut md5);
-    MD5_write(&mut md5, padded.as_mut_ptr(), 32i32 as u32);
-    MD5_write(&mut md5, (*p).O.as_mut_ptr(), 32i32 as u32);
+    MD5_write(&mut md5, padded.as_mut_ptr(), 32_u32);
+    MD5_write(&mut md5, (*p).O.as_mut_ptr(), 32_u32);
     let mut tmp: [u8; 4] = [0; 4];
     tmp[0] = ((*p).P as u8 as i32 & 0xffi32) as u8;
     tmp[1] = (((*p).P >> 8i32) as u8 as i32 & 0xffi32) as u8;
     tmp[2] = (((*p).P >> 16i32) as u8 as i32 & 0xffi32) as u8;
     tmp[3] = (((*p).P >> 24i32) as u8 as i32 & 0xffi32) as u8;
-    MD5_write(&mut md5, tmp.as_mut_ptr(), 4i32 as u32);
-    MD5_write(&mut md5, (*p).ID.as_mut_ptr(), 16i32 as u32);
+    MD5_write(&mut md5, tmp.as_mut_ptr(), 4_u32);
+    MD5_write(&mut md5, (*p).ID.as_mut_ptr(), 16_u32);
     MD5_final(hash.as_mut_ptr(), &mut md5);
     if (*p).R >= 3i32 {
         i = 0i32;
@@ -656,14 +618,10 @@ unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *con
     compute_encryption_key(p, uplain);
     match (*p).R {
         2 => {
-            ARC4_set_key(
-                &mut arc4,
-                (*p).key_size as u32,
-                (*p).key.as_mut_ptr(),
-            );
+            ARC4_set_key(&mut arc4, (*p).key_size as u32, (*p).key.as_mut_ptr());
             ARC4(
                 &mut arc4,
-                32i32 as u32,
+                32_u32,
                 padding_bytes.as_ptr(),
                 upasswd.as_mut_ptr(),
             );
@@ -673,20 +631,11 @@ unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *con
             let mut tmp1: [u8; 32] = [0; 32];
             let mut tmp2: [u8; 32] = [0; 32];
             MD5_init(&mut md5);
-            MD5_write(&mut md5, padding_bytes.as_ptr(), 32i32 as u32);
-            MD5_write(&mut md5, (*p).ID.as_mut_ptr(), 16i32 as u32);
+            MD5_write(&mut md5, padding_bytes.as_ptr(), 32_u32);
+            MD5_write(&mut md5, (*p).ID.as_mut_ptr(), 16_u32);
             MD5_final(hash.as_mut_ptr(), &mut md5);
-            ARC4_set_key(
-                &mut arc4,
-                (*p).key_size as u32,
-                (*p).key.as_mut_ptr(),
-            );
-            ARC4(
-                &mut arc4,
-                16i32 as u32,
-                hash.as_mut_ptr(),
-                tmp1.as_mut_ptr(),
-            );
+            ARC4_set_key(&mut arc4, (*p).key_size as u32, (*p).key.as_mut_ptr());
+            ARC4(&mut arc4, 16_u32, hash.as_mut_ptr(), tmp1.as_mut_ptr());
             i = 1i32;
             while i <= 19i32 {
                 let mut key: [u8; 16] = [0; 16];
@@ -701,12 +650,7 @@ unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *con
                     j += 1
                 }
                 ARC4_set_key(&mut arc4, (*p).key_size as u32, key.as_mut_ptr());
-                ARC4(
-                    &mut arc4,
-                    16i32 as u32,
-                    tmp2.as_mut_ptr(),
-                    tmp1.as_mut_ptr(),
-                );
+                ARC4(&mut arc4, 16_u32, tmp2.as_mut_ptr(), tmp1.as_mut_ptr());
                 i += 1
             }
             memcpy(
@@ -752,14 +696,10 @@ unsafe extern "C" fn compute_hash_V5(
     let mut K_len: size_t = 0;
     let mut nround: i32 = 0;
     SHA256_init(&mut sha);
-    SHA256_write(
-        &mut sha,
-        passwd as *const u8,
-        strlen(passwd) as u32,
-    );
-    SHA256_write(&mut sha, salt, 8i32 as u32);
+    SHA256_write(&mut sha, passwd as *const u8, strlen(passwd) as u32);
+    SHA256_write(&mut sha, salt, 8_u32);
     if !user_key.is_null() {
-        SHA256_write(&mut sha, user_key, 48i32 as u32);
+        SHA256_write(&mut sha, user_key, 48_u32);
     }
     SHA256_final(hash, &mut sha);
     if R == 5i32 || R == 6i32 {
@@ -767,7 +707,7 @@ unsafe extern "C" fn compute_hash_V5(
         __assert_fail(b"R ==5 || R == 6\x00" as *const u8 as
                           *const i8,
                       b"dpx-pdfencrypt.c\x00" as *const u8 as
-                          *const i8, 307i32 as u32,
+                          *const i8, 307_u32,
                       (*::std::mem::transmute::<&[u8; 103],
                                                 &[i8; 103]>(b"void compute_hash_V5(unsigned char *, const char *, const unsigned char *, const unsigned char *, int)\x00")).as_ptr());
     }
@@ -800,7 +740,7 @@ unsafe extern "C" fn compute_hash_V5(
             __assert_fail(b"K1_len < 240\x00" as *const u8 as
                               *const i8,
                           b"dpx-pdfencrypt.c\x00" as *const u8 as
-                              *const i8, 319i32 as u32,
+                              *const i8, 319_u32,
                           (*::std::mem::transmute::<&[u8; 103],
                                                     &[i8; 103]>(b"void compute_hash_V5(unsigned char *, const char *, const unsigned char *, const unsigned char *, int)\x00")).as_ptr());
         }
@@ -823,11 +763,8 @@ unsafe extern "C" fn compute_hash_V5(
                 48i32 as u64,
             );
         }
-        Kr = new(
-            (K1_len.wrapping_mul(64i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-                as u32,
-        ) as *mut u8;
+        Kr = new((K1_len.wrapping_mul(64i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
         i = 0i32;
         while i < 64i32 {
             memcpy(
@@ -931,10 +868,7 @@ unsafe extern "C" fn compute_hash_V5(
         32i32 as u64,
     );
 }
-unsafe extern "C" fn compute_owner_password_V5(
-    mut p: *mut pdf_sec,
-    mut oplain: *const i8,
-) {
+unsafe extern "C" fn compute_owner_password_V5(mut p: *mut pdf_sec, mut oplain: *const i8) {
     let mut vsalt: [u8; 8] = [0; 8];
     let mut ksalt: [u8; 8] = [0; 8];
     let mut hash: [u8; 32] = [0; 32];
@@ -977,11 +911,7 @@ unsafe extern "C" fn compute_owner_password_V5(
         (*p).U.as_mut_ptr(),
         (*p).R,
     );
-    memset(
-        iv.as_mut_ptr() as *mut libc::c_void,
-        0i32,
-        16i32 as u64,
-    );
+    memset(iv.as_mut_ptr() as *mut libc::c_void, 0i32, 16i32 as u64);
     AES_cbc_encrypt_tectonic(
         hash.as_mut_ptr(),
         32i32 as size_t,
@@ -999,10 +929,7 @@ unsafe extern "C" fn compute_owner_password_V5(
     );
     free(OE as *mut libc::c_void);
 }
-unsafe extern "C" fn compute_user_password_V5(
-    mut p: *mut pdf_sec,
-    mut uplain: *const i8,
-) {
+unsafe extern "C" fn compute_user_password_V5(mut p: *mut pdf_sec, mut uplain: *const i8) {
     let mut vsalt: [u8; 8] = [0; 8];
     let mut ksalt: [u8; 8] = [0; 8];
     let mut hash: [u8; 32] = [0; 32];
@@ -1045,11 +972,7 @@ unsafe extern "C" fn compute_user_password_V5(
         0 as *const u8,
         (*p).R,
     );
-    memset(
-        iv.as_mut_ptr() as *mut libc::c_void,
-        0i32,
-        16i32 as u64,
-    );
+    memset(iv.as_mut_ptr() as *mut libc::c_void, 0i32, 16i32 as u64);
     AES_cbc_encrypt_tectonic(
         hash.as_mut_ptr(),
         32i32 as size_t,
@@ -1106,11 +1029,8 @@ unsafe extern "C" fn stringprep_profile(
             return -1i32;
         }
     }
-    *output = new(
-        (strlen(input).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32,
-    ) as *mut i8;
+    *output = new((strlen(input).wrapping_add(1i32 as u64) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy(*output, input);
     return 0i32;
 }
@@ -1192,7 +1112,7 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
     } else {
         __assert_fail(b"oplain\x00" as *const u8 as *const i8,
                       b"dpx-pdfencrypt.c\x00" as *const u8 as
-                          *const i8, 521i32 as u32,
+                          *const i8, 521_u32,
                       (*::std::mem::transmute::<&[u8; 80],
                                                 &[i8; 80]>(b"void pdf_enc_set_passwd(unsigned int, unsigned int, const char *, const char *)\x00")).as_ptr());
     }
@@ -1200,12 +1120,12 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
     } else {
         __assert_fail(b"uplain\x00" as *const u8 as *const i8,
                       b"dpx-pdfencrypt.c\x00" as *const u8 as
-                          *const i8, 522i32 as u32,
+                          *const i8, 522_u32,
                       (*::std::mem::transmute::<&[u8; 80],
                                                 &[i8; 80]>(b"void pdf_enc_set_passwd(unsigned int, unsigned int, const char *, const char *)\x00")).as_ptr());
     }
     version = pdf_get_version() as i32;
-    (*p).key_size = bits.wrapping_div(8i32 as u32) as i32;
+    (*p).key_size = bits.wrapping_div(8_u32) as i32;
     if (*p).key_size == 5i32 {
         /* 40bit */
         (*p).V = 1i32
@@ -1228,13 +1148,7 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
     check_version(p, version);
     (*p).P = (perm | 0xc0u32) as i32;
     match (*p).V {
-        1 => {
-            (*p).R = if ((*p).P as i64) < 0x100 {
-                2i32
-            } else {
-                3i32
-            }
-        }
+        1 => (*p).R = if ((*p).P as i64) < 0x100 { 2i32 } else { 3i32 },
         2 | 3 => (*p).R = 3i32,
         4 => (*p).R = 4i32,
         5 => (*p).R = 6i32,
@@ -1293,17 +1207,14 @@ unsafe extern "C" fn calculate_key(mut p: *mut pdf_sec, mut key: *mut u8) {
         (*p).key.as_mut_ptr() as *const libc::c_void,
         (*p).key_size as u64,
     );
-    tmp[(*p).key_size as usize] =
-        ((*p).label.objnum as u8 as i32 & 0xffi32) as u8;
+    tmp[(*p).key_size as usize] = ((*p).label.objnum as u8 as i32 & 0xffi32) as u8;
     tmp[((*p).key_size + 1i32) as usize] =
         (((*p).label.objnum >> 8i32) as u8 as i32 & 0xffi32) as u8;
     tmp[((*p).key_size + 2i32) as usize] =
         (((*p).label.objnum >> 16i32) as u8 as i32 & 0xffi32) as u8;
-    tmp[((*p).key_size + 3i32) as usize] =
-        ((*p).label.gennum as u8 as i32 & 0xffi32) as u8;
-    tmp[((*p).key_size + 4i32) as usize] = (((*p).label.gennum as i32 >> 8i32)
-        as u8 as i32
-        & 0xffi32) as u8;
+    tmp[((*p).key_size + 3i32) as usize] = ((*p).label.gennum as u8 as i32 & 0xffi32) as u8;
+    tmp[((*p).key_size + 4i32) as usize] =
+        (((*p).label.gennum as i32 >> 8i32) as u8 as i32 & 0xffi32) as u8;
     if (*p).V >= 4i32 {
         tmp[((*p).key_size + 5i32) as usize] = 0x73i32 as u8;
         tmp[((*p).key_size + 6i32) as usize] = 0x41i32 as u8;
@@ -1333,9 +1244,9 @@ pub unsafe extern "C" fn pdf_encrypt_data(
                 sbox: [0; 256],
             };
             *cipher_len = plain_len;
-            *cipher = new((*cipher_len as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-                as u32) as *mut u8;
+            *cipher = new(
+                (*cipher_len as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32
+            ) as *mut u8;
             ARC4_set_key(
                 &mut arc4,
                 (if 16i32 < (*p).key_size + 5i32 {

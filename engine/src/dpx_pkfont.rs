@@ -52,12 +52,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
-    fn fread(
-        _: *mut libc::c_void,
-        _: u64,
-        _: u64,
-        _: *mut FILE,
-    ) -> u64;
+    fn fread(_: *mut libc::c_void, _: u64, _: u64, _: *mut FILE) -> u64;
     #[no_mangle]
     fn fgetc(__stream: *mut FILE) -> i32;
     #[no_mangle]
@@ -238,19 +233,12 @@ static mut base_dpi: u32 = 600u32;
 #[no_mangle]
 pub unsafe extern "C" fn PKFont_set_dpi(mut dpi: i32) {
     if dpi <= 0i32 {
-        _tt_abort(
-            b"Invalid DPI: %d\n\x00" as *const u8 as *const i8,
-            dpi,
-        );
+        _tt_abort(b"Invalid DPI: %d\n\x00" as *const u8 as *const i8, dpi);
     }
     base_dpi = dpi as u32;
 }
 /* (Only) This requires TFM to get design size... */
-unsafe extern "C" fn truedpi(
-    mut ident: *const i8,
-    mut point_size: f64,
-    mut bdpi: u32,
-) -> u32 {
+unsafe extern "C" fn truedpi(mut ident: *const i8, mut point_size: f64, mut bdpi: u32) -> u32 {
     let mut dpi: u32 = bdpi;
     let mut design_size: f64 = 0.;
     let mut tfm_id: i32 = 0;
@@ -265,15 +253,11 @@ unsafe extern "C" fn truedpi(
             ident,
         );
     } else {
-        dpi = (floor(base_dpi as f64 * point_size / design_size / 1.0f64 + 0.5f64)
-            * 1.0f64) as u32
+        dpi = (floor(base_dpi as f64 * point_size / design_size / 1.0f64 + 0.5f64) * 1.0f64) as u32
     }
     return dpi;
 }
-unsafe extern "C" fn dpx_open_pk_font_at(
-    mut ident: *const i8,
-    mut dpi: u32,
-) -> *mut FILE {
+unsafe extern "C" fn dpx_open_pk_font_at(mut ident: *const i8, mut dpi: u32) -> *mut FILE {
     let mut fp: *mut FILE = 0 as *mut FILE;
     let mut fqpn: *mut i8 = 0 as *mut i8;
     /*kpse_glyph_file_type kpse_file_info;*/
@@ -317,8 +301,7 @@ pub unsafe extern "C" fn pdf_font_open_pkfont(mut font: *mut pdf_font) -> i32 {
             pdf_encoding_get_name(encoding_id),
         );
         dpx_warning(
-            b">> Assuming this is for glyph name assignment.\x00" as *const u8
-                as *const i8,
+            b">> Assuming this is for glyph name assignment.\x00" as *const u8 as *const i8,
         );
     }
     return 0i32;
@@ -326,11 +309,7 @@ pub unsafe extern "C" fn pdf_font_open_pkfont(mut font: *mut pdf_font) -> i32 {
 /* We are using Mask Image. Fill black is bit clear.
  * Optimizing those codes doesn't improve things.
  */
-unsafe extern "C" fn fill_black_run(
-    mut dp: *mut u8,
-    mut left: u32,
-    mut run_count: u32,
-) -> u32 {
+unsafe extern "C" fn fill_black_run(mut dp: *mut u8, mut left: u32, mut run_count: u32) -> u32 {
     static mut mask: [u8; 8] = [
         127u32 as u8,
         191u32 as u8,
@@ -341,14 +320,10 @@ unsafe extern "C" fn fill_black_run(
         253u32 as u8,
         254u32 as u8,
     ];
-    let mut right: u32 = left
-        .wrapping_add(run_count)
-        .wrapping_sub(1i32 as u32);
+    let mut right: u32 = left.wrapping_add(run_count).wrapping_sub(1_u32);
     while left <= right {
-        let ref mut fresh0 = *dp.offset(left.wrapping_div(8i32 as u32) as isize);
-        *fresh0 = (*fresh0 as i32
-            & mask[left.wrapping_rem(8i32 as u32) as usize] as i32)
-            as u8;
+        let ref mut fresh0 = *dp.offset(left.wrapping_div(8_u32) as isize);
+        *fresh0 = (*fresh0 as i32 & mask[left.wrapping_rem(8_u32) as usize] as i32) as u8;
         left = left.wrapping_add(1)
     }
     return run_count;
@@ -363,38 +338,33 @@ unsafe extern "C" fn pk_packed_num(
     mut dp: *mut u8,
     mut pl: u32,
 ) -> u32 {
-    let mut nmbr: u32 = 0i32 as u32;
+    let mut nmbr: u32 = 0_u32;
     let mut i: u32 = *np;
     let mut nyb: i32 = 0;
     let mut j: i32 = 0;
-    if i.wrapping_div(2i32 as u32) == pl {
-        dpx_warning(
-            b"EOD reached while unpacking pk_packed_num.\x00" as *const u8 as *const i8,
-        );
-        return 0i32 as u32;
+    if i.wrapping_div(2_u32) == pl {
+        dpx_warning(b"EOD reached while unpacking pk_packed_num.\x00" as *const u8 as *const i8);
+        return 0_u32;
     }
-    nyb = if i.wrapping_rem(2i32 as u32) != 0 {
-        *dp.offset(i.wrapping_div(2i32 as u32) as isize) as i32 & 0xfi32
+    nyb = if i.wrapping_rem(2_u32) != 0 {
+        *dp.offset(i.wrapping_div(2_u32) as isize) as i32 & 0xfi32
     } else {
-        *dp.offset(i.wrapping_div(2i32 as u32) as isize) as i32 >> 4i32 & 0xfi32
+        *dp.offset(i.wrapping_div(2_u32) as isize) as i32 >> 4i32 & 0xfi32
     };
     i = i.wrapping_add(1);
     if nyb == 0i32 {
         j = 0i32;
         loop {
-            if i.wrapping_div(2i32 as u32) == pl {
+            if i.wrapping_div(2_u32) == pl {
                 dpx_warning(
-                    b"EOD reached while unpacking pk_packed_num.\x00" as *const u8
-                        as *const i8,
+                    b"EOD reached while unpacking pk_packed_num.\x00" as *const u8 as *const i8,
                 );
                 break;
             } else {
-                nyb = if i.wrapping_rem(2i32 as u32) != 0 {
-                    *dp.offset(i.wrapping_div(2i32 as u32) as isize) as i32
-                        & 0xfi32
+                nyb = if i.wrapping_rem(2_u32) != 0 {
+                    *dp.offset(i.wrapping_div(2_u32) as isize) as i32 & 0xfi32
                 } else {
-                    *dp.offset(i.wrapping_div(2i32 as u32) as isize) as i32 >> 4i32
-                        & 0xfi32
+                    *dp.offset(i.wrapping_div(2_u32) as isize) as i32 >> 4i32 & 0xfi32
                 };
                 i = i.wrapping_add(1);
                 j += 1;
@@ -410,45 +380,36 @@ unsafe extern "C" fn pk_packed_num(
             if !(fresh1 > 0i32) {
                 break;
             }
-            if i.wrapping_div(2i32 as u32) == pl {
+            if i.wrapping_div(2_u32) == pl {
                 dpx_warning(
-                    b"EOD reached while unpacking pk_packed_num.\x00" as *const u8
-                        as *const i8,
+                    b"EOD reached while unpacking pk_packed_num.\x00" as *const u8 as *const i8,
                 );
                 break;
             } else {
-                nyb = if i.wrapping_rem(2i32 as u32) != 0 {
-                    *dp.offset(i.wrapping_div(2i32 as u32) as isize) as i32
-                        & 0xfi32
+                nyb = if i.wrapping_rem(2_u32) != 0 {
+                    *dp.offset(i.wrapping_div(2_u32) as isize) as i32 & 0xfi32
                 } else {
-                    *dp.offset(i.wrapping_div(2i32 as u32) as isize) as i32 >> 4i32
-                        & 0xfi32
+                    *dp.offset(i.wrapping_div(2_u32) as isize) as i32 >> 4i32 & 0xfi32
                 };
                 i = i.wrapping_add(1);
-                nmbr = nmbr
-                    .wrapping_mul(16i32 as u32)
-                    .wrapping_add(nyb as u32)
+                nmbr = nmbr.wrapping_mul(16_u32).wrapping_add(nyb as u32)
             }
         }
-        nmbr = (nmbr as u32)
-            .wrapping_add(((13i32 - dyn_f) * 16i32 + dyn_f - 15i32) as u32)
-            as u32
+        nmbr = (nmbr as u32).wrapping_add(((13i32 - dyn_f) * 16i32 + dyn_f - 15i32) as u32) as u32
     } else if nyb <= dyn_f {
         nmbr = nyb as u32
     } else if nyb < 14i32 {
-        if i.wrapping_div(2i32 as u32) == pl {
+        if i.wrapping_div(2_u32) == pl {
             dpx_warning(
-                b"EOD reached while unpacking pk_packed_num.\x00" as *const u8
-                    as *const i8,
+                b"EOD reached while unpacking pk_packed_num.\x00" as *const u8 as *const i8,
             );
-            return 0i32 as u32;
+            return 0_u32;
         }
         nmbr = ((nyb - dyn_f - 1i32) * 16i32
-            + (if i.wrapping_rem(2i32 as u32) != 0 {
-                *dp.offset(i.wrapping_div(2i32 as u32) as isize) as i32 & 0xfi32
+            + (if i.wrapping_rem(2_u32) != 0 {
+                *dp.offset(i.wrapping_div(2_u32) as isize) as i32 & 0xfi32
             } else {
-                *dp.offset(i.wrapping_div(2i32 as u32) as isize) as i32 >> 4i32
-                    & 0xfi32
+                *dp.offset(i.wrapping_div(2_u32) as isize) as i32 >> 4i32 & 0xfi32
             })
             + dyn_f
             + 1i32) as u32;
@@ -457,11 +418,7 @@ unsafe extern "C" fn pk_packed_num(
     *np = i;
     return nmbr;
 }
-unsafe extern "C" fn send_out(
-    mut rowptr: *mut u8,
-    mut rowbytes: u32,
-    mut stream: *mut pdf_obj,
-) {
+unsafe extern "C" fn send_out(mut rowptr: *mut u8, mut rowbytes: u32, mut stream: *mut pdf_obj) {
     pdf_add_stream(stream, rowptr as *mut libc::c_void, rowbytes as i32);
 }
 unsafe extern "C" fn pk_decode_packed(
@@ -476,34 +433,27 @@ unsafe extern "C" fn pk_decode_packed(
     let mut rowptr: *mut u8 = 0 as *mut u8;
     let mut rowbytes: u32 = 0;
     let mut i: u32 = 0;
-    let mut np: u32 = 0i32 as u32;
-    let mut run_count: u32 = 0i32 as u32;
-    let mut repeat_count: u32 = 0i32 as u32;
-    rowbytes = wd
-        .wrapping_add(7i32 as u32)
-        .wrapping_div(8i32 as u32);
-    rowptr = new((rowbytes as u64)
-        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-        as u32) as *mut u8;
+    let mut np: u32 = 0_u32;
+    let mut run_count: u32 = 0_u32;
+    let mut repeat_count: u32 = 0_u32;
+    rowbytes = wd.wrapping_add(7_u32).wrapping_div(8_u32);
+    rowptr =
+        new((rowbytes as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
     /* repeat count is applied to the *current* row.
      * "run" can span across rows.
      * If there are non-zero repeat count and if run
      * spans across row, first repeat and then continue.
      */
-    np = 0i32 as u32; /* 1 is white */
-    i = 0i32 as u32;
+    np = 0_u32; /* 1 is white */
+    i = 0_u32;
     while i < ht {
         let mut rowbits_left: u32 = 0;
         let mut nbits: u32 = 0;
-        repeat_count = 0i32 as u32;
-        memset(
-            rowptr as *mut libc::c_void,
-            0xffi32,
-            rowbytes as u64,
-        );
+        repeat_count = 0_u32;
+        memset(rowptr as *mut libc::c_void, 0xffi32, rowbytes as u64);
         rowbits_left = wd;
         /* Fill run left over from previous row */
-        if run_count > 0i32 as u32 {
+        if run_count > 0_u32 {
             nbits = if rowbits_left < run_count {
                 rowbits_left
             } else {
@@ -511,49 +461,39 @@ unsafe extern "C" fn pk_decode_packed(
             };
             match run_color {
                 0 => {
-                    rowbits_left = (rowbits_left as u32).wrapping_sub(fill_black_run(
-                        rowptr,
-                        0i32 as u32,
-                        nbits,
-                    )) as u32
+                    rowbits_left = (rowbits_left as u32)
+                        .wrapping_sub(fill_black_run(rowptr, 0_u32, nbits))
+                        as u32
                 }
                 1 => {
-                    rowbits_left = (rowbits_left as u32)
-                        .wrapping_sub(fill_white_run(nbits))
-                        as u32
+                    rowbits_left = (rowbits_left as u32).wrapping_sub(fill_white_run(nbits)) as u32
                 }
                 _ => {}
             }
             run_count = (run_count as u32).wrapping_sub(nbits) as u32
         }
         /* Read nybbles until we have a full row */
-        while np.wrapping_div(2i32 as u32) < pl && rowbits_left > 0i32 as u32 {
+        while np.wrapping_div(2_u32) < pl && rowbits_left > 0_u32 {
             let mut nyb: i32 = 0;
-            nyb = if np.wrapping_rem(2i32 as u32) != 0 {
-                *dp.offset(np.wrapping_div(2i32 as u32) as isize) as i32 & 0xfi32
+            nyb = if np.wrapping_rem(2_u32) != 0 {
+                *dp.offset(np.wrapping_div(2_u32) as isize) as i32 & 0xfi32
             } else {
-                *dp.offset(np.wrapping_div(2i32 as u32) as isize) as i32 >> 4i32
-                    & 0xfi32
+                *dp.offset(np.wrapping_div(2_u32) as isize) as i32 >> 4i32 & 0xfi32
             };
             if nyb == 14i32 {
                 /* packed number "repeat_count" follows */
-                if repeat_count != 0i32 as u32 {
-                    dpx_warning(
-                        b"Second repeat count for this row!\x00" as *const u8
-                            as *const i8,
-                    ); /* Consume this nybble */
+                if repeat_count != 0_u32 {
+                    dpx_warning(b"Second repeat count for this row!\x00" as *const u8 as *const i8);
+                    /* Consume this nybble */
                 } /* run_count */
                 np = np.wrapping_add(1); /* Consume this nybble */
                 repeat_count = pk_packed_num(&mut np, dyn_f, dp, pl)
             } else if nyb == 15i32 {
-                if repeat_count != 0i32 as u32 {
-                    dpx_warning(
-                        b"Second repeat count for this row!\x00" as *const u8
-                            as *const i8,
-                    );
+                if repeat_count != 0_u32 {
+                    dpx_warning(b"Second repeat count for this row!\x00" as *const u8 as *const i8);
                 }
                 np = np.wrapping_add(1);
-                repeat_count = 1i32 as u32
+                repeat_count = 1_u32
             } else {
                 /* Interprete current nybble as packed number */
                 run_count = pk_packed_num(&mut np, dyn_f, dp, pl);
@@ -573,9 +513,8 @@ unsafe extern "C" fn pk_decode_packed(
                         )) as u32
                     }
                     1 => {
-                        rowbits_left = (rowbits_left as u32)
-                            .wrapping_sub(fill_white_run(nbits))
-                            as u32
+                        rowbits_left =
+                            (rowbits_left as u32).wrapping_sub(fill_white_run(nbits)) as u32
                     }
                     _ => {}
                 }
@@ -583,7 +522,7 @@ unsafe extern "C" fn pk_decode_packed(
         }
         /* We got bitmap row data. */
         send_out(rowptr, rowbytes, stream);
-        while i < ht && repeat_count > 0i32 as u32 {
+        while i < ht && repeat_count > 0_u32 {
             send_out(rowptr, rowbytes, stream);
             repeat_count = repeat_count.wrapping_sub(1);
             i = i.wrapping_add(1)
@@ -621,52 +560,40 @@ unsafe extern "C" fn pk_decode_bitmap(
     } else {
         __assert_fail(b"dyn_f == 14\x00" as *const u8 as *const i8,
                       b"dpx-pkfont.c\x00" as *const u8 as *const i8,
-                      308i32 as u32,
+                      308_u32,
                       (*::std::mem::transmute::<&[u8; 89],
                                                 &[i8; 89]>(b"int pk_decode_bitmap(pdf_obj *, uint32_t, uint32_t, int, int, unsigned char *, uint32_t)\x00")).as_ptr());
     }
     if run_color != 0i32 {
         dpx_warning(b"run_color != 0 for bitmap pk data?\x00" as *const u8 as *const i8);
-    } else if pl
-        < wd.wrapping_mul(ht)
-            .wrapping_add(7i32 as u32)
-            .wrapping_div(8i32 as u32)
-    {
+    } else if pl < wd.wrapping_mul(ht).wrapping_add(7_u32).wrapping_div(8_u32) {
         dpx_warning(
             b"Insufficient bitmap pk data. %dbytes expected but only %dbytes read.\x00" as *const u8
                 as *const i8,
-            wd.wrapping_mul(ht)
-                .wrapping_add(7i32 as u32)
-                .wrapping_div(8i32 as u32),
+            wd.wrapping_mul(ht).wrapping_add(7_u32).wrapping_div(8_u32),
             pl,
         );
         return -1i32;
     }
-    rowbytes = wd
-        .wrapping_add(7i32 as u32)
-        .wrapping_div(8i32 as u32);
-    rowptr = new((rowbytes as u64)
-        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-        as u32) as *mut u8;
+    rowbytes = wd.wrapping_add(7_u32).wrapping_div(8_u32);
+    rowptr =
+        new((rowbytes as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
     memset(rowptr as *mut libc::c_void, 0i32, rowbytes as u64);
     /* Flip. PK bitmap is not byte aligned for each rows. */
-    i = 0i32 as u32; /* flip bit */
-    j = 0i32 as u32;
+    i = 0_u32; /* flip bit */
+    j = 0_u32;
     while i < ht.wrapping_mul(wd) {
-        c = (*dp.offset(i.wrapping_div(8i32 as u32) as isize) as i32
-            & mask[i.wrapping_rem(8i32 as u32) as usize] as i32)
-            as u8;
+        c = (*dp.offset(i.wrapping_div(8_u32) as isize) as i32
+            & mask[i.wrapping_rem(8_u32) as usize] as i32) as u8;
         if c as i32 == 0i32 {
-            let ref mut fresh2 = *rowptr.offset(j.wrapping_div(8i32 as u32) as isize);
-            *fresh2 = (*fresh2 as i32
-                | mask[i.wrapping_rem(8i32 as u32) as usize] as i32)
-                as u8
+            let ref mut fresh2 = *rowptr.offset(j.wrapping_div(8_u32) as isize);
+            *fresh2 = (*fresh2 as i32 | mask[i.wrapping_rem(8_u32) as usize] as i32) as u8
         }
         j = j.wrapping_add(1);
         if j == wd {
             send_out(rowptr, rowbytes, stream);
             memset(rowptr as *mut libc::c_void, 0i32, rowbytes as u64);
-            j = 0i32 as u32
+            j = 0_u32
         }
         i = i.wrapping_add(1)
     }
@@ -679,7 +606,7 @@ unsafe extern "C" fn do_preamble(mut fp: *mut FILE) {
         skip_bytes(get_unsigned_byte(fp) as u32, fp);
         /* Skip other header info.  It's normally used for verifying this
         is the file wethink it is */
-        skip_bytes(16i32 as u32, fp);
+        skip_bytes(16_u32, fp);
     } else {
         _tt_abort(
             b"embed_pk_font: PK ID byte is incorrect.  Are you sure this is a PK file?\x00"
@@ -697,7 +624,7 @@ unsafe extern "C" fn read_pk_char_header(
         __assert_fail(
             b"h\x00" as *const u8 as *const i8,
             b"dpx-pkfont.c\x00" as *const u8 as *const i8,
-            366i32 as u32,
+            366_u32,
             (*::std::mem::transmute::<&[u8; 68], &[i8; 68]>(
                 b"int read_pk_char_header(struct pk_header_ *, unsigned char, FILE *)\x00",
             ))
@@ -706,8 +633,7 @@ unsafe extern "C" fn read_pk_char_header(
     }
     if opcode as i32 & 4i32 == 0i32 {
         /* short */
-        (*h).pkt_len = ((opcode as i32 & 3i32) << 8i32
-            | get_unsigned_byte(fp) as i32) as u32; /* TFM width */
+        (*h).pkt_len = ((opcode as i32 & 3i32) << 8i32 | get_unsigned_byte(fp) as i32) as u32; /* TFM width */
         (*h).chrcode = get_unsigned_byte(fp) as i32; /* horizontal escapement */
         (*h).wd = get_unsigned_triple(fp) as i32; /* extended short */
         (*h).dx = (get_unsigned_byte(fp) as i32) << 16i32;
@@ -716,8 +642,7 @@ unsafe extern "C" fn read_pk_char_header(
         (*h).bm_ht = get_unsigned_byte(fp) as u32;
         (*h).bm_hoff = get_signed_byte(fp) as i32;
         (*h).bm_voff = get_signed_byte(fp) as i32;
-        (*h).pkt_len = ((*h).pkt_len as u32).wrapping_sub(8i32 as u32) as u32
-            as u32
+        (*h).pkt_len = ((*h).pkt_len as u32).wrapping_sub(8_u32) as u32 as u32
     } else if opcode as i32 & 7i32 == 7i32 {
         /* long */
         (*h).pkt_len = get_positive_quad(
@@ -741,11 +666,9 @@ unsafe extern "C" fn read_pk_char_header(
         );
         (*h).bm_hoff = get_signed_quad(fp);
         (*h).bm_voff = get_signed_quad(fp);
-        (*h).pkt_len = ((*h).pkt_len as u32).wrapping_sub(28i32 as u32)
-            as u32
+        (*h).pkt_len = ((*h).pkt_len as u32).wrapping_sub(28_u32) as u32
     } else {
-        (*h).pkt_len = ((opcode as i32 & 3i32) << 16i32
-            | get_unsigned_pair(fp) as i32) as u32;
+        (*h).pkt_len = ((opcode as i32 & 3i32) << 16i32 | get_unsigned_pair(fp) as i32) as u32;
         (*h).chrcode = get_unsigned_byte(fp) as i32;
         (*h).wd = get_unsigned_triple(fp) as i32;
         (*h).dx = (get_unsigned_pair(fp) as i32) << 16i32;
@@ -754,8 +677,7 @@ unsafe extern "C" fn read_pk_char_header(
         (*h).bm_ht = get_unsigned_pair(fp) as u32;
         (*h).bm_hoff = get_signed_pair(fp) as i32;
         (*h).bm_voff = get_signed_pair(fp) as i32;
-        (*h).pkt_len = ((*h).pkt_len as u32).wrapping_sub(13i32 as u32)
-            as u32
+        (*h).pkt_len = ((*h).pkt_len as u32).wrapping_sub(13_u32) as u32
     }
     (*h).dyn_f = opcode as i32 / 16i32;
     (*h).run_color = if opcode as i32 & 8i32 != 0 {
@@ -763,7 +685,7 @@ unsafe extern "C" fn read_pk_char_header(
     } else {
         0i32
     };
-    if (*h).chrcode as u32 > 0xffi32 as u32 {
+    if (*h).chrcode as u32 > 0xff_u32 {
         dpx_warning(
             b"Unable to handle long characters in PK files: code=0x%04x\x00" as *const u8
                 as *const i8,
@@ -819,10 +741,7 @@ unsafe extern "C" fn create_pk_CharProc_stream(
      *
      * but it does not forbid use of such transformation.
      */
-    if (*pkh).bm_wd != 0i32 as u32
-        && (*pkh).bm_ht != 0i32 as u32
-        && pkt_len > 0i32 as u32
-    {
+    if (*pkh).bm_wd != 0_u32 && (*pkh).bm_ht != 0_u32 && pkt_len > 0_u32 {
         /* Otherwise we embed an empty stream :-( */
         /* Scale and translate origin to lower left corner for raster data */
         len = sprintf(
@@ -941,7 +860,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
         __assert_fail(
             b"ident && usedchars && point_size > 0.0\x00" as *const u8 as *const i8,
             b"dpx-pkfont.c\x00" as *const u8 as *const i8,
-            522i32 as u32,
+            522_u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int pdf_font_load_pkfont(pdf_font *)\x00",
             ))
@@ -952,8 +871,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
     fp = dpx_open_pk_font_at(ident, dpi);
     if fp.is_null() {
         _tt_abort(
-            b"Could not find/open PK font file: %s (at %udpi)\x00" as *const u8
-                as *const i8,
+            b"Could not find/open PK font file: %s (at %udpi)\x00" as *const u8 as *const i8,
             ident,
             dpi,
         );
@@ -994,10 +912,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
             };
             error = read_pk_char_header(&mut pkh, opcode as u8, fp);
             if error != 0 {
-                _tt_abort(
-                    b"Error in reading PK character header.\x00" as *const u8
-                        as *const i8,
-                );
+                _tt_abort(b"Error in reading PK character header.\x00" as *const u8 as *const i8);
             } else {
                 if charavail[(pkh.chrcode & 0xffi32) as usize] != 0 {
                     dpx_warning(
@@ -1018,9 +933,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
                 let mut charwidth: f64 = 0.;
                 /* Charwidth in PDF units */
                 charwidth = floor(
-                    1000.0f64 * pkh.wd as f64
-                        / ((1i32 << 20i32) as f64 * pix2charu)
-                        / 0.1f64
+                    1000.0f64 * pkh.wd as f64 / ((1i32 << 20i32) as f64 * pix2charu) / 0.1f64
                         + 0.5f64,
                 ) * 0.1f64;
                 widths[(pkh.chrcode & 0xffi32) as usize] = charwidth;
@@ -1030,14 +943,12 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
                 } else {
                     -pkh.bm_hoff as f64
                 };
-                bbox.lly = if bbox.lly < pkh.bm_voff as f64 - pkh.bm_ht as f64
-                {
+                bbox.lly = if bbox.lly < pkh.bm_voff as f64 - pkh.bm_ht as f64 {
                     bbox.lly
                 } else {
                     pkh.bm_voff as f64 - pkh.bm_ht as f64
                 };
-                bbox.urx = if bbox.urx > pkh.bm_wd as f64 - pkh.bm_hoff as f64
-                {
+                bbox.urx = if bbox.urx > pkh.bm_wd as f64 - pkh.bm_hoff as f64 {
                     bbox.urx
                 } else {
                     pkh.bm_wd as f64 - pkh.bm_hoff as f64
@@ -1047,9 +958,9 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
                 } else {
                     pkh.bm_voff as f64
                 };
-                pkt_ptr = new((pkh.pkt_len as u64)
-                    .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-                    as u32) as *mut u8;
+                pkt_ptr = new(
+                    (pkh.pkt_len as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32,
+                ) as *mut u8;
                 bytesread = fread(
                     pkt_ptr as *mut libc::c_void,
                     1i32 as u64,
@@ -1068,10 +979,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
                     create_pk_CharProc_stream(&mut pkh, charwidth, pkt_ptr, bytesread as u32);
                 free(pkt_ptr as *mut libc::c_void);
                 if charproc.is_null() {
-                    _tt_abort(
-                        b"Unpacking PK character data failed.\x00" as *const u8
-                            as *const i8,
-                    );
+                    _tt_abort(b"Unpacking PK character data failed.\x00" as *const u8 as *const i8);
                 }
                 if encoding_id >= 0i32 && !enc_vec.is_null() {
                     charname = *enc_vec.offset((pkh.chrcode & 0xffi32) as isize);
@@ -1105,8 +1013,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
         } else {
             match opcode {
                 240 | 241 | 242 | 243 => {
-                    let mut len: i32 =
-                        get_unsigned_num(fp, (opcode - 240i32) as u8) as i32;
+                    let mut len: i32 = get_unsigned_num(fp, (opcode - 240i32) as u8) as i32;
                     if len < 0i32 {
                         dpx_warning(
                             b"PK: Special with %d bytes???\x00" as *const u8 as *const i8,
@@ -1117,7 +1024,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
                     }
                 }
                 244 => {
-                    skip_bytes(4i32 as u32, fp);
+                    skip_bytes(4_u32, fp);
                 }
                 247 => {
                     do_preamble(fp);
@@ -1132,8 +1039,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
     while code < 256i32 {
         if *usedchars.offset(code as isize) as i32 != 0 && charavail[code as usize] == 0 {
             dpx_warning(
-                b"Missing glyph code=0x%02x in PK font \"%s\".\x00" as *const u8
-                    as *const i8,
+                b"Missing glyph code=0x%02x in PK font \"%s\".\x00" as *const u8 as *const i8,
                 code,
                 ident,
             );
@@ -1221,8 +1127,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
     if firstchar > lastchar {
         pdf_release_obj(tmp_array);
         _tt_abort(
-            b"Unexpected error: firstchar > lastchar (%d %d)\x00" as *const u8
-                as *const i8,
+            b"Unexpected error: firstchar > lastchar (%d %d)\x00" as *const u8 as *const i8,
             firstchar,
             lastchar,
         );

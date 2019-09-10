@@ -309,19 +309,13 @@ pub unsafe extern "C" fn print_char(mut s: i32) {
         if (l as i32) < 10i32 {
             print_raw_char(('0' as i32 + l as i32) as UTF16_code, 1i32 != 0);
         } else {
-            print_raw_char(
-                ('a' as i32 + l as i32 - 10i32) as UTF16_code,
-                1i32 != 0,
-            );
+            print_raw_char(('a' as i32 + l as i32 - 10i32) as UTF16_code, 1i32 != 0);
         }
         l = (s % 16i32) as small_number;
         if (l as i32) < 10i32 {
             print_raw_char(('0' as i32 + l as i32) as UTF16_code, 1i32 != 0);
         } else {
-            print_raw_char(
-                ('a' as i32 + l as i32 - 10i32) as UTF16_code,
-                1i32 != 0,
-            );
+            print_raw_char(('a' as i32 + l as i32 - 10i32) as UTF16_code, 1i32 != 0);
         }
     } else if s < 2048i32 {
         print_raw_char((192i32 + s / 64i32) as UTF16_code, 0i32 != 0);
@@ -503,7 +497,7 @@ pub unsafe extern "C" fn print(mut s: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_cstr(mut str: *const i8) {
-    let mut i: u32 = 0i32 as u32;
+    let mut i: u32 = 0_u32;
     while (i as u64) < strlen(str) {
         print_char(*str.offset(i as isize) as i32);
         i = i.wrapping_add(1)
@@ -511,9 +505,8 @@ pub unsafe extern "C" fn print_cstr(mut str: *const i8) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_nl(mut s: str_number) {
-    if term_offset > 0i32 && selector as u32 & 1i32 as u32 != 0
-        || file_offset > 0i32
-            && selector as u32 >= SELECTOR_LOG_ONLY as i32 as u32
+    if term_offset > 0i32 && selector as u32 & 1_u32 != 0
+        || file_offset > 0i32 && selector as u32 >= SELECTOR_LOG_ONLY as i32 as u32
     {
         print_ln();
     }
@@ -521,9 +514,8 @@ pub unsafe extern "C" fn print_nl(mut s: str_number) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_nl_cstr(mut str: *const i8) {
-    if term_offset > 0i32 && selector as u32 & 1i32 as u32 != 0
-        || file_offset > 0i32
-            && selector as u32 >= SELECTOR_LOG_ONLY as i32 as u32
+    if term_offset > 0i32 && selector as u32 & 1_u32 != 0
+        || file_offset > 0i32 && selector as u32 >= SELECTOR_LOG_ONLY as i32 as u32
     {
         print_ln();
     }
@@ -904,8 +896,7 @@ pub unsafe extern "C" fn print_native_word(mut p: i32) {
             .offset(i as isize) as i32;
         if c >= 0xd800i32 && c < 0xdc00i32 {
             if i < (*mem.offset((p + 4i32) as isize)).b16.s1 as i32 - 1i32 {
-                cc = *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word
-                    as *mut u16)
+                cc = *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
                     .offset((i + 1i32) as isize) as i32;
                 if cc >= 0xdc00i32 && cc < 0xe000i32 {
                     c = 0x10000i32 + (c - 0xd800i32) * 1024i32 + (cc - 0xdc00i32);
@@ -990,8 +981,7 @@ pub unsafe extern "C" fn print_hex(mut n: i32) {
 pub unsafe extern "C" fn print_roman_int(mut n: i32) {
     let mut u: i32 = 0;
     let mut v: i32 = 0;
-    let mut roman_data: *const i8 =
-        b"m2d5c2l5x2v5i\x00" as *const u8 as *const i8;
+    let mut roman_data: *const i8 = b"m2d5c2l5x2v5i\x00" as *const u8 as *const i8;
     let mut j: u8 = 0i32 as u8;
     let mut k: u8 = 0i32 as u8;
     v = 1000i32;
@@ -1004,22 +994,17 @@ pub unsafe extern "C" fn print_roman_int(mut n: i32) {
             return;
         }
         k = (j as i32 + 2i32) as u8;
-        u = v
-            / (*roman_data.offset((k as i32 - 1i32) as isize) as i32 - '0' as i32);
+        u = v / (*roman_data.offset((k as i32 - 1i32) as isize) as i32 - '0' as i32);
         if *roman_data.offset((k as i32 - 1i32) as isize) as i32 == '2' as i32 {
             k = (k as i32 + 2i32) as u8;
-            u = u
-                / (*roman_data.offset((k as i32 - 1i32) as isize) as i32
-                    - '0' as i32)
+            u = u / (*roman_data.offset((k as i32 - 1i32) as isize) as i32 - '0' as i32)
         }
         if n + u >= v {
             print_char(*roman_data.offset(k as isize) as i32);
             n = n + u
         } else {
             j = (j as i32 + 2i32) as u8;
-            v = v
-                / (*roman_data.offset((j as i32 - 1i32) as isize) as i32
-                    - '0' as i32)
+            v = v / (*roman_data.offset((j as i32 - 1i32) as isize) as i32 - '0' as i32)
         }
     }
 }

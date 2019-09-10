@@ -32,11 +32,7 @@ extern "C" {
         is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
-    fn ttstub_input_read(
-        handle: rust_input_handle_t,
-        data: *mut i8,
-        len: size_t,
-    ) -> ssize_t;
+    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
@@ -53,11 +49,8 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_num(handle: rust_input_handle_t, num: u8) -> u32;
     #[no_mangle]
-    fn tt_get_positive_quad(
-        handle: rust_input_handle_t,
-        type_0: *const i8,
-        name: *const i8,
-    ) -> u32;
+    fn tt_get_positive_quad(handle: rust_input_handle_t, type_0: *const i8, name: *const i8)
+        -> u32;
     #[no_mangle]
     fn sqxfw(sq: i32, fw: fixword) -> i32;
     #[no_mangle]
@@ -270,12 +263,12 @@ pub unsafe extern "C" fn vf_set_verbose(mut level: i32) {
     verbose = level as u8;
 }
 static mut vf_fonts: *mut vf = 0 as *const vf as *mut vf;
-static mut num_vf_fonts: u32 = 0i32 as u32;
-static mut max_vf_fonts: u32 = 0i32 as u32;
+static mut num_vf_fonts: u32 = 0_u32;
+static mut max_vf_fonts: u32 = 0_u32;
 #[no_mangle]
 pub unsafe extern "C" fn vf_reset_global_state() {
-    num_vf_fonts = 0i32 as u32;
-    max_vf_fonts = 0i32 as u32;
+    num_vf_fonts = 0_u32;
+    max_vf_fonts = 0_u32;
     vf_fonts = 0 as *mut vf;
 }
 unsafe extern "C" fn read_header(mut vf_handle: rust_input_handle_t, mut thisfont: i32) {
@@ -291,7 +284,7 @@ unsafe extern "C" fn read_header(mut vf_handle: rust_input_handle_t, mut thisfon
     /* skip comment */
     tt_skip_bytes(tt_get_unsigned_byte(vf_handle) as u32, vf_handle);
     /* Skip checksum */
-    tt_skip_bytes(4i32 as u32, vf_handle);
+    tt_skip_bytes(4_u32, vf_handle);
     (*vf_fonts.offset(thisfont as isize)).design_size = tt_get_positive_quad(
         vf_handle,
         b"VF\x00" as *const u8 as *const i8,
@@ -303,13 +296,12 @@ unsafe extern "C" fn resize_vf_fonts(mut size: i32) {
     if size as u32 > max_vf_fonts {
         vf_fonts = renew(
             vf_fonts as *mut libc::c_void,
-            (size as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<vf>() as u64) as u32,
+            (size as u32 as u64).wrapping_mul(::std::mem::size_of::<vf>() as u64) as u32,
         ) as *mut vf;
         i = max_vf_fonts as i32;
         while i < size {
-            (*vf_fonts.offset(i as isize)).num_dev_fonts = 0i32 as u32;
-            (*vf_fonts.offset(i as isize)).max_dev_fonts = 0i32 as u32;
+            (*vf_fonts.offset(i as isize)).num_dev_fonts = 0_u32;
+            (*vf_fonts.offset(i as isize)).max_dev_fonts = 0_u32;
             let ref mut fresh0 = (*vf_fonts.offset(i as isize)).dev_fonts;
             *fresh0 = 0 as *mut font_def;
             i += 1
@@ -320,27 +312,24 @@ unsafe extern "C" fn resize_vf_fonts(mut size: i32) {
 unsafe extern "C" fn resize_one_vf_font(mut a_vf: *mut vf, mut size: u32) {
     let mut i: u32 = 0;
     if size > (*a_vf).num_chars {
-        size = if size > (*a_vf).num_chars.wrapping_add(256i32 as u32) {
+        size = if size > (*a_vf).num_chars.wrapping_add(256_u32) {
             size
         } else {
-            (*a_vf).num_chars.wrapping_add(256i32 as u32)
+            (*a_vf).num_chars.wrapping_add(256_u32)
         };
         (*a_vf).ch_pkt = renew(
             (*a_vf).ch_pkt as *mut libc::c_void,
-            (size as u64)
-                .wrapping_mul(::std::mem::size_of::<*mut u8>() as u64)
-                as u32,
+            (size as u64).wrapping_mul(::std::mem::size_of::<*mut u8>() as u64) as u32,
         ) as *mut *mut u8;
         (*a_vf).pkt_len = renew(
             (*a_vf).pkt_len as *mut libc::c_void,
-            (size as u64).wrapping_mul(::std::mem::size_of::<u32>() as u64)
-                as u32,
+            (size as u64).wrapping_mul(::std::mem::size_of::<u32>() as u64) as u32,
         ) as *mut u32;
         i = (*a_vf).num_chars;
         while i < size {
             let ref mut fresh1 = *(*a_vf).ch_pkt.offset(i as isize);
             *fresh1 = 0 as *mut u8;
-            *(*a_vf).pkt_len.offset(i as isize) = 0i32 as u32;
+            *(*a_vf).pkt_len.offset(i as isize) = 0_u32;
             i = i.wrapping_add(1)
         }
         (*a_vf).num_chars = size
@@ -355,18 +344,13 @@ unsafe extern "C" fn read_a_char_def(
     let mut pkt: *mut u8 = 0 as *mut u8;
     /* Resize and initialize character arrays if necessary */
     if ch >= (*vf_fonts.offset(thisfont as isize)).num_chars {
-        resize_one_vf_font(
-            vf_fonts.offset(thisfont as isize),
-            ch.wrapping_add(1i32 as u32),
-        ); /* must exist */
+        resize_one_vf_font(vf_fonts.offset(thisfont as isize), ch.wrapping_add(1_u32));
+        /* must exist */
     }
-    if pkt_len > 0i32 as u32 {
-        pkt = new((pkt_len as u64)
-            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-            as u32) as *mut u8;
-        if ttstub_input_read(vf_handle, pkt as *mut i8, pkt_len as size_t)
-            != pkt_len as i64
-        {
+    if pkt_len > 0_u32 {
+        pkt = new((pkt_len as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
+            as *mut u8;
+        if ttstub_input_read(vf_handle, pkt as *mut i8, pkt_len as size_t) != pkt_len as i64 {
             _tt_abort(b"VF file ended prematurely.\x00" as *const u8 as *const i8);
         }
         let ref mut fresh2 = *(*vf_fonts.offset(thisfont as isize))
@@ -395,8 +379,7 @@ unsafe extern "C" fn read_a_font_def(
         *fresh4 = renew(
             (*vf_fonts.offset(thisfont as isize)).dev_fonts as *mut libc::c_void,
             ((*vf_fonts.offset(thisfont as isize)).max_dev_fonts as u64)
-                .wrapping_mul(::std::mem::size_of::<font_def>() as u64)
-                as u32,
+                .wrapping_mul(::std::mem::size_of::<font_def>() as u64) as u32,
         ) as *mut font_def
     }
     dev_font = (*vf_fonts.offset(thisfont as isize))
@@ -416,26 +399,23 @@ unsafe extern "C" fn read_a_font_def(
     );
     dir_length = tt_get_unsigned_byte(vf_handle) as i32;
     name_length = tt_get_unsigned_byte(vf_handle) as i32;
-    (*dev_font).directory = new(((dir_length + 1i32) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+    (*dev_font).directory = new(
+        ((dir_length + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32
+    ) as *mut i8;
     if ttstub_input_read(vf_handle, (*dev_font).directory, dir_length as size_t)
         != dir_length as i64
     {
         _tt_abort(b"directory read failed\x00" as *const u8 as *const i8);
     }
     (*dev_font).name = new(((name_length + 1i32) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
-    if ttstub_input_read(vf_handle, (*dev_font).name, name_length as size_t)
-        != name_length as i64
-    {
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    if ttstub_input_read(vf_handle, (*dev_font).name, name_length as size_t) != name_length as i64 {
         _tt_abort(b"directory read failed\x00" as *const u8 as *const i8);
     }
     *(*dev_font).directory.offset(dir_length as isize) = 0i32 as i8;
     *(*dev_font).name.offset(name_length as isize) = 0i32 as i8;
     let ref mut fresh5 = (*vf_fonts.offset(thisfont as isize)).num_dev_fonts;
-    *fresh5 = (*fresh5).wrapping_add(1i32 as u32);
+    *fresh5 = (*fresh5).wrapping_add(1_u32);
     (*dev_font).tfm_id = tfm_open((*dev_font).name, 1i32);
     (*dev_font).dev_id = dvi_locate_font(
         (*dev_font).name,
@@ -445,10 +425,7 @@ unsafe extern "C" fn read_a_font_def(
         ),
     ) as i32;
 }
-unsafe extern "C" fn process_vf_file(
-    mut vf_handle: rust_input_handle_t,
-    mut thisfont: i32,
-) {
+unsafe extern "C" fn process_vf_file(mut vf_handle: rust_input_handle_t, mut thisfont: i32) {
     let mut eof: i32 = 0i32;
     let mut code: i32 = 0;
     let mut font_id: u32 = 0;
@@ -464,7 +441,7 @@ unsafe extern "C" fn process_vf_file(
                     /* For a short packet, code is the pkt_len */
                     let mut ch: u32 = tt_get_unsigned_byte(vf_handle) as u32;
                     /* Skip over TFM width since we already know it */
-                    tt_skip_bytes(3i32 as u32, vf_handle);
+                    tt_skip_bytes(3_u32, vf_handle);
                     read_a_char_def(vf_handle, thisfont, code as u32, ch);
                 } else if code == 242i32 {
                     let mut pkt_len: u32 = tt_get_positive_quad(
@@ -474,15 +451,11 @@ unsafe extern "C" fn process_vf_file(
                     );
                     let mut ch_0: u32 = tt_get_unsigned_quad(vf_handle);
                     /* Skip over TFM width since we already know it */
-                    tt_skip_bytes(4i32 as u32, vf_handle);
+                    tt_skip_bytes(4_u32, vf_handle);
                     if ch_0 < 0x1000000u32 {
                         read_a_char_def(vf_handle, thisfont, pkt_len, ch_0);
                     } else {
-                        fprintf(
-                            stderr,
-                            b"char=%u\n\x00" as *const u8 as *const i8,
-                            ch_0,
-                        );
+                        fprintf(stderr, b"char=%u\n\x00" as *const u8 as *const i8, ch_0);
                         _tt_abort(b"Long character (>24 bits) in VF file.\nI can\'t handle long characters!\n\x00"
                                       as *const u8 as *const i8);
                     }
@@ -510,10 +483,7 @@ the PDF file will never repeat a physical font name */
 /* Note: This code needs to be able to recurse */
 /* Global variables such as num_vf_fonts require careful attention */
 #[no_mangle]
-pub unsafe extern "C" fn vf_locate_font(
-    mut tex_name: *const i8,
-    mut ptsize: spt_t,
-) -> i32 {
+pub unsafe extern "C" fn vf_locate_font(mut tex_name: *const i8, mut ptsize: spt_t) -> i32 {
     let mut thisfont: i32 = -1i32;
     let mut i: i32 = 0;
     let mut vf_handle: rust_input_handle_t = 0 as *mut libc::c_void;
@@ -538,11 +508,7 @@ pub unsafe extern "C" fn vf_locate_font(
         return -1i32;
     }
     if verbose as i32 == 1i32 {
-        fprintf(
-            stderr,
-            b"(VF:%s\x00" as *const u8 as *const i8,
-            tex_name,
-        );
+        fprintf(stderr, b"(VF:%s\x00" as *const u8 as *const i8, tex_name);
     }
     if num_vf_fonts >= max_vf_fonts {
         resize_vf_fonts(max_vf_fonts.wrapping_add(16u32) as i32);
@@ -552,14 +518,11 @@ pub unsafe extern "C" fn vf_locate_font(
     thisfont = fresh6 as i32;
     /* Initialize some pointers and such */
     let ref mut fresh7 = (*vf_fonts.offset(thisfont as isize)).tex_name;
-    *fresh7 = new(
-        (strlen(tex_name).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32,
-    ) as *mut i8;
+    *fresh7 = new((strlen(tex_name).wrapping_add(1i32 as u64) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy((*vf_fonts.offset(thisfont as isize)).tex_name, tex_name);
     (*vf_fonts.offset(thisfont as isize)).ptsize = ptsize;
-    (*vf_fonts.offset(thisfont as isize)).num_chars = 0i32 as u32;
+    (*vf_fonts.offset(thisfont as isize)).num_chars = 0_u32;
     let ref mut fresh8 = (*vf_fonts.offset(thisfont as isize)).ch_pkt;
     *fresh8 = 0 as *mut *mut u8;
     let ref mut fresh9 = (*vf_fonts.offset(thisfont as isize)).pkt_len;
@@ -572,20 +535,14 @@ pub unsafe extern "C" fn vf_locate_font(
     ttstub_input_close(vf_handle);
     return thisfont;
 }
-unsafe extern "C" fn unsigned_byte(
-    mut start: *mut *mut u8,
-    mut end: *mut u8,
-) -> i32 {
+unsafe extern "C" fn unsigned_byte(mut start: *mut *mut u8, mut end: *mut u8) -> i32 {
     let mut byte: i32 = 0i32;
     if *start < end {
         let fresh10 = *start;
         *start = (*start).offset(1);
         byte = *fresh10 as i32
     } else {
-        _tt_abort(
-            b"Premature end of DVI byte stream in VF font\n\x00" as *const u8
-                as *const i8,
-        );
+        _tt_abort(b"Premature end of DVI byte stream in VF font\n\x00" as *const u8 as *const i8);
     }
     return byte;
 }
@@ -638,10 +595,7 @@ unsafe extern "C" fn get_pkt_signed_num(
             _ => {}
         }
     } else {
-        _tt_abort(
-            b"Premature end of DVI byte stream in VF font\n\x00" as *const u8
-                as *const i8,
-        );
+        _tt_abort(b"Premature end of DVI byte stream in VF font\n\x00" as *const u8 as *const i8);
     }
     return val;
 }
@@ -694,32 +648,18 @@ unsafe extern "C" fn get_pkt_unsigned_num(
             _ => {}
         }
     } else {
-        _tt_abort(
-            b"Premature end of DVI byte stream in VF font\n\x00" as *const u8
-                as *const i8,
-        );
+        _tt_abort(b"Premature end of DVI byte stream in VF font\n\x00" as *const u8 as *const i8);
     }
     return val;
 }
-unsafe extern "C" fn vf_putrule(
-    mut start: *mut *mut u8,
-    mut end: *mut u8,
-    mut ptsize: spt_t,
-) {
+unsafe extern "C" fn vf_putrule(mut start: *mut *mut u8, mut end: *mut u8, mut ptsize: spt_t) {
     let mut height: i32 = get_pkt_signed_num(start, end, 3i32 as u8);
     let mut width: i32 = get_pkt_signed_num(start, end, 3i32 as u8);
     dvi_rule(sqxfw(ptsize, width), sqxfw(ptsize, height));
 }
-unsafe extern "C" fn vf_setrule(
-    mut start: *mut *mut u8,
-    mut end: *mut u8,
-    mut ptsize: spt_t,
-) {
+unsafe extern "C" fn vf_setrule(mut start: *mut *mut u8, mut end: *mut u8, mut ptsize: spt_t) {
     let mut height: i32 = get_pkt_signed_num(start, end, 3i32 as u8);
-    let mut s_width: i32 = sqxfw(
-        ptsize,
-        get_pkt_signed_num(start, end, 3i32 as u8),
-    );
+    let mut s_width: i32 = sqxfw(ptsize, get_pkt_signed_num(start, end, 3i32 as u8));
     dvi_rule(s_width, sqxfw(ptsize, height));
     dvi_right(s_width);
 }
@@ -754,11 +694,7 @@ unsafe extern "C" fn vf_fnt(mut font_id: i32, mut vf_font: i32) {
     };
 }
 /* identical to do_xxx in dvi.c */
-unsafe extern "C" fn vf_xxx(
-    mut len: i32,
-    mut start: *mut *mut u8,
-    mut end: *mut u8,
-) {
+unsafe extern "C" fn vf_xxx(mut len: i32, mut start: *mut *mut u8, mut end: *mut u8) {
     if *start <= end.offset(-(len as isize)) {
         let mut buffer: *mut u8 = new(((len + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<u8>() as u64)
@@ -783,19 +719,14 @@ unsafe extern "C" fn vf_xxx(
         ) == 0
         {
             if verbose != 0 {
-                dpx_warning(
-                    b"VF:%s\x00" as *const u8 as *const i8,
-                    p.offset(8),
-                );
+                dpx_warning(b"VF:%s\x00" as *const u8 as *const i8, p.offset(8));
             }
         } else {
             dvi_do_special(buffer as *const libc::c_void, len);
         }
         free(buffer as *mut libc::c_void);
     } else {
-        _tt_abort(
-            b"Premature end of DVI byte stream in VF font.\x00" as *const u8 as *const i8,
-        );
+        _tt_abort(b"Premature end of DVI byte stream in VF font.\x00" as *const u8 as *const i8);
     }
     *start = (*start).offset(len as isize);
 }
@@ -809,7 +740,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
     if (vf_font as u32) < num_vf_fonts {
         /* Initialize to the first font or -1 if undefined */
         ptsize = (*vf_fonts.offset(vf_font as isize)).ptsize;
-        if (*vf_fonts.offset(vf_font as isize)).num_dev_fonts > 0i32 as u32 {
+        if (*vf_fonts.offset(vf_font as isize)).num_dev_fonts > 0_u32 {
             default_font = (*(*vf_fonts.offset(vf_font as isize)).dev_fonts.offset(0)).dev_id
         }
         dvi_vf_init(default_font);
@@ -886,11 +817,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
                 143 | 144 | 145 | 146 => {
                     dvi_right(sqxfw(
                         ptsize,
-                        get_pkt_signed_num(
-                            &mut start,
-                            end,
-                            (opcode as i32 - 143i32) as u8,
-                        ),
+                        get_pkt_signed_num(&mut start, end, (opcode as i32 - 143i32) as u8),
                     ));
                 }
                 147 => {
@@ -899,11 +826,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
                 148 | 149 | 150 | 151 => {
                     dvi_w(sqxfw(
                         ptsize,
-                        get_pkt_signed_num(
-                            &mut start,
-                            end,
-                            (opcode as i32 - 148i32) as u8,
-                        ),
+                        get_pkt_signed_num(&mut start, end, (opcode as i32 - 148i32) as u8),
                     ));
                 }
                 152 => {
@@ -912,21 +835,13 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
                 153 | 154 | 155 | 156 => {
                     dvi_x(sqxfw(
                         ptsize,
-                        get_pkt_signed_num(
-                            &mut start,
-                            end,
-                            (opcode as i32 - 153i32) as u8,
-                        ),
+                        get_pkt_signed_num(&mut start, end, (opcode as i32 - 153i32) as u8),
                     ));
                 }
                 157 | 158 | 159 | 160 => {
                     dvi_down(sqxfw(
                         ptsize,
-                        get_pkt_signed_num(
-                            &mut start,
-                            end,
-                            (opcode as i32 - 157i32) as u8,
-                        ),
+                        get_pkt_signed_num(&mut start, end, (opcode as i32 - 157i32) as u8),
                     ));
                 }
                 161 => {
@@ -935,11 +850,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
                 162 | 163 | 164 | 165 => {
                     dvi_y(sqxfw(
                         ptsize,
-                        get_pkt_signed_num(
-                            &mut start,
-                            end,
-                            (opcode as i32 - 162i32) as u8,
-                        ),
+                        get_pkt_signed_num(&mut start, end, (opcode as i32 - 162i32) as u8),
                     ));
                 }
                 166 => {
@@ -948,29 +859,18 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
                 167 | 168 | 169 | 170 => {
                     dvi_z(sqxfw(
                         ptsize,
-                        get_pkt_signed_num(
-                            &mut start,
-                            end,
-                            (opcode as i32 - 167i32) as u8,
-                        ),
+                        get_pkt_signed_num(&mut start, end, (opcode as i32 - 167i32) as u8),
                     ));
                 }
                 235 | 236 | 237 | 238 => {
                     vf_fnt(
-                        get_pkt_signed_num(
-                            &mut start,
-                            end,
-                            (opcode as i32 - 235i32) as u8,
-                        ),
+                        get_pkt_signed_num(&mut start, end, (opcode as i32 - 235i32) as u8),
                         vf_font,
                     );
                 }
                 239 | 240 | 241 | 242 => {
-                    let mut len: i32 = get_pkt_unsigned_num(
-                        &mut start,
-                        end,
-                        (opcode as i32 - 239i32) as u8,
-                    );
+                    let mut len: i32 =
+                        get_pkt_unsigned_num(&mut start, end, (opcode as i32 - 239i32) as u8);
                     if len < 0i32 {
                         dpx_warning(
                             b"VF: Special with %d bytes???\x00" as *const u8 as *const i8,
@@ -994,10 +894,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
                             b"Unexpected opcode: %d\n\x00" as *const u8 as *const i8,
                             opcode as i32,
                         );
-                        _tt_abort(
-                            b"Unexpected opcode in vf file\n\x00" as *const u8
-                                as *const i8,
-                        );
+                        _tt_abort(b"Unexpected opcode in vf file\n\x00" as *const u8 as *const i8);
                     }
                 }
             }
@@ -1038,11 +935,11 @@ pub unsafe extern "C" fn vf_close_all_fonts() {
     let mut i: u32 = 0;
     let mut j: u32 = 0;
     let mut one_font: *mut font_def = 0 as *mut font_def;
-    i = 0i32 as u32;
+    i = 0_u32;
     while i < num_vf_fonts {
         /* Release the packet for each character */
         if !(*vf_fonts.offset(i as isize)).ch_pkt.is_null() {
-            j = 0i32 as u32;
+            j = 0_u32;
             while j < (*vf_fonts.offset(i as isize)).num_chars {
                 free(*(*vf_fonts.offset(i as isize)).ch_pkt.offset(j as isize) as *mut libc::c_void);
                 j = j.wrapping_add(1)
@@ -1052,7 +949,7 @@ pub unsafe extern "C" fn vf_close_all_fonts() {
         free((*vf_fonts.offset(i as isize)).pkt_len as *mut libc::c_void);
         free((*vf_fonts.offset(i as isize)).tex_name as *mut libc::c_void);
         /* Release each font record */
-        j = 0i32 as u32;
+        j = 0_u32;
         while j < (*vf_fonts.offset(i as isize)).num_dev_fonts {
             one_font =
                 &mut *(*vf_fonts.offset(i as isize)).dev_fonts.offset(j as isize) as *mut font_def;

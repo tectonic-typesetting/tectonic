@@ -31,11 +31,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
-    fn strtoll(
-        _: *const i8,
-        _: *mut *mut i8,
-        _: i32,
-    ) -> libc::c_longlong;
+    fn strtoll(_: *const i8, _: *mut *mut i8, _: i32) -> libc::c_longlong;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const i8,
@@ -69,12 +65,7 @@ extern "C" {
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
-    fn snprintf(
-        _: *mut i8,
-        _: u64,
-        _: *const i8,
-        _: ...
-    ) -> i32;
+    fn snprintf(_: *mut i8, _: u64, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn time(__timer: *mut time_t) -> time_t;
     #[no_mangle]
@@ -87,11 +78,7 @@ extern "C" {
     fn CIDFont_set_verbose(level: i32);
     /* ******************************* CACHE ********************************/
     #[no_mangle]
-    fn Type0Font_cache_find(
-        map_name: *const i8,
-        cmap_id: i32,
-        fmap_opt: *mut fontmap_opt,
-    ) -> i32;
+    fn Type0Font_cache_find(map_name: *const i8, cmap_id: i32, fmap_opt: *mut fontmap_opt) -> i32;
     #[no_mangle]
     fn Type0Font_set_verbose(level: i32);
     #[no_mangle]
@@ -108,11 +95,7 @@ extern "C" {
     fn Type0Font_cache_close();
     /* Type1 --> CFF CIDFont */
     #[no_mangle]
-    fn t1_load_UnicodeCMap(
-        font_name: *const i8,
-        otl_tags: *const i8,
-        wmode: i32,
-    ) -> i32;
+    fn t1_load_UnicodeCMap(font_name: *const i8, otl_tags: *const i8, wmode: i32) -> i32;
     /* ************************* CMAP_MAIN **************************/
     #[no_mangle]
     fn CMap_set_verbose(level: i32);
@@ -641,7 +624,7 @@ unsafe extern "C" fn pdf_init_font_struct(mut font: *mut pdf_font) {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            217i32 as u32,
+            217_u32,
             (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
                 b"void pdf_init_font_struct(pdf_font *)\x00",
             ))
@@ -698,8 +681,7 @@ unsafe extern "C" fn pdf_flush_font(mut font: *mut pdf_font) {
                 }
                 fontname = new(((7i32 as u64)
                     .wrapping_add(strlen((*font).fontname))
-                    .wrapping_add(1i32 as u64) as u32
-                    as u64)
+                    .wrapping_add(1i32 as u64) as u32 as u64)
                     .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                     as u32) as *mut i8;
                 uniqueTag = pdf_font_get_uniqueTag(font);
@@ -775,11 +757,9 @@ pub unsafe extern "C" fn pdf_init_fonts() {
         __assert_fail(
             b"font_cache.fonts == NULL\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            331i32 as u32,
-            (*::std::mem::transmute::<&[u8; 26], &[i8; 26]>(
-                b"void pdf_init_fonts(void)\x00",
-            ))
-            .as_ptr(),
+            331_u32,
+            (*::std::mem::transmute::<&[u8; 26], &[i8; 26]>(b"void pdf_init_fonts(void)\x00"))
+                .as_ptr(),
         );
     }
     agl_init_map();
@@ -789,8 +769,8 @@ pub unsafe extern "C" fn pdf_init_fonts() {
     font_cache.count = 0i32;
     font_cache.capacity = 16u32 as i32;
     font_cache.fonts = new((font_cache.capacity as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<pdf_font>() as u64)
-        as u32) as *mut pdf_font;
+        .wrapping_mul(::std::mem::size_of::<pdf_font>() as u64) as u32)
+        as *mut pdf_font;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_get_font_reference(mut font_id: i32) -> *mut pdf_obj {
@@ -829,14 +809,12 @@ pub unsafe extern "C" fn pdf_get_font_usedchars(mut font_id: i32) -> *mut i8 {
         return Type0Font_get_usedchars(t0font);
     } else {
         if (*font).usedchars.is_null() {
-            (*font).usedchars = new((256i32 as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+            (*font).usedchars =
+                new((256_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
             memset(
                 (*font).usedchars as *mut libc::c_void,
                 0i32,
-                (256i32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<i8>() as u64),
+                (256i32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64),
             );
         }
         return (*font).usedchars;
@@ -902,7 +880,7 @@ unsafe extern "C" fn try_load_ToUnicode_CMap(mut font: *mut pdf_font) -> i32 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            455i32 as u32,
+            455_u32,
             (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
                 b"int try_load_ToUnicode_CMap(pdf_font *)\x00",
             ))
@@ -920,7 +898,7 @@ unsafe extern "C" fn try_load_ToUnicode_CMap(mut font: *mut pdf_font) -> i32 {
         __assert_fail(
             b"font->map_name\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            463i32 as u32,
+            463_u32,
             (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
                 b"int try_load_ToUnicode_CMap(pdf_font *)\x00",
             ))
@@ -1129,16 +1107,8 @@ pub unsafe extern "C" fn pdf_font_findresource(
         tex_name
     };
     if !mrec.is_null() && !(*mrec).enc_name.is_null() {
-        if strstr(
-            (*mrec).enc_name,
-            b".enc\x00" as *const u8 as *const i8,
-        )
-        .is_null()
-            || !strstr(
-                (*mrec).enc_name,
-                b".cmap\x00" as *const u8 as *const i8,
-            )
-            .is_null()
+        if strstr((*mrec).enc_name, b".enc\x00" as *const u8 as *const i8).is_null()
+            || !strstr((*mrec).enc_name, b".cmap\x00" as *const u8 as *const i8).is_null()
         {
             cmap_id = CMap_cache_find((*mrec).enc_name);
             if cmap_id >= 0i32 {
@@ -1177,10 +1147,7 @@ pub unsafe extern "C" fn pdf_font_findresource(
                     (*mrec).opt.mapc = 0i32
                     /* _FIXME_ */
                 }
-            } else if streq_ptr(
-                (*mrec).enc_name,
-                b"unicode\x00" as *const u8 as *const i8,
-            ) {
+            } else if streq_ptr((*mrec).enc_name, b"unicode\x00" as *const u8 as *const i8) {
                 cmap_id = otf_load_Unicode_CMap(
                     (*mrec).font_name,
                     (*mrec).opt.index,
@@ -1204,8 +1171,7 @@ pub unsafe extern "C" fn pdf_font_findresource(
                 }
                 if cmap_id < 0i32 {
                     _tt_abort(
-                        b"Failed to read UCS2/UCS4 TrueType cmap...\x00" as *const u8
-                            as *const i8,
+                        b"Failed to read UCS2/UCS4 TrueType cmap...\x00" as *const u8 as *const i8,
                     );
                 }
             }
@@ -1255,8 +1221,8 @@ pub unsafe extern "C" fn pdf_font_findresource(
         if found == 0 {
             font_id = font_cache.count;
             if font_cache.count >= font_cache.capacity {
-                font_cache.capacity = (font_cache.capacity as u32).wrapping_add(16u32)
-                    as i32 as i32;
+                font_cache.capacity =
+                    (font_cache.capacity as u32).wrapping_add(16u32) as i32 as i32;
                 font_cache.fonts = renew(
                     font_cache.fonts as *mut libc::c_void,
                     (font_cache.capacity as u32 as u64)
@@ -1349,8 +1315,8 @@ pub unsafe extern "C" fn pdf_font_findresource(
         if found_0 == 0 {
             font_id = font_cache.count;
             if font_cache.count >= font_cache.capacity {
-                font_cache.capacity = (font_cache.capacity as u32).wrapping_add(16u32)
-                    as i32 as i32;
+                font_cache.capacity =
+                    (font_cache.capacity as u32).wrapping_add(16u32) as i32 as i32;
                 font_cache.fonts = renew(
                     font_cache.fonts as *mut libc::c_void,
                     (font_cache.capacity as u32 as u64)
@@ -1362,17 +1328,13 @@ pub unsafe extern "C" fn pdf_font_findresource(
             pdf_init_font_struct(font);
             (*font).point_size = font_scale;
             (*font).encoding_id = encoding_id;
-            (*font).ident = new(
-                (strlen(fontname).wrapping_add(1i32 as u64) as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                    as u32,
-            ) as *mut i8;
+            (*font).ident = new((strlen(fontname).wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32) as *mut i8;
             strcpy((*font).ident, fontname);
-            (*font).map_name = new(
-                (strlen(tex_name).wrapping_add(1i32 as u64) as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                    as u32,
-            ) as *mut i8;
+            (*font).map_name = new((strlen(tex_name).wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32) as *mut i8;
             strcpy((*font).map_name, tex_name);
             (*font).index = if !mrec.is_null() && (*mrec).opt.index != 0 {
                 (*mrec).opt.index
@@ -1423,7 +1385,7 @@ pub unsafe extern "C" fn pdf_font_is_in_use(mut font: *mut pdf_font) -> bool {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            829i32 as u32,
+            829_u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"_Bool pdf_font_is_in_use(pdf_font *)\x00",
             ))
@@ -1443,7 +1405,7 @@ pub unsafe extern "C" fn pdf_font_get_index(mut font: *mut pdf_font) -> i32 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            837i32 as u32,
+            837_u32,
             (*::std::mem::transmute::<&[u8; 35], &[i8; 35]>(
                 b"int pdf_font_get_index(pdf_font *)\x00",
             ))
@@ -1459,7 +1421,7 @@ pub unsafe extern "C" fn pdf_font_get_ident(mut font: *mut pdf_font) -> *mut i8 
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            845i32 as u32,
+            845_u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"char *pdf_font_get_ident(pdf_font *)\x00",
             ))
@@ -1475,7 +1437,7 @@ pub unsafe extern "C" fn pdf_font_get_mapname(mut font: *mut pdf_font) -> *mut i
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            853i32 as u32,
+            853_u32,
             (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
                 b"char *pdf_font_get_mapname(pdf_font *)\x00",
             ))
@@ -1491,7 +1453,7 @@ pub unsafe extern "C" fn pdf_font_get_fontname(mut font: *mut pdf_font) -> *mut 
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            861i32 as u32,
+            861_u32,
             (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
                 b"char *pdf_font_get_fontname(pdf_font *)\x00",
             ))
@@ -1507,7 +1469,7 @@ pub unsafe extern "C" fn pdf_font_get_resource(mut font: *mut pdf_font) -> *mut 
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            869i32 as u32,
+            869_u32,
             (*::std::mem::transmute::<&[u8; 43], &[i8; 43]>(
                 b"pdf_obj *pdf_font_get_resource(pdf_font *)\x00",
             ))
@@ -1555,7 +1517,7 @@ pub unsafe extern "C" fn pdf_font_get_descriptor(mut font: *mut pdf_font) -> *mu
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            900i32 as u32,
+            900_u32,
             (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"pdf_obj *pdf_font_get_descriptor(pdf_font *)\x00",
             ))
@@ -1579,7 +1541,7 @@ pub unsafe extern "C" fn pdf_font_get_usedchars(mut font: *mut pdf_font) -> *mut
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            914i32 as u32,
+            914_u32,
             (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
                 b"char *pdf_font_get_usedchars(pdf_font *)\x00",
             ))
@@ -1595,7 +1557,7 @@ pub unsafe extern "C" fn pdf_font_get_encoding(mut font: *mut pdf_font) -> i32 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            922i32 as u32,
+            922_u32,
             (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
                 b"int pdf_font_get_encoding(pdf_font *)\x00",
             ))
@@ -1605,16 +1567,13 @@ pub unsafe extern "C" fn pdf_font_get_encoding(mut font: *mut pdf_font) -> i32 {
     return (*font).encoding_id;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_font_get_flag(
-    mut font: *mut pdf_font,
-    mut mask: i32,
-) -> i32 {
+pub unsafe extern "C" fn pdf_font_get_flag(mut font: *mut pdf_font, mut mask: i32) -> i32 {
     if !font.is_null() {
     } else {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            930i32 as u32,
+            930_u32,
             (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
                 b"int pdf_font_get_flag(pdf_font *, int)\x00",
             ))
@@ -1628,17 +1587,14 @@ pub unsafe extern "C" fn pdf_font_get_flag(
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_font_get_param(
-    mut font: *mut pdf_font,
-    mut param_type: i32,
-) -> f64 {
+pub unsafe extern "C" fn pdf_font_get_param(mut font: *mut pdf_font, mut param_type: i32) -> f64 {
     let mut param: f64 = 0.0f64;
     if !font.is_null() {
     } else {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            940i32 as u32,
+            940_u32,
             (*::std::mem::transmute::<&[u8; 43], &[i8; 43]>(
                 b"double pdf_font_get_param(pdf_font *, int)\x00",
             ))
@@ -1659,7 +1615,7 @@ pub unsafe extern "C" fn pdf_font_get_uniqueTag(mut font: *mut pdf_font) -> *mut
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            959i32 as u32,
+            959_u32,
             (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
                 b"char *pdf_font_get_uniqueTag(pdf_font *)\x00",
             ))
@@ -1681,7 +1637,7 @@ pub unsafe extern "C" fn pdf_font_set_fontname(
         __assert_fail(
             b"font && fontname\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            971i32 as u32,
+            971_u32,
             (*::std::mem::transmute::<&[u8; 52], &[i8; 52]>(
                 b"int pdf_font_set_fontname(pdf_font *, const char *)\x00",
             ))
@@ -1694,25 +1650,19 @@ pub unsafe extern "C" fn pdf_font_set_fontname(
     if !(*font).fontname.is_null() {
         free((*font).fontname as *mut libc::c_void);
     }
-    (*font).fontname = new(
-        (strlen(fontname).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32,
-    ) as *mut i8;
+    (*font).fontname = new((strlen(fontname).wrapping_add(1i32 as u64) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy((*font).fontname, fontname);
     return 0i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_font_set_subtype(
-    mut font: *mut pdf_font,
-    mut subtype: i32,
-) -> i32 {
+pub unsafe extern "C" fn pdf_font_set_subtype(mut font: *mut pdf_font, mut subtype: i32) -> i32 {
     if !font.is_null() {
     } else {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            988i32 as u32,
+            988_u32,
             (*::std::mem::transmute::<&[u8; 42], &[i8; 42]>(
                 b"int pdf_font_set_subtype(pdf_font *, int)\x00",
             ))
@@ -1752,16 +1702,13 @@ pub unsafe extern "C" fn pdf_font_set_subtype(
 /* Each font drivers use the followings. */
 /* without unique tag */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_font_set_flags(
-    mut font: *mut pdf_font,
-    mut flags: i32,
-) -> i32 {
+pub unsafe extern "C" fn pdf_font_set_flags(mut font: *mut pdf_font, mut flags: i32) -> i32 {
     if !font.is_null() {
     } else {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdffont.c\x00" as *const u8 as *const i8,
-            998i32 as u32,
+            998_u32,
             (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
                 b"int pdf_font_set_flags(pdf_font *, int)\x00",
             ))

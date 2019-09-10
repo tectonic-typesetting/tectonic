@@ -288,9 +288,8 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 #[no_mangle]
 pub unsafe extern "C" fn cff_new_dict() -> *mut cff_dict {
     let mut dict: *mut cff_dict = 0 as *mut cff_dict;
-    dict = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<cff_dict>() as u64)
-        as u32) as *mut cff_dict;
+    dict =
+        new((1_u64).wrapping_mul(::std::mem::size_of::<cff_dict>() as u64) as u32) as *mut cff_dict;
     (*dict).max = 16i32;
     (*dict).count = 0i32;
     (*dict).entries = new(((*dict).max as u32 as u64)
@@ -831,8 +830,7 @@ unsafe extern "C" fn get_real(
         if nibble >= 0i32 && nibble <= 0x9i32 {
             let fresh6 = len;
             len = len + 1;
-            *work_buffer.as_mut_ptr().offset(fresh6 as isize) =
-                (nibble + '0' as i32) as i8
+            *work_buffer.as_mut_ptr().offset(fresh6 as isize) = (nibble + '0' as i32) as i8
         } else if nibble == 0xai32 {
             /* . */
             let fresh7 = len;
@@ -916,8 +914,7 @@ unsafe extern "C" fn add_dict(
         (*dict).max += 16i32;
         (*dict).entries = renew(
             (*dict).entries as *mut libc::c_void,
-            ((*dict).max as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<cff_dict_entry>() as u64)
+            ((*dict).max as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_dict_entry>() as u64)
                 as u32,
         ) as *mut cff_dict_entry
     }
@@ -937,9 +934,8 @@ unsafe extern "C" fn add_dict(
         stack_top -= 1;
         (*(*dict).entries.offset((*dict).count as isize)).count = 1i32;
         let ref mut fresh13 = (*(*dict).entries.offset((*dict).count as isize)).values;
-        *fresh13 = new((1i32 as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<f64>() as u64)
-            as u32) as *mut f64;
+        *fresh13 =
+            new((1_u64).wrapping_mul(::std::mem::size_of::<f64>() as u64) as u32) as *mut f64;
         *(*(*dict).entries.offset((*dict).count as isize))
             .values
             .offset(0) = arg_stack[stack_top as usize];
@@ -947,9 +943,9 @@ unsafe extern "C" fn add_dict(
     } else if stack_top > 0i32 {
         (*(*dict).entries.offset((*dict).count as isize)).count = stack_top;
         let ref mut fresh14 = (*(*dict).entries.offset((*dict).count as isize)).values;
-        *fresh14 = new((stack_top as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<f64>() as u64)
-            as u32) as *mut f64;
+        *fresh14 =
+            new((stack_top as u32 as u64).wrapping_mul(::std::mem::size_of::<f64>() as u64) as u32)
+                as *mut f64;
         while stack_top > 0i32 {
             stack_top -= 1;
             *(*(*dict).entries.offset((*dict).count as isize))
@@ -988,9 +984,7 @@ pub unsafe extern "C" fn cff_dict_unpack(
             } else {
                 status = -2i32
             }
-        } else if *data as i32 == 255i32
-            || *data as i32 >= 22i32 && *data as i32 <= 27i32
-        {
+        } else if *data as i32 == 255i32 || *data as i32 >= 22i32 && *data as i32 <= 27i32 {
             /* reserved */
             data = data.offset(1)
         } else if stack_top < 64i32 {
@@ -1018,11 +1012,7 @@ pub unsafe extern "C" fn cff_dict_unpack(
     return dict;
 }
 /* Pack DICT data */
-unsafe extern "C" fn pack_integer(
-    mut dest: *mut card8,
-    mut destlen: i32,
-    mut value: i32,
-) -> i32 {
+unsafe extern "C" fn pack_integer(mut dest: *mut card8, mut destlen: i32, mut value: i32) -> i32 {
     let mut len: i32 = 0i32; /* longint */
     if value >= -107i32 && value <= 107i32 {
         if destlen < 1i32 {
@@ -1040,9 +1030,7 @@ unsafe extern "C" fn pack_integer(
                 b"CFF\x00" as *const u8 as *const i8,
             );
         }
-        value = 0xf700u32
-            .wrapping_add(value as u32)
-            .wrapping_sub(108i32 as u32) as i32;
+        value = 0xf700u32.wrapping_add(value as u32).wrapping_sub(108_u32) as i32;
         *dest.offset(0) = (value >> 8i32 & 0xffi32) as card8;
         *dest.offset(1) = (value & 0xffi32) as card8;
         len = 2i32
@@ -1053,9 +1041,7 @@ unsafe extern "C" fn pack_integer(
                 b"CFF\x00" as *const u8 as *const i8,
             );
         }
-        value = 0xfb00u32
-            .wrapping_sub(value as u32)
-            .wrapping_sub(108i32 as u32) as i32;
+        value = 0xfb00u32.wrapping_sub(value as u32).wrapping_sub(108_u32) as i32;
         *dest.offset(0) = (value >> 8i32 & 0xffi32) as card8;
         *dest.offset(1) = (value & 0xffi32) as card8;
         len = 2i32
@@ -1087,11 +1073,7 @@ unsafe extern "C" fn pack_integer(
     }
     return len;
 }
-unsafe extern "C" fn pack_real(
-    mut dest: *mut card8,
-    mut destlen: i32,
-    mut value: f64,
-) -> i32 {
+unsafe extern "C" fn pack_real(mut dest: *mut card8, mut destlen: i32, mut value: f64) -> i32 {
     let mut i: i32 = 0i32;
     let mut pos: i32 = 2i32;
     let mut buffer: [i8; 32] = [0; 32];
@@ -1124,8 +1106,7 @@ unsafe extern "C" fn pack_real(
         let mut ch: u8 = 0i32 as u8;
         if buffer[i as usize] as i32 == '.' as i32 {
             ch = 0xai32 as u8
-        } else if buffer[i as usize] as i32 >= '0' as i32
-            && buffer[i as usize] as i32 <= '9' as i32
+        } else if buffer[i as usize] as i32 >= '0' as i32 && buffer[i as usize] as i32 <= '9' as i32
         {
             ch = (buffer[i as usize] as i32 - '0' as i32) as u8
         } else if buffer[i as usize] as i32 == 'e' as i32 {
@@ -1248,9 +1229,7 @@ unsafe extern "C" fn put_dict_entry(
             *dest.offset(fresh17 as isize) = id as card8
         } else if id >= 0i32 && id < 22i32 + 39i32 {
             if len + 2i32 > destlen {
-                _tt_abort(
-                    b"in cff_dict_pack(): Buffer overflow\x00" as *const u8 as *const i8,
-                );
+                _tt_abort(b"in cff_dict_pack(): Buffer overflow\x00" as *const u8 as *const i8);
             }
             let fresh18 = len;
             len = len + 1;
@@ -1305,11 +1284,7 @@ pub unsafe extern "C" fn cff_dict_pack(
     return len;
 }
 #[no_mangle]
-pub unsafe extern "C" fn cff_dict_add(
-    mut dict: *mut cff_dict,
-    mut key: *const i8,
-    mut count: i32,
-) {
+pub unsafe extern "C" fn cff_dict_add(mut dict: *mut cff_dict, mut key: *const i8, mut count: i32) {
     let mut id: i32 = 0;
     let mut i: i32 = 0;
     id = 0i32;
@@ -1333,8 +1308,7 @@ pub unsafe extern "C" fn cff_dict_add(
         if (*(*dict).entries.offset(i as isize)).id == id {
             if (*(*dict).entries.offset(i as isize)).count != count {
                 _tt_abort(
-                    b"%s: Inconsistent DICT argument number.\x00" as *const u8
-                        as *const i8,
+                    b"%s: Inconsistent DICT argument number.\x00" as *const u8 as *const i8,
                     b"CFF\x00" as *const u8 as *const i8,
                 );
             }
@@ -1346,8 +1320,7 @@ pub unsafe extern "C" fn cff_dict_add(
         (*dict).max += 8i32;
         (*dict).entries = renew(
             (*dict).entries as *mut libc::c_void,
-            ((*dict).max as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<cff_dict_entry>() as u64)
+            ((*dict).max as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_dict_entry>() as u64)
                 as u32,
         ) as *mut cff_dict_entry
     }
@@ -1357,14 +1330,13 @@ pub unsafe extern "C" fn cff_dict_add(
     (*(*dict).entries.offset((*dict).count as isize)).count = count;
     if count > 0i32 {
         let ref mut fresh21 = (*(*dict).entries.offset((*dict).count as isize)).values;
-        *fresh21 = new((count as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<f64>() as u64)
-            as u32) as *mut f64;
+        *fresh21 =
+            new((count as u32 as u64).wrapping_mul(::std::mem::size_of::<f64>() as u64) as u32)
+                as *mut f64;
         memset(
             (*(*dict).entries.offset((*dict).count as isize)).values as *mut libc::c_void,
             0i32,
-            (::std::mem::size_of::<f64>() as u64)
-                .wrapping_mul(count as u64),
+            (::std::mem::size_of::<f64>() as u64).wrapping_mul(count as u64),
         );
     } else {
         let ref mut fresh22 = (*(*dict).entries.offset((*dict).count as isize)).values;
@@ -1380,17 +1352,14 @@ pub unsafe extern "C" fn cff_dict_remove(mut dict: *mut cff_dict, mut key: *cons
         if streq_ptr(key, (*(*dict).entries.offset(i as isize)).key) {
             (*(*dict).entries.offset(i as isize)).count = 0i32;
             let ref mut fresh23 = (*(*dict).entries.offset(i as isize)).values;
-            *fresh23 = mfree((*(*dict).entries.offset(i as isize)).values as *mut libc::c_void)
-                as *mut f64
+            *fresh23 =
+                mfree((*(*dict).entries.offset(i as isize)).values as *mut libc::c_void) as *mut f64
         }
         i += 1
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn cff_dict_known(
-    mut dict: *mut cff_dict,
-    mut key: *const i8,
-) -> i32 {
+pub unsafe extern "C" fn cff_dict_known(mut dict: *mut cff_dict, mut key: *const i8) -> i32 {
     let mut i: i32 = 0;
     i = 0i32;
     while i < (*dict).count {
@@ -1416,7 +1385,7 @@ pub unsafe extern "C" fn cff_dict_get(
         __assert_fail(
             b"key && dict\x00" as *const u8 as *const i8,
             b"dpx-cff_dict.c\x00" as *const u8 as *const i8,
-            658i32 as u32,
+            658_u32,
             (*::std::mem::transmute::<&[u8; 51], &[i8; 51]>(
                 b"double cff_dict_get(cff_dict *, const char *, int)\x00",
             ))
@@ -1463,7 +1432,7 @@ pub unsafe extern "C" fn cff_dict_set(
         __assert_fail(
             b"dict && key\x00" as *const u8 as *const i8,
             b"dpx-cff_dict.c\x00" as *const u8 as *const i8,
-            680i32 as u32,
+            680_u32,
             (*::std::mem::transmute::<&[u8; 57], &[i8; 57]>(
                 b"void cff_dict_set(cff_dict *, const char *, int, double)\x00",
             ))

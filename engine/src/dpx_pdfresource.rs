@@ -202,7 +202,7 @@ unsafe extern "C" fn pdf_init_resource(mut res: *mut pdf_res) {
         __assert_fail(
             b"res\x00" as *const u8 as *const i8,
             b"dpx-pdfresource.c\x00" as *const u8 as *const i8,
-            94i32 as u32,
+            94_u32,
             (*::std::mem::transmute::<&[u8; 34], &[i8; 34]>(
                 b"void pdf_init_resource(pdf_res *)\x00",
             ))
@@ -227,9 +227,7 @@ unsafe extern "C" fn pdf_flush_resource(mut res: *mut pdf_res) {
 unsafe extern "C" fn pdf_clean_resource(mut res: *mut pdf_res) {
     if !res.is_null() {
         if !(*res).reference.is_null() || !(*res).object.is_null() {
-            dpx_warning(
-                b"Trying to release un-flushed object.\x00" as *const u8 as *const i8,
-            );
+            dpx_warning(b"Trying to release un-flushed object.\x00" as *const u8 as *const i8);
         }
         pdf_release_obj((*res).reference);
         pdf_release_obj((*res).object);
@@ -241,7 +239,7 @@ unsafe extern "C" fn pdf_clean_resource(mut res: *mut pdf_res) {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_init_resources() {
     let mut i: u32 = 0;
-    i = 0i32 as u32;
+    i = 0_u32;
     while (i as u64)
         < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as u64)
             .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as u64)
@@ -255,7 +253,7 @@ pub unsafe extern "C" fn pdf_init_resources() {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_close_resources() {
     let mut i: u32 = 0;
-    i = 0i32 as u32;
+    i = 0_u32;
     while (i as u64)
         < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as u64)
             .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as u64)
@@ -278,7 +276,7 @@ pub unsafe extern "C" fn pdf_close_resources() {
 }
 unsafe extern "C" fn get_category(mut category: *const i8) -> i32 {
     let mut i: u32 = 0;
-    i = 0i32 as u32;
+    i = 0_u32;
     while (i as u64)
         < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as u64)
             .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as u64)
@@ -306,7 +304,7 @@ pub unsafe extern "C" fn pdf_defineresource(
         __assert_fail(
             b"category && object\x00" as *const u8 as *const i8,
             b"dpx-pdfresource.c\x00" as *const u8 as *const i8,
-            192i32 as u32,
+            192_u32,
             (*::std::mem::transmute::<&[u8; 67], &[i8; 67]>(
                 b"int pdf_defineresource(const char *, const char *, pdf_obj *, int)\x00",
             ))
@@ -327,8 +325,7 @@ pub unsafe extern "C" fn pdf_defineresource(
             res = &mut *(*rc).resources.offset(res_id as isize) as *mut pdf_res;
             if streq_ptr(resname, (*res).ident) {
                 dpx_warning(
-                    b"Resource %s (category: %s) already defined...\x00" as *const u8
-                        as *const i8,
+                    b"Resource %s (category: %s) already defined...\x00" as *const u8 as *const i8,
                     resname,
                     category,
                 );
@@ -349,23 +346,19 @@ pub unsafe extern "C" fn pdf_defineresource(
     }
     if res_id == (*rc).count {
         if (*rc).count >= (*rc).capacity {
-            (*rc).capacity =
-                ((*rc).capacity as u32).wrapping_add(16u32) as i32 as i32;
+            (*rc).capacity = ((*rc).capacity as u32).wrapping_add(16u32) as i32 as i32;
             (*rc).resources = renew(
                 (*rc).resources as *mut libc::c_void,
-                ((*rc).capacity as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<pdf_res>() as u64)
+                ((*rc).capacity as u32 as u64).wrapping_mul(::std::mem::size_of::<pdf_res>() as u64)
                     as u32,
             ) as *mut pdf_res
         }
         res = &mut *(*rc).resources.offset(res_id as isize) as *mut pdf_res;
         pdf_init_resource(res);
         if !resname.is_null() && *resname.offset(0) as i32 != '\u{0}' as i32 {
-            (*res).ident = new(
-                (strlen(resname).wrapping_add(1i32 as u64) as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                    as u32,
-            ) as *mut i8;
+            (*res).ident = new((strlen(resname).wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32) as *mut i8;
             strcpy((*res).ident, resname);
         }
         (*res).category = cat_id;
@@ -381,10 +374,7 @@ pub unsafe extern "C" fn pdf_defineresource(
     return cat_id << 16i32 | res_id;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_findresource(
-    mut category: *const i8,
-    mut resname: *const i8,
-) -> i32 {
+pub unsafe extern "C" fn pdf_findresource(mut category: *const i8, mut resname: *const i8) -> i32 {
     let mut res: *mut pdf_res = 0 as *mut pdf_res;
     let mut res_id: i32 = 0;
     let mut cat_id: i32 = 0;
@@ -394,7 +384,7 @@ pub unsafe extern "C" fn pdf_findresource(
         __assert_fail(
             b"resname && category\x00" as *const u8 as *const i8,
             b"dpx-pdfresource.c\x00" as *const u8 as *const i8,
-            254i32 as u32,
+            254_u32,
             (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int pdf_findresource(const char *, const char *)\x00",
             ))

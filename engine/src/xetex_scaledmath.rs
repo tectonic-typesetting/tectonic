@@ -137,11 +137,7 @@ pub unsafe extern "C" fn xn_over_d(mut x: scaled_t, mut n: i32, mut d: i32) -> s
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn round_xn_over_d(
-    mut x: scaled_t,
-    mut n: i32,
-    mut d: i32,
-) -> scaled_t {
+pub unsafe extern "C" fn round_xn_over_d(mut x: scaled_t, mut n: i32, mut d: i32) -> scaled_t {
     let mut positive: bool = false;
     let mut t: i32 = 0;
     let mut u: i32 = 0;

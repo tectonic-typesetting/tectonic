@@ -38,18 +38,9 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     /* Tectonic-enabled versions */
     #[no_mangle]
-    fn tt_mfgets(
-        buffer: *mut i8,
-        length: i32,
-        file: rust_input_handle_t,
-    ) -> *mut i8;
+    fn tt_mfgets(buffer: *mut i8, length: i32, file: rust_input_handle_t) -> *mut i8;
     #[no_mangle]
-    fn pdf_dev_put_image(
-        xobj_id: i32,
-        p: *mut transform_info,
-        ref_x: f64,
-        ref_y: f64,
-    ) -> i32;
+    fn pdf_dev_put_image(xobj_id: i32, p: *mut transform_info, ref_x: f64, ref_y: f64) -> i32;
     /* Please use different interface than findresource...
      * This is not intended to be used for specifying page number and others.
      * Only pdf:image special in spc_pdfm.c want optinal dict!
@@ -57,11 +48,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> i32;
     #[no_mangle]
-    fn mps_scan_bbox(
-        pp: *mut *const i8,
-        endptr: *const i8,
-        bbox: *mut pdf_rect,
-    ) -> i32;
+    fn mps_scan_bbox(pp: *mut *const i8, endptr: *const i8, bbox: *mut pdf_rect) -> i32;
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
     #[no_mangle]
@@ -125,8 +112,7 @@ pub struct spc_arg {
     pub base: *const i8,
     pub command: *const i8,
 }
-pub type spc_handler_fn_ptr =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
+pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
@@ -190,10 +176,7 @@ pub struct load_options {
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-unsafe extern "C" fn spc_handler_postscriptbox(
-    mut spe: *mut spc_env,
-    mut ap: *mut spc_arg,
-) -> i32 {
+unsafe extern "C" fn spc_handler_postscriptbox(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32 {
     let mut form_id: i32 = 0;
     let mut len: i32 = 0;
     let mut ti: transform_info = transform_info {
@@ -232,7 +215,7 @@ unsafe extern "C" fn spc_handler_postscriptbox(
         __assert_fail(
             b"spe && ap\x00" as *const u8 as *const i8,
             b"dpx-spc_misc.c\x00" as *const u8 as *const i8,
-            51i32 as u32,
+            51_u32,
             (*::std::mem::transmute::<&[u8; 66], &[i8; 66]>(
                 b"int spc_handler_postscriptbox(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -257,11 +240,7 @@ unsafe extern "C" fn spc_handler_postscriptbox(
     );
     buf[len as usize] = '\u{0}' as i32 as i8;
     transform_info_clear(&mut ti);
-    spc_warn(
-        spe,
-        b"%s\x00" as *const u8 as *const i8,
-        buf.as_mut_ptr(),
-    );
+    spc_warn(spe, b"%s\x00" as *const u8 as *const i8, buf.as_mut_ptr());
     if sscanf(
         buf.as_mut_ptr(),
         b"{%lfpt}{%lfpt}{%255[^}]}\x00" as *const u8 as *const i8,
@@ -313,10 +292,7 @@ unsafe extern "C" fn spc_handler_postscriptbox(
     pdf_dev_put_image(form_id, &mut ti, (*spe).x_user, (*spe).y_user);
     return 0i32;
 }
-unsafe extern "C" fn spc_handler_null(
-    mut spe: *mut spc_env,
-    mut args: *mut spc_arg,
-) -> i32 {
+unsafe extern "C" fn spc_handler_null(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     (*args).curptr = (*args).endptr;
     return 0i32;
 }
@@ -385,10 +361,7 @@ static mut misc_handlers: [spc_handler; 6] = unsafe {
     ]
 };
 #[no_mangle]
-pub unsafe extern "C" fn spc_misc_check_special(
-    mut buffer: *const i8,
-    mut size: i32,
-) -> bool {
+pub unsafe extern "C" fn spc_misc_check_special(mut buffer: *const i8, mut size: i32) -> bool {
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     let mut i: size_t = 0;
@@ -449,16 +422,14 @@ pub unsafe extern "C" fn spc_misc_setup_handler(
         __assert_fail(b"handle && spe && args\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_misc.c\x00" as *const u8 as
-                          *const i8, 156i32 as u32,
+                          *const i8, 156_u32,
                       (*::std::mem::transmute::<&[u8; 85],
                                                 &[i8; 85]>(b"int spc_misc_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }
     skip_white(&mut (*args).curptr, (*args).endptr);
     key = (*args).curptr;
     while (*args).curptr < (*args).endptr
-        && *(*__ctype_b_loc())
-            .offset(*(*args).curptr.offset(0) as u8 as i32 as isize)
-            as i32
+        && *(*__ctype_b_loc()).offset(*(*args).curptr.offset(0) as u8 as i32 as isize) as i32
             & _ISalpha as i32 as u16 as i32
             != 0
     {

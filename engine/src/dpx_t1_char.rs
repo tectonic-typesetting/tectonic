@@ -211,10 +211,7 @@ static mut ps_arg_stack: [f64; 194] = [0.; 194];
  *  Convert ghost hint to edge hint, Counter control for hstem3/vstem3.
  */
 #[inline]
-unsafe extern "C" fn stem_compare(
-    mut v1: *const libc::c_void,
-    mut v2: *const libc::c_void,
-) -> i32 {
+unsafe extern "C" fn stem_compare(mut v1: *const libc::c_void, mut v2: *const libc::c_void) -> i32 {
     let mut cmp: i32 = 0i32;
     let mut s1: *const t1_stem = 0 as *const t1_stem;
     let mut s2: *const t1_stem = 0 as *const t1_stem;
@@ -258,7 +255,7 @@ unsafe extern "C" fn add_stem(
         __assert_fail(
             b"cd\x00" as *const u8 as *const i8,
             b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            290i32 as u32,
+            290_u32,
             (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int add_stem(t1_chardesc *, double, double, int)\x00",
             ))
@@ -292,11 +289,7 @@ unsafe extern "C" fn add_stem(
     }
     return (*cd).stems[i as usize].id;
 }
-unsafe extern "C" fn copy_args(
-    mut args1: *mut f64,
-    mut args2: *mut f64,
-    mut count: i32,
-) {
+unsafe extern "C" fn copy_args(mut args1: *mut f64, mut args2: *mut f64, mut count: i32) {
     loop {
         let fresh0 = count;
         count = count - 1;
@@ -327,7 +320,7 @@ unsafe extern "C" fn add_charpath(
         __assert_fail(
             b"cd\x00" as *const u8 as *const i8,
             b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            350i32 as u32,
+            350_u32,
             (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                 b"void add_charpath(t1_chardesc *, int, double *, int)\x00",
             ))
@@ -339,16 +332,14 @@ unsafe extern "C" fn add_charpath(
         __assert_fail(
             b"argn <= CS_ARG_STACK_MAX\x00" as *const u8 as *const i8,
             b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            351i32 as u32,
+            351_u32,
             (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                 b"void add_charpath(t1_chardesc *, int, double *, int)\x00",
             ))
             .as_ptr(),
         );
     }
-    p = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<t1_cpath>() as u64) as u32)
-        as *mut t1_cpath;
+    p = new((1_u64).wrapping_mul(::std::mem::size_of::<t1_cpath>() as u64) as u32) as *mut t1_cpath;
     (*p).type_0 = type_0;
     (*p).num_args = argn;
     (*p).next = 0 as *mut t1_cpath;
@@ -401,7 +392,7 @@ unsafe extern "C" fn release_charpath(mut cd: *mut t1_chardesc) {
         __assert_fail(
             b"cd\x00" as *const u8 as *const i8,
             b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            388i32 as u32,
+            388_u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"void release_charpath(t1_chardesc *)\x00",
             ))
@@ -461,11 +452,7 @@ unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc, mut data: *mut *mut 
                 cd,
                 cs_arg_stack[(cs_stack_top - 2i32) as usize],
                 cs_arg_stack[(cs_stack_top - 1i32) as usize],
-                if op as i32 == 1i32 {
-                    0i32
-                } else {
-                    1i32
-                },
+                if op as i32 == 1i32 { 0i32 } else { 1i32 },
             );
             if stem_id < 0i32 {
                 dpx_warning(b"Too many hints...\x00" as *const u8 as *const i8);
@@ -668,22 +655,21 @@ unsafe extern "C" fn do_othersubr0(mut cd: *mut t1_chardesc) {
     flex = cur;
     let mut i: u32 = 0;
     cur = (*cur).next;
-    i = 1i32 as u32;
-    while i < 7i32 as u32 {
+    i = 1_u32;
+    while i < 7_u32 {
         if cur.is_null() || (*cur).type_0 != -2i32 || (*cur).num_args != 2i32 {
             status = -1i32;
             return;
         }
-        if i == 1i32 as u32 {
+        if i == 1_u32 {
             (*flex).args[0] += (*cur).args[0];
             (*flex).args[1] += (*cur).args[1]
         } else {
             copy_args(
-                &mut *(*flex).args.as_mut_ptr().offset(
-                    (2i32 as u32)
-                        .wrapping_mul(i)
-                        .wrapping_sub(2i32 as u32) as isize,
-                ),
+                &mut *(*flex)
+                    .args
+                    .as_mut_ptr()
+                    .offset((2_u32).wrapping_mul(i).wrapping_sub(2_u32) as isize),
                 (*cur).args.as_mut_ptr(),
                 2i32,
             );
@@ -793,8 +779,7 @@ unsafe extern "C" fn do_othersubr13(mut cd: *mut t1_chardesc) {
             if del < 0.0f64 { -del } else { del },
             0i32,
         );
-        stemgroups[n as usize].stems[stemgroups[n as usize].num_stems as usize] =
-            stem_id as f64;
+        stemgroups[n as usize].stems[stemgroups[n as usize].num_stems as usize] = stem_id as f64;
         stemgroups[n as usize].num_stems += 1i32;
         pos += del;
         if del < 0.0f64 {
@@ -826,8 +811,7 @@ unsafe extern "C" fn do_othersubr13(mut cd: *mut t1_chardesc) {
             if del < 0.0f64 { -del } else { del },
             1i32,
         );
-        stemgroups[n as usize].stems[stemgroups[n as usize].num_stems as usize] =
-            stem_id as f64;
+        stemgroups[n as usize].stems[stemgroups[n as usize].num_stems as usize] = stem_id as f64;
         stemgroups[n as usize].num_stems += 1i32;
         pos += del;
         if del < 0.0f64 {
@@ -964,11 +948,7 @@ unsafe extern "C" fn do_operator2(
                     cd,
                     cs_arg_stack[(cs_stack_top - 2i32 * i - 2i32) as usize],
                     cs_arg_stack[(cs_stack_top - 2i32 * i - 1i32) as usize],
-                    if op as i32 == 2i32 {
-                        0i32
-                    } else {
-                        1i32
-                    },
+                    if op as i32 == 2i32 { 0i32 } else { 1i32 },
                 );
                 if stem_id < 0i32 {
                     dpx_warning(b"Too many hints...\x00" as *const u8 as *const i8);
@@ -1086,16 +1066,12 @@ unsafe extern "C" fn put_numbers(
         value = *argv.offset(i as isize);
         /* Nearest integer value */
         ivalue = floor(value + 0.5f64) as i32;
-        if value >= 0x8000i64 as f64
-            || value <= (-0x8000 - 1i32 as i64) as f64
-        {
+        if value >= 0x8000i64 as f64 || value <= (-0x8000 - 1i32 as i64) as f64 {
             /*
              * This number cannot be represented as a single operand.
              * We must use `a b mul ...' or `a c div' to represent large values.
              */
-            _tt_abort(
-                b"Argument value too large. (This is bug)\x00" as *const u8 as *const i8,
-            );
+            _tt_abort(b"Argument value too large. (This is bug)\x00" as *const u8 as *const i8);
         } else {
             if fabs(value - ivalue as f64) > 3.0e-5f64 {
                 /* 16.16-bit signed fixed value  */
@@ -1114,8 +1090,7 @@ unsafe extern "C" fn put_numbers(
                 let fresh10 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh10 = (ivalue & 0xffi32) as card8;
-                ivalue = ((value - ivalue as f64) * 0x10000i64 as f64)
-                    as i32;
+                ivalue = ((value - ivalue as f64) * 0x10000i64 as f64) as i32;
                 let fresh11 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh11 = (ivalue >> 8i32 & 0xffi32) as card8;
@@ -1135,9 +1110,7 @@ unsafe extern "C" fn put_numbers(
                     status = -3i32;
                     return;
                 }
-                ivalue = 0xf700u32
-                    .wrapping_add(ivalue as u32)
-                    .wrapping_sub(108i32 as u32) as i32;
+                ivalue = 0xf700u32.wrapping_add(ivalue as u32).wrapping_sub(108_u32) as i32;
                 let fresh14 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh14 = (ivalue >> 8i32 & 0xffi32) as card8;
@@ -1149,9 +1122,7 @@ unsafe extern "C" fn put_numbers(
                     status = -3i32;
                     return;
                 }
-                ivalue = 0xfb00u32
-                    .wrapping_sub(ivalue as u32)
-                    .wrapping_sub(108i32 as u32) as i32;
+                ivalue = 0xfb00u32.wrapping_sub(ivalue as u32).wrapping_sub(108_u32) as i32;
                 let fresh16 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh16 = (ivalue >> 8i32 & 0xffi32) as card8;
@@ -1245,8 +1216,8 @@ unsafe extern "C" fn get_longint(mut data: *mut *mut card8, mut endptr: *mut car
         result = (result as i64 - 0x100) as i32
     }
     *data = (*data).offset(1);
-    i = 1i32 as u32;
-    while i < 4i32 as u32 {
+    i = 1_u32;
+    while i < 4_u32 {
         result = result * 256i32 + **data as i32;
         *data = (*data).offset(1);
         i = i.wrapping_add(1)
@@ -1310,9 +1281,7 @@ unsafe extern "C" fn t1char_build_charpath(
         } else if (b0 as i32) < 32i32 && b0 as i32 != 28i32 {
             /* 19, 20 need mask */
             do_operator1(cd, data);
-        } else if b0 as i32 >= 22i32 && b0 as i32 <= 27i32
-            || b0 as i32 == 31i32
-        {
+        } else if b0 as i32 >= 22i32 && b0 as i32 <= 27i32 || b0 as i32 == 31i32 {
             /* reserved */
             status = -1i32
         /* not an error ? */
@@ -1332,8 +1301,7 @@ unsafe extern "C" fn t1char_build_charpath(
     } else if status < 0i32 {
         /* error */
         _tt_abort(
-            b"Parsing charstring failed: (status=%d, stack=%d)\x00" as *const u8
-                as *const i8,
+            b"Parsing charstring failed: (status=%d, stack=%d)\x00" as *const u8 as *const i8,
             status,
             cs_stack_top,
         );
@@ -1511,13 +1479,10 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
                 }
             }
             8 => {
-                i = 0i32 as u32;
-                while i < 3i32 as u32 {
-                    x += (*cur).args[(2i32 as u32).wrapping_mul(i) as usize];
-                    y += (*cur).args[(2i32 as u32)
-                        .wrapping_mul(i)
-                        .wrapping_add(1i32 as u32)
-                        as usize];
+                i = 0_u32;
+                while i < 3_u32 {
+                    x += (*cur).args[(2_u32).wrapping_mul(i) as usize];
+                    y += (*cur).args[(2_u32).wrapping_mul(i).wrapping_add(1_u32) as usize];
                     if (*cd).bbox.llx > x {
                         (*cd).bbox.llx = x
                     }
@@ -1668,9 +1633,9 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
                 }
             }
             35 => {
-                i = 0i32 as u32;
-                while i < 6i32 as u32 {
-                    x += (*cur).args[(2i32 as u32).wrapping_mul(i) as usize];
+                i = 0_u32;
+                while i < 6_u32 {
+                    x += (*cur).args[(2_u32).wrapping_mul(i) as usize];
                     y += (*cur).args[(2i32 * 1i32 + 1i32) as usize];
                     if (*cd).bbox.llx > x {
                         (*cd).bbox.llx = x
@@ -1724,8 +1689,7 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
             -1 | 20 => {}
             _ => {
                 _tt_abort(
-                    b"Unexpected Type 2 charstring command %d.\x00" as *const u8
-                        as *const i8,
+                    b"Unexpected Type 2 charstring command %d.\x00" as *const u8 as *const i8,
                     (*cur).type_0,
                 );
             }
@@ -1837,7 +1801,7 @@ unsafe extern "C" fn t1char_encode_charpath(
         __assert_fail(
             b"cd\x00" as *const u8 as *const i8,
             b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            1360i32 as u32,
+            1360_u32,
             (*::std::mem::transmute::<&[u8; 76], &[i8; 76]>(
                 b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00",
             ))
@@ -1995,7 +1959,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                                           *const u8 as *const i8,
                                       b"dpx-t1_char.c\x00" as *const u8 as
                                           *const i8,
-                                      1452i32 as u32,
+                                      1452_u32,
                                       (*::std::mem::transmute::<&[u8; 76],
                                                                 &[i8; 76]>(b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00")).as_ptr());
                     }
@@ -2037,7 +2001,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                                           *const u8 as *const i8,
                                       b"dpx-t1_char.c\x00" as *const u8 as
                                           *const i8,
-                                      1472i32 as u32,
+                                      1472_u32,
                                       (*::std::mem::transmute::<&[u8; 76],
                                                                 &[i8; 76]>(b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00")).as_ptr());
                     }
@@ -2107,8 +2071,7 @@ unsafe extern "C" fn t1char_encode_charpath(
             }
             _ => {
                 _tt_abort(
-                    b"Unknown Type 2 charstring command: %d\x00" as *const u8
-                        as *const i8,
+                    b"Unknown Type 2 charstring command: %d\x00" as *const u8 as *const i8,
                     (*curr).type_0,
                 );
             }
@@ -2212,10 +2175,7 @@ pub unsafe extern "C" fn t1char_convert_charstring(
         ::std::mem::size_of::<t1_stem>() as u64,
         Some(
             stem_compare
-                as unsafe extern "C" fn(
-                    _: *const libc::c_void,
-                    _: *const libc::c_void,
-                ) -> i32,
+                as unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> i32,
         ),
     );
     length = t1char_encode_charpath(

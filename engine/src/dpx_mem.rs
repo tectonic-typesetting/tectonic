@@ -71,10 +71,7 @@ pub unsafe extern "C" fn new(mut size: u32) -> *mut libc::c_void {
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn renew(
-    mut mem: *mut libc::c_void,
-    mut size: u32,
-) -> *mut libc::c_void {
+pub unsafe extern "C" fn renew(mut mem: *mut libc::c_void, mut size: u32) -> *mut libc::c_void {
     if size != 0 {
         let mut result: *mut libc::c_void = realloc(mem, size as size_t);
         if result.is_null() {

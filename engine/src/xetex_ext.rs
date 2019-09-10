@@ -20,8 +20,7 @@ extern "C" {
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64)
-        -> *mut i8;
+    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
     #[no_mangle]
     fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
@@ -48,11 +47,7 @@ extern "C" {
     #[no_mangle]
     fn ttstub_input_get_size(handle: rust_input_handle_t) -> size_t;
     #[no_mangle]
-    fn ttstub_input_read(
-        handle: rust_input_handle_t,
-        data: *mut i8,
-        len: size_t,
-    ) -> ssize_t;
+    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     /* tectonic/core-memory.h: basic dynamic memory helpers
@@ -77,8 +72,7 @@ extern "C" {
         __function: *const i8,
     ) -> !;
     #[no_mangle]
-    fn getCachedGlyphBBox(fontID: u16, glyphID: u16, bbox: *mut GlyphBBox)
-        -> i32;
+    fn getCachedGlyphBBox(fontID: u16, glyphID: u16, bbox: *mut GlyphBBox) -> i32;
     #[no_mangle]
     fn cacheGlyphBBox(fontID: u16, glyphID: u16, bbox: *const GlyphBBox);
     #[no_mangle]
@@ -90,11 +84,7 @@ extern "C" {
     #[no_mangle]
     fn createFont(fontRef: PlatformFontRef, pointSize: Fixed) -> XeTeXFont;
     #[no_mangle]
-    fn getAscentAndDescent(
-        engine: XeTeXLayoutEngine,
-        ascent: *mut f32,
-        descent: *mut f32,
-    );
+    fn getAscentAndDescent(engine: XeTeXLayoutEngine, ascent: *mut f32, descent: *mut f32);
     #[no_mangle]
     fn setFontLayoutDir(font: XeTeXFont, vertical: i32);
     #[no_mangle]
@@ -115,11 +105,7 @@ extern "C" {
     #[no_mangle]
     fn getGlyphs(engine: XeTeXLayoutEngine, glyphs: *mut u32);
     #[no_mangle]
-    fn findFontByName(
-        name: *const i8,
-        var: *mut i8,
-        size: f64,
-    ) -> PlatformFontRef;
+    fn findFontByName(name: *const i8, var: *mut i8, size: f64) -> PlatformFontRef;
     #[no_mangle]
     fn getReqEngine() -> i8;
     #[no_mangle]
@@ -147,26 +133,14 @@ extern "C" {
     #[no_mangle]
     fn getIndLanguage(font: XeTeXFont, script: hb_tag_t, index: u32) -> hb_tag_t;
     #[no_mangle]
-    fn getIndFeature(
-        font: XeTeXFont,
-        script: hb_tag_t,
-        language: hb_tag_t,
-        index: u32,
-    ) -> hb_tag_t;
+    fn getIndFeature(font: XeTeXFont, script: hb_tag_t, language: hb_tag_t, index: u32)
+        -> hb_tag_t;
     #[no_mangle]
     fn getGlyphWidth(font: XeTeXFont, gid: u32) -> f32;
     #[no_mangle]
-    fn createFontFromFile(
-        filename: *const i8,
-        index: i32,
-        pointSize: Fixed,
-    ) -> XeTeXFont;
+    fn createFontFromFile(filename: *const i8, index: i32, pointSize: Fixed) -> XeTeXFont;
     #[no_mangle]
-    fn getCapAndXHeight(
-        engine: XeTeXLayoutEngine,
-        capheight: *mut f32,
-        xheight: *mut f32,
-    );
+    fn getCapAndXHeight(engine: XeTeXLayoutEngine, capheight: *mut f32, xheight: *mut f32);
     #[no_mangle]
     fn getEmboldenFactor(engine: XeTeXLayoutEngine) -> f32;
     #[no_mangle]
@@ -205,11 +179,7 @@ extern "C" {
     #[no_mangle]
     fn findNextGraphiteBreak() -> i32;
     #[no_mangle]
-    fn initGraphiteBreaking(
-        engine: XeTeXLayoutEngine,
-        txtPtr: *const u16,
-        txtLen: i32,
-    ) -> bool;
+    fn initGraphiteBreaking(engine: XeTeXLayoutEngine, txtPtr: *const u16, txtLen: i32) -> bool;
     #[no_mangle]
     fn getFontCharRange(engine: XeTeXLayoutEngine, reqFirst: i32) -> i32;
     #[no_mangle]
@@ -221,12 +191,7 @@ extern "C" {
     #[no_mangle]
     fn getGlyphItalCorr(engine: XeTeXLayoutEngine, glyphID: u32) -> f32;
     #[no_mangle]
-    fn getGlyphSidebearings(
-        engine: XeTeXLayoutEngine,
-        glyphID: u32,
-        lsb: *mut f32,
-        rsb: *mut f32,
-    );
+    fn getGlyphSidebearings(engine: XeTeXLayoutEngine, glyphID: u32, lsb: *mut f32, rsb: *mut f32);
     #[no_mangle]
     fn getGlyphHeightDepth(
         engine: XeTeXLayoutEngine,
@@ -247,11 +212,7 @@ extern "C" {
     #[no_mangle]
     fn countGraphiteFeatureSettings(engine: XeTeXLayoutEngine, feature: u32) -> u32;
     #[no_mangle]
-    fn getGraphiteFeatureSettingCode(
-        engine: XeTeXLayoutEngine,
-        feature: u32,
-        index: u32,
-    ) -> u32;
+    fn getGraphiteFeatureSettingCode(engine: XeTeXLayoutEngine, feature: u32, index: u32) -> u32;
     #[no_mangle]
     fn getGraphiteFeatureDefaultSetting(engine: XeTeXLayoutEngine, feature: u32) -> u32;
     #[no_mangle]
@@ -263,11 +224,8 @@ extern "C" {
         setting: u32,
     ) -> *mut i8;
     #[no_mangle]
-    fn findGraphiteFeatureNamed(
-        engine: XeTeXLayoutEngine,
-        name: *const i8,
-        namelength: i32,
-    ) -> i64;
+    fn findGraphiteFeatureNamed(engine: XeTeXLayoutEngine, name: *const i8, namelength: i32)
+        -> i64;
     #[no_mangle]
     fn findGraphiteFeatureSettingNamed(
         engine: XeTeXLayoutEngine,
@@ -617,10 +575,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     return 0i32 != 0;
 }
 #[inline]
-unsafe extern "C" fn strstartswith(
-    mut s: *const i8,
-    mut prefix: *const i8,
-) -> *const i8 {
+unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
     let mut length: size_t = 0;
     length = strlen(prefix);
     if strncmp(s, prefix, length) == 0i32 {
@@ -666,8 +621,8 @@ unsafe extern "C" fn SWAP16(p: u16) -> u16 {
 #[inline]
 unsafe extern "C" fn SWAP32(p: u32) -> u32 {
     return (p >> 24i32)
-        .wrapping_add(p >> 8i32 & 0xff00i32 as u32)
-        .wrapping_add(p << 8i32 & 0xff0000i32 as u32)
+        .wrapping_add(p >> 8i32 & 0xff00_u32)
+        .wrapping_add(p << 8i32 & 0xff0000_u32)
         .wrapping_add(p << 24i32);
 }
 /* xetex-shipout */
@@ -720,7 +675,8 @@ authorization from the copyright holders.
  */
 /* for fabs() */
 /* OT-related constants we need */
-static mut brkIter: *mut icu::UBreakIterator = 0 as *const icu::UBreakIterator as *mut icu::UBreakIterator;
+static mut brkIter: *mut icu::UBreakIterator =
+    0 as *const icu::UBreakIterator as *mut icu::UBreakIterator;
 static mut brkLocaleStrNum: i32 = 0i32;
 /* info for each glyph is location (FixedPoint) + glyph ID (u16) */
 /* glyph ID field in a glyph_node */
@@ -749,20 +705,23 @@ pub unsafe extern "C" fn linebreak_start(
         brkIter = 0 as *mut icu::UBreakIterator
     }
     if brkIter.is_null() {
-        brkIter = icu::ubrk_open(icu::UBRK_LINE, locale, 0 as *const icu::UChar, 0i32, &mut status);
+        brkIter = icu::ubrk_open(
+            icu::UBRK_LINE,
+            locale,
+            0 as *const icu::UChar,
+            0i32,
+            &mut status,
+        );
         if status as i32 > icu::U_ZERO_ERROR as i32 {
             begin_diagnostic();
             print_nl('E' as i32);
             print_c_string(b"rror \x00" as *const u8 as *const i8);
             print_int(status as i32);
             print_c_string(
-                b" creating linebreak iterator for locale `\x00" as *const u8
-                    as *const i8,
+                b" creating linebreak iterator for locale `\x00" as *const u8 as *const i8,
             );
             print_c_string(locale);
-            print_c_string(
-                b"\'; trying default locale `en_us\'.\x00" as *const u8 as *const i8,
-            );
+            print_c_string(b"\'; trying default locale `en_us\'.\x00" as *const u8 as *const i8);
             end_diagnostic(1i32 != 0);
             if !brkIter.is_null() {
                 icu::ubrk_close(brkIter);
@@ -781,8 +740,7 @@ pub unsafe extern "C" fn linebreak_start(
     }
     if brkIter.is_null() {
         _tt_abort(
-            b"failed to create linebreak iterator, status=%d\x00" as *const u8
-                as *const i8,
+            b"failed to create linebreak iterator, status=%d\x00" as *const u8 as *const i8,
             status as i32,
         );
     }
@@ -805,47 +763,23 @@ pub unsafe extern "C" fn get_encoding_mode_and_info(mut info: *mut i32) -> i32 {
     let mut err: icu::UErrorCode = icu::U_ZERO_ERROR;
     let mut cnv: *mut icu::UConverter = 0 as *mut icu::UConverter;
     *info = 0i32;
-    if strcasecmp(
-        name_of_file,
-        b"auto\x00" as *const u8 as *const i8,
-    ) == 0i32
-    {
+    if strcasecmp(name_of_file, b"auto\x00" as *const u8 as *const i8) == 0i32 {
         return 0i32;
     }
-    if strcasecmp(
-        name_of_file,
-        b"utf8\x00" as *const u8 as *const i8,
-    ) == 0i32
-    {
+    if strcasecmp(name_of_file, b"utf8\x00" as *const u8 as *const i8) == 0i32 {
         return 1i32;
     }
-    if strcasecmp(
-        name_of_file,
-        b"utf16\x00" as *const u8 as *const i8,
-    ) == 0i32
-    {
+    if strcasecmp(name_of_file, b"utf16\x00" as *const u8 as *const i8) == 0i32 {
         /* depends on host platform */
         return 3i32;
     }
-    if strcasecmp(
-        name_of_file,
-        b"utf16be\x00" as *const u8 as *const i8,
-    ) == 0i32
-    {
+    if strcasecmp(name_of_file, b"utf16be\x00" as *const u8 as *const i8) == 0i32 {
         return 2i32;
     }
-    if strcasecmp(
-        name_of_file,
-        b"utf16le\x00" as *const u8 as *const i8,
-    ) == 0i32
-    {
+    if strcasecmp(name_of_file, b"utf16le\x00" as *const u8 as *const i8) == 0i32 {
         return 3i32;
     }
-    if strcasecmp(
-        name_of_file,
-        b"bytes\x00" as *const u8 as *const i8,
-    ) == 0i32
-    {
+    if strcasecmp(name_of_file, b"bytes\x00" as *const u8 as *const i8) == 0i32 {
         return 4i32;
     }
     /* try for an ICU converter */
@@ -898,14 +832,9 @@ unsafe extern "C" fn load_mapping_file(
 ) -> *mut libc::c_void {
     let mut cnv: TECkit_Converter = 0 as TECkit_Converter;
     let mut buffer: *mut i8 =
-        xmalloc((e.wrapping_offset_from(s) as i64 + 5i32 as i64) as size_t)
-            as *mut i8;
+        xmalloc((e.wrapping_offset_from(s) as i64 + 5i32 as i64) as size_t) as *mut i8;
     let mut map: rust_input_handle_t = 0 as *mut libc::c_void;
-    strncpy(
-        buffer,
-        s,
-        e.wrapping_offset_from(s) as i64 as u64,
-    );
+    strncpy(buffer, s, e.wrapping_offset_from(s) as i64 as u64);
     *buffer.offset(e.wrapping_offset_from(s) as i64 as isize) = 0i32 as i8;
     strcat(buffer, b".tec\x00" as *const u8 as *const i8);
     map = ttstub_input_open(buffer, TTIF_MISCFONTS, 0i32);
@@ -941,24 +870,13 @@ unsafe extern "C" fn load_mapping_file(
         }
         if cnv.is_null() {
             /* tracing */
-            font_mapping_warning(
-                buffer as *const libc::c_void,
-                strlen(buffer) as i32,
-                2i32,
-            ); /* not loadable */
+            font_mapping_warning(buffer as *const libc::c_void, strlen(buffer) as i32, 2i32);
+        /* not loadable */
         } else if get_tracing_fonts_state() > 1i32 {
-            font_mapping_warning(
-                buffer as *const libc::c_void,
-                strlen(buffer) as i32,
-                0i32,
-            );
+            font_mapping_warning(buffer as *const libc::c_void, strlen(buffer) as i32, 0i32);
         }
     } else {
-        font_mapping_warning(
-            buffer as *const libc::c_void,
-            strlen(buffer) as i32,
-            1i32,
-        );
+        font_mapping_warning(buffer as *const libc::c_void, strlen(buffer) as i32, 1i32);
         /* not found */
     }
     free(buffer as *mut libc::c_void);
@@ -967,10 +885,7 @@ unsafe extern "C" fn load_mapping_file(
 static mut saved_mapping_name: *mut i8 = 0 as *const i8 as *mut i8;
 #[no_mangle]
 pub unsafe extern "C" fn check_for_tfm_font_mapping() {
-    let mut cp: *mut i8 = strstr(
-        name_of_file,
-        b":mapping=\x00" as *const u8 as *const i8,
-    );
+    let mut cp: *mut i8 = strstr(name_of_file, b":mapping=\x00" as *const u8 as *const i8);
     saved_mapping_name = mfree(saved_mapping_name as *mut libc::c_void) as *mut i8;
     if !cp.is_null() {
         *cp = 0i32 as i8;
@@ -997,10 +912,7 @@ pub unsafe extern "C" fn load_tfm_font_mapping() -> *mut libc::c_void {
     return rval;
 }
 #[no_mangle]
-pub unsafe extern "C" fn apply_tfm_font_mapping(
-    mut cnv: *mut libc::c_void,
-    mut c: i32,
-) -> i32 {
+pub unsafe extern "C" fn apply_tfm_font_mapping(mut cnv: *mut libc::c_void, mut c: i32) -> i32 {
     let mut in_0: UniChar = c as UniChar;
     let mut out: [Byte; 2] = [0; 2];
     let mut inUsed: UInt32 = 0;
@@ -1017,7 +929,7 @@ pub unsafe extern "C" fn apply_tfm_font_mapping(
         &mut outUsed,
         1i32 as Byte,
     );
-    if outUsed < 1i32 as u32 {
+    if outUsed < 1_u32 {
         return 0i32;
     } else {
         return out[0] as i32;
@@ -1053,10 +965,7 @@ pub unsafe extern "C" fn read_double(mut s: *mut *const i8) -> f64 {
     *s = cp;
     return if neg != 0 { -val } else { val };
 }
-unsafe extern "C" fn read_tag_with_param(
-    mut cp: *const i8,
-    mut param: *mut i32,
-) -> hb_tag_t {
+unsafe extern "C" fn read_tag_with_param(mut cp: *const i8, mut param: *mut i32) -> hb_tag_t {
     let mut cp2: *const i8 = 0 as *const i8;
     let mut tag: hb_tag_t = 0;
     cp2 = cp;
@@ -1068,10 +977,7 @@ unsafe extern "C" fn read_tag_with_param(
     {
         cp2 = cp2.offset(1)
     }
-    tag = hb_tag_from_string(
-        cp,
-        cp2.wrapping_offset_from(cp) as i64 as i32,
-    );
+    tag = hb_tag_from_string(cp, cp2.wrapping_offset_from(cp) as i64 as i32);
     cp = cp2;
     if *cp as i32 == '=' as i32 {
         let mut neg: i32 = 0i32;
@@ -1092,8 +998,8 @@ unsafe extern "C" fn read_tag_with_param(
 }
 #[no_mangle]
 pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> u32 {
-    let mut rgbValue: u32 = 0i32 as u32;
-    let mut alpha: u32 = 0i32 as u32;
+    let mut rgbValue: u32 = 0_u32;
+    let mut alpha: u32 = 0_u32;
     let mut i: i32 = 0;
     i = 0i32;
     while i < 6i32 {
@@ -1105,14 +1011,14 @@ pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> u32 {
             rgbValue = (rgbValue << 4i32)
                 .wrapping_add(**cp as u32)
                 .wrapping_sub('A' as i32 as u32)
-                .wrapping_add(10i32 as u32)
+                .wrapping_add(10_u32)
         } else if **cp as i32 >= 'a' as i32 && **cp as i32 <= 'f' as i32 {
             rgbValue = (rgbValue << 4i32)
                 .wrapping_add(**cp as u32)
                 .wrapping_sub('a' as i32 as u32)
-                .wrapping_add(10i32 as u32)
+                .wrapping_add(10_u32)
         } else {
-            return 0xffi32 as u32;
+            return 0xff_u32;
         }
         *cp = (*cp).offset(1);
         i += 1
@@ -1128,7 +1034,7 @@ pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> u32 {
             alpha = (alpha << 4i32)
                 .wrapping_add(**cp as u32)
                 .wrapping_sub('A' as i32 as u32)
-                .wrapping_add(10i32 as u32)
+                .wrapping_add(10_u32)
         } else {
             if !(**cp as i32 >= 'a' as i32 && **cp as i32 <= 'f' as i32) {
                 break;
@@ -1136,7 +1042,7 @@ pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> u32 {
             alpha = (alpha << 4i32)
                 .wrapping_add(**cp as u32)
                 .wrapping_sub('a' as i32 as u32)
-                .wrapping_add(10i32 as u32)
+                .wrapping_add(10_u32)
         }
         *cp = (*cp).offset(1);
         i += 1
@@ -1144,8 +1050,7 @@ pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> u32 {
     if i == 2i32 {
         rgbValue = (rgbValue as u32).wrapping_add(alpha) as u32
     } else {
-        rgbValue =
-            (rgbValue as u32).wrapping_add(0xffi32 as u32) as u32
+        rgbValue = (rgbValue as u32).wrapping_add(0xff_u32) as u32
     }
     return rgbValue;
 }
@@ -1240,7 +1145,7 @@ unsafe extern "C" fn readFeatureNumber(
         let fresh5 = s;
         s = s.offset(1);
         *f = (*f)
-            .wrapping_mul(10i32 as u32)
+            .wrapping_mul(10_u32)
             .wrapping_add(*fresh5 as u32)
             .wrapping_sub('0' as i32 as u32)
     }
@@ -1277,10 +1182,10 @@ unsafe extern "C" fn loadOTfont(
 ) -> *mut libc::c_void {
     let mut current_block: u64;
     let mut engine: XeTeXLayoutEngine = 0 as XeTeXLayoutEngine;
-    let mut script: hb_tag_t = (0i32 as u32 & 0xffi32 as u32) << 24i32
-        | (0i32 as u32 & 0xffi32 as u32) << 16i32
-        | (0i32 as u32 & 0xffi32 as u32) << 8i32
-        | 0i32 as u32 & 0xffi32 as u32;
+    let mut script: hb_tag_t = (0_u32 & 0xff_u32) << 24i32
+        | (0_u32 & 0xff_u32) << 16i32
+        | (0_u32 & 0xff_u32) << 8i32
+        | 0_u32 & 0xff_u32;
     let mut language: *mut i8 = 0 as *mut i8;
     let mut features: *mut hb_feature_t = 0 as *mut hb_feature_t;
     let mut shapers: *mut *mut i8 = 0 as *mut *mut i8;
@@ -1289,7 +1194,7 @@ unsafe extern "C" fn loadOTfont(
     let mut cp2: *mut i8 = 0 as *mut i8;
     let mut cp3: *const i8 = 0 as *const i8;
     let mut tag: hb_tag_t = 0;
-    let mut rgbValue: u32 = 0xffi32 as u32;
+    let mut rgbValue: u32 = 0xff_u32;
     let mut extend: f32 = 1.0f64 as f32;
     let mut slant: f32 = 0.0f64 as f32;
     let mut embolden: f32 = 0.0f64 as f32;
@@ -1299,16 +1204,14 @@ unsafe extern "C" fn loadOTfont(
     if reqEngine as i32 == 'O' as i32 || reqEngine as i32 == 'G' as i32 {
         shapers = xrealloc(
             shapers as *mut libc::c_void,
-            ((nShapers + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<*mut i8>() as u64),
+            ((nShapers + 1i32) as u64).wrapping_mul(::std::mem::size_of::<*mut i8>() as u64),
         ) as *mut *mut i8;
         if reqEngine as i32 == 'O' as i32 {
             static mut ot_const: [i8; 3] = [111, 116, 0];
             let ref mut fresh8 = *shapers.offset(nShapers as isize);
             *fresh8 = ot_const.as_mut_ptr()
         } else if reqEngine as i32 == 'G' as i32 {
-            static mut graphite2_const: [i8; 10] =
-                [103, 114, 97, 112, 104, 105, 116, 101, 50, 0];
+            static mut graphite2_const: [i8; 10] = [103, 114, 97, 112, 104, 105, 116, 101, 50, 0];
             let ref mut fresh9 = *shapers.offset(nShapers as isize);
             *fresh9 = graphite2_const.as_mut_ptr()
         }
@@ -1338,10 +1241,7 @@ unsafe extern "C" fn loadOTfont(
     /* scan the feature string (if any) */
     if !cp1.is_null() {
         while *cp1 != 0 {
-            if *cp1 as i32 == ':' as i32
-                || *cp1 as i32 == ';' as i32
-                || *cp1 as i32 == ',' as i32
-            {
+            if *cp1 as i32 == ':' as i32 || *cp1 as i32 == ';' as i32 || *cp1 as i32 == ',' as i32 {
                 cp1 = cp1.offset(1)
             }
             while *cp1 as i32 == ' ' as i32 || *cp1 as i32 == '\t' as i32 {
@@ -1365,10 +1265,7 @@ unsafe extern "C" fn loadOTfont(
                     current_block = 10622493848381539643;
                 } else {
                     cp3 = cp3.offset(1);
-                    script = hb_tag_from_string(
-                        cp3,
-                        cp2.wrapping_offset_from(cp3) as i64 as i32,
-                    );
+                    script = hb_tag_from_string(cp3, cp2.wrapping_offset_from(cp3) as i64 as i32);
                     current_block = 13857423536159756434;
                 }
             } else {
@@ -1378,10 +1275,9 @@ unsafe extern "C" fn loadOTfont(
                         current_block = 10622493848381539643;
                     } else {
                         cp3 = cp3.offset(1);
-                        language = xmalloc(
-                            (cp2.wrapping_offset_from(cp3) as i64 + 1i32 as i64)
-                                as size_t,
-                        ) as *mut i8;
+                        language =
+                            xmalloc((cp2.wrapping_offset_from(cp3) as i64 + 1i32 as i64) as size_t)
+                                as *mut i8;
                         *language.offset(cp2.wrapping_offset_from(cp3) as i64 as isize) =
                             '\u{0}' as i32 as i8;
                         memcpy(
@@ -1400,9 +1296,8 @@ unsafe extern "C" fn loadOTfont(
                             cp3 = cp3.offset(1);
                             shapers = xrealloc(
                                 shapers as *mut libc::c_void,
-                                ((nShapers + 1i32) as u64).wrapping_mul(
-                                    ::std::mem::size_of::<*mut i8>() as u64,
-                                ),
+                                ((nShapers + 1i32) as u64)
+                                    .wrapping_mul(::std::mem::size_of::<*mut i8>() as u64),
                             ) as *mut *mut i8;
                             /* some dumb systems have no strndup() */
                             let ref mut fresh10 = *shapers.offset(nShapers as isize);
@@ -1430,26 +1325,22 @@ unsafe extern "C" fn loadOTfont(
                         } else {
                             if reqEngine as i32 == 'G' as i32 {
                                 let mut value: i32 = 0i32;
-                                if readFeatureNumber(cp1, cp2, &mut tag, &mut value) as i32
-                                    != 0
+                                if readFeatureNumber(cp1, cp2, &mut tag, &mut value) as i32 != 0
                                     || findGraphiteFeature(engine, cp1, cp2, &mut tag, &mut value)
                                         as i32
                                         != 0
                                 {
                                     features = xrealloc(
                                         features as *mut libc::c_void,
-                                        ((nFeatures + 1i32) as u64)
-                                            .wrapping_mul(::std::mem::size_of::<hb_feature_t>()
-                                                as u64),
+                                        ((nFeatures + 1i32) as u64).wrapping_mul(
+                                            ::std::mem::size_of::<hb_feature_t>() as u64,
+                                        ),
                                     )
                                         as *mut hb_feature_t;
                                     (*features.offset(nFeatures as isize)).tag = tag;
-                                    (*features.offset(nFeatures as isize)).value =
-                                        value as u32;
-                                    (*features.offset(nFeatures as isize)).start =
-                                        0i32 as u32;
-                                    (*features.offset(nFeatures as isize)).end =
-                                        -1i32 as u32;
+                                    (*features.offset(nFeatures as isize)).value = value as u32;
+                                    (*features.offset(nFeatures as isize)).start = 0_u32;
+                                    (*features.offset(nFeatures as isize)).end = -1i32 as u32;
                                     nFeatures += 1;
                                     current_block = 13857423536159756434;
                                 } else {
@@ -1467,47 +1358,38 @@ unsafe extern "C" fn loadOTfont(
                                         features = xrealloc(
                                             features as *mut libc::c_void,
                                             ((nFeatures + 1i32) as u64).wrapping_mul(
-                                                ::std::mem::size_of::<hb_feature_t>()
-                                                    as u64,
+                                                ::std::mem::size_of::<hb_feature_t>() as u64,
                                             ),
                                         )
                                             as *mut hb_feature_t;
                                         (*features.offset(nFeatures as isize)).tag = tag;
-                                        (*features.offset(nFeatures as isize)).start =
-                                            0i32 as u32;
-                                        (*features.offset(nFeatures as isize)).end =
-                                            -1i32 as u32;
+                                        (*features.offset(nFeatures as isize)).start = 0_u32;
+                                        (*features.offset(nFeatures as isize)).end = -1i32 as u32;
                                         // for backward compatibility with pre-0.9999 where feature
                                         // indices started from 0
                                         if param >= 0i32 {
                                             param += 1
                                         }
-                                        (*features.offset(nFeatures as isize)).value =
-                                            param as u32;
+                                        (*features.offset(nFeatures as isize)).value = param as u32;
                                         nFeatures += 1;
                                         current_block = 13857423536159756434;
                                     } else if *cp1 as i32 == '-' as i32 {
                                         cp1 = cp1.offset(1);
                                         tag = hb_tag_from_string(
                                             cp1,
-                                            cp2.wrapping_offset_from(cp1) as i64
-                                                as i32,
+                                            cp2.wrapping_offset_from(cp1) as i64 as i32,
                                         );
                                         features = xrealloc(
                                             features as *mut libc::c_void,
                                             ((nFeatures + 1i32) as u64).wrapping_mul(
-                                                ::std::mem::size_of::<hb_feature_t>()
-                                                    as u64,
+                                                ::std::mem::size_of::<hb_feature_t>() as u64,
                                             ),
                                         )
                                             as *mut hb_feature_t;
                                         (*features.offset(nFeatures as isize)).tag = tag;
-                                        (*features.offset(nFeatures as isize)).start =
-                                            0i32 as u32;
-                                        (*features.offset(nFeatures as isize)).end =
-                                            -1i32 as u32;
-                                        (*features.offset(nFeatures as isize)).value =
-                                            0i32 as u32;
+                                        (*features.offset(nFeatures as isize)).start = 0_u32;
+                                        (*features.offset(nFeatures as isize)).end = -1i32 as u32;
+                                        (*features.offset(nFeatures as isize)).value = 0_u32;
                                         nFeatures += 1;
                                         current_block = 13857423536159756434;
                                     } else if !strstartswith(
@@ -1533,9 +1415,8 @@ unsafe extern "C" fn loadOTfont(
                                             cp3 = cp3.offset(1)
                                         }
                                         if cp3 == cp1.offset(8) as *const i8 {
-                                            loaded_font_flags = (loaded_font_flags as i32
-                                                | 0x2i32)
-                                                as i8;
+                                            loaded_font_flags =
+                                                (loaded_font_flags as i32 | 0x2i32) as i8;
                                             current_block = 13857423536159756434;
                                         } else {
                                             current_block = 10622493848381539643;
@@ -1567,8 +1448,7 @@ unsafe extern "C" fn loadOTfont(
     if !shapers.is_null() {
         shapers = xrealloc(
             shapers as *mut libc::c_void,
-            ((nShapers + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<*mut i8>() as u64),
+            ((nShapers + 1i32) as u64).wrapping_mul(::std::mem::size_of::<*mut i8>() as u64),
         ) as *mut *mut i8;
         let ref mut fresh11 = *shapers.offset(nShapers as isize);
         *fresh11 = 0 as *mut i8
@@ -1577,11 +1457,10 @@ unsafe extern "C" fn loadOTfont(
         embolden = (embolden as f64 * Fix2D(scaled_size) / 100.0f64) as f32
     }
     if letterspace as f64 != 0.0f64 {
-        loaded_font_letter_space =
-            (letterspace as f64 / 100.0f64 * scaled_size as f64) as scaled_t
+        loaded_font_letter_space = (letterspace as f64 / 100.0f64 * scaled_size as f64) as scaled_t
     }
     if loaded_font_flags as i32 & 0x1i32 == 0i32 {
-        rgbValue = 0xffi32 as u32
+        rgbValue = 0xff_u32
     }
     if loaded_font_flags as i32 & 0x2i32 != 0i32 {
         setFontLayoutDir(font, 1i32);
@@ -1675,40 +1554,32 @@ pub unsafe extern "C" fn find_native_font(
     loaded_font_letter_space = 0i32;
     splitFontName(name, &mut var, &mut feat, &mut end, &mut index);
     nameString =
-        xmalloc((var.wrapping_offset_from(name) as i64 + 1i32 as i64) as size_t)
-            as *mut i8;
+        xmalloc((var.wrapping_offset_from(name) as i64 + 1i32 as i64) as size_t) as *mut i8;
     strncpy(
         nameString,
         name,
         var.wrapping_offset_from(name) as i64 as u64,
     );
-    *nameString.offset(var.wrapping_offset_from(name) as i64 as isize) =
-        0i32 as i8;
+    *nameString.offset(var.wrapping_offset_from(name) as i64 as isize) = 0i32 as i8;
     if feat > var {
-        varString =
-            xmalloc(feat.wrapping_offset_from(var) as i64 as size_t) as *mut i8;
+        varString = xmalloc(feat.wrapping_offset_from(var) as i64 as size_t) as *mut i8;
         strncpy(
             varString,
             var.offset(1),
-            (feat.wrapping_offset_from(var) as i64 - 1i32 as i64)
-                as u64,
+            (feat.wrapping_offset_from(var) as i64 - 1i32 as i64) as u64,
         );
-        *varString.offset(
-            (feat.wrapping_offset_from(var) as i64 - 1i32 as i64) as isize,
-        ) = 0i32 as i8
+        *varString.offset((feat.wrapping_offset_from(var) as i64 - 1i32 as i64) as isize) =
+            0i32 as i8
     }
     if end > feat {
-        featString =
-            xmalloc(end.wrapping_offset_from(feat) as i64 as size_t) as *mut i8;
+        featString = xmalloc(end.wrapping_offset_from(feat) as i64 as size_t) as *mut i8;
         strncpy(
             featString,
             feat.offset(1),
-            (end.wrapping_offset_from(feat) as i64 - 1i32 as i64)
-                as u64,
+            (end.wrapping_offset_from(feat) as i64 - 1i32 as i64) as u64,
         );
-        *featString.offset(
-            (end.wrapping_offset_from(feat) as i64 - 1i32 as i64) as isize,
-        ) = 0i32 as i8
+        *featString.offset((end.wrapping_offset_from(feat) as i64 - 1i32 as i64) as isize) =
+            0i32 as i8
     }
     // check for "[filename]" form, don't search maps in this case
     if *nameString.offset(0) as i32 == '[' as i32 {
@@ -1730,18 +1601,13 @@ pub unsafe extern "C" fn find_native_font(
             /* This is duplicated in XeTeXFontMgr::findFont! */
             setReqEngine(0i32 as i8);
             if !varString.is_null() {
-                if !strstartswith(varString, b"/AAT\x00" as *const u8 as *const i8)
-                    .is_null()
-                {
+                if !strstartswith(varString, b"/AAT\x00" as *const u8 as *const i8).is_null() {
                     setReqEngine('A' as i32 as i8);
-                } else if !strstartswith(varString, b"/OT\x00" as *const u8 as *const i8)
-                    .is_null()
-                    || !strstartswith(varString, b"/ICU\x00" as *const u8 as *const i8)
-                        .is_null()
+                } else if !strstartswith(varString, b"/OT\x00" as *const u8 as *const i8).is_null()
+                    || !strstartswith(varString, b"/ICU\x00" as *const u8 as *const i8).is_null()
                 {
                     setReqEngine('O' as i32 as i8);
-                } else if !strstartswith(varString, b"/GR\x00" as *const u8 as *const i8)
-                    .is_null()
+                } else if !strstartswith(varString, b"/GR\x00" as *const u8 as *const i8).is_null()
                 {
                     setReqEngine('G' as i32 as i8);
                 }
@@ -1814,10 +1680,7 @@ pub unsafe extern "C" fn find_native_font(
     return rval;
 }
 #[no_mangle]
-pub unsafe extern "C" fn release_font_engine(
-    mut engine: *mut libc::c_void,
-    mut type_flag: i32,
-) {
+pub unsafe extern "C" fn release_font_engine(mut engine: *mut libc::c_void, mut type_flag: i32) {
     if type_flag as u32 == 0xfffeu32 {
         deleteLayoutEngine(engine as XeTeXLayoutEngine);
     };
@@ -1847,8 +1710,7 @@ pub unsafe extern "C" fn ot_get_font_metrics(
     *xheight = D2Fix(d as f64);
     /* fallback in case the font does not have OS/2 table */
     if *xheight == 0i32 {
-        let mut glyphID: i32 =
-            mapCharToGlyph(engine, 'x' as i32 as u32) as i32;
+        let mut glyphID: i32 = mapCharToGlyph(engine, 'x' as i32 as u32) as i32;
         if glyphID != 0i32 {
             getGlyphHeightDepth(engine, glyphID as u32, &mut a, &mut d);
             *xheight = D2Fix(a as f64)
@@ -1858,8 +1720,7 @@ pub unsafe extern "C" fn ot_get_font_metrics(
         }
     }
     if *capheight == 0i32 {
-        let mut glyphID_0: i32 =
-            mapCharToGlyph(engine, 'X' as i32 as u32) as i32;
+        let mut glyphID_0: i32 = mapCharToGlyph(engine, 'X' as i32 as u32) as i32;
         if glyphID_0 != 0i32 {
             getGlyphHeightDepth(engine, glyphID_0 as u32, &mut a, &mut d);
             *capheight = D2Fix(a as f64)
@@ -1915,18 +1776,15 @@ pub unsafe extern "C" fn ot_font_get_2(
     let mut engine: XeTeXLayoutEngine = pEngine as XeTeXLayoutEngine;
     let mut fontInst: XeTeXFont = getFont(engine);
     match what {
-        20 => {
-            return getIndLanguage(fontInst, param1 as hb_tag_t, param2 as u32) as i32
-        }
+        20 => return getIndLanguage(fontInst, param1 as hb_tag_t, param2 as u32) as i32,
         18 => return countFeatures(fontInst, param1 as hb_tag_t, param2 as hb_tag_t) as i32,
         13 => {
             /* for graphite fonts */
-            return getGraphiteFeatureSettingCode(engine, param1 as u32, param2 as u32)
-                as i32;
+            return getGraphiteFeatureSettingCode(engine, param1 as u32, param2 as u32) as i32;
         }
         15 => {
-            return (getGraphiteFeatureDefaultSetting(engine, param1 as u32)
-                == param2 as u32) as i32
+            return (getGraphiteFeatureDefaultSetting(engine, param1 as u32) == param2 as u32)
+                as i32
         }
         _ => {}
     } /* to guarantee enough space in the buffer */
@@ -1975,10 +1833,7 @@ pub unsafe extern "C" fn gr_print_font_name(
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn gr_font_get_named(
-    mut what: i32,
-    mut pEngine: *mut libc::c_void,
-) -> i32 {
+pub unsafe extern "C" fn gr_font_get_named(mut what: i32, mut pEngine: *mut libc::c_void) -> i32 {
     let mut rval: i64 = -1i32 as i64;
     let mut engine: XeTeXLayoutEngine = pEngine as XeTeXLayoutEngine;
     match what {
@@ -1997,12 +1852,7 @@ pub unsafe extern "C" fn gr_font_get_named_1(
     let mut engine: XeTeXLayoutEngine = pEngine as XeTeXLayoutEngine;
     match what {
         14 => {
-            rval = findGraphiteFeatureSettingNamed(
-                engine,
-                param as u32,
-                name_of_file,
-                name_length,
-            )
+            rval = findGraphiteFeatureSettingNamed(engine, param as u32, name_of_file, name_length)
         }
         _ => {}
     }
@@ -2088,8 +1938,7 @@ pub unsafe extern "C" fn makeXDVGlyphArrayData(mut pNode: *mut libc::c_void) -> 
         *fresh28 = (g as i32 & 0xffi32) as u8;
         i += 1
     }
-    return (cp as *mut i8).wrapping_offset_from(xdv_buffer) as i64
-        as i32;
+    return (cp as *mut i8).wrapping_offset_from(xdv_buffer) as i64 as i32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
@@ -2116,11 +1965,9 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
             __assert_fail(
                 b"filename\x00" as *const u8 as *const i8,
                 b"xetex-ext.c\x00" as *const u8 as *const i8,
-                1190i32 as u32,
-                (*::std::mem::transmute::<&[u8; 27], &[i8; 27]>(
-                    b"int make_font_def(int32_t)\x00",
-                ))
-                .as_ptr(),
+                1190_u32,
+                (*::std::mem::transmute::<&[u8; 27], &[i8; 27]>(b"int make_font_def(int32_t)\x00"))
+                    .as_ptr(),
             );
         }
         rgba = getRgbValue(engine);
@@ -2132,9 +1979,7 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
         embolden = getEmboldenFactor(engine);
         size = D2Fix(getPointSize(engine) as f64)
     } else {
-        _tt_abort(
-            b"bad native font flag in `make_font_def`\x00" as *const u8 as *const i8,
-        );
+        _tt_abort(b"bad native font flag in `make_font_def`\x00" as *const u8 as *const i8);
     }
     filenameLen = strlen(filename) as u8;
     /* parameters after internal font ID:
@@ -2232,9 +2077,7 @@ pub unsafe extern "C" fn apply_mapping(
         status = TECkit_ConvertBuffer(
             cnv,
             txtPtr as *mut Byte,
-            (txtLen as u64)
-                .wrapping_mul(::std::mem::size_of::<UniChar>() as u64)
-                as UInt32,
+            (txtLen as u64).wrapping_mul(::std::mem::size_of::<UniChar>() as u64) as UInt32,
             &mut inUsed,
             mapped_text as *mut Byte,
             outLength,
@@ -2244,8 +2087,7 @@ pub unsafe extern "C" fn apply_mapping(
         match status {
             0 => {
                 txtPtr = mapped_text as *mut UniChar;
-                return (outUsed as u64)
-                    .wrapping_div(::std::mem::size_of::<UniChar>() as u64)
+                return (outUsed as u64).wrapping_div(::std::mem::size_of::<UniChar>() as u64)
                     as i32;
             }
             1 => {
@@ -2288,8 +2130,7 @@ pub unsafe extern "C" fn get_native_char_height_depth(
         getGlyphHeightDepth(engine, gid as u32, &mut ht, &mut dp);
     } else {
         _tt_abort(
-            b"bad native font flag in `get_native_char_height_depth`\x00" as *const u8
-                as *const i8,
+            b"bad native font flag in `get_native_char_height_depth`\x00" as *const u8 as *const i8,
         );
     }
     *height = D2Fix(ht as f64);
@@ -2354,11 +2195,7 @@ pub unsafe extern "C" fn get_native_char_sidebearings(
     *rsb = D2Fix(r as f64);
 }
 #[no_mangle]
-pub unsafe extern "C" fn get_glyph_bounds(
-    mut font: i32,
-    mut edge: i32,
-    mut gid: i32,
-) -> scaled_t {
+pub unsafe extern "C" fn get_glyph_bounds(mut font: i32, mut edge: i32, mut gid: i32) -> scaled_t {
     /* edge codes 1,2,3,4 => L T R B */
     let mut a: f32 = 0.;
     let mut b: f32 = 0.;
@@ -2371,9 +2208,7 @@ pub unsafe extern "C" fn get_glyph_bounds(
             getGlyphHeightDepth(engine, gid as u32, &mut a, &mut b);
         }
     } else {
-        _tt_abort(
-            b"bad native font flag in `get_glyph_bounds`\x00" as *const u8 as *const i8,
-        );
+        _tt_abort(b"bad native font flag in `get_glyph_bounds`\x00" as *const u8 as *const i8);
     }
     return D2Fix((if edge <= 2i32 { a } else { b }) as f64);
 }
@@ -2398,9 +2233,7 @@ pub unsafe extern "C" fn getnativecharwd(mut f: i32, mut c: i32) -> scaled_t {
         let mut gid: i32 = mapCharToGlyph(engine, c as u32) as i32;
         wd = D2Fix(getGlyphWidthFromEngine(engine, gid as u32) as f64)
     } else {
-        _tt_abort(
-            b"bad native font flag in `get_native_char_wd`\x00" as *const u8 as *const i8,
-        );
+        _tt_abort(b"bad native font flag in `get_native_char_wd`\x00" as *const u8 as *const i8);
     }
     return wd;
 }
@@ -2454,8 +2287,7 @@ pub unsafe extern "C" fn store_justified_native_glyphs(mut pNode: *mut libc::c_v
                     D2Fix(Fix2D((*locations.offset(i as isize)).x) + adjustment);
                 if *glyphIDs.offset(i as isize) as i32 == spaceGlyph {
                     spaceIndex += 1;
-                    adjustment =
-                        justAmount * spaceIndex as f64 / spaceCount as f64
+                    adjustment = justAmount * spaceIndex as f64 / spaceCount as f64
                 }
                 i += 1
             }
@@ -2555,18 +2387,14 @@ pub unsafe extern "C" fn measure_native_node(
                         txtLen,
                         dir as u32 == icu::UBIDI_RTL as i32 as u32,
                     );
-                    glyphs = xcalloc(
-                        nGlyphs as size_t,
-                        ::std::mem::size_of::<u32>() as u64,
-                    ) as *mut u32;
+                    glyphs =
+                        xcalloc(nGlyphs as size_t, ::std::mem::size_of::<u32>() as u64) as *mut u32;
                     positions = xcalloc(
                         (nGlyphs + 1i32) as size_t,
                         ::std::mem::size_of::<FloatPoint>() as u64,
                     ) as *mut FloatPoint;
-                    advances = xcalloc(
-                        nGlyphs as size_t,
-                        ::std::mem::size_of::<f32>() as u64,
-                    ) as *mut f32;
+                    advances =
+                        xcalloc(nGlyphs as size_t, ::std::mem::size_of::<f32>() as u64) as *mut f32;
                     getGlyphs(engine, glyphs);
                     getGlyphAdvances(engine, advances);
                     getGlyphPositions(engine, positions);
@@ -2674,10 +2502,7 @@ pub unsafe extern "C" fn measure_native_node(
         }
         free(glyphAdvances as *mut libc::c_void);
     } else {
-        _tt_abort(
-            b"bad native font flag in `measure_native_node`\x00" as *const u8
-                as *const i8,
-        );
+        _tt_abort(b"bad native font flag in `measure_native_node`\x00" as *const u8 as *const i8);
     }
     if use_glyph_metrics == 0i32 || (*node.offset(4)).b16.s0 as i32 == 0i32 {
         /* for efficiency, height and depth are the font's ascent/descent,
@@ -2697,17 +2522,14 @@ pub unsafe extern "C" fn measure_native_node(
         while i_2 < (*node.offset(4)).b16.s0 as i32 {
             let mut ht: f32 = 0.;
             let mut dp: f32 = 0.;
-            let mut y_0: f32 =
-                Fix2D(-(*locations_0.offset(i_2 as isize)).y) as f32;
+            let mut y_0: f32 = Fix2D(-(*locations_0.offset(i_2 as isize)).y) as f32;
             let mut bbox: GlyphBBox = GlyphBBox {
                 xMin: 0.,
                 yMin: 0.,
                 xMax: 0.,
                 yMax: 0.,
             };
-            if getCachedGlyphBBox(f as u16, *glyphIDs_0.offset(i_2 as isize), &mut bbox)
-                == 0i32
-            {
+            if getCachedGlyphBBox(f as u16, *glyphIDs_0.offset(i_2 as isize), &mut bbox) == 0i32 {
                 if *font_area.offset(f as isize) as u32 == 0xfffeu32 {
                     getGlyphBounds(
                         *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine,
@@ -2736,13 +2558,13 @@ pub unsafe extern "C" fn real_get_native_italic_correction(mut pNode: *mut libc:
     let mut node: *mut memory_word = pNode as *mut memory_word;
     let mut f: u32 = (*node.offset(4)).b16.s2 as u32;
     let mut n: u32 = (*node.offset(4)).b16.s0 as u32;
-    if n > 0i32 as u32 {
+    if n > 0_u32 {
         let mut locations: *mut FixedPoint = (*node.offset(5)).ptr as *mut FixedPoint;
         let mut glyphIDs: *mut u16 = locations.offset(n as isize) as *mut u16;
         if *font_area.offset(f as isize) as u32 == 0xfffeu32 {
             return D2Fix(getGlyphItalCorr(
                 *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine,
-                *glyphIDs.offset(n.wrapping_sub(1i32 as u32) as isize) as u32,
+                *glyphIDs.offset(n.wrapping_sub(1_u32) as isize) as u32,
             ) as f64)
                 + *font_letter_space.offset(f as isize);
         }
@@ -2779,16 +2601,12 @@ pub unsafe extern "C" fn measure_native_glyph(
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine;
         let mut fontInst: XeTeXFont = getFont(engine);
-        (*node.offset(1)).b32.s1 =
-            D2Fix(getGlyphWidth(fontInst, gid as u32) as f64);
+        (*node.offset(1)).b32.s1 = D2Fix(getGlyphWidth(fontInst, gid as u32) as f64);
         if use_glyph_metrics != 0 {
             getGlyphHeightDepth(engine, gid as u32, &mut ht, &mut dp);
         }
     } else {
-        _tt_abort(
-            b"bad native font flag in `measure_native_glyph`\x00" as *const u8
-                as *const i8,
-        );
+        _tt_abort(b"bad native font flag in `measure_native_glyph`\x00" as *const u8 as *const i8);
     }
     if use_glyph_metrics != 0 {
         (*node.offset(3)).b32.s1 = D2Fix(ht as f64);
@@ -2809,9 +2627,7 @@ pub unsafe extern "C" fn map_char_to_glyph(mut font: i32, mut ch: i32) -> i32 {
             ch as u32,
         ) as i32;
     } else {
-        _tt_abort(
-            b"bad native font flag in `map_char_to_glyph`\x00" as *const u8 as *const i8,
-        );
+        _tt_abort(b"bad native font flag in `map_char_to_glyph`\x00" as *const u8 as *const i8);
     };
 }
 #[no_mangle]
@@ -2823,9 +2639,7 @@ pub unsafe extern "C" fn map_glyph_to_index(mut font: i32) -> i32
             name_of_file,
         );
     } else {
-        _tt_abort(
-            b"bad native font flag in `map_glyph_to_index`\x00" as *const u8 as *const i8,
-        );
+        _tt_abort(b"bad native font flag in `map_glyph_to_index`\x00" as *const u8 as *const i8);
     };
 }
 #[no_mangle]
@@ -2836,10 +2650,7 @@ pub unsafe extern "C" fn get_font_char_range(mut font: i32, mut first: i32) -> i
             first,
         );
     } else {
-        _tt_abort(
-            b"bad native font flag in `get_font_char_range\'`\x00" as *const u8
-                as *const i8,
-        );
+        _tt_abort(b"bad native font flag in `get_font_char_range\'`\x00" as *const u8 as *const i8);
     };
 }
 #[no_mangle]
@@ -2865,10 +2676,7 @@ pub unsafe extern "C" fn aat_get_font_metrics(
 ) {
 }
 #[no_mangle]
-pub unsafe extern "C" fn aat_font_get(
-    mut what: i32,
-    mut attributes: CFDictionaryRef,
-) -> i32 {
+pub unsafe extern "C" fn aat_font_get(mut what: i32, mut attributes: CFDictionaryRef) -> i32 {
     let mut rval: i32 = -1i32;
     return rval;
 }
@@ -2892,10 +2700,7 @@ pub unsafe extern "C" fn aat_font_get_2(
     return rval;
 }
 #[no_mangle]
-pub unsafe extern "C" fn aat_font_get_named(
-    mut what: i32,
-    mut attributes: CFDictionaryRef,
-) -> i32 {
+pub unsafe extern "C" fn aat_font_get_named(mut what: i32, mut attributes: CFDictionaryRef) -> i32 {
     let mut rval: i32 = -1i32;
     return rval;
 }
@@ -2925,9 +2730,7 @@ pub unsafe extern "C" fn print_glyph_name(mut font: i32, mut gid: i32) {
             *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine;
         s = getGlyphName(getFont(engine), gid as u16, &mut len)
     } else {
-        _tt_abort(
-            b"bad native font flag in `print_glyph_name`\x00" as *const u8 as *const i8,
-        );
+        _tt_abort(b"bad native font flag in `print_glyph_name`\x00" as *const u8 as *const i8);
     }
     loop {
         let fresh33 = len;
@@ -2965,7 +2768,7 @@ pub unsafe extern "C" fn real_get_native_word_cp(
             __assert_fail(
                 b"0\x00" as *const u8 as *const i8,
                 b"xetex-ext.c\x00" as *const u8 as *const i8,
-                2136i32 as u32,
+                2136_u32,
                 (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                     b"int32_t real_get_native_word_cp(void *, int)\x00",
                 ))

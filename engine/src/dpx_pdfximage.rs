@@ -32,11 +32,7 @@ extern "C" {
         is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
-    fn ttstub_input_seek(
-        handle: rust_input_handle_t,
-        offset: ssize_t,
-        whence: i32,
-    ) -> size_t;
+    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
@@ -94,11 +90,7 @@ extern "C" {
     static mut work_buffer: [i8; 0];
     /* Tectonic-enabled versions */
     #[no_mangle]
-    fn tt_mfgets(
-        buffer: *mut i8,
-        length: i32,
-        file: rust_input_handle_t,
-    ) -> *mut i8;
+    fn tt_mfgets(buffer: *mut i8, length: i32, file: rust_input_handle_t) -> *mut i8;
     #[no_mangle]
     fn bmp_include_image(ximage: *mut pdf_ximage, handle: rust_input_handle_t) -> i32;
     #[no_mangle]
@@ -130,19 +122,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn min4(
-        v1: f64,
-        v2: f64,
-        v3: f64,
-        v4: f64,
-    ) -> f64;
+    fn min4(v1: f64, v2: f64, v3: f64, v4: f64) -> f64;
     #[no_mangle]
-    fn max4(
-        v1: f64,
-        v2: f64,
-        v3: f64,
-        v4: f64,
-    ) -> f64;
+    fn max4(v1: f64, v2: f64, v3: f64, v4: f64) -> f64;
     #[no_mangle]
     fn pdf_include_page(
         ximage: *mut pdf_ximage,
@@ -405,10 +387,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     return 0i32 != 0;
 }
 #[inline]
-unsafe extern "C" fn strstartswith(
-    mut s: *const i8,
-    mut prefix: *const i8,
-) -> *const i8 {
+unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
     let mut length: size_t = 0;
     length = strlen(prefix);
     if strncmp(s, prefix, length) == 0i32 {
@@ -527,8 +506,7 @@ unsafe extern "C" fn source_image_type(mut handle: rust_input_handle_t) -> i32 {
         format = 5i32
     } else {
         dpx_warning(
-            b"Tectonic was unable to detect an image\'s format\x00" as *const u8
-                as *const i8,
+            b"Tectonic was unable to detect an image\'s format\x00" as *const u8 as *const i8,
         );
         format = -1i32
     }
@@ -551,27 +529,22 @@ unsafe extern "C" fn load_image(
         (*ic).capacity += 16i32;
         (*ic).ximages = renew(
             (*ic).ximages as *mut libc::c_void,
-            ((*ic).capacity as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<pdf_ximage>() as u64)
+            ((*ic).capacity as u32 as u64).wrapping_mul(::std::mem::size_of::<pdf_ximage>() as u64)
                 as u32,
         ) as *mut pdf_ximage
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     pdf_init_ximage_struct(I);
     if !ident.is_null() {
-        (*I).ident = new(
-            (strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32,
-        ) as *mut i8;
+        (*I).ident = new((strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+            as *mut i8;
         strcpy((*I).ident, ident);
     }
     if !fullname.is_null() {
-        (*I).filename = new(
-            (strlen(fullname).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32,
-        ) as *mut i8;
+        (*I).filename = new((strlen(fullname).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+            as *mut i8;
         strcpy((*I).filename, fullname);
     }
     (*I).attr.page_no = options.page_no;
@@ -633,10 +606,7 @@ unsafe extern "C" fn load_image(
                 current_block = 15386155914718490365;
             } else {
                 if _opts.verbose != 0 {
-                    dpx_message(
-                        b",Page:%d\x00" as *const u8 as *const i8,
-                        (*I).attr.page_no,
-                    );
+                    dpx_message(b",Page:%d\x00" as *const u8 as *const i8, (*I).attr.page_no);
                 }
                 (*I).subtype = 0i32;
                 current_block = 14945149239039849694;
@@ -922,10 +892,7 @@ pub unsafe extern "C" fn pdf_ximage_get_reference(mut id: i32) -> *mut pdf_obj {
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(
-            b"Invalid XObject ID: %d\x00" as *const u8 as *const i8,
-            id,
-        );
+        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as *const i8, id);
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     if (*I).reference.is_null() {
@@ -949,19 +916,16 @@ pub unsafe extern "C" fn pdf_ximage_defineresource(
         (*ic).capacity += 16i32;
         (*ic).ximages = renew(
             (*ic).ximages as *mut libc::c_void,
-            ((*ic).capacity as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<pdf_ximage>() as u64)
+            ((*ic).capacity as u32 as u64).wrapping_mul(::std::mem::size_of::<pdf_ximage>() as u64)
                 as u32,
         ) as *mut pdf_ximage
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     pdf_init_ximage_struct(I);
     if !ident.is_null() {
-        (*I).ident = new(
-            (strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32,
-        ) as *mut i8;
+        (*I).ident = new((strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+            as *mut i8;
         strcpy((*I).ident, ident);
     }
     match subtype {
@@ -996,10 +960,7 @@ pub unsafe extern "C" fn pdf_ximage_get_resname(mut id: i32) -> *mut i8 {
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(
-            b"Invalid XObject ID: %d\x00" as *const u8 as *const i8,
-            id,
-        );
+        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as *const i8, id);
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     return (*I).res_name.as_mut_ptr();
@@ -1009,10 +970,7 @@ pub unsafe extern "C" fn pdf_ximage_get_subtype(mut id: i32) -> i32 {
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(
-            b"Invalid XObject ID: %d\x00" as *const u8 as *const i8,
-            id,
-        );
+        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as *const i8, id);
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     return (*I).subtype;
@@ -1033,10 +991,7 @@ pub unsafe extern "C" fn pdf_ximage_set_attr(
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(
-            b"Invalid XObject ID: %d\x00" as *const u8 as *const i8,
-            id,
-        );
+        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as *const i8, id);
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     (*I).attr.width = width;
@@ -1181,10 +1136,7 @@ pub unsafe extern "C" fn pdf_ximage_scale_image(
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(
-            b"Invalid XObject ID: %d\x00" as *const u8 as *const i8,
-            id,
-        );
+        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as *const i8, id);
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     (*M).a = 1.0f64;
@@ -1223,8 +1175,7 @@ pub unsafe extern "C" fn pdf_ximage_scale_image(
             scale_to_fit_I(M, p, I);
             if (*p).flags & 1i32 << 0i32 != 0 {
                 (*r).llx = (*p).bbox.llx / ((*I).attr.width as f64 * (*I).attr.xdensity);
-                (*r).lly =
-                    (*p).bbox.lly / ((*I).attr.height as f64 * (*I).attr.ydensity);
+                (*r).lly = (*p).bbox.lly / ((*I).attr.height as f64 * (*I).attr.ydensity);
                 (*r).urx = (*p).bbox.urx / ((*I).attr.width as f64 * (*I).attr.xdensity);
                 (*r).ury = (*p).bbox.ury / ((*I).attr.height as f64 * (*I).attr.ydensity)
             } else {
@@ -1261,10 +1212,9 @@ pub unsafe extern "C" fn set_distiller_template(mut s: *mut i8) {
     if s.is_null() || *s as i32 == '\u{0}' as i32 {
         _opts.cmdtmpl = 0 as *mut i8
     } else {
-        _opts.cmdtmpl = new((strlen(s).wrapping_add(1i32 as u64) as u32
-            as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+        _opts.cmdtmpl = new((strlen(s).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+            as *mut i8;
         strcpy(_opts.cmdtmpl, s);
     };
 }

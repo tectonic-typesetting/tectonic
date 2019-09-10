@@ -128,8 +128,7 @@ pub unsafe extern "C" fn error() {
         history = HISTORY_FATAL_ERROR;
         post_error_message(0i32);
         _tt_abort(
-            b"halted on potentially-recoverable error as specified\x00" as *const u8
-                as *const i8,
+            b"halted on potentially-recoverable error as specified\x00" as *const u8 as *const i8,
         );
     }
     /* This used to be where there was a bunch of code if "interaction ==
@@ -137,15 +136,10 @@ pub unsafe extern "C" fn error() {
      * error. */
     error_count += 1;
     if error_count as i32 == 100i32 {
-        print_nl_cstr(
-            b"(That makes 100 errors; please try again.)\x00" as *const u8 as *const i8,
-        );
+        print_nl_cstr(b"(That makes 100 errors; please try again.)\x00" as *const u8 as *const i8);
         history = HISTORY_FATAL_ERROR;
         post_error_message(0i32);
-        _tt_abort(
-            b"halted after 100 potentially-recoverable errors\x00" as *const u8
-                as *const i8,
-        );
+        _tt_abort(b"halted after 100 potentially-recoverable errors\x00" as *const u8 as *const i8);
     }
     if interaction as i32 > 0i32 {
         selector -= 1
@@ -183,8 +177,7 @@ pub unsafe extern "C" fn overflow(mut s: *const i8, mut n: i32) -> ! {
     print_int(n);
     print_char(']' as i32);
     help_ptr = 2i32 as u8;
-    help_line[1] =
-        b"If you really absolutely need more capacity,\x00" as *const u8 as *const i8;
+    help_line[1] = b"If you really absolutely need more capacity,\x00" as *const u8 as *const i8;
     help_line[0] = b"you can ask a wizard to enlarge me.\x00" as *const u8 as *const i8;
     post_error_message(1i32);
     _tt_abort(b"halted on overflow()\x00" as *const u8 as *const i8);

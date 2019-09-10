@@ -19,8 +19,7 @@ extern "C" {
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
-    fn vsprintf(_: *mut i8, _: *const i8, _: ::std::ffi::VaList)
-        -> i32;
+    fn vsprintf(_: *mut i8, _: *const i8, _: ::std::ffi::VaList) -> i32;
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
@@ -138,11 +137,7 @@ extern "C" {
         keylen: i32,
     ) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_names_close_object(
-        names: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-    ) -> i32;
+    fn pdf_names_close_object(names: *mut ht_table, key: *const libc::c_void, keylen: i32) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -452,8 +447,7 @@ pub struct spc_arg {
     pub base: *const i8,
     pub command: *const i8,
 }
-pub type spc_handler_fn_ptr =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
+pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
@@ -501,9 +495,8 @@ pub struct C2RustUnnamed_0 {
     pub bophk_func: Option<unsafe extern "C" fn() -> i32>,
     pub eophk_func: Option<unsafe extern "C" fn() -> i32>,
     pub check_func: Option<unsafe extern "C" fn(_: *const i8, _: i32) -> bool>,
-    pub setup_func: Option<
-        unsafe extern "C" fn(_: *mut spc_handler, _: *mut spc_env, _: *mut spc_arg) -> i32,
-    >,
+    pub setup_func:
+        Option<unsafe extern "C" fn(_: *mut spc_handler, _: *mut spc_env, _: *mut spc_arg) -> i32>,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -532,28 +525,18 @@ pub unsafe extern "C" fn spc_set_verbose(mut level: i32) {
     verbose = level;
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_warn(
-    mut spe: *mut spc_env,
-    mut fmt: *const i8,
-    mut args: ...
-) {
+pub unsafe extern "C" fn spc_warn(mut spe: *mut spc_env, mut fmt: *const i8, mut args: ...) {
     let mut ap: ::std::ffi::VaListImpl;
     static mut buf: [i8; 1024] = [0; 1024];
     ap = args.clone();
     vsprintf(buf.as_mut_ptr(), fmt, ap.as_va_list());
-    dpx_warning(
-        b"%s\x00" as *const u8 as *const i8,
-        buf.as_mut_ptr(),
-    );
+    dpx_warning(b"%s\x00" as *const u8 as *const i8, buf.as_mut_ptr());
 }
 /* This is currently just to make other spc_xxx to not directly
  * call dvi_xxx.
  */
 #[no_mangle]
-pub unsafe extern "C" fn spc_begin_annot(
-    mut spe: *mut spc_env,
-    mut dict: *mut pdf_obj,
-) -> i32 {
+pub unsafe extern "C" fn spc_begin_annot(mut spe: *mut spc_env, mut dict: *mut pdf_obj) -> i32 {
     pdf_doc_begin_annot(dict); /* Tell dvi interpreter to handle line-break. */
     dvi_tag_depth();
     return 0i32;
@@ -604,10 +587,7 @@ unsafe extern "C" fn ispageref(mut key: *const i8) -> i32 {
         return 0i32;
     } else {
         p = key.offset(4);
-        while *p as i32 != 0
-            && *p as i32 >= '0' as i32
-            && *p as i32 <= '9' as i32
-        {
+        while *p as i32 != 0 && *p as i32 >= '0' as i32 && *p as i32 <= '9' as i32 {
             p = p.offset(1)
         }
         if *p as i32 != '\u{0}' as i32 {
@@ -629,7 +609,7 @@ pub unsafe extern "C" fn spc_lookup_reference(mut key: *const i8) -> *mut pdf_ob
         __assert_fail(
             b"named_objects\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            162i32 as u32,
+            162_u32,
             (*::std::mem::transmute::<&[u8; 44], &[i8; 44]>(
                 b"pdf_obj *spc_lookup_reference(const char *)\x00",
             ))
@@ -711,7 +691,7 @@ pub unsafe extern "C" fn spc_lookup_object(mut key: *const i8) -> *mut pdf_obj {
         __assert_fail(
             b"named_objects\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            227i32 as u32,
+            227_u32,
             (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
                 b"pdf_obj *spc_lookup_object(const char *)\x00",
             ))
@@ -766,7 +746,7 @@ pub unsafe extern "C" fn spc_push_object(mut key: *const i8, mut value: *mut pdf
         __assert_fail(
             b"named_objects\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            279i32 as u32,
+            279_u32,
             (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
                 b"void spc_push_object(const char *, pdf_obj *)\x00",
             ))
@@ -796,16 +776,13 @@ pub unsafe extern "C" fn spc_clear_objects() {
     pdf_delete_name_tree(&mut named_objects);
     named_objects = pdf_new_name_tree();
 }
-unsafe extern "C" fn spc_handler_unknown(
-    mut spe: *mut spc_env,
-    mut args: *mut spc_arg,
-) -> i32 {
+unsafe extern "C" fn spc_handler_unknown(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     if !spe.is_null() && !args.is_null() {
     } else {
         __assert_fail(
             b"spe && args\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            305i32 as u32,
+            305_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_unknown(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -830,8 +807,7 @@ unsafe extern "C" fn init_special(
         Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>,
         spc_handler_fn_ptr,
     >(Some(
-        spc_handler_unknown
-            as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+        spc_handler_unknown as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
     ));
     (*spe).x_user = x_user;
     (*spe).y_user = y_user;
@@ -848,7 +824,7 @@ unsafe extern "C" fn check_garbage(mut args: *mut spc_arg) {
         __assert_fail(
             b"args\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            339i32 as u32,
+            339_u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"void check_garbage(struct spc_arg *)\x00",
             ))
@@ -860,9 +836,7 @@ unsafe extern "C" fn check_garbage(mut args: *mut spc_arg) {
     }
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr < (*args).endptr {
-        dpx_warning(
-            b"Unparsed material at end of special ignored.\x00" as *const u8 as *const i8,
-        );
+        dpx_warning(b"Unparsed material at end of special ignored.\x00" as *const u8 as *const i8);
         dump((*args).curptr, (*args).endptr);
     };
 }
@@ -871,15 +845,12 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
         {
             let mut init = C2RustUnnamed_0 {
                 key: b"pdf:\x00" as *const u8 as *const i8,
-                bodhk_func: Some(
-                    spc_pdfm_at_begin_document as unsafe extern "C" fn() -> i32,
-                ),
+                bodhk_func: Some(spc_pdfm_at_begin_document as unsafe extern "C" fn() -> i32),
                 eodhk_func: Some(spc_pdfm_at_end_document as unsafe extern "C" fn() -> i32),
                 bophk_func: None,
                 eophk_func: None,
                 check_func: Some(
-                    spc_pdfm_check_special
-                        as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
+                    spc_pdfm_check_special as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
                 ),
                 setup_func: Some(
                     spc_pdfm_setup_handler
@@ -900,8 +871,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
                 bophk_func: None,
                 eophk_func: None,
                 check_func: Some(
-                    spc_xtx_check_special
-                        as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
+                    spc_xtx_check_special as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
                 ),
                 setup_func: Some(
                     spc_xtx_setup_handler
@@ -939,17 +909,12 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
         {
             let mut init = C2RustUnnamed_0 {
                 key: b"ps:\x00" as *const u8 as *const i8,
-                bodhk_func: Some(
-                    spc_dvips_at_begin_document as unsafe extern "C" fn() -> i32,
-                ),
-                eodhk_func: Some(
-                    spc_dvips_at_end_document as unsafe extern "C" fn() -> i32,
-                ),
+                bodhk_func: Some(spc_dvips_at_begin_document as unsafe extern "C" fn() -> i32),
+                eodhk_func: Some(spc_dvips_at_end_document as unsafe extern "C" fn() -> i32),
                 bophk_func: Some(spc_dvips_at_begin_page as unsafe extern "C" fn() -> i32),
                 eophk_func: Some(spc_dvips_at_end_page as unsafe extern "C" fn() -> i32),
                 check_func: Some(
-                    spc_dvips_check_special
-                        as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
+                    spc_dvips_check_special as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
                 ),
                 setup_func: Some(
                     spc_dvips_setup_handler
@@ -970,8 +935,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
                 bophk_func: None,
                 eophk_func: None,
                 check_func: Some(
-                    spc_color_check_special
-                        as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
+                    spc_color_check_special as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
                 ),
                 setup_func: Some(
                     spc_color_setup_handler
@@ -987,15 +951,12 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
         {
             let mut init = C2RustUnnamed_0 {
                 key: b"tpic\x00" as *const u8 as *const i8,
-                bodhk_func: Some(
-                    spc_tpic_at_begin_document as unsafe extern "C" fn() -> i32,
-                ),
+                bodhk_func: Some(spc_tpic_at_begin_document as unsafe extern "C" fn() -> i32),
                 eodhk_func: Some(spc_tpic_at_end_document as unsafe extern "C" fn() -> i32),
                 bophk_func: Some(spc_tpic_at_begin_page as unsafe extern "C" fn() -> i32),
                 eophk_func: Some(spc_tpic_at_end_page as unsafe extern "C" fn() -> i32),
                 check_func: Some(
-                    spc_tpic_check_special
-                        as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
+                    spc_tpic_check_special as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
                 ),
                 setup_func: Some(
                     spc_tpic_setup_handler
@@ -1011,15 +972,12 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
         {
             let mut init = C2RustUnnamed_0 {
                 key: b"html:\x00" as *const u8 as *const i8,
-                bodhk_func: Some(
-                    spc_html_at_begin_document as unsafe extern "C" fn() -> i32,
-                ),
+                bodhk_func: Some(spc_html_at_begin_document as unsafe extern "C" fn() -> i32),
                 eodhk_func: Some(spc_html_at_end_document as unsafe extern "C" fn() -> i32),
                 bophk_func: Some(spc_html_at_begin_page as unsafe extern "C" fn() -> i32),
                 eophk_func: Some(spc_html_at_end_page as unsafe extern "C" fn() -> i32),
                 check_func: Some(
-                    spc_html_check_special
-                        as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
+                    spc_html_check_special as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
                 ),
                 setup_func: Some(
                     spc_html_setup_handler
@@ -1040,8 +998,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
                 bophk_func: None,
                 eophk_func: None,
                 check_func: Some(
-                    spc_misc_check_special
-                        as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
+                    spc_misc_check_special as unsafe extern "C" fn(_: *const i8, _: i32) -> bool,
                 ),
                 setup_func: Some(
                     spc_misc_setup_handler
@@ -1072,7 +1029,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
 pub unsafe extern "C" fn spc_exec_at_begin_page() -> i32 {
     let mut error: i32 = 0i32;
     let mut i: u32 = 0;
-    i = 0i32 as u32;
+    i = 0_u32;
     while !known_specials[i as usize].key.is_null() {
         if known_specials[i as usize].bophk_func.is_some() {
             error = known_specials[i as usize]
@@ -1087,7 +1044,7 @@ pub unsafe extern "C" fn spc_exec_at_begin_page() -> i32 {
 pub unsafe extern "C" fn spc_exec_at_end_page() -> i32 {
     let mut error: i32 = 0i32;
     let mut i: u32 = 0;
-    i = 0i32 as u32;
+    i = 0_u32;
     while !known_specials[i as usize].key.is_null() {
         if known_specials[i as usize].eophk_func.is_some() {
             error = known_specials[i as usize]
@@ -1107,7 +1064,7 @@ pub unsafe extern "C" fn spc_exec_at_begin_document() -> i32 {
         __assert_fail(
             b"!named_objects\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            474i32 as u32,
+            474_u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int spc_exec_at_begin_document(void)\x00",
             ))
@@ -1115,7 +1072,7 @@ pub unsafe extern "C" fn spc_exec_at_begin_document() -> i32 {
         );
     }
     named_objects = pdf_new_name_tree();
-    i = 0i32 as u32;
+    i = 0_u32;
     while !known_specials[i as usize].key.is_null() {
         if known_specials[i as usize].bodhk_func.is_some() {
             error = known_specials[i as usize]
@@ -1130,7 +1087,7 @@ pub unsafe extern "C" fn spc_exec_at_begin_document() -> i32 {
 pub unsafe extern "C" fn spc_exec_at_end_document() -> i32 {
     let mut error: i32 = 0i32;
     let mut i: u32 = 0;
-    i = 0i32 as u32;
+    i = 0_u32;
     while !known_specials[i as usize].key.is_null() {
         if known_specials[i as usize].eodhk_func.is_some() {
             error = known_specials[i as usize]
@@ -1144,11 +1101,7 @@ pub unsafe extern "C" fn spc_exec_at_end_document() -> i32 {
     }
     return error;
 }
-unsafe extern "C" fn print_error(
-    mut name: *const i8,
-    mut spe: *mut spc_env,
-    mut ap: *mut spc_arg,
-) {
+unsafe extern "C" fn print_error(mut name: *const i8, mut spe: *mut spc_env, mut ap: *mut spc_arg) {
     let mut p: *const i8 = 0 as *const i8;
     let mut ebuf: [i8; 64] = [0; 64];
     let mut i: i32 = 0;
@@ -1164,8 +1117,7 @@ unsafe extern "C" fn print_error(
             name,
         );
         dpx_warning(
-            b">> at page=\"%d\" position=\"(%g, %g)\" (in PDF)\x00" as *const u8
-                as *const i8,
+            b">> at page=\"%d\" position=\"(%g, %g)\" (in PDF)\x00" as *const u8 as *const i8,
             pg,
             c.x,
             c.y,
@@ -1212,8 +1164,7 @@ unsafe extern "C" fn print_error(
         i = 0i32;
         p = (*ap).curptr;
         while i < 63i32 && p < (*ap).endptr {
-            if *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
-                as i32
+            if *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
                 & _ISprint as i32 as u16 as i32
                 != 0
             {
@@ -1244,8 +1195,7 @@ unsafe extern "C" fn print_error(
             }
         }
         dpx_warning(
-            b">> Reading special command stopped around >>%s<<\x00" as *const u8
-                as *const i8,
+            b">> Reading special command stopped around >>%s<<\x00" as *const u8 as *const i8,
             ebuf.as_mut_ptr(),
         );
         (*ap).curptr = (*ap).endptr

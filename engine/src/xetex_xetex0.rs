@@ -530,30 +530,15 @@ extern "C" {
         slant: *mut i32,
     );
     #[no_mangle]
-    fn aat_print_font_name(
-        what: i32,
-        attrs: CFDictionaryRef,
-        param1: i32,
-        param2: i32,
-    );
+    fn aat_print_font_name(what: i32, attrs: CFDictionaryRef, param1: i32, param2: i32);
     #[no_mangle]
-    fn aat_font_get_named_1(
-        what: i32,
-        attrs: CFDictionaryRef,
-        param: i32,
-    ) -> i32;
+    fn aat_font_get_named_1(what: i32, attrs: CFDictionaryRef, param: i32) -> i32;
     #[no_mangle]
     fn aat_font_get_named(what: i32, attrs: CFDictionaryRef) -> i32;
     #[no_mangle]
-    fn aat_font_get_2(
-        what: i32,
-        attrs: CFDictionaryRef,
-        param1: i32,
-        param2: i32,
-    ) -> i32;
+    fn aat_font_get_2(what: i32, attrs: CFDictionaryRef, param1: i32, param2: i32) -> i32;
     #[no_mangle]
-    fn aat_font_get_1(what: i32, attrs: CFDictionaryRef, param: i32)
-        -> i32;
+    fn aat_font_get_1(what: i32, attrs: CFDictionaryRef, param: i32) -> i32;
     #[no_mangle]
     fn aat_font_get(what: i32, attrs: CFDictionaryRef) -> i32;
     #[no_mangle]
@@ -575,12 +560,7 @@ extern "C" {
     #[no_mangle]
     fn gr_font_get_named(what: i32, pEngine: *mut libc::c_void) -> i32;
     #[no_mangle]
-    fn gr_print_font_name(
-        what: i32,
-        pEngine: *mut libc::c_void,
-        param1: i32,
-        param2: i32,
-    );
+    fn gr_print_font_name(what: i32, pEngine: *mut libc::c_void, param1: i32, param2: i32);
     #[no_mangle]
     fn print_glyph_name(font: i32, gid: i32);
     #[no_mangle]
@@ -598,11 +578,7 @@ extern "C" {
     #[no_mangle]
     fn measure_native_node(node: *mut libc::c_void, use_glyph_metrics: i32);
     #[no_mangle]
-    fn apply_mapping(
-        cnv: *mut libc::c_void,
-        txtPtr: *mut u16,
-        txtLen: i32,
-    ) -> i32;
+    fn apply_mapping(cnv: *mut libc::c_void, txtPtr: *mut u16, txtLen: i32) -> i32;
     #[no_mangle]
     fn ot_font_get_3(
         what: i32,
@@ -612,12 +588,7 @@ extern "C" {
         param3: i32,
     ) -> i32;
     #[no_mangle]
-    fn ot_font_get_2(
-        what: i32,
-        engine: *mut libc::c_void,
-        param1: i32,
-        param2: i32,
-    ) -> i32;
+    fn ot_font_get_2(what: i32, engine: *mut libc::c_void, param1: i32, param2: i32) -> i32;
     #[no_mangle]
     fn ot_font_get_1(what: i32, engine: *mut libc::c_void, param: i32) -> i32;
     #[no_mangle]
@@ -633,12 +604,7 @@ extern "C" {
     #[no_mangle]
     fn getnativecharwd(font: i32, ch: i32) -> scaled_t;
     #[no_mangle]
-    fn get_native_char_sidebearings(
-        font: i32,
-        ch: i32,
-        lsb: *mut scaled_t,
-        rsb: *mut scaled_t,
-    );
+    fn get_native_char_sidebearings(font: i32, ch: i32, lsb: *mut scaled_t, rsb: *mut scaled_t);
     #[no_mangle]
     fn get_native_char_height_depth(
         font: i32,
@@ -666,12 +632,7 @@ extern "C" {
     #[no_mangle]
     fn linebreak_next() -> i32;
     #[no_mangle]
-    fn linebreak_start(
-        f: i32,
-        localeStrNum: i32,
-        text: *mut u16,
-        textLength: i32,
-    );
+    fn linebreak_start(f: i32, localeStrNum: i32, text: *mut u16, textLength: i32);
     #[no_mangle]
     fn isOpenTypeMathFont(engine: XeTeXLayoutEngine) -> bool;
     #[no_mangle]
@@ -1641,11 +1602,7 @@ pub unsafe extern "C" fn new_rule() -> i32 {
     return p;
 }
 #[no_mangle]
-pub unsafe extern "C" fn new_ligature(
-    mut f: internal_font_number,
-    mut c: u16,
-    mut q: i32,
-) -> i32 {
+pub unsafe extern "C" fn new_ligature(mut f: internal_font_number, mut c: u16, mut q: i32) -> i32 {
     let mut p: i32 = 0;
     p = get_node(2i32);
     (*mem.offset(p as isize)).b16.s1 = 6i32 as u16;
@@ -1680,8 +1637,7 @@ pub unsafe extern "C" fn copy_native_glyph_info(mut src: i32, mut dest: i32) {
         glyph_count = (*mem.offset((src + 4i32) as isize)).b16.s0 as i32;
         let ref mut fresh1 = (*mem.offset((dest + 5i32) as isize)).ptr;
         *fresh1 = xmalloc(
-            ((glyph_count * 10i32 + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64),
+            ((glyph_count * 10i32 + 1i32) as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64),
         );
         memcpy(
             (*mem.offset((dest + 5i32) as isize)).ptr,
@@ -1846,8 +1802,7 @@ pub unsafe extern "C" fn short_display(mut p: i32) {
                 }
                 8 => match (*mem.offset(p as isize)).b16.s0 as i32 {
                     40 | 41 => {
-                        if (*mem.offset((p + 4i32) as isize)).b16.s2 as i32
-                            != font_in_short_display
+                        if (*mem.offset((p + 4i32) as isize)).b16.s2 as i32 != font_in_short_display
                         {
                             print_esc(
                                 (*hash.offset(
@@ -1863,8 +1818,7 @@ pub unsafe extern "C" fn short_display(mut p: i32) {
                                 .s1,
                             );
                             print_char(' ' as i32);
-                            font_in_short_display =
-                                (*mem.offset((p + 4i32) as isize)).b16.s2 as i32
+                            font_in_short_display = (*mem.offset((p + 4i32) as isize)).b16.s2 as i32
                         }
                         print_native_word(p);
                     }
@@ -1924,8 +1878,7 @@ pub unsafe extern "C" fn print_font_and_char(mut p: i32) {
                         + 1i32
                         + 15000i32
                         + 12i32
-                        + (*mem.offset(p as isize)).b16.s1 as i32)
-                        as isize,
+                        + (*mem.offset(p as isize)).b16.s1 as i32) as isize,
                 ))
                 .s1,
             );
@@ -1957,11 +1910,7 @@ pub unsafe extern "C" fn print_rule_dimen(mut d: scaled_t) {
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn print_glue(
-    mut d: scaled_t,
-    mut order: i32,
-    mut s: *const i8,
-) {
+pub unsafe extern "C" fn print_glue(mut d: scaled_t, mut order: i32, mut s: *const i8) {
     print_scaled(d);
     if order < 0i32 || order > 3i32 {
         print_cstr(b"foul\x00" as *const u8 as *const i8);
@@ -2009,8 +1958,7 @@ pub unsafe extern "C" fn print_fam_and_char(mut p: i32) {
     print_int((*mem.offset(p as isize)).b16.s1 as i32 % 256i32 % 256i32);
     print_char(' ' as i32);
     c = ((*mem.offset(p as isize)).b16.s0 as i64
-        + ((*mem.offset(p as isize)).b16.s1 as i32 / 256i32) as i64 * 65536)
-        as i32;
+        + ((*mem.offset(p as isize)).b16.s1 as i32 / 256i32) as i64 * 65536) as i32;
     if (c as i64) < 65536 {
         print(c);
     } else {
@@ -2022,13 +1970,10 @@ pub unsafe extern "C" fn print_delimiter(mut p: i32) {
     let mut a: i32 = 0;
     a = (((*mem.offset(p as isize)).b16.s3 as i32 % 256i32 * 256i32) as i64
         + ((*mem.offset(p as isize)).b16.s2 as i64
-            + ((*mem.offset(p as isize)).b16.s3 as i32 / 256i32) as i64 * 65536))
-        as i32;
-    a = ((a * 4096i32 + (*mem.offset(p as isize)).b16.s1 as i32 % 256i32 * 256i32)
-        as i64
+            + ((*mem.offset(p as isize)).b16.s3 as i32 / 256i32) as i64 * 65536)) as i32;
+    a = ((a * 4096i32 + (*mem.offset(p as isize)).b16.s1 as i32 % 256i32 * 256i32) as i64
         + ((*mem.offset(p as isize)).b16.s0 as i64
-            + ((*mem.offset(p as isize)).b16.s1 as i32 / 256i32) as i64 * 65536))
-        as i32;
+            + ((*mem.offset(p as isize)).b16.s1 as i32 / 256i32) as i64 * 65536)) as i32;
     if a < 0i32 {
         print_int(a);
     } else {
@@ -2220,9 +2165,7 @@ pub unsafe extern "C" fn show_node_list(mut p: i32) {
                         }
                     } else {
                         g = (*mem.offset((p + 6i32) as isize)).gr;
-                        if g != 0.0f64
-                            && (*mem.offset((p + 5i32) as isize)).b16.s1 as i32 != 0i32
-                        {
+                        if g != 0.0f64 && (*mem.offset((p + 5i32) as isize)).b16.s1 as i32 != 0i32 {
                             print_cstr(b", glue set \x00" as *const u8 as *const i8);
                             if (*mem.offset((p + 5i32) as isize)).b16.s1 as i32 == 2i32 {
                                 print_cstr(b"- \x00" as *const u8 as *const i8);
@@ -2276,10 +2219,7 @@ pub unsafe extern "C" fn show_node_list(mut p: i32) {
                     print_cstr(b", natural size \x00" as *const u8 as *const i8);
                     print_scaled((*mem.offset((p + 3i32) as isize)).b32.s1);
                     print_cstr(b"; split(\x00" as *const u8 as *const i8);
-                    print_spec(
-                        (*mem.offset((p + 4i32) as isize)).b32.s1,
-                        0 as *const i8,
-                    );
+                    print_spec((*mem.offset((p + 4i32) as isize)).b32.s1, 0 as *const i8);
                     print_char(',' as i32);
                     print_scaled((*mem.offset((p + 2i32) as isize)).b32.s1);
                     print_cstr(b"); float cost \x00" as *const u8 as *const i8);
@@ -2390,10 +2330,7 @@ pub unsafe extern "C" fn show_node_list(mut p: i32) {
                             print_char('x' as i32);
                         }
                         print_cstr(b"leaders \x00" as *const u8 as *const i8);
-                        print_spec(
-                            (*mem.offset((p + 1i32) as isize)).b32.s0,
-                            0 as *const i8,
-                        );
+                        print_spec((*mem.offset((p + 1i32) as isize)).b32.s0, 0 as *const i8);
                         *str_pool.offset(pool_ptr as isize) = '.' as i32 as packed_UTF16_code;
                         pool_ptr += 1;
                         show_node_list((*mem.offset((p + 1i32) as isize)).b32.s1);
@@ -2403,13 +2340,9 @@ pub unsafe extern "C" fn show_node_list(mut p: i32) {
                         if (*mem.offset(p as isize)).b16.s0 as i32 != 0i32 {
                             print_char('(' as i32);
                             if ((*mem.offset(p as isize)).b16.s0 as i32) < 98i32 {
-                                print_skip_param(
-                                    (*mem.offset(p as isize)).b16.s0 as i32 - 1i32,
-                                );
+                                print_skip_param((*mem.offset(p as isize)).b16.s0 as i32 - 1i32);
                             } else if (*mem.offset(p as isize)).b16.s0 as i32 == 98i32 {
-                                print_esc_cstr(
-                                    b"nonscript\x00" as *const u8 as *const i8,
-                                );
+                                print_esc_cstr(b"nonscript\x00" as *const u8 as *const i8);
                             } else {
                                 print_esc_cstr(b"mskip\x00" as *const u8 as *const i8);
                             }
@@ -2441,9 +2374,7 @@ pub unsafe extern "C" fn show_node_list(mut p: i32) {
                         if (*mem.offset(p as isize)).b16.s0 as i32 == 2i32 {
                             print_cstr(b" (for accent)\x00" as *const u8 as *const i8);
                         } else if (*mem.offset(p as isize)).b16.s0 as i32 == 3i32 {
-                            print_cstr(
-                                b" (space adjustment)\x00" as *const u8 as *const i8,
-                            );
+                            print_cstr(b" (space adjustment)\x00" as *const u8 as *const i8);
                         }
                     } else {
                         print_esc_cstr(b"mkern\x00" as *const u8 as *const i8);
@@ -2638,14 +2569,12 @@ pub unsafe extern "C" fn show_node_list(mut p: i32) {
                     }
                     if (*mem.offset((p + 4i32) as isize)).b16.s3 as i32 % 256i32 != 0i32
                         || (*mem.offset((p + 4i32) as isize)).b16.s2 as i64
-                            + ((*mem.offset((p + 4i32) as isize)).b16.s3 as i32 / 256i32)
-                                as i64
+                            + ((*mem.offset((p + 4i32) as isize)).b16.s3 as i32 / 256i32) as i64
                                 * 65536
                             != 0i32 as i64
                         || (*mem.offset((p + 4i32) as isize)).b16.s1 as i32 % 256i32 != 0i32
                         || (*mem.offset((p + 4i32) as isize)).b16.s0 as i64
-                            + ((*mem.offset((p + 4i32) as isize)).b16.s1 as i32 / 256i32)
-                                as i64
+                            + ((*mem.offset((p + 4i32) as isize)).b16.s1 as i32 / 256i32) as i64
                                 * 65536
                             != 0i32 as i64
                     {
@@ -2654,14 +2583,12 @@ pub unsafe extern "C" fn show_node_list(mut p: i32) {
                     }
                     if (*mem.offset((p + 5i32) as isize)).b16.s3 as i32 % 256i32 != 0i32
                         || (*mem.offset((p + 5i32) as isize)).b16.s2 as i64
-                            + ((*mem.offset((p + 5i32) as isize)).b16.s3 as i32 / 256i32)
-                                as i64
+                            + ((*mem.offset((p + 5i32) as isize)).b16.s3 as i32 / 256i32) as i64
                                 * 65536
                             != 0i32 as i64
                         || (*mem.offset((p + 5i32) as isize)).b16.s1 as i32 % 256i32 != 0i32
                         || (*mem.offset((p + 5i32) as isize)).b16.s0 as i64
-                            + ((*mem.offset((p + 5i32) as isize)).b16.s1 as i32 / 256i32)
-                                as i64
+                            + ((*mem.offset((p + 5i32) as isize)).b16.s1 as i32 / 256i32) as i64
                                 * 65536
                             != 0i32 as i64
                     {
@@ -2826,13 +2753,9 @@ pub unsafe extern "C" fn flush_node_list(mut p: i32) {
                                 p,
                                 (9i32 as u64).wrapping_add(
                                     ((*mem.offset((p + 4i32) as isize)).b16.s1 as u64)
-                                        .wrapping_add(
-                                            ::std::mem::size_of::<memory_word>() as u64
-                                        )
+                                        .wrapping_add(::std::mem::size_of::<memory_word>() as u64)
                                         .wrapping_sub(1i32 as u64)
-                                        .wrapping_div(
-                                            ::std::mem::size_of::<memory_word>() as u64
-                                        ),
+                                        .wrapping_div(::std::mem::size_of::<memory_word>() as u64),
                                 ) as i32,
                             );
                         }
@@ -3023,17 +2946,12 @@ pub unsafe extern "C" fn copy_node_list(mut p: i32) -> i32 {
                         words = 5i32 as u8
                     }
                     43 | 44 => {
-                        words =
-                            (9i32 as u64).wrapping_add(
-                                ((*mem.offset((p + 4i32) as isize)).b16.s1 as u64)
-                                    .wrapping_add(
-                                        ::std::mem::size_of::<memory_word>() as u64
-                                    )
-                                    .wrapping_sub(1i32 as u64)
-                                    .wrapping_div(
-                                        ::std::mem::size_of::<memory_word>() as u64
-                                    ),
-                            ) as u8;
+                        words = (9i32 as u64).wrapping_add(
+                            ((*mem.offset((p + 4i32) as isize)).b16.s1 as u64)
+                                .wrapping_add(::std::mem::size_of::<memory_word>() as u64)
+                                .wrapping_sub(1i32 as u64)
+                                .wrapping_div(::std::mem::size_of::<memory_word>() as u64),
+                        ) as u8;
                         r = get_node(words as i32)
                     }
                     6 => r = get_node(2i32),
@@ -3099,8 +3017,7 @@ pub unsafe extern "C" fn copy_node_list(mut p: i32) -> i32 {
         }
         while words as i32 > 0i32 {
             words = words.wrapping_sub(1);
-            *mem.offset((r + words as i32) as isize) =
-                *mem.offset((p + words as i32) as isize)
+            *mem.offset((r + words as i32) as isize) = *mem.offset((p + words as i32) as isize)
         }
         (*mem.offset(q as isize)).b32.s1 = r;
         q = r;
@@ -3167,9 +3084,7 @@ pub unsafe extern "C" fn print_in_mode(mut m: i32) {
                 print_cstr(b"\' in internal vertical mode\x00" as *const u8 as *const i8);
             }
             1 => {
-                print_cstr(
-                    b"\' in restricted horizontal mode\x00" as *const u8 as *const i8,
-                );
+                print_cstr(b"\' in restricted horizontal mode\x00" as *const u8 as *const i8);
             }
             2 => {
                 print_cstr(b"\' in math mode\x00" as *const u8 as *const i8);
@@ -3231,15 +3146,12 @@ pub unsafe extern "C" fn show_activities() {
             if m as i32 == 104i32 {
                 if (*nest.offset(p as isize)).prev_graf != 0x830000i32 {
                     print_cstr(b" (language\x00" as *const u8 as *const i8);
-                    print_int(
-                        ((*nest.offset(p as isize)).prev_graf as i64 % 65536) as i32,
-                    );
+                    print_int(((*nest.offset(p as isize)).prev_graf as i64 % 65536) as i32);
                     print_cstr(b":hyphenmin\x00" as *const u8 as *const i8);
                     print_int((*nest.offset(p as isize)).prev_graf / 0x400000i32);
                     print_char(',' as i32);
                     print_int(
-                        ((*nest.offset(p as isize)).prev_graf as i64 / 65536
-                            % 64i32 as i64) as i32,
+                        ((*nest.offset(p as isize)).prev_graf as i64 / 65536 % 64i32 as i64) as i32,
                     );
                     print_char(')' as i32);
                 }
@@ -3251,9 +3163,7 @@ pub unsafe extern "C" fn show_activities() {
                 if 4999999i32 - 2i32 != page_tail {
                     print_nl_cstr(b"### current page:\x00" as *const u8 as *const i8);
                     if output_active {
-                        print_cstr(
-                            b" (held over for next output)\x00" as *const u8 as *const i8,
-                        );
+                        print_cstr(b" (held over for next output)\x00" as *const u8 as *const i8);
                     }
                     show_box((*mem.offset((4999999i32 - 2i32) as isize)).b32.s1);
                     if page_contents as i32 > 0i32 {
@@ -3358,9 +3268,7 @@ pub unsafe extern "C" fn show_activities() {
                     }
                 }
                 if (*mem.offset((4999999i32 - 1i32) as isize)).b32.s1 != -0xfffffffi32 {
-                    print_nl_cstr(
-                        b"### recent contributions:\x00" as *const u8 as *const i8,
-                    );
+                    print_nl_cstr(b"### recent contributions:\x00" as *const u8 as *const i8);
                 }
             }
             show_box(
@@ -3391,18 +3299,14 @@ pub unsafe extern "C" fn show_activities() {
                     print_int(a.b32.s0);
                     if m as i32 > 0i32 {
                         if a.b32.s1 > 0i32 {
-                            print_cstr(
-                                b", current language \x00" as *const u8 as *const i8,
-                            );
+                            print_cstr(b", current language \x00" as *const u8 as *const i8);
                             print_int(a.b32.s1);
                         }
                     }
                 }
                 2 => {
                     if a.b32.s1 != -0xfffffffi32 {
-                        print_cstr(
-                            b"this will be denominator of:\x00" as *const u8 as *const i8,
-                        );
+                        print_cstr(b"this will be denominator of:\x00" as *const u8 as *const i8);
                         show_box(a.b32.s1);
                     }
                 }
@@ -4009,14 +3913,10 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: i32) {
                         print_esc_cstr(b"everyeof\x00" as *const u8 as *const i8);
                     }
                     2252782 => {
-                        print_esc_cstr(
-                            b"XeTeXinterchartoks\x00" as *const u8 as *const i8,
-                        );
+                        print_esc_cstr(b"XeTeXinterchartoks\x00" as *const u8 as *const i8);
                     }
                     2252783 => {
-                        print_esc_cstr(
-                            b"TectonicCodaTokens\x00" as *const u8 as *const i8,
-                        );
+                        print_esc_cstr(b"TectonicCodaTokens\x00" as *const u8 as *const i8);
                     }
                     _ => {
                         print_esc_cstr(b"errhelp\x00" as *const u8 as *const i8);
@@ -5161,9 +5061,9 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: i32) {
         }
         70 => {
             print_esc_cstr(b"Umathchar\x00" as *const u8 as *const i8);
-            print_hex((chr_code as u32 >> 21i32 & 0x7i32 as u32) as i32);
-            print_hex((chr_code as u32 >> 24i32 & 0xffi32 as u32) as i32);
-            print_hex((chr_code as u32 & 0x1fffffi32 as u32) as i32);
+            print_hex((chr_code as u32 >> 21i32 & 0x7_u32) as i32);
+            print_hex((chr_code as u32 >> 24i32 & 0xff_u32) as i32);
+            print_hex((chr_code as u32 & 0x1fffff_u32) as i32);
         }
         86 => {
             if chr_code
@@ -5449,8 +5349,7 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: i32) {
                 n = 0i32;
                 while n <= for_end {
                     if *str_pool.offset(
-                        (*str_start.offset((font_name_str as i64 - 65536) as isize) + n)
-                            as isize,
+                        (*str_start.offset((font_name_str as i64 - 65536) as isize) + n) as isize,
                     ) as i32
                         == '\"' as i32
                     {
@@ -5830,13 +5729,11 @@ pub unsafe extern "C" fn id_lookup(mut j: i32, mut l: i32) -> i32 {
                         pool_ptr += 1
                     } else {
                         *str_pool.offset(pool_ptr as isize) = (0xd800i32 as i64
-                            + (*buffer.offset(k as isize) as i64 - 65536)
-                                / 1024i32 as i64)
+                            + (*buffer.offset(k as isize) as i64 - 65536) / 1024i32 as i64)
                             as packed_UTF16_code;
                         pool_ptr += 1;
                         *str_pool.offset(pool_ptr as isize) = (0xdc00i32 as i64
-                            + (*buffer.offset(k as isize) as i64 - 65536)
-                                % 1024i32 as i64)
+                            + (*buffer.offset(k as isize) as i64 - 65536) % 1024i32 as i64)
                             as packed_UTF16_code;
                         pool_ptr += 1
                     }
@@ -6035,10 +5932,7 @@ pub unsafe extern "C" fn pseudo_input() -> bool {
             /*35: */
             cur_input.loc = first;
             cur_input.limit = last - 1i32;
-            overflow(
-                b"buffer size\x00" as *const u8 as *const i8,
-                buf_size,
-            );
+            overflow(b"buffer size\x00" as *const u8 as *const i8, buf_size);
         }
         last = first;
         let mut for_end: i32 = 0;
@@ -6394,13 +6288,9 @@ pub unsafe extern "C" fn delete_sa_ref(mut q: i32) {
             return;
         }
         if i as i32 & 1i32 != 0 {
-            (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                .b32
-                .s1 = -0xfffffffi32
+            (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s1 = -0xfffffffi32
         } else {
-            (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                .b32
-                .s0 = -0xfffffffi32
+            (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s0 = -0xfffffffi32
         }
         let ref mut fresh17 = (*mem.offset(q as isize)).b16.s0;
         *fresh17 = (*fresh17).wrapping_sub(1);
@@ -6420,10 +6310,7 @@ pub unsafe extern "C" fn sa_save(mut p: i32) {
         if save_ptr > max_save_stack {
             max_save_stack = save_ptr;
             if max_save_stack > save_size - 7i32 {
-                overflow(
-                    b"save size\x00" as *const u8 as *const i8,
-                    save_size,
-                );
+                overflow(b"save size\x00" as *const u8 as *const i8, save_size);
             }
         }
         (*save_stack.offset(save_ptr as isize)).b16.s1 = 4i32 as u16;
@@ -6556,10 +6443,7 @@ pub unsafe extern "C" fn new_save_level(mut c: group_code) {
     if save_ptr > max_save_stack {
         max_save_stack = save_ptr;
         if max_save_stack > save_size - 7i32 {
-            overflow(
-                b"save size\x00" as *const u8 as *const i8,
-                save_size,
-            );
+            overflow(b"save size\x00" as *const u8 as *const i8, save_size);
         }
     }
     (*save_stack.offset((save_ptr + 0i32) as isize)).b32.s1 = line;
@@ -6568,10 +6452,7 @@ pub unsafe extern "C" fn new_save_level(mut c: group_code) {
     (*save_stack.offset(save_ptr as isize)).b16.s0 = cur_group as u16;
     (*save_stack.offset(save_ptr as isize)).b32.s1 = cur_boundary;
     if cur_level as i32 == 65535i32 {
-        overflow(
-            b"grouping levels\x00" as *const u8 as *const i8,
-            65535i32,
-        );
+        overflow(b"grouping levels\x00" as *const u8 as *const i8, 65535i32);
     }
     cur_boundary = save_ptr;
     cur_group = c;
@@ -6613,10 +6494,7 @@ pub unsafe extern "C" fn eq_save(mut p: i32, mut l: u16) {
     if save_ptr > max_save_stack {
         max_save_stack = save_ptr;
         if max_save_stack > save_size - 7i32 {
-            overflow(
-                b"save size\x00" as *const u8 as *const i8,
-                save_size,
-            );
+            overflow(b"save size\x00" as *const u8 as *const i8, save_size);
         }
     }
     if l as i32 == 0i32 {
@@ -6777,10 +6655,7 @@ pub unsafe extern "C" fn save_for_after(mut t: i32) {
         if save_ptr > max_save_stack {
             max_save_stack = save_ptr;
             if max_save_stack > save_size - 7i32 {
-                overflow(
-                    b"save size\x00" as *const u8 as *const i8,
-                    save_size,
-                );
+                overflow(b"save size\x00" as *const u8 as *const i8, save_size);
             }
         }
         (*save_stack.offset(save_ptr as isize)).b16.s1 = 2i32 as u16;
@@ -7046,9 +6921,7 @@ pub unsafe extern "C" fn prepare_mag() {
             .s1,
         );
         print_cstr(b");\x00" as *const u8 as *const i8);
-        print_nl_cstr(
-            b" the previous value will be retained\x00" as *const u8 as *const i8,
-        );
+        print_nl_cstr(b" the previous value will be retained\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
         help_line[1] = b"I can handle only one magnification ratio per job. So I\'ve\x00"
             as *const u8 as *const i8;
@@ -7148,13 +7021,10 @@ pub unsafe extern "C" fn prepare_mag() {
         } else {
             print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
-        print_cstr(
-            b"Illegal magnification has been changed to 1000\x00" as *const u8
-                as *const i8,
-        );
+        print_cstr(b"Illegal magnification has been changed to 1000\x00" as *const u8 as *const i8);
         help_ptr = 1i32 as u8;
-        help_line[0] = b"The magnification ratio must be between 1 and 32768.\x00" as *const u8
-            as *const i8;
+        help_line[0] =
+            b"The magnification ratio must be between 1 and 32768.\x00" as *const u8 as *const i8;
         int_error(
             (*eqtb.offset(
                 (1i32
@@ -7426,10 +7296,7 @@ pub unsafe extern "C" fn show_context() {
                         if cur_input.index as i32 == in_open {
                             print_int(line);
                         } else {
-                            print_int(
-                                *line_stack
-                                    .offset((cur_input.index as i32 + 1i32) as isize),
-                            );
+                            print_int(*line_stack.offset((cur_input.index as i32 + 1i32) as isize));
                         }
                     }
                     print_char(' ' as i32);
@@ -7504,19 +7371,13 @@ pub unsafe extern "C" fn show_context() {
                         }
                         3 | 4 => {
                             if cur_input.loc == -0xfffffffi32 {
-                                print_nl_cstr(
-                                    b"<recently read> \x00" as *const u8 as *const i8,
-                                );
+                                print_nl_cstr(b"<recently read> \x00" as *const u8 as *const i8);
                             } else {
-                                print_nl_cstr(
-                                    b"<to be read again> \x00" as *const u8 as *const i8,
-                                );
+                                print_nl_cstr(b"<to be read again> \x00" as *const u8 as *const i8);
                             }
                         }
                         5 => {
-                            print_nl_cstr(
-                                b"<inserted text> \x00" as *const u8 as *const i8,
-                            );
+                            print_nl_cstr(b"<inserted text> \x00" as *const u8 as *const i8);
                         }
                         6 => {
                             print_ln();
@@ -7532,9 +7393,7 @@ pub unsafe extern "C" fn show_context() {
                             print_nl_cstr(b"<everymath> \x00" as *const u8 as *const i8);
                         }
                         10 => {
-                            print_nl_cstr(
-                                b"<everydisplay> \x00" as *const u8 as *const i8,
-                            );
+                            print_nl_cstr(b"<everydisplay> \x00" as *const u8 as *const i8);
                         }
                         11 => {
                             print_nl_cstr(b"<everyhbox> \x00" as *const u8 as *const i8);
@@ -7555,17 +7414,13 @@ pub unsafe extern "C" fn show_context() {
                             print_nl_cstr(b"<everyeof> \x00" as *const u8 as *const i8);
                         }
                         17 => {
-                            print_nl_cstr(
-                                b"<XeTeXinterchartoks> \x00" as *const u8 as *const i8,
-                            );
+                            print_nl_cstr(b"<XeTeXinterchartoks> \x00" as *const u8 as *const i8);
                         }
                         18 => {
                             print_nl_cstr(b"<write> \x00" as *const u8 as *const i8);
                         }
                         19 => {
-                            print_nl_cstr(
-                                b"<TectonicCodaTokens> \x00" as *const u8 as *const i8,
-                            );
+                            print_nl_cstr(b"<TectonicCodaTokens> \x00" as *const u8 as *const i8);
                         }
                         _ => {
                             print_nl('?' as i32);
@@ -7808,8 +7663,7 @@ pub unsafe extern "C" fn end_token_list() {
             align_state = 0i32
         } else {
             fatal_error(
-                b"(interwoven alignment preambles are not allowed)\x00" as *const u8
-                    as *const i8,
+                b"(interwoven alignment preambles are not allowed)\x00" as *const u8 as *const i8,
             );
         }
     }
@@ -7870,10 +7724,7 @@ pub unsafe extern "C" fn begin_file_reading() {
         );
     }
     if first == buf_size {
-        overflow(
-            b"buffer size\x00" as *const u8 as *const i8,
-            buf_size,
-        );
+        overflow(b"buffer size\x00" as *const u8 as *const i8, buf_size);
     }
     in_open += 1;
     if input_ptr > max_in_stack {
@@ -7919,10 +7770,7 @@ pub unsafe extern "C" fn check_outer_validity() {
     if scanner_status as i32 != 0i32 {
         deletions_allowed = 0i32 != 0;
         if cur_cs != 0i32 {
-            if cur_input.state as i32 == 0i32
-                || cur_input.name < 1i32
-                || cur_input.name > 17i32
-            {
+            if cur_input.state as i32 == 0i32 || cur_input.name < 1i32 || cur_input.name > 17i32 {
                 p = get_avail();
                 (*mem.offset(p as isize)).b32.s0 = 0x1ffffffi32 + cur_cs;
                 begin_token_list(p, 3i32 as u16);
@@ -7947,16 +7795,12 @@ pub unsafe extern "C" fn check_outer_validity() {
                 } else {
                     print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
-                print_cstr(
-                    b"Forbidden control sequence found\x00" as *const u8 as *const i8,
-                );
+                print_cstr(b"Forbidden control sequence found\x00" as *const u8 as *const i8);
             }
             p = get_avail();
             match scanner_status as i32 {
                 2 => {
-                    print_cstr(
-                        b" while scanning definition\x00" as *const u8 as *const i8,
-                    );
+                    print_cstr(b" while scanning definition\x00" as *const u8 as *const i8);
                     (*mem.offset(p as isize)).b32.s0 = 0x400000i32 + '}' as i32
                 }
                 3 => {
@@ -7989,12 +7833,12 @@ pub unsafe extern "C" fn check_outer_validity() {
             print_cstr(b" of \x00" as *const u8 as *const i8);
             sprint_cs(warning_index);
             help_ptr = 4i32 as u8;
-            help_line[3] = b"I suspect you have forgotten a `}\', causing me\x00" as *const u8
-                as *const i8;
-            help_line[2] = b"to read past where you wanted me to stop.\x00" as *const u8
-                as *const i8;
-            help_line[1] = b"I\'ll try to recover; but if the error is serious,\x00" as *const u8
-                as *const i8;
+            help_line[3] =
+                b"I suspect you have forgotten a `}\', causing me\x00" as *const u8 as *const i8;
+            help_line[2] =
+                b"to read past where you wanted me to stop.\x00" as *const u8 as *const i8;
+            help_line[1] =
+                b"I\'ll try to recover; but if the error is serious,\x00" as *const u8 as *const i8;
             help_line[0] = b"you\'d better type `E\' or `X\' now and fix your file.\x00"
                 as *const u8 as *const i8;
             error();
@@ -8006,9 +7850,7 @@ pub unsafe extern "C" fn check_outer_validity() {
             }
             print_cstr(b"Incomplete \x00" as *const u8 as *const i8);
             print_cmd_chr(107i32 as u16, cur_if as i32);
-            print_cstr(
-                b"; all text was ignored after line \x00" as *const u8 as *const i8,
-            );
+            print_cstr(b"; all text was ignored after line \x00" as *const u8 as *const i8);
             print_int(skip_line);
             help_ptr = 3i32 as u8;
             help_line[2] = b"A forbidden control sequence occurred in skipped text.\x00"
@@ -8059,9 +7901,8 @@ pub unsafe extern "C" fn get_next() {
                     {
                         lower = (*buffer.offset(cur_input.loc as isize) - 0xdc00i32) as UTF16_code;
                         cur_input.loc += 1;
-                        cur_chr = (65536
-                            + ((cur_chr - 0xd800i32) * 1024i32) as i64
-                            + lower as i64) as i32
+                        cur_chr =
+                            (65536 + ((cur_chr - 0xd800i32) * 1024i32) as i64 + lower as i64) as i32
                     }
                     'c_65186: loop {
                         cur_cmd = (*eqtb.offset(
@@ -8126,8 +7967,7 @@ pub unsafe extern "C" fn get_next() {
                                         <= cur_input.limit
                                     && cur_chr
                                         == *buffer.offset(
-                                            (cur_input.loc + sup_count as i32 - 1i32)
-                                                as isize,
+                                            (cur_input.loc + sup_count as i32 - 1i32) as isize,
                                         )
                                 {
                                     sup_count += 1
@@ -8135,23 +7975,19 @@ pub unsafe extern "C" fn get_next() {
                                 d = 1i32 as small_number;
                                 while d as i32 <= sup_count as i32 {
                                     if !(*buffer.offset(
-                                        (cur_input.loc + sup_count as i32 - 2i32
-                                            + d as i32)
+                                        (cur_input.loc + sup_count as i32 - 2i32 + d as i32)
                                             as isize,
                                     ) >= '0' as i32
                                         && *buffer.offset(
-                                            (cur_input.loc + sup_count as i32 - 2i32
-                                                + d as i32)
+                                            (cur_input.loc + sup_count as i32 - 2i32 + d as i32)
                                                 as isize,
                                         ) <= '9' as i32
                                         || *buffer.offset(
-                                            (cur_input.loc + sup_count as i32 - 2i32
-                                                + d as i32)
+                                            (cur_input.loc + sup_count as i32 - 2i32 + d as i32)
                                                 as isize,
                                         ) >= 'a' as i32
                                             && *buffer.offset(
-                                                (cur_input.loc + sup_count as i32 - 2i32
-                                                    + d as i32)
+                                                (cur_input.loc + sup_count as i32 - 2i32 + d as i32)
                                                     as isize,
                                             ) <= 'f' as i32)
                                     {
@@ -8175,8 +8011,7 @@ pub unsafe extern "C" fn get_next() {
                                 d = 1i32 as small_number;
                                 while d as i32 <= sup_count as i32 {
                                     c = *buffer.offset(
-                                        (cur_input.loc + sup_count as i32 - 2i32
-                                            + d as i32)
+                                        (cur_input.loc + sup_count as i32 - 2i32 + d as i32)
                                             as isize,
                                     );
                                     if c <= '9' as i32 {
@@ -8191,8 +8026,7 @@ pub unsafe extern "C" fn get_next() {
                                     current_block = 8567661057257693057;
                                     break 'c_63807;
                                 } else {
-                                    cur_input.loc =
-                                        cur_input.loc + 2i32 * sup_count as i32 - 1i32
+                                    cur_input.loc = cur_input.loc + 2i32 * sup_count as i32 - 1i32
                                 }
                             }
                             16 | 32 | 48 => {
@@ -8614,8 +8448,7 @@ pub unsafe extern "C" fn get_next() {
                                                 as isize,
                                         ))
                                         .b32
-                                        .s1
-                                            as u8;
+                                        .s1 as u8;
                                         k += 1;
                                         if !(cat as i32 == 11i32 && k <= cur_input.limit) {
                                             break;
@@ -8635,10 +8468,8 @@ pub unsafe extern "C" fn get_next() {
                                     /* How many ^'s are there? */
                                     sup_count = 2i32 as small_number;
                                     while (sup_count as i32) < 6i32
-                                        && k + 2i32 * sup_count as i32 - 2i32
-                                            <= cur_input.limit
-                                        && *buffer
-                                            .offset((k + sup_count as i32 - 1i32) as isize)
+                                        && k + 2i32 * sup_count as i32 - 2i32 <= cur_input.limit
+                                        && *buffer.offset((k + sup_count as i32 - 1i32) as isize)
                                             == cur_chr
                                     {
                                         sup_count += 1
@@ -8651,22 +8482,16 @@ pub unsafe extern "C" fn get_next() {
                                     d = 1i32 as small_number;
                                     while d as i32 <= sup_count_save {
                                         if !(*buffer.offset(
-                                            (k + sup_count as i32 - 2i32 + d as i32)
-                                                as isize,
+                                            (k + sup_count as i32 - 2i32 + d as i32) as isize,
                                         ) >= '0' as i32
                                             && *buffer.offset(
-                                                (k + sup_count as i32 - 2i32
-                                                    + d as i32)
-                                                    as isize,
+                                                (k + sup_count as i32 - 2i32 + d as i32) as isize,
                                             ) <= '9' as i32
                                             || *buffer.offset(
-                                                (k + sup_count as i32 - 2i32
-                                                    + d as i32)
-                                                    as isize,
+                                                (k + sup_count as i32 - 2i32 + d as i32) as isize,
                                             ) >= 'a' as i32
                                                 && *buffer.offset(
-                                                    (k + sup_count as i32 - 2i32
-                                                        + d as i32)
+                                                    (k + sup_count as i32 - 2i32 + d as i32)
                                                         as isize,
                                                 ) <= 'f' as i32)
                                         {
@@ -8679,11 +8504,10 @@ pub unsafe extern "C" fn get_next() {
                                                     *buffer.offset((k - 1i32) as isize) = c - 64i32
                                                 }
                                                 d = 2i32 as small_number;
-                                                cur_input.limit =
-                                                    cur_input.limit - d as i32;
+                                                cur_input.limit = cur_input.limit - d as i32;
                                                 while k <= cur_input.limit {
-                                                    *buffer.offset(k as isize) = *buffer
-                                                        .offset((k + d as i32) as isize);
+                                                    *buffer.offset(k as isize) =
+                                                        *buffer.offset((k + d as i32) as isize);
                                                     k += 1
                                                 }
                                                 continue 'c_65963;
@@ -8701,8 +8525,7 @@ pub unsafe extern "C" fn get_next() {
                                     d = 1i32 as small_number;
                                     while d as i32 <= sup_count as i32 {
                                         c = *buffer.offset(
-                                            (k + sup_count as i32 - 2i32 + d as i32)
-                                                as isize,
+                                            (k + sup_count as i32 - 2i32 + d as i32) as isize,
                                         );
                                         if c <= '9' as i32 {
                                             cur_chr = 16i32 * cur_chr + c - '0' as i32
@@ -8717,8 +8540,7 @@ pub unsafe extern "C" fn get_next() {
                                         break;
                                     } else {
                                         *buffer.offset((k - 1i32) as isize) = cur_chr;
-                                        d = (2i32 * sup_count as i32 - 1i32)
-                                            as small_number;
+                                        d = (2i32 * sup_count as i32 - 1i32) as small_number;
                                         cur_input.limit = cur_input.limit - d as i32;
                                         while k <= cur_input.limit {
                                             *buffer.offset(k as isize) =
@@ -8737,10 +8559,8 @@ pub unsafe extern "C" fn get_next() {
                                     let mut sup_count_save_0: i32 = 0;
                                     sup_count = 2i32 as small_number;
                                     while (sup_count as i32) < 6i32
-                                        && k + 2i32 * sup_count as i32 - 2i32
-                                            <= cur_input.limit
-                                        && *buffer
-                                            .offset((k + sup_count as i32 - 1i32) as isize)
+                                        && k + 2i32 * sup_count as i32 - 2i32 <= cur_input.limit
+                                        && *buffer.offset((k + sup_count as i32 - 1i32) as isize)
                                             == cur_chr
                                     {
                                         sup_count += 1
@@ -8749,22 +8569,16 @@ pub unsafe extern "C" fn get_next() {
                                     d = 1i32 as small_number;
                                     while d as i32 <= sup_count_save_0 {
                                         if !(*buffer.offset(
-                                            (k + sup_count as i32 - 2i32 + d as i32)
-                                                as isize,
+                                            (k + sup_count as i32 - 2i32 + d as i32) as isize,
                                         ) >= '0' as i32
                                             && *buffer.offset(
-                                                (k + sup_count as i32 - 2i32
-                                                    + d as i32)
-                                                    as isize,
+                                                (k + sup_count as i32 - 2i32 + d as i32) as isize,
                                             ) <= '9' as i32
                                             || *buffer.offset(
-                                                (k + sup_count as i32 - 2i32
-                                                    + d as i32)
-                                                    as isize,
+                                                (k + sup_count as i32 - 2i32 + d as i32) as isize,
                                             ) >= 'a' as i32
                                                 && *buffer.offset(
-                                                    (k + sup_count as i32 - 2i32
-                                                        + d as i32)
+                                                    (k + sup_count as i32 - 2i32 + d as i32)
                                                         as isize,
                                                 ) <= 'f' as i32)
                                         {
@@ -8776,11 +8590,10 @@ pub unsafe extern "C" fn get_next() {
                                                     *buffer.offset((k - 1i32) as isize) = c - 64i32
                                                 }
                                                 d = 2i32 as small_number;
-                                                cur_input.limit =
-                                                    cur_input.limit - d as i32;
+                                                cur_input.limit = cur_input.limit - d as i32;
                                                 while k <= cur_input.limit {
-                                                    *buffer.offset(k as isize) = *buffer
-                                                        .offset((k + d as i32) as isize);
+                                                    *buffer.offset(k as isize) =
+                                                        *buffer.offset((k + d as i32) as isize);
                                                     k += 1
                                                 }
                                                 continue 'c_65963;
@@ -8798,8 +8611,7 @@ pub unsafe extern "C" fn get_next() {
                                     d = 1i32 as small_number;
                                     while d as i32 <= sup_count as i32 {
                                         c = *buffer.offset(
-                                            (k + sup_count as i32 - 2i32 + d as i32)
-                                                as isize,
+                                            (k + sup_count as i32 - 2i32 + d as i32) as isize,
                                         );
                                         if c <= '9' as i32 {
                                             cur_chr = 16i32 * cur_chr + c - '0' as i32
@@ -8814,8 +8626,7 @@ pub unsafe extern "C" fn get_next() {
                                         break;
                                     } else {
                                         *buffer.offset((k - 1i32) as isize) = cur_chr;
-                                        d = (2i32 * sup_count as i32 - 1i32)
-                                            as small_number;
+                                        d = (2i32 * sup_count as i32 - 1i32) as small_number;
                                         cur_input.limit = cur_input.limit - d as i32;
                                         while k <= cur_input.limit {
                                             *buffer.offset(k as isize) =
@@ -8843,9 +8654,7 @@ pub unsafe extern "C" fn get_next() {
                             match current_block {
                                 10802200937357087535 => {}
                                 _ => {
-                                    if *buffer.offset(cur_input.loc as isize) as i64
-                                        > 65535
-                                    {
+                                    if *buffer.offset(cur_input.loc as isize) as i64 > 65535 {
                                         cur_cs = id_lookup(cur_input.loc, 1i32);
                                         cur_input.loc += 1
                                     } else {
@@ -8915,9 +8724,7 @@ pub unsafe extern "C" fn get_next() {
                                 );
                                 continue;
                             } else {
-                                if (selector as u32)
-                                    < SELECTOR_LOG_ONLY as i32 as u32
-                                {
+                                if (selector as u32) < SELECTOR_LOG_ONLY as i32 as u32 {
                                     open_log_file();
                                 }
                                 fatal_error(
@@ -9164,26 +8971,21 @@ pub unsafe extern "C" fn macro_call() {
                             print_cstr(b"Use of \x00" as *const u8 as *const i8);
                             sprint_cs(warning_index);
                             print_cstr(
-                                b" doesn\'t match its definition\x00" as *const u8
-                                    as *const i8,
+                                b" doesn\'t match its definition\x00" as *const u8 as *const i8,
                             );
                             help_ptr = 4i32 as u8;
                             help_line[3] =
                                 b"If you say, e.g., `\\def\\a1{...}\', then you must always\x00"
-                                    as *const u8
-                                    as *const i8;
+                                    as *const u8 as *const i8;
                             help_line[2] =
                                 b"put `1\' after `\\a\', since control sequence names are\x00"
-                                    as *const u8
-                                    as *const i8;
+                                    as *const u8 as *const i8;
                             help_line[1] =
                                 b"made up of letters only. The macro here has not been\x00"
-                                    as *const u8
-                                    as *const i8;
+                                    as *const u8 as *const i8;
                             help_line[0] =
                                 b"followed by the required stuff, so I\'m ignoring it.\x00"
-                                    as *const u8
-                                    as *const i8;
+                                    as *const u8 as *const i8;
                             error();
                             current_block = 16670727159935121194;
                             break 's_135;
@@ -9233,13 +9035,10 @@ pub unsafe extern "C" fn macro_call() {
                                     print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                                 }
                                 print_cstr(
-                                    b"Paragraph ended before \x00" as *const u8
-                                        as *const i8,
+                                    b"Paragraph ended before \x00" as *const u8 as *const i8,
                                 );
                                 sprint_cs(warning_index);
-                                print_cstr(
-                                    b" was complete\x00" as *const u8 as *const i8,
-                                );
+                                print_cstr(b" was complete\x00" as *const u8 as *const i8);
                                 help_ptr = 3i32 as u8;
                                 help_line[2] =
                                             b"I suspect you\'ve forgotten a `}\', causing me to apply this\x00"
@@ -9290,9 +9089,7 @@ pub unsafe extern "C" fn macro_call() {
                                             if file_line_error_style_p != 0 {
                                                 print_file_line();
                                             } else {
-                                                print_nl_cstr(
-                                                    b"! \x00" as *const u8 as *const i8,
-                                                );
+                                                print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                                             }
                                             print_cstr(
                                                 b"Paragraph ended before \x00" as *const u8
@@ -9300,8 +9097,7 @@ pub unsafe extern "C" fn macro_call() {
                                             );
                                             sprint_cs(warning_index);
                                             print_cstr(
-                                                b" was complete\x00" as *const u8
-                                                    as *const i8,
+                                                b" was complete\x00" as *const u8 as *const i8,
                                             );
                                             help_ptr = 3i32 as u8;
                                             help_line[2] =
@@ -9360,28 +9156,22 @@ pub unsafe extern "C" fn macro_call() {
                             help_ptr = 6i32 as u8;
                             help_line[5] =
                                 b"I\'ve run across a `}\' that doesn\'t seem to match anything.\x00"
-                                    as *const u8
-                                    as *const i8;
+                                    as *const u8 as *const i8;
                             help_line[4] =
                                 b"For example, `\\def\\a#1{...}\' and `\\a}\' would produce\x00"
-                                    as *const u8
-                                    as *const i8;
+                                    as *const u8 as *const i8;
                             help_line[3] =
                                 b"this error. If you simply proceed now, the `\\par\' that\x00"
-                                    as *const u8
-                                    as *const i8;
+                                    as *const u8 as *const i8;
                             help_line[2] =
                                 b"I\'ve just inserted will cause me to report a runaway\x00"
-                                    as *const u8
-                                    as *const i8;
+                                    as *const u8 as *const i8;
                             help_line[1] =
                                 b"argument that might be the root of the problem. But if\x00"
-                                    as *const u8
-                                    as *const i8;
+                                    as *const u8 as *const i8;
                             help_line[0] =
                                 b"your `}\' was spurious, just type `2\' and it will go away.\x00"
-                                    as *const u8
-                                    as *const i8;
+                                    as *const u8 as *const i8;
                             align_state += 1;
                             long_state = 113i32 as u8;
                             cur_tok = par_token;
@@ -9461,11 +9251,7 @@ pub unsafe extern "C" fn macro_call() {
                     print_nl(match_chr as str_number);
                     print_int(n as i32);
                     print_cstr(b"<-\x00" as *const u8 as *const i8);
-                    show_token_list(
-                        pstack[(n as i32 - 1i32) as usize],
-                        -0xfffffffi32,
-                        1000i32,
-                    );
+                    show_token_list(pstack[(n as i32 - 1i32) as usize], -0xfffffffi32, 1000i32);
                     end_diagnostic(0i32 != 0);
                 }
             }
@@ -9561,13 +9347,9 @@ pub unsafe extern "C" fn find_sa_element(mut t: small_number, mut n: i32, mut w:
         q = cur_ptr;
         i = (n / 0x40000i32) as small_number;
         if i as i32 & 1i32 != 0 {
-            cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                .b32
-                .s1
+            cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s1
         } else {
-            cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                .b32
-                .s0
+            cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s0
         }
         if cur_ptr == -0xfffffffi32 {
             if w {
@@ -9579,13 +9361,9 @@ pub unsafe extern "C" fn find_sa_element(mut t: small_number, mut n: i32, mut w:
             q = cur_ptr;
             i = (n / 4096i32 % 64i32) as small_number;
             if i as i32 & 1i32 != 0 {
-                cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                    .b32
-                    .s1
+                cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s1
             } else {
-                cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                    .b32
-                    .s0
+                cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s0
             }
             if cur_ptr == -0xfffffffi32 {
                 if w {
@@ -9597,13 +9375,9 @@ pub unsafe extern "C" fn find_sa_element(mut t: small_number, mut n: i32, mut w:
                 q = cur_ptr;
                 i = (n / 64i32 % 64i32) as small_number;
                 if i as i32 & 1i32 != 0 {
-                    cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                        .b32
-                        .s1
+                    cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s1
                 } else {
-                    cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                        .b32
-                        .s0
+                    cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s0
                 }
                 if cur_ptr == -0xfffffffi32 {
                     if w {
@@ -9615,13 +9389,9 @@ pub unsafe extern "C" fn find_sa_element(mut t: small_number, mut n: i32, mut w:
                     q = cur_ptr;
                     i = (n % 64i32) as small_number;
                     if i as i32 & 1i32 != 0 {
-                        cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                            .b32
-                            .s1
+                        cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s1
                     } else {
-                        cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                            .b32
-                            .s0
+                        cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s0
                     }
                     if cur_ptr == -0xfffffffi32 && w as i32 != 0 {
                         current_block = 10182473981606373355;
@@ -9637,13 +9407,9 @@ pub unsafe extern "C" fn find_sa_element(mut t: small_number, mut n: i32, mut w:
             /*not_found1 */
             new_index(i as u16, q);
             if i as i32 & 1i32 != 0 {
-                (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                    .b32
-                    .s1 = cur_ptr
+                (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s1 = cur_ptr
             } else {
-                (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                    .b32
-                    .s0 = cur_ptr
+                (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s0 = cur_ptr
             }
             let ref mut fresh29 = (*mem.offset(q as isize)).b16.s0;
             *fresh29 = (*fresh29).wrapping_add(1);
@@ -9658,13 +9424,9 @@ pub unsafe extern "C" fn find_sa_element(mut t: small_number, mut n: i32, mut w:
             /*not_found2 */
             new_index(i as u16, q);
             if i as i32 & 1i32 != 0 {
-                (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                    .b32
-                    .s1 = cur_ptr
+                (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s1 = cur_ptr
             } else {
-                (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                    .b32
-                    .s0 = cur_ptr
+                (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s0 = cur_ptr
             }
             let ref mut fresh30 = (*mem.offset(q as isize)).b16.s0;
             *fresh30 = (*fresh30).wrapping_add(1);
@@ -9679,13 +9441,9 @@ pub unsafe extern "C" fn find_sa_element(mut t: small_number, mut n: i32, mut w:
             /*not_found3 */
             new_index(i as u16, q);
             if i as i32 & 1i32 != 0 {
-                (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                    .b32
-                    .s1 = cur_ptr
+                (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s1 = cur_ptr
             } else {
-                (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                    .b32
-                    .s0 = cur_ptr
+                (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s0 = cur_ptr
             }
             let ref mut fresh31 = (*mem.offset(q as isize)).b16.s0;
             *fresh31 = (*fresh31).wrapping_add(1);
@@ -9717,18 +9475,13 @@ pub unsafe extern "C" fn find_sa_element(mut t: small_number, mut n: i32, mut w:
         }
         (*mem.offset((cur_ptr + 1i32) as isize)).b32.s0 = -0xfffffffi32
     }
-    (*mem.offset(cur_ptr as isize)).b16.s1 =
-        (64i32 * t as i32 + i as i32) as u16;
+    (*mem.offset(cur_ptr as isize)).b16.s1 = (64i32 * t as i32 + i as i32) as u16;
     (*mem.offset(cur_ptr as isize)).b16.s0 = 1i32 as u16;
     (*mem.offset(cur_ptr as isize)).b32.s1 = q;
     if i as i32 & 1i32 != 0 {
-        (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-            .b32
-            .s1 = cur_ptr
+        (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s1 = cur_ptr
     } else {
-        (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-            .b32
-            .s0 = cur_ptr
+        (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s0 = cur_ptr
     }
     let ref mut fresh33 = (*mem.offset(q as isize)).b16.s0;
     *fresh33 = (*fresh33).wrapping_add(1);
@@ -9945,11 +9698,9 @@ pub unsafe extern "C" fn expand() {
                         print_cstr(b" inserted\x00" as *const u8 as *const i8);
                         help_ptr = 2i32 as u8;
                         help_line[1] = b"The control sequence marked <to be read again> should\x00"
-                            as *const u8
-                            as *const i8;
+                            as *const u8 as *const i8;
                         help_line[0] = b"not appear between \\csname and \\endcsname.\x00"
-                            as *const u8
-                            as *const i8;
+                            as *const u8 as *const i8;
                         back_error();
                     }
                     is_in_csname = b;
@@ -9959,10 +9710,7 @@ pub unsafe extern "C" fn expand() {
                         if j >= max_buf_stack {
                             max_buf_stack = j + 1i32;
                             if max_buf_stack == buf_size {
-                                overflow(
-                                    b"buffer size\x00" as *const u8 as *const i8,
-                                    buf_size,
-                                );
+                                overflow(b"buffer size\x00" as *const u8 as *const i8, buf_size);
                             }
                         }
                         *buffer.offset(j as isize) = (*mem.offset(p as isize)).b32.s0 % 0x200000i32;
@@ -10118,9 +9866,7 @@ pub unsafe extern "C" fn expand() {
                     } else {
                         print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                     }
-                    print_cstr(
-                        b"Undefined control sequence\x00" as *const u8 as *const i8,
-                    );
+                    print_cstr(b"Undefined control sequence\x00" as *const u8 as *const i8);
                     help_ptr = 5i32 as u8;
                     help_line[4] = b"The control sequence at the end of the top line\x00"
                         as *const u8 as *const i8;
@@ -10208,12 +9954,12 @@ pub unsafe extern "C" fn scan_left_brace() {
         }
         print_cstr(b"Missing { inserted\x00" as *const u8 as *const i8);
         help_ptr = 4i32 as u8;
-        help_line[3] = b"A left brace was mandatory here, so I\'ve put one in.\x00" as *const u8
-            as *const i8;
+        help_line[3] =
+            b"A left brace was mandatory here, so I\'ve put one in.\x00" as *const u8 as *const i8;
         help_line[2] = b"You might want to delete and/or insert some corrections\x00" as *const u8
             as *const i8;
-        help_line[1] = b"so that I will find a matching right brace soon.\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"so that I will find a matching right brace soon.\x00" as *const u8 as *const i8;
         help_line[0] = b"(If you\'re confused by all this, try typing `I}\' now.)\x00" as *const u8
             as *const i8;
         back_error();
@@ -10245,9 +9991,7 @@ pub unsafe extern "C" fn scan_keyword(mut s: *const i8) -> bool {
         let mut c: i8 = *s.offset(0);
         loop {
             get_x_token();
-            if cur_cs == 0i32
-                && (cur_chr == c as i32 || cur_chr == c as i32 - 32i32)
-            {
+            if cur_cs == 0i32 && (cur_chr == c as i32 || cur_chr == c as i32 - 32i32) {
                 q = get_avail();
                 (*mem.offset(p as isize)).b32.s1 = q;
                 (*mem.offset(q as isize)).b32.s0 = cur_tok;
@@ -10304,8 +10048,8 @@ pub unsafe extern "C" fn mu_error() {
     }
     print_cstr(b"Incompatible glue units\x00" as *const u8 as *const i8);
     help_ptr = 1i32 as u8;
-    help_line[0] = b"I\'m going to assume that 1mu=1pt when they\'re mixed.\x00" as *const u8
-        as *const i8;
+    help_line[0] =
+        b"I\'m going to assume that 1mu=1pt when they\'re mixed.\x00" as *const u8 as *const i8;
     error();
 }
 #[no_mangle]
@@ -10333,8 +10077,8 @@ pub unsafe extern "C" fn scan_char_class() {
         }
         print_cstr(b"Bad character class\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] = b"A character class must be between 0 and 4096.\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"A character class must be between 0 and 4096.\x00" as *const u8 as *const i8;
         help_line[0] = b"I changed this one to zero.\x00" as *const u8 as *const i8;
         int_error(cur_val);
         cur_val = 0i32
@@ -10387,8 +10131,8 @@ pub unsafe extern "C" fn scan_usv_num() {
         }
         print_cstr(b"Bad character code\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] = b"A Unicode scalar value must be between 0 and \"10FFFF.\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"A Unicode scalar value must be between 0 and \"10FFFF.\x00" as *const u8 as *const i8;
         help_line[0] = b"I changed this one to zero.\x00" as *const u8 as *const i8;
         int_error(cur_val);
         cur_val = 0i32
@@ -10405,8 +10149,8 @@ pub unsafe extern "C" fn scan_char_num() {
         }
         print_cstr(b"Bad character code\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] = b"A character number must be between 0 and 65535.\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"A character number must be between 0 and 65535.\x00" as *const u8 as *const i8;
         help_line[0] = b"I changed this one to zero.\x00" as *const u8 as *const i8;
         int_error(cur_val);
         cur_val = 0i32
@@ -10415,7 +10159,7 @@ pub unsafe extern "C" fn scan_char_num() {
 #[no_mangle]
 pub unsafe extern "C" fn scan_xetex_math_char_int() {
     scan_int();
-    if cur_val as u32 & 0x1fffffi32 as u32 == 0x1fffffi32 as u32 {
+    if cur_val as u32 & 0x1fffff_u32 == 0x1fffff_u32 {
         if cur_val != 0x1fffffi32 {
             if file_line_error_style_p != 0 {
                 print_file_line();
@@ -10426,12 +10170,11 @@ pub unsafe extern "C" fn scan_xetex_math_char_int() {
             help_ptr = 2i32 as u8;
             help_line[1] = b"Since I ignore class and family for active math chars,\x00"
                 as *const u8 as *const i8;
-            help_line[0] =
-                b"I changed this one to \"1FFFFF.\x00" as *const u8 as *const i8;
+            help_line[0] = b"I changed this one to \"1FFFFF.\x00" as *const u8 as *const i8;
             int_error(cur_val);
             cur_val = 0x1fffffi32
         }
-    } else if cur_val as u32 & 0x1fffffi32 as u32 > 0x10ffffi32 as u32 {
+    } else if cur_val as u32 & 0x1fffff_u32 > 0x10ffff_u32 {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
@@ -10488,9 +10231,7 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
                     ))
                     .b32
                     .s1;
-                    if !(c as u32 & 0x1fffffi32 as u32
-                        == 0x1fffffi32 as u32)
-                    {
+                    if !(c as u32 & 0x1fffff_u32 == 0x1fffff_u32) {
                         break 'c_118470;
                     }
                     cur_cs = cur_chr + 1i32;
@@ -10508,12 +10249,9 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
                 17 => {
                     if cur_chr == 2i32 {
                         scan_math_class_int();
-                        c = ((cur_val as u32 & 0x7i32 as u32) << 21i32)
-                            as i32;
+                        c = ((cur_val as u32 & 0x7_u32) << 21i32) as i32;
                         scan_math_fam_int();
-                        c = (c as u32).wrapping_add(
-                            (cur_val as u32 & 0xffi32 as u32) << 24i32,
-                        ) as i32;
+                        c = (c as u32).wrapping_add((cur_val as u32 & 0xff_u32) << 24i32) as i32;
                         scan_usv_num();
                         c = c + cur_val
                     } else if cur_chr == 1i32 {
@@ -10521,27 +10259,17 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
                         c = cur_val
                     } else {
                         scan_fifteen_bit_int();
-                        c = (((cur_val / 4096i32) as u32 & 0x7i32 as u32)
-                            << 21i32)
-                            .wrapping_add(
-                                ((cur_val % 4096i32 / 256i32) as u32
-                                    & 0xffi32 as u32)
-                                    << 24i32,
-                            )
+                        c = (((cur_val / 4096i32) as u32 & 0x7_u32) << 21i32)
+                            .wrapping_add(((cur_val % 4096i32 / 256i32) as u32 & 0xff_u32) << 24i32)
                             .wrapping_add((cur_val % 256i32) as u32)
                             as i32
                     }
                     break 'c_118470;
                 }
                 69 => {
-                    c = (((cur_chr / 4096i32) as u32 & 0x7i32 as u32) << 21i32)
-                        .wrapping_add(
-                            ((cur_chr % 4096i32 / 256i32) as u32
-                                & 0xffi32 as u32)
-                                << 24i32,
-                        )
-                        .wrapping_add((cur_chr % 256i32) as u32)
-                        as i32;
+                    c = (((cur_chr / 4096i32) as u32 & 0x7_u32) << 21i32)
+                        .wrapping_add(((cur_chr % 4096i32 / 256i32) as u32 & 0xff_u32) << 24i32)
+                        .wrapping_add((cur_chr % 256i32) as u32) as i32;
                     break 'c_118470;
                 }
                 70 => {
@@ -10551,24 +10279,17 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
                 15 => {
                     if cur_chr == 1i32 {
                         scan_math_class_int();
-                        c = ((cur_val as u32 & 0x7i32 as u32) << 21i32)
-                            as i32;
+                        c = ((cur_val as u32 & 0x7_u32) << 21i32) as i32;
                         scan_math_fam_int();
-                        c = (c as u32).wrapping_add(
-                            (cur_val as u32 & 0xffi32 as u32) << 24i32,
-                        ) as i32;
+                        c = (c as u32).wrapping_add((cur_val as u32 & 0xff_u32) << 24i32) as i32;
                         scan_usv_num();
                         c = c + cur_val
                     } else {
                         scan_delimiter_int();
                         c = cur_val / 4096i32;
-                        c = (((c / 4096i32) as u32 & 0x7i32 as u32) << 21i32)
-                            .wrapping_add(
-                                ((c % 4096i32 / 256i32) as u32 & 0xffi32 as u32)
-                                    << 24i32,
-                            )
-                            .wrapping_add((c % 256i32) as u32)
-                            as i32
+                        c = (((c / 4096i32) as u32 & 0x7_u32) << 21i32)
+                            .wrapping_add(((c % 4096i32 / 256i32) as u32 & 0xff_u32) << 24i32)
+                            .wrapping_add((c % 256i32) as u32) as i32
                     }
                     break 'c_118470;
                 }
@@ -10585,7 +10306,7 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
     }
     (*mem.offset(p as isize)).b32.s1 = 1i32;
     (*mem.offset(p as isize)).b16.s0 = (c as i64 % 65536) as u16;
-    if c as u32 >> 21i32 & 0x7i32 as u32 == 7i32 as u32
+    if c as u32 >> 21i32 & 0x7_u32 == 7_u32
         && ((*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -10675,18 +10396,17 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
         .b32
         .s1 as u16
     } else {
-        (*mem.offset(p as isize)).b16.s1 =
-            (c as u32 >> 24i32 & 0xffi32 as u32) as u16
+        (*mem.offset(p as isize)).b16.s1 = (c as u32 >> 24i32 & 0xff_u32) as u16
     }
     (*mem.offset(p as isize)).b16.s1 = ((*mem.offset(p as isize)).b16.s1 as i64
-        + (c as u32 & 0x1fffffi32 as u32) as i64 / 65536
-            * 256i32 as i64) as u16;
+        + (c as u32 & 0x1fffff_u32) as i64 / 65536 * 256i32 as i64)
+        as u16;
 }
 #[no_mangle]
 pub unsafe extern "C" fn set_math_char(mut c: i32) {
     let mut p: i32 = 0;
     let mut ch: UnicodeScalar = 0;
-    if c as u32 & 0x1fffffi32 as u32 == 0x1fffffi32 as u32 {
+    if c as u32 & 0x1fffff_u32 == 0x1fffff_u32 {
         /*1187: */
         cur_cs = cur_chr + 1i32; /* ... "between 0 and 15" */
         cur_cmd = (*eqtb.offset(cur_cs as isize)).b16.s1 as eight_bits; /* ... "between 0 and 15" */
@@ -10696,11 +10416,10 @@ pub unsafe extern "C" fn set_math_char(mut c: i32) {
     } else {
         p = new_noad();
         (*mem.offset((p + 1i32) as isize)).b32.s1 = 1i32;
-        ch = (c as u32 & 0x1fffffi32 as u32) as UnicodeScalar;
+        ch = (c as u32 & 0x1fffff_u32) as UnicodeScalar;
         (*mem.offset((p + 1i32) as isize)).b16.s0 = (ch as i64 % 65536) as u16;
-        (*mem.offset((p + 1i32) as isize)).b16.s1 =
-            (c as u32 >> 24i32 & 0xffi32 as u32) as u16;
-        if c as u32 >> 21i32 & 0x7i32 as u32 == 7i32 as u32 {
+        (*mem.offset((p + 1i32) as isize)).b16.s1 = (c as u32 >> 24i32 & 0xff_u32) as u16;
+        if c as u32 >> 21i32 & 0x7_u32 == 7_u32 {
             if (*eqtb.offset(
                 (1i32
                     + (0x10ffffi32 + 1i32)
@@ -10792,13 +10511,12 @@ pub unsafe extern "C" fn set_math_char(mut c: i32) {
             }
             (*mem.offset(p as isize)).b16.s1 = 16i32 as u16
         } else {
-            (*mem.offset(p as isize)).b16.s1 = (16i32 as u32)
-                .wrapping_add(c as u32 >> 21i32 & 0x7i32 as u32)
-                as u16
+            (*mem.offset(p as isize)).b16.s1 =
+                (16_u32).wrapping_add(c as u32 >> 21i32 & 0x7_u32) as u16
         }
         (*mem.offset((p + 1i32) as isize)).b16.s1 =
-            ((*mem.offset((p + 1i32) as isize)).b16.s1 as i64
-                + ch as i64 / 65536 * 256i32 as i64) as u16;
+            ((*mem.offset((p + 1i32) as isize)).b16.s1 as i64 + ch as i64 / 65536 * 256i32 as i64)
+                as u16;
         (*mem.offset(cur_list.tail as isize)).b32.s1 = p;
         cur_list.tail = p
     };
@@ -10814,8 +10532,8 @@ pub unsafe extern "C" fn scan_math_class_int() {
         }
         print_cstr(b"Bad math class\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] = b"Since I expected to read a number between 0 and 7,\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"Since I expected to read a number between 0 and 7,\x00" as *const u8 as *const i8;
         help_line[0] = b"I changed this one to zero.\x00" as *const u8 as *const i8;
         int_error(cur_val);
         cur_val = 0i32
@@ -10832,8 +10550,8 @@ pub unsafe extern "C" fn scan_math_fam_int() {
         }
         print_cstr(b"Bad math family\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] = b"Since I expected to read a number between 0 and 255,\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"Since I expected to read a number between 0 and 255,\x00" as *const u8 as *const i8;
         help_line[0] = b"I changed this one to zero.\x00" as *const u8 as *const i8;
         int_error(cur_val);
         cur_val = 0i32
@@ -10850,8 +10568,8 @@ pub unsafe extern "C" fn scan_four_bit_int() {
         }
         print_cstr(b"Bad number\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] = b"Since I expected to read a number between 0 and 15,\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"Since I expected to read a number between 0 and 15,\x00" as *const u8 as *const i8;
         help_line[0] = b"I changed this one to zero.\x00" as *const u8 as *const i8;
         int_error(cur_val);
         cur_val = 0i32
@@ -10868,8 +10586,8 @@ pub unsafe extern "C" fn scan_fifteen_bit_int() {
         }
         print_cstr(b"Bad mathchar\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] = b"A mathchar number must be between 0 and 32767.\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"A mathchar number must be between 0 and 32767.\x00" as *const u8 as *const i8;
         help_line[0] = b"I changed this one to zero.\x00" as *const u8 as *const i8;
         int_error(cur_val);
         cur_val = 0i32
@@ -10921,8 +10639,8 @@ pub unsafe extern "C" fn scan_four_bit_int_or_18() {
         }
         print_cstr(b"Bad number\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] = b"Since I expected to read a number between 0 and 15,\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"Since I expected to read a number between 0 and 15,\x00" as *const u8 as *const i8;
         help_line[0] = b"I changed this one to zero.\x00" as *const u8 as *const i8;
         int_error(cur_val);
         cur_val = 0i32
@@ -11004,10 +10722,8 @@ pub unsafe extern "C" fn scan_font_ident() {
         }
         print_cstr(b"Missing font identifier\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] =
-            b"I was looking for a control sequence whose\x00" as *const u8 as *const i8;
-        help_line[0] =
-            b"current meaning has been defined by \\font.\x00" as *const u8 as *const i8;
+        help_line[1] = b"I was looking for a control sequence whose\x00" as *const u8 as *const i8;
+        help_line[0] = b"current meaning has been defined by \\font.\x00" as *const u8 as *const i8;
         back_error();
         f = 0i32
     }
@@ -11040,10 +10756,7 @@ pub unsafe extern "C" fn find_font_dimen(mut writing: bool) {
                 /*599: */
                 {
                     if fmem_ptr == font_mem_size {
-                        overflow(
-                            b"font memory\x00" as *const u8 as *const i8,
-                            font_mem_size,
-                        );
+                        overflow(b"font memory\x00" as *const u8 as *const i8, font_mem_size);
                     }
                     (*font_info.offset(fmem_ptr as isize)).b32.s1 = 0i32;
                     fmem_ptr += 1;
@@ -11077,8 +10790,8 @@ pub unsafe extern "C" fn find_font_dimen(mut writing: bool) {
         print_int(*font_params.offset(f as isize));
         print_cstr(b" fontdimen parameters\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] = b"To increase the number of font parameters, you must\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"To increase the number of font parameters, you must\x00" as *const u8 as *const i8;
         help_line[0] = b"use \\fontdimen immediately after the \\font is loaded.\x00" as *const u8
             as *const i8;
         error();
@@ -11154,42 +10867,29 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                 ))
                 .b32
                 .s1;
-                if cur_val1 as u32 & 0x1fffffi32 as u32
-                    == 0x1fffffi32 as u32
-                {
+                if cur_val1 as u32 & 0x1fffff_u32 == 0x1fffff_u32 {
                     cur_val1 = 0x8000i32
-                } else if cur_val1 as u32 >> 21i32 & 0x7i32 as u32
-                    > 7i32 as u32
-                    || cur_val1 as u32 >> 24i32 & 0xffi32 as u32
-                        > 15i32 as u32
-                    || cur_val1 as u32 & 0x1fffffi32 as u32
-                        > 255i32 as u32
+                } else if cur_val1 as u32 >> 21i32 & 0x7_u32 > 7_u32
+                    || cur_val1 as u32 >> 24i32 & 0xff_u32 > 15_u32
+                    || cur_val1 as u32 & 0x1fffff_u32 > 255_u32
                 {
                     if file_line_error_style_p != 0 {
                         print_file_line();
                     } else {
                         print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                     }
-                    print_cstr(
-                        b"Extended mathchar used as mathchar\x00" as *const u8
-                            as *const i8,
-                    );
+                    print_cstr(b"Extended mathchar used as mathchar\x00" as *const u8 as *const i8);
                     help_ptr = 2i32 as u8;
                     help_line[1] = b"A mathchar number must be between 0 and \"7FFF.\x00"
                         as *const u8 as *const i8;
-                    help_line[0] =
-                        b"I changed this one to zero.\x00" as *const u8 as *const i8;
+                    help_line[0] = b"I changed this one to zero.\x00" as *const u8 as *const i8;
                     int_error(cur_val1);
                     cur_val1 = 0i32
                 }
-                cur_val1 = (cur_val1 as u32 >> 21i32 & 0x7i32 as u32)
-                    .wrapping_mul(0x1000i32 as u32)
-                    .wrapping_add(
-                        (cur_val1 as u32 >> 24i32 & 0xffi32 as u32)
-                            .wrapping_mul(0x100i32 as u32),
-                    )
-                    .wrapping_add(cur_val1 as u32 & 0x1fffffi32 as u32)
-                    as i32;
+                cur_val1 = (cur_val1 as u32 >> 21i32 & 0x7_u32)
+                    .wrapping_mul(0x1000_u32)
+                    .wrapping_add((cur_val1 as u32 >> 24i32 & 0xff_u32).wrapping_mul(0x100_u32))
+                    .wrapping_add(cur_val1 as u32 & 0x1fffff_u32) as i32;
                 cur_val = cur_val1;
                 cur_val_level = 0i32 as u8
             } else if m
@@ -11257,14 +10957,11 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                     } else {
                         print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                     }
-                    print_cstr(
-                        b"Extended delcode used as delcode\x00" as *const u8 as *const i8,
-                    );
+                    print_cstr(b"Extended delcode used as delcode\x00" as *const u8 as *const i8);
                     help_ptr = 2i32 as u8;
                     help_line[1] = b"I can only go up to 2147483647=\'17777777777=\"7FFFFFFF,\x00"
                         as *const u8 as *const i8;
-                    help_line[0] =
-                        b"I changed this one to zero.\x00" as *const u8 as *const i8;
+                    help_line[0] = b"I changed this one to zero.\x00" as *const u8 as *const i8;
                     error();
                     cur_val = 0i32;
                     cur_val_level = 0i32 as u8
@@ -11319,8 +11016,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
             {
-                cur_val = ((*eqtb.offset((m + cur_val) as isize)).b32.s1 as i64 % 65536)
-                    as i32;
+                cur_val = ((*eqtb.offset((m + cur_val) as isize)).b32.s1 as i64 % 65536) as i32;
                 cur_val_level = 0i32 as u8
             } else {
                 cur_val = (*eqtb.offset((m + cur_val) as isize)).b32.s1;
@@ -11560,9 +11256,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                 } else {
                     print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
-                print_cstr(
-                    b"Missing number, treated as zero\x00" as *const u8 as *const i8,
-                );
+                print_cstr(b"Missing number, treated as zero\x00" as *const u8 as *const i8);
                 help_ptr = 3i32 as u8;
                 help_line[2] = b"A number should have been here; I inserted `0\'.\x00" as *const u8
                     as *const i8;
@@ -11894,8 +11588,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
         91 => {
             if m < 0i32 || m > 19i32 {
                 /* 19 = "lo_mem_stat_max" */
-                cur_val_level =
-                    ((*mem.offset(m as isize)).b16.s1 as i32 / 64i32) as u8;
+                cur_val_level = ((*mem.offset(m as isize)).b16.s1 as i32 / 64i32) as u8;
                 if (cur_val_level as i32) < 2i32 {
                     cur_val = (*mem.offset((m + 2i32) as isize)).b32.s1
                 } else {
@@ -12133,9 +11826,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                                     if file_line_error_style_p != 0 {
                                         print_file_line();
                                     } else {
-                                        print_nl_cstr(
-                                            b"! \x00" as *const u8 as *const i8,
-                                        );
+                                        print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                                     }
                                     print_cstr(b"\\\\XeTeXglyphbounds requires an edge index from 1 to 4;\x00"
                                                    as *const u8 as
@@ -12230,16 +11921,14 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                                 match m {
                                     48 => {
                                         cur_val = (*font_info.offset(
-                                            (*width_base.offset(q as isize) + i.s3 as i32)
-                                                as isize,
+                                            (*width_base.offset(q as isize) + i.s3 as i32) as isize,
                                         ))
                                         .b32
                                         .s1
                                     }
                                     49 => {
                                         cur_val = (*font_info.offset(
-                                            (*height_base.offset(q as isize)
-                                                + i.s2 as i32 / 16i32)
+                                            (*height_base.offset(q as isize) + i.s2 as i32 / 16i32)
                                                 as isize,
                                         ))
                                         .b32
@@ -12247,8 +11936,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                                     }
                                     50 => {
                                         cur_val = (*font_info.offset(
-                                            (*depth_base.offset(q as isize)
-                                                + i.s2 as i32 % 16i32)
+                                            (*depth_base.offset(q as isize) + i.s2 as i32 % 16i32)
                                                 as isize,
                                         ))
                                         .b32
@@ -12256,8 +11944,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                                     }
                                     51 => {
                                         cur_val = (*font_info.offset(
-                                            (*italic_base.offset(q as isize)
-                                                + i.s1 as i32 / 4i32)
+                                            (*italic_base.offset(q as isize) + i.s1 as i32 / 4i32)
                                                 as isize,
                                         ))
                                         .b32
@@ -13104,8 +12791,7 @@ pub unsafe extern "C" fn scan_int() {
             help_ptr = 2i32 as u8;
             help_line[1] = b"A one-character control sequence belongs after a ` mark.\x00"
                 as *const u8 as *const i8;
-            help_line[0] =
-                b"So I\'m essentially inserting \\0 here.\x00" as *const u8 as *const i8;
+            help_line[0] = b"So I\'m essentially inserting \\0 here.\x00" as *const u8 as *const i8;
             cur_val = '0' as i32;
             back_error();
         } else {
@@ -13154,9 +12840,7 @@ pub unsafe extern "C" fn scan_int() {
                 }
             }
             vacuous = 0i32 != 0;
-            if cur_val >= m
-                && (cur_val > m || d as i32 > 7i32 || radix as i32 != 10i32)
-            {
+            if cur_val >= m && (cur_val > m || d as i32 > 7i32 || radix as i32 != 10i32) {
                 if OK_so_far {
                     if file_line_error_style_p != 0 {
                         print_file_line();
@@ -13187,8 +12871,8 @@ pub unsafe extern "C" fn scan_int() {
             }
             print_cstr(b"Missing number, treated as zero\x00" as *const u8 as *const i8);
             help_ptr = 3i32 as u8;
-            help_line[2] = b"A number should have been here; I inserted `0\'.\x00" as *const u8
-                as *const i8;
+            help_line[2] =
+                b"A number should have been here; I inserted `0\'.\x00" as *const u8 as *const i8;
             help_line[1] = b"(If you can\'t figure out why I needed to see a number,\x00"
                 as *const u8 as *const i8;
             help_line[0] = b"look up `weird error\' in the index to The TeXbook.)\x00" as *const u8
@@ -13310,8 +12994,7 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                 }
                 kk = k;
                 while kk as i32 >= 1i32 {
-                    dig[(kk as i32 - 1i32) as usize] =
-                        (*mem.offset(p as isize)).b32.s0 as u8;
+                    dig[(kk as i32 - 1i32) as usize] = (*mem.offset(p as isize)).b32.s0 as u8;
                     q = p;
                     p = (*mem.offset(p as isize)).b32.s1;
                     (*mem.offset(q as isize)).b32.s1 = avail;
@@ -13347,12 +13030,9 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                     print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                                 }
                                 print_cstr(
-                                    b"Illegal unit of measure (\x00" as *const u8
-                                        as *const i8,
+                                    b"Illegal unit of measure (\x00" as *const u8 as *const i8,
                                 );
-                                print_cstr(
-                                    b"replaced by filll)\x00" as *const u8 as *const i8,
-                                );
+                                print_cstr(b"replaced by filll)\x00" as *const u8 as *const i8);
                                 help_ptr = 1i32 as u8;
                                 help_line[0] = b"I dddon\'t go any higher than filll.\x00"
                                     as *const u8
@@ -13414,9 +13094,7 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                     .b32
                                     .s1;
                                     current_block = 5195798230510548452;
-                                } else if scan_keyword(
-                                    b"ex\x00" as *const u8 as *const i8,
-                                ) {
+                                } else if scan_keyword(b"ex\x00" as *const u8 as *const i8) {
                                     v = (*font_info.offset(
                                         (5i32
                                             + *param_base.offset(
@@ -13466,25 +13144,20 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                 _ => {
                                     if mu {
                                         /*475:*/
-                                        if scan_keyword(
-                                            b"mu\x00" as *const u8 as *const i8,
-                                        ) {
+                                        if scan_keyword(b"mu\x00" as *const u8 as *const i8) {
                                             current_block = 6063453238281986051;
                                         } else {
                                             if file_line_error_style_p != 0 {
                                                 print_file_line();
                                             } else {
-                                                print_nl_cstr(
-                                                    b"! \x00" as *const u8 as *const i8,
-                                                );
+                                                print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                                             }
                                             print_cstr(
                                                 b"Illegal unit of measure (\x00" as *const u8
                                                     as *const i8,
                                             );
                                             print_cstr(
-                                                b"mu inserted)\x00" as *const u8
-                                                    as *const i8,
+                                                b"mu inserted)\x00" as *const u8 as *const i8,
                                             );
                                             help_ptr = 4i32 as u8;
                                             help_line[3] =
@@ -13507,9 +13180,7 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                             current_block = 6063453238281986051;
                                         }
                                     } else {
-                                        if scan_keyword(
-                                            b"true\x00" as *const u8 as *const i8,
-                                        ) {
+                                        if scan_keyword(b"true\x00" as *const u8 as *const i8) {
                                             /*476:*/
                                             prepare_mag(); /* magic ratio consant */
                                             if (*eqtb.offset(
@@ -13611,20 +13282,15 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                                     .s1
                                                         as i64)
                                                     as i32;
-                                                cur_val = (cur_val as i64
-                                                    + f as i64 / 65536)
-                                                    as i32;
+                                                cur_val =
+                                                    (cur_val as i64 + f as i64 / 65536) as i32;
                                                 f = (f as i64 % 65536) as i32
                                             }
                                         }
-                                        if scan_keyword(
-                                            b"pt\x00" as *const u8 as *const i8,
-                                        ) {
+                                        if scan_keyword(b"pt\x00" as *const u8 as *const i8) {
                                             current_block = 6063453238281986051;
                                         } else {
-                                            if scan_keyword(
-                                                b"in\x00" as *const u8 as *const i8,
-                                            ) {
+                                            if scan_keyword(b"in\x00" as *const u8 as *const i8) {
                                                 num = 7227i32;
                                                 denom = 100i32;
                                                 current_block = 15908231092227701503;
@@ -13646,40 +13312,44 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                             ) {
                                                 num = 7227i32;
                                                 denom = 2540i32;
-                                                current_block = 15908231092227701503; /* magic ratio consant */
+                                                current_block = 15908231092227701503;
+                                            /* magic ratio consant */
                                             /* magic ratio consant */
                                             } else if scan_keyword(
                                                 b"bp\x00" as *const u8 as *const i8,
                                             ) {
                                                 num = 7227i32;
                                                 denom = 7200i32;
-                                                current_block = 15908231092227701503; /* magic ratio consant */
+                                                current_block = 15908231092227701503;
+                                            /* magic ratio consant */
                                             /* magic ratio consant */
                                             } else if scan_keyword(
                                                 b"dd\x00" as *const u8 as *const i8,
                                             ) {
                                                 num = 1238i32;
                                                 denom = 1157i32;
-                                                current_block = 15908231092227701503; /* magic ratio consant */
+                                                current_block = 15908231092227701503;
+                                            /* magic ratio consant */
                                             /* magic ratio consant */
                                             } else if scan_keyword(
                                                 b"cc\x00" as *const u8 as *const i8,
                                             ) {
                                                 num = 14856i32;
                                                 denom = 1157i32;
-                                                current_block = 15908231092227701503; /* magic ratio consant */
+                                                current_block = 15908231092227701503;
+                                            /* magic ratio consant */
                                             /* magic ratio consant */
                                             } else if scan_keyword(
                                                 b"sp\x00" as *const u8 as *const i8,
                                             ) {
-                                                current_block = 8982780081639585757; /*478:*/
+                                                current_block = 8982780081639585757;
+                                            /*478:*/
                                             } else {
                                                 if file_line_error_style_p != 0 {
                                                     print_file_line();
                                                 } else {
                                                     print_nl_cstr(
-                                                        b"! \x00" as *const u8
-                                                            as *const i8,
+                                                        b"! \x00" as *const u8 as *const i8,
                                                     );
                                                 }
                                                 print_cstr(
@@ -13687,8 +13357,7 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                                         as *const i8,
                                                 );
                                                 print_cstr(
-                                                    b"pt inserted)\x00" as *const u8
-                                                        as *const i8,
+                                                    b"pt inserted)\x00" as *const u8 as *const i8,
                                                 );
                                                 help_ptr = 6i32 as u8;
                                                 help_line[5] =
@@ -13727,9 +13396,8 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                                         + 65536 * tex_remainder as i64)
                                                         / denom as i64)
                                                         as i32;
-                                                    cur_val = (cur_val as i64
-                                                        + f as i64 / 65536)
-                                                        as i32;
+                                                    cur_val =
+                                                        (cur_val as i64 + f as i64 / 65536) as i32;
                                                     f = (f as i64 % 65536) as i32;
                                                     current_block = 6063453238281986051;
                                                 }
@@ -13779,8 +13447,7 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                 if cur_val >= 16384i32 {
                                     arith_error = 1i32 != 0
                                 } else {
-                                    cur_val = (cur_val as i64 * 65536 + f as i64)
-                                        as i32
+                                    cur_val = (cur_val as i64 * 65536 + f as i64) as i32
                                 }
                             }
                             _ => {}
@@ -13808,10 +13475,10 @@ pub unsafe extern "C" fn xetex_scan_dimen(
         }
         print_cstr(b"Dimension too large\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] = b"I can\'t work with sizes bigger than about 19 feet.\x00" as *const u8
-            as *const i8;
-        help_line[0] = b"Continue and I\'ll use the largest value I can.\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"I can\'t work with sizes bigger than about 19 feet.\x00" as *const u8 as *const i8;
+        help_line[0] =
+            b"Continue and I\'ll use the largest value I can.\x00" as *const u8 as *const i8;
         error();
         cur_val = 0x3fffffffi32;
         arith_error = 0i32 != 0
@@ -13945,12 +13612,7 @@ pub unsafe extern "C" fn quotient(mut n: i32, mut d: i32) -> i32 {
     return a;
 }
 #[no_mangle]
-pub unsafe extern "C" fn fract(
-    mut x: i32,
-    mut n: i32,
-    mut d: i32,
-    mut max_answer: i32,
-) -> i32 {
+pub unsafe extern "C" fn fract(mut x: i32, mut n: i32, mut d: i32, mut max_answer: i32) -> i32 {
     let mut current_block: u64;
     let mut negative: bool = false;
     let mut a: i32 = 0;
@@ -14150,8 +13812,7 @@ pub unsafe extern "C" fn scan_expr() {
                             print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                         }
                         print_cstr(
-                            b"Missing ) inserted for expression\x00" as *const u8
-                                as *const i8,
+                            b"Missing ) inserted for expression\x00" as *const u8 as *const i8,
                         );
                         help_ptr = 1i32 as u8;
                         help_line[0] =
@@ -14366,8 +14027,7 @@ pub unsafe extern "C" fn scan_expr() {
         }
         print_cstr(b"Arithmetic overflow\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] =
-            b"I can\'t evaluate this expression,\x00" as *const u8 as *const i8;
+        help_line[1] = b"I can\'t evaluate this expression,\x00" as *const u8 as *const i8;
         help_line[0] = b"since the result is out of range.\x00" as *const u8 as *const i8;
         error();
         if l as i32 >= 2i32 {
@@ -14822,8 +14482,7 @@ pub unsafe extern "C" fn conv_toks() {
                 print_cstr(b"Invalid code (\x00" as *const u8 as *const i8);
                 print_int(cur_val);
                 print_cstr(
-                    b"), should be in the ranges 1..4, 6..8, 10..12\x00" as *const u8
-                        as *const i8,
+                    b"), should be in the ranges 1..4, 6..8, 10..12\x00" as *const u8 as *const i8,
                 );
                 help_ptr = 1i32 as u8;
                 help_line[0] = b"I\'m going to use 12 instead of that illegal code value.\x00"
@@ -15029,8 +14688,8 @@ pub unsafe extern "C" fn conv_toks() {
                 i = 0i32 as small_number;
                 while i as i32 <= length(font_name_str) - 1i32 {
                     if *str_pool.offset(
-                        (*str_start.offset((font_name_str as i64 - 65536) as isize)
-                            + i as i32) as isize,
+                        (*str_start.offset((font_name_str as i64 - 65536) as isize) + i as i32)
+                            as isize,
                     ) as i32
                         == '\"' as i32
                     {
@@ -15246,9 +14905,7 @@ pub unsafe extern "C" fn scan_toks(mut macro_def: bool, mut xpand: bool) -> i32 
                     } else {
                         print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                     }
-                    print_cstr(
-                        b"You already have nine parameters\x00" as *const u8 as *const i8,
-                    );
+                    print_cstr(b"You already have nine parameters\x00" as *const u8 as *const i8);
                     help_ptr = 1i32 as u8;
                     help_line[0] = b"I\'m going to ignore the # sign you just used.\x00"
                         as *const u8 as *const i8;
@@ -15269,8 +14926,8 @@ pub unsafe extern "C" fn scan_toks(mut macro_def: bool, mut xpand: bool) -> i32 
                         help_line[1] =
                             b"I\'ve inserted the digit you should have used after the #.\x00"
                                 as *const u8 as *const i8;
-                        help_line[0] = b"Type `1\' to delete what you did use.\x00" as *const u8
-                            as *const i8;
+                        help_line[0] =
+                            b"Type `1\' to delete what you did use.\x00" as *const u8 as *const i8;
                         back_error();
                     }
                     cur_tok = s
@@ -15469,8 +15126,8 @@ pub unsafe extern "C" fn read_toks(mut n: i32, mut r: i32, mut j: i32) {
                     print_cstr(b"File ended within \x00" as *const u8 as *const i8);
                     print_esc_cstr(b"read\x00" as *const u8 as *const i8);
                     help_ptr = 1i32 as u8;
-                    help_line[0] = b"This \\read has unbalanced braces.\x00" as *const u8
-                        as *const i8;
+                    help_line[0] =
+                        b"This \\read has unbalanced braces.\x00" as *const u8 as *const i8;
                     align_state = 1000000i64 as i32;
                     error();
                 }
@@ -16017,8 +15674,8 @@ pub unsafe extern "C" fn conditional() {
                 help_ptr = 2i32 as u8;
                 help_line[1] = b"The control sequence marked <to be read again> should\x00"
                     as *const u8 as *const i8;
-                help_line[0] = b"not appear between \\csname and \\endcsname.\x00" as *const u8
-                    as *const i8;
+                help_line[0] =
+                    b"not appear between \\csname and \\endcsname.\x00" as *const u8 as *const i8;
                 back_error();
             }
             m = first;
@@ -16027,10 +15684,7 @@ pub unsafe extern "C" fn conditional() {
                 if m >= max_buf_stack {
                     max_buf_stack = m + 1i32;
                     if max_buf_stack == buf_size {
-                        overflow(
-                            b"buffer size\x00" as *const u8 as *const i8,
-                            buf_size,
-                        );
+                        overflow(b"buffer size\x00" as *const u8 as *const i8, buf_size);
                     }
                 }
                 *buffer.offset(m as isize) = (*mem.offset(p as isize)).b32.s0 % 0x200000i32;
@@ -16065,8 +15719,7 @@ pub unsafe extern "C" fn conditional() {
                 && *font_ec.offset(n as isize) as i32 >= cur_val
             {
                 b = (*font_info.offset(
-                    (*char_base.offset(n as isize)
-                        + effective_char(1i32 != 0, n, cur_val as u16))
+                    (*char_base.offset(n as isize) + effective_char(1i32 != 0, n, cur_val as u16))
                         as isize,
                 ))
                 .b16
@@ -16274,10 +15927,7 @@ pub unsafe extern "C" fn begin_name() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn more_name(mut c: UTF16_code) -> bool {
-    if stop_at_space as i32 != 0
-        && file_name_quote_char as i32 == 0i32
-        && c as i32 == ' ' as i32
-    {
+    if stop_at_space as i32 != 0 && file_name_quote_char as i32 == 0i32 && c as i32 == ' ' as i32 {
         return 0i32 != 0;
     }
     if stop_at_space as i32 != 0
@@ -16396,8 +16046,7 @@ pub unsafe extern "C" fn pack_file_name(mut n: str_number, mut a: str_number, mu
     name_length = strlen(work_buffer) as i32;
     free(name_of_file as *mut libc::c_void);
     name_of_file = xmalloc(
-        ((name_length + 1i32 + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64),
+        ((name_length + 1i32 + 1i32) as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64),
     ) as *mut i8;
     strcpy(name_of_file, work_buffer);
     free(work_buffer as *mut libc::c_void);
@@ -16551,8 +16200,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
         begin_name();
         stop_at_space = 0i32 != 0;
         let mut cp: *const u8 = primary_input_name as *const u8;
-        if (pool_ptr as u64)
-            .wrapping_add(strlen(primary_input_name).wrapping_mul(2i32 as u64))
+        if (pool_ptr as u64).wrapping_add(strlen(primary_input_name).wrapping_mul(2i32 as u64))
             >= pool_size as u64
         {
             _tt_abort(
@@ -16565,7 +16213,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
             let fresh39 = cp;
             cp = cp.offset(1);
             rval = *fresh39 as UInt32;
-            if !(rval != 0i32 as u32) {
+            if !(rval != 0_u32) {
                 break;
             }
             let mut extraBytes: UInt16 = bytesFromUTF8[rval as usize] as UInt16;
@@ -16577,8 +16225,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
                     if *cp != 0 {
                         let fresh40 = cp;
                         cp = cp.offset(1);
-                        rval = (rval as u32).wrapping_add(*fresh40 as u32)
-                            as UInt32 as UInt32
+                        rval = (rval as u32).wrapping_add(*fresh40 as u32) as UInt32 as UInt32
                     }
                     current_block_21 = 7676382540965064243;
                 }
@@ -16604,8 +16251,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
                     if *cp != 0 {
                         let fresh41 = cp;
                         cp = cp.offset(1);
-                        rval = (rval as u32).wrapping_add(*fresh41 as u32)
-                            as UInt32 as UInt32
+                        rval = (rval as u32).wrapping_add(*fresh41 as u32) as UInt32 as UInt32
                     }
                     current_block_21 = 13258898395114305131;
                 }
@@ -16617,8 +16263,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
                     if *cp != 0 {
                         let fresh42 = cp;
                         cp = cp.offset(1);
-                        rval = (rval as u32).wrapping_add(*fresh42 as u32)
-                            as UInt32 as UInt32
+                        rval = (rval as u32).wrapping_add(*fresh42 as u32) as UInt32 as UInt32
                     }
                     current_block_21 = 10625751394499422232;
                 }
@@ -16630,8 +16275,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
                     if *cp != 0 {
                         let fresh43 = cp;
                         cp = cp.offset(1);
-                        rval = (rval as u32).wrapping_add(*fresh43 as u32)
-                            as UInt32 as UInt32
+                        rval = (rval as u32).wrapping_add(*fresh43 as u32) as UInt32 as UInt32
                     }
                     current_block_21 = 4051951890355284227;
                 }
@@ -16643,27 +16287,23 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
                     if *cp != 0 {
                         let fresh44 = cp;
                         cp = cp.offset(1);
-                        rval = (rval as u32).wrapping_add(*fresh44 as u32)
-                            as UInt32 as UInt32
+                        rval = (rval as u32).wrapping_add(*fresh44 as u32) as UInt32 as UInt32
                     }
                 }
                 _ => {}
             }
-            rval = (rval as u32).wrapping_sub(offsetsFromUTF8[extraBytes as usize])
-                as UInt32 as UInt32;
-            if rval > 0xffffi32 as u32 {
-                rval = (rval as u32).wrapping_sub(0x10000i32 as u32) as UInt32
-                    as UInt32;
+            rval = (rval as u32).wrapping_sub(offsetsFromUTF8[extraBytes as usize]) as UInt32
+                as UInt32;
+            if rval > 0xffff_u32 {
+                rval = (rval as u32).wrapping_sub(0x10000_u32) as UInt32 as UInt32;
                 let fresh45 = pool_ptr;
                 pool_ptr = pool_ptr + 1;
-                *str_pool.offset(fresh45 as isize) = (0xd800i32 as u32)
-                    .wrapping_add(rval.wrapping_div(0x400i32 as u32))
-                    as packed_UTF16_code;
+                *str_pool.offset(fresh45 as isize) =
+                    (0xd800_u32).wrapping_add(rval.wrapping_div(0x400_u32)) as packed_UTF16_code;
                 let fresh46 = pool_ptr;
                 pool_ptr = pool_ptr + 1;
-                *str_pool.offset(fresh46 as isize) = (0xdc00i32 as u32)
-                    .wrapping_add(rval.wrapping_rem(0x400i32 as u32))
-                    as packed_UTF16_code
+                *str_pool.offset(fresh46 as isize) =
+                    (0xdc00_u32).wrapping_add(rval.wrapping_rem(0x400_u32)) as packed_UTF16_code
             } else {
                 let fresh47 = pool_ptr;
                 pool_ptr = pool_ptr + 1;
@@ -16903,10 +16543,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
     cur_input.loc = cur_input.start;
 }
 #[no_mangle]
-pub unsafe extern "C" fn effective_char_info(
-    mut f: internal_font_number,
-    mut c: u16,
-) -> b16x4 {
+pub unsafe extern "C" fn effective_char_info(mut f: internal_font_number, mut c: u16) -> b16x4 {
     if !xtx_ligature_present && !(*font_mapping.offset(f as isize)).is_null() {
         c = apply_tfm_font_mapping(*font_mapping.offset(f as isize), c as i32) as u16
     }
@@ -17092,8 +16729,7 @@ pub unsafe extern "C" fn char_warning(mut f: internal_font_number, mut c: i32) {
     str_ptr -= 1;
     pool_ptr = *str_start.offset((str_ptr - 0x10000i32) as isize);
     ttstub_issue_warning(
-        b"could not represent character \"%s\" in font \"%s\"\x00" as *const u8
-            as *const i8,
+        b"could not represent character \"%s\" in font \"%s\"\x00" as *const u8 as *const i8,
         chr,
         fn_0,
     );
@@ -17112,10 +16748,7 @@ pub unsafe extern "C" fn char_warning(mut f: internal_font_number, mut c: i32) {
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn new_native_word_node(
-    mut f: internal_font_number,
-    mut n: i32,
-) -> i32 {
+pub unsafe extern "C" fn new_native_word_node(mut f: internal_font_number, mut n: i32) -> i32 {
     let mut l: i32 = 0;
     let mut q: i32 = 0;
     l = (6i32 as u64).wrapping_add(
@@ -17186,12 +16819,10 @@ pub unsafe extern "C" fn new_native_character(
                 );
             }
             *str_pool.offset(pool_ptr as isize) =
-                ((c as i64 - 65536) / 1024i32 as i64 + 0xd800i32 as i64)
-                    as packed_UTF16_code;
+                ((c as i64 - 65536) / 1024i32 as i64 + 0xd800i32 as i64) as packed_UTF16_code;
             pool_ptr += 1;
             *str_pool.offset(pool_ptr as isize) =
-                ((c as i64 - 65536) % 1024i32 as i64 + 0xdc00i32 as i64)
-                    as packed_UTF16_code;
+                ((c as i64 - 65536) % 1024i32 as i64 + 0xdc00i32 as i64) as packed_UTF16_code;
             pool_ptr += 1
         } else {
             if pool_ptr + 1i32 > pool_size {
@@ -17280,16 +16911,14 @@ pub unsafe extern "C" fn new_native_character(
         (*mem.offset((p + 4i32) as isize)).b16.s2 = f as u16;
         if c as i64 > 65535 {
             (*mem.offset((p + 4i32) as isize)).b16.s1 = 2i32 as u16;
-            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
-                .offset(0) = ((c as i64 - 65536) / 1024i32 as i64
-                + 0xd800i32 as i64) as u16;
-            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
-                .offset(1) = ((c as i64 - 65536) % 1024i32 as i64
-                + 0xdc00i32 as i64) as u16
+            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16).offset(0) =
+                ((c as i64 - 65536) / 1024i32 as i64 + 0xd800i32 as i64) as u16;
+            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16).offset(1) =
+                ((c as i64 - 65536) % 1024i32 as i64 + 0xdc00i32 as i64) as u16
         } else {
             (*mem.offset((p + 4i32) as isize)).b16.s1 = 1i32 as u16;
-            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
-                .offset(0) = c as u16
+            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16).offset(0) =
+                c as u16
         }
     }
     measure_native_node(
@@ -17377,8 +17006,7 @@ pub unsafe extern "C" fn font_mapping_warning(
         2 => {
             print_cstr(b"\' not usable;\x00" as *const u8 as *const i8);
             print_nl_cstr(
-                b"bad mapping file or incorrect mapping type.\x00" as *const u8
-                    as *const i8,
+                b"bad mapping file or incorrect mapping type.\x00" as *const u8 as *const i8,
             );
         }
         _ => {
@@ -17492,12 +17120,12 @@ pub unsafe extern "C" fn load_native_font(
         }
         print_cstr(b" not loaded: Not enough room left\x00" as *const u8 as *const i8);
         help_ptr = 4i32 as u8;
-        help_line[3] = b"I\'m afraid I won\'t be able to make use of this font,\x00" as *const u8
-            as *const i8;
+        help_line[3] =
+            b"I\'m afraid I won\'t be able to make use of this font,\x00" as *const u8 as *const i8;
         help_line[2] = b"because my memory for character-size data is too small.\x00" as *const u8
             as *const i8;
-        help_line[1] = b"If you\'re really stuck, ask a wizard to enlarge me.\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"If you\'re really stuck, ask a wizard to enlarge me.\x00" as *const u8 as *const i8;
         help_line[0] = b"Or maybe try `I\\font<same font id>=<name of loaded font>\'.\x00"
             as *const u8 as *const i8;
         error();
@@ -18302,23 +17930,19 @@ pub unsafe extern "C" fn read_font_info(
                                                                                 a
                                                                                     =
                                                                                     ttstub_input_getc(tfm_file);
-                                                                                qw.s3 =
-                                                                                    a as u16;
+                                                                                qw.s3 = a as u16;
                                                                                 b
                                                                                     =
                                                                                     ttstub_input_getc(tfm_file);
-                                                                                qw.s2 =
-                                                                                    b as u16;
+                                                                                qw.s2 = b as u16;
                                                                                 c
                                                                                     =
                                                                                     ttstub_input_getc(tfm_file);
-                                                                                qw.s1 =
-                                                                                    c as u16;
+                                                                                qw.s1 = c as u16;
                                                                                 d
                                                                                     =
                                                                                     ttstub_input_getc(tfm_file);
-                                                                                qw.s0 =
-                                                                                    d as u16;
+                                                                                qw.s0 = d as u16;
                                                                                 if a == -1i32
                                                                                     || b == -1i32
                                                                                     || c == -1i32
@@ -18364,11 +17988,9 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                     /
                                                                                                     16i32;
                                                                                         if (z
-                                                                                                as
-                                                                                                i64)
-                                                                                               <
-                                                                                               65536
-                                                                                           {
+                                                                                            as i64)
+                                                                                            < 65536
+                                                                                        {
                                                                                             current_block
                                                                                                 =
                                                                                                 9519785463931849731;
@@ -18417,8 +18039,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                             k
                                                                                                 =
                                                                                                 fmem_ptr;
-                                                                                            loop
-                                                                                                 {
+                                                                                            loop {
                                                                                                 if !(k
                                                                                                          <=
                                                                                                          *width_base.offset(f
@@ -20110,22 +19731,18 @@ pub unsafe extern "C" fn read_font_info(
                         } else {
                             print_cstr(
                                 b" not loadable: Metric (TFM) file or installed font not found\x00"
-                                    as *const u8
-                                    as *const i8,
+                                    as *const u8 as *const i8,
                             );
                         }
                         help_ptr = 5i32 as u8;
                         help_line[4] = b"I wasn\'t able to read the size data for this font,\x00"
-                            as *const u8
-                            as *const i8;
+                            as *const u8 as *const i8;
                         help_line[3] = b"so I will ignore the font specification.\x00" as *const u8
                             as *const i8;
                         help_line[2] = b"[Wizards can fix TFM files using TFtoPL/PLtoTF.]\x00"
-                            as *const u8
-                            as *const i8;
+                            as *const u8 as *const i8;
                         help_line[1] = b"You might try inserting a different font spec;\x00"
-                            as *const u8
-                            as *const i8;
+                            as *const u8 as *const i8;
                         help_line[0] =
                             b"e.g., type `I\\font<same font id>=<substitute font name>\'.\x00"
                                 as *const u8 as *const i8;
@@ -20171,9 +19788,7 @@ pub unsafe extern "C" fn read_font_info(
     {
         if g == 0i32 {
             begin_diagnostic();
-            print_nl_cstr(
-                b" -> font not found, using \"nullfont\"\x00" as *const u8 as *const i8,
-            );
+            print_nl_cstr(b" -> font not found, using \"nullfont\"\x00" as *const u8 as *const i8);
             end_diagnostic(0i32 != 0);
         } else if file_opened {
             begin_diagnostic();
@@ -20306,11 +19921,7 @@ pub unsafe extern "C" fn char_pw(mut p: i32, mut side: small_number) -> scaled_t
         }
     }
     f = (*mem.offset(p as isize)).b16.s1 as internal_font_number;
-    c = get_cp_code(
-        f,
-        (*mem.offset(p as isize)).b16.s0 as u32,
-        side as i32,
-    );
+    c = get_cp_code(f, (*mem.offset(p as isize)).b16.s0 as u32, side as i32);
     match side as i32 {
         0 => last_leftmost_char = p,
         1 => last_rightmost_char = p,
@@ -20430,21 +20041,18 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
                 ))
                 .b16;
                 x = x
-                    + (*font_info
-                        .offset((*width_base.offset(f as isize) + i.s3 as i32) as isize))
-                    .b32
-                    .s1;
-                s = (*font_info.offset(
-                    (*height_base.offset(f as isize) + i.s2 as i32 / 16i32) as isize,
-                ))
+                    + (*font_info.offset((*width_base.offset(f as isize) + i.s3 as i32) as isize))
+                        .b32
+                        .s1;
+                s = (*font_info
+                    .offset((*height_base.offset(f as isize) + i.s2 as i32 / 16i32) as isize))
                 .b32
                 .s1;
                 if s > h {
                     h = s
                 }
-                s = (*font_info.offset(
-                    (*depth_base.offset(f as isize) + i.s2 as i32 % 16i32) as isize,
-                ))
+                s = (*font_info
+                    .offset((*depth_base.offset(f as isize) + i.s2 as i32 % 16i32) as isize))
                 .b32
                 .s1;
                 if s > d {
@@ -20481,9 +20089,7 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
                         if (*mem.offset(p as isize)).b16.s1 as i32 == 5i32 {
                             if (*mem.offset(p as isize)).b16.s0 as i32 != 0i32 {
                                 if pre_adjust_tail == -0xfffffffi32 {
-                                    confusion(
-                                        b"pre vadjust\x00" as *const u8 as *const i8,
-                                    );
+                                    confusion(b"pre vadjust\x00" as *const u8 as *const i8);
                                 }
                                 (*mem.offset(pre_adjust_tail as isize)).b32.s1 =
                                     (*mem.offset((p + 1i32) as isize)).b32.s1;
@@ -20494,9 +20100,7 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
                                 }
                             } else {
                                 if adjust_tail == -0xfffffffi32 {
-                                    confusion(
-                                        b"pre vadjust\x00" as *const u8 as *const i8,
-                                    );
+                                    confusion(b"pre vadjust\x00" as *const u8 as *const i8);
                                 }
                                 (*mem.offset(adjust_tail as isize)).b32.s1 =
                                     (*mem.offset((p + 1i32) as isize)).b32.s1;
@@ -20597,8 +20201,7 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
                         /*1498: */
                         if (*mem.offset(p as isize)).b16.s0 as i32 & 1i32 != 0 {
                             if (*mem.offset(LR_ptr as isize)).b32.s0
-                                == 4i32 * ((*mem.offset(p as isize)).b16.s0 as i32 / 4i32)
-                                    + 3i32
+                                == 4i32 * ((*mem.offset(p as isize)).b16.s0 as i32 / 4i32) + 3i32
                             {
                                 temp_ptr = LR_ptr; /*689: */
                                 LR_ptr = (*mem.offset(temp_ptr as isize)).b32.s1;
@@ -20611,9 +20214,8 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
                             }
                         } else {
                             temp_ptr = get_avail();
-                            (*mem.offset(temp_ptr as isize)).b32.s0 = 4i32
-                                * ((*mem.offset(p as isize)).b16.s0 as i32 / 4i32)
-                                + 3i32;
+                            (*mem.offset(temp_ptr as isize)).b32.s0 =
+                                4i32 * ((*mem.offset(p as isize)).b16.s0 as i32 / 4i32) + 3i32;
                             (*mem.offset(temp_ptr as isize)).b32.s1 = LR_ptr;
                             LR_ptr = temp_ptr
                         }
@@ -20680,8 +20282,8 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
                     p = (*mem.offset(q as isize)).b32.s1;
                     while p != pp {
                         if (*mem.offset(p as isize)).b16.s1 as i32 == 8i32 {
-                            total_chars = total_chars
-                                + (*mem.offset((p + 4i32) as isize)).b16.s1 as i32
+                            total_chars =
+                                total_chars + (*mem.offset((p + 4i32) as isize)).b16.s1 as i32
                         }
                         ppp = p;
                         p = (*mem.offset(p as isize)).b32.s1
@@ -20701,8 +20303,7 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
                         if (*mem.offset(ppp as isize)).b16.s1 as i32 == 8i32 {
                             let mut for_end: i32 = 0;
                             k = 0i32;
-                            for_end =
-                                (*mem.offset((ppp + 4i32) as isize)).b16.s1 as i32 - 1i32;
+                            for_end = (*mem.offset((ppp + 4i32) as isize)).b16.s1 as i32 - 1i32;
                             if k <= for_end {
                                 loop {
                                     *(&mut *mem.offset((pp + 6i32) as isize) as *mut memory_word
@@ -20814,8 +20415,7 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
         (*mem.offset((r + 5i32) as isize)).b16.s0 = o as u16;
         (*mem.offset((r + 5i32) as isize)).b16.s1 = 1i32 as u16;
         if total_stretch[o as usize] != 0i32 {
-            (*mem.offset((r + 6i32) as isize)).gr =
-                x as f64 / total_stretch[o as usize] as f64
+            (*mem.offset((r + 6i32) as isize)).gr = x as f64 / total_stretch[o as usize] as f64
         } else {
             (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
             (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
@@ -20886,8 +20486,7 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
         (*mem.offset((r + 5i32) as isize)).b16.s0 = o as u16;
         (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as u16;
         if total_shrink[o as usize] != 0i32 {
-            (*mem.offset((r + 6i32) as isize)).gr =
-                -x as f64 / total_shrink[o as usize] as f64
+            (*mem.offset((r + 6i32) as isize)).gr = -x as f64 / total_shrink[o as usize] as f64
         } else {
             (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
             (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
@@ -21110,9 +20709,7 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
                     .s1
                 {
                     print_ln();
-                    print_nl_cstr(
-                        b"Tight \\hbox (badness \x00" as *const u8 as *const i8,
-                    );
+                    print_nl_cstr(b"Tight \\hbox (badness \x00" as *const u8 as *const i8);
                     print_int(last_badness);
                     current_block = 13814253595362444008;
                 } else {
@@ -21130,19 +20727,14 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
             13814253595362444008 => {
                 if output_active {
                     print_cstr(
-                        b") has occurred while \\output is active\x00" as *const u8
-                            as *const i8,
+                        b") has occurred while \\output is active\x00" as *const u8 as *const i8,
                     );
                 } else {
                     if pack_begin_line != 0i32 {
                         if pack_begin_line > 0i32 {
-                            print_cstr(
-                                b") in paragraph at lines \x00" as *const u8 as *const i8,
-                            );
+                            print_cstr(b") in paragraph at lines \x00" as *const u8 as *const i8);
                         } else {
-                            print_cstr(
-                                b") in alignment at lines \x00" as *const u8 as *const i8,
-                            );
+                            print_cstr(b") in alignment at lines \x00" as *const u8 as *const i8);
                         }
                         print_int(abs(pack_begin_line));
                         print_cstr(b"--\x00" as *const u8 as *const i8);
@@ -21214,9 +20806,7 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
                 }
                 if LR_problems > 0i32 {
                     print_ln();
-                    print_nl_cstr(
-                        b"\\endL or \\endR problem (\x00" as *const u8 as *const i8,
-                    );
+                    print_nl_cstr(b"\\endL or \\endR problem (\x00" as *const u8 as *const i8);
                     print_int(LR_problems / 10000i32);
                     print_cstr(b" missing, \x00" as *const u8 as *const i8);
                     print_int(LR_problems % 10000i32);
@@ -21390,8 +20980,7 @@ pub unsafe extern "C" fn vpackage(
             (*mem.offset((r + 5i32) as isize)).b16.s0 = o as u16;
             (*mem.offset((r + 5i32) as isize)).b16.s1 = 1i32 as u16;
             if total_stretch[o as usize] != 0i32 {
-                (*mem.offset((r + 6i32) as isize)).gr =
-                    x as f64 / total_stretch[o as usize] as f64
+                (*mem.offset((r + 6i32) as isize)).gr = x as f64 / total_stretch[o as usize] as f64
             } else {
                 (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
@@ -21462,8 +21051,7 @@ pub unsafe extern "C" fn vpackage(
             (*mem.offset((r + 5i32) as isize)).b16.s0 = o as u16;
             (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as u16;
             if total_shrink[o as usize] != 0i32 {
-                (*mem.offset((r + 6i32) as isize)).gr =
-                    -x as f64 / total_shrink[o as usize] as f64
+                (*mem.offset((r + 6i32) as isize)).gr = -x as f64 / total_shrink[o as usize] as f64
             } else {
                 (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
@@ -21581,9 +21169,7 @@ pub unsafe extern "C" fn vpackage(
                         .s1
                     {
                         print_ln();
-                        print_nl_cstr(
-                            b"Tight \\vbox (badness \x00" as *const u8 as *const i8,
-                        );
+                        print_nl_cstr(b"Tight \\vbox (badness \x00" as *const u8 as *const i8);
                         print_int(last_badness);
                         current_block = 13130523023485106979;
                     } else {
@@ -21601,14 +21187,11 @@ pub unsafe extern "C" fn vpackage(
             _ => {
                 if output_active {
                     print_cstr(
-                        b") has occurred while \\output is active\x00" as *const u8
-                            as *const i8,
+                        b") has occurred while \\output is active\x00" as *const u8 as *const i8,
                     );
                 } else {
                     if pack_begin_line != 0i32 {
-                        print_cstr(
-                            b") in alignment at lines \x00" as *const u8 as *const i8,
-                        );
+                        print_cstr(b") in alignment at lines \x00" as *const u8 as *const i8);
                         print_int(abs(pack_begin_line));
                         print_cstr(b"--\x00" as *const u8 as *const i8);
                     } else {
@@ -21838,8 +21421,7 @@ pub unsafe extern "C" fn get_preamble_token() {
         }
         if cur_cmd as i32 == 9i32 {
             fatal_error(
-                b"(interwoven alignment preambles are not allowed)\x00" as *const u8
-                    as *const i8,
+                b"(interwoven alignment preambles are not allowed)\x00" as *const u8 as *const i8,
             );
         }
         if !(cur_cmd as i32 == 76i32
@@ -21938,8 +21520,8 @@ pub unsafe extern "C" fn init_align() {
         print_esc_cstr(b"halign\x00" as *const u8 as *const i8);
         print_cstr(b" inside $$\'s\x00" as *const u8 as *const i8);
         help_ptr = 3i32 as u8;
-        help_line[2] = b"Displays can use special alignments (like \\eqalignno)\x00" as *const u8
-            as *const i8;
+        help_line[2] =
+            b"Displays can use special alignments (like \\eqalignno)\x00" as *const u8 as *const i8;
         help_line[1] = b"only if nothing but the alignment itself is between $$\'s.\x00"
             as *const u8 as *const i8;
         help_line[0] = b"So I\'ve deleted the formulas that preceded this alignment.\x00"
@@ -21976,14 +21558,8 @@ pub unsafe extern "C" fn init_align() {
             if cur_cmd as i32 == 6i32 {
                 break;
             }
-            if cur_cmd as i32 <= 5i32
-                && cur_cmd as i32 >= 4i32
-                && align_state as i64 == -1000000
-            {
-                if p == 4999999i32 - 4i32
-                    && cur_loop == -0xfffffffi32
-                    && cur_cmd as i32 == 4i32
-                {
+            if cur_cmd as i32 <= 5i32 && cur_cmd as i32 >= 4i32 && align_state as i64 == -1000000 {
+                if p == 4999999i32 - 4i32 && cur_loop == -0xfffffffi32 && cur_cmd as i32 == 4i32 {
                     cur_loop = cur_align
                 } else {
                     if file_line_error_style_p != 0 {
@@ -21992,8 +21568,7 @@ pub unsafe extern "C" fn init_align() {
                         print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                     }
                     print_cstr(
-                        b"Missing # inserted in alignment preamble\x00" as *const u8
-                            as *const i8,
+                        b"Missing # inserted in alignment preamble\x00" as *const u8 as *const i8,
                     );
                     help_ptr = 3i32 as u8;
                     help_line[2] = b"There should be exactly one # between &\'s, when an\x00"
@@ -22021,10 +21596,7 @@ pub unsafe extern "C" fn init_align() {
         (*mem.offset(p as isize)).b32.s1 = -0xfffffffi32;
         loop {
             get_preamble_token();
-            if cur_cmd as i32 <= 5i32
-                && cur_cmd as i32 >= 4i32
-                && align_state as i64 == -1000000
-            {
+            if cur_cmd as i32 <= 5i32 && cur_cmd as i32 >= 4i32 && align_state as i64 == -1000000 {
                 break;
             }
             if cur_cmd as i32 == 6i32 {
@@ -22033,9 +21605,7 @@ pub unsafe extern "C" fn init_align() {
                 } else {
                     print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
-                print_cstr(
-                    b"Only one # is allowed per tab\x00" as *const u8 as *const i8,
-                );
+                print_cstr(b"Only one # is allowed per tab\x00" as *const u8 as *const i8);
                 help_ptr = 3i32 as u8;
                 help_line[2] = b"There should be exactly one # between &\'s, when an\x00"
                     as *const u8 as *const i8;
@@ -22166,8 +21736,7 @@ pub unsafe extern "C" fn fin_col() -> bool {
     }
     if (align_state as i64) < 500000 {
         fatal_error(
-            b"(interwoven alignment preambles are not allowed)\x00" as *const u8
-                as *const i8,
+            b"(interwoven alignment preambles are not allowed)\x00" as *const u8 as *const i8,
         );
     }
     p = (*mem.offset(q as isize)).b32.s1;
@@ -22211,9 +21780,7 @@ pub unsafe extern "C" fn fin_col() -> bool {
             } else {
                 print_nl_cstr(b"! \x00" as *const u8 as *const i8);
             }
-            print_cstr(
-                b"Extra alignment tab has been changed to \x00" as *const u8 as *const i8,
-            );
+            print_cstr(b"Extra alignment tab has been changed to \x00" as *const u8 as *const i8);
             print_esc_cstr(b"cr\x00" as *const u8 as *const i8);
             help_ptr = 3i32 as u8;
             help_line[2] = b"You have given more \\span or & marks than there were\x00" as *const u8
@@ -22756,8 +22323,7 @@ pub unsafe extern "C" fn fin_align() {
                             {
                                 t = t + tex_round(
                                     (*mem.offset((p + 6i32) as isize)).gr
-                                        * (*mem.offset((v + 2i32) as isize)).b32.s1
-                                            as f64,
+                                        * (*mem.offset((v + 2i32) as isize)).b32.s1 as f64,
                                 )
                             }
                         } else if (*mem.offset((p + 5i32) as isize)).b16.s1 as i32 == 2i32 {
@@ -22766,8 +22332,7 @@ pub unsafe extern "C" fn fin_align() {
                             {
                                 t = t - tex_round(
                                     (*mem.offset((p + 6i32) as isize)).gr
-                                        * (*mem.offset((v + 3i32) as isize)).b32.s1
-                                            as f64,
+                                        * (*mem.offset((v + 3i32) as isize)).b32.s1 as f64,
                                 )
                             }
                         }
@@ -22799,10 +22364,9 @@ pub unsafe extern "C" fn fin_align() {
                             if (*mem.offset((r + 6i32) as isize)).b32.s1 == 0i32 {
                                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
                             } else {
-                                (*mem.offset((r + 6i32) as isize)).gr = (t
-                                    - (*mem.offset((r + 1i32) as isize)).b32.s1)
-                                    as f64
-                                    / (*mem.offset((r + 6i32) as isize)).b32.s1 as f64
+                                (*mem.offset((r + 6i32) as isize)).gr =
+                                    (t - (*mem.offset((r + 1i32) as isize)).b32.s1) as f64
+                                        / (*mem.offset((r + 6i32) as isize)).b32.s1 as f64
                             }
                         } else {
                             (*mem.offset((r + 5i32) as isize)).b16.s0 =
@@ -22810,18 +22374,15 @@ pub unsafe extern "C" fn fin_align() {
                             (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as u16;
                             if (*mem.offset((r + 4i32) as isize)).b32.s1 == 0i32 {
                                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
-                            } else if (*mem.offset((r + 5i32) as isize)).b16.s0 as i32
-                                == 0i32
+                            } else if (*mem.offset((r + 5i32) as isize)).b16.s0 as i32 == 0i32
                                 && (*mem.offset((r + 1i32) as isize)).b32.s1 - t
                                     > (*mem.offset((r + 4i32) as isize)).b32.s1
                             {
                                 (*mem.offset((r + 6i32) as isize)).gr = 1.0f64
                             } else {
                                 (*mem.offset((r + 6i32) as isize)).gr =
-                                    ((*mem.offset((r + 1i32) as isize)).b32.s1 - t)
-                                        as f64
-                                        / (*mem.offset((r + 4i32) as isize)).b32.s1
-                                            as f64
+                                    ((*mem.offset((r + 1i32) as isize)).b32.s1 - t) as f64
+                                        / (*mem.offset((r + 4i32) as isize)).b32.s1 as f64
                             }
                         }
                         (*mem.offset((r + 1i32) as isize)).b32.s1 = w;
@@ -22838,10 +22399,9 @@ pub unsafe extern "C" fn fin_align() {
                             if (*mem.offset((r + 6i32) as isize)).b32.s1 == 0i32 {
                                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
                             } else {
-                                (*mem.offset((r + 6i32) as isize)).gr = (t
-                                    - (*mem.offset((r + 3i32) as isize)).b32.s1)
-                                    as f64
-                                    / (*mem.offset((r + 6i32) as isize)).b32.s1 as f64
+                                (*mem.offset((r + 6i32) as isize)).gr =
+                                    (t - (*mem.offset((r + 3i32) as isize)).b32.s1) as f64
+                                        / (*mem.offset((r + 6i32) as isize)).b32.s1 as f64
                             }
                         } else {
                             (*mem.offset((r + 5i32) as isize)).b16.s0 =
@@ -22849,18 +22409,15 @@ pub unsafe extern "C" fn fin_align() {
                             (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as u16;
                             if (*mem.offset((r + 4i32) as isize)).b32.s1 == 0i32 {
                                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
-                            } else if (*mem.offset((r + 5i32) as isize)).b16.s0 as i32
-                                == 0i32
+                            } else if (*mem.offset((r + 5i32) as isize)).b16.s0 as i32 == 0i32
                                 && (*mem.offset((r + 3i32) as isize)).b32.s1 - t
                                     > (*mem.offset((r + 4i32) as isize)).b32.s1
                             {
                                 (*mem.offset((r + 6i32) as isize)).gr = 1.0f64
                             } else {
                                 (*mem.offset((r + 6i32) as isize)).gr =
-                                    ((*mem.offset((r + 3i32) as isize)).b32.s1 - t)
-                                        as f64
-                                        / (*mem.offset((r + 4i32) as isize)).b32.s1
-                                            as f64
+                                    ((*mem.offset((r + 3i32) as isize)).b32.s1 - t) as f64
+                                        / (*mem.offset((r + 4i32) as isize)).b32.s1 as f64
                             }
                         }
                         (*mem.offset((r + 3i32) as isize)).b32.s1 = w;
@@ -22941,9 +22498,7 @@ pub unsafe extern "C" fn fin_align() {
                 } else {
                     print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
-                print_cstr(
-                    b"Display math should end with $$\x00" as *const u8 as *const i8,
-                );
+                print_cstr(b"Display math should end with $$\x00" as *const u8 as *const i8);
                 help_ptr = 2i32 as u8;
                 help_line[1] = b"The `$\' that I just saw supposedly matches a previous `$$\'.\x00"
                     as *const u8 as *const i8;
@@ -23144,8 +22699,8 @@ pub unsafe extern "C" fn eTeX_enabled(mut b: bool, mut j: u16, mut k: i32) -> bo
         print_cstr(b"Improper \x00" as *const u8 as *const i8);
         print_cmd_chr(j, k);
         help_ptr = 1i32 as u8;
-        help_line[0] = b"Sorry, this optional e-TeX feature has been disabled.\x00" as *const u8
-            as *const i8;
+        help_line[0] =
+            b"Sorry, this optional e-TeX feature has been disabled.\x00" as *const u8 as *const i8;
         error();
     }
     return b;
@@ -23780,10 +23335,8 @@ pub unsafe extern "C" fn vert_break(mut p: i32, mut h: scaled_t, mut d: scaled_t
                     q = p
                 } else {
                     q = (*mem.offset((p + 1i32) as isize)).b32.s0; /*:1011 */
-                    active_width
-                        [(2i32 + (*mem.offset(q as isize)).b16.s1 as i32) as usize] =
-                        active_width
-                            [(2i32 + (*mem.offset(q as isize)).b16.s1 as i32) as usize]
+                    active_width[(2i32 + (*mem.offset(q as isize)).b16.s1 as i32) as usize] =
+                        active_width[(2i32 + (*mem.offset(q as isize)).b16.s1 as i32) as usize]
                             + (*mem.offset((q + 2i32) as isize)).b32.s1; /*:1014*/
                     active_width[6] = active_width[6] + (*mem.offset((q + 3i32) as isize)).b32.s1;
                     if (*mem.offset(q as isize)).b16.s0 as i32 != 0i32
@@ -23800,8 +23353,7 @@ pub unsafe extern "C" fn vert_break(mut p: i32, mut h: scaled_t, mut d: scaled_t
                         );
                         help_ptr = 4i32 as u8;
                         help_line[3] = b"The box you are \\vsplitting contains some infinitely\x00"
-                            as *const u8
-                            as *const i8;
+                            as *const u8 as *const i8;
                         help_line[2] =
                             b"shrinkable glue, e.g., `\\vss\' or `\\vskip 0pt minus 1fil\'.\x00"
                                 as *const u8 as *const i8;
@@ -23896,10 +23448,10 @@ pub unsafe extern "C" fn vsplit(mut n: i32, mut h: scaled_t) -> i32 {
         print_cstr(b" needs a \x00" as *const u8 as *const i8);
         print_esc_cstr(b"vbox\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] = b"The box you are trying to split is an \\hbox.\x00" as *const u8
-            as *const i8;
-        help_line[0] = b"I can\'t split such a box, so I\'ll leave it alone.\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"The box you are trying to split is an \\hbox.\x00" as *const u8 as *const i8;
+        help_line[0] =
+            b"I can\'t split such a box, so I\'ll leave it alone.\x00" as *const u8 as *const i8;
         error();
         return -0xfffffffi32;
     }
@@ -24381,8 +23933,8 @@ pub unsafe extern "C" fn insert_dollar_sign() {
     }
     print_cstr(b"Missing $ inserted\x00" as *const u8 as *const i8);
     help_ptr = 2i32 as u8;
-    help_line[1] = b"I\'ve inserted a begin-math/end-math symbol since I think\x00" as *const u8
-        as *const i8;
+    help_line[1] =
+        b"I\'ve inserted a begin-math/end-math symbol since I think\x00" as *const u8 as *const i8;
     help_line[0] =
         b"you left one out. Proceed, with fingers crossed.\x00" as *const u8 as *const i8;
     ins_error();
@@ -24402,12 +23954,11 @@ pub unsafe extern "C" fn you_cant() {
 pub unsafe extern "C" fn report_illegal_case() {
     you_cant();
     help_ptr = 4i32 as u8;
-    help_line[3] = b"Sorry, but I\'m not programmed to handle this case;\x00" as *const u8
-        as *const i8;
-    help_line[2] =
-        b"I\'ll just pretend that you didn\'t ask for it.\x00" as *const u8 as *const i8;
-    help_line[1] = b"If you\'re in the wrong mode, you might be able to\x00" as *const u8
-        as *const i8;
+    help_line[3] =
+        b"Sorry, but I\'m not programmed to handle this case;\x00" as *const u8 as *const i8;
+    help_line[2] = b"I\'ll just pretend that you didn\'t ask for it.\x00" as *const u8 as *const i8;
+    help_line[1] =
+        b"If you\'re in the wrong mode, you might be able to\x00" as *const u8 as *const i8;
     help_line[0] = b"return to the right one by typing `I}\' or `I$\' or `I\\par\'.\x00"
         as *const u8 as *const i8;
     error();
@@ -24561,11 +24112,11 @@ pub unsafe extern "C" fn off_save() {
             5i32 as u16,
         );
         help_ptr = 5i32 as u8;
-        help_line[4] = b"I\'ve inserted something that you may have forgotten.\x00" as *const u8
-            as *const i8;
+        help_line[4] =
+            b"I\'ve inserted something that you may have forgotten.\x00" as *const u8 as *const i8;
         help_line[3] = b"(See the <inserted text> above.)\x00" as *const u8 as *const i8;
-        help_line[2] = b"With luck, this will get me unwedged. But if you\x00" as *const u8
-            as *const i8;
+        help_line[2] =
+            b"With luck, this will get me unwedged. But if you\x00" as *const u8 as *const i8;
         help_line[1] = b"really didn\'t forget anything, try typing `2\' now; then\x00" as *const u8
             as *const i8;
         help_line[0] = b"my insertion and my current dilemma will both disappear.\x00" as *const u8
@@ -24600,10 +24151,9 @@ pub unsafe extern "C" fn extra_right_brace() {
         as *const i8;
     help_line[2] = b"you forgot something else, as in `\\hbox{$x}\'. In such cases\x00" as *const u8
         as *const i8;
-    help_line[1] = b"the way to recover is to insert both the forgotten and the\x00" as *const u8
-        as *const i8;
-    help_line[0] =
-        b"deleted material, e.g., by typing `I$}\'.\x00" as *const u8 as *const i8;
+    help_line[1] =
+        b"the way to recover is to insert both the forgotten and the\x00" as *const u8 as *const i8;
+    help_line[0] = b"deleted material, e.g., by typing `I$}\'.\x00" as *const u8 as *const i8;
     error();
     align_state += 1;
 }
@@ -24994,9 +24544,7 @@ pub unsafe extern "C" fn box_end(mut box_context: i32) {
                 } else {
                     print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
-                print_cstr(
-                    b"Leaders not followed by proper glue\x00" as *const u8 as *const i8,
-                );
+                print_cstr(b"Leaders not followed by proper glue\x00" as *const u8 as *const i8);
                 help_ptr = 3i32 as u8;
                 help_line[2] = b"You should say `\\leaders <box or rule><hskip or vskip>\'.\x00"
                     as *const u8 as *const i8;
@@ -25123,16 +24671,15 @@ pub unsafe extern "C" fn begin_box(mut box_context: i32) {
             if abs(cur_list.mode as i32) == 207i32 {
                 you_cant();
                 help_ptr = 1i32 as u8;
-                help_line[0] =
-                    b"Sorry; this \\lastbox will be void.\x00" as *const u8 as *const i8;
+                help_line[0] = b"Sorry; this \\lastbox will be void.\x00" as *const u8 as *const i8;
                 error();
             } else if cur_list.mode as i32 == 1i32 && cur_list.head == cur_list.tail {
                 you_cant();
                 help_ptr = 2i32 as u8;
                 help_line[1] = b"Sorry...I usually can\'t take things from the current page.\x00"
                     as *const u8 as *const i8;
-                help_line[0] = b"This \\lastbox will therefore be void.\x00" as *const u8
-                    as *const i8;
+                help_line[0] =
+                    b"This \\lastbox will therefore be void.\x00" as *const u8 as *const i8;
                 error();
             } else {
                 let mut current_block_79: u64;
@@ -25166,9 +24713,7 @@ pub unsafe extern "C" fn begin_box(mut box_context: i32) {
                             if q < hi_mem_min {
                                 if (*mem.offset(q as isize)).b16.s1 as i32 == 7i32 {
                                     m = 1i32 as u16;
-                                    while m as i32
-                                        <= (*mem.offset(q as isize)).b16.s0 as i32
-                                    {
+                                    while m as i32 <= (*mem.offset(q as isize)).b16.s0 as i32 {
                                         p = (*mem.offset(p as isize)).b32.s1;
                                         m = m.wrapping_add(1)
                                     }
@@ -25226,8 +24771,7 @@ pub unsafe extern "C" fn begin_box(mut box_context: i32) {
                 help_ptr = 2i32 as u8;
                 help_line[1] = b"I\'m working on `\\vsplit<box number> to <dimen>\';\x00"
                     as *const u8 as *const i8;
-                help_line[0] =
-                    b"will look for the <dimen> next.\x00" as *const u8 as *const i8;
+                help_line[0] = b"will look for the <dimen> next.\x00" as *const u8 as *const i8;
                 error();
             }
             scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
@@ -25351,9 +24895,7 @@ pub unsafe extern "C" fn scan_box(mut box_context: i32) {
     }
     if cur_cmd as i32 == 20i32 {
         begin_box(box_context);
-    } else if box_context >= 0x40010001i32
-        && (cur_cmd as i32 == 36i32 || cur_cmd as i32 == 35i32)
-    {
+    } else if box_context >= 0x40010001i32 && (cur_cmd as i32 == 36i32 || cur_cmd as i32 == 35i32) {
         cur_box = scan_rule_spec();
         box_end(box_context);
     } else {
@@ -25368,8 +24910,8 @@ pub unsafe extern "C" fn scan_box(mut box_context: i32) {
             as *const u8 as *const i8;
         help_line[1] = b"something like that. So you might find something missing in\x00"
             as *const u8 as *const i8;
-        help_line[0] = b"your output. But keep trying; you can fix this later.\x00" as *const u8
-            as *const i8;
+        help_line[0] =
+            b"your output. But keep trying; you can fix this later.\x00" as *const u8 as *const i8;
         back_error();
     };
 }
@@ -25930,16 +25472,14 @@ pub unsafe extern "C" fn begin_insert_or_adjust() {
             print_esc_cstr(b"insert\x00" as *const u8 as *const i8);
             print_int(255i32);
             help_ptr = 1i32 as u8;
-            help_line[0] = b"I\'m changing to \\insert0; box 255 is special.\x00" as *const u8
-                as *const i8;
+            help_line[0] =
+                b"I\'m changing to \\insert0; box 255 is special.\x00" as *const u8 as *const i8;
             error();
             cur_val = 0i32
         }
     }
     (*save_stack.offset((save_ptr + 0i32) as isize)).b32.s1 = cur_val;
-    if cur_cmd as i32 == 38i32
-        && scan_keyword(b"pre\x00" as *const u8 as *const i8) as i32 != 0
-    {
+    if cur_cmd as i32 == 38i32 && scan_keyword(b"pre\x00" as *const u8 as *const i8) as i32 != 0 {
         (*save_stack.offset((save_ptr + 1i32) as isize)).b32.s1 = 1i32
     } else {
         (*save_stack.offset((save_ptr + 1i32) as isize)).b32.s1 = 0i32
@@ -25995,14 +25535,12 @@ pub unsafe extern "C" fn delete_last() {
             help_ptr = 2i32 as u8;
             help_line[1] = b"Sorry...I usually can\'t take things from the current page.\x00"
                 as *const u8 as *const i8;
-            help_line[0] =
-                b"Try `I\\vskip-\\lastskip\' instead.\x00" as *const u8 as *const i8;
+            help_line[0] = b"Try `I\\vskip-\\lastskip\' instead.\x00" as *const u8 as *const i8;
             if cur_chr == 11i32 {
-                help_line[0] =
-                    b"Try `I\\kern-\\lastkern\' instead.\x00" as *const u8 as *const i8
+                help_line[0] = b"Try `I\\kern-\\lastkern\' instead.\x00" as *const u8 as *const i8
             } else if cur_chr != 10i32 {
-                help_line[0] = b"Perhaps you can make the output routine do it.\x00" as *const u8
-                    as *const i8
+                help_line[0] =
+                    b"Perhaps you can make the output routine do it.\x00" as *const u8 as *const i8
             }
             error();
         }
@@ -26124,8 +25662,7 @@ pub unsafe extern "C" fn unpackage() {
             return;
         }
         if abs(cur_list.mode as i32) == 207i32
-            || abs(cur_list.mode as i32) == 1i32
-                && (*mem.offset(p as isize)).b16.s1 as i32 != 1i32
+            || abs(cur_list.mode as i32) == 1i32 && (*mem.offset(p as isize)).b16.s1 as i32 != 1i32
             || abs(cur_list.mode as i32) == 104i32
                 && (*mem.offset(p as isize)).b16.s1 as i32 != 0i32
         {
@@ -26134,16 +25671,13 @@ pub unsafe extern "C" fn unpackage() {
             } else {
                 print_nl_cstr(b"! \x00" as *const u8 as *const i8);
             }
-            print_cstr(
-                b"Incompatible list can\'t be unboxed\x00" as *const u8 as *const i8,
-            );
+            print_cstr(b"Incompatible list can\'t be unboxed\x00" as *const u8 as *const i8);
             help_ptr = 3i32 as u8;
-            help_line[2] =
-                b"Sorry, Pandora. (You sneaky devil.)\x00" as *const u8 as *const i8;
+            help_line[2] = b"Sorry, Pandora. (You sneaky devil.)\x00" as *const u8 as *const i8;
             help_line[1] = b"I refuse to unbox an \\hbox in vertical mode or vice versa.\x00"
                 as *const u8 as *const i8;
-            help_line[0] = b"And I can\'t open any boxes in math mode.\x00" as *const u8
-                as *const i8;
+            help_line[0] =
+                b"And I can\'t open any boxes in math mode.\x00" as *const u8 as *const i8;
             error();
             return;
         }
@@ -26338,20 +25872,17 @@ pub unsafe extern "C" fn build_discretionary() {
                                 print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                             }
                             print_cstr(
-                                b"Improper discretionary list\x00" as *const u8
-                                    as *const i8,
+                                b"Improper discretionary list\x00" as *const u8 as *const i8,
                             );
                             help_ptr = 1i32 as u8;
                             help_line[0] =
                                 b"Discretionary lists must contain only boxes and kerns.\x00"
-                                    as *const u8
-                                    as *const i8;
+                                    as *const u8 as *const i8;
                             error();
                             begin_diagnostic();
                             print_nl_cstr(
                                 b"The following discretionary sublist has been deleted:\x00"
-                                    as *const u8
-                                    as *const i8,
+                                    as *const u8 as *const i8,
                             );
                             show_box(p);
                             end_diagnostic(1i32 != 0);
@@ -26400,9 +25931,7 @@ pub unsafe extern "C" fn build_discretionary() {
                 } else {
                     print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
-                print_cstr(
-                    b"Discretionary list is too long\x00" as *const u8 as *const i8,
-                );
+                print_cstr(b"Discretionary list is too long\x00" as *const u8 as *const i8);
                 help_ptr = 2i32 as u8;
                 help_line[1] = b"Wow---I never thought anybody would tweak me here.\x00"
                     as *const u8 as *const i8;
@@ -26520,10 +26049,7 @@ pub unsafe extern "C" fn make_accent() {
         ))
         .b32
         .s1;
-        if cur_cmd as i32 == 11i32
-            || cur_cmd as i32 == 12i32
-            || cur_cmd as i32 == 68i32
-        {
+        if cur_cmd as i32 == 11i32 || cur_cmd as i32 == 12i32 || cur_cmd as i32 == 68i32 {
             q = new_character(f, cur_chr as UTF16_code);
             cur_val = cur_chr
         } else if cur_cmd as i32 == 16i32 {
@@ -26550,13 +26076,11 @@ pub unsafe extern "C" fn make_accent() {
                         as isize,
                 ))
                 .b16;
-                w = (*font_info
-                    .offset((*width_base.offset(f as isize) + i.s3 as i32) as isize))
-                .b32
-                .s1;
-                h = (*font_info.offset(
-                    (*height_base.offset(f as isize) + i.s2 as i32 / 16i32) as isize,
-                ))
+                w = (*font_info.offset((*width_base.offset(f as isize) + i.s3 as i32) as isize))
+                    .b32
+                    .s1;
+                h = (*font_info
+                    .offset((*height_base.offset(f as isize) + i.s2 as i32 / 16i32) as isize))
                 .b32
                 .s1
             }
@@ -26568,15 +26092,9 @@ pub unsafe extern "C" fn make_accent() {
                 || *font_area.offset(f as isize) as u32 == 0xfffeu32)
                 && a == 0i32
             {
-                delta = tex_round(
-                    (w - lsb + rsb) as f64 / 2.0f64 + h as f64 * t
-                        - x as f64 * s,
-                )
+                delta = tex_round((w - lsb + rsb) as f64 / 2.0f64 + h as f64 * t - x as f64 * s)
             } else {
-                delta = tex_round(
-                    (w - a) as f64 / 2.0f64 + h as f64 * t
-                        - x as f64 * s,
-                )
+                delta = tex_round((w - a) as f64 / 2.0f64 + h as f64 * t - x as f64 * s)
             }
             r = new_kern(delta);
             (*mem.offset(r as isize)).b16.s0 = 2i32 as u16;
@@ -26607,8 +26125,8 @@ pub unsafe extern "C" fn align_error() {
             help_ptr = 6i32 as u8;
             help_line[5] = b"I can\'t figure out why you would want to use a tab mark\x00"
                 as *const u8 as *const i8;
-            help_line[4] = b"here. If you just want an ampersand, the remedy is\x00" as *const u8
-                as *const i8;
+            help_line[4] =
+                b"here. If you just want an ampersand, the remedy is\x00" as *const u8 as *const i8;
             help_line[3] = b"simple: Just type `I\\&\' now. But if some right brace\x00"
                 as *const u8 as *const i8;
             help_line[2] = b"up above has ended a previous alignment prematurely,\x00" as *const u8
@@ -26653,12 +26171,11 @@ pub unsafe extern "C" fn align_error() {
             cur_tok = 0x400000i32 + 125i32
         }
         help_ptr = 3i32 as u8;
-        help_line[2] = b"I\'ve put in what seems to be necessary to fix\x00" as *const u8
-            as *const i8;
+        help_line[2] =
+            b"I\'ve put in what seems to be necessary to fix\x00" as *const u8 as *const i8;
         help_line[1] =
             b"the current column of the current alignment.\x00" as *const u8 as *const i8;
-        help_line[0] =
-            b"Try to go on, since this might almost work.\x00" as *const u8 as *const i8;
+        help_line[0] = b"Try to go on, since this might almost work.\x00" as *const u8 as *const i8;
         ins_error();
     };
 }
@@ -26674,8 +26191,8 @@ pub unsafe extern "C" fn no_align_error() {
     help_ptr = 2i32 as u8;
     help_line[1] =
         b"I expect to see \\noalign only after the \\cr of\x00" as *const u8 as *const i8;
-    help_line[0] = b"an alignment. Proceed, and I\'ll ignore this case.\x00" as *const u8
-        as *const i8;
+    help_line[0] =
+        b"an alignment. Proceed, and I\'ll ignore this case.\x00" as *const u8 as *const i8;
     error();
 }
 #[no_mangle]
@@ -26688,10 +26205,10 @@ pub unsafe extern "C" fn omit_error() {
     print_cstr(b"Misplaced \x00" as *const u8 as *const i8);
     print_esc_cstr(b"omit\x00" as *const u8 as *const i8);
     help_ptr = 2i32 as u8;
-    help_line[1] = b"I expect to see \\omit only after tab marks or the \\cr of\x00" as *const u8
-        as *const i8;
-    help_line[0] = b"an alignment. Proceed, and I\'ll ignore this case.\x00" as *const u8
-        as *const i8;
+    help_line[1] =
+        b"I expect to see \\omit only after tab marks or the \\cr of\x00" as *const u8 as *const i8;
+    help_line[0] =
+        b"an alignment. Proceed, and I\'ll ignore this case.\x00" as *const u8 as *const i8;
     error();
 }
 #[no_mangle]
@@ -26709,8 +26226,7 @@ pub unsafe extern "C" fn do_endv() {
         || (*input_stack.offset(base_ptr as isize)).state as i32 != 0i32
     {
         fatal_error(
-            b"(interwoven alignment preambles are not allowed)\x00" as *const u8
-                as *const i8,
+            b"(interwoven alignment preambles are not allowed)\x00" as *const u8 as *const i8,
         );
     }
     if cur_group as i32 == 6i32 {
@@ -26732,8 +26248,8 @@ pub unsafe extern "C" fn cs_error() {
     print_cstr(b"Extra \x00" as *const u8 as *const i8);
     print_esc_cstr(b"endcsname\x00" as *const u8 as *const i8);
     help_ptr = 1i32 as u8;
-    help_line[0] = b"I\'m ignoring this, since I wasn\'t doing a \\csname.\x00" as *const u8
-        as *const i8;
+    help_line[0] =
+        b"I\'m ignoring this, since I wasn\'t doing a \\csname.\x00" as *const u8 as *const i8;
     error();
 }
 #[no_mangle]
@@ -26779,8 +26295,7 @@ pub unsafe extern "C" fn just_copy(mut p: i32, mut h: i32, mut t: i32) {
                                     words = 2i32 as u8
                                 }
                                 40 | 41 => {
-                                    words =
-                                        (*mem.offset((p + 4i32) as isize)).b16.s3 as u8;
+                                    words = (*mem.offset((p + 4i32) as isize)).b16.s3 as u8;
                                     r = get_node(words as i32);
                                     while words as i32 > 0i32 {
                                         words = words.wrapping_sub(1);
@@ -26798,13 +26313,14 @@ pub unsafe extern "C" fn just_copy(mut p: i32, mut h: i32, mut t: i32) {
                                 }
                                 43 | 44 => {
                                     words = (9i32 as u64).wrapping_add(
-                                        ((*mem.offset((p + 4i32) as isize)).b16.s1
-                                            as u64)
-                                            .wrapping_add(::std::mem::size_of::<memory_word>()
-                                                as u64)
+                                        ((*mem.offset((p + 4i32) as isize)).b16.s1 as u64)
+                                            .wrapping_add(
+                                                ::std::mem::size_of::<memory_word>() as u64
+                                            )
                                             .wrapping_sub(1i32 as u64)
-                                            .wrapping_div(::std::mem::size_of::<memory_word>()
-                                                as u64),
+                                            .wrapping_div(
+                                                ::std::mem::size_of::<memory_word>() as u64
+                                            ),
                                     ) as u8;
                                     r = get_node(words as i32)
                                 }
@@ -26884,8 +26400,7 @@ pub unsafe extern "C" fn just_copy(mut p: i32, mut h: i32, mut t: i32) {
                                     words = 2i32 as u8
                                 }
                                 40 | 41 => {
-                                    words =
-                                        (*mem.offset((p + 4i32) as isize)).b16.s3 as u8;
+                                    words = (*mem.offset((p + 4i32) as isize)).b16.s3 as u8;
                                     r = get_node(words as i32);
                                     while words as i32 > 0i32 {
                                         words = words.wrapping_sub(1);
@@ -26903,13 +26418,14 @@ pub unsafe extern "C" fn just_copy(mut p: i32, mut h: i32, mut t: i32) {
                                 }
                                 43 | 44 => {
                                     words = (9i32 as u64).wrapping_add(
-                                        ((*mem.offset((p + 4i32) as isize)).b16.s1
-                                            as u64)
-                                            .wrapping_add(::std::mem::size_of::<memory_word>()
-                                                as u64)
+                                        ((*mem.offset((p + 4i32) as isize)).b16.s1 as u64)
+                                            .wrapping_add(
+                                                ::std::mem::size_of::<memory_word>() as u64
+                                            )
                                             .wrapping_sub(1i32 as u64)
-                                            .wrapping_div(::std::mem::size_of::<memory_word>()
-                                                as u64),
+                                            .wrapping_div(
+                                                ::std::mem::size_of::<memory_word>() as u64
+                                            ),
                                     ) as u8;
                                     r = get_node(words as i32)
                                 }
@@ -26989,8 +26505,7 @@ pub unsafe extern "C" fn just_copy(mut p: i32, mut h: i32, mut t: i32) {
                                     words = 2i32 as u8
                                 }
                                 40 | 41 => {
-                                    words =
-                                        (*mem.offset((p + 4i32) as isize)).b16.s3 as u8;
+                                    words = (*mem.offset((p + 4i32) as isize)).b16.s3 as u8;
                                     r = get_node(words as i32);
                                     while words as i32 > 0i32 {
                                         words = words.wrapping_sub(1);
@@ -27008,13 +26523,14 @@ pub unsafe extern "C" fn just_copy(mut p: i32, mut h: i32, mut t: i32) {
                                 }
                                 43 | 44 => {
                                     words = (9i32 as u64).wrapping_add(
-                                        ((*mem.offset((p + 4i32) as isize)).b16.s1
-                                            as u64)
-                                            .wrapping_add(::std::mem::size_of::<memory_word>()
-                                                as u64)
+                                        ((*mem.offset((p + 4i32) as isize)).b16.s1 as u64)
+                                            .wrapping_add(
+                                                ::std::mem::size_of::<memory_word>() as u64
+                                            )
                                             .wrapping_sub(1i32 as u64)
-                                            .wrapping_div(::std::mem::size_of::<memory_word>()
-                                                as u64),
+                                            .wrapping_div(
+                                                ::std::mem::size_of::<memory_word>() as u64
+                                            ),
                                     ) as u8;
                                     r = get_node(words as i32)
                                 }
@@ -27094,8 +26610,7 @@ pub unsafe extern "C" fn just_copy(mut p: i32, mut h: i32, mut t: i32) {
                                     words = 2i32 as u8
                                 }
                                 40 | 41 => {
-                                    words =
-                                        (*mem.offset((p + 4i32) as isize)).b16.s3 as u8;
+                                    words = (*mem.offset((p + 4i32) as isize)).b16.s3 as u8;
                                     r = get_node(words as i32);
                                     while words as i32 > 0i32 {
                                         words = words.wrapping_sub(1);
@@ -27113,13 +26628,14 @@ pub unsafe extern "C" fn just_copy(mut p: i32, mut h: i32, mut t: i32) {
                                 }
                                 43 | 44 => {
                                     words = (9i32 as u64).wrapping_add(
-                                        ((*mem.offset((p + 4i32) as isize)).b16.s1
-                                            as u64)
-                                            .wrapping_add(::std::mem::size_of::<memory_word>()
-                                                as u64)
+                                        ((*mem.offset((p + 4i32) as isize)).b16.s1 as u64)
+                                            .wrapping_add(
+                                                ::std::mem::size_of::<memory_word>() as u64
+                                            )
                                             .wrapping_sub(1i32 as u64)
-                                            .wrapping_div(::std::mem::size_of::<memory_word>()
-                                                as u64),
+                                            .wrapping_div(
+                                                ::std::mem::size_of::<memory_word>() as u64
+                                            ),
                                     ) as u8;
                                     r = get_node(words as i32)
                                 }
@@ -27199,8 +26715,7 @@ pub unsafe extern "C" fn just_copy(mut p: i32, mut h: i32, mut t: i32) {
                                     words = 2i32 as u8
                                 }
                                 40 | 41 => {
-                                    words =
-                                        (*mem.offset((p + 4i32) as isize)).b16.s3 as u8;
+                                    words = (*mem.offset((p + 4i32) as isize)).b16.s3 as u8;
                                     r = get_node(words as i32);
                                     while words as i32 > 0i32 {
                                         words = words.wrapping_sub(1);
@@ -27218,13 +26733,14 @@ pub unsafe extern "C" fn just_copy(mut p: i32, mut h: i32, mut t: i32) {
                                 }
                                 43 | 44 => {
                                     words = (9i32 as u64).wrapping_add(
-                                        ((*mem.offset((p + 4i32) as isize)).b16.s1
-                                            as u64)
-                                            .wrapping_add(::std::mem::size_of::<memory_word>()
-                                                as u64)
+                                        ((*mem.offset((p + 4i32) as isize)).b16.s1 as u64)
+                                            .wrapping_add(
+                                                ::std::mem::size_of::<memory_word>() as u64
+                                            )
                                             .wrapping_sub(1i32 as u64)
-                                            .wrapping_div(::std::mem::size_of::<memory_word>()
-                                                as u64),
+                                            .wrapping_div(
+                                                ::std::mem::size_of::<memory_word>() as u64
+                                            ),
                                     ) as u8;
                                     r = get_node(words as i32)
                                 }
@@ -27304,8 +26820,7 @@ pub unsafe extern "C" fn just_copy(mut p: i32, mut h: i32, mut t: i32) {
                                     words = 2i32 as u8
                                 }
                                 40 | 41 => {
-                                    words =
-                                        (*mem.offset((p + 4i32) as isize)).b16.s3 as u8;
+                                    words = (*mem.offset((p + 4i32) as isize)).b16.s3 as u8;
                                     r = get_node(words as i32);
                                     while words as i32 > 0i32 {
                                         words = words.wrapping_sub(1);
@@ -27323,13 +26838,14 @@ pub unsafe extern "C" fn just_copy(mut p: i32, mut h: i32, mut t: i32) {
                                 }
                                 43 | 44 => {
                                     words = (9i32 as u64).wrapping_add(
-                                        ((*mem.offset((p + 4i32) as isize)).b16.s1
-                                            as u64)
-                                            .wrapping_add(::std::mem::size_of::<memory_word>()
-                                                as u64)
+                                        ((*mem.offset((p + 4i32) as isize)).b16.s1 as u64)
+                                            .wrapping_add(
+                                                ::std::mem::size_of::<memory_word>() as u64
+                                            )
                                             .wrapping_sub(1i32 as u64)
-                                            .wrapping_div(::std::mem::size_of::<memory_word>()
-                                                as u64),
+                                            .wrapping_div(
+                                                ::std::mem::size_of::<memory_word>() as u64
+                                            ),
                                     ) as u8;
                                     r = get_node(words as i32)
                                 }
@@ -27485,8 +27001,7 @@ pub unsafe extern "C" fn just_reverse(mut p: i32) {
                     (*mem.offset(temp_ptr as isize)).b32.s1 = LR_ptr;
                     LR_ptr = temp_ptr;
                     if n > -0xfffffffi32
-                        || (*mem.offset(p as isize)).b16.s0 as i32 / 8i32
-                            != cur_dir as i32
+                        || (*mem.offset(p as isize)).b16.s0 as i32 / 8i32 != cur_dir as i32
                     {
                         n += 1;
                         let ref mut fresh84 = (*mem.offset(p as isize)).b16.s0;
@@ -27562,10 +27077,9 @@ pub unsafe extern "C" fn get_r_token() {
             as *const u8 as *const i8;
         help_line[2] = b"definition will be completed without mixing me up too badly.\x00"
             as *const u8 as *const i8;
-        help_line[1] = b"You can recover graciously from this error, if you\'re\x00" as *const u8
-            as *const i8;
-        help_line[0] =
-            b"careful; see exercise 27.2 in The TeXbook.\x00" as *const u8 as *const i8;
+        help_line[1] =
+            b"You can recover graciously from this error, if you\'re\x00" as *const u8 as *const i8;
+        help_line[0] = b"careful; see exercise 27.2 in The TeXbook.\x00" as *const u8 as *const i8;
         if cur_cs == 0i32 {
             back_input();
         }
@@ -27863,8 +27377,8 @@ pub unsafe extern "C" fn do_register_command(mut a: small_number) {
         }
         print_cstr(b"Arithmetic overflow\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] = b"I can\'t carry out that multiplication or division,\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"I can\'t carry out that multiplication or division,\x00" as *const u8 as *const i8;
         help_line[0] = b"since the result is out of range.\x00" as *const u8 as *const i8;
         if p as i32 >= 2i32 {
             delete_glue_ref(cur_val);
@@ -27948,8 +27462,7 @@ pub unsafe extern "C" fn alter_prev_graf() {
         print_cstr(b"Bad \x00" as *const u8 as *const i8);
         print_esc_cstr(b"prevgraf\x00" as *const u8 as *const i8);
         help_ptr = 1i32 as u8;
-        help_line[0] =
-            b"I allow only nonnegative values here.\x00" as *const u8 as *const i8;
+        help_line[0] = b"I allow only nonnegative values here.\x00" as *const u8 as *const i8;
         int_error(cur_val);
     } else {
         (*nest.offset(p as isize)).prev_graf = cur_val;
@@ -27981,10 +27494,10 @@ pub unsafe extern "C" fn alter_integer() {
             }
             print_cstr(b"Bad interaction mode\x00" as *const u8 as *const i8);
             help_ptr = 2i32 as u8;
-            help_line[1] = b"Modes are 0=batch, 1=nonstop, 2=scroll, and\x00" as *const u8
-                as *const i8;
-            help_line[0] = b"3=errorstop. Proceed, and I\'ll ignore this case.\x00" as *const u8
-                as *const i8;
+            help_line[1] =
+                b"Modes are 0=batch, 1=nonstop, 2=scroll, and\x00" as *const u8 as *const i8;
+            help_line[0] =
+                b"3=errorstop. Proceed, and I\'ll ignore this case.\x00" as *const u8 as *const i8;
             int_error(cur_val);
         } else {
             cur_chr = cur_val;
@@ -28092,8 +27605,8 @@ pub unsafe extern "C" fn new_font(mut a: small_number) {
             print_scaled(s);
             print_cstr(b"pt), replaced by 10pt\x00" as *const u8 as *const i8);
             help_ptr = 2i32 as u8;
-            help_line[1] = b"I can only handle fonts at positive sizes that are\x00" as *const u8
-                as *const i8;
+            help_line[1] =
+                b"I can only handle fonts at positive sizes that are\x00" as *const u8 as *const i8;
             help_line[0] = b"less than 2048pt, so I\'ve changed what you said to 10pt.\x00"
                 as *const u8 as *const i8;
             error();
@@ -28109,8 +27622,7 @@ pub unsafe extern "C" fn new_font(mut a: small_number) {
                 print_nl_cstr(b"! \x00" as *const u8 as *const i8);
             }
             print_cstr(
-                b"Illegal magnification has been changed to 1000\x00" as *const u8
-                    as *const i8,
+                b"Illegal magnification has been changed to 1000\x00" as *const u8 as *const i8,
             );
             help_ptr = 1i32 as u8;
             help_line[0] = b"The magnification ratio must be between 1 and 32768.\x00" as *const u8
@@ -28209,7 +27721,7 @@ pub unsafe extern "C" fn new_interaction() {
         selector = SELECTOR_TERM_ONLY
     }
     if log_opened {
-        selector = (selector as u32).wrapping_add(2i32 as u32) as selector_t
+        selector = (selector as u32).wrapping_add(2_u32) as selector_t
     };
 }
 #[no_mangle]
@@ -28269,8 +27781,7 @@ pub unsafe extern "C" fn issue_message() {
             use_err_help = 1i32 != 0
         } else if long_help_seen {
             help_ptr = 1i32 as u8;
-            help_line[0] =
-                b"(That was another \\errmessage.)\x00" as *const u8 as *const i8
+            help_line[0] = b"(That was another \\errmessage.)\x00" as *const u8 as *const i8
         } else {
             if (interaction as i32) < 3i32 {
                 long_help_seen = 1i32 != 0
@@ -28278,8 +27789,8 @@ pub unsafe extern "C" fn issue_message() {
             help_ptr = 4i32 as u8;
             help_line[3] = b"This error message was generated by an \\errmessage\x00" as *const u8
                 as *const i8;
-            help_line[2] = b"command, so I can\'t give any explicit help.\x00" as *const u8
-                as *const i8;
+            help_line[2] =
+                b"command, so I can\'t give any explicit help.\x00" as *const u8 as *const i8;
             help_line[1] = b"Pretend that you\'re Hercule Poirot: Examine all clues,\x00"
                 as *const u8 as *const i8;
             help_line[0] =
@@ -28479,9 +27990,7 @@ pub unsafe extern "C" fn show_whatever() {
                 .s1 <= 0i32
                 {
                     selector = SELECTOR_TERM_ONLY;
-                    print_cstr(
-                        b" (see the transcript file)\x00" as *const u8 as *const i8,
-                    );
+                    print_cstr(b" (see the transcript file)\x00" as *const u8 as *const i8);
                     selector = SELECTOR_TERM_AND_LOG
                 }
             }
@@ -28524,18 +28033,18 @@ pub unsafe extern "C" fn show_whatever() {
         help_ptr = 3i32 as u8;
         help_line[2] = b"This isn\'t an error message; I\'m just \\showing something.\x00"
             as *const u8 as *const i8;
-        help_line[1] = b"Type `I\\show...\' to show more (e.g., \\show\\cs,\x00" as *const u8
-            as *const i8;
-        help_line[0] = b"\\showthe\\count10, \\showbox255, \\showlists).\x00" as *const u8
-            as *const i8
+        help_line[1] =
+            b"Type `I\\show...\' to show more (e.g., \\show\\cs,\x00" as *const u8 as *const i8;
+        help_line[0] =
+            b"\\showthe\\count10, \\showbox255, \\showlists).\x00" as *const u8 as *const i8
     } else {
         help_ptr = 5i32 as u8;
         help_line[4] = b"This isn\'t an error message; I\'m just \\showing something.\x00"
             as *const u8 as *const i8;
-        help_line[3] = b"Type `I\\show...\' to show more (e.g., \\show\\cs,\x00" as *const u8
-            as *const i8;
-        help_line[2] = b"\\showthe\\count10, \\showbox255, \\showlists).\x00" as *const u8
-            as *const i8;
+        help_line[3] =
+            b"Type `I\\show...\' to show more (e.g., \\show\\cs,\x00" as *const u8 as *const i8;
+        help_line[2] =
+            b"\\showthe\\count10, \\showbox255, \\showlists).\x00" as *const u8 as *const i8;
         help_line[1] = b"And type `I\\tracingonline=1\\show...\' to show boxes and\x00" as *const u8
             as *const i8;
         help_line[0] = b"lists on your terminal as well as in the transcript file.\x00" as *const u8
@@ -28652,8 +28161,7 @@ pub unsafe extern "C" fn do_extension() {
                     ))
                     .b32
                     .s1,
-                )
-                    as u16;
+                ) as u16;
                 (*mem.offset((cur_list.tail + 1i32) as isize)).b16.s0 = norm_min(
                     (*eqtb.offset(
                         (1i32
@@ -28684,8 +28192,7 @@ pub unsafe extern "C" fn do_extension() {
                     ))
                     .b32
                     .s1,
-                )
-                    as u16
+                ) as u16
             }
         }
         41 => {
@@ -28767,8 +28274,7 @@ pub unsafe extern "C" fn do_extension() {
                     help_ptr = 2i32 as u8;
                     help_line[1] = b"A glyph number must be between 0 and 65535.\x00" as *const u8
                         as *const i8;
-                    help_line[0] =
-                        b"I changed this one to zero.\x00" as *const u8 as *const i8;
+                    help_line[0] = b"I changed this one to zero.\x00" as *const u8 as *const i8;
                     int_error(cur_val);
                     cur_val = 0i32
                 }
@@ -28791,8 +28297,7 @@ pub unsafe extern "C" fn do_extension() {
                         + 256i32) as isize,
                 ))
                 .b32
-                .s1
-                    as u16;
+                .s1 as u16;
                 (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 = cur_val as u16;
                 measure_native_glyph(
                     &mut *mem.offset(cur_list.tail as isize) as *mut memory_word
@@ -29240,8 +28745,8 @@ pub unsafe extern "C" fn handle_right_brace() {
             }
             print_cstr(b"Too many }\'s\x00" as *const u8 as *const i8);
             help_ptr = 2i32 as u8;
-            help_line[1] = b"You\'ve closed more groups than you opened.\x00" as *const u8
-                as *const i8;
+            help_line[1] =
+                b"You\'ve closed more groups than you opened.\x00" as *const u8 as *const i8;
             help_line[0] = b"Such booboos are generally harmless, so keep going.\x00" as *const u8
                 as *const i8;
             error();
@@ -29396,8 +28901,8 @@ pub unsafe extern "C" fn handle_right_brace() {
                 help_ptr = 2i32 as u8;
                 help_line[1] = b"Your sneaky output routine has problematic {\'s and/or }\'s.\x00"
                     as *const u8 as *const i8;
-                help_line[0] = b"I can\'t handle that very well; good luck.\x00" as *const u8
-                    as *const i8;
+                help_line[0] =
+                    b"I can\'t handle that very well; good luck.\x00" as *const u8 as *const i8;
                 error();
                 loop {
                     get_token();
@@ -29437,18 +28942,16 @@ pub unsafe extern "C" fn handle_right_brace() {
                 } else {
                     print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
-                print_cstr(
-                    b"Output routine didn\'t use all of \x00" as *const u8 as *const i8,
-                );
+                print_cstr(b"Output routine didn\'t use all of \x00" as *const u8 as *const i8);
                 print_esc_cstr(b"box\x00" as *const u8 as *const i8);
                 print_int(255i32);
                 help_ptr = 3i32 as u8;
-                help_line[2] = b"Your \\output commands should empty \\box255,\x00" as *const u8
-                    as *const i8;
-                help_line[1] = b"e.g., by saying `\\shipout\\box255\'.\x00" as *const u8
-                    as *const i8;
-                help_line[0] = b"Proceed; I\'ll discard its present contents.\x00" as *const u8
-                    as *const i8;
+                help_line[2] =
+                    b"Your \\output commands should empty \\box255,\x00" as *const u8 as *const i8;
+                help_line[1] =
+                    b"e.g., by saying `\\shipout\\box255\'.\x00" as *const u8 as *const i8;
+                help_line[0] =
+                    b"Proceed; I\'ll discard its present contents.\x00" as *const u8 as *const i8;
                 box_error(255i32 as eight_bits);
             }
             if cur_list.tail != cur_list.head {
@@ -29544,8 +29047,7 @@ pub unsafe extern "C" fn handle_right_brace() {
                         if (*save_stack.offset((save_ptr + 0i32) as isize)).b32.s1
                             == cur_list.tail + 1i32
                         {
-                            if (*mem.offset(cur_list.tail as isize)).b16.s1 as i32 == 16i32
-                            {
+                            if (*mem.offset(cur_list.tail as isize)).b16.s1 as i32 == 16i32 {
                                 /*1222:*/
                                 q = cur_list.head;
                                 while (*mem.offset(q as isize)).b32.s1 != cur_list.tail {
@@ -30076,12 +29578,10 @@ pub unsafe extern "C" fn main_control() {
                         224 => {
                             if cur_chr == 2i32 {
                                 scan_math_class_int();
-                                t = ((cur_val as u32 & 0x7i32 as u32) << 21i32)
-                                    as i32;
+                                t = ((cur_val as u32 & 0x7_u32) << 21i32) as i32;
                                 scan_math_fam_int();
-                                t = (t as u32).wrapping_add(
-                                    (cur_val as u32 & 0xffi32 as u32) << 24i32,
-                                ) as i32;
+                                t = (t as u32).wrapping_add((cur_val as u32 & 0xff_u32) << 24i32)
+                                    as i32;
                                 scan_usv_num();
                                 t = t + cur_val;
                                 set_math_char(t);
@@ -30091,11 +29591,9 @@ pub unsafe extern "C" fn main_control() {
                             } else {
                                 scan_fifteen_bit_int();
                                 set_math_char(
-                                    (((cur_val / 4096i32) as u32 & 0x7i32 as u32)
-                                        << 21i32)
+                                    (((cur_val / 4096i32) as u32 & 0x7_u32) << 21i32)
                                         .wrapping_add(
-                                            ((cur_val % 4096i32 / 256i32) as u32
-                                                & 0xffi32 as u32)
+                                            ((cur_val % 4096i32 / 256i32) as u32 & 0xff_u32)
                                                 << 24i32,
                                         )
                                         .wrapping_add((cur_val % 256i32) as u32)
@@ -30106,12 +29604,9 @@ pub unsafe extern "C" fn main_control() {
                         }
                         276 => {
                             set_math_char(
-                                (((cur_chr / 4096i32) as u32 & 0x7i32 as u32)
-                                    << 21i32)
+                                (((cur_chr / 4096i32) as u32 & 0x7_u32) << 21i32)
                                     .wrapping_add(
-                                        ((cur_chr % 4096i32 / 256i32) as u32
-                                            & 0xffi32 as u32)
-                                            << 24i32,
+                                        ((cur_chr % 4096i32 / 256i32) as u32 & 0xff_u32) << 24i32,
                                     )
                                     .wrapping_add((cur_chr % 256i32) as u32)
                                     as i32,
@@ -30125,12 +29620,10 @@ pub unsafe extern "C" fn main_control() {
                         222 => {
                             if cur_chr == 1i32 {
                                 scan_math_class_int();
-                                t = ((cur_val as u32 & 0x7i32 as u32) << 21i32)
-                                    as i32;
+                                t = ((cur_val as u32 & 0x7_u32) << 21i32) as i32;
                                 scan_math_fam_int();
-                                t = (t as u32).wrapping_add(
-                                    (cur_val as u32 & 0xffi32 as u32) << 24i32,
-                                ) as i32;
+                                t = (t as u32).wrapping_add((cur_val as u32 & 0xff_u32) << 24i32)
+                                    as i32;
                                 scan_usv_num();
                                 t = t + cur_val;
                                 set_math_char(t);
@@ -30138,11 +29631,9 @@ pub unsafe extern "C" fn main_control() {
                                 scan_delimiter_int();
                                 cur_val = cur_val / 4096i32;
                                 set_math_char(
-                                    (((cur_val / 4096i32) as u32 & 0x7i32 as u32)
-                                        << 21i32)
+                                    (((cur_val / 4096i32) as u32 & 0x7_u32) << 21i32)
                                         .wrapping_add(
-                                            ((cur_val % 4096i32 / 256i32) as u32
-                                                & 0xffi32 as u32)
+                                            ((cur_val % 4096i32 / 256i32) as u32 & 0xff_u32)
                                                 << 24i32,
                                         )
                                         .wrapping_add((cur_val % 256i32) as u32)
@@ -30514,9 +30005,7 @@ pub unsafe extern "C" fn main_control() {
                         && space_class != 4096i32
                     {
                         if prev_class == 4096i32 - 1i32 {
-                            if cur_input.state as i32 != 0i32
-                                || cur_input.index as i32 != 4i32
-                            {
+                            if cur_input.state as i32 != 0i32 || cur_input.index as i32 != 4i32 {
                                 find_sa_element(
                                     6i32 as small_number,
                                     (4096i32 - 1i32) * 4096i32 + space_class,
@@ -30565,19 +30054,19 @@ pub unsafe extern "C" fn main_control() {
                             native_text_size = native_text_size + 128i32;
                             native_text = xrealloc(
                                 native_text as *mut libc::c_void,
-                                (native_text_size as u64).wrapping_mul(
-                                    ::std::mem::size_of::<UTF16_code>() as u64,
-                                ),
+                                (native_text_size as u64).wrapping_mul(::std::mem::size_of::<
+                                    UTF16_code,
+                                >(
+                                )
+                                    as u64),
                             ) as *mut UTF16_code
                         }
                         *native_text.offset(native_len as isize) =
-                            ((cur_chr as i64 - 65536) / 1024i32 as i64
-                                + 0xd800i32 as i64)
+                            ((cur_chr as i64 - 65536) / 1024i32 as i64 + 0xd800i32 as i64)
                                 as UTF16_code;
                         native_len += 1;
                         *native_text.offset(native_len as isize) =
-                            ((cur_chr as i64 - 65536) % 1024i32 as i64
-                                + 0xdc00i32 as i64)
+                            ((cur_chr as i64 - 65536) % 1024i32 as i64 + 0xdc00i32 as i64)
                                 as UTF16_code;
                         native_len += 1
                     } else {
@@ -30585,9 +30074,11 @@ pub unsafe extern "C" fn main_control() {
                             native_text_size = native_text_size + 128i32;
                             native_text = xrealloc(
                                 native_text as *mut libc::c_void,
-                                (native_text_size as u64).wrapping_mul(
-                                    ::std::mem::size_of::<UTF16_code>() as u64,
-                                ),
+                                (native_text_size as u64).wrapping_mul(::std::mem::size_of::<
+                                    UTF16_code,
+                                >(
+                                )
+                                    as u64),
                             ) as *mut UTF16_code
                         }
                         *native_text.offset(native_len as isize) = cur_chr as UTF16_code;
@@ -30628,16 +30119,12 @@ pub unsafe extern "C" fn main_control() {
                         main_h = native_len
                     }
                     get_next();
-                    if cur_cmd as i32 == 11i32
-                        || cur_cmd as i32 == 12i32
-                        || cur_cmd as i32 == 68i32
+                    if cur_cmd as i32 == 11i32 || cur_cmd as i32 == 12i32 || cur_cmd as i32 == 68i32
                     {
                         continue;
                     }
                     x_token();
-                    if cur_cmd as i32 == 11i32
-                        || cur_cmd as i32 == 12i32
-                        || cur_cmd as i32 == 68i32
+                    if cur_cmd as i32 == 11i32 || cur_cmd as i32 == 12i32 || cur_cmd as i32 == 68i32
                     {
                         continue;
                     }
@@ -30767,8 +30254,7 @@ pub unsafe extern "C" fn main_control() {
                                     ))
                                     .b32
                                     .s1 > 0i32
-                                        && (*mapped_text.offset(main_p as isize) as i32
-                                            == 8212i32
+                                        && (*mapped_text.offset(main_p as isize) as i32 == 8212i32
                                             || *mapped_text.offset(main_p as isize) as i32
                                                 == 8211i32))
                             {
@@ -30817,10 +30303,10 @@ pub unsafe extern "C" fn main_control() {
                         main_k = *native_text.offset(temp_ptr as isize) as font_index;
                         temp_ptr += 1;
                         if main_k >= 0xd800i32 && main_k < 0xdc00i32 {
-                            main_k = (65536 + ((main_k - 0xd800i32) * 1024i32) as i64)
-                                as font_index;
-                            main_k = main_k + *native_text.offset(temp_ptr as isize) as i32
-                                - 0xdc00i32;
+                            main_k =
+                                (65536 + ((main_k - 0xd800i32) * 1024i32) as i64) as font_index;
+                            main_k =
+                                main_k + *native_text.offset(temp_ptr as isize) as i32 - 0xdc00i32;
                             temp_ptr += 1
                         }
                         if map_char_to_glyph(main_f, main_k) == 0i32 {
@@ -30867,29 +30353,28 @@ pub unsafe extern "C" fn main_control() {
                             && (*mem.offset(main_pp as isize)).b16.s1 as i32 == 8i32
                             && ((*mem.offset(main_pp as isize)).b16.s0 as i32 == 40i32
                                 || (*mem.offset(main_pp as isize)).b16.s0 as i32 == 41i32)
-                            && (*mem.offset((main_pp + 4i32) as isize)).b16.s2 as i32
-                                == main_f
+                            && (*mem.offset((main_pp + 4i32) as isize)).b16.s2 as i32 == main_f
                             && main_ppp != main_pp
                             && !is_char_node(main_ppp)
                             && (*mem.offset(main_ppp as isize)).b16.s1 as i32 != 7i32
                         {
-                            main_k = main_h
-                                + (*mem.offset((main_pp + 4i32) as isize)).b16.s1 as i32;
+                            main_k =
+                                main_h + (*mem.offset((main_pp + 4i32) as isize)).b16.s1 as i32;
                             while native_text_size <= native_len + main_k {
                                 native_text_size = native_text_size + 128i32;
-                                native_text = xrealloc(
-                                    native_text as *mut libc::c_void,
-                                    (native_text_size as u64).wrapping_mul(
-                                        ::std::mem::size_of::<UTF16_code>() as u64,
-                                    ),
-                                ) as *mut UTF16_code
+                                native_text =
+                                    xrealloc(
+                                        native_text as *mut libc::c_void,
+                                        (native_text_size as u64).wrapping_mul(
+                                            ::std::mem::size_of::<UTF16_code>() as u64,
+                                        ),
+                                    ) as *mut UTF16_code
                             }
                             save_native_len = native_len;
                             let mut for_end_1: i32 = 0;
                             main_p = 0i32;
-                            for_end_1 = (*mem.offset((main_pp + 4i32) as isize)).b16.s1
-                                as i32
-                                - 1i32;
+                            for_end_1 =
+                                (*mem.offset((main_pp + 4i32) as isize)).b16.s1 as i32 - 1i32;
                             if main_p <= for_end_1 {
                                 loop {
                                     *native_text.offset(native_len as isize) = *(&mut *mem
@@ -30957,11 +30442,9 @@ pub unsafe extern "C" fn main_control() {
                                 ))
                                 .b32
                                 .s1 > 0i32)
-                                    || *native_text.offset((temp_ptr + main_h) as isize)
-                                        as i32
+                                    || *native_text.offset((temp_ptr + main_h) as isize) as i32
                                         != 8212i32
-                                        && *native_text.offset((temp_ptr + main_h) as isize)
-                                            as i32
+                                        && *native_text.offset((temp_ptr + main_h) as isize) as i32
                                             != 8211i32)
                             {
                                 main_h += 1
@@ -31014,11 +30497,9 @@ pub unsafe extern "C" fn main_control() {
                                 ))
                                 .b32
                                 .s1 > 0i32)
-                                    || *native_text.offset((temp_ptr + main_h) as isize)
-                                        as i32
+                                    || *native_text.offset((temp_ptr + main_h) as isize) as i32
                                         != 8212i32
-                                        && *native_text.offset((temp_ptr + main_h) as isize)
-                                            as i32
+                                        && *native_text.offset((temp_ptr + main_h) as isize) as i32
                                             != 8211i32)
                             {
                                 main_h += 1
@@ -31080,8 +30561,7 @@ pub unsafe extern "C" fn main_control() {
                         cur_list.tail = (*mem.offset(main_pp as isize)).b32.s1;
                         let mut for_end_4: i32 = 0;
                         main_p = 0i32;
-                        for_end_4 =
-                            (*mem.offset((main_pp + 4i32) as isize)).b16.s1 as i32 - 1i32;
+                        for_end_4 = (*mem.offset((main_pp + 4i32) as isize)).b16.s1 as i32 - 1i32;
                         if main_p <= for_end_4 {
                             loop {
                                 *(&mut *mem.offset((cur_list.tail + 6i32) as isize)
@@ -31262,8 +30742,7 @@ pub unsafe extern "C" fn main_control() {
                         main_p = (*mem.offset(main_p as isize)).b32.s1
                     }
                     if main_pp != -0xfffffffi32 {
-                        if (*mem.offset((main_pp + 4i32) as isize)).b16.s2 as i32 == main_f
-                        {
+                        if (*mem.offset((main_pp + 4i32) as isize)).b16.s2 as i32 == main_f {
                             main_p = (*mem.offset(main_pp as isize)).b32.s1;
                             while !is_char_node(main_p)
                                 && ((*mem.offset(main_p as isize)).b16.s1 as i32 == 12i32
@@ -31271,8 +30750,7 @@ pub unsafe extern "C" fn main_control() {
                                     || (*mem.offset(main_p as isize)).b16.s1 as i32 == 4i32
                                     || (*mem.offset(main_p as isize)).b16.s1 as i32 == 5i32
                                     || (*mem.offset(main_p as isize)).b16.s1 as i32 == 8i32
-                                        && (*mem.offset(main_p as isize)).b16.s0 as i32
-                                            <= 4i32)
+                                        && (*mem.offset(main_p as isize)).b16.s0 as i32 <= 4i32)
                             {
                                 main_p = (*mem.offset(main_p as isize)).b32.s1
                             }
@@ -31281,18 +30759,12 @@ pub unsafe extern "C" fn main_control() {
                             {
                                 main_ppp = (*mem.offset(main_p as isize)).b32.s1;
                                 while !is_char_node(main_ppp)
-                                    && ((*mem.offset(main_ppp as isize)).b16.s1 as i32
-                                        == 12i32
-                                        || (*mem.offset(main_ppp as isize)).b16.s1 as i32
-                                            == 3i32
-                                        || (*mem.offset(main_ppp as isize)).b16.s1 as i32
-                                            == 4i32
-                                        || (*mem.offset(main_ppp as isize)).b16.s1 as i32
-                                            == 5i32
-                                        || (*mem.offset(main_ppp as isize)).b16.s1 as i32
-                                            == 8i32
-                                            && (*mem.offset(main_ppp as isize)).b16.s0
-                                                as i32
+                                    && ((*mem.offset(main_ppp as isize)).b16.s1 as i32 == 12i32
+                                        || (*mem.offset(main_ppp as isize)).b16.s1 as i32 == 3i32
+                                        || (*mem.offset(main_ppp as isize)).b16.s1 as i32 == 4i32
+                                        || (*mem.offset(main_ppp as isize)).b16.s1 as i32 == 5i32
+                                        || (*mem.offset(main_ppp as isize)).b16.s1 as i32 == 8i32
+                                            && (*mem.offset(main_ppp as isize)).b16.s0 as i32
                                                 <= 4i32)
                                 {
                                     main_ppp = (*mem.offset(main_ppp as isize)).b32.s1
@@ -31300,8 +30772,7 @@ pub unsafe extern "C" fn main_control() {
                                 if main_ppp == cur_list.tail {
                                     temp_ptr = new_native_word_node(
                                         main_f,
-                                        (*mem.offset((main_pp + 4i32) as isize)).b16.s1
-                                            as i32
+                                        (*mem.offset((main_pp + 4i32) as isize)).b16.s1 as i32
                                             + 1i32
                                             + (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1
                                                 as i32,
@@ -31337,10 +30808,10 @@ pub unsafe extern "C" fn main_control() {
                                     main_k += 1;
                                     let mut for_end_8: i32 = 0;
                                     t = 0i32;
-                                    for_end_8 =
-                                        (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1
-                                            as i32
-                                            - 1i32;
+                                    for_end_8 = (*mem.offset((cur_list.tail + 4i32) as isize))
+                                        .b16
+                                        .s1 as i32
+                                        - 1i32;
                                     if t <= for_end_8 {
                                         loop {
                                             *(&mut *mem.offset((temp_ptr + 6i32) as isize)
@@ -31391,8 +30862,7 @@ pub unsafe extern "C" fn main_control() {
                                                 as isize,
                                         ))
                                         .b32
-                                        .s1 > 0i32)
-                                            as i32,
+                                        .s1 > 0i32) as i32,
                                     );
                                     t = (*mem.offset((temp_ptr + 1i32) as isize)).b32.s1
                                         - (*mem.offset((main_pp + 1i32) as isize)).b32.s1
@@ -31527,9 +30997,7 @@ pub unsafe extern "C" fn main_control() {
                     && space_class != 4096i32
                 {
                     if prev_class == 4096i32 - 1i32 {
-                        if cur_input.state as i32 != 0i32
-                            || cur_input.index as i32 != 4i32
-                        {
+                        if cur_input.state as i32 != 0i32 || cur_input.index as i32 != 4i32 {
                             find_sa_element(
                                 6i32 as small_number,
                                 (4096i32 - 1i32) * 4096i32 + space_class,
@@ -32084,9 +31552,8 @@ pub unsafe extern "C" fn main_control() {
                                                         if cur_cmd as i32 != 11i32 {
                                                             cur_cmd = 12i32 as eight_bits
                                                         }
-                                                        cur_tok = cur_cmd as i32
-                                                            * 0x200000i32
-                                                            + cur_chr;
+                                                        cur_tok =
+                                                            cur_cmd as i32 * 0x200000i32 + cur_chr;
                                                         back_input();
                                                         cur_input.index = 4i32 as u16;
                                                         begin_token_list(
@@ -32109,8 +31576,8 @@ pub unsafe extern "C" fn main_control() {
                                                     if cur_cmd as i32 != 11i32 {
                                                         cur_cmd = 12i32 as eight_bits
                                                     }
-                                                    cur_tok = cur_cmd as i32 * 0x200000i32
-                                                        + cur_chr;
+                                                    cur_tok =
+                                                        cur_cmd as i32 * 0x200000i32 + cur_chr;
                                                     back_input();
                                                     cur_input.index = 4i32 as u16;
                                                     begin_token_list(
@@ -32132,11 +31599,9 @@ pub unsafe extern "C" fn main_control() {
                                             avail = (*mem.offset(lig_stack as isize)).b32.s1;
                                             (*mem.offset(lig_stack as isize)).b32.s1 = -0xfffffffi32
                                         }
-                                        (*mem.offset(lig_stack as isize)).b16.s1 =
-                                            main_f as u16;
+                                        (*mem.offset(lig_stack as isize)).b16.s1 = main_f as u16;
                                         cur_r = cur_chr;
-                                        (*mem.offset(lig_stack as isize)).b16.s0 =
-                                            cur_r as u16;
+                                        (*mem.offset(lig_stack as isize)).b16.s0 = cur_r as u16;
                                         if cur_r == false_bchar {
                                             cur_r = 65536i32
                                         }
@@ -32151,8 +31616,7 @@ pub unsafe extern "C" fn main_control() {
                                     /*main_loop_wrapup *//*1070: */
                                     if cur_l < 65536i32 {
                                         if (*mem.offset(cur_q as isize)).b32.s1 > -0xfffffffi32 {
-                                            if (*mem.offset(cur_list.tail as isize)).b16.s0
-                                                as i32
+                                            if (*mem.offset(cur_list.tail as isize)).b16.s0 as i32
                                                 == *hyphen_char.offset(main_f as isize)
                                             {
                                                 ins_disc = 1i32 != 0
@@ -32165,8 +31629,7 @@ pub unsafe extern "C" fn main_control() {
                                                 (*mem.offset(cur_q as isize)).b32.s1,
                                             );
                                             if lft_hit {
-                                                (*mem.offset(main_p as isize)).b16.s0 =
-                                                    2i32 as u16;
+                                                (*mem.offset(main_p as isize)).b16.s0 = 2i32 as u16;
                                                 lft_hit = 0i32 != 0
                                             }
                                             if rt_hit {
@@ -32261,8 +31724,7 @@ pub unsafe extern "C" fn main_control() {
                         }
                         main_k = ((*lig_kern_base.offset(main_f as isize)
                             + 256i32 * main_j.s1 as i32
-                            + main_j.s0 as i32)
-                            as i64
+                            + main_j.s0 as i32) as i64
                             + 32768
                             - (256i32 * 128i32) as i64)
                             as font_index;
@@ -32472,7 +31934,7 @@ pub unsafe extern "C" fn close_files_and_terminate() {
     if log_opened {
         ttstub_output_putc(log_file, '\n' as i32);
         ttstub_output_close(log_file);
-        selector = (selector as u32).wrapping_sub(2i32 as u32) as selector_t;
+        selector = (selector as u32).wrapping_sub(2_u32) as selector_t;
         if selector as u32 == SELECTOR_TERM_ONLY as i32 as u32 {
             print_nl_cstr(b"Transcript written on \x00" as *const u8 as *const i8);
             print(texmf_log_name);
@@ -32493,8 +31955,7 @@ pub unsafe extern "C" fn tokens_to_string(mut p: i32) -> str_number {
     if selector as u32 == SELECTOR_NEW_STRING as i32 as u32 {
         pdf_error(
             b"tokens\x00" as *const u8 as *const i8,
-            b"tokens_to_string() called while selector = new_string\x00" as *const u8
-                as *const i8,
+            b"tokens_to_string() called while selector = new_string\x00" as *const u8 as *const i8,
         );
     }
     old_setting = selector as u8;
@@ -32535,15 +31996,11 @@ pub unsafe extern "C" fn compare_strings() {
             current_block = 12124785117276362961;
             break;
         }
-        if (*str_pool.offset(i1 as isize) as i32)
-            < *str_pool.offset(i2 as isize) as i32
-        {
+        if (*str_pool.offset(i1 as isize) as i32) < *str_pool.offset(i2 as isize) as i32 {
             cur_val = -1i32;
             current_block = 11833780966967478830;
             break;
-        } else if *str_pool.offset(i1 as isize) as i32
-            > *str_pool.offset(i2 as isize) as i32
-        {
+        } else if *str_pool.offset(i1 as isize) as i32 > *str_pool.offset(i2 as isize) as i32 {
             cur_val = 1i32;
             current_block = 11833780966967478830;
             break;
@@ -32620,34 +32077,22 @@ pub unsafe extern "C" fn prune_page_top(mut p: i32, mut s: bool) -> i32 {
     return (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1;
 }
 #[no_mangle]
-pub unsafe extern "C" fn do_marks(
-    mut a: small_number,
-    mut l: small_number,
-    mut q: i32,
-) -> bool {
+pub unsafe extern "C" fn do_marks(mut a: small_number, mut l: small_number, mut q: i32) -> bool {
     let mut i: small_number = 0;
     if (l as i32) < 4i32 {
         i = 0i32 as small_number;
         while i as i32 <= 15i32 {
             if i as i32 & 1i32 != 0 {
-                cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                    .b32
-                    .s1
+                cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s1
             } else {
-                cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                    .b32
-                    .s0
+                cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s0
             }
             if cur_ptr != -0xfffffffi32 {
                 if do_marks(a, (l as i32 + 1i32) as small_number, cur_ptr) {
                     if i as i32 & 1i32 != 0 {
-                        (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                            .b32
-                            .s1 = -0xfffffffi32
+                        (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s1 = -0xfffffffi32
                     } else {
-                        (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                            .b32
-                            .s0 = -0xfffffffi32
+                        (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s0 = -0xfffffffi32
                     }
                     let ref mut fresh101 = (*mem.offset(q as isize)).b16.s0;
                     *fresh101 = (*fresh101).wrapping_sub(1)
@@ -32712,24 +32157,18 @@ pub unsafe extern "C" fn do_marks(
                 i = 0i32 as small_number;
                 while i as i32 <= 4i32 {
                     if i as i32 & 1i32 != 0 {
-                        cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                            .b32
-                            .s1
+                        cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s1
                     } else {
-                        cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                            .b32
-                            .s0
+                        cur_ptr = (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s0
                     }
                     if cur_ptr != -0xfffffffi32 {
                         delete_token_ref(cur_ptr);
                         if i as i32 & 1i32 != 0 {
-                            (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                                .b32
-                                .s1 = -0xfffffffi32
+                            (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s1 =
+                                -0xfffffffi32
                         } else {
-                            (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize))
-                                .b32
-                                .s0 = -0xfffffffi32
+                            (*mem.offset((q + i as i32 / 2i32 + 1i32) as isize)).b32.s0 =
+                                -0xfffffffi32
                         }
                     }
                     i += 1

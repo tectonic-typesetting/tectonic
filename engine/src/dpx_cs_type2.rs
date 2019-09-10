@@ -15,8 +15,7 @@ extern "C" {
     #[no_mangle]
     fn floor(_: f64) -> f64;
     #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
-        -> *mut libc::c_void;
+    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
@@ -85,16 +84,13 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
         value = arg_stack[i as usize];
         /* Nearest integer value */
         ivalue = floor(value + 0.5f64) as i32;
-        if value >= 0x8000i64 as f64
-            || value <= (-0x8000 - 1 as i64) as f64
-        {
+        if value >= 0x8000i64 as f64 || value <= (-0x8000 - 1 as i64) as f64 {
             /*
              * This number cannot be represented as a single operand.
              * We must use `a b mul ...' or `a c div' to represent large values.
              */
             _tt_abort(
-                b"%s: Argument value too large. (This is bug)\x00" as *const u8
-                    as *const i8,
+                b"%s: Argument value too large. (This is bug)\x00" as *const u8 as *const i8,
                 b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
             );
         } else {
@@ -115,8 +111,7 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                 let fresh2 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh2 = (ivalue & 0xffi32) as card8;
-                ivalue = ((value - ivalue as f64) * 0x10000i64 as f64)
-                    as i32;
+                ivalue = ((value - ivalue as f64) * 0x10000i64 as f64) as i32;
                 let fresh3 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh3 = (ivalue >> 8i32 & 0xffi32) as card8;
@@ -136,9 +131,7 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                     status = -3i32;
                     return;
                 }
-                ivalue = 0xf700u32
-                    .wrapping_add(ivalue as u32)
-                    .wrapping_sub(108i32 as u32) as i32;
+                ivalue = 0xf700u32.wrapping_add(ivalue as u32).wrapping_sub(108_u32) as i32;
                 let fresh6 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh6 = (ivalue >> 8i32 & 0xffi32) as card8;
@@ -150,9 +143,7 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                     status = -3i32;
                     return;
                 }
-                ivalue = 0xfb00u32
-                    .wrapping_sub(ivalue as u32)
-                    .wrapping_sub(108i32 as u32) as i32;
+                ivalue = 0xfb00u32.wrapping_sub(ivalue as u32).wrapping_sub(108_u32) as i32;
                 let fresh8 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh8 = (ivalue >> 8i32 & 0xffi32) as card8;
@@ -642,8 +633,7 @@ unsafe extern "C" fn do_operator2(
         }
         23 => {
             dpx_warning(
-                b"%s: Charstring operator \"random\" found.\x00" as *const u8
-                    as *const i8,
+                b"%s: Charstring operator \"random\" found.\x00" as *const u8 as *const i8,
                 b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
             );
             if 48i32 < stack_top + 1i32 {
@@ -657,8 +647,7 @@ unsafe extern "C" fn do_operator2(
         _ => {
             /* no-op ? */
             dpx_warning(
-                b"%s: Unknown charstring operator: 0x0c%02x\x00" as *const u8
-                    as *const i8,
+                b"%s: Unknown charstring operator: 0x0c%02x\x00" as *const u8 as *const i8,
                 b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
                 op as i32,
             );
@@ -767,8 +756,7 @@ unsafe extern "C" fn get_subr(
     let mut count: card16 = 0;
     if subr_idx.is_null() {
         _tt_abort(
-            b"%s: Subroutine called but no subroutine found.\x00" as *const u8
-                as *const i8,
+            b"%s: Subroutine called but no subroutine found.\x00" as *const u8 as *const i8,
             b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
         );
     }
@@ -886,9 +874,7 @@ unsafe extern "C" fn do_charstring(
         } else if (b0 as i32) < 32i32 && b0 as i32 != 28i32 {
             /* 19, 20 need mask */
             do_operator1(dest, limit, data, endptr);
-        } else if b0 as i32 >= 22i32 && b0 as i32 <= 27i32
-            || b0 as i32 == 31i32
-        {
+        } else if b0 as i32 >= 22i32 && b0 as i32 <= 27i32 || b0 as i32 == 31i32 {
             /* reserved */
             status = -1i32
         /* not an error ? */
@@ -906,8 +892,7 @@ unsafe extern "C" fn do_charstring(
     } else if status < 0i32 {
         /* error */
         _tt_abort(
-            b"%s: Parsing charstring failed: (status=%d, stack=%d)\x00" as *const u8
-                as *const i8,
+            b"%s: Parsing charstring failed: (status=%d, stack=%d)\x00" as *const u8 as *const i8,
             b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
             status,
             stack_top,

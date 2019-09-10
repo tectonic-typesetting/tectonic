@@ -242,10 +242,7 @@ fn main() {
     for flag in &cppflags {
         cppcfg.flag_if_supported(flag);
     }
-    ccfg
-        .flag("-Wall")
-        .file("tectonic/stub_icu.c")
-        .include(".");
+    ccfg.flag("-Wall").file("tectonic/stub_icu.c").include(".");
 
     cppcfg
         .cpp(true)
