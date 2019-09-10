@@ -16,21 +16,21 @@ extern "C" {
         __function: *const i8,
     ) -> !;
     #[no_mangle]
-    fn __errno_location() -> *mut libc::c_int;
+    fn __errno_location() -> *mut i32;
     #[no_mangle]
     fn fabs(_: f64) -> f64;
     #[no_mangle]
     fn floor(_: f64) -> f64;
     #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
@@ -88,7 +88,7 @@ extern "C" {
     #[no_mangle]
     fn cff_get_string(cff: *mut cff_font, id: s_SID) -> *mut i8;
     #[no_mangle]
-    fn cff_add_string(cff: *mut cff_font, str: *const i8, unique: libc::c_int) -> s_SID;
+    fn cff_add_string(cff: *mut cff_font, str: *const i8, unique: i32) -> s_SID;
 }
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type card8 = u8;
@@ -147,17 +147,17 @@ pub struct cff_header {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_dict_entry {
-    pub id: libc::c_int,
+    pub id: i32,
     pub key: *const i8,
-    pub count: libc::c_int,
+    pub count: i32,
     pub values: *mut f64,
     /* values                                  */
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_dict {
-    pub max: libc::c_int,
-    pub count: libc::c_int,
+    pub max: i32,
+    pub count: i32,
     pub entries: *mut cff_dict_entry,
 }
 /* Encoding, Charset and FDSelect */
@@ -255,16 +255,16 @@ pub struct cff_font {
     pub num_fds: card8,
     pub _string: *mut cff_index,
     pub handle: rust_input_handle_t,
-    pub filter: libc::c_int,
-    pub index: libc::c_int,
-    pub flag: libc::c_int,
-    pub is_notdef_notzero: libc::c_int,
+    pub filter: i32,
+    pub index: i32,
+    pub flag: i32,
+    pub is_notdef_notzero: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_2 {
     pub opname: *const i8,
-    pub argtype: libc::c_int,
+    pub argtype: i32,
 }
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
@@ -302,7 +302,7 @@ pub unsafe extern "C" fn cff_new_dict() -> *mut cff_dict {
 pub unsafe extern "C" fn cff_release_dict(mut dict: *mut cff_dict) {
     if !dict.is_null() {
         if !(*dict).entries.is_null() {
-            let mut i: libc::c_int = 0;
+            let mut i: i32 = 0;
             i = 0i32;
             while i < (*dict).count {
                 free((*(*dict).entries.offset(i as isize)).values as *mut libc::c_void);
@@ -313,7 +313,7 @@ pub unsafe extern "C" fn cff_release_dict(mut dict: *mut cff_dict) {
         free(dict as *mut libc::c_void);
     };
 }
-static mut stack_top: libc::c_int = 0i32;
+static mut stack_top: i32 = 0i32;
 static mut arg_stack: [f64; 64] = [0.; 64];
 static mut dict_operator: [C2RustUnnamed_2; 61] = [
     {
@@ -748,16 +748,16 @@ static mut dict_operator: [C2RustUnnamed_2; 61] = [
 unsafe extern "C" fn get_integer(
     mut data: *mut *mut card8,
     mut endptr: *mut card8,
-    mut status: *mut libc::c_int,
+    mut status: *mut i32,
 ) -> f64 {
-    let mut result: libc::c_int = 0i32;
+    let mut result: i32 = 0i32;
     let mut b0: card8 = 0;
     let mut b1: card8 = 0;
     let mut b2: card8 = 0;
     let fresh0 = *data;
     *data = (*data).offset(1);
     b0 = *fresh0;
-    if b0 as libc::c_int == 28i32 && *data < endptr.offset(-2) {
+    if b0 as i32 == 28i32 && *data < endptr.offset(-2) {
         /* shortint */
         let fresh1 = *data;
         *data = (*data).offset(1);
@@ -765,39 +765,39 @@ unsafe extern "C" fn get_integer(
         let fresh2 = *data;
         *data = (*data).offset(1);
         b2 = *fresh2;
-        result = b1 as libc::c_int * 256i32 + b2 as libc::c_int;
+        result = b1 as i32 * 256i32 + b2 as i32;
         if result as i64 > 0x7fff {
-            result = (result as i64 - 0x10000) as libc::c_int
+            result = (result as i64 - 0x10000) as i32
         }
-    } else if b0 as libc::c_int == 29i32 && *data < endptr.offset(-4) {
+    } else if b0 as i32 == 29i32 && *data < endptr.offset(-4) {
         /* longint */
-        let mut i: libc::c_int = 0;
+        let mut i: i32 = 0;
         let fresh3 = *data;
         *data = (*data).offset(1);
-        result = *fresh3 as libc::c_int;
+        result = *fresh3 as i32;
         if result > 0x7fi32 {
             result -= 0x100i32
         }
         i = 0i32;
         while i < 3i32 {
-            result = result * 256i32 + **data as libc::c_int;
+            result = result * 256i32 + **data as i32;
             *data = (*data).offset(1);
             i += 1
         }
-    } else if b0 as libc::c_int >= 32i32 && b0 as libc::c_int <= 246i32 {
+    } else if b0 as i32 >= 32i32 && b0 as i32 <= 246i32 {
         /* int (1) */
-        result = b0 as libc::c_int - 139i32
-    } else if b0 as libc::c_int >= 247i32 && b0 as libc::c_int <= 250i32 {
+        result = b0 as i32 - 139i32
+    } else if b0 as i32 >= 247i32 && b0 as i32 <= 250i32 {
         /* int (2) */
         let fresh4 = *data;
         *data = (*data).offset(1);
         b1 = *fresh4;
-        result = (b0 as libc::c_int - 247i32) * 256i32 + b1 as libc::c_int + 108i32
-    } else if b0 as libc::c_int >= 251i32 && b0 as libc::c_int <= 254i32 {
+        result = (b0 as i32 - 247i32) * 256i32 + b1 as i32 + 108i32
+    } else if b0 as i32 >= 251i32 && b0 as i32 <= 254i32 {
         let fresh5 = *data;
         *data = (*data).offset(1);
         b1 = *fresh5;
-        result = -(b0 as libc::c_int - 251i32) * 256i32 - b1 as libc::c_int - 108i32
+        result = -(b0 as i32 - 251i32) * 256i32 - b1 as i32 - 108i32
     } else {
         *status = -1i32
     }
@@ -807,14 +807,14 @@ unsafe extern "C" fn get_integer(
 unsafe extern "C" fn get_real(
     mut data: *mut *mut card8,
     mut endptr: *mut card8,
-    mut status: *mut libc::c_int,
+    mut status: *mut i32,
 ) -> f64 {
     let mut result: f64 = 0.0f64; /* skip first byte (30) */
-    let mut nibble: libc::c_int = 0i32;
-    let mut pos: libc::c_int = 0i32;
-    let mut len: libc::c_int = 0i32;
-    let mut fail: libc::c_int = 0i32;
-    if **data as libc::c_int != 30i32 || *data >= endptr.offset(-1) {
+    let mut nibble: i32 = 0i32;
+    let mut pos: i32 = 0i32;
+    let mut len: i32 = 0i32;
+    let mut fail: i32 = 0i32;
+    if **data as i32 != 30i32 || *data >= endptr.offset(-1) {
         *status = -1i32;
         return 0.0f64;
     }
@@ -823,10 +823,10 @@ unsafe extern "C" fn get_real(
     while fail == 0 && len < 1024i32 - 2i32 && *data < endptr {
         /* get nibble */
         if pos % 2i32 != 0 {
-            nibble = **data as libc::c_int & 0xfi32;
+            nibble = **data as i32 & 0xfi32;
             *data = (*data).offset(1)
         } else {
-            nibble = **data as libc::c_int >> 4i32 & 0xfi32
+            nibble = **data as i32 >> 4i32 & 0xfi32
         }
         if nibble >= 0i32 && nibble <= 0x9i32 {
             let fresh6 = len;
@@ -859,7 +859,7 @@ unsafe extern "C" fn get_real(
                 let fresh11 = len;
                 len = len + 1;
                 *work_buffer.as_mut_ptr().offset(fresh11 as isize) = '\u{0}' as i32 as i8;
-                if pos % 2i32 == 0i32 && **data as libc::c_int != 0xffi32 {
+                if pos % 2i32 == 0i32 && **data as i32 != 0xffi32 {
                     fail = 1i32
                 }
                 break;
@@ -877,7 +877,7 @@ unsafe extern "C" fn get_real(
     } else {
         let mut s: *mut i8 = 0 as *mut i8;
         result = strtod(work_buffer.as_mut_ptr(), &mut s);
-        if *s as libc::c_int != 0i32 || *__errno_location() == 34i32 {
+        if *s as i32 != 0i32 || *__errno_location() == 34i32 {
             *status = -1i32
         }
     }
@@ -888,15 +888,15 @@ unsafe extern "C" fn add_dict(
     mut dict: *mut cff_dict,
     mut data: *mut *mut card8,
     mut endptr: *mut card8,
-    mut status: *mut libc::c_int,
+    mut status: *mut i32,
 ) {
-    let mut id: libc::c_int = 0;
-    let mut argtype: libc::c_int = 0;
-    id = **data as libc::c_int;
+    let mut id: i32 = 0;
+    let mut argtype: i32 = 0;
+    id = **data as i32;
     if id == 0xci32 {
         *data = (*data).offset(1);
         if *data >= endptr || {
-            id = **data as libc::c_int + 22i32;
+            id = **data as i32 + 22i32;
             id >= 22i32 + 39i32
         } {
             *status = -1i32;
@@ -973,14 +973,14 @@ pub unsafe extern "C" fn cff_dict_unpack(
     mut endptr: *mut card8,
 ) -> *mut cff_dict {
     let mut dict: *mut cff_dict = 0 as *mut cff_dict;
-    let mut status: libc::c_int = 0i32;
+    let mut status: i32 = 0i32;
     stack_top = 0i32;
     dict = cff_new_dict();
     while data < endptr && status == 0i32 {
-        if (*data as libc::c_int) < 22i32 {
+        if (*data as i32) < 22i32 {
             /* operator */
             add_dict(dict, &mut data, endptr, &mut status);
-        } else if *data as libc::c_int == 30i32 {
+        } else if *data as i32 == 30i32 {
             /* real - First byte of a sequence (variable) */
             if stack_top < 64i32 {
                 arg_stack[stack_top as usize] = get_real(&mut data, endptr, &mut status); /* everything else are integer */
@@ -988,8 +988,8 @@ pub unsafe extern "C" fn cff_dict_unpack(
             } else {
                 status = -2i32
             }
-        } else if *data as libc::c_int == 255i32
-            || *data as libc::c_int >= 22i32 && *data as libc::c_int <= 27i32
+        } else if *data as i32 == 255i32
+            || *data as i32 >= 22i32 && *data as i32 <= 27i32
         {
             /* reserved */
             data = data.offset(1)
@@ -1020,10 +1020,10 @@ pub unsafe extern "C" fn cff_dict_unpack(
 /* Pack DICT data */
 unsafe extern "C" fn pack_integer(
     mut dest: *mut card8,
-    mut destlen: libc::c_int,
-    mut value: libc::c_int,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0i32; /* longint */
+    mut destlen: i32,
+    mut value: i32,
+) -> i32 {
+    let mut len: i32 = 0i32; /* longint */
     if value >= -107i32 && value <= 107i32 {
         if destlen < 1i32 {
             _tt_abort(
@@ -1042,7 +1042,7 @@ unsafe extern "C" fn pack_integer(
         }
         value = 0xf700u32
             .wrapping_add(value as libc::c_uint)
-            .wrapping_sub(108i32 as libc::c_uint) as libc::c_int;
+            .wrapping_sub(108i32 as libc::c_uint) as i32;
         *dest.offset(0) = (value >> 8i32 & 0xffi32) as card8;
         *dest.offset(1) = (value & 0xffi32) as card8;
         len = 2i32
@@ -1055,7 +1055,7 @@ unsafe extern "C" fn pack_integer(
         }
         value = 0xfb00u32
             .wrapping_sub(value as libc::c_uint)
-            .wrapping_sub(108i32 as libc::c_uint) as libc::c_int;
+            .wrapping_sub(108i32 as libc::c_uint) as i32;
         *dest.offset(0) = (value >> 8i32 & 0xffi32) as card8;
         *dest.offset(1) = (value & 0xffi32) as card8;
         len = 2i32
@@ -1089,11 +1089,11 @@ unsafe extern "C" fn pack_integer(
 }
 unsafe extern "C" fn pack_real(
     mut dest: *mut card8,
-    mut destlen: libc::c_int,
+    mut destlen: i32,
     mut value: f64,
-) -> libc::c_int {
-    let mut i: libc::c_int = 0i32;
-    let mut pos: libc::c_int = 2i32;
+) -> i32 {
+    let mut i: i32 = 0i32;
+    let mut pos: i32 = 2i32;
     let mut buffer: [i8; 32] = [0; 32];
     if destlen < 2i32 {
         _tt_abort(
@@ -1120,17 +1120,17 @@ unsafe extern "C" fn pack_real(
         value,
     );
     i = 0i32;
-    while buffer[i as usize] as libc::c_int != '\u{0}' as i32 {
+    while buffer[i as usize] as i32 != '\u{0}' as i32 {
         let mut ch: u8 = 0i32 as u8;
-        if buffer[i as usize] as libc::c_int == '.' as i32 {
+        if buffer[i as usize] as i32 == '.' as i32 {
             ch = 0xai32 as u8
-        } else if buffer[i as usize] as libc::c_int >= '0' as i32
-            && buffer[i as usize] as libc::c_int <= '9' as i32
+        } else if buffer[i as usize] as i32 >= '0' as i32
+            && buffer[i as usize] as i32 <= '9' as i32
         {
-            ch = (buffer[i as usize] as libc::c_int - '0' as i32) as u8
-        } else if buffer[i as usize] as libc::c_int == 'e' as i32 {
+            ch = (buffer[i as usize] as i32 - '0' as i32) as u8
+        } else if buffer[i as usize] as i32 == 'e' as i32 {
             i += 1;
-            ch = (if buffer[i as usize] as libc::c_int == '-' as i32 {
+            ch = (if buffer[i as usize] as i32 == '-' as i32 {
                 0xci32
             } else {
                 0xbi32
@@ -1149,16 +1149,16 @@ unsafe extern "C" fn pack_real(
         }
         if pos % 2i32 != 0 {
             let ref mut fresh15 = *dest.offset((pos / 2i32) as isize);
-            *fresh15 = (*fresh15 as libc::c_int + ch as libc::c_int) as card8
+            *fresh15 = (*fresh15 as i32 + ch as i32) as card8
         } else {
-            *dest.offset((pos / 2i32) as isize) = ((ch as libc::c_int) << 4i32) as card8
+            *dest.offset((pos / 2i32) as isize) = ((ch as i32) << 4i32) as card8
         }
         pos += 1;
         i += 1
     }
     if pos % 2i32 != 0 {
         let ref mut fresh16 = *dest.offset((pos / 2i32) as isize);
-        *fresh16 = (*fresh16 as libc::c_int + 0xfi32) as card8;
+        *fresh16 = (*fresh16 as i32 + 0xfi32) as card8;
         pos += 1
     } else {
         if destlen < pos / 2i32 + 1i32 {
@@ -1175,16 +1175,16 @@ unsafe extern "C" fn pack_real(
 unsafe extern "C" fn cff_dict_put_number(
     mut value: f64,
     mut dest: *mut card8,
-    mut destlen: libc::c_int,
-    mut type_0: libc::c_int,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0i32;
+    mut destlen: i32,
+    mut type_0: i32,
+) -> i32 {
+    let mut len: i32 = 0i32;
     let mut nearint: f64 = 0.;
     nearint = floor(value + 0.5f64);
     /* set offset to longint */
     if type_0 == 1i32 << 7i32 {
-        let mut lvalue: libc::c_int = 0; /* integer */
-        lvalue = value as libc::c_int;
+        let mut lvalue: i32 = 0; /* integer */
+        lvalue = value as i32;
         if destlen < 5i32 {
             _tt_abort(
                 b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
@@ -1204,19 +1204,19 @@ unsafe extern "C" fn cff_dict_put_number(
         /* real */
         len = pack_real(dest, destlen, value)
     } else {
-        len = pack_integer(dest, destlen, nearint as libc::c_int)
+        len = pack_integer(dest, destlen, nearint as i32)
     }
     return len;
 }
 unsafe extern "C" fn put_dict_entry(
     mut de: *mut cff_dict_entry,
     mut dest: *mut card8,
-    mut destlen: libc::c_int,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0i32;
-    let mut i: libc::c_int = 0;
-    let mut type_0: libc::c_int = 0;
-    let mut id: libc::c_int = 0;
+    mut destlen: i32,
+) -> i32 {
+    let mut len: i32 = 0i32;
+    let mut i: i32 = 0;
+    let mut type_0: i32 = 0;
+    let mut id: i32 = 0;
     if (*de).count > 0i32 {
         id = (*de).id;
         if dict_operator[id as usize].argtype == 1i32 << 7i32
@@ -1271,10 +1271,10 @@ unsafe extern "C" fn put_dict_entry(
 pub unsafe extern "C" fn cff_dict_pack(
     mut dict: *mut cff_dict,
     mut dest: *mut card8,
-    mut destlen: libc::c_int,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0i32;
-    let mut i: libc::c_int = 0;
+    mut destlen: i32,
+) -> i32 {
+    let mut len: i32 = 0i32;
+    let mut i: i32 = 0;
     i = 0i32;
     while i < (*dict).count {
         if streq_ptr(
@@ -1308,15 +1308,15 @@ pub unsafe extern "C" fn cff_dict_pack(
 pub unsafe extern "C" fn cff_dict_add(
     mut dict: *mut cff_dict,
     mut key: *const i8,
-    mut count: libc::c_int,
+    mut count: i32,
 ) {
-    let mut id: libc::c_int = 0;
-    let mut i: libc::c_int = 0;
+    let mut id: i32 = 0;
+    let mut i: i32 = 0;
     id = 0i32;
     while id < 22i32 + 39i32 {
         if !key.is_null()
             && !dict_operator[id as usize].opname.is_null()
-            && streq_ptr(dict_operator[id as usize].opname, key) as libc::c_int != 0
+            && streq_ptr(dict_operator[id as usize].opname, key) as i32 != 0
         {
             break;
         }
@@ -1374,7 +1374,7 @@ pub unsafe extern "C" fn cff_dict_add(
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_dict_remove(mut dict: *mut cff_dict, mut key: *const i8) {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     i = 0i32;
     while i < (*dict).count {
         if streq_ptr(key, (*(*dict).entries.offset(i as isize)).key) {
@@ -1390,11 +1390,11 @@ pub unsafe extern "C" fn cff_dict_remove(mut dict: *mut cff_dict, mut key: *cons
 pub unsafe extern "C" fn cff_dict_known(
     mut dict: *mut cff_dict,
     mut key: *const i8,
-) -> libc::c_int {
-    let mut i: libc::c_int = 0;
+) -> i32 {
+    let mut i: i32 = 0;
     i = 0i32;
     while i < (*dict).count {
-        if streq_ptr(key, (*(*dict).entries.offset(i as isize)).key) as libc::c_int != 0
+        if streq_ptr(key, (*(*dict).entries.offset(i as isize)).key) as i32 != 0
             && (*(*dict).entries.offset(i as isize)).count > 0i32
         {
             return 1i32;
@@ -1407,10 +1407,10 @@ pub unsafe extern "C" fn cff_dict_known(
 pub unsafe extern "C" fn cff_dict_get(
     mut dict: *mut cff_dict,
     mut key: *const i8,
-    mut idx: libc::c_int,
+    mut idx: i32,
 ) -> f64 {
     let mut value: f64 = 0.0f64;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     if !key.is_null() && !dict.is_null() {
     } else {
         __assert_fail(
@@ -1454,10 +1454,10 @@ pub unsafe extern "C" fn cff_dict_get(
 pub unsafe extern "C" fn cff_dict_set(
     mut dict: *mut cff_dict,
     mut key: *const i8,
-    mut idx: libc::c_int,
+    mut idx: i32,
     mut value: f64,
 ) {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     if !dict.is_null() && !key.is_null() {
     } else {
         __assert_fail(
@@ -1518,12 +1518,12 @@ pub unsafe extern "C" fn cff_dict_set(
 /* decode/encode DICT */
 #[no_mangle]
 pub unsafe extern "C" fn cff_dict_update(mut dict: *mut cff_dict, mut cff: *mut cff_font) {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     i = 0i32;
     while i < (*dict).count {
         if (*(*dict).entries.offset(i as isize)).count > 0i32 {
             let mut str: *mut i8 = 0 as *mut i8;
-            let mut id: libc::c_int = 0;
+            let mut id: i32 = 0;
             id = (*(*dict).entries.offset(i as isize)).id;
             if dict_operator[id as usize].argtype == 1i32 << 3i32 {
                 str = cff_get_string(

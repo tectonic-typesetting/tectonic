@@ -22,7 +22,7 @@ extern "C" {
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn sfnt_set_table(
         sfont: *mut sfnt,
@@ -35,7 +35,7 @@ extern "C" {
     #[no_mangle]
     fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
     #[no_mangle]
-    fn put_big_endian(s: *mut libc::c_void, q: SFNT_LONG, n: libc::c_int) -> libc::c_int;
+    fn put_big_endian(s: *mut libc::c_void, q: SFNT_LONG, n: i32) -> i32;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
@@ -43,7 +43,7 @@ extern "C" {
     fn ttstub_input_seek(
         handle: rust_input_handle_t,
         offset: ssize_t,
-        whence: libc::c_int,
+        whence: i32,
     ) -> size_t;
     #[no_mangle]
     fn ttstub_input_read(
@@ -116,7 +116,7 @@ pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type __compar_fn_t =
-    Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> libc::c_int>;
+    Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> i32>;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type BYTE = u8;
 pub type SFNT_CHAR = libc::c_schar;
@@ -151,7 +151,7 @@ pub struct sfnt_table_directory {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt {
-    pub type_0: libc::c_int,
+    pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
     pub offset: SFNT_ULONG,
@@ -328,16 +328,16 @@ unsafe extern "C" fn find_empty_slot(mut g: *mut tt_glyphs) -> USHORT {
         );
     }
     gid = 0i32 as USHORT;
-    while (gid as libc::c_int) < 65534i32 {
-        if *(*g).used_slot.offset((gid as libc::c_int / 8i32) as isize) as libc::c_int
-            & 1i32 << 7i32 - gid as libc::c_int % 8i32
+    while (gid as i32) < 65534i32 {
+        if *(*g).used_slot.offset((gid as i32 / 8i32) as isize) as i32
+            & 1i32 << 7i32 - gid as i32 % 8i32
             == 0
         {
             break;
         }
         gid = gid.wrapping_add(1)
     }
-    if gid as libc::c_int == 65534i32 {
+    if gid as i32 == 65534i32 {
         _tt_abort(b"No empty glyph slot available.\x00" as *const u8 as *const i8);
     }
     return gid;
@@ -359,8 +359,8 @@ pub unsafe extern "C" fn tt_find_glyph(mut g: *mut tt_glyphs, mut gid: USHORT) -
         );
     }
     idx = 0i32 as USHORT;
-    while (idx as libc::c_int) < (*g).num_glyphs as libc::c_int {
-        if gid as libc::c_int == (*(*g).gd.offset(idx as isize)).ogid as libc::c_int {
+    while (idx as i32) < (*g).num_glyphs as i32 {
+        if gid as i32 == (*(*g).gd.offset(idx as isize)).ogid as i32 {
             new_gid = (*(*g).gd.offset(idx as isize)).gid;
             break;
         } else {
@@ -385,13 +385,13 @@ pub unsafe extern "C" fn tt_get_index(mut g: *mut tt_glyphs, mut gid: USHORT) ->
         );
     }
     idx = 0i32 as USHORT;
-    while (idx as libc::c_int) < (*g).num_glyphs as libc::c_int {
-        if gid as libc::c_int == (*(*g).gd.offset(idx as isize)).gid as libc::c_int {
+    while (idx as i32) < (*g).num_glyphs as i32 {
+        if gid as i32 == (*(*g).gd.offset(idx as isize)).gid as i32 {
             break;
         }
         idx = idx.wrapping_add(1)
     }
-    if idx as libc::c_int == (*g).num_glyphs as libc::c_int {
+    if idx as i32 == (*g).num_glyphs as i32 {
         idx = 0i32 as USHORT
     }
     return idx;
@@ -416,20 +416,20 @@ pub unsafe extern "C" fn tt_add_glyph(
     }
     if *(*g)
         .used_slot
-        .offset((new_gid as libc::c_int / 8i32) as isize) as libc::c_int
-        & 1i32 << 7i32 - new_gid as libc::c_int % 8i32
+        .offset((new_gid as i32 / 8i32) as isize) as i32
+        & 1i32 << 7i32 - new_gid as i32 % 8i32
         != 0
     {
         dpx_warning(
             b"Slot %u already used.\x00" as *const u8 as *const i8,
-            new_gid as libc::c_int,
+            new_gid as i32,
         );
     } else {
-        if (*g).num_glyphs as libc::c_int + 1i32 >= 65534i32 {
+        if (*g).num_glyphs as i32 + 1i32 >= 65534i32 {
             _tt_abort(b"Too many glyphs.\x00" as *const u8 as *const i8);
         }
-        if (*g).num_glyphs as libc::c_int >= (*g).max_glyphs as libc::c_int {
-            (*g).max_glyphs = ((*g).max_glyphs as libc::c_int + 256i32) as USHORT;
+        if (*g).num_glyphs as i32 >= (*g).max_glyphs as i32 {
+            (*g).max_glyphs = ((*g).max_glyphs as i32 + 256i32) as USHORT;
             (*g).gd = renew(
                 (*g).gd as *mut libc::c_void,
                 ((*g).max_glyphs as u32 as u64)
@@ -444,12 +444,12 @@ pub unsafe extern "C" fn tt_add_glyph(
         *fresh0 = 0 as *mut BYTE;
         let ref mut fresh1 = *(*g)
             .used_slot
-            .offset((new_gid as libc::c_int / 8i32) as isize);
-        *fresh1 = (*fresh1 as libc::c_int | 1i32 << 7i32 - new_gid as libc::c_int % 8i32)
+            .offset((new_gid as i32 / 8i32) as isize);
+        *fresh1 = (*fresh1 as i32 | 1i32 << 7i32 - new_gid as i32 % 8i32)
             as u8;
-        (*g).num_glyphs = ((*g).num_glyphs as libc::c_int + 1i32) as USHORT
+        (*g).num_glyphs = ((*g).num_glyphs as i32 + 1i32) as USHORT
     }
-    if new_gid as libc::c_int > (*g).last_gid as libc::c_int {
+    if new_gid as i32 > (*g).last_gid as i32 {
         (*g).last_gid = new_gid
     }
     return new_gid;
@@ -487,7 +487,7 @@ pub unsafe extern "C" fn tt_build_finish(mut g: *mut tt_glyphs) {
         if !(*g).gd.is_null() {
             let mut idx: USHORT = 0;
             idx = 0i32 as USHORT;
-            while (idx as libc::c_int) < (*g).num_glyphs as libc::c_int {
+            while (idx as i32) < (*g).num_glyphs as i32 {
                 free((*(*g).gd.offset(idx as isize)).data as *mut libc::c_void);
                 idx = idx.wrapping_add(1)
             }
@@ -501,15 +501,15 @@ pub unsafe extern "C" fn tt_build_finish(mut g: *mut tt_glyphs) {
 unsafe extern "C" fn glyf_cmp(
     mut v1: *const libc::c_void,
     mut v2: *const libc::c_void,
-) -> libc::c_int {
-    let mut cmp: libc::c_int = 0i32;
+) -> i32 {
+    let mut cmp: i32 = 0i32;
     let mut sv1: *const tt_glyph_desc = 0 as *const tt_glyph_desc;
     let mut sv2: *const tt_glyph_desc = 0 as *const tt_glyph_desc;
     sv1 = v1 as *const tt_glyph_desc;
     sv2 = v2 as *const tt_glyph_desc;
-    if (*sv1).gid as libc::c_int == (*sv2).gid as libc::c_int {
+    if (*sv1).gid as i32 == (*sv2).gid as i32 {
         cmp = 0i32
-    } else if ((*sv1).gid as libc::c_int) < (*sv2).gid as libc::c_int {
+    } else if ((*sv1).gid as i32) < (*sv2).gid as i32 {
         cmp = -1i32
     } else {
         cmp = 1i32
@@ -520,7 +520,7 @@ unsafe extern "C" fn glyf_cmp(
 pub unsafe extern "C" fn tt_build_tables(
     mut sfont: *mut sfnt,
     mut g: *mut tt_glyphs,
-) -> libc::c_int {
+) -> i32 {
     let mut hmtx_table_data: *mut i8 = 0 as *mut i8;
     let mut loca_table_data: *mut i8 = 0 as *mut i8;
     let mut glyf_table_data: *mut i8 = 0 as *mut i8;
@@ -537,7 +537,7 @@ pub unsafe extern "C" fn tt_build_tables(
     /* temp */
     let mut location: *mut SFNT_ULONG = 0 as *mut SFNT_ULONG; /* Estimate most frequently appeared width */
     let mut offset: SFNT_ULONG = 0;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     let mut w_stat: *mut USHORT = 0 as *mut USHORT;
     if !g.is_null() {
     } else {
@@ -560,7 +560,7 @@ pub unsafe extern "C" fn tt_build_tables(
     {
         _tt_abort(b"Invalid font type\x00" as *const u8 as *const i8);
     }
-    if (*g).num_glyphs as libc::c_int > 65534i32 {
+    if (*g).num_glyphs as i32 > 65534i32 {
         _tt_abort(b"Too many glyphs.\x00" as *const u8 as *const i8);
     }
     /*
@@ -574,7 +574,7 @@ pub unsafe extern "C" fn tt_build_tables(
     head = tt_read_head_table(sfont);
     hhea = tt_read_hhea_table(sfont);
     maxp = tt_read_maxp_table(sfont);
-    if (*hhea).metricDataFormat as libc::c_int != 0i32 {
+    if (*hhea).metricDataFormat as i32 != 0i32 {
         _tt_abort(b"Unknown metricDataFormat.\x00" as *const u8 as *const i8);
     }
     (*g).emsize = (*head).unitsPerEm;
@@ -588,9 +588,9 @@ pub unsafe extern "C" fn tt_build_tables(
     os2 = tt_read_os2__table(sfont);
     if !os2.is_null() {
         (*g).default_advh =
-            ((*os2).sTypoAscender as libc::c_int - (*os2).sTypoDescender as libc::c_int) as USHORT;
+            ((*os2).sTypoAscender as i32 - (*os2).sTypoDescender as i32) as USHORT;
         (*g).default_tsb =
-            ((*g).default_advh as libc::c_int - (*os2).sTypoAscender as libc::c_int) as SHORT
+            ((*g).default_advh as i32 - (*os2).sTypoAscender as i32) as SHORT
     }
     if sfnt_find_table_pos(sfont, b"vmtx\x00" as *const u8 as *const i8)
         > 0i32 as libc::c_uint
@@ -610,19 +610,19 @@ pub unsafe extern "C" fn tt_build_tables(
     }
     sfnt_locate_table(sfont, b"loca\x00" as *const u8 as *const i8);
     location = new(
-        (((*maxp).numGlyphs as libc::c_int + 1i32) as u32 as u64)
+        (((*maxp).numGlyphs as i32 + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<SFNT_ULONG>() as u64) as u32,
     ) as *mut SFNT_ULONG;
-    if (*head).indexToLocFormat as libc::c_int == 0i32 {
+    if (*head).indexToLocFormat as i32 == 0i32 {
         i = 0i32;
-        while i <= (*maxp).numGlyphs as libc::c_int {
+        while i <= (*maxp).numGlyphs as i32 {
             *location.offset(i as isize) = (2i32 as libc::c_uint)
                 .wrapping_mul(tt_get_unsigned_pair((*sfont).handle) as SFNT_ULONG);
             i += 1
         }
-    } else if (*head).indexToLocFormat as libc::c_int == 1i32 {
+    } else if (*head).indexToLocFormat as i32 == 1i32 {
         i = 0i32;
-        while i <= (*maxp).numGlyphs as libc::c_int {
+        while i <= (*maxp).numGlyphs as i32 {
             *location.offset(i as isize) = tt_get_unsigned_quad((*sfont).handle);
             i += 1
         }
@@ -630,14 +630,14 @@ pub unsafe extern "C" fn tt_build_tables(
         _tt_abort(b"Unknown IndexToLocFormat.\x00" as *const u8 as *const i8);
     }
     w_stat = new(
-        (((*g).emsize as libc::c_int + 2i32) as u32 as u64)
+        (((*g).emsize as i32 + 2i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<USHORT>() as u64) as u32,
     ) as *mut USHORT;
     memset(
         w_stat as *mut libc::c_void,
         0i32,
         (::std::mem::size_of::<USHORT>() as u64)
-            .wrapping_mul(((*g).emsize as libc::c_int + 2i32) as u64),
+            .wrapping_mul(((*g).emsize as i32 + 2i32) as u64),
     );
     /*
      * Read glyf table.
@@ -658,18 +658,18 @@ pub unsafe extern "C" fn tt_build_tables(
         let mut p: *mut BYTE = 0 as *mut BYTE;
         let mut endptr: *mut BYTE = 0 as *mut BYTE;
         let mut number_of_contours: SHORT = 0;
-        if i >= (*g).num_glyphs as libc::c_int {
+        if i >= (*g).num_glyphs as i32 {
             break;
         }
         gid = (*(*g).gd.offset(i as isize)).ogid;
-        if gid as libc::c_int >= (*maxp).numGlyphs as libc::c_int {
+        if gid as i32 >= (*maxp).numGlyphs as i32 {
             _tt_abort(
                 b"Invalid glyph index (gid %u)\x00" as *const u8 as *const i8,
-                gid as libc::c_int,
+                gid as i32,
             );
         }
         loc = *location.offset(gid as isize);
-        len = (*location.offset((gid as libc::c_int + 1i32) as isize)).wrapping_sub(loc);
+        len = (*location.offset((gid as i32 + 1i32) as isize)).wrapping_sub(loc);
         (*(*g).gd.offset(i as isize)).advw = (*hmtx.offset(gid as isize)).advance;
         (*(*g).gd.offset(i as isize)).lsb = (*hmtx.offset(gid as isize)).sideBearing;
         if !vmtx.is_null() {
@@ -682,12 +682,12 @@ pub unsafe extern "C" fn tt_build_tables(
         (*(*g).gd.offset(i as isize)).length = len;
         let ref mut fresh2 = (*(*g).gd.offset(i as isize)).data;
         *fresh2 = 0 as *mut BYTE;
-        if (*(*g).gd.offset(i as isize)).advw as libc::c_int <= (*g).emsize as libc::c_int {
+        if (*(*g).gd.offset(i as isize)).advw as i32 <= (*g).emsize as i32 {
             let ref mut fresh3 = *w_stat.offset((*(*g).gd.offset(i as isize)).advw as isize);
-            *fresh3 = (*fresh3 as libc::c_int + 1i32) as USHORT
+            *fresh3 = (*fresh3 as i32 + 1i32) as USHORT
         } else {
-            let ref mut fresh4 = *w_stat.offset(((*g).emsize as libc::c_int + 1i32) as isize);
-            *fresh4 = (*fresh4 as libc::c_int + 1i32) as USHORT
+            let ref mut fresh4 = *w_stat.offset(((*g).emsize as i32 + 1i32) as isize);
+            *fresh4 = (*fresh4 as i32 + 1i32) as USHORT
             /* larger than em */
         }
         if !(len == 0i32 as libc::c_uint) {
@@ -695,7 +695,7 @@ pub unsafe extern "C" fn tt_build_tables(
                 _tt_abort(
                     b"Invalid TrueType glyph data (gid %u).\x00" as *const u8
                         as *const i8,
-                    gid as libc::c_int,
+                    gid as i32,
                 );
             }
             p = new((len as u64)
@@ -719,9 +719,9 @@ pub unsafe extern "C" fn tt_build_tables(
             /* _FIXME_ */
             if vmtx.is_null() {
                 /* vertOriginY == sTypeAscender */
-                (*(*g).gd.offset(i as isize)).tsb = ((*g).default_advh as libc::c_int
-                    - (*g).default_tsb as libc::c_int
-                    - (*(*g).gd.offset(i as isize)).ury as libc::c_int)
+                (*(*g).gd.offset(i as isize)).tsb = ((*g).default_advh as i32
+                    - (*g).default_tsb as i32
+                    - (*(*g).gd.offset(i as isize)).ury as i32)
                     as SHORT
             }
             p = p.offset(put_big_endian(
@@ -753,7 +753,7 @@ pub unsafe extern "C" fn tt_build_tables(
             /*
              * Fix GIDs of composite glyphs.
              */
-            if (number_of_contours as libc::c_int) < 0i32 {
+            if (number_of_contours as i32) < 0i32 {
                 let mut flags: USHORT = 0; /* flag, gid of a component */
                 let mut cgid: USHORT = 0;
                 let mut new_gid: USHORT = 0;
@@ -762,27 +762,27 @@ pub unsafe extern "C" fn tt_build_tables(
                         _tt_abort(
                             b"Invalid TrueType glyph data (gid %u): %u bytes\x00" as *const u8
                                 as *const i8,
-                            gid as libc::c_int,
+                            gid as i32,
                             len,
                         );
                     }
                     /*
                      * Flags and gid of component glyph are both USHORT.
                      */
-                    flags = ((*p as libc::c_int) << 8i32 | *p.offset(1) as libc::c_int) as USHORT;
+                    flags = ((*p as i32) << 8i32 | *p.offset(1) as i32) as USHORT;
                     p = p.offset(2);
-                    cgid = ((*p as libc::c_int) << 8i32 | *p.offset(1) as libc::c_int) as USHORT;
-                    if cgid as libc::c_int >= (*maxp).numGlyphs as libc::c_int {
+                    cgid = ((*p as i32) << 8i32 | *p.offset(1) as i32) as USHORT;
+                    if cgid as i32 >= (*maxp).numGlyphs as i32 {
                         _tt_abort(
                             b"Invalid gid (%u > %u) in composite glyph %u.\x00" as *const u8
                                 as *const i8,
-                            cgid as libc::c_int,
-                            (*maxp).numGlyphs as libc::c_int,
-                            gid as libc::c_int,
+                            cgid as i32,
+                            (*maxp).numGlyphs as i32,
+                            gid as i32,
                         );
                     }
                     new_gid = tt_find_glyph(g, cgid);
-                    if new_gid as libc::c_int == 0i32 {
+                    if new_gid as i32 == 0i32 {
                         new_gid = tt_add_glyph(g, cgid, find_empty_slot(g))
                     }
                     p = p.offset(
@@ -792,23 +792,23 @@ pub unsafe extern "C" fn tt_build_tables(
                      * Just skip remaining part.
                      */
                     p = p.offset(
-                        (if flags as libc::c_int & 1i32 << 0i32 != 0 {
+                        (if flags as i32 & 1i32 << 0i32 != 0 {
                             4i32
                         } else {
                             2i32
                         }) as isize,
                     );
-                    if flags as libc::c_int & 1i32 << 3i32 != 0 {
+                    if flags as i32 & 1i32 << 3i32 != 0 {
                         /* F2Dot14 */
                         p = p.offset(2)
-                    } else if flags as libc::c_int & 1i32 << 6i32 != 0 {
+                    } else if flags as i32 & 1i32 << 6i32 != 0 {
                         /* F2Dot14 x 2 */
                         p = p.offset(4)
-                    } else if flags as libc::c_int & 1i32 << 7i32 != 0 {
+                    } else if flags as i32 & 1i32 << 7i32 != 0 {
                         /* F2Dot14 x 4 */
                         p = p.offset(8)
                     }
-                    if !(flags as libc::c_int & 1i32 << 5i32 != 0) {
+                    if !(flags as i32 & 1i32 << 5i32 != 0) {
                         break;
                     }
                 }
@@ -820,12 +820,12 @@ pub unsafe extern "C" fn tt_build_tables(
     free(location as *mut libc::c_void);
     free(hmtx as *mut libc::c_void);
     free(vmtx as *mut libc::c_void);
-    let mut max_count: libc::c_int = -1i32;
+    let mut max_count: i32 = -1i32;
     (*g).dw = (*(*g).gd.offset(0)).advw;
     i = 0i32;
-    while i < (*g).emsize as libc::c_int + 1i32 {
-        if *w_stat.offset(i as isize) as libc::c_int > max_count {
-            max_count = *w_stat.offset(i as isize) as libc::c_int;
+    while i < (*g).emsize as i32 + 1i32 {
+        if *w_stat.offset(i as isize) as i32 > max_count {
+            max_count = *w_stat.offset(i as isize) as i32;
             (*g).dw = i as USHORT
         }
         i += 1
@@ -840,22 +840,22 @@ pub unsafe extern "C" fn tt_build_tables(
                 as unsafe extern "C" fn(
                     _: *const libc::c_void,
                     _: *const libc::c_void,
-                ) -> libc::c_int,
+                ) -> i32,
         ),
     );
     let mut prev: USHORT = 0;
     let mut last_advw: USHORT = 0;
     let mut p_0: *mut i8 = 0 as *mut i8;
     let mut q: *mut i8 = 0 as *mut i8;
-    let mut padlen: libc::c_int = 0;
-    let mut num_hm_known: libc::c_int = 0;
+    let mut padlen: i32 = 0;
+    let mut num_hm_known: i32 = 0;
     glyf_table_size = 0u64 as SFNT_ULONG;
     num_hm_known = 0i32;
     last_advw = (*(*g)
         .gd
-        .offset(((*g).num_glyphs as libc::c_int - 1i32) as isize))
+        .offset(((*g).num_glyphs as i32 - 1i32) as isize))
     .advw;
-    i = (*g).num_glyphs as libc::c_int - 1i32;
+    i = (*g).num_glyphs as i32 - 1i32;
     while i >= 0i32 {
         padlen = (if (*(*g).gd.offset(i as isize))
             .length
@@ -869,17 +869,17 @@ pub unsafe extern "C" fn tt_build_tables(
             )
         } else {
             0i32 as libc::c_uint
-        }) as libc::c_int;
+        }) as i32;
         glyf_table_size = (glyf_table_size as libc::c_uint).wrapping_add(
             (*(*g).gd.offset(i as isize))
                 .length
                 .wrapping_add(padlen as libc::c_uint),
         ) as SFNT_ULONG as SFNT_ULONG;
         if num_hm_known == 0
-            && last_advw as libc::c_int != (*(*g).gd.offset(i as isize)).advw as libc::c_int
+            && last_advw as i32 != (*(*g).gd.offset(i as isize)).advw as i32
         {
             (*hhea).numOfLongHorMetrics =
-                ((*(*g).gd.offset(i as isize)).gid as libc::c_int + 2i32) as USHORT;
+                ((*(*g).gd.offset(i as isize)).gid as i32 + 2i32) as USHORT;
             num_hm_known = 1i32
         }
         i -= 1
@@ -888,18 +888,18 @@ pub unsafe extern "C" fn tt_build_tables(
     if num_hm_known == 0 {
         (*hhea).numOfLongHorMetrics = 1i32 as USHORT
     }
-    hmtx_table_size = ((*hhea).numOfLongHorMetrics as libc::c_int * 2i32
-        + ((*g).last_gid as libc::c_int + 1i32) * 2i32) as SFNT_ULONG;
+    hmtx_table_size = ((*hhea).numOfLongHorMetrics as i32 * 2i32
+        + ((*g).last_gid as i32 + 1i32) * 2i32) as SFNT_ULONG;
     /*
      * Choosing short format does not always give good result
      * when compressed. Sometimes increases size.
      */
     if (glyf_table_size as u64) < 0x20000 {
         (*head).indexToLocFormat = 0i32 as SHORT;
-        loca_table_size = (((*g).last_gid as libc::c_int + 2i32) * 2i32) as SFNT_ULONG
+        loca_table_size = (((*g).last_gid as i32 + 2i32) * 2i32) as SFNT_ULONG
     } else {
         (*head).indexToLocFormat = 1i32 as SHORT;
-        loca_table_size = (((*g).last_gid as libc::c_int + 2i32) * 4i32) as SFNT_ULONG
+        loca_table_size = (((*g).last_gid as i32 + 2i32) * 4i32) as SFNT_ULONG
     }
     p_0 = new((hmtx_table_size as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
@@ -915,23 +915,23 @@ pub unsafe extern "C" fn tt_build_tables(
     offset = 0u64 as SFNT_ULONG;
     prev = 0i32 as USHORT;
     i = 0i32;
-    while i < (*g).num_glyphs as libc::c_int {
-        let mut gap: libc::c_int = 0;
-        let mut j: libc::c_int = 0;
-        gap = (*(*g).gd.offset(i as isize)).gid as libc::c_int - prev as libc::c_int - 1i32;
+    while i < (*g).num_glyphs as i32 {
+        let mut gap: i32 = 0;
+        let mut j: i32 = 0;
+        gap = (*(*g).gd.offset(i as isize)).gid as i32 - prev as i32 - 1i32;
         j = 1i32;
         while j <= gap {
-            if prev as libc::c_int + j == (*hhea).numOfLongHorMetrics as libc::c_int - 1i32 {
+            if prev as i32 + j == (*hhea).numOfLongHorMetrics as i32 - 1i32 {
                 p_0 = p_0.offset(put_big_endian(
                     p_0 as *mut libc::c_void,
                     last_advw as SFNT_LONG,
                     2i32,
                 ) as isize)
-            } else if prev as libc::c_int + j < (*hhea).numOfLongHorMetrics as libc::c_int {
+            } else if prev as i32 + j < (*hhea).numOfLongHorMetrics as i32 {
                 p_0 = p_0.offset(put_big_endian(p_0 as *mut libc::c_void, 0i32, 2i32) as isize)
             }
             p_0 = p_0.offset(put_big_endian(p_0 as *mut libc::c_void, 0i32, 2i32) as isize);
-            if (*head).indexToLocFormat as libc::c_int == 0i32 {
+            if (*head).indexToLocFormat as i32 == 0i32 {
                 q = q.offset(put_big_endian(
                     q as *mut libc::c_void,
                     offset.wrapping_div(2i32 as libc::c_uint) as USHORT as SFNT_LONG,
@@ -956,9 +956,9 @@ pub unsafe extern "C" fn tt_build_tables(
             )
         } else {
             0i32 as libc::c_uint
-        }) as libc::c_int;
-        if ((*(*g).gd.offset(i as isize)).gid as libc::c_int)
-            < (*hhea).numOfLongHorMetrics as libc::c_int
+        }) as i32;
+        if ((*(*g).gd.offset(i as isize)).gid as i32)
+            < (*hhea).numOfLongHorMetrics as i32
         {
             p_0 = p_0.offset(put_big_endian(
                 p_0 as *mut libc::c_void,
@@ -971,7 +971,7 @@ pub unsafe extern "C" fn tt_build_tables(
             (*(*g).gd.offset(i as isize)).lsb as SFNT_LONG,
             2i32,
         ) as isize);
-        if (*head).indexToLocFormat as libc::c_int == 0i32 {
+        if (*head).indexToLocFormat as i32 == 0i32 {
             q = q.offset(put_big_endian(
                 q as *mut libc::c_void,
                 offset.wrapping_div(2i32 as libc::c_uint) as USHORT as SFNT_LONG,
@@ -1005,7 +1005,7 @@ pub unsafe extern "C" fn tt_build_tables(
         *fresh6 = 0 as *mut BYTE;
         i += 1
     }
-    if (*head).indexToLocFormat as libc::c_int == 0i32 {
+    if (*head).indexToLocFormat as i32 == 0i32 {
         q = q.offset(put_big_endian(
             q as *mut libc::c_void,
             offset.wrapping_div(2i32 as libc::c_uint) as USHORT as SFNT_LONG,
@@ -1033,7 +1033,7 @@ pub unsafe extern "C" fn tt_build_tables(
         glyf_table_size,
     );
     (*head).checkSumAdjustment = 0i32 as SFNT_ULONG;
-    (*maxp).numGlyphs = ((*g).last_gid as libc::c_int + 1i32) as USHORT;
+    (*maxp).numGlyphs = ((*g).last_gid as i32 + 1i32) as USHORT;
     /* TODO */
     sfnt_set_table(
         sfont,
@@ -1086,7 +1086,7 @@ pub unsafe extern "C" fn tt_build_tables(
 pub unsafe extern "C" fn tt_get_metrics(
     mut sfont: *mut sfnt,
     mut g: *mut tt_glyphs,
-) -> libc::c_int {
+) -> i32 {
     let mut head: *mut tt_head_table = 0 as *mut tt_head_table;
     let mut hhea: *mut tt_hhea_table = 0 as *mut tt_hhea_table;
     let mut maxp: *mut tt_maxp_table = 0 as *mut tt_maxp_table;
@@ -1130,7 +1130,7 @@ pub unsafe extern "C" fn tt_get_metrics(
     head = tt_read_head_table(sfont);
     hhea = tt_read_hhea_table(sfont);
     maxp = tt_read_maxp_table(sfont);
-    if (*hhea).metricDataFormat as libc::c_int != 0i32 {
+    if (*hhea).metricDataFormat as i32 != 0i32 {
         _tt_abort(b"Unknown metricDataFormat.\x00" as *const u8 as *const i8);
     }
     (*g).emsize = (*head).unitsPerEm;
@@ -1143,9 +1143,9 @@ pub unsafe extern "C" fn tt_get_metrics(
     );
     os2 = tt_read_os2__table(sfont);
     (*g).default_advh =
-        ((*os2).sTypoAscender as libc::c_int - (*os2).sTypoDescender as libc::c_int) as USHORT;
+        ((*os2).sTypoAscender as i32 - (*os2).sTypoDescender as i32) as USHORT;
     (*g).default_tsb =
-        ((*g).default_advh as libc::c_int - (*os2).sTypoAscender as libc::c_int) as SHORT;
+        ((*g).default_advh as i32 - (*os2).sTypoAscender as i32) as SHORT;
     if sfnt_find_table_pos(sfont, b"vmtx\x00" as *const u8 as *const i8)
         > 0i32 as libc::c_uint
     {
@@ -1164,17 +1164,17 @@ pub unsafe extern "C" fn tt_get_metrics(
     }
     sfnt_locate_table(sfont, b"loca\x00" as *const u8 as *const i8);
     location = new(
-        (((*maxp).numGlyphs as libc::c_int + 1i32) as u32 as u64)
+        (((*maxp).numGlyphs as i32 + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<SFNT_ULONG>() as u64) as u32,
     ) as *mut SFNT_ULONG;
-    if (*head).indexToLocFormat as libc::c_int == 0i32 {
+    if (*head).indexToLocFormat as i32 == 0i32 {
         i = 0i32 as libc::c_uint;
         while i <= (*maxp).numGlyphs as libc::c_uint {
             *location.offset(i as isize) = (2i32 as libc::c_uint)
                 .wrapping_mul(tt_get_unsigned_pair((*sfont).handle) as SFNT_ULONG);
             i = i.wrapping_add(1)
         }
-    } else if (*head).indexToLocFormat as libc::c_int == 1i32 {
+    } else if (*head).indexToLocFormat as i32 == 1i32 {
         i = 0i32 as libc::c_uint;
         while i <= (*maxp).numGlyphs as libc::c_uint {
             *location.offset(i as isize) = tt_get_unsigned_quad((*sfont).handle);
@@ -1184,14 +1184,14 @@ pub unsafe extern "C" fn tt_get_metrics(
         _tt_abort(b"Unknown IndexToLocFormat.\x00" as *const u8 as *const i8);
     }
     w_stat = new(
-        (((*g).emsize as libc::c_int + 2i32) as u32 as u64)
+        (((*g).emsize as i32 + 2i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<USHORT>() as u64) as u32,
     ) as *mut USHORT;
     memset(
         w_stat as *mut libc::c_void,
         0i32,
         (::std::mem::size_of::<USHORT>() as u64)
-            .wrapping_mul(((*g).emsize as libc::c_int + 2i32) as u64),
+            .wrapping_mul(((*g).emsize as i32 + 2i32) as u64),
     );
     /*
      * Read glyf table.
@@ -1203,14 +1203,14 @@ pub unsafe extern "C" fn tt_get_metrics(
         let mut loc: SFNT_ULONG = 0;
         let mut len: SFNT_ULONG = 0;
         gid = (*(*g).gd.offset(i as isize)).ogid;
-        if gid as libc::c_int >= (*maxp).numGlyphs as libc::c_int {
+        if gid as i32 >= (*maxp).numGlyphs as i32 {
             _tt_abort(
                 b"Invalid glyph index (gid %u)\x00" as *const u8 as *const i8,
-                gid as libc::c_int,
+                gid as i32,
             );
         }
         loc = *location.offset(gid as isize);
-        len = (*location.offset((gid as libc::c_int + 1i32) as isize)).wrapping_sub(loc);
+        len = (*location.offset((gid as i32 + 1i32) as isize)).wrapping_sub(loc);
         (*(*g).gd.offset(i as isize)).advw = (*hmtx.offset(gid as isize)).advance;
         (*(*g).gd.offset(i as isize)).lsb = (*hmtx.offset(gid as isize)).sideBearing;
         if !vmtx.is_null() {
@@ -1223,12 +1223,12 @@ pub unsafe extern "C" fn tt_get_metrics(
         (*(*g).gd.offset(i as isize)).length = len;
         let ref mut fresh7 = (*(*g).gd.offset(i as isize)).data;
         *fresh7 = 0 as *mut BYTE;
-        if (*(*g).gd.offset(i as isize)).advw as libc::c_int <= (*g).emsize as libc::c_int {
+        if (*(*g).gd.offset(i as isize)).advw as i32 <= (*g).emsize as i32 {
             let ref mut fresh8 = *w_stat.offset((*(*g).gd.offset(i as isize)).advw as isize);
-            *fresh8 = (*fresh8 as libc::c_int + 1i32) as USHORT
+            *fresh8 = (*fresh8 as i32 + 1i32) as USHORT
         } else {
-            let ref mut fresh9 = *w_stat.offset(((*g).emsize as libc::c_int + 1i32) as isize);
-            *fresh9 = (*fresh9 as libc::c_int + 1i32) as USHORT
+            let ref mut fresh9 = *w_stat.offset(((*g).emsize as i32 + 1i32) as isize);
+            *fresh9 = (*fresh9 as i32 + 1i32) as USHORT
             /* larger than em */
         }
         if !(len == 0i32 as libc::c_uint) {
@@ -1236,7 +1236,7 @@ pub unsafe extern "C" fn tt_get_metrics(
                 _tt_abort(
                     b"Invalid TrueType glyph data (gid %u).\x00" as *const u8
                         as *const i8,
-                    gid as libc::c_int,
+                    gid as i32,
                 );
             }
             ttstub_input_seek((*sfont).handle, offset.wrapping_add(loc) as ssize_t, 0i32);
@@ -1249,9 +1249,9 @@ pub unsafe extern "C" fn tt_get_metrics(
             /* _FIXME_ */
             if vmtx.is_null() {
                 /* vertOriginY == sTypeAscender */
-                (*(*g).gd.offset(i as isize)).tsb = ((*g).default_advh as libc::c_int
-                    - (*g).default_tsb as libc::c_int
-                    - (*(*g).gd.offset(i as isize)).ury as libc::c_int)
+                (*(*g).gd.offset(i as isize)).tsb = ((*g).default_advh as i32
+                    - (*g).default_tsb as i32
+                    - (*(*g).gd.offset(i as isize)).ury as i32)
                     as SHORT
             }
         }
@@ -1265,12 +1265,12 @@ pub unsafe extern "C" fn tt_get_metrics(
     free(head as *mut libc::c_void);
     free(os2 as *mut libc::c_void);
     free(vmtx as *mut libc::c_void);
-    let mut max_count: libc::c_int = -1i32;
+    let mut max_count: i32 = -1i32;
     (*g).dw = (*(*g).gd.offset(0)).advw;
     i = 0i32 as libc::c_uint;
-    while i < ((*g).emsize as libc::c_int + 1i32) as libc::c_uint {
-        if *w_stat.offset(i as isize) as libc::c_int > max_count {
-            max_count = *w_stat.offset(i as isize) as libc::c_int;
+    while i < ((*g).emsize as i32 + 1i32) as libc::c_uint {
+        if *w_stat.offset(i as isize) as i32 > max_count {
+            max_count = *w_stat.offset(i as isize) as i32;
             (*g).dw = i as USHORT
         }
         i = i.wrapping_add(1)

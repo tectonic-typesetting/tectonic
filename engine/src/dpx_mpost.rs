@@ -55,18 +55,18 @@ extern "C" {
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
-    fn strchr(_: *const i8, _: libc::c_int) -> *mut i8;
+    fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn fread(
         _: *mut libc::c_void,
@@ -81,7 +81,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> libc::c_int;
+    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
@@ -98,7 +98,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_name_value(object: *mut pdf_obj) -> *mut i8;
     #[no_mangle]
-    fn pdf_get_array(array: *mut pdf_obj, idx: libc::c_int) -> *mut pdf_obj;
+    fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_array_length(array: *mut pdf_obj) -> libc::c_uint;
     #[no_mangle]
@@ -113,14 +113,14 @@ extern "C" {
      * already removed that.
      */
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_color_rgbcolor(
         color: *mut pdf_color,
         r: f64,
         g: f64,
         b: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn pdf_color_cmykcolor(
         color: *mut pdf_color,
@@ -128,9 +128,9 @@ extern "C" {
         m: f64,
         y: f64,
         k: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
-    fn pdf_color_graycolor(color: *mut pdf_color, g: f64) -> libc::c_int;
+    fn pdf_color_graycolor(color: *mut pdf_color, g: f64) -> i32;
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
     /* returns 1.0/unit_conv */
@@ -154,38 +154,38 @@ extern "C" {
         instr_ptr: *const libc::c_void,
         instr_len: size_t,
         text_width: spt_t,
-        font_id: libc::c_int,
-        ctype: libc::c_int,
+        font_id: i32,
+        ctype: i32,
     );
     /* Place XObject */
     #[no_mangle]
     fn pdf_dev_put_image(
-        xobj_id: libc::c_int,
+        xobj_id: i32,
         p: *mut transform_info,
         ref_x: f64,
         ref_y: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     /* The design_size and ptsize required by PK font support...
      */
     #[no_mangle]
-    fn pdf_dev_locate_font(font_name: *const i8, ptsize: spt_t) -> libc::c_int;
+    fn pdf_dev_locate_font(font_name: *const i8, ptsize: spt_t) -> i32;
     /* Access text state parameters. */
     #[no_mangle]
-    fn pdf_dev_get_font_wmode(font_id: libc::c_int) -> libc::c_int;
+    fn pdf_dev_get_font_wmode(font_id: i32) -> i32;
     /* ps: special support want this (pTeX). */
     /* Text composition (direction) mode
      * This affects only when auto_rotate is enabled.
      */
     #[no_mangle]
-    fn pdf_dev_get_dirmode() -> libc::c_int;
+    fn pdf_dev_get_dirmode() -> i32;
     #[no_mangle]
-    fn pdf_dev_set_dirmode(dir_mode: libc::c_int);
+    fn pdf_dev_set_dirmode(dir_mode: i32);
     /* Accessor to various device parameters.
      */
     #[no_mangle]
-    fn pdf_dev_get_param(param_type: libc::c_int) -> libc::c_int;
+    fn pdf_dev_get_param(param_type: i32) -> i32;
     #[no_mangle]
-    fn pdf_dev_set_param(param_type: libc::c_int, value: libc::c_int);
+    fn pdf_dev_set_param(param_type: i32, value: i32);
     /* Text is normal and line art is not normal in dvipdfmx. So we don't have
      * begin_text (BT in PDF) and end_text (ET), but instead we have graphics_mode()
      * to terminate text section. pdf_dev_flushpath() and others call this.
@@ -193,7 +193,7 @@ extern "C" {
     #[no_mangle]
     fn graphics_mode();
     #[no_mangle]
-    static mut translate_origin: libc::c_int;
+    static mut translate_origin: i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -243,7 +243,7 @@ extern "C" {
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_doc_current_page_number() -> libc::c_int;
+    fn pdf_doc_current_page_number() -> i32;
     /* Page */
     #[no_mangle]
     fn pdf_doc_begin_page(
@@ -262,38 +262,38 @@ extern "C" {
         ref_x: f64,
         ref_y: f64,
         cropbox: *const pdf_rect,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn pdf_doc_end_grabbing(attrib: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_dev_currentmatrix(M: *mut pdf_tmatrix) -> libc::c_int;
+    fn pdf_dev_currentmatrix(M: *mut pdf_tmatrix) -> i32;
     #[no_mangle]
-    fn pdf_dev_currentpoint(cp: *mut pdf_coord) -> libc::c_int;
+    fn pdf_dev_currentpoint(cp: *mut pdf_coord) -> i32;
     #[no_mangle]
-    fn pdf_dev_setlinewidth(width: f64) -> libc::c_int;
+    fn pdf_dev_setlinewidth(width: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_setmiterlimit(mlimit: f64) -> libc::c_int;
+    fn pdf_dev_setmiterlimit(mlimit: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_setlinecap(style: libc::c_int) -> libc::c_int;
+    fn pdf_dev_setlinecap(style: i32) -> i32;
     #[no_mangle]
-    fn pdf_dev_setlinejoin(style: libc::c_int) -> libc::c_int;
+    fn pdf_dev_setlinejoin(style: i32) -> i32;
     #[no_mangle]
     fn pdf_dev_setdash(
-        count: libc::c_int,
+        count: i32,
         pattern: *mut f64,
         offset: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     /* Path Construction */
     #[no_mangle]
-    fn pdf_dev_moveto(x: f64, y: f64) -> libc::c_int;
+    fn pdf_dev_moveto(x: f64, y: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_rmoveto(x: f64, y: f64) -> libc::c_int;
+    fn pdf_dev_rmoveto(x: f64, y: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_closepath() -> libc::c_int;
+    fn pdf_dev_closepath() -> i32;
     #[no_mangle]
-    fn pdf_dev_lineto(x0: f64, y0: f64) -> libc::c_int;
+    fn pdf_dev_lineto(x0: f64, y0: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_rlineto(x0: f64, y0: f64) -> libc::c_int;
+    fn pdf_dev_rlineto(x0: f64, y0: f64) -> i32;
     #[no_mangle]
     fn pdf_dev_curveto(
         x0: f64,
@@ -302,7 +302,7 @@ extern "C" {
         y1: f64,
         x2: f64,
         y2: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn pdf_dev_rcurveto(
         x0: f64,
@@ -311,7 +311,7 @@ extern "C" {
         y1: f64,
         x2: f64,
         y2: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn pdf_dev_arc(
         c_x: f64,
@@ -319,7 +319,7 @@ extern "C" {
         r: f64,
         a_0: f64,
         a_1: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn pdf_dev_arcn(
         c_x: f64,
@@ -327,29 +327,29 @@ extern "C" {
         r: f64,
         a_0: f64,
         a_1: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
-    fn pdf_dev_newpath() -> libc::c_int;
+    fn pdf_dev_newpath() -> i32;
     /* Path Painting */
     #[no_mangle]
-    fn pdf_dev_clip() -> libc::c_int;
+    fn pdf_dev_clip() -> i32;
     #[no_mangle]
-    fn pdf_dev_eoclip() -> libc::c_int;
+    fn pdf_dev_eoclip() -> i32;
     #[no_mangle]
-    fn pdf_dev_flushpath(p_op: i8, fill_rule: libc::c_int) -> libc::c_int;
+    fn pdf_dev_flushpath(p_op: i8, fill_rule: i32) -> i32;
     #[no_mangle]
-    fn pdf_dev_concat(M: *const pdf_tmatrix) -> libc::c_int;
+    fn pdf_dev_concat(M: *const pdf_tmatrix) -> i32;
     /* NULL pointer of M mean apply current transformation */
     #[no_mangle]
     fn pdf_dev_dtransform(p: *mut pdf_coord, M: *const pdf_tmatrix);
     #[no_mangle]
     fn pdf_dev_idtransform(p: *mut pdf_coord, M: *const pdf_tmatrix);
     #[no_mangle]
-    fn pdf_dev_gsave() -> libc::c_int;
+    fn pdf_dev_gsave() -> i32;
     #[no_mangle]
-    fn pdf_dev_grestore() -> libc::c_int;
+    fn pdf_dev_grestore() -> i32;
     #[no_mangle]
-    fn pdf_dev_set_color(color: *const pdf_color, mask: i8, force: libc::c_int);
+    fn pdf_dev_set_color(color: *const pdf_color, mask: i8, force: i32);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -400,19 +400,19 @@ extern "C" {
         pf: *mut pdf_file,
     ) -> *mut pdf_obj;
     #[no_mangle]
-    fn lookup_sfd_record(rec_id: libc::c_int, code: u8) -> u16;
+    fn lookup_sfd_record(rec_id: i32, code: u8) -> u16;
     #[no_mangle]
     fn sfd_load_record(
         sfd_name: *const i8,
         subfont_id: *const i8,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
-    fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
+    fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
     #[no_mangle]
-    fn tfm_get_width(font_id: libc::c_int, ch: i32) -> f64;
+    fn tfm_get_width(font_id: i32, ch: i32) -> f64;
     #[no_mangle]
     fn tfm_string_width(
-        font_id: libc::c_int,
+        font_id: i32,
         s: *const u8,
         len: libc::c_uint,
     ) -> fixword;
@@ -438,7 +438,7 @@ pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
-    pub _flags: libc::c_int,
+    pub _flags: i32,
     pub _IO_read_ptr: *mut i8,
     pub _IO_read_end: *mut i8,
     pub _IO_read_base: *mut i8,
@@ -452,8 +452,8 @@ pub struct _IO_FILE {
     pub _IO_save_end: *mut i8,
     pub _markers: *mut _IO_marker,
     pub _chain: *mut _IO_FILE,
-    pub _fileno: libc::c_int,
-    pub _flags2: libc::c_int,
+    pub _fileno: i32,
+    pub _flags2: i32,
     pub _old_offset: __off_t,
     pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
@@ -465,7 +465,7 @@ pub struct _IO_FILE {
     pub _freeres_list: *mut _IO_FILE,
     pub _freeres_buf: *mut libc::c_void,
     pub __pad5: size_t,
-    pub _mode: libc::c_int,
+    pub _mode: i32,
     pub _unused2: [i8; 20],
 }
 pub type _IO_lock_t = ();
@@ -495,7 +495,7 @@ pub type fixword = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
-    pub num_components: libc::c_int,
+    pub num_components: i32,
     pub spot_color_name: *mut i8,
     pub values: [f64; 4],
 }
@@ -520,7 +520,7 @@ pub struct pdf_color {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-pub type spt_t = libc::c_int;
+pub type spt_t = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
@@ -556,7 +556,7 @@ pub struct transform_info {
     pub depth: f64,
     pub matrix: pdf_tmatrix,
     pub bbox: pdf_rect,
-    pub flags: libc::c_int,
+    pub flags: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -573,16 +573,16 @@ pub struct fontmap_opt {
     pub slant: f64,
     pub extend: f64,
     pub bold: f64,
-    pub mapc: libc::c_int,
-    pub flags: libc::c_int,
+    pub mapc: i32,
+    pub flags: i32,
     pub otl_tags: *mut i8,
     pub tounicode: *mut i8,
     pub cff_charsets: *mut libc::c_void,
     pub design_size: f64,
     pub charcoll: *mut i8,
-    pub index: libc::c_int,
-    pub style: libc::c_int,
-    pub stemv: libc::c_int,
+    pub index: i32,
+    pub style: i32,
+    pub stemv: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -594,16 +594,16 @@ pub struct C2RustUnnamed_0 {
 #[repr(C)]
 pub struct mp_font {
     pub font_name: *mut i8,
-    pub font_id: libc::c_int,
-    pub tfm_id: libc::c_int,
-    pub subfont_id: libc::c_int,
+    pub font_id: i32,
+    pub tfm_id: i32,
+    pub subfont_id: i32,
     pub pt_size: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct operators {
     pub token: *const i8,
-    pub opcode: libc::c_int,
+    pub opcode: i32,
 }
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
@@ -2460,15 +2460,15 @@ static mut font_stack: [mp_font; 256] = [
         pt_size: 0.,
     },
 ];
-static mut currentfont: libc::c_int = -1i32;
-static mut mp_cmode: libc::c_int = 0i32;
+static mut currentfont: i32 = -1i32;
+static mut mp_cmode: i32 = 0i32;
 unsafe extern "C" fn mp_setfont(
     mut font_name: *const i8,
     mut pt_size: f64,
-) -> libc::c_int {
+) -> i32 {
     let mut name: *const i8 = font_name;
     let mut font: *mut mp_font = 0 as *mut mp_font;
-    let mut subfont_id: libc::c_int = -1i32;
+    let mut subfont_id: i32 = -1i32;
     let mut mrec: *mut fontmap_rec = 0 as *mut fontmap_rec;
     font = if currentfont < 0i32 {
         0 as *mut mp_font
@@ -2476,7 +2476,7 @@ unsafe extern "C" fn mp_setfont(
         &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as *mut mp_font
     };
     if !font.is_null() {
-        if streq_ptr((*font).font_name, font_name) as libc::c_int != 0 && (*font).pt_size == pt_size
+        if streq_ptr((*font).font_name, font_name) as i32 != 0 && (*font).pt_size == pt_size
         {
             return 0i32;
         }
@@ -2584,20 +2584,20 @@ pub unsafe extern "C" fn mps_scan_bbox(
     mut pp: *mut *const i8,
     mut endptr: *const i8,
     mut bbox: *mut pdf_rect,
-) -> libc::c_int {
+) -> i32 {
     let mut number: *mut i8 = 0 as *mut i8;
     let mut values: [f64; 4] = [0.; 4];
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     /* skip_white() skips lines starting '%'... */
     while *pp < endptr
-        && *(*__ctype_b_loc()).offset(**pp as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as u16 as libc::c_int
+        && *(*__ctype_b_loc()).offset(**pp as u8 as i32 as isize) as i32
+            & _ISspace as i32 as u16 as i32
             != 0
     {
         *pp = (*pp).offset(1)
     }
     /* Scan for bounding box record */
-    while *pp < endptr && **pp as libc::c_int == '%' as i32 {
+    while *pp < endptr && **pp as i32 == '%' as i32 {
         if (*pp).offset(14) < endptr
             && !strstartswith(
                 *pp,
@@ -2641,9 +2641,9 @@ pub unsafe extern "C" fn mps_scan_bbox(
         }
         pdfparse_skip_line(pp, endptr);
         while *pp < endptr
-            && *(*__ctype_b_loc()).offset(**pp as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISspace as libc::c_int as u16 as libc::c_int
+            && *(*__ctype_b_loc()).offset(**pp as u8 as i32 as isize)
+                as i32
+                & _ISspace as i32 as u16 as i32
                 != 0
         {
             *pp = (*pp).offset(1)
@@ -2655,11 +2655,11 @@ unsafe extern "C" fn skip_prolog(
     mut start: *mut *const i8,
     mut end: *const i8,
 ) {
-    let mut found_prolog: libc::c_int = 0i32;
+    let mut found_prolog: i32 = 0i32;
     let mut save: *const i8 = 0 as *const i8;
     save = *start;
     while *start < end {
-        if **start as libc::c_int != '%' as i32 {
+        if **start as i32 != '%' as i32 {
             skip_white(start, end);
         }
         if *start >= end {
@@ -3223,7 +3223,7 @@ static mut mps_operators: [operators; 28] = [
         init
     },
 ];
-unsafe extern "C" fn get_opcode(mut token: *const i8) -> libc::c_int {
+unsafe extern "C" fn get_opcode(mut token: *const i8) -> i32 {
     let mut i: libc::c_uint = 0;
     i = 0i32 as libc::c_uint;
     while (i as u64)
@@ -3249,7 +3249,7 @@ unsafe extern "C" fn get_opcode(mut token: *const i8) -> libc::c_int {
 }
 static mut stack: [*mut pdf_obj; 1024] = [0 as *const pdf_obj as *mut pdf_obj; 1024];
 static mut top_stack: libc::c_uint = 0i32 as libc::c_uint;
-unsafe extern "C" fn do_exch() -> libc::c_int {
+unsafe extern "C" fn do_exch() -> i32 {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     if top_stack < 2i32 as libc::c_uint {
         return -1i32;
@@ -3260,7 +3260,7 @@ unsafe extern "C" fn do_exch() -> libc::c_int {
     stack[top_stack.wrapping_sub(2i32 as libc::c_uint) as usize] = tmp;
     return 0i32;
 }
-unsafe extern "C" fn do_clear() -> libc::c_int {
+unsafe extern "C" fn do_clear() -> i32 {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     while top_stack > 0i32 as libc::c_uint {
         tmp = if top_stack > 0i32 as libc::c_uint {
@@ -3275,8 +3275,8 @@ unsafe extern "C" fn do_clear() -> libc::c_int {
 }
 unsafe extern "C" fn pop_get_numbers(
     mut values: *mut f64,
-    mut count: libc::c_int,
-) -> libc::c_int {
+    mut count: i32,
+) -> i32 {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     loop {
         let fresh1 = count;
@@ -3307,8 +3307,8 @@ unsafe extern "C" fn pop_get_numbers(
 unsafe extern "C" fn cvr_array(
     mut array: *mut pdf_obj,
     mut values: *mut f64,
-    mut count: libc::c_int,
-) -> libc::c_int {
+    mut count: i32,
+) -> i32 {
     if !(!array.is_null() && pdf_obj_typeof(array) == 5i32) {
         dpx_warning(b"mpost: Not an array!\x00" as *const u8 as *const i8);
     } else {
@@ -3356,8 +3356,8 @@ unsafe extern "C" fn is_fontdict(mut dict: *mut pdf_obj) -> bool {
     }
     return 1i32 != 0;
 }
-unsafe extern "C" fn do_findfont() -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
+unsafe extern "C" fn do_findfont() -> i32 {
+    let mut error: i32 = 0i32;
     let mut font_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut font_name: *mut pdf_obj = 0 as *mut pdf_obj;
     font_name = if top_stack > 0i32 as libc::c_uint {
@@ -3419,8 +3419,8 @@ unsafe extern "C" fn do_findfont() -> libc::c_int {
     }
     return error;
 }
-unsafe extern "C" fn do_scalefont() -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
+unsafe extern "C" fn do_scalefont() -> i32 {
+    let mut error: i32 = 0i32;
     let mut font_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut font_scale: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut scale: f64 = 0.;
@@ -3459,8 +3459,8 @@ unsafe extern "C" fn do_scalefont() -> libc::c_int {
     }
     return error;
 }
-unsafe extern "C" fn do_setfont() -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
+unsafe extern "C" fn do_setfont() -> i32 {
+    let mut error: i32 = 0i32;
     let mut font_name: *mut i8 = 0 as *mut i8;
     let mut font_scale: f64 = 0.;
     let mut font_dict: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -3490,8 +3490,8 @@ unsafe extern "C" fn do_setfont() -> libc::c_int {
     return error;
 }
 /* Push dummy font dict onto PS stack */
-unsafe extern "C" fn do_currentfont() -> libc::c_int {
-    let mut error: libc::c_int = 0i32; /* Should not be error... */
+unsafe extern "C" fn do_currentfont() -> i32 {
+    let mut error: i32 = 0i32; /* Should not be error... */
     let mut font: *mut mp_font = 0 as *mut mp_font; /* Should not be error... */
     let mut font_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     font = if currentfont < 0i32 {
@@ -3531,11 +3531,11 @@ unsafe extern "C" fn do_currentfont() -> libc::c_int {
     }
     return error;
 }
-unsafe extern "C" fn do_show() -> libc::c_int {
+unsafe extern "C" fn do_show() -> i32 {
     let mut font: *mut mp_font = 0 as *mut mp_font;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
     let mut text_str: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut length: libc::c_int = 0;
+    let mut length: i32 = 0;
     let mut strptr: *mut u8 = 0 as *mut u8;
     let mut text_width: f64 = 0.;
     font = if currentfont < 0i32 {
@@ -3564,7 +3564,7 @@ unsafe extern "C" fn do_show() -> libc::c_int {
         return 1i32;
     }
     strptr = pdf_string_value(text_str) as *mut u8;
-    length = pdf_string_length(text_str) as libc::c_int;
+    length = pdf_string_length(text_str) as i32;
     if (*font).tfm_id < 0i32 {
         dpx_warning(
             b"mpost: TFM not found for \"%s\".\x00" as *const u8 as *const i8,
@@ -3576,16 +3576,16 @@ unsafe extern "C" fn do_show() -> libc::c_int {
     if (*font).subfont_id >= 0i32 {
         let mut uch: u16 = 0;
         let mut ustr: *mut u8 = 0 as *mut u8;
-        let mut i: libc::c_int = 0;
+        let mut i: i32 = 0;
         ustr = new(((length * 2i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32) as *mut u8;
         i = 0i32;
         while i < length {
             uch = lookup_sfd_record((*font).subfont_id, *strptr.offset(i as isize));
-            *ustr.offset((2i32 * i) as isize) = (uch as libc::c_int >> 8i32) as u8;
+            *ustr.offset((2i32 * i) as isize) = (uch as i32 >> 8i32) as u8;
             *ustr.offset((2i32 * i + 1i32) as isize) =
-                (uch as libc::c_int & 0xffi32) as u8;
+                (uch as i32 & 0xffi32) as u8;
             if (*font).tfm_id >= 0i32 {
                 text_width += tfm_get_width((*font).tfm_id, *strptr.offset(i as isize) as i32)
             }
@@ -3632,8 +3632,8 @@ unsafe extern "C" fn do_mpost_bind_def(
     mut ps_code: *const i8,
     mut x_user: f64,
     mut y_user: f64,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
+) -> i32 {
+    let mut error: i32 = 0i32;
     let mut start: *const i8 = 0 as *const i8;
     let mut end: *const i8 = 0 as *const i8;
     start = ps_code;
@@ -3642,10 +3642,10 @@ unsafe extern "C" fn do_mpost_bind_def(
     return error;
 }
 unsafe extern "C" fn do_texfig_operator(
-    mut opcode: libc::c_int,
+    mut opcode: i32,
     mut x_user: f64,
     mut y_user: f64,
-) -> libc::c_int {
+) -> i32 {
     static mut fig_p: transform_info = transform_info {
         width: 0.,
         height: 0.,
@@ -3666,11 +3666,11 @@ unsafe extern "C" fn do_texfig_operator(
         },
         flags: 0,
     };
-    static mut in_tfig: libc::c_int = 0i32;
-    static mut xobj_id: libc::c_int = -1i32;
-    static mut count: libc::c_int = 0i32;
+    static mut in_tfig: i32 = 0i32;
+    static mut xobj_id: i32 = -1i32;
+    static mut count: i32 = 0i32;
     let mut values: [f64; 6] = [0.; 6];
-    let mut error: libc::c_int = 0i32;
+    let mut error: i32 = 0i32;
     match opcode {
         1002 => {
             error = pop_get_numbers(values.as_mut_ptr(), 6i32);
@@ -3716,7 +3716,7 @@ unsafe extern "C" fn do_texfig_operator(
     }
     return error;
 }
-unsafe extern "C" fn ps_dev_CTM(mut M: *mut pdf_tmatrix) -> libc::c_int {
+unsafe extern "C" fn ps_dev_CTM(mut M: *mut pdf_tmatrix) -> i32 {
     pdf_dev_currentmatrix(M);
     (*M).a *= 1000i32 as f64;
     (*M).b *= 1000i32 as f64;
@@ -3734,9 +3734,9 @@ unsafe extern "C" fn do_operator(
     mut token: *const i8,
     mut x_user: f64,
     mut y_user: f64,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
-    let mut opcode: libc::c_int = 0i32;
+) -> i32 {
+    let mut error: i32 = 0i32;
+    let mut opcode: i32 = 0i32;
     let mut values: [f64; 12] = [0.; 12];
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut matrix: pdf_tmatrix = pdf_tmatrix {
@@ -4032,8 +4032,8 @@ unsafe extern "C" fn do_operator(
             if error == 0 {
                 let mut pattern: *mut pdf_obj = 0 as *mut pdf_obj;
                 let mut dash: *mut pdf_obj = 0 as *mut pdf_obj;
-                let mut i: libc::c_int = 0;
-                let mut num_dashes: libc::c_int = 0;
+                let mut i: i32 = 0;
+                let mut num_dashes: i32 = 0;
                 let mut dash_values: [f64; 16] = [0.; 16];
                 let mut offset: f64 = 0.;
                 offset = values[0];
@@ -4047,7 +4047,7 @@ unsafe extern "C" fn do_operator(
                     pdf_release_obj(pattern);
                     error = 1i32
                 } else {
-                    num_dashes = pdf_array_length(pattern) as libc::c_int;
+                    num_dashes = pdf_array_length(pattern) as i32;
                     if num_dashes > 16i32 {
                         dpx_warning(b"Too many dashes...\x00" as *const u8 as *const i8);
                         pdf_release_obj(pattern);
@@ -4074,13 +4074,13 @@ unsafe extern "C" fn do_operator(
         62 => {
             error = pop_get_numbers(values.as_mut_ptr(), 1i32);
             if error == 0 {
-                error = pdf_dev_setlinecap(values[0] as libc::c_int)
+                error = pdf_dev_setlinecap(values[0] as i32)
             }
         }
         63 => {
             error = pop_get_numbers(values.as_mut_ptr(), 1i32);
             if error == 0 {
-                error = pdf_dev_setlinejoin(values[0] as libc::c_int)
+                error = pdf_dev_setlinejoin(values[0] as i32)
             }
         }
         60 => {
@@ -4150,7 +4150,7 @@ unsafe extern "C" fn do_operator(
             }
         }
         82 => {
-            let mut has_matrix: libc::c_int = 0i32;
+            let mut has_matrix: i32 = 0i32;
             tmp = if top_stack > 0i32 as libc::c_uint {
                 top_stack = top_stack.wrapping_sub(1);
                 stack[top_stack as usize]
@@ -4231,7 +4231,7 @@ unsafe extern "C" fn do_operator(
             }
         }
         81 => {
-            let mut has_matrix_0: libc::c_int = 0i32;
+            let mut has_matrix_0: i32 = 0i32;
             tmp = if top_stack > 0i32 as libc::c_uint {
                 top_stack = top_stack.wrapping_sub(1);
                 stack[top_stack as usize]
@@ -4420,20 +4420,20 @@ unsafe extern "C" fn mp_parse_body(
     mut end: *const i8,
     mut x_user: f64,
     mut y_user: f64,
-) -> libc::c_int {
+) -> i32 {
     let mut token: *mut i8 = 0 as *mut i8;
     let mut obj: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut error: libc::c_int = 0i32;
+    let mut error: i32 = 0i32;
     skip_white(start, end);
     while *start < end && error == 0 {
-        if *(*__ctype_b_loc()).offset(**start as u8 as libc::c_int as isize)
-            as libc::c_int
-            & _ISdigit as libc::c_int as u16 as libc::c_int
+        if *(*__ctype_b_loc()).offset(**start as u8 as i32 as isize)
+            as i32
+            & _ISdigit as i32 as u16 as i32
             != 0
             || *start < end.offset(-1)
-                && (**start as libc::c_int == '+' as i32
-                    || **start as libc::c_int == '-' as i32
-                    || **start as libc::c_int == '.' as i32)
+                && (**start as i32 == '+' as i32
+                    || **start as i32 == '-' as i32
+                    || **start as i32 == '.' as i32)
         {
             let mut value: f64 = 0.;
             let mut next: *mut i8 = 0 as *mut i8;
@@ -4441,12 +4441,12 @@ unsafe extern "C" fn mp_parse_body(
             if next < end as *mut i8
                 && strchr(
                     b"<([{/%\x00" as *const u8 as *const i8,
-                    *next as libc::c_int,
+                    *next as i32,
                 )
                 .is_null()
-                && *(*__ctype_b_loc()).offset(*next as u8 as libc::c_int as isize)
-                    as libc::c_int
-                    & _ISspace as libc::c_int as u16 as libc::c_int
+                && *(*__ctype_b_loc()).offset(*next as u8 as i32 as isize)
+                    as i32
+                    & _ISspace as i32 as u16 as i32
                     == 0
             {
                 dpx_warning(b"Unkown PostScript operator.\x00" as *const u8 as *const i8);
@@ -4469,7 +4469,7 @@ unsafe extern "C" fn mp_parse_body(
          * PDF parser can't handle PS operator inside arrays.
          * This shouldn't use parse_pdf_array().
          */
-        } else if **start as libc::c_int == '[' as i32 && {
+        } else if **start as i32 == '[' as i32 && {
             obj = parse_pdf_array(start, end, 0 as *mut pdf_file);
             !obj.is_null()
         } {
@@ -4487,8 +4487,8 @@ unsafe extern "C" fn mp_parse_body(
             }
         /* This cannot handle ASCII85 string. */
         } else if *start < end.offset(-1)
-            && (**start as libc::c_int == '<' as i32
-                && *(*start).offset(1) as libc::c_int == '<' as i32)
+            && (**start as i32 == '<' as i32
+                && *(*start).offset(1) as i32 == '<' as i32)
             && {
                 obj = parse_pdf_dict(start, end, 0 as *mut pdf_file);
                 !obj.is_null()
@@ -4506,7 +4506,7 @@ unsafe extern "C" fn mp_parse_body(
                 error = 1i32;
                 break;
             }
-        } else if (**start as libc::c_int == '(' as i32 || **start as libc::c_int == '<' as i32)
+        } else if (**start as i32 == '(' as i32 || **start as i32 == '<' as i32)
             && {
                 obj = parse_pdf_string(start, end);
                 !obj.is_null()
@@ -4524,7 +4524,7 @@ unsafe extern "C" fn mp_parse_body(
                 error = 1i32;
                 break;
             }
-        } else if **start as libc::c_int == '/' as i32 && {
+        } else if **start as i32 == '/' as i32 && {
             obj = parse_pdf_name(start, end);
             !obj.is_null()
         } {
@@ -4559,8 +4559,8 @@ pub unsafe extern "C" fn mps_eop_cleanup() {
     do_clear();
 }
 #[no_mangle]
-pub unsafe extern "C" fn mps_stack_depth() -> libc::c_int {
-    return top_stack as libc::c_int;
+pub unsafe extern "C" fn mps_stack_depth() -> i32 {
+    return top_stack as i32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn mps_exec_inline(
@@ -4568,10 +4568,10 @@ pub unsafe extern "C" fn mps_exec_inline(
     mut endptr: *const i8,
     mut x_user: f64,
     mut y_user: f64,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0;
-    let mut dirmode: libc::c_int = 0;
-    let mut autorotate: libc::c_int = 0;
+) -> i32 {
+    let mut error: i32 = 0;
+    let mut dirmode: i32 = 0;
+    let mut autorotate: i32 = 0;
     /* Compatibility for dvipsk. */
     dirmode = pdf_dev_get_dirmode();
     if dirmode != 0 {
@@ -4614,8 +4614,8 @@ pub unsafe extern "C" fn mps_exec_inline(
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> libc::c_int {
-    let mut error: libc::c_int = 0i32; /* scale, xorig, yorig */
+pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> i32 {
+    let mut error: i32 = 0i32; /* scale, xorig, yorig */
     let mut bbox: pdf_rect = pdf_rect {
         llx: 0.,
         lly: 0.,
@@ -4625,8 +4625,8 @@ pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> libc::c_int {
     let mut buffer: *mut i8 = 0 as *mut i8;
     let mut start: *const i8 = 0 as *const i8;
     let mut end: *const i8 = 0 as *const i8;
-    let mut size: libc::c_int = 0;
-    let mut dir_mode: libc::c_int = 0;
+    let mut size: i32 = 0;
+    let mut dir_mode: i32 = 0;
     rewind(image_file);
     size = file_size(image_file);
     if size == 0i32 {

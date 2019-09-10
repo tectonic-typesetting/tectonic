@@ -15,15 +15,15 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_input_getc(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    fn ttstub_input_ungetc(handle: rust_input_handle_t, ch: libc::c_int) -> libc::c_int;
+    fn ttstub_input_ungetc(handle: rust_input_handle_t, ch: i32) -> i32;
     #[no_mangle]
-    fn fgetc(__stream: *mut FILE) -> libc::c_int;
+    fn fgetc(__stream: *mut FILE) -> i32;
     #[no_mangle]
-    fn ungetc(__c: libc::c_int, __stream: *mut FILE) -> libc::c_int;
+    fn ungetc(__c: i32, __stream: *mut FILE) -> i32;
     #[no_mangle]
-    fn fseek(__stream: *mut FILE, __off: i64, __whence: libc::c_int) -> libc::c_int;
+    fn fseek(__stream: *mut FILE, __off: i64, __whence: i32) -> i32;
     #[no_mangle]
     fn ftell(__stream: *mut FILE) -> i64;
     #[no_mangle]
@@ -36,7 +36,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
-    pub _flags: libc::c_int,
+    pub _flags: i32,
     pub _IO_read_ptr: *mut i8,
     pub _IO_read_end: *mut i8,
     pub _IO_read_base: *mut i8,
@@ -50,8 +50,8 @@ pub struct _IO_FILE {
     pub _IO_save_end: *mut i8,
     pub _markers: *mut _IO_marker,
     pub _chain: *mut _IO_FILE,
-    pub _fileno: libc::c_int,
-    pub _flags2: libc::c_int,
+    pub _fileno: i32,
+    pub _flags2: i32,
     pub _old_offset: __off_t,
     pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
@@ -63,7 +63,7 @@ pub struct _IO_FILE {
     pub _freeres_list: *mut _IO_FILE,
     pub _freeres_buf: *mut libc::c_void,
     pub __pad5: size_t,
-    pub _mode: libc::c_int,
+    pub _mode: i32,
     pub _unused2: [i8; 20],
 }
 pub type _IO_lock_t = ();
@@ -131,11 +131,11 @@ pub unsafe extern "C" fn file_size(mut file: *mut FILE) -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn mfgets(
     mut buffer: *mut i8,
-    mut length: libc::c_int,
+    mut length: i32,
     mut file: *mut FILE,
 ) -> *mut i8 {
-    let mut ch: libc::c_int = 0i32;
-    let mut i: libc::c_int = 0i32;
+    let mut ch: i32 = 0i32;
+    let mut i: i32 = 0i32;
     while i < length - 1i32
         && {
             ch = fgetc(file);
@@ -192,11 +192,11 @@ pub static mut work_buffer: [i8; 1024] = [0; 1024];
 #[no_mangle]
 pub unsafe extern "C" fn tt_mfgets(
     mut buffer: *mut i8,
-    mut length: libc::c_int,
+    mut length: i32,
     mut file: rust_input_handle_t,
 ) -> *mut i8 {
-    let mut ch: libc::c_int = 0i32;
-    let mut i: libc::c_int = 0i32;
+    let mut ch: i32 = 0i32;
+    let mut i: i32 = 0i32;
     while i < length - 1i32
         && {
             ch = ttstub_input_getc(file);

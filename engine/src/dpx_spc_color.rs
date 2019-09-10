@@ -20,7 +20,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
@@ -46,8 +46,8 @@ extern "C" {
         spe: *mut spc_env,
         colorspec: *mut pdf_color,
         args: *mut spc_arg,
-        syntax: libc::c_int,
-    ) -> libc::c_int;
+        syntax: i32,
+    ) -> i32;
     /* Similar to bop_content */
     #[no_mangle]
     fn pdf_doc_set_bgcolor(color: *const pdf_color);
@@ -71,7 +71,7 @@ pub struct spc_env {
     pub x_user: f64,
     pub y_user: f64,
     pub mag: f64,
-    pub pg: libc::c_int,
+    pub pg: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -82,7 +82,7 @@ pub struct spc_arg {
     pub command: *const i8,
 }
 pub type spc_handler_fn_ptr =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int>;
+    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
@@ -92,7 +92,7 @@ pub struct spc_handler {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
-    pub num_components: libc::c_int,
+    pub num_components: i32,
     pub spot_color_name: *mut i8,
     pub values: [f64; 4],
 }
@@ -140,8 +140,8 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 unsafe extern "C" fn spc_handler_color_push(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0;
+) -> i32 {
+    let mut error: i32 = 0;
     let mut colorspec: pdf_color = pdf_color {
         num_components: 0,
         spot_color_name: 0 as *mut i8,
@@ -156,7 +156,7 @@ unsafe extern "C" fn spc_handler_color_push(
 unsafe extern "C" fn spc_handler_color_pop(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     pdf_color_pop();
     return 0i32;
 }
@@ -166,8 +166,8 @@ unsafe extern "C" fn spc_handler_color_pop(
 unsafe extern "C" fn spc_handler_color_default(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0;
+) -> i32 {
+    let mut error: i32 = 0;
     let mut colorspec: pdf_color = pdf_color {
         num_components: 0,
         spot_color_name: 0 as *mut i8,
@@ -184,8 +184,8 @@ unsafe extern "C" fn spc_handler_color_default(
 unsafe extern "C" fn spc_handler_background(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0;
+) -> i32 {
+    let mut error: i32 = 0;
     let mut colorspec: pdf_color = pdf_color {
         num_components: 0,
         spot_color_name: 0 as *mut i8,
@@ -200,10 +200,10 @@ unsafe extern "C" fn spc_handler_background(
 unsafe extern "C" fn skip_blank(mut pp: *mut *const i8, mut endptr: *const i8) {
     let mut p: *const i8 = *pp;
     while p < endptr
-        && (*p as libc::c_int & !0x7fi32 == 0i32
-            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISblank as libc::c_int as u16 as libc::c_int
+        && (*p as i32 & !0x7fi32 == 0i32
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                as i32
+                & _ISblank as i32 as u16 as i32
                 != 0)
     {
         p = p.offset(1)
@@ -213,7 +213,7 @@ unsafe extern "C" fn skip_blank(mut pp: *mut *const i8, mut endptr: *const i8) {
 #[no_mangle]
 pub unsafe extern "C" fn spc_color_check_special(
     mut buf: *const i8,
-    mut len: libc::c_int,
+    mut len: i32,
 ) -> bool {
     let mut r: bool = 0i32 != 0;
     let mut p: *const i8 = 0 as *const i8;
@@ -261,7 +261,7 @@ pub unsafe extern "C" fn spc_color_setup_handler(
     mut sph: *mut spc_handler,
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let mut p: *const i8 = 0 as *const i8;
     let mut q: *mut i8 = 0 as *mut i8;
     if !sph.is_null() && !spe.is_null() && !ap.is_null() {
@@ -283,7 +283,7 @@ pub unsafe extern "C" fn spc_color_setup_handler(
         (*ap).command = b"background\x00" as *const u8 as *const i8;
         (*sph).exec = Some(
             spc_handler_background
-                as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
         );
         free(q as *mut libc::c_void);
     } else if streq_ptr(q, b"color\x00" as *const u8 as *const i8) {
@@ -298,21 +298,21 @@ pub unsafe extern "C" fn spc_color_setup_handler(
                 (*ap).command = b"push\x00" as *const u8 as *const i8;
                 (*sph).exec = Some(
                     spc_handler_color_push
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 );
                 (*ap).curptr = p
             } else if streq_ptr(q, b"pop\x00" as *const u8 as *const i8) {
                 (*ap).command = b"pop\x00" as *const u8 as *const i8;
                 (*sph).exec = Some(
                     spc_handler_color_pop
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 );
                 (*ap).curptr = p
             } else {
                 (*ap).command = b"\x00" as *const u8 as *const i8;
                 (*sph).exec = Some(
                     spc_handler_color_default
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 )
             }
         }

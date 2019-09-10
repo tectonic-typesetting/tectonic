@@ -10,7 +10,7 @@ use crate::stub_icu as icu;
 extern "C" {
     pub type Opaque_TECkit_Converter;
     #[no_mangle]
-    fn __errno_location() -> *mut libc::c_int;
+    fn __errno_location() -> *mut i32;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -22,7 +22,7 @@ extern "C" {
     fn ttstub_input_open(
         path: *const i8,
         format: tt_input_format_type,
-        is_gz: libc::c_int,
+        is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
     fn ttstub_input_open_primary() -> rust_input_handle_t;
@@ -30,14 +30,14 @@ extern "C" {
     fn ttstub_input_seek(
         handle: rust_input_handle_t,
         offset: ssize_t,
-        whence: libc::c_int,
+        whence: i32,
     ) -> size_t;
     #[no_mangle]
-    fn ttstub_input_getc(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    fn ttstub_input_ungetc(handle: rust_input_handle_t, ch: libc::c_int) -> libc::c_int;
+    fn ttstub_input_ungetc(handle: rust_input_handle_t, ch: i32) -> i32;
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     /* tectonic/core-memory.h: basic dynamic memory helpers
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.
@@ -176,7 +176,7 @@ pub const TTIF_BIB: tt_input_format_type = 6;
 pub const TTIF_AFM: tt_input_format_type = 4;
 pub const TTIF_TFM: tt_input_format_type = 3;
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type UErrorCode = libc::c_int;
+pub type UErrorCode = i32;
 pub const U_ERROR_LIMIT: UErrorCode = 66818;
 pub const U_PLUGIN_ERROR_LIMIT: UErrorCode = 66818;
 pub const U_PLUGIN_DIDNT_SET_LEVEL: UErrorCode = 66817;
@@ -476,9 +476,9 @@ unsafe extern "C" fn print_c_string(mut str: *const i8) {
 pub static mut name_of_input_file: *mut i8 =
     0 as *const i8 as *mut i8;
 #[no_mangle]
-pub unsafe extern "C" fn tt_xetex_open_input(mut filefmt: libc::c_int) -> rust_input_handle_t {
+pub unsafe extern "C" fn tt_xetex_open_input(mut filefmt: i32) -> rust_input_handle_t {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
-    if filefmt == TTIF_TECTONIC_PRIMARY as libc::c_int {
+    if filefmt == TTIF_TECTONIC_PRIMARY as i32 {
         handle = ttstub_input_open_primary()
     } else {
         handle = ttstub_input_open(name_of_file, filefmt as tt_input_format_type, 0i32)
@@ -778,7 +778,7 @@ pub unsafe extern "C" fn set_input_file_encoding(
     mut mode: i32,
     mut encodingData: i32,
 ) {
-    if (*f).encodingMode as libc::c_int == 5i32 && !(*f).conversionData.is_null() {
+    if (*f).encodingMode as i32 == 5i32 && !(*f).conversionData.is_null() {
         icu::ucnv_close((*f).conversionData as *mut icu::UConverter);
     }
     (*f).conversionData = 0 as *mut libc::c_void;
@@ -816,10 +816,10 @@ pub unsafe extern "C" fn u_open_in(
     mut fopen_mode: *const i8,
     mut mode: i32,
     mut encodingData: i32,
-) -> libc::c_int {
+) -> i32 {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
-    let mut B1: libc::c_int = 0;
-    let mut B2: libc::c_int = 0;
+    let mut B1: i32 = 0;
+    let mut B2: i32 = 0;
     handle = tt_xetex_open_input(filefmt);
     if handle.is_null() {
         return 0i32;
@@ -845,7 +845,7 @@ pub unsafe extern "C" fn u_open_in(
             mode = 3i32;
             ttstub_input_seek((**f).handle, 0i32 as ssize_t, 0i32);
         } else if B1 == 0xefi32 && B2 == 0xbbi32 {
-            let mut B3: libc::c_int = ttstub_input_getc((**f).handle);
+            let mut B3: i32 = ttstub_input_getc((**f).handle);
             if B3 == 0xbfi32 {
                 mode = 1i32
             }
@@ -864,7 +864,7 @@ unsafe extern "C" fn buffer_overflow() {
         buf_size as libc::c_uint,
     );
 }
-unsafe extern "C" fn conversion_error(mut errcode: libc::c_int) {
+unsafe extern "C" fn conversion_error(mut errcode: i32) {
     begin_diagnostic();
     print_nl('U' as i32);
     print_c_string(
@@ -876,8 +876,8 @@ unsafe extern "C" fn conversion_error(mut errcode: libc::c_int) {
 }
 unsafe extern "C" fn apply_normalization(
     mut buf: *mut u32,
-    mut len: libc::c_int,
-    mut norm: libc::c_int,
+    mut len: i32,
+    mut norm: i32,
 ) {
     static mut normalizers: [TECkit_Converter; 2] = [
         0 as *const Opaque_TECkit_Converter as TECkit_Converter,
@@ -901,7 +901,7 @@ unsafe extern "C" fn apply_normalization(
             _tt_abort(
                 b"failed to create normalizer: error code = %d\x00" as *const u8
                     as *const i8,
-                status as libc::c_int,
+                status as i32,
             );
         }
     }
@@ -926,12 +926,12 @@ unsafe extern "C" fn apply_normalization(
     ) as i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
+pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
     static mut byteBuffer: *mut i8 = 0 as *const i8 as *mut i8;
     static mut utf32Buf: *mut u32 = 0 as *const u32 as *mut u32;
-    let mut i: libc::c_int = 0;
-    let mut tmpLen: libc::c_int = 0;
-    let mut norm: libc::c_int = get_input_normalization_state();
+    let mut i: i32 = 0;
+    let mut tmpLen: i32 = 0;
+    let mut norm: i32 = get_input_normalization_state();
     if (*f).handle.is_null() {
         /* NULL 'handle' means this: */
         _tt_abort(
@@ -940,10 +940,10 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
         );
     }
     last = first;
-    if (*f).encodingMode as libc::c_int == 5i32 {
+    if (*f).encodingMode as i32 == 5i32 {
         let mut bytesRead: u32 = 0i32 as u32;
         let mut cnv: *mut icu::UConverter = 0 as *mut icu::UConverter;
-        let mut outLen: libc::c_int = 0;
+        let mut outLen: i32 = 0;
         let mut errorCode: UErrorCode = U_ZERO_ERROR;
         if byteBuffer.is_null() {
             byteBuffer = xmalloc((buf_size + 1i32) as size_t) as *mut i8
@@ -1004,15 +1004,15 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                     bytesRead as i32,
                     &mut errorCode,
                 );
-                if errorCode as libc::c_int != 0i32 {
-                    conversion_error(errorCode as libc::c_int);
+                if errorCode as i32 != 0i32 {
+                    conversion_error(errorCode as i32);
                     return 0i32;
                 }
                 apply_normalization(
                     utf32Buf,
                     (tmpLen as u64)
                         .wrapping_div(::std::mem::size_of::<u32>() as u64)
-                        as libc::c_int,
+                        as i32,
                     norm,
                 );
             }
@@ -1029,13 +1029,13 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                     bytesRead as i32,
                     &mut errorCode,
                 );
-                if errorCode as libc::c_int != 0i32 {
-                    conversion_error(errorCode as libc::c_int);
+                if errorCode as i32 != 0i32 {
+                    conversion_error(errorCode as i32);
                     return 0i32;
                 }
                 outLen = (outLen as u64)
                     .wrapping_div(::std::mem::size_of::<UnicodeScalar>() as u64)
-                    as libc::c_int as libc::c_int;
+                    as i32 as i32;
                 last = first + outLen
             }
         }
@@ -1144,28 +1144,28 @@ pub unsafe extern "C" fn u_close(mut f: *mut UFILE) {
         return;
     }
     ttstub_input_close((*f).handle);
-    if (*f).encodingMode as libc::c_int == 5i32 && !(*f).conversionData.is_null() {
+    if (*f).encodingMode as i32 == 5i32 && !(*f).conversionData.is_null() {
         icu::ucnv_close((*f).conversionData as *mut icu::UConverter);
     }
     free(f as *mut libc::c_void);
 }
 #[no_mangle]
-pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> libc::c_int {
+pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> i32 {
     let mut current_block: u64;
-    let mut rval: libc::c_int = 0;
-    let mut c: libc::c_int = 0;
+    let mut rval: i32 = 0;
+    let mut c: i32 = 0;
     if (*f).savedChar != -1i32 as i64 {
-        rval = (*f).savedChar as libc::c_int;
+        rval = (*f).savedChar as i32;
         (*f).savedChar = -1i32 as i64;
         return rval;
     }
-    match (*f).encodingMode as libc::c_int {
+    match (*f).encodingMode as i32 {
         1 => {
             rval = ttstub_input_getc((*f).handle);
             c = rval;
             if rval != -1i32 {
                 let mut extraBytes: u16 = bytesFromUTF8[rval as usize] as u16;
-                match extraBytes as libc::c_int {
+                match extraBytes as i32 {
                     3 => {
                         /* note: code falls through cases! */
                         c = ttstub_input_getc((*f).handle);
@@ -1220,7 +1220,7 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> libc::c_int {
                     15925075030174552612 => {
                         rval = (rval as libc::c_uint)
                             .wrapping_sub(offsetsFromUTF8[extraBytes as usize])
-                            as libc::c_int as libc::c_int;
+                            as i32 as i32;
                         if rval < 0i32 || rval > 0x10ffffi32 {
                             bad_utf8_warning();
                             return 0xfffdi32;
@@ -1250,7 +1250,7 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> libc::c_int {
                 rval <<= 8i32;
                 rval += ttstub_input_getc((*f).handle);
                 if rval >= 0xd800i32 && rval <= 0xdbffi32 {
-                    let mut lo: libc::c_int = ttstub_input_getc((*f).handle);
+                    let mut lo: i32 = ttstub_input_getc((*f).handle);
                     lo <<= 8i32;
                     lo += ttstub_input_getc((*f).handle);
                     if lo >= 0xdc00i32 && lo <= 0xdfffi32 {
@@ -1269,7 +1269,7 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> libc::c_int {
             if rval != -1i32 {
                 rval += ttstub_input_getc((*f).handle) << 8i32;
                 if rval >= 0xd800i32 && rval <= 0xdbffi32 {
-                    let mut lo_0: libc::c_int = ttstub_input_getc((*f).handle);
+                    let mut lo_0: i32 = ttstub_input_getc((*f).handle);
                     lo_0 += ttstub_input_getc((*f).handle) << 8i32;
                     if lo_0 >= 0xdc00i32 && lo_0 <= 0xdfffi32 {
                         rval = 0x10000i32 + (rval - 0xd800i32) * 0x400i32 + (lo_0 - 0xdc00i32)
@@ -1286,7 +1286,7 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> libc::c_int {
         _ => {
             _tt_abort(
                 b"internal error; file input mode=%d\x00" as *const u8 as *const i8,
-                (*f).encodingMode as libc::c_int,
+                (*f).encodingMode as i32,
             );
         }
     }
@@ -1301,7 +1301,7 @@ pub unsafe extern "C" fn make_utf16_name() {
     let mut s: *mut u8 = name_of_file as *mut u8;
     let mut rval: u32 = 0;
     let mut t: *mut u16 = 0 as *mut u16;
-    static mut name16len: libc::c_int = 0i32;
+    static mut name16len: i32 = 0i32;
     if name16len <= name_length {
         free(name_of_file16 as *mut libc::c_void);
         name16len = name_length + 10i32;
@@ -1318,7 +1318,7 @@ pub unsafe extern "C" fn make_utf16_name() {
         rval = *fresh7 as u32;
         extraBytes = bytesFromUTF8[rval as usize] as u16;
         let mut current_block_23: u64;
-        match extraBytes as libc::c_int {
+        match extraBytes as i32 {
             5 => {
                 /* note: code falls through cases! */
                 rval <<= 6i32;
@@ -1421,17 +1421,17 @@ pub unsafe extern "C" fn open_or_close_in() {
     c = cur_chr as u8;
     scan_four_bit_int();
     n = cur_val as u8;
-    if read_open[n as usize] as libc::c_int != 2i32 {
+    if read_open[n as usize] as i32 != 2i32 {
         u_close(read_file[n as usize]);
         read_open[n as usize] = 2i32 as u8
     }
-    if c as libc::c_int != 0i32 {
+    if c as i32 != 0i32 {
         scan_optional_equals();
         scan_file_name();
         pack_file_name(cur_name, cur_area, cur_ext);
         if u_open_in(
             &mut *read_file.as_mut_ptr().offset(n as isize),
-            TTIF_TEX as libc::c_int,
+            TTIF_TEX as i32,
             b"rb\x00" as *const u8 as *const i8,
             (*eqtb.offset(
                 (1i32
@@ -1499,7 +1499,7 @@ pub unsafe extern "C" fn open_or_close_in() {
             stop_at_space = 0i32 != 0;
             k = 0i32;
             while k < name_length16
-                && more_name(*name_of_file16.offset(k as isize)) as libc::c_int != 0
+                && more_name(*name_of_file16.offset(k as isize)) as i32 != 0
             {
                 k += 1
             }

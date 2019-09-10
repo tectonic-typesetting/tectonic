@@ -1,5 +1,5 @@
 pub type UChar = u16;
-pub type UErrorCode = libc::c_int;
+pub type UErrorCode = i32;
 
 macro_rules! no_mangle_extern_fn {
     ($(
@@ -57,7 +57,7 @@ extern "C" {
 }
 
 
-pub type UConverterType = libc::c_int;
+pub type UConverterType = i32;
 pub type UBiDiLevel = u8;
 
 pub const UCNV_NUMBER_OF_SUPPORTED_CONVERTER_TYPES: UConverterType = 34;

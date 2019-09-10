@@ -67,13 +67,13 @@ pub unsafe extern "C" fn UC_UTF16BE_decode_char(
     if p.offset(1) >= endptr {
         return -1i32;
     }
-    first = ((*p.offset(0) as libc::c_int) << 8i32 | *p.offset(1) as libc::c_int) as u16;
+    first = ((*p.offset(0) as i32) << 8i32 | *p.offset(1) as i32) as u16;
     p = p.offset(2);
     if first as libc::c_uint >= 0xd800u32 && (first as libc::c_uint) < 0xdc00u32 {
         if p.offset(1) >= endptr {
             return -1i32;
         }
-        second = ((*p.offset(0) as libc::c_int) << 8i32 | *p.offset(1) as libc::c_int) as u16;
+        second = ((*p.offset(0) as i32) << 8i32 | *p.offset(1) as i32) as u16;
         p = p.offset(2);
         ucv = (second as libc::c_uint & 0x3ffu32) as i32;
         ucv = (ucv as libc::c_uint | (first as libc::c_uint & 0x3ffu32) << 10i32) as i32;
@@ -92,7 +92,7 @@ pub unsafe extern "C" fn UC_UTF16BE_encode_char(
     mut pp: *mut *mut u8,
     mut endptr: *mut u8,
 ) -> size_t {
-    let mut count: libc::c_int = 0i32;
+    let mut count: i32 = 0i32;
     let mut p: *mut u8 = *pp;
     if ucv >= 0i32 && ucv <= 0xffffi32 {
         if p.offset(2) >= endptr {
@@ -110,10 +110,10 @@ pub unsafe extern "C" fn UC_UTF16BE_encode_char(
         ucv -= 0x10000i32;
         high = ((ucv >> 10i32) as libc::c_uint).wrapping_add(0xd800u32) as u16;
         low = (ucv as libc::c_uint & 0x3ffu32).wrapping_add(0xdc00u32) as u16;
-        *p.offset(0) = (high as libc::c_int >> 8i32 & 0xffi32) as u8;
-        *p.offset(1) = (high as libc::c_int & 0xffi32) as u8;
-        *p.offset(2) = (low as libc::c_int >> 8i32 & 0xffi32) as u8;
-        *p.offset(3) = (low as libc::c_int & 0xffi32) as u8;
+        *p.offset(0) = (high as i32 >> 8i32 & 0xffi32) as u8;
+        *p.offset(1) = (high as i32 & 0xffi32) as u8;
+        *p.offset(2) = (low as i32 >> 8i32 & 0xffi32) as u8;
+        *p.offset(3) = (low as i32 & 0xffi32) as u8;
         count = 4i32
     } else {
         if p.offset(2) >= endptr {
@@ -136,29 +136,29 @@ pub unsafe extern "C" fn UC_UTF8_decode_char(
     let fresh0 = p;
     p = p.offset(1);
     let mut c: u8 = *fresh0;
-    let mut nbytes: libc::c_int = 0;
-    if c as libc::c_int <= 0x7fi32 {
+    let mut nbytes: i32 = 0;
+    if c as i32 <= 0x7fi32 {
         ucv = c as i32;
         nbytes = 0i32
-    } else if c as libc::c_int & 0xe0i32 == 0xc0i32 {
+    } else if c as i32 & 0xe0i32 == 0xc0i32 {
         /* 110x xxxx */
-        ucv = c as libc::c_int & 31i32;
+        ucv = c as i32 & 31i32;
         nbytes = 1i32
-    } else if c as libc::c_int & 0xf0i32 == 0xe0i32 {
+    } else if c as i32 & 0xf0i32 == 0xe0i32 {
         /* 1110 xxxx */
-        ucv = c as libc::c_int & 0xfi32;
+        ucv = c as i32 & 0xfi32;
         nbytes = 2i32
-    } else if c as libc::c_int & 0xf8i32 == 0xf0i32 {
+    } else if c as i32 & 0xf8i32 == 0xf0i32 {
         /* 1111 0xxx */
-        ucv = c as libc::c_int & 0x7i32;
+        ucv = c as i32 & 0x7i32;
         nbytes = 3i32
-    } else if c as libc::c_int & 0xfci32 == 0xf8i32 {
+    } else if c as i32 & 0xfci32 == 0xf8i32 {
         /* 1111 10xx */
-        ucv = c as libc::c_int & 0x3i32;
+        ucv = c as i32 & 0x3i32;
         nbytes = 4i32
-    } else if c as libc::c_int & 0xfei32 == 0xfci32 {
+    } else if c as i32 & 0xfei32 == 0xfci32 {
         /* 1111 110x */
-        ucv = c as libc::c_int & 0x1i32;
+        ucv = c as i32 & 0x1i32;
         nbytes = 5i32
     } else {
         return -1i32;
@@ -175,10 +175,10 @@ pub unsafe extern "C" fn UC_UTF8_decode_char(
         let fresh2 = p;
         p = p.offset(1);
         c = *fresh2;
-        if c as libc::c_int & 0xc0i32 != 0x80i32 {
+        if c as i32 & 0xc0i32 != 0x80i32 {
             return -1i32;
         }
-        ucv = ucv << 6i32 | c as libc::c_int & 0x3fi32
+        ucv = ucv << 6i32 | c as i32 & 0x3fi32
     }
     *pp = p;
     return ucv;
@@ -210,7 +210,7 @@ pub unsafe extern "C" fn UC_UTF8_encode_char(
     mut pp: *mut *mut u8,
     mut endptr: *mut u8,
 ) -> size_t {
-    let mut count: libc::c_int = 0i32;
+    let mut count: i32 = 0i32;
     let mut p: *mut u8 = *pp;
     if !pp.is_null() && !(*pp).is_null() && !endptr.is_null() {
     } else {

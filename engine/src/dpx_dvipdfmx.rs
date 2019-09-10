@@ -11,7 +11,7 @@ extern "C" {
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
-    fn atoi(__nptr: *const i8) -> libc::c_int;
+    fn atoi(__nptr: *const i8) -> i32;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
@@ -19,11 +19,11 @@ extern "C" {
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn strchr(_: *const i8, _: libc::c_int) -> *mut i8;
+    fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -34,7 +34,7 @@ extern "C" {
         __function: *const i8,
     ) -> !;
     #[no_mangle]
-    fn pdf_obj_set_verbose(level: libc::c_int);
+    fn pdf_obj_set_verbose(level: i32);
     #[no_mangle]
     fn pdf_obj_reset_global_state();
     #[no_mangle]
@@ -65,27 +65,27 @@ extern "C" {
     #[no_mangle]
     fn pdf_files_init();
     #[no_mangle]
-    fn CIDFont_set_flags(flags: libc::c_int);
+    fn CIDFont_set_flags(flags: i32);
     #[no_mangle]
-    fn pdf_set_use_predictor(bval: libc::c_int);
+    fn pdf_set_use_predictor(bval: i32);
     #[no_mangle]
     fn pdf_files_close();
     #[no_mangle]
     fn pdf_close_fontmaps();
     #[no_mangle]
-    fn pdf_load_fontmap_file(filename: *const i8, mode: libc::c_int) -> libc::c_int;
+    fn pdf_load_fontmap_file(filename: *const i8, mode: i32) -> i32;
     #[no_mangle]
-    fn pdf_fontmap_set_verbose(level: libc::c_int);
+    fn pdf_fontmap_set_verbose(level: i32);
     #[no_mangle]
-    fn pdf_set_compression(level: libc::c_int);
+    fn pdf_set_compression(level: i32);
     #[no_mangle]
     fn pdf_init_fontmaps();
     #[no_mangle]
     fn paperinfo(ppformat: *const i8) -> *const paper;
     #[no_mangle]
-    fn dpx_file_set_verbose(level: libc::c_int);
+    fn dpx_file_set_verbose(level: i32);
     #[no_mangle]
-    fn dpx_delete_old_cache(life: libc::c_int);
+    fn dpx_delete_old_cache(life: i32);
     #[no_mangle]
     fn parse_float_decimal(
         pp: *mut *const i8,
@@ -152,11 +152,11 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn shut_up(quietness: libc::c_int);
+    fn shut_up(quietness: i32);
     #[no_mangle]
-    fn dvi_set_verbose(level: libc::c_int);
+    fn dvi_set_verbose(level: i32);
     #[no_mangle]
-    fn pdf_dev_set_verbose(level: libc::c_int);
+    fn pdf_dev_set_verbose(level: i32);
     #[no_mangle]
     fn dvi_reset_global_state();
     #[no_mangle]
@@ -164,7 +164,7 @@ extern "C" {
     #[no_mangle]
     fn dvi_init(dvi_filename: *const i8, mag_0: f64) -> f64;
     #[no_mangle]
-    fn pdf_init_device(unit_conv: f64, precision: libc::c_int, is_bw: libc::c_int);
+    fn pdf_init_device(unit_conv: f64, precision: i32, is_bw: i32);
     #[no_mangle]
     fn pdf_close_device();
     #[no_mangle]
@@ -183,16 +183,16 @@ extern "C" {
     );
     #[no_mangle]
     fn dvi_scan_specials(
-        page_no: libc::c_int,
+        page_no: i32,
         width: *mut f64,
         height: *mut f64,
         x_offset_0: *mut f64,
         y_offset_0: *mut f64,
-        landscape: *mut libc::c_int,
-        majorversion: *mut libc::c_int,
-        minorversion: *mut libc::c_int,
-        do_enc: *mut libc::c_int,
-        keybits: *mut libc::c_int,
+        landscape: *mut i32,
+        majorversion: *mut i32,
+        minorversion: *mut i32,
+        do_enc: *mut i32,
+        keybits: *mut i32,
         perm: *mut i32,
         opasswd: *mut i8,
         upasswd: *mut i8,
@@ -244,7 +244,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn pdf_doc_set_verbose(level: libc::c_int);
+    fn pdf_doc_set_verbose(level: i32);
     #[no_mangle]
     fn pdf_open_document(
         filename: *const i8,
@@ -253,8 +253,8 @@ extern "C" {
         media_width: f64,
         media_height: f64,
         annot_grow_amount: f64,
-        bookmark_open_depth: libc::c_int,
-        check_gotos: libc::c_int,
+        bookmark_open_depth: i32,
+        check_gotos: i32,
     );
     #[no_mangle]
     fn pdf_close_document();
@@ -285,7 +285,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn pdf_enc_set_verbose(level: libc::c_int);
+    fn pdf_enc_set_verbose(level: i32);
     #[no_mangle]
     fn pdf_enc_compute_id_string(dviname: *const i8, pdfname: *const i8);
     #[no_mangle]
@@ -296,11 +296,11 @@ extern "C" {
         user: *const i8,
     );
     #[no_mangle]
-    fn pdf_font_set_dpi(font_dpi_0: libc::c_int);
+    fn pdf_font_set_dpi(font_dpi_0: i32);
     #[no_mangle]
     fn pdf_font_reset_unique_tag_state();
     #[no_mangle]
-    fn pdf_font_set_deterministic_unique_tags(value: libc::c_int);
+    fn pdf_font_set_deterministic_unique_tags(value: i32);
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
     #[no_mangle]
@@ -330,7 +330,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn tpic_set_fill_mode(mode: libc::c_int);
+    fn tpic_set_fill_mode(mode: i32);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -357,9 +357,9 @@ extern "C" {
     /* PDF parser shouldn't depend on this...
      */
     #[no_mangle]
-    fn spc_exec_at_end_document() -> libc::c_int;
+    fn spc_exec_at_end_document() -> i32;
     #[no_mangle]
-    fn spc_exec_at_begin_document() -> libc::c_int;
+    fn spc_exec_at_begin_document() -> i32;
     #[no_mangle]
     fn tfm_reset_global_state();
     #[no_mangle]
@@ -385,7 +385,7 @@ extern "C" {
     */
     /* flag declared in dvipdfmx.c */
     #[no_mangle]
-    fn tt_aux_set_verbose(level: libc::c_int);
+    fn tt_aux_set_verbose(level: i32);
 }
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
@@ -429,8 +429,8 @@ pub type PageRange = page_range;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct page_range {
-    pub first: libc::c_int,
-    pub last: libc::c_int,
+    pub first: i32,
+    pub last: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -469,27 +469,27 @@ pub struct paper {
     pub psheight: f64,
 }
 #[no_mangle]
-pub static mut is_xdv: libc::c_int = 0i32;
+pub static mut is_xdv: i32 = 0i32;
 #[no_mangle]
-pub static mut translate_origin: libc::c_int = 0i32;
+pub static mut translate_origin: i32 = 0i32;
 static mut ignore_colors: i8 = 0i32 as i8;
 static mut annot_grow: f64 = 0.0f64;
-static mut bookmark_open: libc::c_int = 0i32;
+static mut bookmark_open: i32 = 0i32;
 static mut mag: f64 = 1.0f64;
-static mut font_dpi: libc::c_int = 600i32;
+static mut font_dpi: i32 = 600i32;
 /*
  * Precision is essentially limited to 0.01pt.
  * See, dev_set_string() in pdfdev.c.
  */
-static mut pdfdecimaldigits: libc::c_int = 3i32;
+static mut pdfdecimaldigits: i32 = 3i32;
 /* Image cache life in hours */
 /*  0 means erase all old images and leave new images */
 /* -1 means erase all old images and also erase new images */
 /* -2 means ignore image cache (default) */
-static mut image_cache_life: libc::c_int = -2i32;
+static mut image_cache_life: i32 = -2i32;
 /* Encryption */
-static mut do_encryption: libc::c_int = 0i32;
-static mut key_bits: libc::c_int = 40i32;
+static mut do_encryption: i32 = 0i32;
+static mut key_bits: i32 = 40i32;
 static mut permission: i32 = 0x3ci32;
 /* Page device */
 #[no_mangle]
@@ -499,16 +499,16 @@ pub static mut paper_height: f64 = 842.0f64;
 static mut x_offset: f64 = 72.0f64;
 static mut y_offset: f64 = 72.0f64;
 #[no_mangle]
-pub static mut landscape_mode: libc::c_int = 0i32;
+pub static mut landscape_mode: i32 = 0i32;
 #[no_mangle]
-pub static mut always_embed: libc::c_int = 0i32;
+pub static mut always_embed: i32 = 0i32;
 /* always embed fonts, regardless of licensing flags */
 /* XXX: there are four quasi-redundant versions of this; grp for K_UNIT__PT */
 unsafe extern "C" fn read_length(
     mut vp: *mut f64,
     mut pp: *mut *const i8,
     mut endptr: *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = *pp;
     let mut v: f64 = 0.;
@@ -525,8 +525,8 @@ unsafe extern "C" fn read_length(
         b"sp\x00" as *const u8 as *const i8,
         0 as *const i8,
     ];
-    let mut k: libc::c_int = 0;
-    let mut error: libc::c_int = 0i32;
+    let mut k: i32 = 0;
+    let mut error: i32 = 0i32;
     q = parse_float_decimal(&mut p, endptr);
     if q.is_null() {
         *vp = 0.0f64;
@@ -592,7 +592,7 @@ unsafe extern "C" fn read_length(
 }
 unsafe extern "C" fn select_paper(mut paperspec: *const i8) {
     let mut pi: *const paper = 0 as *const paper;
-    let mut error: libc::c_int = 0i32;
+    let mut error: i32 = 0i32;
     pi = paperinfo(paperspec);
     if !pi.is_null()
         && !(if !pi.is_null() && !(*pi).name.is_null() {
@@ -647,7 +647,7 @@ unsafe extern "C" fn select_pages(
     let mut max_page_ranges: libc::c_uint = 0i32 as libc::c_uint;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = pagespec;
-    while *p as libc::c_int != '\u{0}' as i32 {
+    while *p as i32 != '\u{0}' as i32 {
         /* Enlarge page range table if necessary */
         if num_page_ranges >= max_page_ranges {
             max_page_ranges = max_page_ranges.wrapping_add(4i32 as libc::c_uint); /* Can't be signed. */
@@ -660,10 +660,10 @@ unsafe extern "C" fn select_pages(
         }
         (*page_ranges.offset(num_page_ranges as isize)).first = 0i32;
         (*page_ranges.offset(num_page_ranges as isize)).last = 0i32;
-        while *p as libc::c_int != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISspace as libc::c_int as u16 as libc::c_int
+        while *p as i32 != 0
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                as i32
+                & _ISspace as i32 as u16 as i32
                 != 0
         {
             p = p.offset(1)
@@ -676,20 +676,20 @@ unsafe extern "C" fn select_pages(
                 (*page_ranges.offset(num_page_ranges as isize)).first;
             free(q as *mut libc::c_void);
         }
-        while *p as libc::c_int != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISspace as libc::c_int as u16 as libc::c_int
+        while *p as i32 != 0
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                as i32
+                & _ISspace as i32 as u16 as i32
                 != 0
         {
             p = p.offset(1)
         }
-        if *p as libc::c_int == '-' as i32 {
+        if *p as i32 == '-' as i32 {
             p = p.offset(1);
-            while *p as libc::c_int != 0
-                && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                    as libc::c_int
-                    & _ISspace as libc::c_int as u16 as libc::c_int
+            while *p as i32 != 0
+                && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                    as i32
+                    & _ISspace as i32 as u16 as i32
                     != 0
             {
                 p = p.offset(1)
@@ -701,10 +701,10 @@ unsafe extern "C" fn select_pages(
                     (*page_ranges.offset(num_page_ranges as isize)).last = atoi(q) - 1i32;
                     free(q as *mut libc::c_void);
                 }
-                while *p as libc::c_int != 0
-                    && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                        as libc::c_int
-                        & _ISspace as libc::c_int as u16 as libc::c_int
+                while *p as i32 != 0
+                    && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                        as i32
+                        & _ISspace as i32 as u16 as i32
                         != 0
                 {
                     p = p.offset(1)
@@ -715,13 +715,13 @@ unsafe extern "C" fn select_pages(
                 (*page_ranges.offset(num_page_ranges as isize)).first
         }
         num_page_ranges = num_page_ranges.wrapping_add(1);
-        if *p as libc::c_int == ',' as i32 {
+        if *p as i32 == ',' as i32 {
             p = p.offset(1)
         } else {
-            while *p as libc::c_int != 0
-                && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                    as libc::c_int
-                    & _ISspace as libc::c_int as u16 as libc::c_int
+            while *p as i32 != 0
+                && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                    as i32
+                    & _ISspace as i32 as u16 as i32
                     != 0
             {
                 p = p.offset(1)
@@ -748,8 +748,8 @@ unsafe extern "C" fn do_dvi_pages(
     mut page_ranges: *mut PageRange,
     mut num_page_ranges: libc::c_uint,
 ) {
-    let mut page_no: libc::c_int = 0;
-    let mut step: libc::c_int = 0;
+    let mut page_no: i32 = 0;
+    let mut step: i32 = 0;
     let mut page_count: libc::c_uint = 0;
     let mut i: libc::c_uint = 0;
     let mut page_width: f64 = 0.;
@@ -778,7 +778,7 @@ unsafe extern "C" fn do_dvi_pages(
         if (*page_ranges.offset(i as isize)).last < 0i32 {
             let ref mut fresh0 = (*page_ranges.offset(i as isize)).last;
             *fresh0 =
-                (*fresh0 as libc::c_uint).wrapping_add(dvi_npages()) as libc::c_int as libc::c_int
+                (*fresh0 as libc::c_uint).wrapping_add(dvi_npages()) as i32 as i32
         }
         step = if (*page_ranges.offset(i as isize)).first <= (*page_ranges.offset(i as isize)).last
         {
@@ -793,7 +793,7 @@ unsafe extern "C" fn do_dvi_pages(
                 let mut h: f64 = 0.;
                 let mut xo: f64 = 0.;
                 let mut yo: f64 = 0.;
-                let mut lm: libc::c_int = 0;
+                let mut lm: i32 = 0;
                 dpx_message(
                     b"[%d\x00" as *const u8 as *const i8,
                     page_no + 1i32,
@@ -813,10 +813,10 @@ unsafe extern "C" fn do_dvi_pages(
                     &mut xo,
                     &mut yo,
                     &mut lm,
-                    0 as *mut libc::c_int,
-                    0 as *mut libc::c_int,
-                    0 as *mut libc::c_int,
-                    0 as *mut libc::c_int,
+                    0 as *mut i32,
+                    0 as *mut i32,
+                    0 as *mut i32,
+                    0 as *mut i32,
                     0 as *mut i32,
                     0 as *mut i8,
                     0 as *mut i8,
@@ -892,13 +892,13 @@ pub unsafe extern "C" fn dvipdfmx_main(
     mut pdf_filename: *const i8,
     mut dvi_filename: *const i8,
     mut pagespec: *const i8,
-    mut opt_flags: libc::c_int,
+    mut opt_flags: i32,
     mut translate: bool,
     mut compress: bool,
     mut deterministic_tags: bool,
     mut quiet: bool,
     mut verbose: libc::c_uint,
-) -> libc::c_int {
+) -> i32 {
     let mut enable_object_stream: bool = 1i32 != 0; /* This must come before parsing options... */
     let mut dvi2pts: f64 = 0.;
     let mut num_page_ranges: libc::c_uint = 0i32 as libc::c_uint;
@@ -919,7 +919,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
                       (*::std::mem::transmute::<&[u8; 107],
                                                 &[i8; 107]>(b"int dvipdfmx_main(const char *, const char *, const char *, int, _Bool, _Bool, _Bool, _Bool, unsigned int)\x00")).as_ptr());
     }
-    translate_origin = translate as libc::c_int;
+    translate_origin = translate as i32;
     dvi_reset_global_state();
     tfm_reset_global_state();
     vf_reset_global_state();
@@ -929,21 +929,21 @@ pub unsafe extern "C" fn dvipdfmx_main(
     if quiet {
         shut_up(2i32);
     } else {
-        dvi_set_verbose(verbose as libc::c_int);
-        pdf_dev_set_verbose(verbose as libc::c_int);
-        pdf_doc_set_verbose(verbose as libc::c_int);
-        pdf_enc_set_verbose(verbose as libc::c_int);
-        pdf_obj_set_verbose(verbose as libc::c_int);
-        pdf_fontmap_set_verbose(verbose as libc::c_int);
-        dpx_file_set_verbose(verbose as libc::c_int);
-        tt_aux_set_verbose(verbose as libc::c_int);
+        dvi_set_verbose(verbose as i32);
+        pdf_dev_set_verbose(verbose as i32);
+        pdf_doc_set_verbose(verbose as i32);
+        pdf_enc_set_verbose(verbose as i32);
+        pdf_obj_set_verbose(verbose as i32);
+        pdf_fontmap_set_verbose(verbose as i32);
+        dpx_file_set_verbose(verbose as i32);
+        tt_aux_set_verbose(verbose as i32);
     }
-    pdf_set_compression(if compress as libc::c_int != 0 {
+    pdf_set_compression(if compress as i32 != 0 {
         9i32
     } else {
         0i32
     });
-    pdf_font_set_deterministic_unique_tags(if deterministic_tags as libc::c_int != 0 {
+    pdf_font_set_deterministic_unique_tags(if deterministic_tags as i32 != 0 {
         1i32
     } else {
         0i32
@@ -992,8 +992,8 @@ pub unsafe extern "C" fn dvipdfmx_main(
     pdf_font_set_dpi(font_dpi);
     dpx_delete_old_cache(image_cache_life);
     pdf_enc_compute_id_string(dvi_filename, pdf_filename);
-    let mut ver_major: libc::c_int = 0i32;
-    let mut ver_minor: libc::c_int = 0i32;
+    let mut ver_major: i32 = 0i32;
+    let mut ver_minor: i32 = 0i32;
     let mut owner_pw: [i8; 127] = [0; 127];
     let mut user_pw: [i8; 127] = [0; 127];
     /* Dependency between DVI and PDF side is rather complicated... */
@@ -1066,12 +1066,12 @@ pub unsafe extern "C" fn dvipdfmx_main(
         paper_height,
         annot_grow,
         bookmark_open,
-        (opt_flags & 1i32 << 4i32 == 0) as libc::c_int,
+        (opt_flags & 1i32 << 4i32 == 0) as i32,
     );
     /* Ignore_colors placed here since
      * they are considered as device's capacity.
      */
-    pdf_init_device(dvi2pts, pdfdecimaldigits, ignore_colors as libc::c_int);
+    pdf_init_device(dvi2pts, pdfdecimaldigits, ignore_colors as i32);
     if opt_flags & 1i32 << 2i32 != 0 {
         CIDFont_set_flags(1i32 << 1i32);
     }

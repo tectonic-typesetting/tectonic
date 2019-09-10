@@ -30,7 +30,7 @@ extern "C" {
         _: u64,
         _: *const i8,
         _: ::std::ffi::VaList,
-    ) -> libc::c_int;
+    ) -> i32;
 }
 pub type __builtin_va_list = [__va_list_tag; 1];
 #[derive(Copy, Clone)]
@@ -70,9 +70,9 @@ pub type _message_type = libc::c_uint;
 pub const DPX_MESG_WARN: _message_type = 1;
 pub const DPX_MESG_INFO: _message_type = 0;
 static mut _last_message_type: message_type_t = DPX_MESG_INFO;
-static mut _dpx_quietness: libc::c_int = 0i32;
+static mut _dpx_quietness: i32 = 0i32;
 #[no_mangle]
-pub unsafe extern "C" fn shut_up(mut quietness: libc::c_int) {
+pub unsafe extern "C" fn shut_up(mut quietness: i32) {
     _dpx_quietness = quietness;
 }
 static mut _dpx_message_handle: rust_output_handle_t =
@@ -90,9 +90,9 @@ unsafe extern "C" fn _dpx_ensure_output_handle() -> rust_output_handle_t {
 unsafe extern "C" fn _dpx_print_to_stdout(
     mut fmt: *const i8,
     mut argp: ::std::ffi::VaList,
-    mut warn: libc::c_int,
+    mut warn: i32,
 ) {
-    let mut n: libc::c_int = 0;
+    let mut n: i32 = 0;
     n = vsnprintf(
         _dpx_message_buf.as_mut_ptr(),
         ::std::mem::size_of::<[i8; 1024]>() as u64,
@@ -103,7 +103,7 @@ unsafe extern "C" fn _dpx_print_to_stdout(
      * bigger than sizeof(buf). */
     if n as u64 >= ::std::mem::size_of::<[i8; 1024]>() as u64 {
         n = (::std::mem::size_of::<[i8; 1024]>() as u64)
-            .wrapping_sub(1i32 as u64) as libc::c_int;
+            .wrapping_sub(1i32 as u64) as i32;
         _dpx_message_buf[n as usize] = '\u{0}' as i32 as i8
     }
     if warn != 0 {
@@ -155,7 +155,7 @@ pub unsafe extern "C" fn dpx_warning(mut fmt: *const i8, mut args: ...) {
     if _dpx_quietness > 1i32 {
         return;
     }
-    if _last_message_type as libc::c_uint == DPX_MESG_INFO as libc::c_int as libc::c_uint {
+    if _last_message_type as libc::c_uint == DPX_MESG_INFO as i32 as libc::c_uint {
         ttstub_output_write(
             _dpx_ensure_output_handle(),
             b"\n\x00" as *const u8 as *const i8,

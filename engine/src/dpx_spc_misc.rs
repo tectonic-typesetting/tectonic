@@ -21,47 +21,47 @@ extern "C" {
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
     fn ttstub_input_open(
         path: *const i8,
         format: tt_input_format_type,
-        is_gz: libc::c_int,
+        is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
-    fn sscanf(_: *const i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sscanf(_: *const i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     /* Tectonic-enabled versions */
     #[no_mangle]
     fn tt_mfgets(
         buffer: *mut i8,
-        length: libc::c_int,
+        length: i32,
         file: rust_input_handle_t,
     ) -> *mut i8;
     #[no_mangle]
     fn pdf_dev_put_image(
-        xobj_id: libc::c_int,
+        xobj_id: i32,
         p: *mut transform_info,
         ref_x: f64,
         ref_y: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     /* Please use different interface than findresource...
      * This is not intended to be used for specifying page number and others.
      * Only pdf:image special in spc_pdfm.c want optinal dict!
      */
     #[no_mangle]
-    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> libc::c_int;
+    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> i32;
     #[no_mangle]
     fn mps_scan_bbox(
         pp: *mut *const i8,
         endptr: *const i8,
         bbox: *mut pdf_rect,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
     #[no_mangle]
@@ -115,7 +115,7 @@ pub struct spc_env {
     pub x_user: f64,
     pub y_user: f64,
     pub mag: f64,
-    pub pg: libc::c_int,
+    pub pg: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -126,7 +126,7 @@ pub struct spc_arg {
     pub command: *const i8,
 }
 pub type spc_handler_fn_ptr =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int>;
+    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
@@ -141,7 +141,7 @@ pub struct transform_info {
     pub depth: f64,
     pub matrix: pdf_tmatrix,
     pub bbox: pdf_rect,
-    pub flags: libc::c_int,
+    pub flags: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -164,8 +164,8 @@ pub struct pdf_tmatrix {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct load_options {
-    pub page_no: libc::c_int,
-    pub bbox_type: libc::c_int,
+    pub page_no: i32,
+    pub bbox_type: i32,
     pub dict: *mut pdf_obj,
 }
 /* quasi-hack to get the primary input */
@@ -193,9 +193,9 @@ pub struct load_options {
 unsafe extern "C" fn spc_handler_postscriptbox(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int {
-    let mut form_id: libc::c_int = 0;
-    let mut len: libc::c_int = 0;
+) -> i32 {
+    let mut form_id: i32 = 0;
+    let mut len: i32 = 0;
     let mut ti: transform_info = transform_info {
         width: 0.,
         height: 0.,
@@ -248,7 +248,7 @@ unsafe extern "C" fn spc_handler_postscriptbox(
         return -1i32;
     }
     /* input is not NULL terminated */
-    len = (*ap).endptr.wrapping_offset_from((*ap).curptr) as i64 as libc::c_int;
+    len = (*ap).endptr.wrapping_offset_from((*ap).curptr) as i64 as i32;
     len = if 511i32 < len { 511i32 } else { len };
     memcpy(
         buf.as_mut_ptr() as *mut libc::c_void,
@@ -316,7 +316,7 @@ unsafe extern "C" fn spc_handler_postscriptbox(
 unsafe extern "C" fn spc_handler_null(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     (*args).curptr = (*args).endptr;
     return 0i32;
 }
@@ -327,7 +327,7 @@ static mut misc_handlers: [spc_handler; 6] = unsafe {
                 key: b"postscriptbox\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_postscriptbox
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -337,7 +337,7 @@ static mut misc_handlers: [spc_handler; 6] = unsafe {
                 key: b"landscape\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -347,7 +347,7 @@ static mut misc_handlers: [spc_handler; 6] = unsafe {
                 key: b"papersize\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -357,7 +357,7 @@ static mut misc_handlers: [spc_handler; 6] = unsafe {
                 key: b"src:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -367,7 +367,7 @@ static mut misc_handlers: [spc_handler; 6] = unsafe {
                 key: b"pos:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -377,7 +377,7 @@ static mut misc_handlers: [spc_handler; 6] = unsafe {
                 key: b"om:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -387,7 +387,7 @@ static mut misc_handlers: [spc_handler; 6] = unsafe {
 #[no_mangle]
 pub unsafe extern "C" fn spc_misc_check_special(
     mut buffer: *const i8,
-    mut size: libc::c_int,
+    mut size: i32,
 ) -> bool {
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
@@ -395,7 +395,7 @@ pub unsafe extern "C" fn spc_misc_check_special(
     p = buffer;
     endptr = p.offset(size as isize);
     skip_white(&mut p, endptr);
-    size = endptr.wrapping_offset_from(p) as i64 as libc::c_int;
+    size = endptr.wrapping_offset_from(p) as i64 as i32;
     i = 0i32 as size_t;
     while i
         < (::std::mem::size_of::<[spc_handler; 6]>() as u64)
@@ -440,9 +440,9 @@ pub unsafe extern "C" fn spc_misc_setup_handler(
     mut handle: *mut spc_handler,
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let mut key: *const i8 = 0 as *const i8;
-    let mut keylen: libc::c_int = 0;
+    let mut keylen: i32 = 0;
     let mut i: size_t = 0;
     if !handle.is_null() && !spe.is_null() && !args.is_null() {
     } else {
@@ -457,17 +457,17 @@ pub unsafe extern "C" fn spc_misc_setup_handler(
     key = (*args).curptr;
     while (*args).curptr < (*args).endptr
         && *(*__ctype_b_loc())
-            .offset(*(*args).curptr.offset(0) as u8 as libc::c_int as isize)
-            as libc::c_int
-            & _ISalpha as libc::c_int as u16 as libc::c_int
+            .offset(*(*args).curptr.offset(0) as u8 as i32 as isize)
+            as i32
+            & _ISalpha as i32 as u16 as i32
             != 0
     {
         (*args).curptr = (*args).curptr.offset(1)
     }
-    if (*args).curptr < (*args).endptr && *(*args).curptr.offset(0) as libc::c_int == ':' as i32 {
+    if (*args).curptr < (*args).endptr && *(*args).curptr.offset(0) as i32 == ':' as i32 {
         (*args).curptr = (*args).curptr.offset(1)
     }
-    keylen = (*args).curptr.wrapping_offset_from(key) as i64 as libc::c_int;
+    keylen = (*args).curptr.wrapping_offset_from(key) as i64 as i32;
     if keylen < 1i32 {
         return -1i32;
     }

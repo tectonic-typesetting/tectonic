@@ -24,10 +24,10 @@ extern "C" {
     fn ttstub_input_open(
         path: *const i8,
         format: tt_input_format_type,
-        is_gz: libc::c_int,
+        is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     /* tectonic/core-memory.h: basic dynamic memory helpers
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.
@@ -37,7 +37,7 @@ extern "C" {
     #[no_mangle]
     static mut name_of_file: *mut i8;
     #[no_mangle]
-    static mut file_line_error_style_p: libc::c_int;
+    static mut file_line_error_style_p: i32;
     #[no_mangle]
     static mut help_line: [*const i8; 6];
     #[no_mangle]
@@ -191,12 +191,12 @@ extern "C" {
      * Callers are completely responsible for doing right thing...
      */
     #[no_mangle]
-    fn pdf_doc_get_page_count(pf: *mut pdf_file) -> libc::c_int;
+    fn pdf_doc_get_page_count(pf: *mut pdf_file) -> i32;
     #[no_mangle]
     fn pdf_doc_get_page(
         pf: *mut pdf_file,
-        page_no: libc::c_int,
-        options: libc::c_int,
+        page_no: i32,
+        options: i32,
         bbox: *mut pdf_rect,
         matrix: *mut pdf_tmatrix,
         resources_p: *mut *mut pdf_obj,
@@ -208,7 +208,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_transform(p: *mut pdf_coord, M: *const pdf_tmatrix);
     #[no_mangle]
-    fn check_for_png(handle: rust_input_handle_t) -> libc::c_int;
+    fn check_for_png(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn png_get_bbox(
         handle: rust_input_handle_t,
@@ -216,7 +216,7 @@ extern "C" {
         height: *mut u32,
         xdensity: *mut f64,
         ydensity: *mut f64,
-    ) -> libc::c_int;
+    ) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -239,7 +239,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn check_for_jpeg(handle: rust_input_handle_t) -> libc::c_int;
+    fn check_for_jpeg(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn jpeg_get_bbox(
         handle: rust_input_handle_t,
@@ -247,9 +247,9 @@ extern "C" {
         height: *mut libc::c_uint,
         xdensity: *mut f64,
         ydensity: *mut f64,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
-    fn check_for_bmp(handle: rust_input_handle_t) -> libc::c_int;
+    fn check_for_bmp(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn bmp_get_bbox(
         handle: rust_input_handle_t,
@@ -257,7 +257,7 @@ extern "C" {
         height: *mut libc::c_uint,
         xdensity: *mut f64,
         ydensity: *mut f64,
-    ) -> libc::c_int;
+    ) -> i32;
 }
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
@@ -429,8 +429,8 @@ pub struct pdf_tmatrix {
     pub f: f64,
 }
 #[no_mangle]
-pub unsafe extern "C" fn count_pdf_file_pages() -> libc::c_int {
-    let mut pages: libc::c_int = 0;
+pub unsafe extern "C" fn count_pdf_file_pages() -> i32 {
+    let mut pages: i32 = 0;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut pf: *mut pdf_file = 0 as *mut pdf_file;
     handle = ttstub_input_open(name_of_file, TTIF_PICT, 0i32);
@@ -451,12 +451,12 @@ pub unsafe extern "C" fn count_pdf_file_pages() -> libc::c_int {
 unsafe extern "C" fn pdf_get_rect(
     mut filename: *mut i8,
     mut handle: rust_input_handle_t,
-    mut page_num: libc::c_int,
-    mut pdf_box: libc::c_int,
+    mut page_num: i32,
+    mut pdf_box: i32,
     mut box_0: *mut real_rect,
-) -> libc::c_int {
-    let mut pages: libc::c_int = 0;
-    let mut dpx_options: libc::c_int = 0;
+) -> i32 {
+    let mut pages: i32 = 0;
+    let mut dpx_options: i32 = 0;
     let mut pf: *mut pdf_file = 0 as *mut pdf_file;
     let mut page: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut bbox: pdf_rect = pdf_rect {
@@ -545,8 +545,8 @@ unsafe extern "C" fn get_image_size_in_inches(
     mut handle: rust_input_handle_t,
     mut width: *mut f32,
     mut height: *mut f32,
-) -> libc::c_int {
-    let mut err: libc::c_int = 1i32;
+) -> i32 {
+    let mut err: i32 = 1i32;
     let mut width_pix: libc::c_uint = 0;
     let mut height_pix: libc::c_uint = 0;
     let mut xdensity: f64 = 0.;
@@ -596,10 +596,10 @@ unsafe extern "C" fn get_image_size_in_inches(
 unsafe extern "C" fn find_pic_file(
     mut path: *mut *mut i8,
     mut bounds: *mut real_rect,
-    mut pdfBoxType: libc::c_int,
-    mut page: libc::c_int,
-) -> libc::c_int {
-    let mut err: libc::c_int = -1i32;
+    mut pdfBoxType: i32,
+    mut page: i32,
+) -> i32 {
+    let mut err: i32 = -1i32;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     handle = ttstub_input_open(name_of_file, TTIF_PICT, 0i32);
     (*bounds).ht = 0.0f64 as f32;
@@ -776,12 +776,12 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 let mut for_end: i32 = 0;
                 i = 0i32 as small_number;
                 for_end = 3i32;
-                if i as libc::c_int <= for_end {
+                if i as i32 <= for_end {
                     loop {
                         transform_point(&mut *corners.as_mut_ptr().offset(i as isize), &mut t2);
                         let fresh0 = i;
                         i = i + 1;
-                        if !((fresh0 as libc::c_int) < for_end) {
+                        if !((fresh0 as i32) < for_end) {
                             break;
                         }
                     }
@@ -795,12 +795,12 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 let mut for_end_0: i32 = 0;
                 i = 0i32 as small_number;
                 for_end_0 = 3i32;
-                if i as libc::c_int <= for_end_0 {
+                if i as i32 <= for_end_0 {
                     loop {
                         transform_point(&mut *corners.as_mut_ptr().offset(i as isize), &mut t2);
                         let fresh1 = i;
                         i = i + 1;
-                        if !((fresh1 as libc::c_int) < for_end_0) {
+                        if !((fresh1 as i32) < for_end_0) {
                             break;
                         }
                     }
@@ -814,12 +814,12 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 let mut for_end_1: i32 = 0;
                 i = 0i32 as small_number;
                 for_end_1 = 3i32;
-                if i as libc::c_int <= for_end_1 {
+                if i as i32 <= for_end_1 {
                     loop {
                         transform_point(&mut *corners.as_mut_ptr().offset(i as isize), &mut t2);
                         let fresh2 = i;
                         i = i + 1;
-                        if !((fresh2 as libc::c_int) < for_end_1) {
+                        if !((fresh2 as i32) < for_end_1) {
                             break;
                         }
                     }
@@ -876,7 +876,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 let mut for_end_2: i32 = 0;
                 i = 0i32 as small_number;
                 for_end_2 = 3i32;
-                if i as libc::c_int <= for_end_2 {
+                if i as i32 <= for_end_2 {
                     loop {
                         if (corners[i as usize].x as f64) < xmin {
                             xmin = corners[i as usize].x as f64
@@ -892,7 +892,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                         }
                         let fresh3 = i;
                         i = i + 1;
-                        if !((fresh3 as libc::c_int) < for_end_2) {
+                        if !((fresh3 as i32) < for_end_2) {
                             break;
                         }
                     }
@@ -919,12 +919,12 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 let mut for_end_3: i32 = 0;
                 i = 0i32 as small_number;
                 for_end_3 = 3i32;
-                if i as libc::c_int <= for_end_3 {
+                if i as i32 <= for_end_3 {
                     loop {
                         transform_point(&mut *corners.as_mut_ptr().offset(i as isize), &mut t2);
                         let fresh4 = i;
                         i = i + 1;
-                        if !((fresh4 as libc::c_int) < for_end_3) {
+                        if !((fresh4 as i32) < for_end_3) {
                             break;
                         }
                     }
@@ -940,12 +940,12 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
             let mut for_end_4: i32 = 0;
             i = 0i32 as small_number;
             for_end_4 = 3i32;
-            if i as libc::c_int <= for_end_4 {
+            if i as i32 <= for_end_4 {
                 loop {
                     transform_point(&mut *corners.as_mut_ptr().offset(i as isize), &mut t2);
                     let fresh5 = i;
                     i = i + 1;
-                    if !((fresh5 as libc::c_int) < for_end_4) {
+                    if !((fresh5 as i32) < for_end_4) {
                         break;
                     }
                 }
@@ -957,7 +957,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
             let mut for_end_5: i32 = 0;
             i = 0i32 as small_number;
             for_end_5 = 3i32;
-            if i as libc::c_int <= for_end_5 {
+            if i as i32 <= for_end_5 {
                 loop {
                     if (corners[i as usize].x as f64) < xmin {
                         xmin = corners[i as usize].x as f64
@@ -973,7 +973,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                     }
                     let fresh6 = i;
                     i = i + 1;
-                    if !((fresh6 as libc::c_int) < for_end_5) {
+                    if !((fresh6 as i32) < for_end_5) {
                         break;
                     }
                 }
@@ -999,7 +999,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         let mut for_end_6: i32 = 0;
         i = 0i32 as small_number;
         for_end_6 = 3i32;
-        if i as libc::c_int <= for_end_6 {
+        if i as i32 <= for_end_6 {
             loop {
                 if (corners[i as usize].x as f64) < xmin {
                     xmin = corners[i as usize].x as f64
@@ -1015,7 +1015,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 }
                 let fresh7 = i;
                 i = i + 1;
-                if !((fresh7 as libc::c_int) < for_end_6) {
+                if !((fresh7 as i32) < for_end_6) {
                     break;
                 }
             }
@@ -1042,12 +1042,12 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         let mut for_end_7: i32 = 0;
         i = 0i32 as small_number;
         for_end_7 = 3i32;
-        if i as libc::c_int <= for_end_7 {
+        if i as i32 <= for_end_7 {
             loop {
                 transform_point(&mut *corners.as_mut_ptr().offset(i as isize), &mut t2);
                 let fresh8 = i;
                 i = i + 1;
-                if !((fresh8 as libc::c_int) < for_end_7) {
+                if !((fresh8 as i32) < for_end_7) {
                     break;
                 }
             }
@@ -1063,7 +1063,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
     let mut for_end_8: i32 = 0;
     i = 0i32 as small_number;
     for_end_8 = 3i32;
-    if i as libc::c_int <= for_end_8 {
+    if i as i32 <= for_end_8 {
         loop {
             if (corners[i as usize].x as f64) < xmin {
                 xmin = corners[i as usize].x as f64
@@ -1079,7 +1079,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
             }
             let fresh9 = i;
             i = i + 1;
-            if !((fresh9 as libc::c_int) < for_end_8) {
+            if !((fresh9 as i32) < for_end_8) {
                 break;
             }
         }

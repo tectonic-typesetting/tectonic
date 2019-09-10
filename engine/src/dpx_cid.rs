@@ -13,7 +13,7 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
     #[no_mangle]
@@ -31,7 +31,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> libc::c_int;
+    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
@@ -41,21 +41,21 @@ extern "C" {
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn strchr(_: *const i8, _: libc::c_int) -> *mut i8;
+    fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strtoul(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> u64;
+    fn strtoul(_: *const i8, _: *mut *mut i8, _: i32) -> u64;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const i8,
@@ -87,17 +87,17 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn CIDFont_type0_set_verbose(level: libc::c_int);
+    fn CIDFont_type0_set_verbose(level: i32);
     #[no_mangle]
-    fn CIDFont_type0_set_flags(flags: libc::c_int);
+    fn CIDFont_type0_set_flags(flags: i32);
     #[no_mangle]
     fn CIDFont_type0_open(
         font: *mut CIDFont,
         name: *const i8,
         cmap_csi: *mut CIDSysInfo,
         opt: *mut cid_opt,
-        expected_flag: libc::c_int,
-    ) -> libc::c_int;
+        expected_flag: i32,
+    ) -> i32;
     #[no_mangle]
     fn CIDFont_type0_dofont(font: *mut CIDFont);
     #[no_mangle]
@@ -124,16 +124,16 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn CIDFont_type2_set_verbose(level: libc::c_int);
+    fn CIDFont_type2_set_verbose(level: i32);
     #[no_mangle]
-    fn CIDFont_type2_set_flags(flags: libc::c_int);
+    fn CIDFont_type2_set_flags(flags: i32);
     #[no_mangle]
     fn CIDFont_type2_open(
         font: *mut CIDFont,
         name: *const i8,
         cmap_csi: *mut CIDSysInfo,
         opt: *mut cid_opt,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn CIDFont_type2_dofont(font: *mut CIDFont);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -212,7 +212,7 @@ pub type size_t = u64;
 pub struct CIDSysInfo {
     pub registry: *mut i8,
     pub ordering: *mut i8,
-    pub supplement: libc::c_int,
+    pub supplement: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -220,9 +220,9 @@ pub struct CIDFont {
     pub ident: *mut i8,
     pub name: *mut i8,
     pub fontname: *mut i8,
-    pub subtype: libc::c_int,
-    pub flags: libc::c_int,
-    pub parent: [libc::c_int; 2],
+    pub subtype: i32,
+    pub flags: i32,
+    pub parent: [i32; 2],
     pub csi: *mut CIDSysInfo,
     pub options: *mut cid_opt,
     pub indirect: *mut pdf_obj,
@@ -234,10 +234,10 @@ pub struct CIDFont {
 pub struct cid_opt {
     pub name: *mut i8,
     pub csi: *mut CIDSysInfo,
-    pub index: libc::c_int,
-    pub style: libc::c_int,
-    pub embed: libc::c_int,
-    pub stemv: libc::c_int,
+    pub index: i32,
+    pub style: i32,
+    pub embed: i32,
+    pub stemv: i32,
     pub cff_charsets: *mut libc::c_void,
 }
 #[derive(Copy, Clone)]
@@ -246,16 +246,16 @@ pub struct fontmap_opt {
     pub slant: f64,
     pub extend: f64,
     pub bold: f64,
-    pub mapc: libc::c_int,
-    pub flags: libc::c_int,
+    pub mapc: i32,
+    pub flags: i32,
     pub otl_tags: *mut i8,
     pub tounicode: *mut i8,
     pub cff_charsets: *mut libc::c_void,
     pub design_size: f64,
     pub charcoll: *mut i8,
-    pub index: libc::c_int,
-    pub style: libc::c_int,
-    pub stemv: libc::c_int,
+    pub index: i32,
+    pub style: i32,
+    pub stemv: i32,
 }
 /*
  * Unicode and PDF Standard Character Collections.
@@ -268,13 +268,13 @@ pub struct fontmap_opt {
 pub struct C2RustUnnamed_0 {
     pub registry: *const i8,
     pub ordering: *const i8,
-    pub supplement: [libc::c_int; 16],
+    pub supplement: [i32; 16],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct FontCache {
-    pub num: libc::c_int,
-    pub max: libc::c_int,
+    pub num: i32,
+    pub max: i32,
     pub fonts: *mut *mut CIDFont,
 }
 #[derive(Copy, Clone)]
@@ -359,7 +359,7 @@ pub struct C2RustUnnamed_2 {
 #[repr(C)]
 pub struct C2RustUnnamed_3 {
     pub name: *const i8,
-    pub index: libc::c_int,
+    pub index: i32,
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -628,10 +628,10 @@ static mut CIDFont_stdcc_alias: [C2RustUnnamed_3; 19] = [
         init
     },
 ];
-static mut __verbose: libc::c_int = 0i32;
-static mut cidoptflags: libc::c_int = 0i32;
+static mut __verbose: i32 = 0i32;
+static mut cidoptflags: i32 = 0i32;
 #[no_mangle]
-pub unsafe extern "C" fn CIDFont_set_verbose(mut level: libc::c_int) {
+pub unsafe extern "C" fn CIDFont_set_verbose(mut level: i32) {
     CIDFont_type0_set_verbose(level);
     CIDFont_type2_set_verbose(level);
     __verbose = level;
@@ -738,8 +738,8 @@ pub unsafe extern "C" fn CIDFont_get_ident(mut font: *mut CIDFont) -> *mut i8 {
     return (*font).ident;
 }
 #[no_mangle]
-pub unsafe extern "C" fn CIDFont_get_opt_index(mut font: *mut CIDFont) -> libc::c_int {
-    let mut opt_index: libc::c_int = 0;
+pub unsafe extern "C" fn CIDFont_get_opt_index(mut font: *mut CIDFont) -> i32 {
+    let mut opt_index: i32 = 0;
     if !font.is_null() {
     } else {
         __assert_fail(
@@ -760,7 +760,7 @@ pub unsafe extern "C" fn CIDFont_get_opt_index(mut font: *mut CIDFont) -> libc::
     return opt_index;
 }
 #[no_mangle]
-pub unsafe extern "C" fn CIDFont_get_subtype(mut font: *mut CIDFont) -> libc::c_int {
+pub unsafe extern "C" fn CIDFont_get_subtype(mut font: *mut CIDFont) -> i32 {
     if !font.is_null() {
     } else {
         __assert_fail(
@@ -776,7 +776,7 @@ pub unsafe extern "C" fn CIDFont_get_subtype(mut font: *mut CIDFont) -> libc::c_
     return (*font).subtype;
 }
 #[no_mangle]
-pub unsafe extern "C" fn CIDFont_get_embedding(mut font: *mut CIDFont) -> libc::c_int {
+pub unsafe extern "C" fn CIDFont_get_embedding(mut font: *mut CIDFont) -> i32 {
     if !font.is_null() {
     } else {
         __assert_fail(
@@ -814,8 +814,8 @@ pub unsafe extern "C" fn CIDFont_get_CIDSysInfo(mut font: *mut CIDFont) -> *mut 
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_get_parent_id(
     mut font: *mut CIDFont,
-    mut wmode: libc::c_int,
-) -> libc::c_int {
+    mut wmode: i32,
+) -> i32 {
     if !font.is_null() {
     } else {
         __assert_fail(
@@ -861,8 +861,8 @@ pub unsafe extern "C" fn CIDFont_get_resource(mut font: *mut CIDFont) -> *mut pd
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_attach_parent(
     mut font: *mut CIDFont,
-    mut parent_id: libc::c_int,
-    mut wmode: libc::c_int,
+    mut parent_id: i32,
+    mut wmode: i32,
 ) {
     if !font.is_null() {
     } else {
@@ -893,7 +893,7 @@ pub unsafe extern "C" fn CIDFont_attach_parent(
 }
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_is_ACCFont(mut font: *mut CIDFont) -> bool {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     if !font.is_null() {
     } else {
         __assert_fail(
@@ -917,12 +917,12 @@ pub unsafe extern "C" fn CIDFont_is_ACCFont(mut font: *mut CIDFont) -> bool {
         if streq_ptr(
             (*(*font).csi).registry,
             CIDFont_stdcc_def[i as usize].registry,
-        ) as libc::c_int
+        ) as i32
             != 0
             && streq_ptr(
                 (*(*font).csi).ordering,
                 CIDFont_stdcc_def[i as usize].ordering,
-            ) as libc::c_int
+            ) as i32
                 != 0
         {
             return 1i32 != 0;
@@ -948,20 +948,20 @@ pub unsafe extern "C" fn CIDFont_is_UCSFont(mut font: *mut CIDFont) -> bool {
     return streq_ptr(
         (*(*font).csi).ordering,
         b"UCS\x00" as *const u8 as *const i8,
-    ) as libc::c_int
+    ) as i32
         != 0
         || streq_ptr(
             (*(*font).csi).ordering,
             b"UCS2\x00" as *const u8 as *const i8,
-        ) as libc::c_int
+        ) as i32
             != 0;
 }
 /* FIXME */
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_get_flag(
     mut font: *mut CIDFont,
-    mut mask: libc::c_int,
-) -> libc::c_int {
+    mut mask: i32,
+) -> i32 {
     if !font.is_null() {
     } else {
         __assert_fail(
@@ -1320,11 +1320,11 @@ unsafe extern "C" fn CIDFont_base_open(
     mut name: *const i8,
     mut cmap_csi: *mut CIDSysInfo,
     mut opt: *mut cid_opt,
-) -> libc::c_int {
+) -> i32 {
     let mut fontdict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut descriptor: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut fontname: *mut i8 = 0 as *mut i8;
-    let mut idx: libc::c_int = 0;
+    let mut idx: i32 = 0;
     if !font.is_null() {
     } else {
         __assert_fail(
@@ -1339,7 +1339,7 @@ unsafe extern "C" fn CIDFont_base_open(
     }
     idx = 0i32;
     while !cid_basefont[idx as usize].fontname.is_null() {
-        if streq_ptr(name, cid_basefont[idx as usize].fontname) as libc::c_int != 0
+        if streq_ptr(name, cid_basefont[idx as usize].fontname) as i32 != 0
             || strlen(name)
                 == strlen(cid_basefont[idx as usize].fontname)
                     .wrapping_sub(strlen(b"-Acro\x00" as *const u8 as *const i8))
@@ -1407,7 +1407,7 @@ unsafe extern "C" fn CIDFont_base_open(
     (*font).flags |= 1i32 << 0i32;
     let mut registry: *mut i8 = 0 as *mut i8;
     let mut ordering: *mut i8 = 0 as *mut i8;
-    let mut supplement: libc::c_int = 0;
+    let mut supplement: i32 = 0;
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     tmp = pdf_lookup_dict(
         fontdict,
@@ -1436,7 +1436,7 @@ unsafe extern "C" fn CIDFont_base_open(
     supplement = pdf_number_value(pdf_lookup_dict(
         tmp,
         b"Supplement\x00" as *const u8 as *const i8,
-    )) as libc::c_int;
+    )) as i32;
     if !cmap_csi.is_null() {
         /* NULL for accept any */
         if strcmp(registry, (*cmap_csi).registry) != 0
@@ -1554,14 +1554,14 @@ unsafe extern "C" fn CIDFont_cache_init() {
     __cache = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<FontCache>() as u64)
         as u32) as *mut FontCache;
-    (*__cache).max = 16u32 as libc::c_int;
+    (*__cache).max = 16u32 as i32;
     (*__cache).fonts = new(((*__cache).max as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<*mut CIDFont>() as u64)
         as u32) as *mut *mut CIDFont;
     (*__cache).num = 0i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn CIDFont_cache_get(mut font_id: libc::c_int) -> *mut CIDFont {
+pub unsafe extern "C" fn CIDFont_cache_get(mut font_id: i32) -> *mut CIDFont {
     if __cache.is_null() {
         _tt_abort(
             b"%s: CIDFont cache not initialized.\x00" as *const u8 as *const i8,
@@ -1585,8 +1585,8 @@ pub unsafe extern "C" fn CIDFont_cache_find(
     mut map_name: *const i8,
     mut cmap_csi: *mut CIDSysInfo,
     mut fmap_opt: *mut fontmap_opt,
-) -> libc::c_int {
-    let mut font_id: libc::c_int = -1i32;
+) -> i32 {
+    let mut font_id: i32 = -1i32;
     let mut font: *mut CIDFont = 0 as *mut CIDFont;
     let mut opt: *mut cid_opt = 0 as *mut cid_opt;
     if __cache.is_null() {
@@ -1635,7 +1635,7 @@ pub unsafe extern "C" fn CIDFont_cache_find(
     font_id = 0i32;
     while font_id < (*__cache).num {
         font = *(*__cache).fonts.offset(font_id as isize);
-        if streq_ptr((*font).name, map_name) as libc::c_int != 0
+        if streq_ptr((*font).name, map_name) as i32 != 0
             && (*(*font).options).style == (*opt).style
             && (*(*font).options).index == (*opt).index
         {
@@ -1650,9 +1650,9 @@ pub unsafe extern "C" fn CIDFont_cache_find(
                     if !((*font).subtype == 2i32) {
                         break;
                     }
-                } else if streq_ptr((*(*font).csi).registry, (*(*opt).csi).registry) as libc::c_int
+                } else if streq_ptr((*(*font).csi).registry, (*(*opt).csi).registry) as i32
                     != 0
-                    && streq_ptr((*(*font).csi).ordering, (*(*opt).csi).ordering) as libc::c_int
+                    && streq_ptr((*(*font).csi).ordering, (*(*opt).csi).ordering) as i32
                         != 0
                 {
                     if (*font).subtype == 2i32 {
@@ -1696,8 +1696,8 @@ pub unsafe extern "C" fn CIDFont_cache_find(
             return -1i32;
         } else {
             if (*__cache).num >= (*__cache).max {
-                (*__cache).max = ((*__cache).max as libc::c_uint).wrapping_add(16u32) as libc::c_int
-                    as libc::c_int;
+                (*__cache).max = ((*__cache).max as libc::c_uint).wrapping_add(16u32) as i32
+                    as i32;
                 (*__cache).fonts = renew(
                     (*__cache).fonts as *mut libc::c_void,
                     ((*__cache).max as u32 as u64)
@@ -1734,7 +1734,7 @@ pub unsafe extern "C" fn CIDFont_cache_find(
 /* FIXME */
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_cache_close() {
-    let mut font_id: libc::c_int = 0;
+    let mut font_id: i32 = 0;
     if !__cache.is_null() {
         font_id = 0i32;
         while font_id < (*__cache).num {
@@ -1778,12 +1778,12 @@ unsafe extern "C" fn get_cidsysinfo(
     mut fmap_opt: *mut fontmap_opt,
 ) -> *mut CIDSysInfo {
     let mut csi: *mut CIDSysInfo = 0 as *mut CIDSysInfo;
-    let mut pdf_ver: libc::c_int = 0;
-    let mut i: libc::c_int = 0;
-    let mut csi_idx: libc::c_int = -1i32;
-    let mut m: libc::c_int = 0;
+    let mut pdf_ver: i32 = 0;
+    let mut i: i32 = 0;
+    let mut csi_idx: i32 = -1i32;
+    let mut m: i32 = 0;
     let mut n: size_t = 0;
-    pdf_ver = pdf_get_version() as libc::c_int;
+    pdf_ver = pdf_get_version() as i32;
     if fmap_opt.is_null() || (*fmap_opt).charcoll.is_null() {
         return 0 as *mut CIDSysInfo;
     }
@@ -1819,7 +1819,7 @@ unsafe extern "C" fn get_cidsysinfo(
                     &mut *(*fmap_opt).charcoll.offset(n as isize),
                     0 as *mut *mut i8,
                     10i32,
-                ) as libc::c_int
+                ) as i32
             } else {
                 (*csi).supplement = CIDFont_stdcc_def[csi_idx as usize].supplement[pdf_ver as usize]
             }
@@ -1837,7 +1837,7 @@ unsafe extern "C" fn get_cidsysinfo(
             as u32) as *mut CIDSysInfo;
         /* Full REGISTRY-ORDERING-SUPPLEMENT */
         p = strchr((*fmap_opt).charcoll, '-' as i32);
-        if p.is_null() || *p.offset(1) as libc::c_int == '\u{0}' as i32 {
+        if p.is_null() || *p.offset(1) as i32 == '\u{0}' as i32 {
             _tt_abort(
                 b"%s: String can\'t be converted to REGISTRY-ORDERING-SUPPLEMENT: %s\x00"
                     as *const u8 as *const i8,
@@ -1847,7 +1847,7 @@ unsafe extern "C" fn get_cidsysinfo(
         }
         p = p.offset(1);
         q = strchr(p, '-' as i32);
-        if q.is_null() || *q.offset(1) as libc::c_int == '\u{0}' as i32 {
+        if q.is_null() || *q.offset(1) as i32 == '\u{0}' as i32 {
             _tt_abort(
                 b"%s: String can\'t be converted to REGISTRY-ORDERING-SUPPLEMENT: %s\x00"
                     as *const u8 as *const i8,
@@ -1856,9 +1856,9 @@ unsafe extern "C" fn get_cidsysinfo(
             );
         }
         q = q.offset(1);
-        if *(*__ctype_b_loc()).offset(*q.offset(0) as u8 as libc::c_int as isize)
-            as libc::c_int
-            & _ISdigit as libc::c_int as u16 as libc::c_int
+        if *(*__ctype_b_loc()).offset(*q.offset(0) as u8 as i32 as isize)
+            as i32
+            & _ISdigit as i32 as u16 as i32
             == 0
         {
             _tt_abort(
@@ -1884,7 +1884,7 @@ unsafe extern "C" fn get_cidsysinfo(
         *(*csi).registry.offset(n as isize) = '\u{0}' as i32 as i8;
         m = strlen(p)
             .wrapping_sub(strlen(q))
-            .wrapping_sub(1i32 as u64) as libc::c_int;
+            .wrapping_sub(1i32 as u64) as i32;
         (*csi).ordering = new(((m + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32) as *mut i8;
@@ -1894,14 +1894,14 @@ unsafe extern "C" fn get_cidsysinfo(
             m as u64,
         );
         *(*csi).ordering.offset(m as isize) = '\u{0}' as i32 as i8;
-        (*csi).supplement = strtoul(q, 0 as *mut *mut i8, 10i32) as libc::c_int;
+        (*csi).supplement = strtoul(q, 0 as *mut *mut i8, 10i32) as i32;
         /* Check for standart character collections. */
         i = 0i32;
         while !CIDFont_stdcc_def[i as usize].ordering.is_null() {
             if !CIDFont_stdcc_def[i as usize].registry.is_null()
-                && streq_ptr((*csi).registry, CIDFont_stdcc_def[i as usize].registry) as libc::c_int
+                && streq_ptr((*csi).registry, CIDFont_stdcc_def[i as usize].registry) as i32
                     != 0
-                && streq_ptr((*csi).ordering, CIDFont_stdcc_def[i as usize].ordering) as libc::c_int
+                && streq_ptr((*csi).ordering, CIDFont_stdcc_def[i as usize].ordering) as i32
                     != 0
             {
                 csi_idx = i;
@@ -1955,7 +1955,7 @@ unsafe extern "C" fn get_cidsysinfo(
 */
 /* CIDFont types */
 #[no_mangle]
-pub unsafe extern "C" fn CIDFont_set_flags(mut flags: libc::c_int) {
+pub unsafe extern "C" fn CIDFont_set_flags(mut flags: i32) {
     CIDFont_type0_set_flags(flags);
     CIDFont_type2_set_flags(flags);
     cidoptflags |= flags;

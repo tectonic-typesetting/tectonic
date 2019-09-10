@@ -26,17 +26,17 @@ extern "C" {
      * will one day eliminate all of the global state and get rid of all of
      * these. */
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    fn ttstub_input_getc(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn ttstub_input_open(
         path: *const i8,
         format: tt_input_format_type,
-        is_gz: libc::c_int,
+        is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
-    fn ttstub_output_close(handle: rust_output_handle_t) -> libc::c_int;
+    fn ttstub_output_close(handle: rust_output_handle_t) -> i32;
     #[no_mangle]
     fn ttstub_output_write(
         handle: rust_output_handle_t,
@@ -44,11 +44,11 @@ extern "C" {
         len: size_t,
     ) -> size_t;
     #[no_mangle]
-    fn ttstub_output_putc(handle: rust_output_handle_t, c: libc::c_int) -> libc::c_int;
+    fn ttstub_output_putc(handle: rust_output_handle_t, c: i32) -> i32;
     #[no_mangle]
     fn ttstub_output_open_stdout() -> rust_output_handle_t;
     #[no_mangle]
-    fn ttstub_output_open(path: *const i8, is_gz: libc::c_int) -> rust_output_handle_t;
+    fn ttstub_output_open(path: *const i8, is_gz: i32) -> rust_output_handle_t;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
@@ -65,18 +65,18 @@ extern "C" {
         _: u64,
         _: *const i8,
         _: ...
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn vsnprintf(
         _: *mut i8,
         _: u64,
         _: *const i8,
         _: ::std::ffi::VaList,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
-    fn _setjmp(_: *mut __jmp_buf_tag) -> libc::c_int;
+    fn _setjmp(_: *mut __jmp_buf_tag) -> i32;
     #[no_mangle]
-    fn longjmp(_: *mut __jmp_buf_tag, _: libc::c_int) -> !;
+    fn longjmp(_: *mut __jmp_buf_tag, _: i32) -> !;
 }
 pub type __builtin_va_list = [__va_list_tag; 1];
 #[derive(Copy, Clone)]
@@ -132,7 +132,7 @@ pub type pool_pointer = i32;
 #[repr(C)]
 pub struct __jmp_buf_tag {
     pub __jmpbuf: __jmp_buf,
-    pub __mask_was_saved: libc::c_int,
+    pub __mask_was_saved: i32,
     pub __saved_mask: __sigset_t,
 }
 pub type __jmp_buf = [i64; 8];
@@ -142,7 +142,7 @@ pub type bib_number = i32;
 #[repr(C)]
 pub struct peekable_input_t {
     pub handle: rust_input_handle_t,
-    pub peek_char: libc::c_int,
+    pub peek_char: i32,
     pub saw_eof: bool,
 }
 pub type buf_pointer = i32;
@@ -185,8 +185,8 @@ unsafe extern "C" fn peekable_open(
     (*peekable).saw_eof = 0i32 != 0;
     return peekable;
 }
-unsafe extern "C" fn peekable_close(mut peekable: *mut peekable_input_t) -> libc::c_int {
-    let mut rv: libc::c_int = 0;
+unsafe extern "C" fn peekable_close(mut peekable: *mut peekable_input_t) -> i32 {
+    let mut rv: i32 = 0;
     if peekable.is_null() {
         return 0i32;
     }
@@ -194,8 +194,8 @@ unsafe extern "C" fn peekable_close(mut peekable: *mut peekable_input_t) -> libc
     free(peekable as *mut libc::c_void);
     return rv;
 }
-unsafe extern "C" fn peekable_getc(mut peekable: *mut peekable_input_t) -> libc::c_int {
-    let mut rv: libc::c_int = 0;
+unsafe extern "C" fn peekable_getc(mut peekable: *mut peekable_input_t) -> i32 {
+    let mut rv: i32 = 0;
     if (*peekable).peek_char != -1i32 {
         rv = (*peekable).peek_char;
         (*peekable).peek_char = -1i32;
@@ -207,7 +207,7 @@ unsafe extern "C" fn peekable_getc(mut peekable: *mut peekable_input_t) -> libc:
     }
     return rv;
 }
-unsafe extern "C" fn peekable_ungetc(mut peekable: *mut peekable_input_t, mut c: libc::c_int) {
+unsafe extern "C" fn peekable_ungetc(mut peekable: *mut peekable_input_t, mut c: i32) {
     /*last_lex */
     /*last_fn_class */
     /*last_ilk */
@@ -219,7 +219,7 @@ unsafe extern "C" fn peekable_ungetc(mut peekable: *mut peekable_input_t, mut c:
 /* eofeoln.c, adapted for Rusty I/O */
 unsafe extern "C" fn tectonic_eof(mut peekable: *mut peekable_input_t) -> bool {
     /* Check for EOF following Pascal semantics. */
-    let mut c: libc::c_int = 0;
+    let mut c: i32 = 0;
     if peekable.is_null() {
         return 1i32 != 0;
     }
@@ -234,7 +234,7 @@ unsafe extern "C" fn tectonic_eof(mut peekable: *mut peekable_input_t) -> bool {
     return 0i32 != 0;
 }
 unsafe extern "C" fn eoln(mut peekable: *mut peekable_input_t) -> bool {
-    let mut c: libc::c_int = 0;
+    let mut c: i32 = 0;
     if (*peekable).saw_eof {
         return 1i32 != 0;
     }
@@ -505,11 +505,11 @@ static mut num_text_chars: buf_pointer = 0;
 /*bad_conversion */
 static mut conversion_type: u8 = 0;
 static mut prev_colon: bool = false;
-static mut verbose: libc::c_int = 0;
+static mut verbose: i32 = 0;
 static mut min_crossrefs: i32 = 0;
 /*:473*/
 /*12: *//*3: */
-unsafe extern "C" fn putc_log(c: libc::c_int) {
+unsafe extern "C" fn putc_log(c: i32) {
     ttstub_output_putc(log_file, c); /* note: global! */
     ttstub_output_putc(standard_output, c);
 }
@@ -567,23 +567,23 @@ unsafe extern "C" fn printf_log(mut fmt: *const i8, mut args: ...) {
     puts_log(fmt_buf.as_mut_ptr());
 }
 unsafe extern "C" fn mark_warning() {
-    if history as libc::c_int == HISTORY_WARNING_ISSUED as libc::c_int {
+    if history as i32 == HISTORY_WARNING_ISSUED as i32 {
         err_count += 1
-    } else if history as libc::c_int == HISTORY_SPOTLESS as libc::c_int {
-        history = HISTORY_WARNING_ISSUED as libc::c_int as u8;
+    } else if history as i32 == HISTORY_SPOTLESS as i32 {
+        history = HISTORY_WARNING_ISSUED as i32 as u8;
         err_count = 1i32
     };
 }
 unsafe extern "C" fn mark_error() {
-    if (history as libc::c_int) < HISTORY_ERROR_ISSUED as libc::c_int {
-        history = HISTORY_ERROR_ISSUED as libc::c_int as u8;
+    if (history as i32) < HISTORY_ERROR_ISSUED as i32 {
+        history = HISTORY_ERROR_ISSUED as i32 as u8;
         err_count = 1i32
     } else {
         err_count += 1
     };
 }
 unsafe extern "C" fn mark_fatal() {
-    history = HISTORY_FATAL_ERROR as libc::c_int as u8;
+    history = HISTORY_FATAL_ERROR as i32 as u8;
 }
 unsafe extern "C" fn print_overflow() {
     puts_log(b"Sorry---you\'ve exceeded BibTeX\'s \x00" as *const u8 as *const i8);
@@ -641,7 +641,7 @@ unsafe extern "C" fn input_ln(mut peekable: *mut peekable_input_t) -> bool {
     }
     peekable_getc(peekable);
     while last > 0i32 {
-        if !(lex_class[*buffer.offset((last - 1i32) as isize) as usize] as libc::c_int == 1i32) {
+        if !(lex_class[*buffer.offset((last - 1i32) as isize) as usize] as i32 == 1i32) {
             break;
         }
         /*white_space */
@@ -661,7 +661,7 @@ unsafe extern "C" fn out_pool_str(mut handle: rust_output_handle_t, mut s: str_n
     }
     i = *str_start.offset(s as isize);
     while i < *str_start.offset((s + 1i32) as isize) {
-        ttstub_output_putc(handle, *str_pool.offset(i as isize) as libc::c_int);
+        ttstub_output_putc(handle, *str_pool.offset(i as isize) as i32);
         i += 1
     }
 }
@@ -682,7 +682,7 @@ unsafe extern "C" fn out_token(mut handle: rust_output_handle_t) {
     while i < buf_ptr2 {
         let fresh0 = i;
         i = i + 1;
-        ttstub_output_putc(handle, *buffer.offset(fresh0 as isize) as libc::c_int);
+        ttstub_output_putc(handle, *buffer.offset(fresh0 as isize) as i32);
     }
 }
 unsafe extern "C" fn print_a_token() {
@@ -694,11 +694,11 @@ unsafe extern "C" fn print_bad_input_line() {
     puts_log(b" : \x00" as *const u8 as *const i8);
     bf_ptr = 0i32;
     while bf_ptr < buf_ptr2 {
-        if lex_class[*buffer.offset(bf_ptr as isize) as usize] as libc::c_int == 1i32 {
+        if lex_class[*buffer.offset(bf_ptr as isize) as usize] as i32 == 1i32 {
             /*white_space */
             putc_log(' ' as i32);
         } else {
-            putc_log(*buffer.offset(bf_ptr as isize) as libc::c_int);
+            putc_log(*buffer.offset(bf_ptr as isize) as i32);
         }
         bf_ptr += 1
     }
@@ -715,18 +715,18 @@ unsafe extern "C" fn print_bad_input_line() {
     }
     bf_ptr = buf_ptr2;
     while bf_ptr < last {
-        if lex_class[*buffer.offset(bf_ptr as isize) as usize] as libc::c_int == 1i32 {
+        if lex_class[*buffer.offset(bf_ptr as isize) as usize] as i32 == 1i32 {
             /*white_space */
             putc_log(' ' as i32);
         } else {
-            putc_log(*buffer.offset(bf_ptr as isize) as libc::c_int);
+            putc_log(*buffer.offset(bf_ptr as isize) as i32);
         }
         bf_ptr += 1
     }
     putc_log('\n' as i32);
     bf_ptr = 0i32;
     while bf_ptr < buf_ptr2
-        && lex_class[*buffer.offset(bf_ptr as isize) as usize] as libc::c_int == 1i32
+        && lex_class[*buffer.offset(bf_ptr as isize) as usize] as i32 == 1i32
     {
         /*white_space */
         bf_ptr += 1
@@ -752,7 +752,7 @@ unsafe extern "C" fn sam_wrong_file_name_print() {
         name_ptr = name_ptr + 1;
         ttstub_output_putc(
             standard_output,
-            *name_of_file.offset(fresh2 as isize) as libc::c_int,
+            *name_of_file.offset(fresh2 as isize) as i32,
         );
     }
     ttstub_output_putc(standard_output, '\'' as i32);
@@ -898,7 +898,7 @@ unsafe extern "C" fn unknwn_function_class_confusion() {
     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
 }
 unsafe extern "C" fn print_fn_class(mut fn_loc_0: hash_loc) {
-    match *fn_type.offset(fn_loc_0 as isize) as libc::c_int {
+    match *fn_type.offset(fn_loc_0 as isize) as i32 {
         0 => {
             puts_log(b"built-in\x00" as *const u8 as *const i8);
         }
@@ -939,18 +939,18 @@ unsafe extern "C" fn id_scanning_confusion() {
     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
 }
 unsafe extern "C" fn bst_id_print() {
-    if scan_result as libc::c_int == 0i32 {
+    if scan_result as i32 == 0i32 {
         /*id_null */
         printf_log(
             b"\"%c\" begins identifier, command: \x00" as *const u8 as *const i8,
-            *buffer.offset(buf_ptr2 as isize) as libc::c_int,
+            *buffer.offset(buf_ptr2 as isize) as i32,
         );
-    } else if scan_result as libc::c_int == 2i32 {
+    } else if scan_result as i32 == 2i32 {
         /*other_char_adjacent */
         printf_log(
             b"\"%c\" immediately follows identifier, command: \x00" as *const u8
                 as *const i8,
-            *buffer.offset(buf_ptr2 as isize) as libc::c_int,
+            *buffer.offset(buf_ptr2 as isize) as i32,
         );
     } else {
         id_scanning_confusion();
@@ -1025,8 +1025,8 @@ unsafe extern "C" fn eat_bib_print() {
 unsafe extern "C" fn bib_one_of_two_print(mut char1: ASCII_code, mut char2: ASCII_code) {
     printf_log(
         b"I was expecting a `%c\' or a `%c\'\x00" as *const u8 as *const i8,
-        char1 as libc::c_int,
-        char2 as libc::c_int,
+        char1 as i32,
+        char2 as i32,
     );
     bib_err_print();
 }
@@ -1051,14 +1051,14 @@ unsafe extern "C" fn macro_warn_print() {
     puts_log(b"\" is \x00" as *const u8 as *const i8);
 }
 unsafe extern "C" fn bib_id_print() {
-    if scan_result as libc::c_int == 0i32 {
+    if scan_result as i32 == 0i32 {
         /*id_null */
         puts_log(b"You\'re missing \x00" as *const u8 as *const i8);
-    } else if scan_result as libc::c_int == 2i32 {
+    } else if scan_result as i32 == 2i32 {
         /*other_char_adjacent */
         printf_log(
             b"\"%c\" immediately follows \x00" as *const u8 as *const i8,
-            *buffer.offset(buf_ptr2 as isize) as libc::c_int,
+            *buffer.offset(buf_ptr2 as isize) as i32,
         );
     } else {
         id_scanning_confusion();
@@ -1131,7 +1131,7 @@ unsafe extern "C" fn unknwn_literal_confusion() {
     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
 }
 unsafe extern "C" fn print_stk_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
-    match stk_tp as libc::c_int {
+    match stk_tp as i32 {
         0 => {
             printf_log(
                 b"%ld is an integer literal\x00" as *const u8 as *const i8,
@@ -1162,7 +1162,7 @@ unsafe extern "C" fn print_stk_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
     };
 }
 unsafe extern "C" fn print_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
-    match stk_tp as libc::c_int {
+    match stk_tp as i32 {
         0 => {
             printf_log(
                 b"%ld\n\x00" as *const u8 as *const i8,
@@ -1193,7 +1193,7 @@ unsafe extern "C" fn output_bbl_line() {
     if out_buf_length != 0i32 {
         while out_buf_length > 0i32 {
             if !(lex_class[*out_buf.offset((out_buf_length - 1i32) as isize) as usize]
-                as libc::c_int
+                as i32
                 == 1i32)
             {
                 break;
@@ -1208,7 +1208,7 @@ unsafe extern "C" fn output_bbl_line() {
         while out_buf_ptr < out_buf_length {
             ttstub_output_putc(
                 bbl_file,
-                *out_buf.offset(out_buf_ptr as isize) as libc::c_int,
+                *out_buf.offset(out_buf_ptr as isize) as i32,
             );
             out_buf_ptr += 1
         }
@@ -1295,7 +1295,7 @@ unsafe extern "C" fn str_eq_buf(
     i = bf_ptr;
     j = *str_start.offset(s as isize);
     while j < *str_start.offset((s + 1i32) as isize) {
-        if *str_pool.offset(j as isize) as libc::c_int != *buf.offset(i as isize) as libc::c_int {
+        if *str_pool.offset(j as isize) as i32 != *buf.offset(i as isize) as i32 {
             return 0i32 != 0;
         }
         i = i + 1i32;
@@ -1312,8 +1312,8 @@ unsafe extern "C" fn str_eq_str(mut s1: str_number, mut s2: str_number) -> bool 
     p_ptr1 = *str_start.offset(s1 as isize);
     p_ptr2 = *str_start.offset(s2 as isize);
     while p_ptr1 < *str_start.offset((s1 + 1i32) as isize) {
-        if *str_pool.offset(p_ptr1 as isize) as libc::c_int
-            != *str_pool.offset(p_ptr2 as isize) as libc::c_int
+        if *str_pool.offset(p_ptr1 as isize) as i32
+            != *str_pool.offset(p_ptr2 as isize) as i32
         {
             return 0i32 != 0;
         }
@@ -1330,11 +1330,11 @@ unsafe extern "C" fn lower_case(mut buf: buf_type, mut bf_ptr: buf_pointer, mut 
         for_end = bf_ptr + len - 1i32;
         if i <= for_end {
             loop {
-                if *buf.offset(i as isize) as libc::c_int >= 'A' as i32
-                    && *buf.offset(i as isize) as libc::c_int <= 'Z' as i32
+                if *buf.offset(i as isize) as i32 >= 'A' as i32
+                    && *buf.offset(i as isize) as i32 <= 'Z' as i32
                 {
                     *buf.offset(i as isize) =
-                        (*buf.offset(i as isize) as libc::c_int + 32i32) as ASCII_code
+                        (*buf.offset(i as isize) as i32 + 32i32) as ASCII_code
                 }
                 let fresh4 = i;
                 i = i + 1;
@@ -1353,11 +1353,11 @@ unsafe extern "C" fn upper_case(mut buf: buf_type, mut bf_ptr: buf_pointer, mut 
         for_end = bf_ptr + len - 1i32;
         if i <= for_end {
             loop {
-                if *buf.offset(i as isize) as libc::c_int >= 'a' as i32
-                    && *buf.offset(i as isize) as libc::c_int <= 'z' as i32
+                if *buf.offset(i as isize) as i32 >= 'a' as i32
+                    && *buf.offset(i as isize) as i32 <= 'z' as i32
                 {
                     *buf.offset(i as isize) =
-                        (*buf.offset(i as isize) as libc::c_int - 32i32) as ASCII_code
+                        (*buf.offset(i as isize) as i32 - 32i32) as ASCII_code
                 }
                 let fresh5 = i;
                 i = i + 1;
@@ -1382,7 +1382,7 @@ unsafe extern "C" fn str_lookup(
     h = 0i32;
     k = j;
     while k < j + l {
-        h = h + h + *buf.offset(k as isize) as libc::c_int;
+        h = h + h + *buf.offset(k as isize) as i32;
         while h >= hash_prime {
             h = h - hash_prime
         }
@@ -1394,7 +1394,7 @@ unsafe extern "C" fn str_lookup(
     loop {
         if *hash_text.offset(p as isize) > 0i32 {
             if str_eq_buf(*hash_text.offset(p as isize), buf, j, l) {
-                if *hash_ilk.offset(p as isize) as libc::c_int == ilk as libc::c_int {
+                if *hash_ilk.offset(p as isize) as i32 == ilk as i32 {
                     hash_found = 1i32 != 0;
                     return p;
                 /* str_found */
@@ -1451,13 +1451,13 @@ unsafe extern "C" fn pre_define(mut pds: pds_type, mut len: pds_len, mut ilk: st
     let mut for_end: i32 = 0;
     i = 1i32 as pds_len;
     for_end = len as i32;
-    if i as libc::c_int <= for_end {
+    if i as i32 <= for_end {
         loop {
             *buffer.offset(i as isize) =
-                *pds.offset((i as libc::c_int - 1i32) as isize) as u8;
+                *pds.offset((i as i32 - 1i32) as isize) as u8;
             let fresh6 = i;
             i = i.wrapping_add(1);
-            if !((fresh6 as libc::c_int) < for_end) {
+            if !((fresh6 as i32) < for_end) {
                 break;
             }
         }
@@ -1562,9 +1562,9 @@ unsafe extern "C" fn less_than(mut arg1: cite_number, mut arg2: cite_number) -> 
     loop {
         char1 = *entry_strs.offset((ptr1 * (ent_str_size + 1i32) + char_ptr) as isize);
         char2 = *entry_strs.offset((ptr2 * (ent_str_size + 1i32) + char_ptr) as isize);
-        if char1 as libc::c_int == 127i32 {
+        if char1 as i32 == 127i32 {
             /*end_of_string */
-            if char2 as libc::c_int == 127i32 {
+            if char2 as i32 == 127i32 {
                 /*end_of_string */
                 if arg1 < arg2 {
                     return 1i32 != 0;
@@ -1579,14 +1579,14 @@ unsafe extern "C" fn less_than(mut arg1: cite_number, mut arg2: cite_number) -> 
                 return 1i32 != 0;
             }
         } else {
-            if char2 as libc::c_int == 127i32 {
+            if char2 as i32 == 127i32 {
                 /*end_of_string */
                 return 0i32 != 0;
             } else {
-                if (char1 as libc::c_int) < char2 as libc::c_int {
+                if (char1 as i32) < char2 as i32 {
                     return 1i32 != 0;
                 } else {
-                    if char1 as libc::c_int > char2 as libc::c_int {
+                    if char1 as i32 > char2 as i32 {
                         return 0i32 != 0;
                     }
                 }
@@ -2199,7 +2199,7 @@ unsafe extern "C" fn pre_def_certain_strings() {
 unsafe extern "C" fn scan1(mut char1: ASCII_code) -> bool {
     buf_ptr1 = buf_ptr2;
     while buf_ptr2 < last
-        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char1 as libc::c_int
+        && *buffer.offset(buf_ptr2 as isize) as i32 != char1 as i32
     {
         buf_ptr2 = buf_ptr2 + 1i32
     }
@@ -2208,8 +2208,8 @@ unsafe extern "C" fn scan1(mut char1: ASCII_code) -> bool {
 unsafe extern "C" fn scan1_white(mut char1: ASCII_code) -> bool {
     buf_ptr1 = buf_ptr2;
     while buf_ptr2 < last
-        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int != 1i32
-        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char1 as libc::c_int
+        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 != 1i32
+        && *buffer.offset(buf_ptr2 as isize) as i32 != char1 as i32
     {
         buf_ptr2 = buf_ptr2 + 1i32
     }
@@ -2218,8 +2218,8 @@ unsafe extern "C" fn scan1_white(mut char1: ASCII_code) -> bool {
 unsafe extern "C" fn scan2(mut char1: ASCII_code, mut char2: ASCII_code) -> bool {
     buf_ptr1 = buf_ptr2;
     while buf_ptr2 < last
-        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char1 as libc::c_int
-        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char2 as libc::c_int
+        && *buffer.offset(buf_ptr2 as isize) as i32 != char1 as i32
+        && *buffer.offset(buf_ptr2 as isize) as i32 != char2 as i32
     {
         buf_ptr2 = buf_ptr2 + 1i32
     }
@@ -2228,9 +2228,9 @@ unsafe extern "C" fn scan2(mut char1: ASCII_code, mut char2: ASCII_code) -> bool
 unsafe extern "C" fn scan2_white(mut char1: ASCII_code, mut char2: ASCII_code) -> bool {
     buf_ptr1 = buf_ptr2;
     while buf_ptr2 < last
-        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char1 as libc::c_int
-        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char2 as libc::c_int
-        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int != 1i32
+        && *buffer.offset(buf_ptr2 as isize) as i32 != char1 as i32
+        && *buffer.offset(buf_ptr2 as isize) as i32 != char2 as i32
+        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 != 1i32
     {
         buf_ptr2 = buf_ptr2 + 1i32
     }
@@ -2243,9 +2243,9 @@ unsafe extern "C" fn scan3(
 ) -> bool {
     buf_ptr1 = buf_ptr2;
     while buf_ptr2 < last
-        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char1 as libc::c_int
-        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char2 as libc::c_int
-        && *buffer.offset(buf_ptr2 as isize) as libc::c_int != char3 as libc::c_int
+        && *buffer.offset(buf_ptr2 as isize) as i32 != char1 as i32
+        && *buffer.offset(buf_ptr2 as isize) as i32 != char2 as i32
+        && *buffer.offset(buf_ptr2 as isize) as i32 != char3 as i32
     {
         buf_ptr2 = buf_ptr2 + 1i32
     }
@@ -2254,7 +2254,7 @@ unsafe extern "C" fn scan3(
 unsafe extern "C" fn scan_alpha() -> bool {
     buf_ptr1 = buf_ptr2;
     while buf_ptr2 < last
-        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 2i32
+        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 2i32
     {
         buf_ptr2 = buf_ptr2 + 1i32
     }
@@ -2266,23 +2266,23 @@ unsafe extern "C" fn scan_identifier(
     mut char3: ASCII_code,
 ) {
     buf_ptr1 = buf_ptr2;
-    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int != 3i32 {
+    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 != 3i32 {
         /*numeric */
         while buf_ptr2 < last
-            && id_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32
+            && id_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32
         {
             buf_ptr2 = buf_ptr2 + 1i32
         }
     } /*id_null */
     if buf_ptr2 - buf_ptr1 == 0i32 {
         scan_result = 0i32 as u8
-    } else if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32
+    } else if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32
         || buf_ptr2 == last
     {
         scan_result = 3i32 as u8
-    } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == char1 as libc::c_int
-        || *buffer.offset(buf_ptr2 as isize) as libc::c_int == char2 as libc::c_int
-        || *buffer.offset(buf_ptr2 as isize) as libc::c_int == char3 as libc::c_int
+    } else if *buffer.offset(buf_ptr2 as isize) as i32 == char1 as i32
+        || *buffer.offset(buf_ptr2 as isize) as i32 == char2 as i32
+        || *buffer.offset(buf_ptr2 as isize) as i32 == char3 as i32
     {
         /*white_adjacent */
         scan_result = 1i32 as u8
@@ -2295,10 +2295,10 @@ unsafe extern "C" fn scan_nonneg_integer() -> bool {
     buf_ptr1 = buf_ptr2;
     token_value = 0i32;
     while buf_ptr2 < last
-        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 3i32
+        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 3i32
     {
         token_value =
-            token_value * 10i32 + (*buffer.offset(buf_ptr2 as isize) as libc::c_int - 48i32);
+            token_value * 10i32 + (*buffer.offset(buf_ptr2 as isize) as i32 - 48i32);
         buf_ptr2 = buf_ptr2 + 1i32
     }
     return buf_ptr2 - buf_ptr1 != 0i32;
@@ -2306,7 +2306,7 @@ unsafe extern "C" fn scan_nonneg_integer() -> bool {
 unsafe extern "C" fn scan_integer() -> bool {
     let mut sign_length: u8 = 0;
     buf_ptr1 = buf_ptr2;
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 45i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 == 45i32 {
         /*minus_sign */
         sign_length = 1i32 as u8;
         buf_ptr2 = buf_ptr2 + 1i32
@@ -2315,20 +2315,20 @@ unsafe extern "C" fn scan_integer() -> bool {
     }
     token_value = 0i32;
     while buf_ptr2 < last
-        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 3i32
+        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 3i32
     {
         token_value =
-            token_value * 10i32 + (*buffer.offset(buf_ptr2 as isize) as libc::c_int - 48i32);
+            token_value * 10i32 + (*buffer.offset(buf_ptr2 as isize) as i32 - 48i32);
         buf_ptr2 = buf_ptr2 + 1i32
     }
-    if sign_length as libc::c_int == 1i32 {
+    if sign_length as i32 == 1i32 {
         token_value = -token_value
     }
-    return buf_ptr2 - buf_ptr1 != sign_length as libc::c_int;
+    return buf_ptr2 - buf_ptr1 != sign_length as i32;
 }
 unsafe extern "C" fn scan_white_space() -> bool {
     while buf_ptr2 < last
-        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32
+        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32
     {
         buf_ptr2 = buf_ptr2 + 1i32
     }
@@ -2337,7 +2337,7 @@ unsafe extern "C" fn scan_white_space() -> bool {
 unsafe extern "C" fn eat_bst_white_space() -> bool {
     loop {
         if scan_white_space() {
-            if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 37i32 {
+            if *buffer.offset(buf_ptr2 as isize) as i32 != 37i32 {
                 /*comment */
                 return 1i32 != 0;
             }
@@ -2372,7 +2372,7 @@ unsafe extern "C" fn skp_token_unknown_function_print() {
 unsafe extern "C" fn skip_illegal_stuff_after_token_print() {
     printf_log(
         b"\"%c\" can\'t follow a literal\x00" as *const u8 as *const i8,
-        *buffer.offset(buf_ptr2 as isize) as libc::c_int,
+        *buffer.offset(buf_ptr2 as isize) as i32,
     );
     skip_token_print();
 }
@@ -2396,12 +2396,12 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
     } else {
         single_ptr = 0i32;
         loop {
-            if !(*buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32) {
+            if !(*buffer.offset(buf_ptr2 as isize) as i32 != 125i32) {
                 current_block = 355541881813056170;
                 break;
             }
             /*right_brace */
-            match *buffer.offset(buf_ptr2 as isize) as libc::c_int {
+            match *buffer.offset(buf_ptr2 as isize) as i32 {
                 35 => {
                     buf_ptr2 = buf_ptr2 + 1i32; /*int_literal */
                     if !scan_integer() {
@@ -2423,10 +2423,10 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                             *ilk_info.offset(literal_loc as isize) = token_value
                         }
                         if buf_ptr2 < last
-                            && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int
+                            && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32
                                 != 1i32
-                            && *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32
-                            && *buffer.offset(buf_ptr2 as isize) as libc::c_int != 37i32
+                            && *buffer.offset(buf_ptr2 as isize) as i32 != 125i32
+                            && *buffer.offset(buf_ptr2 as isize) as i32 != 37i32
                         {
                             skip_illegal_stuff_after_token_print();
                         } else {
@@ -2465,10 +2465,10 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                         *fn_type.offset(literal_loc as isize) = 3i32 as fn_class;
                         buf_ptr2 = buf_ptr2 + 1i32;
                         if buf_ptr2 < last
-                            && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int
+                            && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32
                                 != 1i32
-                            && *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32
-                            && *buffer.offset(buf_ptr2 as isize) as libc::c_int != 37i32
+                            && *buffer.offset(buf_ptr2 as isize) as i32 != 125i32
+                            && *buffer.offset(buf_ptr2 as isize) as i32 != 37i32
                         {
                             skip_illegal_stuff_after_token_print();
                         } else {
@@ -2669,7 +2669,7 @@ unsafe extern "C" fn compress_bib_white() -> bool {
 }
 unsafe extern "C" fn scan_balanced_braces() -> bool {
     buf_ptr2 = buf_ptr2 + 1i32;
-    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32
+    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32
         || buf_ptr2 == last
     {
         if !compress_bib_white() {
@@ -2677,9 +2677,9 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
         }
     }
     if ex_buf_ptr > 1i32 {
-        if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int == 32i32 {
+        if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as i32 == 32i32 {
             /*space */
-            if *ex_buf.offset((ex_buf_ptr - 2i32) as isize) as libc::c_int == 32i32 {
+            if *ex_buf.offset((ex_buf_ptr - 2i32) as isize) as i32 == 32i32 {
                 /*space */
                 ex_buf_ptr = ex_buf_ptr - 1i32
             }
@@ -2688,8 +2688,8 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
     bib_brace_level = 0i32;
     if store_field {
         /*257: */
-        while *buffer.offset(buf_ptr2 as isize) as libc::c_int != right_str_delim as libc::c_int {
-            match *buffer.offset(buf_ptr2 as isize) as libc::c_int {
+        while *buffer.offset(buf_ptr2 as isize) as i32 != right_str_delim as i32 {
+            match *buffer.offset(buf_ptr2 as isize) as i32 {
                 123 => {
                     bib_brace_level = bib_brace_level + 1i32; /*left_brace */
                     if ex_buf_ptr == buf_size {
@@ -2700,7 +2700,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                         ex_buf_ptr = ex_buf_ptr + 1i32
                     }
                     buf_ptr2 = buf_ptr2 + 1i32;
-                    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32
+                    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32
                         || buf_ptr2 == last
                     {
                         if !compress_bib_white() {
@@ -2708,7 +2708,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                         }
                     }
                     loop {
-                        match *buffer.offset(buf_ptr2 as isize) as libc::c_int {
+                        match *buffer.offset(buf_ptr2 as isize) as i32 {
                             125 => {
                                 bib_brace_level = bib_brace_level - 1i32;
                                 if ex_buf_ptr == buf_size {
@@ -2720,7 +2720,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                                 }
                                 buf_ptr2 = buf_ptr2 + 1i32;
                                 if lex_class[*buffer.offset(buf_ptr2 as isize) as usize]
-                                    as libc::c_int
+                                    as i32
                                     == 1i32
                                     || buf_ptr2 == last
                                 {
@@ -2743,7 +2743,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                                 }
                                 buf_ptr2 = buf_ptr2 + 1i32;
                                 if lex_class[*buffer.offset(buf_ptr2 as isize) as usize]
-                                    as libc::c_int
+                                    as i32
                                     == 1i32
                                     || buf_ptr2 == last
                                 {
@@ -2763,7 +2763,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                                 }
                                 buf_ptr2 = buf_ptr2 + 1i32;
                                 if lex_class[*buffer.offset(buf_ptr2 as isize) as usize]
-                                    as libc::c_int
+                                    as i32
                                     == 1i32
                                     || buf_ptr2 == last
                                 {
@@ -2788,7 +2788,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                         ex_buf_ptr = ex_buf_ptr + 1i32
                     }
                     buf_ptr2 = buf_ptr2 + 1i32;
-                    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32
+                    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32
                         || buf_ptr2 == last
                     {
                         if !compress_bib_white() {
@@ -2799,8 +2799,8 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
             }
         }
     } else {
-        while *buffer.offset(buf_ptr2 as isize) as libc::c_int != right_str_delim as libc::c_int {
-            if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 123i32 {
+        while *buffer.offset(buf_ptr2 as isize) as i32 != right_str_delim as i32 {
+            if *buffer.offset(buf_ptr2 as isize) as i32 == 123i32 {
                 /*left_brace */
                 bib_brace_level = bib_brace_level + 1i32;
                 buf_ptr2 = buf_ptr2 + 1i32;
@@ -2810,7 +2810,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                 }
                 while bib_brace_level > 0i32 {
                     /*256: */
-                    if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 125i32 {
+                    if *buffer.offset(buf_ptr2 as isize) as i32 == 125i32 {
                         /*right_brace */
                         bib_brace_level = bib_brace_level - 1i32;
                         buf_ptr2 = buf_ptr2 + 1i32;
@@ -2818,7 +2818,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                             eat_bib_print();
                             return 0i32 != 0;
                         }
-                    } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 123i32 {
+                    } else if *buffer.offset(buf_ptr2 as isize) as i32 == 123i32 {
                         /*left_brace */
                         bib_brace_level = bib_brace_level + 1i32;
                         buf_ptr2 = buf_ptr2 + 1i32;
@@ -2836,7 +2836,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                         }
                     }
                 }
-            } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 125i32 {
+            } else if *buffer.offset(buf_ptr2 as isize) as i32 == 125i32 {
                 /*right_brace */
                 bib_unbalanced_braces_print(); /*right_brace */
                 return 0i32 != 0;
@@ -2855,7 +2855,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
     return 1i32 != 0;
 }
 unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
-    match *buffer.offset(buf_ptr2 as isize) as libc::c_int {
+    match *buffer.offset(buf_ptr2 as isize) as i32 {
         123 => {
             right_str_delim = 125i32 as ASCII_code;
             if !scan_balanced_braces() {
@@ -2890,7 +2890,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
         }
         _ => {
             scan_identifier(44i32 as ASCII_code, right_outer_delim, 35i32 as ASCII_code);
-            if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
+            if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
             } else {
                 bib_id_print();
                 puts_log(b"a field part\x00" as *const u8 as *const i8);
@@ -2934,7 +2934,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                         .offset((*ilk_info.offset(macro_name_loc as isize) + 1i32) as isize);
                     if ex_buf_ptr == 0i32 {
                         if tmp_ptr < tmp_end_ptr
-                            && lex_class[*str_pool.offset(tmp_ptr as isize) as usize] as libc::c_int
+                            && lex_class[*str_pool.offset(tmp_ptr as isize) as usize] as i32
                                 == 1i32
                         {
                             if ex_buf_ptr == buf_size {
@@ -2947,7 +2947,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                             tmp_ptr = tmp_ptr + 1i32;
                             while tmp_ptr < tmp_end_ptr
                                 && lex_class[*str_pool.offset(tmp_ptr as isize) as usize]
-                                    as libc::c_int
+                                    as i32
                                     == 1i32
                             {
                                 tmp_ptr = tmp_ptr + 1i32
@@ -2955,7 +2955,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                         }
                     }
                     while tmp_ptr < tmp_end_ptr {
-                        if lex_class[*str_pool.offset(tmp_ptr as isize) as usize] as libc::c_int
+                        if lex_class[*str_pool.offset(tmp_ptr as isize) as usize] as i32
                             != 1i32
                         {
                             /*white_space */
@@ -2967,7 +2967,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                                     *str_pool.offset(tmp_ptr as isize);
                                 ex_buf_ptr = ex_buf_ptr + 1i32
                             }
-                        } else if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int
+                        } else if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as i32
                             != 32i32
                         {
                             /*space */
@@ -2996,7 +2996,7 @@ unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
     if !scan_a_field_token_and_eat_white() {
         return 0i32 != 0;
     }
-    while *buffer.offset(buf_ptr2 as isize) as libc::c_int == 35i32 {
+    while *buffer.offset(buf_ptr2 as isize) as i32 == 35i32 {
         /*concat_char */
         buf_ptr2 = buf_ptr2 + 1i32;
         if !eat_bib_white_space() {
@@ -3011,13 +3011,13 @@ unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
         /*262: */
         if !at_bib_command {
             if ex_buf_ptr > 0i32 {
-                if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int == 32i32 {
+                if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as i32 == 32i32 {
                     /*space */
                     ex_buf_ptr = ex_buf_ptr - 1i32
                 }
             }
         } /*str_literal */
-        if !at_bib_command && *ex_buf.offset(0) as libc::c_int == 32i32 && ex_buf_ptr > 0i32 {
+        if !at_bib_command && *ex_buf.offset(0) as i32 == 32i32 && ex_buf_ptr > 0i32 {
             ex_buf_xptr = 1i32
         } else {
             ex_buf_xptr = 0i32
@@ -3124,22 +3124,22 @@ unsafe extern "C" fn name_scan_for_and(mut pop_lit_var: str_number) {
     preceding_white = 0i32 != 0;
     and_found = 0i32 != 0;
     while !and_found && ex_buf_ptr < ex_buf_length {
-        match *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int {
+        match *ex_buf.offset(ex_buf_ptr as isize) as i32 {
             97 | 65 => {
                 ex_buf_ptr = ex_buf_ptr + 1i32;
                 if preceding_white {
                     /*387: */
                     if ex_buf_ptr <= ex_buf_length - 3i32 {
-                        if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 'n' as i32
-                            || *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 'N' as i32
+                        if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 'n' as i32
+                            || *ex_buf.offset(ex_buf_ptr as isize) as i32 == 'N' as i32
                         {
-                            if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as libc::c_int
+                            if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as i32
                                 == 'd' as i32
-                                || *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as libc::c_int
+                                || *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as i32
                                     == 'D' as i32
                             {
                                 if lex_class[*ex_buf.offset((ex_buf_ptr + 2i32) as isize) as usize]
-                                    as libc::c_int
+                                    as i32
                                     == 1i32
                                 {
                                     /*white_space */
@@ -3156,10 +3156,10 @@ unsafe extern "C" fn name_scan_for_and(mut pop_lit_var: str_number) {
                 brace_level = brace_level + 1i32;
                 ex_buf_ptr = ex_buf_ptr + 1i32;
                 while brace_level > 0i32 && ex_buf_ptr < ex_buf_length {
-                    if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 125i32 {
+                    if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 125i32 {
                         /*right_brace */
                         brace_level = brace_level - 1i32
-                    } else if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 123i32 {
+                    } else if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 123i32 {
                         /*left_brace */
                         brace_level = brace_level + 1i32
                     }
@@ -3173,7 +3173,7 @@ unsafe extern "C" fn name_scan_for_and(mut pop_lit_var: str_number) {
                 preceding_white = 0i32 != 0
             }
             _ => {
-                if lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as libc::c_int == 1i32 {
+                if lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as i32 == 1i32 {
                     /*white_space */
                     ex_buf_ptr = ex_buf_ptr + 1i32;
                     preceding_white = 1i32 != 0
@@ -3189,29 +3189,29 @@ unsafe extern "C" fn name_scan_for_and(mut pop_lit_var: str_number) {
 unsafe extern "C" fn von_token_found() -> bool {
     nm_brace_level = 0i32;
     while name_bf_ptr < name_bf_xptr {
-        if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int >= 'A' as i32
-            && *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int <= 'Z' as i32
+        if *sv_buffer.offset(name_bf_ptr as isize) as i32 >= 'A' as i32
+            && *sv_buffer.offset(name_bf_ptr as isize) as i32 <= 'Z' as i32
         {
             return 0i32 != 0;
         } else {
-            if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int >= 'a' as i32
-                && *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int <= 'z' as i32
+            if *sv_buffer.offset(name_bf_ptr as isize) as i32 >= 'a' as i32
+                && *sv_buffer.offset(name_bf_ptr as isize) as i32 <= 'z' as i32
             {
                 return 1i32 != 0;
             } else {
-                if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int == 123i32 {
+                if *sv_buffer.offset(name_bf_ptr as isize) as i32 == 123i32 {
                     /*left_brace */
                     nm_brace_level = nm_brace_level + 1i32; /*401: */
                     name_bf_ptr = name_bf_ptr + 1i32;
                     if name_bf_ptr + 2i32 < name_bf_xptr
-                        && *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int == 92i32
+                        && *sv_buffer.offset(name_bf_ptr as isize) as i32 == 92i32
                     {
                         /*399: */
                         name_bf_ptr = name_bf_ptr + 1i32;
                         name_bf_yptr = name_bf_ptr;
                         while name_bf_ptr < name_bf_xptr
                             && lex_class[*sv_buffer.offset(name_bf_ptr as isize) as usize]
-                                as libc::c_int
+                                as i32
                                 == 2i32
                         {
                             name_bf_ptr = name_bf_ptr + 1i32
@@ -3239,25 +3239,25 @@ unsafe extern "C" fn von_token_found() -> bool {
                             }
                         }
                         while name_bf_ptr < name_bf_xptr && nm_brace_level > 0i32 {
-                            if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int >= 'A' as i32
-                                && *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                            if *sv_buffer.offset(name_bf_ptr as isize) as i32 >= 'A' as i32
+                                && *sv_buffer.offset(name_bf_ptr as isize) as i32
                                     <= 'Z' as i32
                             {
                                 return 0i32 != 0;
                             } else {
-                                if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                                if *sv_buffer.offset(name_bf_ptr as isize) as i32
                                     >= 'a' as i32
-                                    && *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                                    && *sv_buffer.offset(name_bf_ptr as isize) as i32
                                         <= 'z' as i32
                                 {
                                     return 1i32 != 0;
                                 } else {
-                                    if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                                    if *sv_buffer.offset(name_bf_ptr as isize) as i32
                                         == 125i32
                                     {
                                         /*right_brace */
                                         nm_brace_level = nm_brace_level - 1i32
-                                    } else if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                                    } else if *sv_buffer.offset(name_bf_ptr as isize) as i32
                                         == 123i32
                                     {
                                         /*left_brace */
@@ -3270,10 +3270,10 @@ unsafe extern "C" fn von_token_found() -> bool {
                         return 0i32 != 0;
                     } else {
                         while nm_brace_level > 0i32 && name_bf_ptr < name_bf_xptr {
-                            if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int == 125i32 {
+                            if *sv_buffer.offset(name_bf_ptr as isize) as i32 == 125i32 {
                                 /*right_brace */
                                 nm_brace_level = nm_brace_level - 1i32
-                            } else if *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                            } else if *sv_buffer.offset(name_bf_ptr as isize) as i32
                                 == 123i32
                             {
                                 /*left_brace */
@@ -3303,10 +3303,10 @@ unsafe extern "C" fn von_name_ends_and_last_name_starts_stuff() {
 }
 unsafe extern "C" fn skip_stuff_at_sp_brace_level_greater_than_one() {
     while sp_brace_level > 1i32 && sp_ptr < sp_end {
-        if *str_pool.offset(sp_ptr as isize) as libc::c_int == 125i32 {
+        if *str_pool.offset(sp_ptr as isize) as i32 == 125i32 {
             /*right_brace */
             sp_brace_level = sp_brace_level - 1i32
-        } else if *str_pool.offset(sp_ptr as isize) as libc::c_int == 123i32 {
+        } else if *str_pool.offset(sp_ptr as isize) as i32 == 123i32 {
             /*left_brace */
             sp_brace_level = sp_brace_level + 1i32
         }
@@ -3324,18 +3324,18 @@ unsafe extern "C" fn enough_text_chars(mut enough_chars: buf_pointer) -> bool {
     ex_buf_yptr = ex_buf_xptr;
     while ex_buf_yptr < ex_buf_ptr && num_text_chars < enough_chars {
         ex_buf_yptr = ex_buf_yptr + 1i32;
-        if *ex_buf.offset((ex_buf_yptr - 1i32) as isize) as libc::c_int == 123i32 {
+        if *ex_buf.offset((ex_buf_yptr - 1i32) as isize) as i32 == 123i32 {
             /*left_brace */
             brace_level = brace_level + 1i32;
             if brace_level == 1i32 && ex_buf_yptr < ex_buf_ptr {
-                if *ex_buf.offset(ex_buf_yptr as isize) as libc::c_int == 92i32 {
+                if *ex_buf.offset(ex_buf_yptr as isize) as i32 == 92i32 {
                     /*backslash */
                     ex_buf_yptr = ex_buf_yptr + 1i32;
                     while ex_buf_yptr < ex_buf_ptr && brace_level > 0i32 {
-                        if *ex_buf.offset(ex_buf_yptr as isize) as libc::c_int == 125i32 {
+                        if *ex_buf.offset(ex_buf_yptr as isize) as i32 == 125i32 {
                             /*right_brace */
                             brace_level = brace_level - 1i32
-                        } else if *ex_buf.offset(ex_buf_yptr as isize) as libc::c_int == 123i32 {
+                        } else if *ex_buf.offset(ex_buf_yptr as isize) as i32 == 123i32 {
                             /*left_brace */
                             brace_level = brace_level + 1i32
                         }
@@ -3343,7 +3343,7 @@ unsafe extern "C" fn enough_text_chars(mut enough_chars: buf_pointer) -> bool {
                     }
                 }
             }
-        } else if *ex_buf.offset((ex_buf_yptr - 1i32) as isize) as libc::c_int == 125i32 {
+        } else if *ex_buf.offset((ex_buf_yptr - 1i32) as isize) as i32 == 125i32 {
             /*right_brace */
             brace_level = brace_level - 1i32
         }
@@ -3357,7 +3357,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
     sp_ptr = *str_start.offset(pop_lit1 as isize);
     sp_end = *str_start.offset((pop_lit1 + 1i32) as isize);
     while sp_ptr < sp_end {
-        if *str_pool.offset(sp_ptr as isize) as libc::c_int == 123i32 {
+        if *str_pool.offset(sp_ptr as isize) as i32 == 123i32 {
             /*left_brace */
             sp_brace_level = sp_brace_level + 1i32;
             sp_ptr = sp_ptr + 1i32;
@@ -3367,22 +3367,22 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
             end_of_group = 0i32 != 0;
             to_be_written = 1i32 != 0;
             while !end_of_group && sp_ptr < sp_end {
-                if lex_class[*str_pool.offset(sp_ptr as isize) as usize] as libc::c_int == 2i32 {
+                if lex_class[*str_pool.offset(sp_ptr as isize) as usize] as i32 == 2i32 {
                     /*alpha */
                     sp_ptr = sp_ptr + 1i32;
                     if alpha_found {
                         brace_lvl_one_letters_complaint();
                         to_be_written = 0i32 != 0
                     } else {
-                        match *str_pool.offset((sp_ptr - 1i32) as isize) as libc::c_int {
+                        match *str_pool.offset((sp_ptr - 1i32) as isize) as i32 {
                             102 | 70 => {
                                 cur_token = first_start;
                                 last_token = first_end;
                                 if cur_token == last_token {
                                     to_be_written = 0i32 != 0
                                 }
-                                if *str_pool.offset(sp_ptr as isize) as libc::c_int == 'f' as i32
-                                    || *str_pool.offset(sp_ptr as isize) as libc::c_int
+                                if *str_pool.offset(sp_ptr as isize) as i32 == 'f' as i32
+                                    || *str_pool.offset(sp_ptr as isize) as i32
                                         == 'F' as i32
                                 {
                                     double_letter = 1i32 != 0
@@ -3394,8 +3394,8 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                 if cur_token == last_token {
                                     to_be_written = 0i32 != 0
                                 }
-                                if *str_pool.offset(sp_ptr as isize) as libc::c_int == 'v' as i32
-                                    || *str_pool.offset(sp_ptr as isize) as libc::c_int
+                                if *str_pool.offset(sp_ptr as isize) as i32 == 'v' as i32
+                                    || *str_pool.offset(sp_ptr as isize) as i32
                                         == 'V' as i32
                                 {
                                     double_letter = 1i32 != 0
@@ -3407,8 +3407,8 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                 if cur_token == last_token {
                                     to_be_written = 0i32 != 0
                                 }
-                                if *str_pool.offset(sp_ptr as isize) as libc::c_int == 'l' as i32
-                                    || *str_pool.offset(sp_ptr as isize) as libc::c_int
+                                if *str_pool.offset(sp_ptr as isize) as i32 == 'l' as i32
+                                    || *str_pool.offset(sp_ptr as isize) as i32
                                         == 'L' as i32
                                 {
                                     double_letter = 1i32 != 0
@@ -3420,8 +3420,8 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                 if cur_token == last_token {
                                     to_be_written = 0i32 != 0
                                 }
-                                if *str_pool.offset(sp_ptr as isize) as libc::c_int == 'j' as i32
-                                    || *str_pool.offset(sp_ptr as isize) as libc::c_int
+                                if *str_pool.offset(sp_ptr as isize) as i32 == 'j' as i32
+                                    || *str_pool.offset(sp_ptr as isize) as i32
                                         == 'J' as i32
                                 {
                                     double_letter = 1i32 != 0
@@ -3437,12 +3437,12 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                         }
                     }
                     alpha_found = 1i32 != 0
-                } else if *str_pool.offset(sp_ptr as isize) as libc::c_int == 125i32 {
+                } else if *str_pool.offset(sp_ptr as isize) as i32 == 125i32 {
                     /*right_brace */
                     sp_brace_level = sp_brace_level - 1i32;
                     sp_ptr = sp_ptr + 1i32;
                     end_of_group = 1i32 != 0
-                } else if *str_pool.offset(sp_ptr as isize) as libc::c_int == 123i32 {
+                } else if *str_pool.offset(sp_ptr as isize) as i32 == 123i32 {
                     /*left_brace */
                     sp_brace_level = sp_brace_level + 1i32;
                     sp_ptr = sp_ptr + 1i32;
@@ -3451,7 +3451,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                     sp_ptr = sp_ptr + 1i32
                 }
             }
-            if !(end_of_group as libc::c_int != 0 && to_be_written as libc::c_int != 0) {
+            if !(end_of_group as i32 != 0 && to_be_written as i32 != 0) {
                 continue;
             }
             /*412: */
@@ -3459,7 +3459,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
             sp_ptr = sp_xptr1;
             sp_brace_level = 1i32;
             while sp_brace_level > 0i32 {
-                if lex_class[*str_pool.offset(sp_ptr as isize) as usize] as libc::c_int == 2i32
+                if lex_class[*str_pool.offset(sp_ptr as isize) as usize] as i32 == 2i32
                     && sp_brace_level == 1i32
                 {
                     sp_ptr = sp_ptr + 1i32;
@@ -3468,7 +3468,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                     }
                     use_default = 1i32 != 0;
                     sp_xptr2 = sp_ptr;
-                    if *str_pool.offset(sp_ptr as isize) as libc::c_int == 123i32 {
+                    if *str_pool.offset(sp_ptr as isize) as i32 == 123i32 {
                         /*left_brace */
                         use_default = 0i32 != 0; /*416: */
                         sp_brace_level = sp_brace_level + 1i32;
@@ -3496,7 +3496,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                             name_bf_xptr = *name_tok.offset((cur_token + 1i32) as isize);
                             while name_bf_ptr < name_bf_xptr {
                                 if lex_class[*sv_buffer.offset(name_bf_ptr as isize) as usize]
-                                    as libc::c_int
+                                    as i32
                                     == 2i32
                                 {
                                     /*alpha */
@@ -3509,11 +3509,11 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                     break;
                                 } else {
                                     if name_bf_ptr + 1i32 < name_bf_xptr
-                                        && *sv_buffer.offset(name_bf_ptr as isize) as libc::c_int
+                                        && *sv_buffer.offset(name_bf_ptr as isize) as i32
                                             == 123i32
                                     {
                                         if *sv_buffer.offset((name_bf_ptr + 1i32) as isize)
-                                            as libc::c_int
+                                            as i32
                                             == 92i32
                                         {
                                             /*backslash */
@@ -3533,13 +3533,13 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                                 && nm_brace_level > 0i32
                                             {
                                                 if *sv_buffer.offset(name_bf_ptr as isize)
-                                                    as libc::c_int
+                                                    as i32
                                                     == 125i32
                                                 {
                                                     /*right_brace */
                                                     nm_brace_level = nm_brace_level - 1i32
                                                 } else if *sv_buffer.offset(name_bf_ptr as isize)
-                                                    as libc::c_int
+                                                    as i32
                                                     == 123i32
                                                 {
                                                     /*left_brace */
@@ -3572,7 +3572,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 }
                                 if lex_class[*name_sep_char.offset(cur_token as isize) as usize]
-                                    as libc::c_int
+                                    as i32
                                     == 4i32
                                 {
                                     /*sep_char */
@@ -3613,7 +3613,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                     if !use_default {
                         sp_ptr = sp_xptr2 + 1i32
                     }
-                } else if *str_pool.offset(sp_ptr as isize) as libc::c_int == 125i32 {
+                } else if *str_pool.offset(sp_ptr as isize) as i32 == 125i32 {
                     /*right_brace */
                     sp_brace_level = sp_brace_level - 1i32; /*right_brace */
                     sp_ptr = sp_ptr + 1i32;
@@ -3624,7 +3624,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                         *ex_buf.offset(ex_buf_ptr as isize) = 125i32 as ASCII_code;
                         ex_buf_ptr = ex_buf_ptr + 1i32
                     }
-                } else if *str_pool.offset(sp_ptr as isize) as libc::c_int == 123i32 {
+                } else if *str_pool.offset(sp_ptr as isize) as i32 == 123i32 {
                     /*left_brace */
                     sp_brace_level = sp_brace_level + 1i32; /*left_brace */
                     sp_ptr = sp_ptr + 1i32;
@@ -3643,11 +3643,11 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                 }
             }
             if ex_buf_ptr > 0i32 {
-                if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int == 126i32 {
+                if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as i32 == 126i32 {
                     /*tie */
                     /*420: */
                     ex_buf_ptr = ex_buf_ptr - 1i32; /*space */
-                    if !(*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int == 126i32) {
+                    if !(*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as i32 == 126i32) {
                         if !enough_text_chars(3i32) {
                             ex_buf_ptr = ex_buf_ptr + 1i32
                         } else {
@@ -3657,7 +3657,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                     }
                 }
             }
-        } else if *str_pool.offset(sp_ptr as isize) as libc::c_int == 125i32 {
+        } else if *str_pool.offset(sp_ptr as isize) as i32 == 125i32 {
             /*right_brace */
             braces_unbalanced_complaint(pop_lit1);
             sp_ptr = sp_ptr + 1i32
@@ -3703,7 +3703,7 @@ unsafe extern "C" fn pop_lit_stk(mut pop_lit: *mut i32, mut pop_type: *mut stk_t
         lit_stk_ptr = lit_stk_ptr - 1i32;
         *pop_lit = *lit_stack.offset(lit_stk_ptr as isize);
         *pop_type = *lit_stk_type.offset(lit_stk_ptr as isize);
-        if *pop_type as libc::c_int == 1i32 {
+        if *pop_type as i32 == 1i32 {
             /*stk_str */
             if *pop_lit >= cmd_str_ptr {
                 if *pop_lit != str_ptr - 1i32 {
@@ -3722,10 +3722,10 @@ unsafe extern "C" fn print_wrong_stk_lit(
     mut stk_tp1: stk_type,
     mut stk_tp2: stk_type,
 ) {
-    if stk_tp1 as libc::c_int != 4i32 {
+    if stk_tp1 as i32 != 4i32 {
         /*stk_empty */
         print_stk_lit(stk_lt, stk_tp1);
-        match stk_tp2 as libc::c_int {
+        match stk_tp2 as i32 {
             0 => {
                 puts_log(b", not an integer,\x00" as *const u8 as *const i8);
             }
@@ -3749,7 +3749,7 @@ unsafe extern "C" fn pop_top_and_print() {
     let mut stk_lt: i32 = 0;
     let mut stk_tp: stk_type = 0;
     pop_lit_stk(&mut stk_lt, &mut stk_tp);
-    if stk_tp as libc::c_int == 4i32 {
+    if stk_tp as i32 == 4i32 {
         /*stk_empty */
         puts_log(b"Empty literal\n\x00" as *const u8 as *const i8);
     } else {
@@ -3830,7 +3830,7 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
         end_ptr = out_buf_length;
         out_buf_ptr = 79i32;
         break_pt_found = 0i32 != 0;
-        while lex_class[*out_buf.offset(out_buf_ptr as isize) as usize] as libc::c_int != 1i32
+        while lex_class[*out_buf.offset(out_buf_ptr as isize) as usize] as i32 != 1i32
             && out_buf_ptr >= 3i32
         {
             out_buf_ptr = out_buf_ptr - 1i32
@@ -3839,7 +3839,7 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
             /*325: */
             out_buf_ptr = 79i32 + 1i32;
             while out_buf_ptr < end_ptr {
-                if !(lex_class[*out_buf.offset(out_buf_ptr as isize) as usize] as libc::c_int
+                if !(lex_class[*out_buf.offset(out_buf_ptr as isize) as usize] as i32
                     != 1i32)
                 {
                     break;
@@ -3854,7 +3854,7 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
                 break_pt_found = 1i32 != 0;
                 while out_buf_ptr + 1i32 < end_ptr {
                     if !(lex_class[*out_buf.offset((out_buf_ptr + 1i32) as isize) as usize]
-                        as libc::c_int
+                        as i32
                         == 1i32)
                     {
                         break;
@@ -3886,8 +3886,8 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
 unsafe extern "C" fn x_equals() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
-    if pop_typ1 as libc::c_int != pop_typ2 as libc::c_int {
-        if pop_typ1 as libc::c_int != 4i32 && pop_typ2 as libc::c_int != 4i32 {
+    if pop_typ1 as i32 != pop_typ2 as i32 {
+        if pop_typ1 as i32 != 4i32 && pop_typ2 as i32 != 4i32 {
             print_stk_lit(pop_lit1, pop_typ1);
             puts_log(b", \x00" as *const u8 as *const i8);
             print_stk_lit(pop_lit2, pop_typ2);
@@ -3898,15 +3898,15 @@ unsafe extern "C" fn x_equals() {
             bst_ex_warn_print();
         }
         push_lit_stk(0i32, 0i32 as stk_type);
-    } else if pop_typ1 as libc::c_int != 0i32 && pop_typ1 as libc::c_int != 1i32 {
-        if pop_typ1 as libc::c_int != 4i32 {
+    } else if pop_typ1 as i32 != 0i32 && pop_typ1 as i32 != 1i32 {
+        if pop_typ1 as i32 != 4i32 {
             /*stk_empty */
             print_stk_lit(pop_lit1, pop_typ1);
             puts_log(b", not an integer or a string,\x00" as *const u8 as *const i8);
             bst_ex_warn_print();
         }
         push_lit_stk(0i32, 0i32 as stk_type);
-    } else if pop_typ1 as libc::c_int == 0i32 {
+    } else if pop_typ1 as i32 == 0i32 {
         /*stk_int */
         if pop_lit2 == pop_lit1 {
             push_lit_stk(1i32, 0i32 as stk_type);
@@ -3922,11 +3922,11 @@ unsafe extern "C" fn x_equals() {
 unsafe extern "C" fn x_greater_than() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
-    if pop_typ1 as libc::c_int != 0i32 {
+    if pop_typ1 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
-    } else if pop_typ2 as libc::c_int != 0i32 {
+    } else if pop_typ2 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
@@ -3939,11 +3939,11 @@ unsafe extern "C" fn x_greater_than() {
 unsafe extern "C" fn x_less_than() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
-    if pop_typ1 as libc::c_int != 0i32 {
+    if pop_typ1 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
-    } else if pop_typ2 as libc::c_int != 0i32 {
+    } else if pop_typ2 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
@@ -3956,11 +3956,11 @@ unsafe extern "C" fn x_less_than() {
 unsafe extern "C" fn x_plus() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
-    if pop_typ1 as libc::c_int != 0i32 {
+    if pop_typ1 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
-    } else if pop_typ2 as libc::c_int != 0i32 {
+    } else if pop_typ2 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
@@ -3971,11 +3971,11 @@ unsafe extern "C" fn x_plus() {
 unsafe extern "C" fn x_minus() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
-    if pop_typ1 as libc::c_int != 0i32 {
+    if pop_typ1 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
-    } else if pop_typ2 as libc::c_int != 0i32 {
+    } else if pop_typ2 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
@@ -3986,11 +3986,11 @@ unsafe extern "C" fn x_minus() {
 unsafe extern "C" fn x_concatenate() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
-    if pop_typ1 as libc::c_int != 1i32 {
+    if pop_typ1 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
-    } else if pop_typ2 as libc::c_int != 1i32 {
+    } else if pop_typ2 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit2, pop_typ2, 1i32 as stk_type); /*352: */
         push_lit_stk(s_null, 1i32 as stk_type); /*353: */
@@ -4098,20 +4098,20 @@ unsafe extern "C" fn x_concatenate() {
 unsafe extern "C" fn x_gets() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
-    if pop_typ1 as libc::c_int != 2i32 {
+    if pop_typ1 as i32 != 2i32 {
         /*stk_fn */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
     } else if !mess_with_entries
-        && (*fn_type.offset(pop_lit1 as isize) as libc::c_int == 6i32
-            || *fn_type.offset(pop_lit1 as isize) as libc::c_int == 5i32)
+        && (*fn_type.offset(pop_lit1 as isize) as i32 == 6i32
+            || *fn_type.offset(pop_lit1 as isize) as i32 == 5i32)
     {
         bst_cant_mess_with_entries_print();
     } else {
-        match *fn_type.offset(pop_lit1 as isize) as libc::c_int {
+        match *fn_type.offset(pop_lit1 as isize) as i32 {
             5 => {
                 /*
                 356: */
-                if pop_typ2 as libc::c_int != 0i32 {
+                if pop_typ2 as i32 != 0i32 {
                     /*stk_int */
                     print_wrong_stk_lit(pop_lit2, pop_typ2, 0i32 as stk_type);
                 } else {
@@ -4121,7 +4121,7 @@ unsafe extern "C" fn x_gets() {
                 }
             }
             6 => {
-                if pop_typ2 as libc::c_int != 1i32 {
+                if pop_typ2 as i32 != 1i32 {
                     /*stk_str */
                     print_wrong_stk_lit(pop_lit2, pop_typ2, 1i32 as stk_type);
                 } else {
@@ -4152,7 +4152,7 @@ unsafe extern "C" fn x_gets() {
                 }
             }
             7 => {
-                if pop_typ2 as libc::c_int != 0i32 {
+                if pop_typ2 as i32 != 0i32 {
                     /*stk_int */
                     print_wrong_stk_lit(pop_lit2, pop_typ2, 0i32 as stk_type);
                 } else {
@@ -4160,7 +4160,7 @@ unsafe extern "C" fn x_gets() {
                 }
             }
             8 => {
-                if pop_typ2 as libc::c_int != 1i32 {
+                if pop_typ2 as i32 != 1i32 {
                     /*stk_str */
                     print_wrong_stk_lit(pop_lit2, pop_typ2, 1i32 as stk_type);
                 } else {
@@ -4203,7 +4203,7 @@ unsafe extern "C" fn x_gets() {
 }
 unsafe extern "C" fn x_add_period() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-    if pop_typ1 as libc::c_int != 1i32 {
+    if pop_typ1 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
@@ -4217,12 +4217,12 @@ unsafe extern "C" fn x_add_period() {
         sp_end = *str_start.offset(pop_lit1 as isize);
         while sp_ptr > sp_end {
             sp_ptr = sp_ptr - 1i32;
-            if *str_pool.offset(sp_ptr as isize) as libc::c_int != 125i32 {
+            if *str_pool.offset(sp_ptr as isize) as i32 != 125i32 {
                 break;
             }
         }
         /*right_brace */
-        match *str_pool.offset(sp_ptr as isize) as libc::c_int {
+        match *str_pool.offset(sp_ptr as isize) as i32 {
             46 | 63 | 33 => {
                 if *lit_stack.offset(lit_stk_ptr as isize) >= cmd_str_ptr {
                     str_ptr = str_ptr + 1i32; /*period */
@@ -4264,16 +4264,16 @@ unsafe extern "C" fn x_change_case() {
     let mut current_block: u64;
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
-    if pop_typ1 as libc::c_int != 1i32 {
+    if pop_typ1 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
-    } else if pop_typ2 as libc::c_int != 1i32 {
+    } else if pop_typ2 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit2, pop_typ2, 1i32 as stk_type); /*title_lowers */
         push_lit_stk(s_null, 1i32 as stk_type); /*all_lowers */
     } else {
-        match *str_pool.offset(*str_start.offset(pop_lit1 as isize) as isize) as libc::c_int {
+        match *str_pool.offset(*str_start.offset(pop_lit1 as isize) as isize) as i32 {
             116 | 84 => conversion_type = 0i32 as u8,
             108 | 76 => conversion_type = 1i32 as u8,
             117 | 85 => conversion_type = 2i32 as u8,
@@ -4284,7 +4284,7 @@ unsafe extern "C" fn x_change_case() {
         } /*bad_conversion */
         if *str_start.offset((pop_lit1 + 1i32) as isize) - *str_start.offset(pop_lit1 as isize)
             != 1i32
-            || conversion_type as libc::c_int == 3i32
+            || conversion_type as i32 == 3i32
         {
             conversion_type = 3i32 as u8; /*bad_conversion */
             print_a_pool_str(pop_lit1);
@@ -4298,20 +4298,20 @@ unsafe extern "C" fn x_change_case() {
         brace_level = 0i32;
         ex_buf_ptr = 0i32;
         while ex_buf_ptr < ex_buf_length {
-            if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 123i32 {
+            if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 123i32 {
                 /*left_brace */
                 brace_level = brace_level + 1i32;
                 if !(brace_level != 1i32) {
                     if !(ex_buf_ptr + 4i32 > ex_buf_length) {
-                        if !(*ex_buf.offset((ex_buf_ptr + 1i32) as isize) as libc::c_int != 92i32) {
-                            if conversion_type as libc::c_int == 0i32 {
+                        if !(*ex_buf.offset((ex_buf_ptr + 1i32) as isize) as i32 != 92i32) {
+                            if conversion_type as i32 == 0i32 {
                                 /*title_lowers */
                                 if ex_buf_ptr == 0i32 {
                                     current_block = 17089879097653631793;
-                                } else if prev_colon as libc::c_int != 0
+                                } else if prev_colon as i32 != 0
                                     && lex_class
                                         [*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as usize]
-                                        as libc::c_int
+                                        as i32
                                         == 1i32
                                 {
                                     current_block = 17089879097653631793;
@@ -4331,7 +4331,7 @@ unsafe extern "C" fn x_change_case() {
                                         while ex_buf_ptr < ex_buf_length
                                             && lex_class
                                                 [*ex_buf.offset(ex_buf_ptr as isize) as usize]
-                                                as libc::c_int
+                                                as i32
                                                 == 2i32
                                         {
                                             ex_buf_ptr = ex_buf_ptr + 1i32
@@ -4345,7 +4345,7 @@ unsafe extern "C" fn x_change_case() {
                                         );
                                         if hash_found {
                                             /*373: */
-                                            match conversion_type as libc::c_int {
+                                            match conversion_type as i32 {
                                                 0 | 1 => {
                                                     match *ilk_info.offset(control_seq_loc as isize)
                                                     {
@@ -4387,7 +4387,7 @@ unsafe extern "C" fn x_change_case() {
                                                                 && lex_class[*ex_buf
                                                                     .offset(ex_buf_ptr as isize)
                                                                     as usize]
-                                                                    as libc::c_int
+                                                                    as i32
                                                                     == 1i32
                                                             {
                                                                 ex_buf_ptr = ex_buf_ptr + 1i32
@@ -4419,16 +4419,16 @@ unsafe extern "C" fn x_change_case() {
                                         ex_buf_xptr = ex_buf_ptr;
                                         while ex_buf_ptr < ex_buf_length
                                             && brace_level > 0i32
-                                            && *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int
+                                            && *ex_buf.offset(ex_buf_ptr as isize) as i32
                                                 != 92i32
                                         {
-                                            if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int
+                                            if *ex_buf.offset(ex_buf_ptr as isize) as i32
                                                 == 125i32
                                             {
                                                 /*right_brace */
                                                 brace_level = brace_level - 1i32
                                             } else if *ex_buf.offset(ex_buf_ptr as isize)
-                                                as libc::c_int
+                                                as i32
                                                 == 123i32
                                             {
                                                 /*left_brace */
@@ -4436,7 +4436,7 @@ unsafe extern "C" fn x_change_case() {
                                             }
                                             ex_buf_ptr = ex_buf_ptr + 1i32
                                         }
-                                        match conversion_type as libc::c_int {
+                                        match conversion_type as i32 {
                                             0 | 1 => {
                                                 lower_case(
                                                     ex_buf,
@@ -4466,28 +4466,28 @@ unsafe extern "C" fn x_change_case() {
                 /*backslash */
                 /*ok_pascal_i_give_up */
                 prev_colon = 0i32 != 0
-            } else if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 125i32 {
+            } else if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 125i32 {
                 /*right_brace */
                 decr_brace_level(pop_lit2);
                 prev_colon = 0i32 != 0
             } else if brace_level == 0i32 {
                 /*377: */
-                match conversion_type as libc::c_int {
+                match conversion_type as i32 {
                     0 => {
                         if !(ex_buf_ptr == 0i32) {
-                            if !(prev_colon as libc::c_int != 0
+                            if !(prev_colon as i32 != 0
                                 && lex_class[*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as usize]
-                                    as libc::c_int
+                                    as i32
                                     == 1i32)
                             {
                                 lower_case(ex_buf, ex_buf_ptr, 1i32);
                             }
                         }
-                        if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 58i32 {
+                        if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 58i32 {
                             /*colon */
                             prev_colon = 1i32 != 0
                         } else if lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize]
-                            as libc::c_int
+                            as i32
                             != 1i32
                         {
                             /*white_space */
@@ -4514,7 +4514,7 @@ unsafe extern "C" fn x_change_case() {
 }
 unsafe extern "C" fn x_chr_to_int() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-    if pop_typ1 as libc::c_int != 1i32 {
+    if pop_typ1 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
@@ -4542,7 +4542,7 @@ unsafe extern "C" fn x_cite() {
 }
 unsafe extern "C" fn x_duplicate() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-    if pop_typ1 as libc::c_int != 1i32 {
+    if pop_typ1 as i32 != 1i32 {
         /*stk_str */
         push_lit_stk(pop_lit1, pop_typ1);
         push_lit_stk(pop_lit1, pop_typ1);
@@ -4575,12 +4575,12 @@ unsafe extern "C" fn x_duplicate() {
 }
 unsafe extern "C" fn x_empty() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-    match pop_typ1 as libc::c_int {
+    match pop_typ1 as i32 {
         1 => {
             sp_ptr = *str_start.offset(pop_lit1 as isize);
             sp_end = *str_start.offset((pop_lit1 + 1i32) as isize);
             while sp_ptr < sp_end {
-                if lex_class[*str_pool.offset(sp_ptr as isize) as usize] as libc::c_int != 1i32 {
+                if lex_class[*str_pool.offset(sp_ptr as isize) as usize] as i32 != 1i32 {
                     /*white_space */
                     push_lit_stk(0i32, 0i32 as stk_type);
                     return;
@@ -4607,15 +4607,15 @@ unsafe extern "C" fn x_format_name() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
     pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-    if pop_typ1 as libc::c_int != 1i32 {
+    if pop_typ1 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
-    } else if pop_typ2 as libc::c_int != 0i32 {
+    } else if pop_typ2 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
-    } else if pop_typ3 as libc::c_int != 1i32 {
+    } else if pop_typ3 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit3, pop_typ3, 1i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
@@ -4646,10 +4646,10 @@ unsafe extern "C" fn x_format_name() {
             bst_ex_warn_print();
         }
         while ex_buf_ptr > ex_buf_xptr {
-            match lex_class[*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as usize] as libc::c_int {
+            match lex_class[*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as usize] as i32 {
                 1 | 4 => ex_buf_ptr = ex_buf_ptr - 1i32,
                 _ => {
-                    if !(*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as libc::c_int == 44i32) {
+                    if !(*ex_buf.offset((ex_buf_ptr - 1i32) as isize) as i32 == 44i32) {
                         break;
                     }
                     /*comma */
@@ -4669,7 +4669,7 @@ unsafe extern "C" fn x_format_name() {
         num_tokens = 0i32;
         token_starting = 1i32 != 0;
         while ex_buf_xptr < ex_buf_ptr {
-            match *ex_buf.offset(ex_buf_xptr as isize) as libc::c_int {
+            match *ex_buf.offset(ex_buf_xptr as isize) as i32 {
                 44 => {
                     if num_commas == 2i32 {
                         printf_log(
@@ -4703,10 +4703,10 @@ unsafe extern "C" fn x_format_name() {
                     name_bf_ptr = name_bf_ptr + 1i32;
                     ex_buf_xptr = ex_buf_xptr + 1i32;
                     while brace_level > 0i32 && ex_buf_xptr < ex_buf_ptr {
-                        if *ex_buf.offset(ex_buf_xptr as isize) as libc::c_int == 125i32 {
+                        if *ex_buf.offset(ex_buf_xptr as isize) as i32 == 125i32 {
                             /*right_brace */
                             brace_level = brace_level - 1i32
-                        } else if *ex_buf.offset(ex_buf_xptr as isize) as libc::c_int == 123i32 {
+                        } else if *ex_buf.offset(ex_buf_xptr as isize) as i32 == 123i32 {
                             /*left_brace */
                             brace_level = brace_level + 1i32
                         } /*space */
@@ -4733,7 +4733,7 @@ unsafe extern "C" fn x_format_name() {
                     token_starting = 0i32 != 0
                 }
                 _ => {
-                    match lex_class[*ex_buf.offset(ex_buf_xptr as isize) as usize] as libc::c_int {
+                    match lex_class[*ex_buf.offset(ex_buf_xptr as isize) as usize] as i32 {
                         1 => {
                             if !token_starting {
                                 *name_sep_char.offset(num_tokens as isize) = 32i32 as ASCII_code
@@ -4796,9 +4796,9 @@ unsafe extern "C" fn x_format_name() {
                     _ => {
                         if von_start > 0i32 {
                             if !(lex_class[*name_sep_char.offset(von_start as isize) as usize]
-                                as libc::c_int
+                                as i32
                                 != 4i32
-                                || *name_sep_char.offset(von_start as isize) as libc::c_int
+                                || *name_sep_char.offset(von_start as isize) as i32
                                     == 126i32)
                             {
                                 von_start = von_start - 1i32;
@@ -4839,7 +4839,7 @@ unsafe extern "C" fn x_format_name() {
 }
 unsafe extern "C" fn x_int_to_chr() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-    if pop_typ1 as libc::c_int != 0i32 {
+    if pop_typ1 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
@@ -4861,7 +4861,7 @@ unsafe extern "C" fn x_int_to_chr() {
 }
 unsafe extern "C" fn x_int_to_str() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-    if pop_typ1 as libc::c_int != 0i32 {
+    if pop_typ1 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
@@ -4874,15 +4874,15 @@ unsafe extern "C" fn x_missing() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     if !mess_with_entries {
         bst_cant_mess_with_entries_print();
-    } else if pop_typ1 as libc::c_int != 1i32 && pop_typ1 as libc::c_int != 3i32 {
-        if pop_typ1 as libc::c_int != 4i32 {
+    } else if pop_typ1 as i32 != 1i32 && pop_typ1 as i32 != 3i32 {
+        if pop_typ1 as i32 != 4i32 {
             /*stk_empty */
             print_stk_lit(pop_lit1, pop_typ1);
             puts_log(b", not a string or missing field,\x00" as *const u8 as *const i8);
             bst_ex_warn_print();
         }
         push_lit_stk(0i32, 0i32 as stk_type);
-    } else if pop_typ1 as libc::c_int == 3i32 {
+    } else if pop_typ1 as i32 == 3i32 {
         /*stk_field_missing */
         push_lit_stk(1i32, 0i32 as stk_type);
     } else {
@@ -4891,7 +4891,7 @@ unsafe extern "C" fn x_missing() {
 }
 unsafe extern "C" fn x_num_names() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-    if pop_typ1 as libc::c_int != 1i32 {
+    if pop_typ1 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
@@ -4918,7 +4918,7 @@ unsafe extern "C" fn x_preamble() {
 }
 unsafe extern "C" fn x_purify() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-    if pop_typ1 as libc::c_int != 1i32 {
+    if pop_typ1 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type); /*space */
         push_lit_stk(s_null, 1i32 as stk_type);
@@ -4929,7 +4929,7 @@ unsafe extern "C" fn x_purify() {
         ex_buf_xptr = 0i32;
         ex_buf_ptr = 0i32;
         while ex_buf_ptr < ex_buf_length {
-            match lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as libc::c_int {
+            match lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as i32 {
                 1 | 4 => {
                     *ex_buf.offset(ex_buf_xptr as isize) = 32i32 as ASCII_code;
                     ex_buf_xptr = ex_buf_xptr + 1i32
@@ -4939,11 +4939,11 @@ unsafe extern "C" fn x_purify() {
                     ex_buf_xptr = ex_buf_xptr + 1i32
                 }
                 _ => {
-                    if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 123i32 {
+                    if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 123i32 {
                         /*left_brace */
                         brace_level = brace_level + 1i32;
                         if brace_level == 1i32 && ex_buf_ptr + 1i32 < ex_buf_length {
-                            if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as libc::c_int == 92i32
+                            if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as i32 == 92i32
                             {
                                 /*backslash */
                                 /*433: */
@@ -4953,7 +4953,7 @@ unsafe extern "C" fn x_purify() {
                                     ex_buf_yptr = ex_buf_ptr;
                                     while ex_buf_ptr < ex_buf_length
                                         && lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize]
-                                            as libc::c_int
+                                            as i32
                                             == 2i32
                                     {
                                         ex_buf_ptr = ex_buf_ptr + 1i32
@@ -4981,12 +4981,12 @@ unsafe extern "C" fn x_purify() {
                                     }
                                     while ex_buf_ptr < ex_buf_length
                                         && brace_level > 0i32
-                                        && *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int
+                                        && *ex_buf.offset(ex_buf_ptr as isize) as i32
                                             != 92i32
                                     {
                                         match lex_class
                                             [*ex_buf.offset(ex_buf_ptr as isize) as usize]
-                                            as libc::c_int
+                                            as i32
                                         {
                                             2 | 3 => {
                                                 *ex_buf.offset(ex_buf_xptr as isize) =
@@ -4995,13 +4995,13 @@ unsafe extern "C" fn x_purify() {
                                             }
                                             _ => {
                                                 if *ex_buf.offset(ex_buf_ptr as isize)
-                                                    as libc::c_int
+                                                    as i32
                                                     == 125i32
                                                 {
                                                     /*right_brace */
                                                     brace_level = brace_level - 1i32
                                                 } else if *ex_buf.offset(ex_buf_ptr as isize)
-                                                    as libc::c_int
+                                                    as i32
                                                     == 123i32
                                                 {
                                                     /*left_brace */
@@ -5015,7 +5015,7 @@ unsafe extern "C" fn x_purify() {
                                 ex_buf_ptr = ex_buf_ptr - 1i32
                             }
                         }
-                    } else if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 125i32 {
+                    } else if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 125i32 {
                         /*right_brace */
                         if brace_level > 0i32 {
                             brace_level = brace_level - 1i32
@@ -5041,15 +5041,15 @@ unsafe extern "C" fn x_substring() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
     pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-    if pop_typ1 as libc::c_int != 0i32 {
+    if pop_typ1 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
-    } else if pop_typ2 as libc::c_int != 0i32 {
+    } else if pop_typ2 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
-    } else if pop_typ3 as libc::c_int != 1i32 {
+    } else if pop_typ3 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit3, pop_typ3, 1i32 as stk_type); /*439: */
         push_lit_stk(s_null, 1i32 as stk_type); /*441: */
@@ -5108,14 +5108,14 @@ unsafe extern "C" fn x_substring() {
 unsafe extern "C" fn x_swap() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
-    if pop_typ1 as libc::c_int != 1i32 || pop_lit1 < cmd_str_ptr {
+    if pop_typ1 as i32 != 1i32 || pop_lit1 < cmd_str_ptr {
         push_lit_stk(pop_lit1, pop_typ1);
-        if pop_typ2 as libc::c_int == 1i32 && pop_lit2 >= cmd_str_ptr {
+        if pop_typ2 as i32 == 1i32 && pop_lit2 >= cmd_str_ptr {
             str_ptr = str_ptr + 1i32;
             pool_ptr = *str_start.offset(str_ptr as isize)
         }
         push_lit_stk(pop_lit2, pop_typ2);
-    } else if pop_typ2 as libc::c_int != 1i32 || pop_lit2 < cmd_str_ptr {
+    } else if pop_typ2 as i32 != 1i32 || pop_lit2 < cmd_str_ptr {
         str_ptr = str_ptr + 1i32;
         pool_ptr = *str_start.offset(str_ptr as isize);
         push_lit_stk(pop_lit1, 1i32 as stk_type);
@@ -5136,7 +5136,7 @@ unsafe extern "C" fn x_swap() {
 }
 unsafe extern "C" fn x_text_length() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-    if pop_typ1 as libc::c_int != 1i32 {
+    if pop_typ1 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
@@ -5147,18 +5147,18 @@ unsafe extern "C" fn x_text_length() {
         sp_brace_level = 0i32;
         while sp_ptr < sp_end {
             sp_ptr = sp_ptr + 1i32;
-            if *str_pool.offset((sp_ptr - 1i32) as isize) as libc::c_int == 123i32 {
+            if *str_pool.offset((sp_ptr - 1i32) as isize) as i32 == 123i32 {
                 /*left_brace */
                 sp_brace_level = sp_brace_level + 1i32;
                 if sp_brace_level == 1i32 && sp_ptr < sp_end {
-                    if *str_pool.offset(sp_ptr as isize) as libc::c_int == 92i32 {
+                    if *str_pool.offset(sp_ptr as isize) as i32 == 92i32 {
                         /*backslash */
                         sp_ptr = sp_ptr + 1i32;
                         while sp_ptr < sp_end && sp_brace_level > 0i32 {
-                            if *str_pool.offset(sp_ptr as isize) as libc::c_int == 125i32 {
+                            if *str_pool.offset(sp_ptr as isize) as i32 == 125i32 {
                                 /*right_brace */
                                 sp_brace_level = sp_brace_level - 1i32
-                            } else if *str_pool.offset(sp_ptr as isize) as libc::c_int == 123i32 {
+                            } else if *str_pool.offset(sp_ptr as isize) as i32 == 123i32 {
                                 /*left_brace */
                                 sp_brace_level = sp_brace_level + 1i32
                             }
@@ -5167,7 +5167,7 @@ unsafe extern "C" fn x_text_length() {
                         num_text_chars = num_text_chars + 1i32
                     }
                 }
-            } else if *str_pool.offset((sp_ptr - 1i32) as isize) as libc::c_int == 125i32 {
+            } else if *str_pool.offset((sp_ptr - 1i32) as isize) as i32 == 125i32 {
                 /*right_brace */
                 if sp_brace_level > 0i32 {
                     sp_brace_level = sp_brace_level - 1i32
@@ -5182,11 +5182,11 @@ unsafe extern "C" fn x_text_length() {
 unsafe extern "C" fn x_text_prefix() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
     pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
-    if pop_typ1 as libc::c_int != 0i32 {
+    if pop_typ1 as i32 != 0i32 {
         /*stk_int */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
-    } else if pop_typ2 as libc::c_int != 1i32 {
+    } else if pop_typ2 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit2, pop_typ2, 1i32 as stk_type); /*445: */
         push_lit_stk(s_null, 1i32 as stk_type);
@@ -5201,18 +5201,18 @@ unsafe extern "C" fn x_text_prefix() {
         sp_xptr1 = sp_ptr;
         while sp_xptr1 < sp_end && num_text_chars < pop_lit1 {
             sp_xptr1 = sp_xptr1 + 1i32;
-            if *str_pool.offset((sp_xptr1 - 1i32) as isize) as libc::c_int == 123i32 {
+            if *str_pool.offset((sp_xptr1 - 1i32) as isize) as i32 == 123i32 {
                 /*left_brace */
                 sp_brace_level = sp_brace_level + 1i32;
                 if sp_brace_level == 1i32 && sp_xptr1 < sp_end {
-                    if *str_pool.offset(sp_xptr1 as isize) as libc::c_int == 92i32 {
+                    if *str_pool.offset(sp_xptr1 as isize) as i32 == 92i32 {
                         /*backslash */
                         sp_xptr1 = sp_xptr1 + 1i32;
                         while sp_xptr1 < sp_end && sp_brace_level > 0i32 {
-                            if *str_pool.offset(sp_xptr1 as isize) as libc::c_int == 125i32 {
+                            if *str_pool.offset(sp_xptr1 as isize) as i32 == 125i32 {
                                 /*right_brace */
                                 sp_brace_level = sp_brace_level - 1i32
-                            } else if *str_pool.offset(sp_xptr1 as isize) as libc::c_int == 123i32 {
+                            } else if *str_pool.offset(sp_xptr1 as isize) as i32 == 123i32 {
                                 /*left_brace */
                                 sp_brace_level = sp_brace_level + 1i32
                             }
@@ -5221,7 +5221,7 @@ unsafe extern "C" fn x_text_prefix() {
                         num_text_chars = num_text_chars + 1i32
                     }
                 }
-            } else if *str_pool.offset((sp_xptr1 - 1i32) as isize) as libc::c_int == 125i32 {
+            } else if *str_pool.offset((sp_xptr1 - 1i32) as isize) as i32 == 125i32 {
                 /*right_brace */
                 if sp_brace_level > 0i32 {
                     sp_brace_level = sp_brace_level - 1i32
@@ -5267,7 +5267,7 @@ unsafe extern "C" fn x_type() {
 }
 unsafe extern "C" fn x_warning() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-    if pop_typ1 as libc::c_int != 1i32 {
+    if pop_typ1 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type);
     } else {
@@ -5278,7 +5278,7 @@ unsafe extern "C" fn x_warning() {
 }
 unsafe extern "C" fn x_width() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-    if pop_typ1 as libc::c_int != 1i32 {
+    if pop_typ1 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type);
         push_lit_stk(0i32, 0i32 as stk_type);
@@ -5289,11 +5289,11 @@ unsafe extern "C" fn x_width() {
         brace_level = 0i32;
         ex_buf_ptr = 0i32;
         while ex_buf_ptr < ex_buf_length {
-            if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 123i32 {
+            if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 123i32 {
                 /*left_brace */
                 brace_level = brace_level + 1i32;
                 if brace_level == 1i32 && ex_buf_ptr + 1i32 < ex_buf_length {
-                    if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as libc::c_int == 92i32 {
+                    if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as i32 == 92i32 {
                         /*backslash */
                         /*453: */
                         ex_buf_ptr = ex_buf_ptr + 1i32;
@@ -5302,7 +5302,7 @@ unsafe extern "C" fn x_width() {
                             ex_buf_xptr = ex_buf_ptr;
                             while ex_buf_ptr < ex_buf_length
                                 && lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize]
-                                    as libc::c_int
+                                    as i32
                                     == 2i32
                             {
                                 ex_buf_ptr = ex_buf_ptr + 1i32
@@ -5335,19 +5335,19 @@ unsafe extern "C" fn x_width() {
                             }
                             while ex_buf_ptr < ex_buf_length
                                 && lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize]
-                                    as libc::c_int
+                                    as i32
                                     == 1i32
                             {
                                 ex_buf_ptr = ex_buf_ptr + 1i32
                             }
                             while ex_buf_ptr < ex_buf_length
                                 && brace_level > 0i32
-                                && *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int != 92i32
+                                && *ex_buf.offset(ex_buf_ptr as isize) as i32 != 92i32
                             {
-                                if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 125i32 {
+                                if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 125i32 {
                                     /*right_brace */
                                     brace_level = brace_level - 1i32
-                                } else if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int
+                                } else if *ex_buf.offset(ex_buf_ptr as isize) as i32
                                     == 123i32
                                 {
                                     /*left_brace */
@@ -5366,7 +5366,7 @@ unsafe extern "C" fn x_width() {
                 } else {
                     string_width = string_width + char_width[123]
                 }
-            } else if *ex_buf.offset(ex_buf_ptr as isize) as libc::c_int == 125i32 {
+            } else if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 125i32 {
                 /*right_brace */
                 decr_brace_level(pop_lit1);
                 string_width = string_width + char_width[125]
@@ -5382,7 +5382,7 @@ unsafe extern "C" fn x_width() {
 }
 unsafe extern "C" fn x_write() {
     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-    if pop_typ1 as libc::c_int != 1i32 {
+    if pop_typ1 as i32 != 1i32 {
         /*stk_str */
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1i32 as stk_type);
     } else {
@@ -5396,7 +5396,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
     let mut r_pop_tp1: stk_type = 0;
     let mut r_pop_tp2: stk_type = 0;
     let mut wiz_ptr: wiz_fn_loc = 0;
-    match *fn_type.offset(ex_fn_loc as isize) as libc::c_int {
+    match *fn_type.offset(ex_fn_loc as isize) as i32 {
         0 => {
             match *ilk_info.offset(ex_fn_loc as isize) {
                 0 => {
@@ -5408,17 +5408,17 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 /*stk_fn */
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 /*stk_fn */
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         /*stk_int */
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
@@ -5486,13 +5486,13 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 /*stk_fn */
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 /*stk_fn */
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 /*stk_int */
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
@@ -5574,15 +5574,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -5649,11 +5649,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -5734,15 +5734,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -5809,11 +5809,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -5894,15 +5894,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -5969,11 +5969,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -6054,15 +6054,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -6129,11 +6129,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -6214,15 +6214,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -6289,11 +6289,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -6374,15 +6374,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -6449,11 +6449,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -6534,15 +6534,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -6609,11 +6609,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -6694,15 +6694,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -6769,11 +6769,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -6854,15 +6854,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -6929,11 +6929,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -7014,15 +7014,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -7089,11 +7089,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -7174,15 +7174,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -7249,11 +7249,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -7334,15 +7334,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -7409,11 +7409,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -7494,15 +7494,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -7569,11 +7569,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -7654,15 +7654,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -7729,11 +7729,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -7814,15 +7814,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -7889,11 +7889,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -7974,15 +7974,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -8049,11 +8049,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -8134,15 +8134,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -8209,11 +8209,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -8294,15 +8294,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -8369,11 +8369,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -8454,15 +8454,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -8529,11 +8529,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -8614,15 +8614,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -8689,11 +8689,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -8774,15 +8774,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -8849,11 +8849,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -8934,15 +8934,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -9009,11 +9009,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -9094,15 +9094,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -9169,11 +9169,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -9254,15 +9254,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -9329,11 +9329,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -9415,15 +9415,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -9490,11 +9490,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -9575,15 +9575,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -9650,11 +9650,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -9735,15 +9735,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -9810,11 +9810,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -9895,15 +9895,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -9970,11 +9970,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -10055,15 +10055,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -10130,11 +10130,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -10215,15 +10215,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -10290,11 +10290,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -10375,15 +10375,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -10450,11 +10450,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -10535,15 +10535,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -10610,11 +10610,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -10695,15 +10695,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -10770,11 +10770,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -10855,15 +10855,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -10930,11 +10930,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -11015,15 +11015,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -11090,11 +11090,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -11175,15 +11175,15 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         9705665520141849625 => {
                             pop_lit_stk(&mut r_pop_lt1, &mut r_pop_tp1);
                             pop_lit_stk(&mut r_pop_lt2, &mut r_pop_tp2);
-                            if r_pop_tp1 as libc::c_int != 2i32 {
+                            if r_pop_tp1 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2i32 as stk_type);
-                            } else if r_pop_tp2 as libc::c_int != 2i32 {
+                            } else if r_pop_tp2 as i32 != 2i32 {
                                 print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2i32 as stk_type);
                             } else {
                                 loop {
                                     execute_fn(r_pop_lt2);
                                     pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
-                                    if pop_typ1 as libc::c_int != 0i32 {
+                                    if pop_typ1 as i32 != 0i32 {
                                         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
                                         break;
                                     } else {
@@ -11250,11 +11250,11 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             pop_lit_stk(&mut pop_lit1, &mut pop_typ1);
                             pop_lit_stk(&mut pop_lit2, &mut pop_typ2);
                             pop_lit_stk(&mut pop_lit3, &mut pop_typ3);
-                            if pop_typ1 as libc::c_int != 2i32 {
+                            if pop_typ1 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 2i32 as stk_type);
-                            } else if pop_typ2 as libc::c_int != 2i32 {
+                            } else if pop_typ2 as i32 != 2i32 {
                                 print_wrong_stk_lit(pop_lit2, pop_typ2, 2i32 as stk_type);
-                            } else if pop_typ3 as libc::c_int != 0i32 {
+                            } else if pop_typ3 as i32 != 0i32 {
                                 print_wrong_stk_lit(pop_lit3, pop_typ3, 0i32 as stk_type);
                             } else if pop_lit3 > 0i32 {
                                 execute_fn(pop_lit2);
@@ -11386,7 +11386,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 ex_buf_ptr = 0i32;
                 while *entry_strs
                     .offset((str_ent_ptr * (ent_str_size + 1i32) + ex_buf_ptr) as isize)
-                    as libc::c_int
+                    as i32
                     != 127i32
                 {
                     /*end_of_string */
@@ -11426,7 +11426,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
 }
 unsafe extern "C" fn get_the_top_level_aux_file_name(
     mut aux_file_name: *const i8,
-) -> libc::c_int {
+) -> i32 {
     name_of_file = xmalloc(
         strlen(aux_file_name)
             .wrapping_add(1i32 as u64)
@@ -11485,7 +11485,7 @@ unsafe extern "C" fn aux_bib_data_command() {
         return;
     }
     bib_seen = 1i32 != 0;
-    while *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
+    while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         buf_ptr2 = buf_ptr2 + 1i32;
         if !scan2_white(125i32 as ASCII_code, 44i32 as ASCII_code) {
@@ -11493,13 +11493,13 @@ unsafe extern "C" fn aux_bib_data_command() {
             aux_err_print();
             return;
         }
-        if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32 {
+        if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32 {
             /*white_space */
             aux_err_white_space_in_argument_print();
             aux_err_print();
             return;
         }
-        if last > buf_ptr2 + 1i32 && *buffer.offset(buf_ptr2 as isize) as libc::c_int == 125i32 {
+        if last > buf_ptr2 + 1i32 && *buffer.offset(buf_ptr2 as isize) as i32 == 125i32 {
             aux_err_stuff_after_right_brace_print();
             aux_err_print();
             return;
@@ -11563,7 +11563,7 @@ unsafe extern "C" fn aux_bib_style_command() {
         aux_err_print();
         return;
     }
-    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32 {
+    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32 {
         /*white_space */
         aux_err_white_space_in_argument_print();
         aux_err_print();
@@ -11608,7 +11608,7 @@ unsafe extern "C" fn aux_bib_style_command() {
 }
 unsafe extern "C" fn aux_citation_command() {
     citation_seen = 1i32 != 0;
-    while *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
+    while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         let mut current_block_56: u64;
         /*right_brace */
         buf_ptr2 = buf_ptr2 + 1i32;
@@ -11617,19 +11617,19 @@ unsafe extern "C" fn aux_citation_command() {
             aux_err_print();
             return;
         }
-        if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32 {
+        if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32 {
             /*white_space */
             aux_err_white_space_in_argument_print();
             aux_err_print();
             return;
         }
-        if last > buf_ptr2 + 1i32 && *buffer.offset(buf_ptr2 as isize) as libc::c_int == 125i32 {
+        if last > buf_ptr2 + 1i32 && *buffer.offset(buf_ptr2 as isize) as i32 == 125i32 {
             aux_err_stuff_after_right_brace_print();
             aux_err_print();
             return;
         }
         if buf_ptr2 - buf_ptr1 == 1i32 {
-            if *buffer.offset(buf_ptr1 as isize) as libc::c_int == 42i32 {
+            if *buffer.offset(buf_ptr1 as isize) as i32 == 42i32 {
                 /*star */
                 if all_entries {
                     puts_log(
@@ -11717,7 +11717,7 @@ unsafe extern "C" fn aux_input_command() {
         aux_err_print();
         return;
     }
-    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32 {
+    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32 {
         /*white_space */
         aux_err_white_space_in_argument_print();
         aux_err_print();
@@ -11795,7 +11795,7 @@ unsafe extern "C" fn aux_input_command() {
     print_aux_name();
     aux_ln_stack[aux_ptr as usize] = 0i32;
 }
-unsafe extern "C" fn pop_the_aux_stack() -> libc::c_int {
+unsafe extern "C" fn pop_the_aux_stack() -> i32 {
     peekable_close(aux_file[aux_ptr as usize]);
     aux_file[aux_ptr as usize] = 0 as *mut peekable_input_t;
     if aux_ptr == 0i32 {
@@ -11882,7 +11882,7 @@ unsafe extern "C" fn bst_entry_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"entry\x00" as *const u8 as *const i8);
@@ -11896,14 +11896,14 @@ unsafe extern "C" fn bst_entry_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    while *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
+    while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         scan_identifier(
             125i32 as ASCII_code,
             37i32 as ASCII_code,
             37i32 as ASCII_code,
         ); /*field */
-        if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
+        if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
         } else {
             bst_id_print();
             puts_log(b"entry\x00" as *const u8 as *const i8);
@@ -11943,7 +11943,7 @@ unsafe extern "C" fn bst_entry_command() {
         puts_log(b"Warning--I didn\'t find any fields\x00" as *const u8 as *const i8);
         bst_warn_print();
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"entry\x00" as *const u8 as *const i8);
@@ -11957,14 +11957,14 @@ unsafe extern "C" fn bst_entry_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    while *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
+    while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         scan_identifier(
             125i32 as ASCII_code,
             37i32 as ASCII_code,
             37i32 as ASCII_code,
         ); /*int_entry_var */
-        if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
+        if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
         } else {
             bst_id_print();
             puts_log(b"entry\x00" as *const u8 as *const i8);
@@ -12000,7 +12000,7 @@ unsafe extern "C" fn bst_entry_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"entry\x00" as *const u8 as *const i8);
@@ -12014,14 +12014,14 @@ unsafe extern "C" fn bst_entry_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    while *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
+    while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         scan_identifier(
             125i32 as ASCII_code,
             37i32 as ASCII_code,
             37i32 as ASCII_code,
         ); /*str_entry_var */
-        if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
+        if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
         } else {
             bst_id_print();
             puts_log(b"entry\x00" as *const u8 as *const i8);
@@ -12067,8 +12067,8 @@ unsafe extern "C" fn bad_argument_token() -> bool {
         bst_err_print_and_look_for_blank_line();
         return 1i32 != 0;
     } else {
-        if *fn_type.offset(fn_loc as isize) as libc::c_int != 0i32
-            && *fn_type.offset(fn_loc as isize) as libc::c_int != 1i32
+        if *fn_type.offset(fn_loc as isize) as i32 != 0i32
+            && *fn_type.offset(fn_loc as isize) as i32 != 1i32
         {
             print_a_token();
             puts_log(b" has bad function type \x00" as *const u8 as *const i8);
@@ -12093,7 +12093,7 @@ unsafe extern "C" fn bst_execute_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"execute\x00" as *const u8 as *const i8);
@@ -12112,7 +12112,7 @@ unsafe extern "C" fn bst_execute_command() {
         37i32 as ASCII_code,
         37i32 as ASCII_code,
     );
-    if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
+    if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
     } else {
         bst_id_print();
         puts_log(b"execute\x00" as *const u8 as *const i8);
@@ -12128,7 +12128,7 @@ unsafe extern "C" fn bst_execute_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         bst_right_brace_print();
         puts_log(b"execute\x00" as *const u8 as *const i8);
@@ -12148,7 +12148,7 @@ unsafe extern "C" fn bst_function_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 123i32 {
         /*left_brace */
         bst_left_brace_print(); /*wiz_defined */
         puts_log(b"function\x00" as *const u8 as *const i8);
@@ -12167,7 +12167,7 @@ unsafe extern "C" fn bst_function_command() {
         37i32 as ASCII_code,
         37i32 as ASCII_code,
     );
-    if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
+    if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
     } else {
         bst_id_print();
         puts_log(b"function\x00" as *const u8 as *const i8);
@@ -12196,7 +12196,7 @@ unsafe extern "C" fn bst_function_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         bst_right_brace_print();
         puts_log(b"function\x00" as *const u8 as *const i8);
@@ -12210,7 +12210,7 @@ unsafe extern "C" fn bst_function_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"function\x00" as *const u8 as *const i8);
@@ -12227,7 +12227,7 @@ unsafe extern "C" fn bst_integers_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"integers\x00" as *const u8 as *const i8);
@@ -12241,14 +12241,14 @@ unsafe extern "C" fn bst_integers_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    while *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
+    while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         scan_identifier(
             125i32 as ASCII_code,
             37i32 as ASCII_code,
             37i32 as ASCII_code,
         ); /*int_global_var */
-        if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
+        if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
         } else {
             bst_id_print();
             puts_log(b"integers\x00" as *const u8 as *const i8);
@@ -12292,7 +12292,7 @@ unsafe extern "C" fn bst_iterate_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"iterate\x00" as *const u8 as *const i8);
@@ -12311,7 +12311,7 @@ unsafe extern "C" fn bst_iterate_command() {
         37i32 as ASCII_code,
         37i32 as ASCII_code,
     );
-    if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
+    if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
     } else {
         bst_id_print();
         puts_log(b"iterate\x00" as *const u8 as *const i8);
@@ -12327,7 +12327,7 @@ unsafe extern "C" fn bst_iterate_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         bst_right_brace_print();
         puts_log(b"iterate\x00" as *const u8 as *const i8);
@@ -12359,7 +12359,7 @@ unsafe extern "C" fn bst_macro_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"macro\x00" as *const u8 as *const i8);
@@ -12378,7 +12378,7 @@ unsafe extern "C" fn bst_macro_command() {
         37i32 as ASCII_code,
         37i32 as ASCII_code,
     );
-    if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
+    if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
     } else {
         bst_id_print();
         puts_log(b"macro\x00" as *const u8 as *const i8);
@@ -12406,7 +12406,7 @@ unsafe extern "C" fn bst_macro_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         bst_right_brace_print();
         puts_log(b"macro\x00" as *const u8 as *const i8);
@@ -12420,7 +12420,7 @@ unsafe extern "C" fn bst_macro_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"macro\x00" as *const u8 as *const i8);
@@ -12434,7 +12434,7 @@ unsafe extern "C" fn bst_macro_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 34i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 34i32 {
         /*double_quote */
         puts_log(
             b"A macro definition must be \"-delimited\x00" as *const u8 as *const i8,
@@ -12466,7 +12466,7 @@ unsafe extern "C" fn bst_macro_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         bst_right_brace_print();
         puts_log(b"macro\x00" as *const u8 as *const i8);
@@ -12485,7 +12485,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
         bib_line_num = bib_line_num + 1i32;
         buf_ptr2 = 0i32
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 64i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 64i32 {
         /*at_sign */
         puts_log(b"An \"@\" disappeared\x00" as *const u8 as *const i8);
         print_confusion();
@@ -12501,7 +12501,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
         40i32 as ASCII_code,
         40i32 as ASCII_code,
     );
-    if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
+    if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
     } else {
         bib_id_print();
         puts_log(b"an entry type\x00" as *const u8 as *const i8);
@@ -12545,10 +12545,10 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     eat_bib_print();
                     return;
                 }
-                if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 123i32 {
+                if *buffer.offset(buf_ptr2 as isize) as i32 == 123i32 {
                     /*left_brace */
                     right_outer_delim = 125i32 as ASCII_code
-                } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 40i32 {
+                } else if *buffer.offset(buf_ptr2 as isize) as i32 == 40i32 {
                     /*right_brace */
                     /*left_paren */
                     right_outer_delim = 41i32 as ASCII_code
@@ -12565,13 +12565,13 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                 if !scan_and_store_the_field_value_and_eat_white() {
                     return;
                 }
-                if *buffer.offset(buf_ptr2 as isize) as libc::c_int
-                    != right_outer_delim as libc::c_int
+                if *buffer.offset(buf_ptr2 as isize) as i32
+                    != right_outer_delim as i32
                 {
                     printf_log(
                         b"Missing \"%c\" in preamble command\x00" as *const u8
                             as *const i8,
-                        right_outer_delim as libc::c_int,
+                        right_outer_delim as i32,
                     );
                     bib_err_print();
                     return;
@@ -12584,10 +12584,10 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     eat_bib_print();
                     return;
                 }
-                if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 123i32 {
+                if *buffer.offset(buf_ptr2 as isize) as i32 == 123i32 {
                     /*left_brace */
                     right_outer_delim = 125i32 as ASCII_code
-                } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 40i32 {
+                } else if *buffer.offset(buf_ptr2 as isize) as i32 == 40i32 {
                     /*right_brace */
                     /*left_paren */
                     right_outer_delim = 41i32 as ASCII_code
@@ -12605,7 +12605,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     61i32 as ASCII_code,
                     61i32 as ASCII_code,
                 );
-                if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
+                if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
                 } else {
                     bib_id_print();
                     puts_log(b"a string name\x00" as *const u8 as *const i8);
@@ -12626,7 +12626,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     eat_bib_print();
                     return;
                 }
-                if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 61i32 {
+                if *buffer.offset(buf_ptr2 as isize) as i32 != 61i32 {
                     /*equals_sign */
                     bib_equals_sign_print();
                     return;
@@ -12640,12 +12640,12 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                 if !scan_and_store_the_field_value_and_eat_white() {
                     return;
                 }
-                if *buffer.offset(buf_ptr2 as isize) as libc::c_int
-                    != right_outer_delim as libc::c_int
+                if *buffer.offset(buf_ptr2 as isize) as i32
+                    != right_outer_delim as i32
                 {
                     printf_log(
                         b"Missing \"%c\" in string command\x00" as *const u8 as *const i8,
-                        right_outer_delim as libc::c_int,
+                        right_outer_delim as i32,
                     );
                     bib_err_print();
                     return;
@@ -12665,7 +12665,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
             11i32 as str_ilk,
             0i32 != 0,
         );
-        if !hash_found || *fn_type.offset(entry_type_loc as isize) as libc::c_int != 1i32 {
+        if !hash_found || *fn_type.offset(entry_type_loc as isize) as i32 != 1i32 {
             type_exists = 0i32 != 0
         } else {
             type_exists = 1i32 != 0
@@ -12675,10 +12675,10 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
         eat_bib_print();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 123i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 == 123i32 {
         /*left_brace */
         right_outer_delim = 125i32 as ASCII_code
-    } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 40i32 {
+    } else if *buffer.offset(buf_ptr2 as isize) as i32 == 40i32 {
         /*right_brace */
         /*left_paren */
         right_outer_delim = 41i32 as ASCII_code
@@ -12691,7 +12691,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
         eat_bib_print();
         return;
     }
-    if right_outer_delim as libc::c_int == 41i32 {
+    if right_outer_delim as i32 == 41i32 {
         /*right_paren */
         scan1_white(44i32 as ASCII_code);
     } else {
@@ -12847,8 +12847,8 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
         eat_bib_print();
         return;
     }
-    while *buffer.offset(buf_ptr2 as isize) as libc::c_int != right_outer_delim as libc::c_int {
-        if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 44i32 {
+    while *buffer.offset(buf_ptr2 as isize) as i32 != right_outer_delim as i32 {
+        if *buffer.offset(buf_ptr2 as isize) as i32 != 44i32 {
             /*comma */
             bib_one_of_two_print(44i32 as ASCII_code, right_outer_delim);
             return;
@@ -12858,7 +12858,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
             eat_bib_print();
             return;
         }
-        if *buffer.offset(buf_ptr2 as isize) as libc::c_int == right_outer_delim as libc::c_int {
+        if *buffer.offset(buf_ptr2 as isize) as i32 == right_outer_delim as i32 {
             break;
         }
         scan_identifier(
@@ -12866,7 +12866,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
             61i32 as ASCII_code,
             61i32 as ASCII_code,
         );
-        if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
+        if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
         } else {
             bib_id_print();
             puts_log(b"a field name\x00" as *const u8 as *const i8);
@@ -12884,7 +12884,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                 0i32 != 0,
             );
             if hash_found {
-                if *fn_type.offset(field_name_loc as isize) as libc::c_int == 4i32 {
+                if *fn_type.offset(field_name_loc as isize) as i32 == 4i32 {
                     /*field */
                     store_field = 1i32 != 0
                 }
@@ -12894,7 +12894,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
             eat_bib_print();
             return;
         }
-        if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 61i32 {
+        if *buffer.offset(buf_ptr2 as isize) as i32 != 61i32 {
             /*equals_sign */
             bib_equals_sign_print(); /*missing */
             return;
@@ -13081,7 +13081,7 @@ unsafe extern "C" fn bst_read_command() {
         if *type_list.offset(cite_ptr as isize) == 0i32 {
             /*empty */
             print_missing_entry(*cite_list.offset(cite_ptr as isize));
-        } else if all_entries as libc::c_int != 0
+        } else if all_entries as i32 != 0
             || cite_ptr < old_num_cites
             || *cite_info.offset(cite_ptr as isize) >= min_crossrefs
         {
@@ -13174,7 +13174,7 @@ unsafe extern "C" fn bst_reverse_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"reverse\x00" as *const u8 as *const i8);
@@ -13193,7 +13193,7 @@ unsafe extern "C" fn bst_reverse_command() {
         37i32 as ASCII_code,
         37i32 as ASCII_code,
     );
-    if scan_result as libc::c_int == 3i32 || scan_result as libc::c_int == 1i32 {
+    if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
     } else {
         bst_id_print();
         puts_log(b"reverse\x00" as *const u8 as *const i8);
@@ -13209,7 +13209,7 @@ unsafe extern "C" fn bst_reverse_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         bst_right_brace_print();
         puts_log(b"reverse\x00" as *const u8 as *const i8);
@@ -13251,7 +13251,7 @@ unsafe extern "C" fn bst_strings_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    if *buffer.offset(buf_ptr2 as isize) as libc::c_int != 123i32 {
+    if *buffer.offset(buf_ptr2 as isize) as i32 != 123i32 {
         /*left_brace */
         bst_left_brace_print();
         puts_log(b"strings\x00" as *const u8 as *const i8);
@@ -13265,14 +13265,14 @@ unsafe extern "C" fn bst_strings_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    while *buffer.offset(buf_ptr2 as isize) as libc::c_int != 125i32 {
+    while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         scan_identifier(
             125i32 as ASCII_code,
             37i32 as ASCII_code,
             37i32 as ASCII_code,
         );
-        if scan_result as libc::c_int != 3i32 && scan_result as libc::c_int != 1i32 {
+        if scan_result as i32 != 3i32 && scan_result as i32 != 1i32 {
             /*specified_char_adjacent */
             bst_id_print(); /*str_global_var */
             puts_log(b"strings\x00" as *const u8 as *const i8); /*HASH_SIZE */
@@ -13331,7 +13331,7 @@ unsafe extern "C" fn get_bst_command_and_process() {
     if !scan_alpha() {
         printf_log(
             b"\"%c\" can\'t start a style-file command\x00" as *const u8 as *const i8,
-            *buffer.offset(buf_ptr2 as isize) as libc::c_int,
+            *buffer.offset(buf_ptr2 as isize) as i32,
         );
         bst_err_print_and_look_for_blank_line();
         return;
@@ -13427,7 +13427,7 @@ unsafe extern "C" fn compute_hash_prime() {
             } /*illegal_id_char */
             n = 2i32; /*illegal_id_char */
             j_prime = 1i32 != 0; /*illegal_id_char */
-            while n < o && j_prime as libc::c_int != 0 {
+            while n < o && j_prime as i32 != 0 {
                 while *hash_text.offset(n as isize) < j {
                     let ref mut fresh11 = *hash_text.offset(n as isize); /*illegal_id_char */
                     *fresh11 += 2i32 * *hash_next.offset(n as isize)
@@ -13446,7 +13446,7 @@ unsafe extern "C" fn compute_hash_prime() {
         *hash_next.offset(k as isize) = hash_prime
     }
 }
-unsafe extern "C" fn initialize(mut aux_file_name: *const i8) -> libc::c_int {
+unsafe extern "C" fn initialize(mut aux_file_name: *const i8) -> i32 {
     let mut i: i32 = 0;
     let mut k: hash_loc = 0;
     bad = 0i32;
@@ -13480,7 +13480,7 @@ unsafe extern "C" fn initialize(mut aux_file_name: *const i8) -> libc::c_int {
     if bad != 0 {
         return 1i32;
     }
-    history = HISTORY_SPOTLESS as libc::c_int as u8;
+    history = HISTORY_SPOTLESS as i32 as u8;
     i = 0i32;
     while i <= 127i32 {
         lex_class[i as usize] = 5i32 as lex_type;
@@ -13868,14 +13868,14 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
         ttstub_output_close(bbl_file);
     }
     /*456:*/
-    if read_performed as libc::c_int != 0 && !reading_completed {
+    if read_performed as i32 != 0 && !reading_completed {
         printf_log(
             b"Aborted at line %ld of file \x00" as *const u8 as *const i8,
             bib_line_num as i64,
         );
         print_bib_name();
     }
-    match history as libc::c_int {
+    match history as i32 {
         0 => {}
         1 => {
             if err_count == 1i32 {

@@ -16,12 +16,12 @@ extern "C" {
     fn pdf_add_stream(
         stream: *mut pdf_obj,
         stream_data_ptr: *const libc::c_void,
-        stream_data_len: libc::c_int,
+        stream_data_len: i32,
     );
     #[no_mangle]
-    fn pdf_new_stream(flags: libc::c_int) -> *mut pdf_obj;
+    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
     #[no_mangle]
@@ -39,7 +39,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_version() -> libc::c_uint;
     #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
@@ -54,13 +54,13 @@ extern "C" {
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn floor(_: f64) -> f64;
     #[no_mangle]
@@ -95,9 +95,9 @@ extern "C" {
     #[no_mangle]
     fn sget_unsigned_pair(_: *mut u8) -> u16;
     #[no_mangle]
-    fn pdf_dev_get_param(param_type: libc::c_int) -> libc::c_int;
+    fn pdf_dev_get_param(param_type: i32) -> i32;
     #[no_mangle]
-    fn pdf_dev_reset_color(force: libc::c_int);
+    fn pdf_dev_reset_color(force: i32);
     #[no_mangle]
     fn MD5_init(ctx: *mut MD5_CONTEXT);
     #[no_mangle]
@@ -122,7 +122,7 @@ pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
-    pub num_components: libc::c_int,
+    pub num_components: i32,
     pub spot_color_name: *mut i8,
     pub values: [f64; 4],
 }
@@ -130,7 +130,7 @@ pub struct pdf_color {
 #[repr(C)]
 pub struct pdf_colorspace {
     pub ident: *mut i8,
-    pub subtype: libc::c_int,
+    pub subtype: i32,
     pub resource: *mut pdf_obj,
     pub reference: *mut pdf_obj,
     pub cdata: *mut libc::c_void,
@@ -147,8 +147,8 @@ pub type iccSig = u32;
 pub struct iccbased_cdata {
     pub sig: i32,
     pub checksum: [u8; 16],
-    pub colorspace: libc::c_int,
-    pub alternate: libc::c_int,
+    pub colorspace: i32,
+    pub alternate: i32,
     /* alternate colorspace (id), unused */
 }
 #[derive(Copy, Clone)]
@@ -161,7 +161,7 @@ pub struct C2RustUnnamed_0 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct iccHeader {
-    pub size: libc::c_int,
+    pub size: i32,
     pub CMMType: iccSig,
     pub version: i32,
     pub devClass: iccSig,
@@ -195,18 +195,18 @@ pub struct MD5_CONTEXT {
     pub D: u32,
     pub nblocks: size_t,
     pub buf: [u8; 64],
-    pub count: libc::c_int,
+    pub count: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_1 {
-    pub major: libc::c_int,
-    pub minor: libc::c_int,
+    pub major: i32,
+    pub minor: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_2 {
-    pub current: libc::c_int,
+    pub current: i32,
     pub stroke: [pdf_color; 128],
     pub fill: [pdf_color; 128],
 }
@@ -242,9 +242,9 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 */
 /* No page independence here...
  */
-static mut verbose: libc::c_int = 0i32;
+static mut verbose: i32 = 0i32;
 #[no_mangle]
-pub unsafe extern "C" fn pdf_color_set_verbose(mut level: libc::c_int) {
+pub unsafe extern "C" fn pdf_color_set_verbose(mut level: i32) {
     verbose = level;
 }
 /* This function returns PDF_COLORSPACE_TYPE_GRAY,
@@ -252,7 +252,7 @@ pub unsafe extern "C" fn pdf_color_set_verbose(mut level: libc::c_int) {
  * PDF_COLORSPACE_TYPE_SPOT.
  */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_color_type(mut color: *const pdf_color) -> libc::c_int {
+pub unsafe extern "C" fn pdf_color_type(mut color: *const pdf_color) -> i32 {
     if !color.is_null() {
     } else {
         __assert_fail(
@@ -273,7 +273,7 @@ pub unsafe extern "C" fn pdf_color_rgbcolor(
     mut r: f64,
     mut g: f64,
     mut b: f64,
-) -> libc::c_int {
+) -> i32 {
     if !color.is_null() {
     } else {
         __assert_fail(
@@ -321,7 +321,7 @@ pub unsafe extern "C" fn pdf_color_cmykcolor(
     mut m: f64,
     mut y: f64,
     mut k: f64,
-) -> libc::c_int {
+) -> i32 {
     if !color.is_null() {
     } else {
         __assert_fail(
@@ -374,7 +374,7 @@ pub unsafe extern "C" fn pdf_color_cmykcolor(
 pub unsafe extern "C" fn pdf_color_graycolor(
     mut color: *mut pdf_color,
     mut g: f64,
-) -> libc::c_int {
+) -> i32 {
     if !color.is_null() {
     } else {
         __assert_fail(
@@ -404,7 +404,7 @@ pub unsafe extern "C" fn pdf_color_spotcolor(
     mut color: *mut pdf_color,
     mut name: *mut i8,
     mut c: f64,
-) -> libc::c_int {
+) -> i32 {
     if !color.is_null() {
     } else {
         __assert_fail(
@@ -477,7 +477,7 @@ pub unsafe extern "C" fn pdf_color_brighten_color(
     } else {
         let mut f0: f64 = 0.;
         let mut f1: f64 = 0.;
-        let mut n: libc::c_int = 0;
+        let mut n: i32 = 0;
         (*dst).num_components = (*src).num_components;
         n = (*dst).num_components;
         f1 = if n == 4i32 { 0.0f64 } else { f };
@@ -494,7 +494,7 @@ pub unsafe extern "C" fn pdf_color_brighten_color(
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_is_white(mut color: *const pdf_color) -> bool {
-    let mut n: libc::c_int = 0;
+    let mut n: i32 = 0;
     let mut f: f64 = 0.;
     if !color.is_null() {
     } else {
@@ -538,19 +538,19 @@ pub unsafe extern "C" fn pdf_color_to_string(
     mut color: *const pdf_color,
     mut buffer: *mut i8,
     mut mask: i8,
-) -> libc::c_int {
-    let mut i: libc::c_int = 0;
-    let mut len: libc::c_int = 0i32;
+) -> i32 {
+    let mut i: i32 = 0;
+    let mut len: i32 = 0i32;
     if pdf_color_type(color) == -2i32 {
         len = sprintf(
             buffer,
             b" /%s %c%c %g %c%c\x00" as *const u8 as *const i8,
             (*color).spot_color_name,
-            'C' as i32 | mask as libc::c_int,
-            'S' as i32 | mask as libc::c_int,
+            'C' as i32 | mask as i32,
+            'S' as i32 | mask as i32,
             floor((*color).values[0] / 0.001f64 + 0.5f64) * 0.001f64,
-            'S' as i32 | mask as libc::c_int,
-            'C' as i32 | mask as libc::c_int,
+            'S' as i32 | mask as i32,
+            'C' as i32 | mask as i32,
         )
     } else {
         i = 0i32;
@@ -572,8 +572,8 @@ pub unsafe extern "C" fn pdf_color_to_string(
 pub unsafe extern "C" fn pdf_color_compare(
     mut color1: *const pdf_color,
     mut color2: *const pdf_color,
-) -> libc::c_int {
-    let mut n: libc::c_int = 0;
+) -> i32 {
+    let mut n: i32 = 0;
     n = (*color1).num_components;
     let mut current_block_1: u64;
     match n {
@@ -626,7 +626,7 @@ pub unsafe extern "C" fn pdf_color_compare(
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_is_valid(mut color: *const pdf_color) -> bool {
-    let mut n: libc::c_int = 0;
+    let mut n: i32 = 0;
     n = (*color).num_components;
     let mut current_block_1: u64;
     match n {
@@ -675,7 +675,7 @@ pub unsafe extern "C" fn pdf_color_is_valid(mut color: *const pdf_color) -> bool
     }
     if pdf_color_type(color) == -2i32 {
         if (*color).spot_color_name.is_null()
-            || *(*color).spot_color_name.offset(0) as libc::c_int == '\u{0}' as i32
+            || *(*color).spot_color_name.offset(0) as i32 == '\u{0}' as i32
         {
             dpx_warning(b"Invalid spot color: empty name\x00" as *const u8 as *const i8);
             return 0i32 != 0;
@@ -849,11 +849,11 @@ static mut icc_versions: [C2RustUnnamed_1; 8] = [
     },
 ];
 unsafe extern "C" fn iccp_version_supported(
-    mut major: libc::c_int,
-    mut minor: libc::c_int,
-) -> libc::c_int {
-    let mut pdf_ver: libc::c_int = 0;
-    pdf_ver = pdf_get_version() as libc::c_int;
+    mut major: i32,
+    mut minor: i32,
+) -> i32 {
+    let mut pdf_ver: i32 = 0;
+    pdf_ver = pdf_get_version() as i32;
     if pdf_ver < 8i32 {
         if icc_versions[pdf_ver as usize].major < major {
             return 0i32;
@@ -870,10 +870,10 @@ unsafe extern "C" fn iccp_version_supported(
 unsafe extern "C" fn str2iccSig(mut s: *const libc::c_void) -> iccSig {
     let mut p: *const i8 = 0 as *const i8;
     p = s as *const i8;
-    return ((*p.offset(0) as libc::c_int) << 24i32
-        | (*p.offset(1) as libc::c_int) << 16i32
-        | (*p.offset(2) as libc::c_int) << 8i32
-        | *p.offset(3) as libc::c_int) as iccSig;
+    return ((*p.offset(0) as i32) << 24i32
+        | (*p.offset(1) as i32) << 16i32
+        | (*p.offset(2) as i32) << 8i32
+        | *p.offset(3) as i32) as iccSig;
 }
 unsafe extern "C" fn iccp_init_iccHeader(mut icch: *mut iccHeader) {
     if !icch.is_null() {
@@ -966,8 +966,8 @@ unsafe extern "C" fn release_iccbased_cdata(mut cdata: *mut iccbased_cdata) {
     }
     free(cdata as *mut libc::c_void);
 }
-unsafe extern "C" fn get_num_components_iccbased(mut cdata: *const iccbased_cdata) -> libc::c_int {
-    let mut num_components: libc::c_int = 0i32;
+unsafe extern "C" fn get_num_components_iccbased(mut cdata: *const iccbased_cdata) -> i32 {
+    let mut num_components: i32 = 0i32;
     if !cdata.is_null()
         && (*cdata).sig
             == ('i' as i32) << 24i32 | ('c' as i32) << 16i32 | ('c' as i32) << 8i32 | 'b' as i32
@@ -997,7 +997,7 @@ unsafe extern "C" fn compare_iccbased(
     mut cdata1: *const iccbased_cdata,
     mut ident2: *const i8,
     mut cdata2: *const iccbased_cdata,
-) -> libc::c_int {
+) -> i32 {
     if !cdata1.is_null() && !cdata2.is_null() {
         if !cdata1.is_null()
             && (*cdata1).sig
@@ -1053,10 +1053,10 @@ unsafe extern "C" fn compare_iccbased(
 }
 #[no_mangle]
 pub unsafe extern "C" fn iccp_check_colorspace(
-    mut colortype: libc::c_int,
+    mut colortype: i32,
     mut profile: *const libc::c_void,
-    mut proflen: libc::c_int,
-) -> libc::c_int {
+    mut proflen: i32,
+) -> i32 {
     let mut colorspace: iccSig = 0;
     let mut p: *const u8 = 0 as *const u8;
     if profile.is_null() || proflen < 128i32 {
@@ -1099,7 +1099,7 @@ pub unsafe extern "C" fn iccp_check_colorspace(
 #[no_mangle]
 pub unsafe extern "C" fn iccp_get_rendering_intent(
     mut profile: *const libc::c_void,
-    mut proflen: libc::c_int,
+    mut proflen: i32,
 ) -> *mut pdf_obj {
     let mut ri: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut p: *const u8 = 0 as *const u8;
@@ -1108,10 +1108,10 @@ pub unsafe extern "C" fn iccp_get_rendering_intent(
         return 0 as *mut pdf_obj;
     }
     p = profile as *const u8;
-    intent = (*p.offset(64) as libc::c_int) << 24i32
-        | (*p.offset(65) as libc::c_int) << 16i32
-        | (*p.offset(66) as libc::c_int) << 8i32
-        | *p.offset(67) as libc::c_int;
+    intent = (*p.offset(64) as i32) << 24i32
+        | (*p.offset(65) as i32) << 16i32
+        | (*p.offset(66) as i32) << 8i32
+        | *p.offset(67) as i32;
     match intent >> 16i32 & 0xffi32 {
         2 => ri = pdf_new_name(b"Saturation\x00" as *const u8 as *const i8),
         0 => ri = pdf_new_name(b"Perceptual\x00" as *const u8 as *const i8),
@@ -1130,9 +1130,9 @@ pub unsafe extern "C" fn iccp_get_rendering_intent(
 unsafe extern "C" fn iccp_unpack_header(
     mut icch: *mut iccHeader,
     mut profile: *const libc::c_void,
-    mut proflen: libc::c_int,
-    mut check_size: libc::c_int,
-) -> libc::c_int {
+    mut proflen: i32,
+    mut check_size: i32,
+) -> i32 {
     let mut p: *const u8 = 0 as *const u8;
     let mut endptr: *const u8 = 0 as *const u8;
     if check_size != 0 {
@@ -1146,10 +1146,10 @@ unsafe extern "C" fn iccp_unpack_header(
     }
     p = profile as *const u8;
     endptr = p.offset(128);
-    (*icch).size = (*p.offset(0) as libc::c_int) << 24i32
-        | (*p.offset(1) as libc::c_int) << 16i32
-        | (*p.offset(2) as libc::c_int) << 8i32
-        | *p.offset(3) as libc::c_int;
+    (*icch).size = (*p.offset(0) as i32) << 24i32
+        | (*p.offset(1) as i32) << 16i32
+        | (*p.offset(2) as i32) << 8i32
+        | *p.offset(3) as i32;
     if check_size != 0 {
         if (*icch).size != proflen {
             dpx_warning(
@@ -1163,10 +1163,10 @@ unsafe extern "C" fn iccp_unpack_header(
     p = p.offset(4);
     (*icch).CMMType = str2iccSig(p as *const libc::c_void);
     p = p.offset(4);
-    (*icch).version = (*p.offset(0) as libc::c_int) << 24i32
-        | (*p.offset(1) as libc::c_int) << 16i32
-        | (*p.offset(2) as libc::c_int) << 8i32
-        | *p.offset(3) as libc::c_int;
+    (*icch).version = (*p.offset(0) as i32) << 24i32
+        | (*p.offset(1) as i32) << 16i32
+        | (*p.offset(2) as i32) << 8i32
+        | *p.offset(3) as i32;
     p = p.offset(4);
     (*icch).devClass = str2iccSig(p as *const libc::c_void);
     p = p.offset(4);
@@ -1187,10 +1187,10 @@ unsafe extern "C" fn iccp_unpack_header(
         dpx_warning(
             b"Invalid ICC profile: not \"acsp\" - %c%c%c%c \x00" as *const u8
                 as *const i8,
-            *p.offset(0) as libc::c_int,
-            *p.offset(1) as libc::c_int,
-            *p.offset(2) as libc::c_int,
-            *p.offset(3) as libc::c_int,
+            *p.offset(0) as i32,
+            *p.offset(1) as i32,
+            *p.offset(2) as i32,
+            *p.offset(3) as i32,
         );
         return -1i32;
     }
@@ -1213,25 +1213,25 @@ unsafe extern "C" fn iccp_unpack_header(
         8i32 as u64,
     );
     p = p.offset(8);
-    (*icch).intent = (*p.offset(0) as libc::c_int) << 24i32
-        | (*p.offset(1) as libc::c_int) << 16i32
-        | (*p.offset(2) as libc::c_int) << 8i32
-        | *p.offset(3) as libc::c_int;
+    (*icch).intent = (*p.offset(0) as i32) << 24i32
+        | (*p.offset(1) as i32) << 16i32
+        | (*p.offset(2) as i32) << 8i32
+        | *p.offset(3) as i32;
     p = p.offset(4);
-    (*icch).illuminant.X = (*p.offset(0) as libc::c_int) << 24i32
-        | (*p.offset(1) as libc::c_int) << 16i32
-        | (*p.offset(2) as libc::c_int) << 8i32
-        | *p.offset(3) as libc::c_int;
+    (*icch).illuminant.X = (*p.offset(0) as i32) << 24i32
+        | (*p.offset(1) as i32) << 16i32
+        | (*p.offset(2) as i32) << 8i32
+        | *p.offset(3) as i32;
     p = p.offset(4);
-    (*icch).illuminant.Y = (*p.offset(0) as libc::c_int) << 24i32
-        | (*p.offset(1) as libc::c_int) << 16i32
-        | (*p.offset(2) as libc::c_int) << 8i32
-        | *p.offset(3) as libc::c_int;
+    (*icch).illuminant.Y = (*p.offset(0) as i32) << 24i32
+        | (*p.offset(1) as i32) << 16i32
+        | (*p.offset(2) as i32) << 8i32
+        | *p.offset(3) as i32;
     p = p.offset(4);
-    (*icch).illuminant.Z = (*p.offset(0) as libc::c_int) << 24i32
-        | (*p.offset(1) as libc::c_int) << 16i32
-        | (*p.offset(2) as libc::c_int) << 8i32
-        | *p.offset(3) as libc::c_int;
+    (*icch).illuminant.Z = (*p.offset(0) as i32) << 24i32
+        | (*p.offset(1) as i32) << 16i32
+        | (*p.offset(2) as i32) << 8i32
+        | *p.offset(3) as i32;
     p = p.offset(4);
     (*icch).creator = str2iccSig(p as *const libc::c_void);
     p = p.offset(4);
@@ -1243,12 +1243,12 @@ unsafe extern "C" fn iccp_unpack_header(
     p = p.offset(16);
     /* 28 bytes reserved - must be set to zeros */
     while p < endptr {
-        if *p as libc::c_int != '\u{0}' as i32 {
+        if *p as i32 != '\u{0}' as i32 {
             dpx_warning(
                 b"Reserved pad not zero: %02x (at offset %d in ICC profile header.)\x00"
                     as *const u8 as *const i8,
-                *p as libc::c_int,
-                128i32 - endptr.wrapping_offset_from(p) as i64 as libc::c_int,
+                *p as i32,
+                128i32 - endptr.wrapping_offset_from(p) as i64 as i32,
             );
             return -1i32;
         }
@@ -1259,7 +1259,7 @@ unsafe extern "C" fn iccp_unpack_header(
 unsafe extern "C" fn iccp_get_checksum(
     mut checksum: *mut u8,
     mut profile: *const libc::c_void,
-    mut proflen: libc::c_int,
+    mut proflen: i32,
 ) {
     let mut p: *const u8 = 0 as *const u8;
     let mut md5: MD5_CONTEXT = MD5_CONTEXT {
@@ -1283,7 +1283,7 @@ unsafe extern "C" fn iccp_get_checksum(
     MD5_final(checksum, &mut md5);
 }
 unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *mut u8) {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     if !icch.is_null() {
     } else {
         __assert_fail(
@@ -1308,24 +1308,24 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"CMM Type\x00" as *const u8 as *const i8,
         );
     } else if *(*__ctype_b_loc())
-        .offset(((*icch).CMMType >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-        as libc::c_int
-        & _ISprint as libc::c_int as u16 as libc::c_int
+        .offset(((*icch).CMMType >> 24i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+        as i32
+        & _ISprint as i32 as u16 as i32
         == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).CMMType >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).CMMType >> 16i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).CMMType >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).CMMType >> 8i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).CMMType & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).CMMType & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
     {
         dpx_message(
@@ -1354,24 +1354,24 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"Device Class\x00" as *const u8 as *const i8,
         );
     } else if *(*__ctype_b_loc())
-        .offset(((*icch).devClass >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-        as libc::c_int
-        & _ISprint as libc::c_int as u16 as libc::c_int
+        .offset(((*icch).devClass >> 24i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+        as i32
+        & _ISprint as i32 as u16 as i32
         == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).devClass >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).devClass >> 16i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).devClass >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).devClass >> 8i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).devClass & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).devClass & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
     {
         dpx_message(
@@ -1394,24 +1394,24 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"Color Space\x00" as *const u8 as *const i8,
         );
     } else if *(*__ctype_b_loc())
-        .offset(((*icch).colorSpace >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-        as libc::c_int
-        & _ISprint as libc::c_int as u16 as libc::c_int
+        .offset(((*icch).colorSpace >> 24i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+        as i32
+        & _ISprint as i32 as u16 as i32
         == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).colorSpace >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).colorSpace >> 16i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).colorSpace >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).colorSpace >> 8i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).colorSpace & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).colorSpace & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
     {
         dpx_message(
@@ -1434,24 +1434,24 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"Connection Space\x00" as *const u8 as *const i8,
         );
     } else if *(*__ctype_b_loc())
-        .offset(((*icch).PCS >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-        as libc::c_int
-        & _ISprint as libc::c_int as u16 as libc::c_int
+        .offset(((*icch).PCS >> 24i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+        as i32
+        & _ISprint as i32 as u16 as i32
         == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).PCS >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).PCS >> 16i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).PCS >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).PCS >> 8i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).PCS & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).PCS & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
     {
         dpx_message(
@@ -1475,13 +1475,13 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             dpx_message(
                 b"%04u\x00" as *const u8 as *const i8,
                 sget_unsigned_pair((*icch).creationDate.as_mut_ptr() as *mut u8)
-                    as libc::c_int,
+                    as i32,
             );
         } else {
             dpx_message(
                 b":%02u\x00" as *const u8 as *const i8,
                 sget_unsigned_pair(&mut *(*icch).creationDate.as_mut_ptr().offset(i as isize)
-                    as *mut i8 as *mut u8) as libc::c_int,
+                    as *mut i8 as *mut u8) as i32,
             );
         }
         i += 2i32
@@ -1493,24 +1493,24 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"Primary Platform\x00" as *const u8 as *const i8,
         );
     } else if *(*__ctype_b_loc())
-        .offset(((*icch).platform >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-        as libc::c_int
-        & _ISprint as libc::c_int as u16 as libc::c_int
+        .offset(((*icch).platform >> 24i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+        as i32
+        & _ISprint as i32 as u16 as i32
         == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).platform >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).platform >> 16i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).platform >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).platform >> 8i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).platform & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).platform & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
     {
         dpx_message(
@@ -1530,10 +1530,10 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
     dpx_message(
         b"pdf_color>> Profile Flags:\t%02x:%02x:%02x:%02x\n\x00" as *const u8
             as *const i8,
-        (*icch).flags[0] as libc::c_int,
-        (*icch).flags[1] as libc::c_int,
-        (*icch).flags[2] as libc::c_int,
-        (*icch).flags[3] as libc::c_int,
+        (*icch).flags[0] as i32,
+        (*icch).flags[1] as i32,
+        (*icch).flags[2] as i32,
+        (*icch).flags[3] as i32,
     );
     if (*icch).devMnfct == 0i32 as libc::c_uint {
         dpx_message(
@@ -1541,24 +1541,24 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"Device Mnfct\x00" as *const u8 as *const i8,
         );
     } else if *(*__ctype_b_loc())
-        .offset(((*icch).devMnfct >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-        as libc::c_int
-        & _ISprint as libc::c_int as u16 as libc::c_int
+        .offset(((*icch).devMnfct >> 24i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+        as i32
+        & _ISprint as i32 as u16 as i32
         == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).devMnfct >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).devMnfct >> 16i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).devMnfct >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).devMnfct >> 8i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).devMnfct & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).devMnfct & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
     {
         dpx_message(
@@ -1581,24 +1581,24 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"Device Model\x00" as *const u8 as *const i8,
         );
     } else if *(*__ctype_b_loc())
-        .offset(((*icch).devModel >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-        as libc::c_int
-        & _ISprint as libc::c_int as u16 as libc::c_int
+        .offset(((*icch).devModel >> 24i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+        as i32
+        & _ISprint as i32 as u16 as i32
         == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).devModel >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).devModel >> 16i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).devModel >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).devModel >> 8i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).devModel & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).devModel & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
     {
         dpx_message(
@@ -1621,12 +1621,12 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
         if i == 0i32 {
             dpx_message(
                 b"%02x\x00" as *const u8 as *const i8,
-                (*icch).devAttr[i as usize] as libc::c_int,
+                (*icch).devAttr[i as usize] as i32,
             );
         } else {
             dpx_message(
                 b":%02x\x00" as *const u8 as *const i8,
-                (*icch).devAttr[i as usize] as libc::c_int,
+                (*icch).devAttr[i as usize] as i32,
             );
         }
         i += 1
@@ -1657,24 +1657,24 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"Creator\x00" as *const u8 as *const i8,
         );
     } else if *(*__ctype_b_loc())
-        .offset(((*icch).creator >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-        as libc::c_int
-        & _ISprint as libc::c_int as u16 as libc::c_int
+        .offset(((*icch).creator >> 24i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+        as i32
+        & _ISprint as i32 as u16 as i32
         == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).creator >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).creator >> 16i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).creator >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).creator >> 8i32 & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         || *(*__ctype_b_loc())
-            .offset(((*icch).creator & 0xffi32 as libc::c_uint) as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(((*icch).creator & 0xffi32 as libc::c_uint) as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             == 0
     {
         dpx_message(
@@ -1712,12 +1712,12 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             if i == 0i32 {
                 dpx_message(
                     b"%02x\x00" as *const u8 as *const i8,
-                    (*icch).ID[i as usize] as libc::c_int,
+                    (*icch).ID[i as usize] as i32,
                 );
             } else {
                 dpx_message(
                     b":%02x\x00" as *const u8 as *const i8,
-                    (*icch).ID[i as usize] as libc::c_int,
+                    (*icch).ID[i as usize] as i32,
                 );
             }
             i += 1
@@ -1731,12 +1731,12 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             if i == 0i32 {
                 dpx_message(
                     b"%02x\x00" as *const u8 as *const i8,
-                    *checksum.offset(i as isize) as libc::c_int,
+                    *checksum.offset(i as isize) as i32,
                 );
             } else {
                 dpx_message(
                     b":%02x\x00" as *const u8 as *const i8,
-                    *checksum.offset(i as isize) as libc::c_int,
+                    *checksum.offset(i as isize) as i32,
                 );
             }
             i += 1
@@ -1744,8 +1744,8 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
         dpx_message(b"\n\x00" as *const u8 as *const i8);
     };
 }
-unsafe extern "C" fn iccp_devClass_allowed(mut dev_class: libc::c_int) -> libc::c_int {
-    let mut colormode: libc::c_int = 0;
+unsafe extern "C" fn iccp_devClass_allowed(mut dev_class: i32) -> i32 {
+    let mut colormode: i32 = 0;
     colormode = pdf_dev_get_param(2i32);
     match colormode {
         _ => {}
@@ -1767,9 +1767,9 @@ unsafe extern "C" fn iccp_devClass_allowed(mut dev_class: libc::c_int) -> libc::
 pub unsafe extern "C" fn iccp_load_profile(
     mut ident: *const i8,
     mut profile: *const libc::c_void,
-    mut proflen: libc::c_int,
-) -> libc::c_int {
-    let mut cspc_id: libc::c_int = 0;
+    mut proflen: i32,
+) -> i32 {
+    let mut cspc_id: i32 = 0;
     let mut resource: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -1792,7 +1792,7 @@ pub unsafe extern "C" fn iccp_load_profile(
         creator: 0,
         ID: [0; 16],
     };
-    let mut colorspace: libc::c_int = 0;
+    let mut colorspace: i32 = 0;
     let mut checksum: [u8; 16] = [0; 16];
     let mut cdata: *mut iccbased_cdata = 0 as *mut iccbased_cdata;
     iccp_init_iccHeader(&mut icch);
@@ -1819,7 +1819,7 @@ pub unsafe extern "C" fn iccp_load_profile(
         print_iccp_header(&mut icch, 0 as *mut u8);
         return -1i32;
     }
-    if iccp_devClass_allowed(icch.devClass as libc::c_int) == 0 {
+    if iccp_devClass_allowed(icch.devClass as i32) == 0 {
         dpx_warning(
             b"Unsupported ICC Profile Device Class:\x00" as *const u8 as *const i8,
         );
@@ -1913,12 +1913,12 @@ static mut cspc_cache: C2RustUnnamed_0 = {
 };
 unsafe extern "C" fn pdf_colorspace_findresource(
     mut ident: *const i8,
-    mut type_0: libc::c_int,
+    mut type_0: i32,
     mut cdata: *const libc::c_void,
-) -> libc::c_int {
+) -> i32 {
     let mut colorspace: *mut pdf_colorspace = 0 as *mut pdf_colorspace;
-    let mut cspc_id: libc::c_int = 0;
-    let mut cmp: libc::c_int = -1i32;
+    let mut cspc_id: i32 = 0;
+    let mut cmp: i32 = -1i32;
     cspc_id = 0i32;
     while cmp != 0 && (cspc_id as libc::c_uint) < cspc_cache.count {
         colorspace = &mut *cspc_cache.colorspaces.offset(cspc_id as isize) as *mut pdf_colorspace;
@@ -2012,11 +2012,11 @@ unsafe extern "C" fn pdf_flush_colorspace(mut colorspace: *mut pdf_colorspace) {
 /* **************************** COLOR SPACE *****************************/
 unsafe extern "C" fn pdf_colorspace_defineresource(
     mut ident: *const i8,
-    mut subtype: libc::c_int,
+    mut subtype: i32,
     mut cdata: *mut libc::c_void,
     mut resource: *mut pdf_obj,
-) -> libc::c_int {
-    let mut cspc_id: libc::c_int = 0; /* .... */
+) -> i32 {
+    let mut cspc_id: i32 = 0; /* .... */
     let mut colorspace: *mut pdf_colorspace = 0 as *mut pdf_colorspace;
     if cspc_cache.count >= cspc_cache.capacity {
         cspc_cache.capacity = cspc_cache.capacity.wrapping_add(16i32 as libc::c_uint);
@@ -2027,7 +2027,7 @@ unsafe extern "C" fn pdf_colorspace_defineresource(
                 as u32,
         ) as *mut pdf_colorspace
     }
-    cspc_id = cspc_cache.count as libc::c_int;
+    cspc_id = cspc_cache.count as i32;
     colorspace = &mut *cspc_cache.colorspaces.offset(cspc_id as isize) as *mut pdf_colorspace;
     pdf_init_colorspace_struct(colorspace);
     if !ident.is_null() {
@@ -2066,7 +2066,7 @@ unsafe extern "C" fn pdf_colorspace_defineresource(
     return cspc_id;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_get_colorspace_reference(mut cspc_id: libc::c_int) -> *mut pdf_obj {
+pub unsafe extern "C" fn pdf_get_colorspace_reference(mut cspc_id: i32) -> *mut pdf_obj {
     let mut colorspace: *mut pdf_colorspace = 0 as *mut pdf_colorspace;
     colorspace = &mut *cspc_cache.colorspaces.offset(cspc_id as isize) as *mut pdf_colorspace;
     if (*colorspace).reference.is_null() {

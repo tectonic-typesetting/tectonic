@@ -17,15 +17,15 @@ extern "C" {
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
         -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     /* FontName */
     /* - CFF structure - */
     /* CFF Header */
@@ -68,9 +68,9 @@ extern "C" {
     #[no_mangle]
     fn cff_update_string(cff: *mut cff_font);
     #[no_mangle]
-    fn cff_add_string(cff: *mut cff_font, str: *const i8, unique: libc::c_int) -> s_SID;
+    fn cff_add_string(cff: *mut cff_font, str: *const i8, unique: i32) -> s_SID;
     #[no_mangle]
-    fn cff_get_sid(cff: *mut cff_font, str: *const i8) -> libc::c_int;
+    fn cff_get_sid(cff: *mut cff_font, str: *const i8) -> i32;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
@@ -78,7 +78,7 @@ extern "C" {
     fn ttstub_input_seek(
         handle: rust_input_handle_t,
         offset: ssize_t,
-        whence: libc::c_int,
+        whence: i32,
     ) -> size_t;
     #[no_mangle]
     fn ttstub_input_read(
@@ -87,7 +87,7 @@ extern "C" {
         len: size_t,
     ) -> ssize_t;
     #[no_mangle]
-    fn ttstub_input_getc(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
     /* tectonic/core-memory.h: basic dynamic memory helpers
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.
@@ -99,7 +99,7 @@ extern "C" {
     #[no_mangle]
     fn cff_new_index(count: card16) -> *mut cff_index;
     #[no_mangle]
-    fn cff_set_name(cff: *mut cff_font, name: *mut i8) -> libc::c_int;
+    fn cff_set_name(cff: *mut cff_font, name: *mut i8) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -127,11 +127,11 @@ extern "C" {
     fn cff_dict_set(
         dict: *mut cff_dict,
         key: *const i8,
-        idx: libc::c_int,
+        idx: i32,
         value: f64,
     );
     #[no_mangle]
-    fn cff_dict_add(dict: *mut cff_dict, key: *const i8, count: libc::c_int);
+    fn cff_dict_add(dict: *mut cff_dict, key: *const i8, count: i32);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -187,7 +187,7 @@ extern "C" {
     #[no_mangle]
     fn pst_type_of(obj: *mut pst_obj) -> pst_type;
     #[no_mangle]
-    fn pst_getIV(obj: *mut pst_obj) -> libc::c_int;
+    fn pst_getIV(obj: *mut pst_obj) -> i32;
     #[no_mangle]
     fn pst_getRV(obj: *mut pst_obj) -> f64;
     #[no_mangle]
@@ -255,17 +255,17 @@ pub struct cff_header {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_dict_entry {
-    pub id: libc::c_int,
+    pub id: i32,
     pub key: *const i8,
-    pub count: libc::c_int,
+    pub count: i32,
     pub values: *mut f64,
     /* values                                  */
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_dict {
-    pub max: libc::c_int,
-    pub count: libc::c_int,
+    pub max: i32,
+    pub count: i32,
     pub entries: *mut cff_dict_entry,
 }
 /* Encoding, Charset and FDSelect */
@@ -363,12 +363,12 @@ pub struct cff_font {
     pub num_fds: card8,
     pub _string: *mut cff_index,
     pub handle: rust_input_handle_t,
-    pub filter: libc::c_int,
-    pub index: libc::c_int,
-    pub flag: libc::c_int,
-    pub is_notdef_notzero: libc::c_int,
+    pub filter: i32,
+    pub index: i32,
+    pub flag: i32,
+    pub is_notdef_notzero: i32,
 }
-pub type pst_type = libc::c_int;
+pub type pst_type = i32;
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
@@ -404,8 +404,8 @@ unsafe extern "C" fn t1_decrypt(
     mut key: u16,
     mut dst: *mut u8,
     mut src: *const u8,
-    mut skip: libc::c_int,
-    mut len: libc::c_int,
+    mut skip: i32,
+    mut len: i32,
 ) {
     len -= skip;
     loop {
@@ -416,7 +416,7 @@ unsafe extern "C" fn t1_decrypt(
         }
         let fresh1 = src;
         src = src.offset(1);
-        key = ((key as libc::c_int + *fresh1 as libc::c_int) as libc::c_uint)
+        key = ((key as i32 + *fresh1 as i32) as libc::c_uint)
             .wrapping_mul(52845u32)
             .wrapping_add(22719u32) as u16
     }
@@ -431,8 +431,8 @@ unsafe extern "C" fn t1_decrypt(
         let mut c: u8 = *fresh3;
         let fresh4 = dst;
         dst = dst.offset(1);
-        *fresh4 = (c as libc::c_int ^ key as libc::c_int >> 8i32) as u8;
-        key = ((key as libc::c_int + c as libc::c_int) as libc::c_uint)
+        *fresh4 = (c as i32 ^ key as i32 >> 8i32) as u8;
+        key = ((key as i32 + c as i32) as libc::c_uint)
             .wrapping_mul(52845u32)
             .wrapping_add(22719u32) as u16
     }
@@ -466,7 +466,7 @@ unsafe extern "C" fn seek_operator(
     mut start: *mut *mut u8,
     mut end: *mut u8,
     mut op: *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
     while *start < end && {
         tok = pst_get_token(start, end);
@@ -496,7 +496,7 @@ unsafe extern "C" fn parse_svalue(
     mut start: *mut *mut u8,
     mut end: *mut u8,
     mut value: *mut *mut i8,
-) -> libc::c_int {
+) -> i32 {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
     tok = pst_get_token(start, end);
     if tok.is_null() {
@@ -522,7 +522,7 @@ unsafe extern "C" fn parse_bvalue(
     mut start: *mut *mut u8,
     mut end: *mut u8,
     mut value: *mut f64,
-) -> libc::c_int {
+) -> i32 {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
     tok = pst_get_token(start, end);
     if tok.is_null() {
@@ -548,9 +548,9 @@ unsafe extern "C" fn parse_nvalue(
     mut start: *mut *mut u8,
     mut end: *mut u8,
     mut value: *mut f64,
-    mut max: libc::c_int,
-) -> libc::c_int {
-    let mut argn: libc::c_int = 0i32;
+    mut max: i32,
+) -> i32 {
+    let mut argn: i32 = 0i32;
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
     tok = pst_get_token(start, end);
     if tok.is_null() {
@@ -1134,12 +1134,12 @@ unsafe extern "C" fn try_put_or_putinterval(
     mut enc_vec: *mut *mut i8,
     mut start: *mut *mut u8,
     mut end: *mut u8,
-) -> libc::c_int {
+) -> i32 {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
-    let mut i: libc::c_int = 0;
-    let mut num1: libc::c_int = 0;
-    let mut num2: libc::c_int = 0;
-    let mut num3: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut num1: i32 = 0;
+    let mut num2: i32 = 0;
+    let mut num3: i32 = 0;
     tok = pst_get_token(start, end);
     if tok.is_null()
         || !(pst_type_of(tok) == 2i32)
@@ -1349,9 +1349,9 @@ unsafe extern "C" fn parse_encoding(
     mut enc_vec: *mut *mut i8,
     mut start: *mut *mut u8,
     mut end: *mut u8,
-) -> libc::c_int {
+) -> i32 {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
-    let mut code: libc::c_int = 0;
+    let mut code: i32 = 0;
     /*
      *  StandardEncoding def
      * or
@@ -1601,17 +1601,17 @@ unsafe extern "C" fn parse_subrs(
     mut font: *mut cff_font,
     mut start: *mut *mut u8,
     mut end: *mut u8,
-    mut lenIV: libc::c_int,
-    mut mode: libc::c_int,
-) -> libc::c_int {
+    mut lenIV: i32,
+    mut mode: i32,
+) -> i32 {
     let mut subrs: *mut cff_index = 0 as *mut cff_index;
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
-    let mut i: libc::c_int = 0;
-    let mut count: libc::c_int = 0;
-    let mut offset: libc::c_int = 0;
-    let mut max_size: libc::c_int = 0;
-    let mut offsets: *mut libc::c_int = 0 as *mut libc::c_int;
-    let mut lengths: *mut libc::c_int = 0 as *mut libc::c_int;
+    let mut i: i32 = 0;
+    let mut count: i32 = 0;
+    let mut offset: i32 = 0;
+    let mut max_size: i32 = 0;
+    let mut offsets: *mut i32 = 0 as *mut i32;
+    let mut lengths: *mut i32 = 0 as *mut i32;
     let mut data: *mut card8 = 0 as *mut card8;
     tok = pst_get_token(start, end);
     if !(pst_type_of(tok) == 2i32) || pst_getIV(tok) < 0i32 {
@@ -1657,35 +1657,35 @@ unsafe extern "C" fn parse_subrs(
             .wrapping_mul(::std::mem::size_of::<card8>() as u64)
             as u32) as *mut card8;
         offsets = new((count as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_int>() as u64)
-            as u32) as *mut libc::c_int;
+            .wrapping_mul(::std::mem::size_of::<i32>() as u64)
+            as u32) as *mut i32;
         lengths = new((count as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_int>() as u64)
-            as u32) as *mut libc::c_int;
+            .wrapping_mul(::std::mem::size_of::<i32>() as u64)
+            as u32) as *mut i32;
         memset(
             offsets as *mut libc::c_void,
             0i32,
-            (::std::mem::size_of::<libc::c_int>() as u64)
+            (::std::mem::size_of::<i32>() as u64)
                 .wrapping_mul(count as u64),
         );
         memset(
             lengths as *mut libc::c_void,
             0i32,
-            (::std::mem::size_of::<libc::c_int>() as u64)
+            (::std::mem::size_of::<i32>() as u64)
                 .wrapping_mul(count as u64),
         );
     } else {
         max_size = 0i32;
         data = 0 as *mut card8;
-        offsets = 0 as *mut libc::c_int;
-        lengths = 0 as *mut libc::c_int
+        offsets = 0 as *mut i32;
+        lengths = 0 as *mut i32
     }
     offset = 0i32;
     /* dup subr# n-bytes RD n-binary-bytes NP */
     i = 0i32;
     while i < count {
-        let mut idx: libc::c_int = 0;
-        let mut len: libc::c_int = 0;
+        let mut idx: i32 = 0;
+        let mut len: i32 = 0;
         tok = pst_get_token(start, end);
         if tok.is_null() {
             free(data as *mut libc::c_void);
@@ -1887,17 +1887,17 @@ unsafe extern "C" fn parse_charstrings(
     mut font: *mut cff_font,
     mut start: *mut *mut u8,
     mut end: *mut u8,
-    mut lenIV: libc::c_int,
-    mut mode: libc::c_int,
-) -> libc::c_int {
+    mut lenIV: i32,
+    mut mode: i32,
+) -> i32 {
     let mut charstrings: *mut cff_index = 0 as *mut cff_index;
     let mut charset: *mut cff_charsets = 0 as *mut cff_charsets;
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
-    let mut i: libc::c_int = 0;
-    let mut count: libc::c_int = 0;
-    let mut have_notdef: libc::c_int = 0;
-    let mut max_size: libc::c_int = 0;
-    let mut offset: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut count: i32 = 0;
+    let mut have_notdef: i32 = 0;
+    let mut max_size: i32 = 0;
+    let mut offset: i32 = 0;
     /* /CharStrings n dict dup begin
      * /GlyphName n-bytes RD -n-binary-bytes- ND
      * ...
@@ -1956,9 +1956,9 @@ unsafe extern "C" fn parse_charstrings(
     i = 0i32;
     while i < count {
         let mut glyph_name: *mut i8 = 0 as *mut i8;
-        let mut len: libc::c_int = 0;
-        let mut gid: libc::c_int = 0;
-        let mut j: libc::c_int = 0;
+        let mut len: i32 = 0;
+        let mut gid: i32 = 0;
+        let mut j: i32 = 0;
         /* BUG-20061126 (by ChoF):
          * Some fonts (e.g., belleek/blsy.pfb) does not have the correct number
          * of glyphs. Modify the codes even to work with these broken fonts.
@@ -2102,7 +2102,7 @@ unsafe extern "C" fn parse_charstrings(
             *start = (*start).offset(1);
             if mode != 1i32 {
                 if lenIV >= 0i32 {
-                    let mut offs: libc::c_int = if gid != 0 { offset } else { 0i32 };
+                    let mut offs: i32 = if gid != 0 { offset } else { 0i32 };
                     *(*charstrings).offset.offset(gid as isize) = (offs + 1i32) as l_offset;
                     t1_decrypt(
                         4330u32 as u16,
@@ -2161,7 +2161,7 @@ unsafe extern "C" fn parse_charstrings(
             }
             i += 1
         } else if pst_type_of(tok) < 0i32
-            && streq_ptr(glyph_name, b"end\x00" as *const u8 as *const i8) as libc::c_int
+            && streq_ptr(glyph_name, b"end\x00" as *const u8 as *const i8) as i32
                 != 0
         {
             if !tok.is_null() {
@@ -2187,12 +2187,12 @@ unsafe extern "C" fn parse_part2(
     mut font: *mut cff_font,
     mut start: *mut *mut u8,
     mut end: *mut u8,
-    mut mode: libc::c_int,
-) -> libc::c_int {
+    mut mode: i32,
+) -> i32 {
     let mut key: *mut i8 = 0 as *mut i8;
     let mut argv: [f64; 127] = [0.; 127];
-    let mut argn: libc::c_int = 0;
-    let mut lenIV: libc::c_int = 4i32;
+    let mut argn: i32 = 0;
+    let mut lenIV: i32 = 4i32;
     while *start < end && {
         key = get_next_key(start, end);
         !key.is_null()
@@ -2219,22 +2219,22 @@ unsafe extern "C" fn parse_part2(
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
-            lenIV = argv[0] as libc::c_int
+            lenIV = argv[0] as i32
         } else if streq_ptr(key, b"BlueValues\x00" as *const u8 as *const i8)
-            as libc::c_int
+            as i32
             != 0
-            || streq_ptr(key, b"OtherBlues\x00" as *const u8 as *const i8) as libc::c_int
+            || streq_ptr(key, b"OtherBlues\x00" as *const u8 as *const i8) as i32
                 != 0
-            || streq_ptr(key, b"FamilyBlues\x00" as *const u8 as *const i8) as libc::c_int
+            || streq_ptr(key, b"FamilyBlues\x00" as *const u8 as *const i8) as i32
                 != 0
             || streq_ptr(
                 key,
                 b"FamilyOtherBlues\x00" as *const u8 as *const i8,
-            ) as libc::c_int
+            ) as i32
                 != 0
-            || streq_ptr(key, b"StemSnapH\x00" as *const u8 as *const i8) as libc::c_int
+            || streq_ptr(key, b"StemSnapH\x00" as *const u8 as *const i8) as i32
                 != 0
-            || streq_ptr(key, b"StemSnapV\x00" as *const u8 as *const i8) as libc::c_int
+            || streq_ptr(key, b"StemSnapV\x00" as *const u8 as *const i8) as i32
                 != 0
         {
             /*
@@ -2268,24 +2268,24 @@ unsafe extern "C" fn parse_part2(
                     },
                 );
             }
-        } else if streq_ptr(key, b"StdHW\x00" as *const u8 as *const i8) as libc::c_int
+        } else if streq_ptr(key, b"StdHW\x00" as *const u8 as *const i8) as i32
             != 0
-            || streq_ptr(key, b"StdVW\x00" as *const u8 as *const i8) as libc::c_int != 0
-            || streq_ptr(key, b"BlueScale\x00" as *const u8 as *const i8) as libc::c_int
+            || streq_ptr(key, b"StdVW\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"BlueScale\x00" as *const u8 as *const i8) as i32
                 != 0
-            || streq_ptr(key, b"BlueShift\x00" as *const u8 as *const i8) as libc::c_int
+            || streq_ptr(key, b"BlueShift\x00" as *const u8 as *const i8) as i32
                 != 0
-            || streq_ptr(key, b"BlueFuzz\x00" as *const u8 as *const i8) as libc::c_int
+            || streq_ptr(key, b"BlueFuzz\x00" as *const u8 as *const i8) as i32
                 != 0
             || streq_ptr(
                 key,
                 b"LanguageGroup\x00" as *const u8 as *const i8,
-            ) as libc::c_int
+            ) as i32
                 != 0
             || streq_ptr(
                 key,
                 b"ExpansionFactor\x00" as *const u8 as *const i8,
-            ) as libc::c_int
+            ) as i32
                 != 0
         {
             /*
@@ -2337,11 +2337,11 @@ unsafe extern "C" fn parse_part1(
     mut enc_vec: *mut *mut i8,
     mut start: *mut *mut u8,
     mut end: *mut u8,
-) -> libc::c_int {
+) -> i32 {
     let mut key: *mut i8 = 0 as *mut i8;
     let mut strval: *mut i8 = 0 as *mut i8;
     let mut argv: [f64; 127] = [0.; 127];
-    let mut argn: libc::c_int = 0;
+    let mut argn: i32 = 0;
     /*
      * We skip PostScript code inserted before the beginning of
      * font dictionary so that parser will not be confused with
@@ -2394,17 +2394,17 @@ unsafe extern "C" fn parse_part1(
             if argv[0] != 1.0f64 {
                 dpx_warning(
                     b"FontType %d not supported.\x00" as *const u8 as *const i8,
-                    argv[0] as libc::c_int,
+                    argv[0] as i32,
                 );
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
         } else if streq_ptr(key, b"ItalicAngle\x00" as *const u8 as *const i8)
-            as libc::c_int
+            as i32
             != 0
-            || streq_ptr(key, b"StrokeWidth\x00" as *const u8 as *const i8) as libc::c_int
+            || streq_ptr(key, b"StrokeWidth\x00" as *const u8 as *const i8) as i32
                 != 0
-            || streq_ptr(key, b"PaintType\x00" as *const u8 as *const i8) as libc::c_int
+            || streq_ptr(key, b"PaintType\x00" as *const u8 as *const i8) as i32
                 != 0
         {
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 1i32);
@@ -2424,12 +2424,12 @@ unsafe extern "C" fn parse_part1(
         } else if streq_ptr(
             key,
             b"UnderLinePosition\x00" as *const u8 as *const i8,
-        ) as libc::c_int
+        ) as i32
             != 0
             || streq_ptr(
                 key,
                 b"UnderLineThickness\x00" as *const u8 as *const i8,
-            ) as libc::c_int
+            ) as i32
                 != 0
         {
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 1i32);
@@ -2492,15 +2492,15 @@ unsafe extern "C" fn parse_part1(
                     cff_dict_set((*font).topdict, key, argn, argv[argn as usize]);
                 }
             }
-        } else if streq_ptr(key, b"version\x00" as *const u8 as *const i8) as libc::c_int
+        } else if streq_ptr(key, b"version\x00" as *const u8 as *const i8) as i32
             != 0
-            || streq_ptr(key, b"Notice\x00" as *const u8 as *const i8) as libc::c_int != 0
-            || streq_ptr(key, b"FullName\x00" as *const u8 as *const i8) as libc::c_int
+            || streq_ptr(key, b"Notice\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"FullName\x00" as *const u8 as *const i8) as i32
                 != 0
-            || streq_ptr(key, b"FamilyName\x00" as *const u8 as *const i8) as libc::c_int
+            || streq_ptr(key, b"FamilyName\x00" as *const u8 as *const i8) as i32
                 != 0
-            || streq_ptr(key, b"Weight\x00" as *const u8 as *const i8) as libc::c_int != 0
-            || streq_ptr(key, b"Copyright\x00" as *const u8 as *const i8) as libc::c_int
+            || streq_ptr(key, b"Weight\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"Copyright\x00" as *const u8 as *const i8) as i32
                 != 0
         {
             /*
@@ -2519,7 +2519,7 @@ unsafe extern "C" fn parse_part1(
             let mut sid: s_SID = 0;
             cff_dict_add((*font).topdict, key, 1i32);
             sid = cff_get_sid(font, strval) as s_SID;
-            if sid as libc::c_int == 65535i32 {
+            if sid as i32 == 65535i32 {
                 sid = cff_add_string(font, strval, 0i32)
             }
             /*
@@ -2556,8 +2556,8 @@ unsafe extern "C" fn parse_part1(
 #[no_mangle]
 pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
     let mut sig: [i8; 15] = [0; 15];
-    let mut i: libc::c_int = 0;
-    let mut ch: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut ch: i32 = 0;
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     ch = ttstub_input_getc(handle);
     if ch != 128i32
@@ -2617,16 +2617,16 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
 }
 unsafe extern "C" fn get_pfb_segment(
     mut handle: rust_input_handle_t,
-    mut expected_type: libc::c_int,
-    mut length: *mut libc::c_int,
+    mut expected_type: i32,
+    mut length: *mut i32,
 ) -> *mut u8 {
     let mut buffer: *mut u8 = 0 as *mut u8;
-    let mut bytesread: libc::c_int = 0i32;
+    let mut bytesread: i32 = 0i32;
     loop {
-        let mut ch: libc::c_int = 0;
-        let mut slen: libc::c_int = 0;
-        let mut rlen: libc::c_int = 0;
-        let mut i: libc::c_int = 0;
+        let mut ch: i32 = 0;
+        let mut slen: i32 = 0;
+        let mut rlen: i32 = 0;
+        let mut i: i32 = 0;
         ch = ttstub_input_getc(handle);
         if ch < 0i32 {
             break;
@@ -2661,7 +2661,7 @@ unsafe extern "C" fn get_pfb_segment(
                     handle,
                     (buffer as *mut i8).offset(bytesread as isize),
                     slen as size_t,
-                ) as libc::c_int;
+                ) as i32;
                 if rlen < 0i32 {
                     free(buffer as *mut libc::c_void);
                     return 0 as *mut u8;
@@ -2687,7 +2687,7 @@ unsafe extern "C" fn get_pfb_segment(
     return buffer;
 }
 #[no_mangle]
-pub unsafe extern "C" fn t1_get_standard_glyph(mut code: libc::c_int) -> *const i8 {
+pub unsafe extern "C" fn t1_get_standard_glyph(mut code: i32) -> *const i8 {
     if StandardEncoding[code as usize].is_null() {
         return 0 as *const i8;
     }
@@ -2697,13 +2697,13 @@ pub unsafe extern "C" fn t1_get_standard_glyph(mut code: libc::c_int) -> *const 
 pub unsafe extern "C" fn t1_get_fontname(
     mut handle: rust_input_handle_t,
     mut fontname: *mut i8,
-) -> libc::c_int {
+) -> i32 {
     let mut buffer: *mut u8 = 0 as *mut u8;
     let mut start: *mut u8 = 0 as *mut u8;
     let mut end: *mut u8 = 0 as *mut u8;
-    let mut length: libc::c_int = 0;
+    let mut length: i32 = 0;
     let mut key: *mut i8 = 0 as *mut i8;
-    let mut fn_found: libc::c_int = 0i32;
+    let mut fn_found: i32 = 0i32;
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     buffer = get_pfb_segment(handle, 1i32, &mut length);
     if buffer.is_null() || length == 0i32 {
@@ -2807,10 +2807,10 @@ unsafe extern "C" fn init_cff_font(mut cff: *mut cff_font) {
 #[no_mangle]
 pub unsafe extern "C" fn t1_load_font(
     mut enc_vec: *mut *mut i8,
-    mut mode: libc::c_int,
+    mut mode: i32,
     mut handle: rust_input_handle_t,
 ) -> *mut cff_font {
-    let mut length: libc::c_int = 0;
+    let mut length: i32 = 0;
     let mut cff: *mut cff_font = 0 as *mut cff_font;
     let mut buffer: *mut u8 = 0 as *mut u8;
     let mut start: *mut u8 = 0 as *mut u8;

@@ -37,7 +37,7 @@ extern "C" {
     #[no_mangle]
     fn floor(_: f64) -> f64;
     #[no_mangle]
-    fn atoi(__nptr: *const i8) -> libc::c_int;
+    fn atoi(__nptr: *const i8) -> i32;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const i8,
@@ -53,20 +53,20 @@ extern "C" {
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
         -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strncpy(_: *mut i8, _: *const i8, _: u64)
         -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn pdf_font_set_fontname(font: *mut pdf_font, fontname: *const i8) -> libc::c_int;
+    fn pdf_font_set_fontname(font: *mut pdf_font, fontname: *const i8) -> i32;
     #[no_mangle]
-    fn pdf_font_get_index(font: *mut pdf_font) -> libc::c_int;
+    fn pdf_font_get_index(font: *mut pdf_font) -> i32;
     #[no_mangle]
-    fn pdf_font_get_encoding(font: *mut pdf_font) -> libc::c_int;
+    fn pdf_font_get_encoding(font: *mut pdf_font) -> i32;
     #[no_mangle]
     fn pdf_font_get_usedchars(font: *mut pdf_font) -> *mut i8;
     #[no_mangle]
@@ -80,18 +80,18 @@ extern "C" {
     #[no_mangle]
     fn pdf_font_is_in_use(font: *mut pdf_font) -> bool;
     #[no_mangle]
-    fn pdf_font_get_verbose() -> libc::c_int;
+    fn pdf_font_get_verbose() -> i32;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> libc::c_int;
+    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
@@ -120,11 +120,11 @@ extern "C" {
      * already removed that.
      */
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn pdf_stream_length(stream: *mut pdf_obj) -> libc::c_int;
+    fn pdf_stream_length(stream: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn strchr(_: *const i8, _: libc::c_int) -> *mut i8;
+    fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
@@ -172,9 +172,9 @@ extern "C" {
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_encoding_is_predefined(enc_id: libc::c_int) -> libc::c_int;
+    fn pdf_encoding_is_predefined(enc_id: i32) -> i32;
     #[no_mangle]
-    fn pdf_encoding_get_encoding(enc_id: libc::c_int) -> *mut *mut i8;
+    fn pdf_encoding_get_encoding(enc_id: i32) -> *mut *mut i8;
     /* 16.16-bit signed fixed-point number */
     /* table header */
     /* table data */
@@ -200,30 +200,30 @@ extern "C" {
     fn sfnt_require_table(
         sfont: *mut sfnt,
         tag: *const i8,
-        must_exist: libc::c_int,
-    ) -> libc::c_int;
+        must_exist: i32,
+    ) -> i32;
     #[no_mangle]
     fn sfnt_create_FontFile_stream(sfont: *mut sfnt) -> *mut pdf_obj;
     #[no_mangle]
-    fn dfont_open(handle: rust_input_handle_t, index: libc::c_int) -> *mut sfnt;
+    fn dfont_open(handle: rust_input_handle_t, index: i32) -> *mut sfnt;
     #[no_mangle]
-    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: SFNT_ULONG) -> libc::c_int;
+    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: SFNT_ULONG) -> i32;
     #[no_mangle]
-    fn put_big_endian(s: *mut libc::c_void, q: SFNT_LONG, n: libc::c_int) -> libc::c_int;
+    fn put_big_endian(s: *mut libc::c_void, q: SFNT_LONG, n: i32) -> i32;
     #[no_mangle]
-    fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
+    fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
     #[no_mangle]
-    fn tfm_get_width(font_id: libc::c_int, ch: i32) -> f64;
+    fn tfm_get_width(font_id: i32, ch: i32) -> f64;
     /* TTC (TrueType Collection) */
     #[no_mangle]
-    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: libc::c_int) -> SFNT_ULONG;
+    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> SFNT_ULONG;
     /* FontDescriptor */
     #[no_mangle]
     fn tt_get_fontdesc(
         sfont: *mut sfnt,
-        embed: *mut libc::c_int,
-        stemv: libc::c_int,
-        type_0: libc::c_int,
+        embed: *mut i32,
+        stemv: i32,
+        type_0: i32,
         fontname: *const i8,
     ) -> *mut pdf_obj;
     #[no_mangle]
@@ -243,7 +243,7 @@ extern "C" {
     #[no_mangle]
     fn tt_find_glyph(g: *mut tt_glyphs, gid: USHORT) -> USHORT;
     #[no_mangle]
-    fn tt_build_tables(sfont: *mut sfnt, g: *mut tt_glyphs) -> libc::c_int;
+    fn tt_build_tables(sfont: *mut sfnt, g: *mut tt_glyphs) -> i32;
     /* LookupType for GSUB */
     #[no_mangle]
     fn otl_gsub_new() -> *mut otl_gsub;
@@ -255,7 +255,7 @@ extern "C" {
         script: *const i8,
         language: *const i8,
         feature: *const i8,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn otl_gsub_add_feat(
         gsub_list: *mut otl_gsub,
@@ -263,22 +263,22 @@ extern "C" {
         language: *const i8,
         feature: *const i8,
         sfont: *mut sfnt,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
-    fn otl_gsub_apply(gsub_list: *mut otl_gsub, gid: *mut USHORT) -> libc::c_int;
+    fn otl_gsub_apply(gsub_list: *mut otl_gsub, gid: *mut USHORT) -> i32;
     #[no_mangle]
     fn otl_gsub_apply_alt(
         gsub_list: *mut otl_gsub,
         alt_idx: USHORT,
         gid: *mut USHORT,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn otl_gsub_apply_lig(
         gsub_list: *mut otl_gsub,
         gid_in: *mut USHORT,
         num_gids: USHORT,
         gid_out: *mut USHORT,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn tt_read_post_table(sfont: *mut sfnt) -> *mut tt_post_table;
     #[no_mangle]
@@ -293,7 +293,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt {
-    pub type_0: libc::c_int,
+    pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
     pub offset: SFNT_ULONG,
@@ -386,7 +386,7 @@ pub struct tt_cmap {
 #[repr(C)]
 pub struct C2RustUnnamed {
     pub name: *const i8,
-    pub must_exist: libc::c_int,
+    pub must_exist: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -496,10 +496,10 @@ pub struct glyph_mapper {
 pub struct agl_name {
     pub name: *mut i8,
     pub suffix: *mut i8,
-    pub n_components: libc::c_int,
+    pub n_components: i32,
     pub unicodes: [i32; 16],
     pub alternate: *mut agl_name,
-    pub is_predef: libc::c_int,
+    pub is_predef: i32,
 }
 pub type SFNT_LONG = i32;
 /* tectonic/core-strutils.h: miscellaneous C string utilities
@@ -538,17 +538,17 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 /* TrueType */
 /* Modifying this has no effect :P */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> libc::c_int {
+pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 {
     let mut ident: *mut i8 = 0 as *mut i8; /* Must be embedded. */
-    let mut index: libc::c_int = 0;
-    let mut encoding_id: libc::c_int = 0;
+    let mut index: i32 = 0;
+    let mut encoding_id: i32 = 0;
     let mut fontdict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut descriptor: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut sfont: *mut sfnt = 0 as *mut sfnt;
-    let mut embedding: libc::c_int = 1i32;
+    let mut embedding: i32 = 1i32;
     let mut handle: *mut rust_input_handle_t = 0 as *mut rust_input_handle_t;
-    let mut length: libc::c_int = 0;
-    let mut error: libc::c_int = 0i32;
+    let mut length: i32 = 0;
+    let mut error: i32 = 0i32;
     if !font.is_null() {
     } else {
         __assert_fail(
@@ -632,20 +632,20 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> libc
         );
     }
     let mut fontname: [i8; 256] = [0; 256];
-    let mut n: libc::c_int = 0;
+    let mut n: i32 = 0;
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     memset(
         fontname.as_mut_ptr() as *mut libc::c_void,
         0i32,
         256i32 as u64,
     );
-    length = tt_get_ps_fontname(sfont, fontname.as_mut_ptr(), 255i32 as USHORT) as libc::c_int;
+    length = tt_get_ps_fontname(sfont, fontname.as_mut_ptr(), 255i32 as USHORT) as i32;
     if length < 1i32 {
         length = (if strlen(ident) < 255i32 as u64 {
             strlen(ident)
         } else {
             255i32 as u64
-        }) as libc::c_int;
+        }) as i32;
         /* Suppress some warnings on GCC. Clang supports the same warning control
          * #pragmas (and #defines __GNUC__!), but not these particular warnings, which
          * leads to a meta-warning if they're left unguarded. */
@@ -654,7 +654,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> libc
     fontname[length as usize] = '\u{0}' as i32 as i8;
     n = 0i32;
     while n < length {
-        if fontname[n as usize] as libc::c_int == 0i32 {
+        if fontname[n as usize] as i32 == 0i32 {
             memmove(
                 fontname.as_mut_ptr().offset(n as isize) as *mut libc::c_void,
                 fontname.as_mut_ptr().offset(n as isize).offset(1) as *const libc::c_void,
@@ -824,10 +824,10 @@ static mut required_table: [C2RustUnnamed; 13] = [
 unsafe extern "C" fn do_widths(mut font: *mut pdf_font, mut widths: *mut f64) {
     let mut fontdict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut tmparray: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut code: libc::c_int = 0;
-    let mut firstchar: libc::c_int = 0;
-    let mut lastchar: libc::c_int = 0;
-    let mut tfm_id: libc::c_int = 0;
+    let mut code: i32 = 0;
+    let mut firstchar: i32 = 0;
+    let mut lastchar: i32 = 0;
+    let mut tfm_id: i32 = 0;
     let mut usedchars: *mut i8 = 0 as *mut i8;
     fontdict = pdf_font_get_resource(font);
     usedchars = pdf_font_get_usedchars(font);
@@ -890,7 +890,7 @@ unsafe extern "C" fn do_widths(mut font: *mut pdf_font, mut widths: *mut f64) {
         pdf_new_number(lastchar as f64),
     );
 }
-static mut verbose: libc::c_int = 0i32;
+static mut verbose: i32 = 0i32;
 /*
  * There are several issues in TrueType font support in PDF.
  * How PDF viewers select TrueType cmap table is not so clear.
@@ -903,14 +903,14 @@ unsafe extern "C" fn do_builtin_encoding(
     mut font: *mut pdf_font,
     mut usedchars: *const i8,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
+) -> i32 {
     let mut glyphs: *mut tt_glyphs = 0 as *mut tt_glyphs;
     let mut cmap_table: *mut i8 = 0 as *mut i8;
     let mut ttcm: *mut tt_cmap = 0 as *mut tt_cmap;
     let mut gid: USHORT = 0;
     let mut idx: USHORT = 0;
-    let mut code: libc::c_int = 0;
-    let mut count: libc::c_int = 0;
+    let mut code: i32 = 0;
+    let mut count: i32 = 0;
     let mut widths: [f64; 256] = [0.; 256];
     ttcm = tt_cmap_read(sfont, 1u32 as USHORT, 0u32 as USHORT);
     if ttcm.is_null() {
@@ -964,7 +964,7 @@ unsafe extern "C" fn do_builtin_encoding(
                 dpx_message(b"/.c0x%02x\x00" as *const u8 as *const i8, code);
             }
             gid = tt_cmap_lookup(ttcm, code as SFNT_ULONG);
-            if gid as libc::c_int == 0i32 {
+            if gid as i32 == 0i32 {
                 dpx_warning(
                     b"Glyph for character code=0x%02x missing in font font-file=\"%s\".\x00"
                         as *const u8 as *const i8,
@@ -974,13 +974,13 @@ unsafe extern "C" fn do_builtin_encoding(
                 idx = 0i32 as USHORT
             } else {
                 idx = tt_find_glyph(glyphs, gid);
-                if idx as libc::c_int == 0i32 {
+                if idx as i32 == 0i32 {
                     idx = tt_add_glyph(glyphs, gid, count as USHORT)
                 }
                 /* count returned. */
             } /* bug here */
             *cmap_table.offset((18i32 + code) as isize) =
-                (idx as libc::c_int & 0xffi32) as i8;
+                (idx as i32 & 0xffi32) as i8;
             count += 1
         }
         code += 1
@@ -1006,8 +1006,8 @@ unsafe extern "C" fn do_builtin_encoding(
             );
             widths[code as usize] = floor(
                 1000.0f64
-                    * (*(*glyphs).gd.offset(idx as isize)).advw as libc::c_int as f64
-                    / (*glyphs).emsize as libc::c_int as f64
+                    * (*(*glyphs).gd.offset(idx as isize)).advw as i32 as f64
+                    / (*glyphs).emsize as i32 as f64
                     / 1i32 as f64
                     + 0.5f64,
             ) * 1i32 as f64
@@ -1020,7 +1020,7 @@ unsafe extern "C" fn do_builtin_encoding(
     if verbose > 1i32 {
         dpx_message(
             b"[%d glyphs]\x00" as *const u8 as *const i8,
-            (*glyphs).num_glyphs as libc::c_int,
+            (*glyphs).num_glyphs as i32,
         );
     }
     tt_build_finish(glyphs);
@@ -1036,12 +1036,12 @@ unsafe extern "C" fn do_builtin_encoding(
 unsafe extern "C" fn agl_decompose_glyphname(
     mut glyphname: *mut i8,
     mut nptrs: *mut *mut i8,
-    mut size: libc::c_int,
+    mut size: i32,
     mut suffix: *mut *mut i8,
-) -> libc::c_int {
+) -> i32 {
     let mut q: *mut i8 = 0 as *mut i8; /* chop every thing after *first* dot */
     let mut p: *mut i8 = glyphname; /* _FIXME_ */
-    let mut n: libc::c_int = 0;
+    let mut n: i32 = 0;
     q = strchr(p, '.' as i32);
     if q.is_null() {
         *suffix = 0 as *mut i8
@@ -1053,9 +1053,9 @@ unsafe extern "C" fn agl_decompose_glyphname(
     let ref mut fresh0 = *nptrs.offset(0);
     *fresh0 = p;
     n = 1i32;
-    while !p.is_null() && *p as libc::c_int != 0 {
+    while !p.is_null() && *p as i32 != 0 {
         p = strchr(p, '_' as i32);
-        if p.is_null() || *p.offset(1) as libc::c_int == '\u{0}' as i32 {
+        if p.is_null() || *p.offset(1) as i32 == '\u{0}' as i32 {
             break;
         }
         if n >= size {
@@ -1072,10 +1072,10 @@ unsafe extern "C" fn agl_decompose_glyphname(
 unsafe extern "C" fn select_gsub(
     mut feat: *const i8,
     mut gm: *mut glyph_mapper,
-) -> libc::c_int {
-    let mut idx: libc::c_int = 0;
-    let mut error: libc::c_int = 0i32;
-    if feat.is_null() || *feat as libc::c_int == 0i32 || gm.is_null() || (*gm).gsub.is_null() {
+) -> i32 {
+    let mut idx: i32 = 0;
+    let mut error: i32 = 0i32;
+    if feat.is_null() || *feat as i32 == 0i32 || gm.is_null() || (*gm).gsub.is_null() {
         return -1i32;
     }
     /* First treat as is */
@@ -1119,13 +1119,13 @@ unsafe extern "C" fn selectglyph(
     mut suffix: *const i8,
     mut gm: *mut glyph_mapper,
     mut out: *mut USHORT,
-) -> libc::c_int {
+) -> i32 {
     let mut s: *mut i8 = 0 as *mut i8;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut t: [i8; 5] = [0; 5];
     let mut r: *const i8 = 0 as *const i8;
-    let mut n: libc::c_int = 0;
-    let mut error: libc::c_int = 0i32;
+    let mut n: i32 = 0;
+    let mut error: i32 = 0i32;
     if !suffix.is_null() && !gm.is_null() && !out.is_null() {
     } else {
         __assert_fail(
@@ -1138,7 +1138,7 @@ unsafe extern "C" fn selectglyph(
             .as_ptr(),
         );
     }
-    if !suffix.is_null() && *suffix as libc::c_int != 0i32 {
+    if !suffix.is_null() && *suffix as i32 != 0i32 {
     } else {
         __assert_fail(
             b"suffix && *suffix != 0\x00" as *const u8 as *const i8,
@@ -1197,7 +1197,7 @@ unsafe extern "C" fn selectglyph(
         } else {
             /* other case: alt1, nalt10... (alternates) */
             q = s.offset(strlen(s) as isize).offset(-1);
-            while q > s && *q as libc::c_int >= '0' as i32 && *q as libc::c_int <= '9' as i32 {
+            while q > s && *q as i32 >= '0' as i32 && *q as i32 <= '9' as i32 {
                 q = q.offset(-1)
             }
             if q == s {
@@ -1237,12 +1237,12 @@ unsafe extern "C" fn selectglyph(
 /* Compose glyphs via ligature substitution. */
 unsafe extern "C" fn composeglyph(
     mut glyphs: *mut USHORT,
-    mut n_glyphs: libc::c_int,
+    mut n_glyphs: i32,
     mut feat: *const i8,
     mut gm: *mut glyph_mapper,
     mut gid: *mut USHORT,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
+) -> i32 {
+    let mut error: i32 = 0i32;
     let mut t: [i8; 5] = [
         ' ' as i32 as i8,
         ' ' as i32 as i8,
@@ -1259,7 +1259,7 @@ unsafe extern "C" fn composeglyph(
                       (*::std::mem::transmute::<&[u8; 79],
                                                 &[i8; 79]>(b"int composeglyph(USHORT *, int, const char *, struct glyph_mapper *, USHORT *)\x00")).as_ptr());
     }
-    if feat.is_null() || *feat.offset(0) as libc::c_int == '\u{0}' as i32 {
+    if feat.is_null() || *feat.offset(0) as i32 == '\u{0}' as i32 {
         /* meaning "Unknown" */
         error = select_gsub(
             b"(?lig|lig?|?cmp|cmp?|frac|afrc)\x00" as *const u8 as *const i8,
@@ -1283,14 +1283,14 @@ unsafe extern "C" fn composeglyph(
 /* This may be called by findparanoiac(). */
 unsafe extern "C" fn composeuchar(
     mut unicodes: *mut i32,
-    mut n_unicodes: libc::c_int,
+    mut n_unicodes: i32,
     mut feat: *const i8,
     mut gm: *mut glyph_mapper,
     mut gid: *mut USHORT,
-) -> libc::c_int {
+) -> i32 {
     let mut gids: *mut USHORT = 0 as *mut USHORT;
-    let mut i: libc::c_int = 0;
-    let mut error: libc::c_int = 0i32;
+    let mut i: i32 = 0;
+    let mut error: i32 = 0i32;
     if (*gm).codetogid.is_null() {
         return -1i32;
     }
@@ -1301,7 +1301,7 @@ unsafe extern "C" fn composeuchar(
     while error == 0 && i < n_unicodes {
         *gids.offset(i as isize) =
             tt_cmap_lookup((*gm).codetogid, *unicodes.offset(i as isize) as SFNT_ULONG);
-        error = if *gids.offset(i as isize) as libc::c_int == 0i32 {
+        error = if *gids.offset(i as isize) as i32 == 0i32 {
             -1i32
         } else {
             0i32
@@ -1319,12 +1319,12 @@ unsafe extern "C" fn findposttable(
     mut glyph_name: *const i8,
     mut gid: *mut USHORT,
     mut gm: *mut glyph_mapper,
-) -> libc::c_int {
+) -> i32 {
     if (*gm).nametogid.is_null() {
         return -1i32;
     }
     *gid = tt_lookup_post_table((*gm).nametogid, glyph_name);
-    return if *gid as libc::c_int == 0i32 {
+    return if *gid as i32 == 0i32 {
         -1i32
     } else {
         0i32
@@ -1336,14 +1336,14 @@ unsafe extern "C" fn findcomposite(
     mut glyphname: *const i8,
     mut gid: *mut USHORT,
     mut gm: *mut glyph_mapper,
-) -> libc::c_int {
+) -> i32 {
     let mut gname: *mut i8 = 0 as *mut i8; /* first try composing glyph */
     let mut suffix: *mut i8 = 0 as *mut i8;
     let mut gids: [USHORT; 32] = [0; 32];
     let mut nptrs: [*mut i8; 32] = [0 as *mut i8; 32];
-    let mut i: libc::c_int = 0;
-    let mut n_comp: libc::c_int = 0;
-    let mut error: libc::c_int = 0i32;
+    let mut i: i32 = 0;
+    let mut n_comp: i32 = 0;
+    let mut error: i32 = 0i32;
     error = findposttable(glyphname, gid, gm);
     if error == 0 {
         return 0i32;
@@ -1381,22 +1381,22 @@ unsafe extern "C" fn findcomposite(
     }
     if error == 0 {
         if !suffix.is_null()
-            && (streq_ptr(suffix, b"liga\x00" as *const u8 as *const i8) as libc::c_int
+            && (streq_ptr(suffix, b"liga\x00" as *const u8 as *const i8) as i32
                 != 0
                 || streq_ptr(suffix, b"dlig\x00" as *const u8 as *const i8)
-                    as libc::c_int
+                    as i32
                     != 0
                 || streq_ptr(suffix, b"hlig\x00" as *const u8 as *const i8)
-                    as libc::c_int
+                    as i32
                     != 0
                 || streq_ptr(suffix, b"frac\x00" as *const u8 as *const i8)
-                    as libc::c_int
+                    as i32
                     != 0
                 || streq_ptr(suffix, b"ccmp\x00" as *const u8 as *const i8)
-                    as libc::c_int
+                    as i32
                     != 0
                 || streq_ptr(suffix, b"afrc\x00" as *const u8 as *const i8)
-                    as libc::c_int
+                    as i32
                     != 0)
         {
             error = composeglyph(gids.as_mut_ptr(), n_comp, suffix, gm, gid)
@@ -1416,12 +1416,12 @@ unsafe extern "C" fn findparanoiac(
     mut glyphname: *const i8,
     mut gid: *mut USHORT,
     mut gm: *mut glyph_mapper,
-) -> libc::c_int {
+) -> i32 {
     let mut agln: *mut agl_name = 0 as *mut agl_name;
     let mut idx: USHORT = 0u32 as USHORT;
-    let mut error: libc::c_int = 0i32;
+    let mut error: i32 = 0i32;
     agln = agl_lookup_list(glyphname);
-    while !agln.is_null() && idx as libc::c_int == 0i32 {
+    while !agln.is_null() && idx as i32 == 0i32 {
         if !(*agln).suffix.is_null() {
             error = findparanoiac((*agln).name, &mut idx, gm);
             if error != 0 {
@@ -1464,15 +1464,15 @@ unsafe extern "C" fn findparanoiac(
                 if error != 0 {
                     dpx_warning(b"Not found...\x00" as *const u8 as *const i8);
                 } else {
-                    let mut _i: libc::c_int = 0;
-                    let mut _n: libc::c_int = 0i32;
+                    let mut _i: i32 = 0;
+                    let mut _n: i32 = 0i32;
                     let mut _p: *mut i8 = 0 as *mut i8;
                     let mut _buf: [i8; 256] = [0; 256];
                     dpx_warning(
                         b">> Composite glyph glyph-name=\"%s\" found at glyph-id=\"%u\".\x00"
                             as *const u8 as *const i8,
                         (*agln).name,
-                        idx as libc::c_int,
+                        idx as i32,
                     );
                     _p = _buf.as_mut_ptr();
                     _i = 0i32;
@@ -1508,7 +1508,7 @@ unsafe extern "C" fn findparanoiac(
                     *_p.offset(fresh4 as isize) = '\u{0}' as i32 as i8;
                     dpx_warning(b">> Input Unicode seq.=\"%s\" ==> glyph-id=\"%u\" in font-file=\"_please_try_-v_\".\x00"
                                     as *const u8 as *const i8,
-                                _buf.as_mut_ptr(), idx as libc::c_int);
+                                _buf.as_mut_ptr(), idx as i32);
                 }
             }
         } else {
@@ -1525,7 +1525,7 @@ unsafe extern "C" fn findparanoiac(
         agln = (*agln).alternate
     }
     *gid = idx;
-    return if idx as libc::c_int == 0i32 {
+    return if idx as i32 == 0i32 {
         -1i32
     } else {
         0i32
@@ -1535,8 +1535,8 @@ unsafe extern "C" fn resolve_glyph(
     mut glyphname: *const i8,
     mut gid: *mut USHORT,
     mut gm: *mut glyph_mapper,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
+) -> i32 {
+    let mut error: i32 = 0i32;
     let mut name: *mut i8 = 0 as *mut i8;
     let mut suffix: *mut i8 = 0 as *mut i8;
     let mut ucv: i32 = 0;
@@ -1573,7 +1573,7 @@ unsafe extern "C" fn resolve_glyph(
     } else if agl_name_is_unicode(name) {
         ucv = agl_name_convert_unicode(name);
         *gid = tt_cmap_lookup((*gm).codetogid, ucv as SFNT_ULONG);
-        error = if *gid as libc::c_int == 0i32 {
+        error = if *gid as i32 == 0i32 {
             -1i32
         } else {
             0i32
@@ -1610,7 +1610,7 @@ unsafe extern "C" fn resolve_glyph(
 unsafe extern "C" fn setup_glyph_mapper(
     mut gm: *mut glyph_mapper,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
+) -> i32 {
     (*gm).sfont = sfont;
     (*gm).nametogid = tt_read_post_table(sfont);
     (*gm).codetogid = tt_cmap_read(sfont, 3u32 as USHORT, 10u32 as USHORT);
@@ -1643,11 +1643,11 @@ unsafe extern "C" fn do_custom_encoding(
     mut encoding: *mut *mut i8,
     mut usedchars: *const i8,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
+) -> i32 {
     let mut glyphs: *mut tt_glyphs = 0 as *mut tt_glyphs;
     let mut cmap_table: *mut i8 = 0 as *mut i8;
-    let mut code: libc::c_int = 0;
-    let mut count: libc::c_int = 0;
+    let mut code: i32 = 0;
+    let mut count: i32 = 0;
     let mut widths: [f64; 256] = [0.; 256];
     let mut gm: glyph_mapper = glyph_mapper {
         codetogid: 0 as *mut tt_cmap,
@@ -1657,7 +1657,7 @@ unsafe extern "C" fn do_custom_encoding(
     };
     let mut idx: USHORT = 0;
     let mut gid: USHORT = 0;
-    let mut error: libc::c_int = 0i32;
+    let mut error: i32 = 0i32;
     if !font.is_null() && !encoding.is_null() && !usedchars.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
@@ -1723,7 +1723,7 @@ unsafe extern "C" fn do_custom_encoding(
                 || streq_ptr(
                     *encoding.offset(code as isize),
                     b".notdef\x00" as *const u8 as *const i8,
-                ) as libc::c_int
+                ) as i32
                     != 0
             {
                 dpx_warning(b"Character code=\"0x%02X\" mapped to \".notdef\" glyph used in font font-file=\"%s\"\x00"
@@ -1756,17 +1756,17 @@ unsafe extern "C" fn do_custom_encoding(
                         b"truetype>> Glyph glyph-name=\"%s\" found at glyph-id=\"%u\".\n\x00"
                             as *const u8 as *const i8,
                         *encoding.offset(code as isize),
-                        gid as libc::c_int,
+                        gid as i32,
                     );
                 }
                 idx = tt_find_glyph(glyphs, gid);
-                if idx as libc::c_int == 0i32 {
+                if idx as i32 == 0i32 {
                     idx = tt_add_glyph(glyphs, gid, count as USHORT);
                     count += 1
                 }
             }
             *cmap_table.offset((18i32 + code) as isize) =
-                (idx as libc::c_int & 0xffi32) as i8
+                (idx as i32 & 0xffi32) as i8
         }
         code += 1
         /* bug here */
@@ -1790,8 +1790,8 @@ unsafe extern "C" fn do_custom_encoding(
             );
             widths[code as usize] = floor(
                 1000.0f64
-                    * (*(*glyphs).gd.offset(idx as isize)).advw as libc::c_int as f64
-                    / (*glyphs).emsize as libc::c_int as f64
+                    * (*(*glyphs).gd.offset(idx as isize)).advw as i32 as f64
+                    / (*glyphs).emsize as i32 as f64
                     / 1i32 as f64
                     + 0.5f64,
             ) * 1i32 as f64
@@ -1804,7 +1804,7 @@ unsafe extern "C" fn do_custom_encoding(
     if verbose > 1i32 {
         dpx_message(
             b"[%d glyphs]\x00" as *const u8 as *const i8,
-            (*glyphs).num_glyphs as libc::c_int,
+            (*glyphs).num_glyphs as i32,
         );
     }
     tt_build_finish(glyphs);
@@ -1838,19 +1838,19 @@ unsafe extern "C" fn do_custom_encoding(
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_font_load_truetype(mut font: *mut pdf_font) -> libc::c_int {
+pub unsafe extern "C" fn pdf_font_load_truetype(mut font: *mut pdf_font) -> i32 {
     let mut descriptor: *mut pdf_obj = pdf_font_get_descriptor(font);
     let mut ident: *mut i8 = pdf_font_get_ident(font);
-    let mut encoding_id: libc::c_int = pdf_font_get_encoding(font);
+    let mut encoding_id: i32 = pdf_font_get_encoding(font);
     let mut usedchars: *mut i8 = pdf_font_get_usedchars(font);
     /* ENABLE_NOEMBED */
-    let mut index: libc::c_int = pdf_font_get_index(font); /* Should find *truetype* here */
+    let mut index: i32 = pdf_font_get_index(font); /* Should find *truetype* here */
     let mut enc_vec: *mut *mut i8 = 0 as *mut *mut i8;
     let mut fontfile: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut handle: *mut rust_input_handle_t = 0 as *mut rust_input_handle_t;
     let mut sfont: *mut sfnt = 0 as *mut sfnt;
-    let mut i: libc::c_int = 0;
-    let mut error: libc::c_int = 0i32;
+    let mut i: i32 = 0;
+    let mut error: i32 = 0i32;
     if !pdf_font_is_in_use(font) {
         return 0i32;
     }

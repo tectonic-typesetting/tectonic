@@ -38,16 +38,16 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strncpy(_: *mut i8, _: *const i8, _: u64)
         -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn strchr(_: *const i8, _: libc::c_int) -> *mut i8;
+    fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
@@ -57,16 +57,16 @@ extern "C" {
     fn ttstub_input_seek(
         handle: rust_input_handle_t,
         offset: ssize_t,
-        whence: libc::c_int,
+        whence: i32,
     ) -> size_t;
     #[no_mangle]
     fn otl_new_opt() -> *mut otl_opt;
     #[no_mangle]
     fn otl_release_opt(opt: *mut otl_opt);
     #[no_mangle]
-    fn otl_parse_optstring(opt: *mut otl_opt, optstr: *const i8) -> libc::c_int;
+    fn otl_parse_optstring(opt: *mut otl_opt, optstr: *const i8) -> i32;
     #[no_mangle]
-    fn otl_match_optrule(opt: *mut otl_opt, tag: *const i8) -> libc::c_int;
+    fn otl_match_optrule(opt: *mut otl_opt, tag: *const i8) -> i32;
     #[no_mangle]
     fn tt_get_signed_byte(handle: rust_input_handle_t) -> libc::c_schar;
     #[no_mangle]
@@ -142,7 +142,7 @@ pub struct sfnt_table_directory {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt {
-    pub type_0: libc::c_int,
+    pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
     pub offset: SFNT_ULONG,
@@ -150,8 +150,8 @@ pub struct sfnt {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct otl_gsub {
-    pub num_gsubs: libc::c_int,
-    pub select: libc::c_int,
+    pub num_gsubs: i32,
+    pub select: i32,
     pub first: *mut gsub_entry,
     pub gsubs: [otl_gsub_tab; 32],
     /* _TT_GSUB_H_ */
@@ -162,7 +162,7 @@ pub struct otl_gsub_tab {
     pub script: *mut i8,
     pub language: *mut i8,
     pub feature: *mut i8,
-    pub num_subtables: libc::c_int,
+    pub num_subtables: i32,
     pub subtables: *mut otl_gsub_subtab,
 }
 #[derive(Copy, Clone)]
@@ -245,7 +245,7 @@ pub struct otl_gsub_single1 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct gsub_entry {
-    pub index: libc::c_int,
+    pub index: i32,
     pub next: *mut gsub_entry,
 }
 #[derive(Copy, Clone)]
@@ -320,16 +320,16 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     }
     return 0i32 != 0;
 }
-static mut verbose: libc::c_int = 0i32;
+static mut verbose: i32 = 0i32;
 #[no_mangle]
-pub unsafe extern "C" fn otl_gsub_set_verbose(mut level: libc::c_int) {
+pub unsafe extern "C" fn otl_gsub_set_verbose(mut level: i32) {
     verbose = level;
 }
 unsafe extern "C" fn clt_read_record(
     mut rec: *mut clt_record,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
-    let mut i: libc::c_int = 0;
+) -> i32 {
+    let mut i: i32 = 0;
     if !rec.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
@@ -351,7 +351,7 @@ unsafe extern "C" fn clt_read_record(
     (*rec).offset = tt_get_unsigned_pair((*sfont).handle);
     return 6i32;
 }
-unsafe extern "C" fn clt_read_range(mut rec: *mut clt_range, mut sfont: *mut sfnt) -> libc::c_int {
+unsafe extern "C" fn clt_read_range(mut rec: *mut clt_range, mut sfont: *mut sfnt) -> i32 {
     if !rec.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
@@ -372,9 +372,9 @@ unsafe extern "C" fn clt_read_range(mut rec: *mut clt_range, mut sfont: *mut sfn
 unsafe extern "C" fn clt_read_record_list(
     mut list: *mut clt_record_list,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0;
-    let mut i: libc::c_int = 0;
+) -> i32 {
+    let mut len: i32 = 0;
+    let mut i: i32 = 0;
     if !list.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
@@ -389,14 +389,14 @@ unsafe extern "C" fn clt_read_record_list(
     }
     (*list).count = tt_get_unsigned_pair((*sfont).handle);
     len = 2i32;
-    if (*list).count as libc::c_int == 0i32 {
+    if (*list).count as i32 == 0i32 {
         (*list).record = 0 as *mut clt_record
     } else {
         (*list).record = new(((*list).count as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<clt_record>() as u64)
             as u32) as *mut clt_record;
         i = 0i32;
-        while i < (*list).count as libc::c_int {
+        while i < (*list).count as i32 {
             len += clt_read_record(&mut *(*list).record.offset(i as isize), sfont);
             i += 1
         }
@@ -412,8 +412,8 @@ unsafe extern "C" fn clt_release_record_list(mut list: *mut clt_record_list) {
 unsafe extern "C" fn clt_read_number_list(
     mut list: *mut clt_number_list,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
-    let mut i: libc::c_int = 0;
+) -> i32 {
+    let mut i: i32 = 0;
     if !list.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
@@ -427,19 +427,19 @@ unsafe extern "C" fn clt_read_number_list(
         );
     }
     (*list).count = tt_get_unsigned_pair((*sfont).handle);
-    if (*list).count as libc::c_int == 0i32 {
+    if (*list).count as i32 == 0i32 {
         (*list).value = 0 as *mut USHORT
     } else {
         (*list).value = new(((*list).count as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<USHORT>() as u64)
             as u32) as *mut USHORT;
         i = 0i32;
-        while i < (*list).count as libc::c_int {
+        while i < (*list).count as i32 {
             *(*list).value.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
             i += 1
         }
     }
-    return 2i32 + 2i32 * (*list).count as libc::c_int;
+    return 2i32 + 2i32 * (*list).count as i32;
 }
 unsafe extern "C" fn clt_release_number_list(mut list: *mut clt_number_list) {
     if !list.is_null() {
@@ -450,8 +450,8 @@ unsafe extern "C" fn clt_release_number_list(mut list: *mut clt_number_list) {
 unsafe extern "C" fn clt_read_script_table(
     mut tab: *mut clt_script_table,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0;
+) -> i32 {
+    let mut len: i32 = 0;
     if !tab.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
@@ -477,8 +477,8 @@ unsafe extern "C" fn clt_release_script_table(mut tab: *mut clt_script_table) {
 unsafe extern "C" fn clt_read_langsys_table(
     mut tab: *mut clt_langsys_table,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0;
+) -> i32 {
+    let mut len: i32 = 0;
     if !tab.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
@@ -505,8 +505,8 @@ unsafe extern "C" fn clt_release_langsys_table(mut tab: *mut clt_langsys_table) 
 unsafe extern "C" fn clt_read_feature_table(
     mut tab: *mut clt_feature_table,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0;
+) -> i32 {
+    let mut len: i32 = 0;
     if !tab.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
@@ -532,8 +532,8 @@ unsafe extern "C" fn clt_release_feature_table(mut tab: *mut clt_feature_table) 
 unsafe extern "C" fn clt_read_lookup_table(
     mut tab: *mut clt_lookup_table,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0;
+) -> i32 {
+    let mut len: i32 = 0;
     if !tab.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
@@ -560,9 +560,9 @@ unsafe extern "C" fn clt_release_lookup_table(mut tab: *mut clt_lookup_table) {
 unsafe extern "C" fn clt_read_coverage(
     mut cov: *mut clt_coverage,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0;
-    let mut i: libc::c_int = 0;
+) -> i32 {
+    let mut len: i32 = 0;
+    let mut i: i32 = 0;
     if !cov.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
@@ -578,32 +578,32 @@ unsafe extern "C" fn clt_read_coverage(
     (*cov).format = tt_get_unsigned_pair((*sfont).handle);
     (*cov).count = tt_get_unsigned_pair((*sfont).handle);
     len = 4i32;
-    match (*cov).format as libc::c_int {
+    match (*cov).format as i32 {
         1 => {
-            if (*cov).count as libc::c_int == 0i32 {
+            if (*cov).count as i32 == 0i32 {
                 (*cov).list = 0 as *mut GlyphID
             } else {
                 (*cov).list = new(((*cov).count as u32 as u64)
                     .wrapping_mul(::std::mem::size_of::<USHORT>() as u64)
                     as u32) as *mut USHORT;
                 i = 0i32;
-                while i < (*cov).count as libc::c_int {
+                while i < (*cov).count as i32 {
                     *(*cov).list.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
                     i += 1
                 }
             }
             (*cov).range = 0 as *mut clt_range;
-            len += 2i32 * (*cov).count as libc::c_int
+            len += 2i32 * (*cov).count as i32
         }
         2 => {
-            if (*cov).count as libc::c_int == 0i32 {
+            if (*cov).count as i32 == 0i32 {
                 (*cov).range = 0 as *mut clt_range
             } else {
                 (*cov).range = new(((*cov).count as u32 as u64)
                     .wrapping_mul(::std::mem::size_of::<clt_range>() as u64)
                     as u32) as *mut clt_range;
                 i = 0i32;
-                while i < (*cov).count as libc::c_int {
+                while i < (*cov).count as i32 {
                     len += clt_read_range(&mut *(*cov).range.offset(i as isize), sfont);
                     i += 1
                 }
@@ -618,7 +618,7 @@ unsafe extern "C" fn clt_read_coverage(
 }
 unsafe extern "C" fn clt_release_coverage(mut cov: *mut clt_coverage) {
     if !cov.is_null() {
-        match (*cov).format as libc::c_int {
+        match (*cov).format as i32 {
             1 => (*cov).list = mfree((*cov).list as *mut libc::c_void) as *mut GlyphID,
             2 => (*cov).range = mfree((*cov).range as *mut libc::c_void) as *mut clt_range,
             _ => {
@@ -631,8 +631,8 @@ unsafe extern "C" fn clt_release_coverage(mut cov: *mut clt_coverage) {
 unsafe extern "C" fn clt_lookup_coverage(
     mut cov: *mut clt_coverage,
     mut gid: USHORT,
-) -> libc::c_int {
-    let mut i: libc::c_int = 0;
+) -> i32 {
+    let mut i: i32 = 0;
     if !cov.is_null() {
     } else {
         __assert_fail(
@@ -645,14 +645,14 @@ unsafe extern "C" fn clt_lookup_coverage(
             .as_ptr(),
         );
     }
-    match (*cov).format as libc::c_int {
+    match (*cov).format as i32 {
         1 => {
             i = 0i32;
-            while i < (*cov).count as libc::c_int {
-                if *(*cov).list.offset(i as isize) as libc::c_int > gid as libc::c_int {
+            while i < (*cov).count as i32 {
+                if *(*cov).list.offset(i as isize) as i32 > gid as i32 {
                     break;
                 }
-                if *(*cov).list.offset(i as isize) as libc::c_int == gid as libc::c_int {
+                if *(*cov).list.offset(i as isize) as i32 == gid as i32 {
                     return i;
                 }
                 i += 1
@@ -660,14 +660,14 @@ unsafe extern "C" fn clt_lookup_coverage(
         }
         2 => {
             i = 0i32;
-            while i < (*cov).count as libc::c_int {
-                if (gid as libc::c_int) < (*(*cov).range.offset(i as isize)).Start as libc::c_int {
+            while i < (*cov).count as i32 {
+                if (gid as i32) < (*(*cov).range.offset(i as isize)).Start as i32 {
                     break;
                 }
-                if gid as libc::c_int <= (*(*cov).range.offset(i as isize)).End as libc::c_int {
-                    return (*(*cov).range.offset(i as isize)).StartCoverageIndex as libc::c_int
-                        + gid as libc::c_int
-                        - (*(*cov).range.offset(i as isize)).Start as libc::c_int;
+                if gid as i32 <= (*(*cov).range.offset(i as isize)).End as i32 {
+                    return (*(*cov).range.offset(i as isize)).StartCoverageIndex as i32
+                        + gid as i32
+                        - (*(*cov).range.offset(i as isize)).Start as i32;
                 }
                 i += 1
             }
@@ -681,8 +681,8 @@ unsafe extern "C" fn clt_lookup_coverage(
 unsafe extern "C" fn otl_gsub_read_single(
     mut subtab: *mut otl_gsub_subtab,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0;
+) -> i32 {
+    let mut len: i32 = 0;
     let mut offset: SFNT_ULONG = 0;
     let mut cov_offset: Offset = 0;
     if !subtab.is_null() && !sfont.is_null() {
@@ -701,7 +701,7 @@ unsafe extern "C" fn otl_gsub_read_single(
     (*subtab).LookupType = 1i32 as USHORT;
     (*subtab).SubstFormat = tt_get_unsigned_pair((*sfont).handle);
     len = 2i32;
-    if (*subtab).SubstFormat as libc::c_int == 1i32 {
+    if (*subtab).SubstFormat as i32 == 1i32 {
         let mut data: *mut otl_gsub_single1 = 0 as *mut otl_gsub_single1;
         data = new((1i32 as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<otl_gsub_single1>() as u64)
@@ -716,7 +716,7 @@ unsafe extern "C" fn otl_gsub_read_single(
             0i32,
         );
         len += clt_read_coverage(&mut (*data).coverage, sfont)
-    } else if (*subtab).SubstFormat as libc::c_int == 2i32 {
+    } else if (*subtab).SubstFormat as i32 == 2i32 {
         let mut data_0: *mut otl_gsub_single2 = 0 as *mut otl_gsub_single2;
         let mut count: USHORT = 0;
         data_0 = new((1i32 as u32 as u64)
@@ -726,19 +726,19 @@ unsafe extern "C" fn otl_gsub_read_single(
         cov_offset = tt_get_unsigned_pair((*sfont).handle);
         (*data_0).GlyphCount = tt_get_unsigned_pair((*sfont).handle);
         len += 4i32;
-        if (*data_0).GlyphCount as libc::c_int == 0i32 {
+        if (*data_0).GlyphCount as i32 == 0i32 {
             (*data_0).Substitute = 0 as *mut GlyphID
         } else {
             (*data_0).Substitute = new(((*data_0).GlyphCount as u32 as u64)
                 .wrapping_mul(::std::mem::size_of::<GlyphID>() as u64)
                 as u32) as *mut GlyphID;
             count = 0i32 as USHORT;
-            while (count as libc::c_int) < (*data_0).GlyphCount as libc::c_int {
+            while (count as i32) < (*data_0).GlyphCount as i32 {
                 *(*data_0).Substitute.offset(count as isize) =
                     tt_get_unsigned_pair((*sfont).handle);
                 count = count.wrapping_add(1)
             }
-            len += 2i32 * (*data_0).GlyphCount as libc::c_int
+            len += 2i32 * (*data_0).GlyphCount as i32
         }
         ttstub_input_seek(
             (*sfont).handle,
@@ -754,8 +754,8 @@ unsafe extern "C" fn otl_gsub_read_single(
 unsafe extern "C" fn otl_gsub_read_alternate(
     mut subtab: *mut otl_gsub_subtab,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0;
+) -> i32 {
+    let mut len: i32 = 0;
     let mut i: USHORT = 0;
     let mut j: USHORT = 0;
     let mut offset: SFNT_ULONG = 0;
@@ -780,10 +780,10 @@ unsafe extern "C" fn otl_gsub_read_alternate(
     offset = ttstub_input_seek((*sfont).handle, 0i32 as ssize_t, 1i32) as SFNT_ULONG;
     (*subtab).LookupType = 3i32 as USHORT;
     (*subtab).SubstFormat = tt_get_unsigned_pair((*sfont).handle);
-    if (*subtab).SubstFormat as libc::c_int != 1i32 {
+    if (*subtab).SubstFormat as i32 != 1i32 {
         dpx_warning(
             b"Unknown GSUB SubstFormat for Alternate: %u\x00" as *const u8 as *const i8,
-            (*subtab).SubstFormat as libc::c_int,
+            (*subtab).SubstFormat as i32,
         );
         return -1i32;
     }
@@ -796,7 +796,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
     len += 2i32;
     len += clt_read_number_list(&mut altset_offsets, sfont);
     (*data).AlternateSetCount = altset_offsets.count;
-    if (*data).AlternateSetCount as libc::c_int == 0i32 {
+    if (*data).AlternateSetCount as i32 == 0i32 {
         (*data).AlternateSet = 0 as *mut otl_gsub_altset;
         (*data).coverage.count = 0i32 as USHORT;
         (*data).coverage.format = 0i32 as USHORT;
@@ -807,7 +807,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
         .wrapping_mul(::std::mem::size_of::<otl_gsub_altset>() as u64)
         as u32) as *mut otl_gsub_altset;
     i = 0i32 as USHORT;
-    while (i as libc::c_int) < (*data).AlternateSetCount as libc::c_int {
+    while (i as i32) < (*data).AlternateSetCount as i32 {
         let mut altset: *mut otl_gsub_altset = 0 as *mut otl_gsub_altset;
         let mut altset_offset: SFNT_ULONG = 0;
         altset = &mut *(*data).AlternateSet.offset(i as isize) as *mut otl_gsub_altset;
@@ -816,7 +816,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
         ttstub_input_seek((*sfont).handle, altset_offset as ssize_t, 0i32);
         (*altset).GlyphCount = tt_get_unsigned_pair((*sfont).handle);
         len += 2i32;
-        if (*altset).GlyphCount as libc::c_int == 0i32 {
+        if (*altset).GlyphCount as i32 == 0i32 {
             (*altset).Alternate = 0 as *mut GlyphID;
             break;
         } else {
@@ -824,7 +824,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
                 .wrapping_mul(::std::mem::size_of::<GlyphID>() as u64)
                 as u32) as *mut GlyphID;
             j = 0i32 as USHORT;
-            while (j as libc::c_int) < (*altset).GlyphCount as libc::c_int {
+            while (j as i32) < (*altset).GlyphCount as i32 {
                 *(*altset).Alternate.offset(j as isize) = tt_get_unsigned_pair((*sfont).handle);
                 len += 2i32;
                 j = j.wrapping_add(1)
@@ -844,8 +844,8 @@ unsafe extern "C" fn otl_gsub_read_alternate(
 unsafe extern "C" fn otl_gsub_read_ligature(
     mut subtab: *mut otl_gsub_subtab,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0;
+) -> i32 {
+    let mut len: i32 = 0;
     let mut i: USHORT = 0;
     let mut j: USHORT = 0;
     let mut offset: SFNT_ULONG = 0;
@@ -870,10 +870,10 @@ unsafe extern "C" fn otl_gsub_read_ligature(
     offset = ttstub_input_seek((*sfont).handle, 0i32 as ssize_t, 1i32) as SFNT_ULONG;
     (*subtab).LookupType = 4i32 as USHORT;
     (*subtab).SubstFormat = tt_get_unsigned_pair((*sfont).handle);
-    if (*subtab).SubstFormat as libc::c_int != 1i32 {
+    if (*subtab).SubstFormat as i32 != 1i32 {
         dpx_warning(
             b"Unknown GSUB SubstFormat for Ligature: %u\x00" as *const u8 as *const i8,
-            (*subtab).SubstFormat as libc::c_int,
+            (*subtab).SubstFormat as i32,
         );
         return -1i32;
     }
@@ -886,7 +886,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
     len += 2i32;
     len += clt_read_number_list(&mut ligset_offsets, sfont);
     (*data).LigSetCount = ligset_offsets.count;
-    if (*data).LigSetCount as libc::c_int == 0i32 {
+    if (*data).LigSetCount as i32 == 0i32 {
         (*data).LigatureSet = 0 as *mut otl_gsub_ligset;
         (*data).coverage.count = 0i32 as USHORT;
         (*data).coverage.format = 0i32 as USHORT;
@@ -897,7 +897,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
         .wrapping_mul(::std::mem::size_of::<otl_gsub_ligset>() as u64)
         as u32) as *mut otl_gsub_ligset;
     i = 0i32 as USHORT;
-    while (i as libc::c_int) < (*data).LigSetCount as libc::c_int {
+    while (i as i32) < (*data).LigSetCount as i32 {
         let mut ligset_tab: clt_number_list = clt_number_list {
             count: 0,
             value: 0 as *mut USHORT,
@@ -911,7 +911,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
         ttstub_input_seek((*sfont).handle, ligset_offset as ssize_t, 0i32);
         len += clt_read_number_list(&mut ligset_tab, sfont);
         (*ligset).LigatureCount = ligset_tab.count;
-        if ligset_tab.count as libc::c_int == 0i32 {
+        if ligset_tab.count as i32 == 0i32 {
             (*ligset).Ligature = 0 as *mut otl_gsub_ligtab;
             break;
         } else {
@@ -919,7 +919,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
                 .wrapping_mul(::std::mem::size_of::<otl_gsub_ligtab>() as u64)
                 as u32) as *mut otl_gsub_ligtab;
             j = 0i32 as USHORT;
-            while (j as libc::c_int) < ligset_tab.count as libc::c_int {
+            while (j as i32) < ligset_tab.count as i32 {
                 ttstub_input_seek(
                     (*sfont).handle,
                     ligset_offset.wrapping_add(*ligset_tab.value.offset(j as isize) as libc::c_uint)
@@ -930,27 +930,27 @@ unsafe extern "C" fn otl_gsub_read_ligature(
                     tt_get_unsigned_pair((*sfont).handle);
                 (*(*ligset).Ligature.offset(j as isize)).CompCount =
                     tt_get_unsigned_pair((*sfont).handle);
-                if (*(*ligset).Ligature.offset(j as isize)).CompCount as libc::c_int == 0i32 {
+                if (*(*ligset).Ligature.offset(j as isize)).CompCount as i32 == 0i32 {
                     let ref mut fresh0 = (*(*ligset).Ligature.offset(j as isize)).Component;
                     *fresh0 = 0 as *mut GlyphID;
                     break;
                 } else {
                     let ref mut fresh1 = (*(*ligset).Ligature.offset(j as isize)).Component;
                     *fresh1 = new((((*(*ligset).Ligature.offset(j as isize)).CompCount
-                        as libc::c_int
+                        as i32
                         - 1i32) as u32 as u64)
                         .wrapping_mul(::std::mem::size_of::<GlyphID>() as u64)
                         as u32) as *mut GlyphID;
                     count = 0i32 as USHORT;
-                    while (count as libc::c_int)
-                        < (*(*ligset).Ligature.offset(j as isize)).CompCount as libc::c_int - 1i32
+                    while (count as i32)
+                        < (*(*ligset).Ligature.offset(j as isize)).CompCount as i32 - 1i32
                     {
                         *(*(*ligset).Ligature.offset(j as isize))
                             .Component
                             .offset(count as isize) = tt_get_unsigned_pair((*sfont).handle);
                         count = count.wrapping_add(1)
                     }
-                    len += 4i32 + count as libc::c_int * 2i32;
+                    len += 4i32 + count as i32 * 2i32;
                     j = j.wrapping_add(1)
                 }
             }
@@ -969,7 +969,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
 }
 unsafe extern "C" fn otl_gsub_release_single(mut subtab: *mut otl_gsub_subtab) {
     if !subtab.is_null() {
-        match (*subtab).SubstFormat as libc::c_int {
+        match (*subtab).SubstFormat as i32 {
             1 => {
                 let mut data: *mut otl_gsub_single1 = 0 as *mut otl_gsub_single1;
                 data = (*subtab).table.single1;
@@ -1006,11 +1006,11 @@ unsafe extern "C" fn otl_gsub_release_ligature(mut subtab: *mut otl_gsub_subtab)
         data = (*subtab).table.ligature1;
         if !data.is_null() && !(*data).LigatureSet.is_null() {
             i = 0i32 as USHORT;
-            while (i as libc::c_int) < (*data).LigSetCount as libc::c_int {
+            while (i as i32) < (*data).LigSetCount as i32 {
                 let mut ligset: *mut otl_gsub_ligset = 0 as *mut otl_gsub_ligset;
                 ligset = &mut *(*data).LigatureSet.offset(i as isize) as *mut otl_gsub_ligset;
                 j = 0i32 as USHORT;
-                while (j as libc::c_int) < (*ligset).LigatureCount as libc::c_int {
+                while (j as i32) < (*ligset).LigatureCount as i32 {
                     let ref mut fresh2 = (*(*ligset).Ligature.offset(j as isize)).Component;
                     *fresh2 = mfree(
                         (*(*ligset).Ligature.offset(j as isize)).Component as *mut libc::c_void,
@@ -1036,7 +1036,7 @@ unsafe extern "C" fn otl_gsub_release_alternate(mut subtab: *mut otl_gsub_subtab
         data = (*subtab).table.alternate1;
         if !data.is_null() && !(*data).AlternateSet.is_null() {
             i = 0i32 as USHORT;
-            while (i as libc::c_int) < (*data).AlternateSetCount as libc::c_int {
+            while (i as i32) < (*data).AlternateSetCount as i32 {
                 let mut altset: *mut otl_gsub_altset = 0 as *mut otl_gsub_altset;
                 altset = &mut *(*data).AlternateSet.offset(i as isize) as *mut otl_gsub_altset;
                 (*altset).Alternate =
@@ -1054,7 +1054,7 @@ unsafe extern "C" fn otl_gsub_release_alternate(mut subtab: *mut otl_gsub_subtab
 unsafe extern "C" fn otl_gsub_read_header(
     mut head: *mut otl_gsub_header,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
+) -> i32 {
     if !head.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
@@ -1076,9 +1076,9 @@ unsafe extern "C" fn otl_gsub_read_header(
 unsafe extern "C" fn otl_gsub_read_feat(
     mut gsub: *mut otl_gsub_tab,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
-    let mut feat_idx: libc::c_int = 0;
-    let mut script_idx: libc::c_int = 0;
+) -> i32 {
+    let mut feat_idx: i32 = 0;
+    let mut script_idx: i32 = 0;
     let mut gsub_offset: SFNT_ULONG = 0;
     let mut offset: SFNT_ULONG = 0;
     let mut head: otl_gsub_header = otl_gsub_header {
@@ -1138,7 +1138,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
     ttstub_input_seek((*sfont).handle, offset as ssize_t, 0i32);
     clt_read_record_list(&mut script_list, sfont);
     script_idx = 0i32;
-    while script_idx < script_list.count as libc::c_int {
+    while script_idx < script_list.count as i32 {
         if otl_match_optrule(
             script,
             (*script_list.record.offset(script_idx as isize))
@@ -1153,7 +1153,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                     record: 0 as *mut clt_record,
                 },
             };
-            let mut langsys_idx: libc::c_int = 0;
+            let mut langsys_idx: i32 = 0;
             offset = gsub_offset
                 .wrapping_add(head.ScriptList as libc::c_uint)
                 .wrapping_add(
@@ -1162,7 +1162,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
             ttstub_input_seek((*sfont).handle, offset as ssize_t, 0i32);
             clt_read_script_table(&mut script_tab, sfont);
             if otl_match_optrule(language, b"dflt\x00" as *const u8 as *const i8) != 0
-                && script_tab.DefaultLangSys as libc::c_int != 0i32
+                && script_tab.DefaultLangSys as i32 != 0i32
             {
                 let mut langsys_tab: clt_langsys_table = clt_langsys_table {
                     LookupOrder: 0,
@@ -1176,10 +1176,10 @@ unsafe extern "C" fn otl_gsub_read_feat(
                     dpx_message(
                         b"otl_gsub>> OTL script-language enabled: %c%c%c%c.dflt\n\x00" as *const u8
                             as *const i8,
-                        (*script_list.record.offset(script_idx as isize)).tag[0] as libc::c_int,
-                        (*script_list.record.offset(script_idx as isize)).tag[1] as libc::c_int,
-                        (*script_list.record.offset(script_idx as isize)).tag[2] as libc::c_int,
-                        (*script_list.record.offset(script_idx as isize)).tag[3] as libc::c_int,
+                        (*script_list.record.offset(script_idx as isize)).tag[0] as i32,
+                        (*script_list.record.offset(script_idx as isize)).tag[1] as i32,
+                        (*script_list.record.offset(script_idx as isize)).tag[2] as i32,
+                        (*script_list.record.offset(script_idx as isize)).tag[3] as i32,
                     );
                 }
                 ttstub_input_seek(
@@ -1189,33 +1189,33 @@ unsafe extern "C" fn otl_gsub_read_feat(
                 );
                 clt_read_langsys_table(&mut langsys_tab, sfont);
                 if otl_match_optrule(feature, b"____\x00" as *const u8 as *const i8) != 0
-                    && langsys_tab.ReqFeatureIndex as libc::c_int != 0xffffi32
+                    && langsys_tab.ReqFeatureIndex as i32 != 0xffffi32
                 {
-                    feat_bits[(langsys_tab.ReqFeatureIndex as libc::c_int / 8i32) as usize] =
-                        (feat_bits[(langsys_tab.ReqFeatureIndex as libc::c_int / 8i32) as usize]
-                            as libc::c_int
-                            | 1i32 << 7i32 - langsys_tab.ReqFeatureIndex as libc::c_int % 8i32)
+                    feat_bits[(langsys_tab.ReqFeatureIndex as i32 / 8i32) as usize] =
+                        (feat_bits[(langsys_tab.ReqFeatureIndex as i32 / 8i32) as usize]
+                            as i32
+                            | 1i32 << 7i32 - langsys_tab.ReqFeatureIndex as i32 % 8i32)
                             as u8
                 }
                 feat_idx = 0i32;
-                while feat_idx < langsys_tab.FeatureIndex.count as libc::c_int {
+                while feat_idx < langsys_tab.FeatureIndex.count as i32 {
                     feat_bits[(*langsys_tab.FeatureIndex.value.offset(feat_idx as isize)
-                        as libc::c_int
+                        as i32
                         / 8i32) as usize] =
                         (feat_bits[(*langsys_tab.FeatureIndex.value.offset(feat_idx as isize)
-                            as libc::c_int
-                            / 8i32) as usize] as libc::c_int
+                            as i32
+                            / 8i32) as usize] as i32
                             | 1i32
                                 << 7i32
                                     - *langsys_tab.FeatureIndex.value.offset(feat_idx as isize)
-                                        as libc::c_int
+                                        as i32
                                         % 8i32) as u8;
                     feat_idx += 1
                 }
                 clt_release_langsys_table(&mut langsys_tab);
             }
             langsys_idx = 0i32;
-            while langsys_idx < script_tab.LangSysRecord.count as libc::c_int {
+            while langsys_idx < script_tab.LangSysRecord.count as i32 {
                 let mut langsys_rec: *mut clt_record = 0 as *mut clt_record;
                 langsys_rec = &mut *script_tab.LangSysRecord.record.offset(langsys_idx as isize)
                     as *mut clt_record;
@@ -1232,14 +1232,14 @@ unsafe extern "C" fn otl_gsub_read_feat(
                         dpx_message(
                             b"otl_gsub>> OTL script-language enabled: %c%c%c%c.%c%c%c%c\n\x00"
                                 as *const u8 as *const i8,
-                            (*script_list.record.offset(script_idx as isize)).tag[0] as libc::c_int,
-                            (*script_list.record.offset(script_idx as isize)).tag[1] as libc::c_int,
-                            (*script_list.record.offset(script_idx as isize)).tag[2] as libc::c_int,
-                            (*script_list.record.offset(script_idx as isize)).tag[3] as libc::c_int,
-                            (*langsys_rec).tag[0] as libc::c_int,
-                            (*langsys_rec).tag[1] as libc::c_int,
-                            (*langsys_rec).tag[2] as libc::c_int,
-                            (*langsys_rec).tag[3] as libc::c_int,
+                            (*script_list.record.offset(script_idx as isize)).tag[0] as i32,
+                            (*script_list.record.offset(script_idx as isize)).tag[1] as i32,
+                            (*script_list.record.offset(script_idx as isize)).tag[2] as i32,
+                            (*script_list.record.offset(script_idx as isize)).tag[3] as i32,
+                            (*langsys_rec).tag[0] as i32,
+                            (*langsys_rec).tag[1] as i32,
+                            (*langsys_rec).tag[2] as i32,
+                            (*langsys_rec).tag[3] as i32,
                         );
                     }
                     ttstub_input_seek(
@@ -1250,31 +1250,31 @@ unsafe extern "C" fn otl_gsub_read_feat(
                     clt_read_langsys_table(&mut langsys_tab_0, sfont);
                     if otl_match_optrule(feature, b"____\x00" as *const u8 as *const i8)
                         != 0
-                        || langsys_tab_0.ReqFeatureIndex as libc::c_int != 0xffffi32
+                        || langsys_tab_0.ReqFeatureIndex as i32 != 0xffffi32
                     {
-                        feat_bits[(langsys_tab_0.ReqFeatureIndex as libc::c_int / 8i32) as usize] =
+                        feat_bits[(langsys_tab_0.ReqFeatureIndex as i32 / 8i32) as usize] =
                             (feat_bits
-                                [(langsys_tab_0.ReqFeatureIndex as libc::c_int / 8i32) as usize]
-                                as libc::c_int
+                                [(langsys_tab_0.ReqFeatureIndex as i32 / 8i32) as usize]
+                                as i32
                                 | 1i32
-                                    << 7i32 - langsys_tab_0.ReqFeatureIndex as libc::c_int % 8i32)
+                                    << 7i32 - langsys_tab_0.ReqFeatureIndex as i32 % 8i32)
                                 as u8
                     }
                     feat_idx = 0i32;
-                    while feat_idx < langsys_tab_0.FeatureIndex.count as libc::c_int {
+                    while feat_idx < langsys_tab_0.FeatureIndex.count as i32 {
                         feat_bits[(*langsys_tab_0.FeatureIndex.value.offset(feat_idx as isize)
-                            as libc::c_int
+                            as i32
                             / 8i32) as usize] =
                             (feat_bits[(*langsys_tab_0.FeatureIndex.value.offset(feat_idx as isize)
-                                as libc::c_int
-                                / 8i32) as usize] as libc::c_int
+                                as i32
+                                / 8i32) as usize] as i32
                                 | 1i32
                                     << 7i32
                                         - *langsys_tab_0
                                             .FeatureIndex
                                             .value
                                             .offset(feat_idx as isize)
-                                            as libc::c_int
+                                            as i32
                                             % 8i32) as u8;
                         feat_idx += 1
                     }
@@ -1296,8 +1296,8 @@ unsafe extern "C" fn otl_gsub_read_feat(
         dpx_message(b"otl_gsub>> Reading OTL feature(s):\x00" as *const u8 as *const i8);
     }
     feat_idx = 0i32;
-    while feat_idx < feature_list.count as libc::c_int {
-        if feat_bits[(feat_idx / 8i32) as usize] as libc::c_int & 1i32 << 7i32 - feat_idx % 8i32
+    while feat_idx < feature_list.count as i32 {
+        if feat_bits[(feat_idx / 8i32) as usize] as i32 & 1i32 << 7i32 - feat_idx % 8i32
             != 0
             && otl_match_optrule(
                 feature,
@@ -1313,14 +1313,14 @@ unsafe extern "C" fn otl_gsub_read_feat(
                     value: 0 as *mut USHORT,
                 },
             };
-            let mut i: libc::c_int = 0;
+            let mut i: i32 = 0;
             if verbose > 0i32 {
                 dpx_message(
                     b" %c%c%c%c\x00" as *const u8 as *const i8,
-                    (*feature_list.record.offset(feat_idx as isize)).tag[0] as libc::c_int,
-                    (*feature_list.record.offset(feat_idx as isize)).tag[1] as libc::c_int,
-                    (*feature_list.record.offset(feat_idx as isize)).tag[2] as libc::c_int,
-                    (*feature_list.record.offset(feat_idx as isize)).tag[3] as libc::c_int,
+                    (*feature_list.record.offset(feat_idx as isize)).tag[0] as i32,
+                    (*feature_list.record.offset(feat_idx as isize)).tag[1] as i32,
+                    (*feature_list.record.offset(feat_idx as isize)).tag[2] as i32,
+                    (*feature_list.record.offset(feat_idx as isize)).tag[3] as i32,
                 );
             }
             offset = gsub_offset
@@ -1330,11 +1330,11 @@ unsafe extern "C" fn otl_gsub_read_feat(
                 );
             ttstub_input_seek((*sfont).handle, offset as ssize_t, 0i32);
             clt_read_feature_table(&mut feature_table, sfont);
-            if feature_table.FeatureParams as libc::c_int != 0i32 {
+            if feature_table.FeatureParams as i32 != 0i32 {
                 _tt_abort(b"unrecognized FeatureParams\x00" as *const u8 as *const i8);
             }
             i = 0i32;
-            while i < feature_table.LookupListIndex.count as libc::c_int {
+            while i < feature_table.LookupListIndex.count as i32 {
                 let mut lookup_table: clt_lookup_table = clt_lookup_table {
                     LookupType: 0,
                     LookupFlag: 0,
@@ -1343,12 +1343,12 @@ unsafe extern "C" fn otl_gsub_read_feat(
                         value: 0 as *mut USHORT,
                     },
                 };
-                let mut ll_idx: libc::c_int = 0;
-                let mut st_idx: libc::c_int = 0;
-                let mut r: libc::c_int = 0;
-                let mut n_st: libc::c_int = 0;
-                ll_idx = *feature_table.LookupListIndex.value.offset(i as isize) as libc::c_int;
-                if ll_idx >= lookup_list.count as libc::c_int {
+                let mut ll_idx: i32 = 0;
+                let mut st_idx: i32 = 0;
+                let mut r: i32 = 0;
+                let mut n_st: i32 = 0;
+                ll_idx = *feature_table.LookupListIndex.value.offset(i as isize) as i32;
+                if ll_idx >= lookup_list.count as i32 {
                     _tt_abort(b"invalid Lookup index.\x00" as *const u8 as *const i8);
                 }
                 offset = gsub_offset
@@ -1356,30 +1356,30 @@ unsafe extern "C" fn otl_gsub_read_feat(
                     .wrapping_add(*lookup_list.value.offset(ll_idx as isize) as libc::c_uint);
                 ttstub_input_seek((*sfont).handle, offset as ssize_t, 0i32);
                 clt_read_lookup_table(&mut lookup_table, sfont);
-                if lookup_table.LookupType as libc::c_int != 1i32
-                    && lookup_table.LookupType as libc::c_int != 3i32
-                    && lookup_table.LookupType as libc::c_int != 4i32
-                    && lookup_table.LookupType as libc::c_int != 7i32
+                if lookup_table.LookupType as i32 != 1i32
+                    && lookup_table.LookupType as i32 != 3i32
+                    && lookup_table.LookupType as i32 != 4i32
+                    && lookup_table.LookupType as i32 != 7i32
                 {
                     if verbose > 0i32 {
                         dpx_warning(
                             b"Skipping unsupported GSUB subtable: LookupType=%d\x00" as *const u8
                                 as *const i8,
-                            lookup_table.LookupType as libc::c_int,
+                            lookup_table.LookupType as i32,
                         );
                     }
                 } else {
                     subtab = renew(
                         subtab as *mut libc::c_void,
-                        ((num_subtabs as libc::c_int
-                            + lookup_table.SubTableList.count as libc::c_int)
+                        ((num_subtabs as i32
+                            + lookup_table.SubTableList.count as i32)
                             as u32 as u64)
                             .wrapping_mul(::std::mem::size_of::<otl_gsub_subtab>() as u64)
                             as u32,
                     ) as *mut otl_gsub_subtab;
                     n_st = 0i32;
                     st_idx = 0i32;
-                    while st_idx < lookup_table.SubTableList.count as libc::c_int {
+                    while st_idx < lookup_table.SubTableList.count as i32 {
                         offset =
                             gsub_offset
                                 .wrapping_add(head.LookupList as libc::c_uint)
@@ -1391,11 +1391,11 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                         as libc::c_uint,
                                 );
                         ttstub_input_seek((*sfont).handle, offset as ssize_t, 0i32);
-                        match lookup_table.LookupType as libc::c_int {
+                        match lookup_table.LookupType as i32 {
                             1 => {
                                 r = otl_gsub_read_single(
                                     &mut *subtab
-                                        .offset((num_subtabs as libc::c_int + n_st) as isize),
+                                        .offset((num_subtabs as i32 + n_st) as isize),
                                     sfont,
                                 );
                                 if r <= 0i32 {
@@ -1415,7 +1415,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                             3 => {
                                 r = otl_gsub_read_alternate(
                                     &mut *subtab
-                                        .offset((num_subtabs as libc::c_int + n_st) as isize),
+                                        .offset((num_subtabs as i32 + n_st) as isize),
                                     sfont,
                                 );
                                 if r <= 0i32 {
@@ -1436,7 +1436,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                             4 => {
                                 r = otl_gsub_read_ligature(
                                     &mut *subtab
-                                        .offset((num_subtabs as libc::c_int + n_st) as isize),
+                                        .offset((num_subtabs as i32 + n_st) as isize),
                                     sfont,
                                 );
                                 if r <= 0i32 {
@@ -1459,7 +1459,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                 let mut ExtensionLookupType: USHORT = 0;
                                 let mut ExtensionOffset: SFNT_ULONG = 0;
                                 SubstFormat = tt_get_unsigned_pair((*sfont).handle);
-                                if !(SubstFormat as libc::c_int != 1i32) {
+                                if !(SubstFormat as i32 != 1i32) {
                                     ExtensionLookupType = tt_get_unsigned_pair((*sfont).handle);
                                     ExtensionOffset = tt_get_unsigned_quad((*sfont).handle);
                                     ttstub_input_seek(
@@ -1467,11 +1467,11 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                         offset.wrapping_add(ExtensionOffset) as ssize_t,
                                         0i32,
                                     );
-                                    match ExtensionLookupType as libc::c_int {
+                                    match ExtensionLookupType as i32 {
                                         1 => {
                                             r = otl_gsub_read_single(
                                                 &mut *subtab.offset(
-                                                    (num_subtabs as libc::c_int + n_st) as isize,
+                                                    (num_subtabs as i32 + n_st) as isize,
                                                 ),
                                                 sfont,
                                             );
@@ -1493,7 +1493,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                         3 => {
                                             r = otl_gsub_read_alternate(
                                                 &mut *subtab.offset(
-                                                    (num_subtabs as libc::c_int + n_st) as isize,
+                                                    (num_subtabs as i32 + n_st) as isize,
                                                 ),
                                                 sfont,
                                             );
@@ -1515,7 +1515,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                         4 => {
                                             r = otl_gsub_read_ligature(
                                                 &mut *subtab.offset(
-                                                    (num_subtabs as libc::c_int + n_st) as isize,
+                                                    (num_subtabs as i32 + n_st) as isize,
                                                 ),
                                                 sfont,
                                             );
@@ -1542,7 +1542,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                         }
                         st_idx += 1
                     }
-                    num_subtabs = (num_subtabs as libc::c_int + n_st) as USHORT;
+                    num_subtabs = (num_subtabs as i32 + n_st) as USHORT;
                     clt_release_lookup_table(&mut lookup_table);
                 }
                 i += 1
@@ -1555,7 +1555,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
         dpx_message(b"\n\x00" as *const u8 as *const i8);
         dpx_message(
             b"otl_gsub>> %d subtable(s) read.\n\x00" as *const u8 as *const i8,
-            num_subtabs as libc::c_int,
+            num_subtabs as i32,
         );
     }
     clt_release_number_list(&mut lookup_list);
@@ -1565,7 +1565,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
     otl_release_opt(language);
     otl_release_opt(feature);
     if !subtab.is_null() {
-        (*gsub).num_subtables = num_subtabs as libc::c_int;
+        (*gsub).num_subtables = num_subtabs as i32;
         (*gsub).subtables = subtab
     } else {
         return -1i32;
@@ -1575,8 +1575,8 @@ unsafe extern "C" fn otl_gsub_read_feat(
 unsafe extern "C" fn otl_gsub_apply_single(
     mut subtab: *mut otl_gsub_subtab,
     mut gid: *mut USHORT,
-) -> libc::c_int {
-    let mut idx: libc::c_int = 0;
+) -> i32 {
+    let mut idx: i32 = 0;
     if !subtab.is_null() && !gid.is_null() {
     } else {
         __assert_fail(
@@ -1589,19 +1589,19 @@ unsafe extern "C" fn otl_gsub_apply_single(
             .as_ptr(),
         );
     }
-    if (*subtab).SubstFormat as libc::c_int == 1i32 {
+    if (*subtab).SubstFormat as i32 == 1i32 {
         let mut data: *mut otl_gsub_single1 = 0 as *mut otl_gsub_single1;
         data = (*subtab).table.single1;
         idx = clt_lookup_coverage(&mut (*data).coverage, *gid);
         if idx >= 0i32 {
-            *gid = (*gid as libc::c_int + (*data).DeltaGlyphID as libc::c_int) as USHORT;
+            *gid = (*gid as i32 + (*data).DeltaGlyphID as i32) as USHORT;
             return 0i32;
         }
-    } else if (*subtab).SubstFormat as libc::c_int == 2i32 {
+    } else if (*subtab).SubstFormat as i32 == 2i32 {
         let mut data_0: *mut otl_gsub_single2 = 0 as *mut otl_gsub_single2;
         data_0 = (*subtab).table.single2;
         idx = clt_lookup_coverage(&mut (*data_0).coverage, *gid);
-        if idx >= 0i32 && idx < (*data_0).GlyphCount as libc::c_int {
+        if idx >= 0i32 && idx < (*data_0).GlyphCount as i32 {
             *gid = *(*data_0).Substitute.offset(idx as isize);
             return 0i32;
         }
@@ -1612,8 +1612,8 @@ unsafe extern "C" fn otl_gsub_apply_alternate(
     mut subtab: *mut otl_gsub_subtab,
     mut alt_idx: USHORT,
     mut gid: *mut USHORT,
-) -> libc::c_int {
-    let mut idx: libc::c_int = 0;
+) -> i32 {
+    let mut idx: i32 = 0;
     if !subtab.is_null() && !gid.is_null() {
     } else {
         __assert_fail(
@@ -1626,16 +1626,16 @@ unsafe extern "C" fn otl_gsub_apply_alternate(
             .as_ptr(),
         );
     }
-    if (*subtab).SubstFormat as libc::c_int == 1i32 {
+    if (*subtab).SubstFormat as i32 == 1i32 {
         let mut data: *mut otl_gsub_alternate1 = 0 as *mut otl_gsub_alternate1;
         data = (*subtab).table.alternate1;
         idx = clt_lookup_coverage(&mut (*data).coverage, *gid);
-        if idx < 0i32 || idx >= (*data).AlternateSetCount as libc::c_int {
+        if idx < 0i32 || idx >= (*data).AlternateSetCount as i32 {
             return -1i32;
         } else {
             let mut altset: *mut otl_gsub_altset = 0 as *mut otl_gsub_altset;
             altset = &mut *(*data).AlternateSet.offset(idx as isize) as *mut otl_gsub_altset;
-            if alt_idx as libc::c_int >= (*altset).GlyphCount as libc::c_int {
+            if alt_idx as i32 >= (*altset).GlyphCount as i32 {
                 return -1i32;
             } else {
                 *gid = *(*altset).Alternate.offset(alt_idx as isize);
@@ -1650,18 +1650,18 @@ unsafe extern "C" fn glyph_seq_cmp(
     mut n_glyphs0: USHORT,
     mut glyph_seq1: *mut GlyphID,
     mut n_glyphs1: USHORT,
-) -> libc::c_int {
+) -> i32 {
     let mut i: USHORT = 0;
-    if n_glyphs0 as libc::c_int != n_glyphs1 as libc::c_int {
-        return n_glyphs0 as libc::c_int - n_glyphs1 as libc::c_int;
+    if n_glyphs0 as i32 != n_glyphs1 as i32 {
+        return n_glyphs0 as i32 - n_glyphs1 as i32;
     }
     i = 0i32 as USHORT;
-    while (i as libc::c_int) < n_glyphs0 as libc::c_int {
-        if *glyph_seq0.offset(i as isize) as libc::c_int
-            != *glyph_seq1.offset(i as isize) as libc::c_int
+    while (i as i32) < n_glyphs0 as i32 {
+        if *glyph_seq0.offset(i as isize) as i32
+            != *glyph_seq1.offset(i as isize) as i32
         {
-            return *glyph_seq0.offset(i as isize) as libc::c_int
-                - *glyph_seq1.offset(i as isize) as libc::c_int;
+            return *glyph_seq0.offset(i as isize) as i32
+                - *glyph_seq1.offset(i as isize) as i32;
         }
         i = i.wrapping_add(1)
     }
@@ -1672,8 +1672,8 @@ unsafe extern "C" fn otl_gsub_apply_ligature(
     mut gid_in: *mut USHORT,
     mut num_gids: USHORT,
     mut gid_out: *mut USHORT,
-) -> libc::c_int {
-    let mut idx: libc::c_int = 0;
+) -> i32 {
+    let mut idx: i32 = 0;
     if !subtab.is_null() && !gid_out.is_null() {
     } else {
         __assert_fail(b"subtab && gid_out\x00" as *const u8 as
@@ -1683,24 +1683,24 @@ unsafe extern "C" fn otl_gsub_apply_ligature(
                       (*::std::mem::transmute::<&[u8; 82],
                                                 &[i8; 82]>(b"int otl_gsub_apply_ligature(struct otl_gsub_subtab *, USHORT *, USHORT, USHORT *)\x00")).as_ptr());
     }
-    if gid_in.is_null() || (num_gids as libc::c_int) < 1i32 {
+    if gid_in.is_null() || (num_gids as i32) < 1i32 {
         return -1i32;
     }
-    if (*subtab).SubstFormat as libc::c_int == 1i32 {
+    if (*subtab).SubstFormat as i32 == 1i32 {
         let mut data: *mut otl_gsub_ligature1 = 0 as *mut otl_gsub_ligature1;
         data = (*subtab).table.ligature1;
         idx = clt_lookup_coverage(&mut (*data).coverage, *gid_in.offset(0));
-        if idx >= 0i32 && idx < (*data).LigSetCount as libc::c_int {
+        if idx >= 0i32 && idx < (*data).LigSetCount as i32 {
             let mut ligset: *mut otl_gsub_ligset = 0 as *mut otl_gsub_ligset;
             let mut j: USHORT = 0;
             ligset = &mut *(*data).LigatureSet.offset(idx as isize) as *mut otl_gsub_ligset;
             j = 0i32 as USHORT;
-            while (j as libc::c_int) < (*ligset).LigatureCount as libc::c_int {
+            while (j as i32) < (*ligset).LigatureCount as i32 {
                 if glyph_seq_cmp(
                     &mut *gid_in.offset(1),
-                    (num_gids as libc::c_int - 1i32) as USHORT,
+                    (num_gids as i32 - 1i32) as USHORT,
                     (*(*ligset).Ligature.offset(j as isize)).Component,
-                    ((*(*ligset).Ligature.offset(j as isize)).CompCount as libc::c_int - 1i32)
+                    ((*(*ligset).Ligature.offset(j as isize)).CompCount as i32 - 1i32)
                         as USHORT,
                 ) == 0
                 {
@@ -1742,9 +1742,9 @@ pub unsafe extern "C" fn otl_gsub_add_feat(
     mut language: *const i8,
     mut feature: *const i8,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
-    let mut retval: libc::c_int = -1i32;
-    let mut i: libc::c_int = 0;
+) -> i32 {
+    let mut retval: i32 = -1i32;
+    let mut i: i32 = 0;
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;
     if (*gsub_list).num_gsubs > 32i32 {
         _tt_abort(b"Too many GSUB features...\x00" as *const u8 as *const i8);
@@ -1752,9 +1752,9 @@ pub unsafe extern "C" fn otl_gsub_add_feat(
     i = 0i32;
     while i < (*gsub_list).num_gsubs {
         gsub = &mut *(*gsub_list).gsubs.as_mut_ptr().offset(i as isize) as *mut otl_gsub_tab;
-        if streq_ptr(script, (*gsub).script) as libc::c_int != 0
-            && streq_ptr(language, (*gsub).language) as libc::c_int != 0
-            && streq_ptr(feature, (*gsub).feature) as libc::c_int != 0
+        if streq_ptr(script, (*gsub).script) as i32 != 0
+            && streq_ptr(language, (*gsub).language) as i32 != 0
+            && streq_ptr(feature, (*gsub).feature) as i32 != 0
         {
             (*gsub_list).select = i;
             return 0i32;
@@ -1809,7 +1809,7 @@ unsafe extern "C" fn scan_otl_tag(
     mut script: *mut i8,
     mut language: *mut i8,
     mut feature: *mut i8,
-) -> libc::c_int {
+) -> i32 {
     let mut p: *const i8 = 0 as *const i8;
     let mut period: *const i8 = 0 as *const i8;
     if !script.is_null() && !language.is_null() && !feature.is_null() {
@@ -1904,8 +1904,8 @@ unsafe extern "C" fn scan_otl_tag(
 pub unsafe extern "C" fn otl_gsub_release(mut gsub_list: *mut otl_gsub) {
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;
     let mut subtab: *mut otl_gsub_subtab = 0 as *mut otl_gsub_subtab;
-    let mut i: libc::c_int = 0;
-    let mut j: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut j: i32 = 0;
     if gsub_list.is_null() {
         return;
     }
@@ -1918,7 +1918,7 @@ pub unsafe extern "C" fn otl_gsub_release(mut gsub_list: *mut otl_gsub) {
         j = 0i32;
         while j < (*gsub).num_subtables {
             subtab = &mut *(*gsub).subtables.offset(j as isize) as *mut otl_gsub_subtab;
-            match (*subtab).LookupType as libc::c_int {
+            match (*subtab).LookupType as i32 {
                 1 => {
                     otl_gsub_release_single(subtab);
                 }
@@ -1944,12 +1944,12 @@ pub unsafe extern "C" fn otl_gsub_release(mut gsub_list: *mut otl_gsub) {
 pub unsafe extern "C" fn otl_gsub_apply(
     mut gsub_list: *mut otl_gsub,
     mut gid: *mut USHORT,
-) -> libc::c_int {
-    let mut retval: libc::c_int = -1i32;
+) -> i32 {
+    let mut retval: i32 = -1i32;
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;
     let mut subtab: *mut otl_gsub_subtab = 0 as *mut otl_gsub_subtab;
-    let mut i: libc::c_int = 0;
-    let mut j: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut j: i32 = 0;
     if gsub_list.is_null() || gid.is_null() {
         return retval;
     }
@@ -1961,7 +1961,7 @@ pub unsafe extern "C" fn otl_gsub_apply(
     j = 0i32;
     while retval < 0i32 && j < (*gsub).num_subtables {
         subtab = &mut *(*gsub).subtables.offset(j as isize) as *mut otl_gsub_subtab;
-        match (*subtab).LookupType as libc::c_int {
+        match (*subtab).LookupType as i32 {
             1 => retval = otl_gsub_apply_single(subtab, gid),
             _ => {}
         }
@@ -1974,12 +1974,12 @@ pub unsafe extern "C" fn otl_gsub_apply_alt(
     mut gsub_list: *mut otl_gsub,
     mut alt_idx: USHORT,
     mut gid: *mut USHORT,
-) -> libc::c_int {
-    let mut retval: libc::c_int = -1i32;
+) -> i32 {
+    let mut retval: i32 = -1i32;
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;
     let mut subtab: *mut otl_gsub_subtab = 0 as *mut otl_gsub_subtab;
-    let mut i: libc::c_int = 0;
-    let mut j: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut j: i32 = 0;
     if gsub_list.is_null() || gid.is_null() {
         return retval;
     }
@@ -1991,7 +1991,7 @@ pub unsafe extern "C" fn otl_gsub_apply_alt(
     j = 0i32;
     while retval < 0i32 && j < (*gsub).num_subtables {
         subtab = &mut *(*gsub).subtables.offset(j as isize) as *mut otl_gsub_subtab;
-        match (*subtab).LookupType as libc::c_int {
+        match (*subtab).LookupType as i32 {
             3 => retval = otl_gsub_apply_alternate(subtab, alt_idx, gid),
             _ => {}
         }
@@ -2005,12 +2005,12 @@ pub unsafe extern "C" fn otl_gsub_apply_lig(
     mut gid_in: *mut USHORT,
     mut num_gids: USHORT,
     mut gid_out: *mut USHORT,
-) -> libc::c_int {
-    let mut retval: libc::c_int = -1i32;
+) -> i32 {
+    let mut retval: i32 = -1i32;
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;
     let mut subtab: *mut otl_gsub_subtab = 0 as *mut otl_gsub_subtab;
-    let mut i: libc::c_int = 0;
-    let mut j: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut j: i32 = 0;
     if gsub_list.is_null() || gid_out.is_null() {
         return retval;
     }
@@ -2022,7 +2022,7 @@ pub unsafe extern "C" fn otl_gsub_apply_lig(
     j = 0i32;
     while retval < 0i32 && j < (*gsub).num_subtables {
         subtab = &mut *(*gsub).subtables.offset(j as isize) as *mut otl_gsub_subtab;
-        match (*subtab).LookupType as libc::c_int {
+        match (*subtab).LookupType as i32 {
             4 => retval = otl_gsub_apply_ligature(subtab, gid_in, num_gids, gid_out),
             _ => {}
         }
@@ -2035,15 +2035,15 @@ unsafe extern "C" fn gsub_find(
     mut script: *const i8,
     mut language: *const i8,
     mut feature: *const i8,
-) -> libc::c_int {
-    let mut i: libc::c_int = 0;
+) -> i32 {
+    let mut i: i32 = 0;
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;
     i = 0i32;
     while i < (*gsub_list).num_gsubs {
         gsub = &mut *(*gsub_list).gsubs.as_mut_ptr().offset(i as isize) as *mut otl_gsub_tab;
-        if streq_ptr((*gsub).script, script) as libc::c_int != 0
-            && streq_ptr((*gsub).language, language) as libc::c_int != 0
-            && streq_ptr((*gsub).feature, feature) as libc::c_int != 0
+        if streq_ptr((*gsub).script, script) as i32 != 0
+            && streq_ptr((*gsub).language, language) as i32 != 0
+            && streq_ptr((*gsub).feature, feature) as i32 != 0
         {
             return i;
         }
@@ -2057,7 +2057,7 @@ pub unsafe extern "C" fn otl_gsub_select(
     mut script: *const i8,
     mut language: *const i8,
     mut feature: *const i8,
-) -> libc::c_int {
+) -> i32 {
     (*gsub_list).select = gsub_find(gsub_list, script, language, feature);
     return (*gsub_list).select;
 }
@@ -2065,7 +2065,7 @@ pub unsafe extern "C" fn otl_gsub_select(
 pub unsafe extern "C" fn otl_gsub_set_chain(
     mut gsub_list: *mut otl_gsub,
     mut otl_tags: *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut prev: *mut gsub_entry = 0 as *mut gsub_entry;
     let mut p: *const i8 = 0 as *const i8;
     let mut nextptr: *const i8 = 0 as *const i8;
@@ -2073,7 +2073,7 @@ pub unsafe extern "C" fn otl_gsub_set_chain(
     let mut script: [i8; 5] = [0; 5];
     let mut language: [i8; 5] = [0; 5];
     let mut feature: [i8; 5] = [0; 5];
-    let mut idx: libc::c_int = 0;
+    let mut idx: i32 = 0;
     clear_chain(gsub_list);
     endptr = otl_tags.offset(strlen(otl_tags) as isize);
     p = otl_tags;
@@ -2124,14 +2124,14 @@ pub unsafe extern "C" fn otl_gsub_add_feat_list(
     mut gsub_list: *mut otl_gsub,
     mut otl_tags: *const i8,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
+) -> i32 {
     let mut p: *const i8 = 0 as *const i8;
     let mut nextptr: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     let mut script: [i8; 5] = [0; 5];
     let mut language: [i8; 5] = [0; 5];
     let mut feature: [i8; 5] = [0; 5];
-    let mut idx: libc::c_int = 0;
+    let mut idx: i32 = 0;
     if gsub_list.is_null() || otl_tags.is_null() || sfont.is_null() {
         return -1i32;
     }
@@ -2197,13 +2197,13 @@ pub unsafe extern "C" fn otl_gsub_add_feat_list(
 pub unsafe extern "C" fn otl_gsub_apply_chain(
     mut gsub_list: *mut otl_gsub,
     mut gid: *mut USHORT,
-) -> libc::c_int {
-    let mut retval: libc::c_int = -1i32;
+) -> i32 {
+    let mut retval: i32 = -1i32;
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;
     let mut subtab: *mut otl_gsub_subtab = 0 as *mut otl_gsub_subtab;
     let mut entry: *mut gsub_entry = 0 as *mut gsub_entry;
-    let mut i: libc::c_int = 0;
-    let mut idx: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut idx: i32 = 0;
     if gsub_list.is_null() || gid.is_null() {
         return retval;
     }
@@ -2216,7 +2216,7 @@ pub unsafe extern "C" fn otl_gsub_apply_chain(
             retval = -1i32;
             while retval < 0i32 && i < (*gsub).num_subtables {
                 subtab = &mut *(*gsub).subtables.offset(i as isize) as *mut otl_gsub_subtab;
-                match (*subtab).LookupType as libc::c_int {
+                match (*subtab).LookupType as i32 {
                     1 => retval = otl_gsub_apply_single(subtab, gid),
                     _ => {}
                 }

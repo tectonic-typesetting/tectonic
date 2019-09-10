@@ -15,9 +15,9 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_input_getc(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    fn fgetc(__stream: *mut FILE) -> libc::c_int;
+    fn fgetc(__stream: *mut FILE) -> i32;
 }
 pub type __off_t = i64;
 pub type __off64_t = i64;
@@ -26,7 +26,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
-    pub _flags: libc::c_int,
+    pub _flags: i32,
     pub _IO_read_ptr: *mut i8,
     pub _IO_read_end: *mut i8,
     pub _IO_read_base: *mut i8,
@@ -40,8 +40,8 @@ pub struct _IO_FILE {
     pub _IO_save_end: *mut i8,
     pub _markers: *mut _IO_marker,
     pub _chain: *mut _IO_FILE,
-    pub _fileno: libc::c_int,
-    pub _flags2: libc::c_int,
+    pub _fileno: i32,
+    pub _flags2: i32,
     pub _old_offset: __off_t,
     pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
@@ -53,7 +53,7 @@ pub struct _IO_FILE {
     pub _freeres_list: *mut _IO_FILE,
     pub _freeres_buf: *mut libc::c_void,
     pub __pad5: size_t,
-    pub _mode: libc::c_int,
+    pub _mode: i32,
     pub _unused2: [i8; 20],
 }
 pub type _IO_lock_t = ();
@@ -82,7 +82,7 @@ pub type fixword = i32;
 */
 #[no_mangle]
 pub unsafe extern "C" fn get_unsigned_byte(mut file: *mut FILE) -> u8 {
-    let mut ch: libc::c_int = 0;
+    let mut ch: i32 = 0;
     ch = fgetc(file);
     if ch < 0i32 {
         _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const i8);
@@ -102,8 +102,8 @@ pub unsafe extern "C" fn skip_bytes(mut n: libc::c_uint, mut file: *mut FILE) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_signed_byte(mut file: *mut FILE) -> libc::c_schar {
-    let mut byte: libc::c_int = 0;
-    byte = get_unsigned_byte(file) as libc::c_int;
+    let mut byte: i32 = 0;
+    byte = get_unsigned_byte(file) as i32;
     if byte >= 0x80i32 {
         byte -= 0x100i32
     }
@@ -113,7 +113,7 @@ pub unsafe extern "C" fn get_signed_byte(mut file: *mut FILE) -> libc::c_schar {
 pub unsafe extern "C" fn get_unsigned_pair(mut file: *mut FILE) -> u16 {
     let mut pair: u16 = get_unsigned_byte(file) as u16;
     pair =
-        ((pair as libc::c_int) << 8i32 | get_unsigned_byte(file) as libc::c_int) as u16;
+        ((pair as i32) << 8i32 | get_unsigned_byte(file) as i32) as u16;
     return pair;
 }
 #[no_mangle]
@@ -123,19 +123,19 @@ pub unsafe extern "C" fn sget_unsigned_pair(mut s: *mut u8) -> u16 {
     let mut pair: u16 = *fresh1 as u16;
     let fresh2 = s;
     s = s.offset(1);
-    pair = ((pair as libc::c_int) << 8i32 | *fresh2 as libc::c_int) as u16;
+    pair = ((pair as i32) << 8i32 | *fresh2 as i32) as u16;
     return pair;
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_signed_pair(mut file: *mut FILE) -> libc::c_short {
     let mut pair: libc::c_short = get_signed_byte(file) as libc::c_short;
     pair =
-        ((pair as libc::c_int) << 8i32 | get_unsigned_byte(file) as libc::c_int) as libc::c_short;
+        ((pair as i32) << 8i32 | get_unsigned_byte(file) as i32) as libc::c_short;
     return pair;
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_unsigned_triple(mut file: *mut FILE) -> libc::c_uint {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     let mut triple: libc::c_uint = 0i32 as libc::c_uint;
     i = 0i32;
     while i < 3i32 {
@@ -145,30 +145,30 @@ pub unsafe extern "C" fn get_unsigned_triple(mut file: *mut FILE) -> libc::c_uin
     return triple;
 }
 #[no_mangle]
-pub unsafe extern "C" fn get_signed_triple(mut file: *mut FILE) -> libc::c_int {
-    let mut i: libc::c_int = 0;
-    let mut triple: libc::c_int = get_signed_byte(file) as libc::c_int;
+pub unsafe extern "C" fn get_signed_triple(mut file: *mut FILE) -> i32 {
+    let mut i: i32 = 0;
+    let mut triple: i32 = get_signed_byte(file) as i32;
     i = 0i32;
     while i < 2i32 {
-        triple = triple << 8i32 | get_unsigned_byte(file) as libc::c_int;
+        triple = triple << 8i32 | get_unsigned_byte(file) as i32;
         i += 1
     }
     return triple;
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_signed_quad(mut file: *mut FILE) -> i32 {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     let mut quad: i32 = get_signed_byte(file) as i32;
     i = 0i32;
     while i < 3i32 {
-        quad = quad << 8i32 | get_unsigned_byte(file) as libc::c_int;
+        quad = quad << 8i32 | get_unsigned_byte(file) as i32;
         i += 1
     }
     return quad;
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_unsigned_quad(mut file: *mut FILE) -> u32 {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     let mut quad = 0u32;
     i = 0i32;
     while i < 4i32 {
@@ -181,7 +181,7 @@ pub unsafe extern "C" fn get_unsigned_quad(mut file: *mut FILE) -> u32 {
 pub unsafe extern "C" fn get_unsigned_num(mut file: *mut FILE, mut num: u8) -> u32 {
     let mut val = get_unsigned_byte(file) as u32;
     let mut current_block_4: u64;
-    match num as libc::c_int {
+    match num as i32 {
         3 => {
             if val > 0x7fi32 as libc::c_uint {
                 val = (val as libc::c_uint).wrapping_sub(0x100i32 as libc::c_uint) as u32
@@ -232,7 +232,7 @@ pub unsafe extern "C" fn get_positive_quad(
 }
 #[no_mangle]
 pub unsafe extern "C" fn sqxfw(mut sq: i32, mut fw: fixword) -> i32 {
-    let mut sign: libc::c_int = 1i32;
+    let mut sign: i32 = 1i32;
     let mut a: u32 = 0;
     let mut b: u32 = 0;
     let mut c: u32 = 0;
@@ -297,7 +297,7 @@ pub unsafe extern "C" fn tt_skip_bytes(mut n: libc::c_uint, mut handle: rust_inp
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_unsigned_byte(mut handle: rust_input_handle_t) -> u8 {
-    let mut ch: libc::c_int = 0;
+    let mut ch: i32 = 0;
     ch = ttstub_input_getc(handle);
     if ch < 0i32 {
         _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const i8);
@@ -306,8 +306,8 @@ pub unsafe extern "C" fn tt_get_unsigned_byte(mut handle: rust_input_handle_t) -
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_signed_byte(mut handle: rust_input_handle_t) -> libc::c_schar {
-    let mut byte: libc::c_int = 0;
-    byte = tt_get_unsigned_byte(handle) as libc::c_int;
+    let mut byte: i32 = 0;
+    byte = tt_get_unsigned_byte(handle) as i32;
     if byte >= 0x80i32 {
         byte -= 0x100i32
     }
@@ -316,20 +316,20 @@ pub unsafe extern "C" fn tt_get_signed_byte(mut handle: rust_input_handle_t) -> 
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_unsigned_pair(mut handle: rust_input_handle_t) -> u16 {
     let mut pair: u16 = tt_get_unsigned_byte(handle) as u16;
-    pair = ((pair as libc::c_int) << 8i32 | tt_get_unsigned_byte(handle) as libc::c_int)
+    pair = ((pair as i32) << 8i32 | tt_get_unsigned_byte(handle) as i32)
         as u16;
     return pair;
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_signed_pair(mut handle: rust_input_handle_t) -> libc::c_short {
     let mut pair: libc::c_short = tt_get_signed_byte(handle) as libc::c_short;
-    pair = ((pair as libc::c_int) << 8i32 | tt_get_unsigned_byte(handle) as libc::c_int)
+    pair = ((pair as i32) << 8i32 | tt_get_unsigned_byte(handle) as i32)
         as libc::c_short;
     return pair;
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_unsigned_quad(mut handle: rust_input_handle_t) -> u32 {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     let mut quad: u32 = 0i32 as u32;
     i = 0i32;
     while i < 4i32 {
@@ -340,11 +340,11 @@ pub unsafe extern "C" fn tt_get_unsigned_quad(mut handle: rust_input_handle_t) -
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_signed_quad(mut handle: rust_input_handle_t) -> i32 {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     let mut quad: i32 = tt_get_signed_byte(handle) as i32;
     i = 0i32;
     while i < 3i32 {
-        quad = quad << 8i32 | tt_get_unsigned_byte(handle) as libc::c_int;
+        quad = quad << 8i32 | tt_get_unsigned_byte(handle) as i32;
         i += 1
     }
     return quad;
@@ -356,7 +356,7 @@ pub unsafe extern "C" fn tt_get_unsigned_num(
 ) -> u32 {
     let mut val: u32 = tt_get_unsigned_byte(handle) as u32;
     let mut current_block_4: u64;
-    match num as libc::c_int {
+    match num as i32 {
         3 => {
             if val > 0x7fi32 as libc::c_uint {
                 val = (val as libc::c_uint).wrapping_sub(0x100i32 as libc::c_uint) as u32

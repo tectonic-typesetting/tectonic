@@ -9,11 +9,11 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn abs(_: libc::c_int) -> libc::c_int;
+    fn abs(_: i32) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn ttstub_output_putc(handle: rust_output_handle_t, c: libc::c_int) -> libc::c_int;
+    fn ttstub_output_putc(handle: rust_output_handle_t, c: i32) -> i32;
     /* Needed here for UFILE */
     /* variables! */
     /* All the following variables are defined in xetexini.c */
@@ -183,8 +183,8 @@ pub unsafe extern "C" fn print_ln() {
 pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code, mut incr_offset: bool) {
     match selector as libc::c_uint {
         19 => {
-            ttstub_output_putc(rust_stdout, s as libc::c_int);
-            ttstub_output_putc(log_file, s as libc::c_int);
+            ttstub_output_putc(rust_stdout, s as i32);
+            ttstub_output_putc(log_file, s as i32);
             if incr_offset {
                 term_offset += 1;
                 file_offset += 1
@@ -199,7 +199,7 @@ pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code, mut incr_offset: bool
             }
         }
         18 => {
-            ttstub_output_putc(log_file, s as libc::c_int);
+            ttstub_output_putc(log_file, s as i32);
             if incr_offset {
                 file_offset += 1
             }
@@ -208,7 +208,7 @@ pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code, mut incr_offset: bool
             }
         }
         17 => {
-            ttstub_output_putc(rust_stdout, s as libc::c_int);
+            ttstub_output_putc(rust_stdout, s as i32);
             if incr_offset {
                 term_offset += 1
             }
@@ -229,7 +229,7 @@ pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code, mut incr_offset: bool
             }
         }
         _ => {
-            ttstub_output_putc(write_file[selector as usize], s as libc::c_int);
+            ttstub_output_putc(write_file[selector as usize], s as i32);
         }
     }
     tally += 1;
@@ -237,7 +237,7 @@ pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code, mut incr_offset: bool
 #[no_mangle]
 pub unsafe extern "C" fn print_char(mut s: i32) {
     let mut l: small_number = 0;
-    if selector as libc::c_uint > SELECTOR_PSEUDO as libc::c_int as libc::c_uint && !doing_special {
+    if selector as libc::c_uint > SELECTOR_PSEUDO as i32 as libc::c_uint && !doing_special {
         if s >= 0x10000i32 {
             print_raw_char(
                 (0xd800i32 + (s - 0x10000i32) / 1024i32) as UTF16_code,
@@ -283,7 +283,7 @@ pub unsafe extern "C" fn print_char(mut s: i32) {
     .s1
     {
         /*:252 */
-        if (selector as libc::c_uint) < SELECTOR_PSEUDO as libc::c_int as libc::c_uint {
+        if (selector as libc::c_uint) < SELECTOR_PSEUDO as i32 as libc::c_uint {
             print_ln();
             return;
         }
@@ -306,20 +306,20 @@ pub unsafe extern "C" fn print_char(mut s: i32) {
         print_raw_char('^' as i32 as UTF16_code, 1i32 != 0);
         print_raw_char('^' as i32 as UTF16_code, 1i32 != 0);
         l = (s % 256i32 / 16i32) as small_number;
-        if (l as libc::c_int) < 10i32 {
-            print_raw_char(('0' as i32 + l as libc::c_int) as UTF16_code, 1i32 != 0);
+        if (l as i32) < 10i32 {
+            print_raw_char(('0' as i32 + l as i32) as UTF16_code, 1i32 != 0);
         } else {
             print_raw_char(
-                ('a' as i32 + l as libc::c_int - 10i32) as UTF16_code,
+                ('a' as i32 + l as i32 - 10i32) as UTF16_code,
                 1i32 != 0,
             );
         }
         l = (s % 16i32) as small_number;
-        if (l as libc::c_int) < 10i32 {
-            print_raw_char(('0' as i32 + l as libc::c_int) as UTF16_code, 1i32 != 0);
+        if (l as i32) < 10i32 {
+            print_raw_char(('0' as i32 + l as i32) as UTF16_code, 1i32 != 0);
         } else {
             print_raw_char(
-                ('a' as i32 + l as libc::c_int - 10i32) as UTF16_code,
+                ('a' as i32 + l as i32 - 10i32) as UTF16_code,
                 1i32 != 0,
             );
         }
@@ -347,7 +347,7 @@ pub unsafe extern "C" fn print(mut s: i32) {
             if s < 0i32 {
                 return print_cstr(b"???\x00" as *const u8 as *const i8);
             } else {
-                if selector as libc::c_uint > SELECTOR_PSEUDO as libc::c_int as libc::c_uint {
+                if selector as libc::c_uint > SELECTOR_PSEUDO as i32 as libc::c_uint {
                     print_char(s);
                     return;
                 }
@@ -382,7 +382,7 @@ pub unsafe extern "C" fn print(mut s: i32) {
                 .s1
                 {
                     /*:252 */
-                    if (selector as libc::c_uint) < SELECTOR_PSEUDO as libc::c_int as libc::c_uint {
+                    if (selector as libc::c_uint) < SELECTOR_PSEUDO as i32 as libc::c_uint {
                         print_ln();
                         return;
                     }
@@ -482,16 +482,16 @@ pub unsafe extern "C" fn print(mut s: i32) {
     let mut pool_idx: i32 = s - 0x10000i32;
     let mut i: pool_pointer = *str_start.offset(pool_idx as isize);
     while i < *str_start.offset((pool_idx + 1i32) as isize) {
-        if *str_pool.offset(i as isize) as libc::c_int >= 0xd800i32
-            && (*str_pool.offset(i as isize) as libc::c_int) < 0xdc00i32
+        if *str_pool.offset(i as isize) as i32 >= 0xd800i32
+            && (*str_pool.offset(i as isize) as i32) < 0xdc00i32
             && i + 1i32 < *str_start.offset((pool_idx + 1i32) as isize)
-            && *str_pool.offset((i + 1i32) as isize) as libc::c_int >= 0xdc00i32
-            && (*str_pool.offset((i + 1i32) as isize) as libc::c_int) < 0xe000i32
+            && *str_pool.offset((i + 1i32) as isize) as i32 >= 0xdc00i32
+            && (*str_pool.offset((i + 1i32) as isize) as i32) < 0xe000i32
         {
             print_char(
                 0x10000i32
-                    + (*str_pool.offset(i as isize) as libc::c_int - 0xd800i32) * 1024i32
-                    + *str_pool.offset((i + 1i32) as isize) as libc::c_int
+                    + (*str_pool.offset(i as isize) as i32 - 0xd800i32) * 1024i32
+                    + *str_pool.offset((i + 1i32) as isize) as i32
                     - 0xdc00i32,
             );
             i += 1
@@ -513,7 +513,7 @@ pub unsafe extern "C" fn print_cstr(mut str: *const i8) {
 pub unsafe extern "C" fn print_nl(mut s: str_number) {
     if term_offset > 0i32 && selector as libc::c_uint & 1i32 as libc::c_uint != 0
         || file_offset > 0i32
-            && selector as libc::c_uint >= SELECTOR_LOG_ONLY as libc::c_int as libc::c_uint
+            && selector as libc::c_uint >= SELECTOR_LOG_ONLY as i32 as libc::c_uint
     {
         print_ln();
     }
@@ -523,7 +523,7 @@ pub unsafe extern "C" fn print_nl(mut s: str_number) {
 pub unsafe extern "C" fn print_nl_cstr(mut str: *const i8) {
     if term_offset > 0i32 && selector as libc::c_uint & 1i32 as libc::c_uint != 0
         || file_offset > 0i32
-            && selector as libc::c_uint >= SELECTOR_LOG_ONLY as libc::c_int as libc::c_uint
+            && selector as libc::c_uint >= SELECTOR_LOG_ONLY as i32 as libc::c_uint
     {
         print_ln();
     }
@@ -602,12 +602,12 @@ pub unsafe extern "C" fn print_esc_cstr(mut s: *const i8) {
     print_cstr(s);
 }
 unsafe extern "C" fn print_the_digs(mut k: eight_bits) {
-    while k as libc::c_int > 0i32 {
+    while k as i32 > 0i32 {
         k = k.wrapping_sub(1);
-        if (dig[k as usize] as libc::c_int) < 10i32 {
-            print_char('0' as i32 + dig[k as usize] as libc::c_int);
+        if (dig[k as usize] as i32) < 10i32 {
+            print_char('0' as i32 + dig[k as usize] as i32);
         } else {
-            print_char(55i32 + dig[k as usize] as libc::c_int);
+            print_char(55i32 + dig[k as usize] as i32);
         }
     }
 }
@@ -758,13 +758,13 @@ pub unsafe extern "C" fn print_file_name(mut n: i32, mut a: i32, mut e: i32) {
         while (!must_quote || quote_char == 0i32)
             && j < *str_start.offset((a + 1i32 - 0x10000i32) as isize)
         {
-            if *str_pool.offset(j as isize) as libc::c_int == ' ' as i32 {
+            if *str_pool.offset(j as isize) as i32 == ' ' as i32 {
                 must_quote = 1i32 != 0
-            } else if *str_pool.offset(j as isize) as libc::c_int == '\"' as i32
-                || *str_pool.offset(j as isize) as libc::c_int == '\'' as i32
+            } else if *str_pool.offset(j as isize) as i32 == '\"' as i32
+                || *str_pool.offset(j as isize) as i32 == '\'' as i32
             {
                 must_quote = 1i32 != 0;
-                quote_char = 73i32 - *str_pool.offset(j as isize) as libc::c_int
+                quote_char = 73i32 - *str_pool.offset(j as isize) as i32
             }
             j += 1
         }
@@ -774,13 +774,13 @@ pub unsafe extern "C" fn print_file_name(mut n: i32, mut a: i32, mut e: i32) {
         while (!must_quote || quote_char == 0i32)
             && j < *str_start.offset((n + 1i32 - 0x10000i32) as isize)
         {
-            if *str_pool.offset(j as isize) as libc::c_int == ' ' as i32 {
+            if *str_pool.offset(j as isize) as i32 == ' ' as i32 {
                 must_quote = 1i32 != 0
-            } else if *str_pool.offset(j as isize) as libc::c_int == '\"' as i32
-                || *str_pool.offset(j as isize) as libc::c_int == '\'' as i32
+            } else if *str_pool.offset(j as isize) as i32 == '\"' as i32
+                || *str_pool.offset(j as isize) as i32 == '\'' as i32
             {
                 must_quote = 1i32 != 0;
-                quote_char = 73i32 - *str_pool.offset(j as isize) as libc::c_int
+                quote_char = 73i32 - *str_pool.offset(j as isize) as i32
             }
             j += 1
         }
@@ -790,13 +790,13 @@ pub unsafe extern "C" fn print_file_name(mut n: i32, mut a: i32, mut e: i32) {
         while (!must_quote || quote_char == 0i32)
             && j < *str_start.offset((e + 1i32 - 0x10000i32) as isize)
         {
-            if *str_pool.offset(j as isize) as libc::c_int == ' ' as i32 {
+            if *str_pool.offset(j as isize) as i32 == ' ' as i32 {
                 must_quote = 1i32 != 0
-            } else if *str_pool.offset(j as isize) as libc::c_int == '\"' as i32
-                || *str_pool.offset(j as isize) as libc::c_int == '\'' as i32
+            } else if *str_pool.offset(j as isize) as i32 == '\"' as i32
+                || *str_pool.offset(j as isize) as i32 == '\'' as i32
             {
                 must_quote = 1i32 != 0;
-                quote_char = 73i32 - *str_pool.offset(j as isize) as libc::c_int
+                quote_char = 73i32 - *str_pool.offset(j as isize) as i32
             }
             j += 1
         }
@@ -813,7 +813,7 @@ pub unsafe extern "C" fn print_file_name(mut n: i32, mut a: i32, mut e: i32) {
         for_end = *str_start.offset((a + 1i32 - 0x10000i32) as isize) - 1i32;
         if j <= for_end {
             loop {
-                if *str_pool.offset(j as isize) as libc::c_int == quote_char {
+                if *str_pool.offset(j as isize) as i32 == quote_char {
                     print(quote_char);
                     quote_char = 73i32 - quote_char;
                     print(quote_char);
@@ -833,7 +833,7 @@ pub unsafe extern "C" fn print_file_name(mut n: i32, mut a: i32, mut e: i32) {
         for_end_0 = *str_start.offset((n + 1i32 - 0x10000i32) as isize) - 1i32;
         if j <= for_end_0 {
             loop {
-                if *str_pool.offset(j as isize) as libc::c_int == quote_char {
+                if *str_pool.offset(j as isize) as i32 == quote_char {
                     print(quote_char);
                     quote_char = 73i32 - quote_char;
                     print(quote_char);
@@ -853,7 +853,7 @@ pub unsafe extern "C" fn print_file_name(mut n: i32, mut a: i32, mut e: i32) {
         for_end_1 = *str_start.offset((e + 1i32 - 0x10000i32) as isize) - 1i32;
         if j <= for_end_1 {
             loop {
-                if *str_pool.offset(j as isize) as libc::c_int == quote_char {
+                if *str_pool.offset(j as isize) as i32 == quote_char {
                     print(quote_char);
                     quote_char = 73i32 - quote_char;
                     print(quote_char);
@@ -897,13 +897,13 @@ pub unsafe extern "C" fn print_native_word(mut p: i32) {
     let mut i: i32 = 0;
     let mut c: i32 = 0;
     let mut cc: i32 = 0;
-    let mut for_end: i32 = (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int - 1i32;
+    let mut for_end: i32 = (*mem.offset((p + 4i32) as isize)).b16.s1 as i32 - 1i32;
     i = 0i32;
     while i <= for_end {
         c = *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
             .offset(i as isize) as i32;
         if c >= 0xd800i32 && c < 0xdc00i32 {
-            if i < (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int - 1i32 {
+            if i < (*mem.offset((p + 4i32) as isize)).b16.s1 as i32 - 1i32 {
                 cc = *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word
                     as *mut u16)
                     .offset((i + 1i32) as isize) as i32;
@@ -926,20 +926,20 @@ pub unsafe extern "C" fn print_native_word(mut p: i32) {
 #[no_mangle]
 pub unsafe extern "C" fn print_sa_num(mut q: i32) {
     let mut n: i32 = 0;
-    if ((*mem.offset(q as isize)).b16.s1 as libc::c_int) < 128i32 {
+    if ((*mem.offset(q as isize)).b16.s1 as i32) < 128i32 {
         n = (*mem.offset((q + 1i32) as isize)).b32.s1
     } else {
-        n = (*mem.offset(q as isize)).b16.s1 as libc::c_int % 64i32;
+        n = (*mem.offset(q as isize)).b16.s1 as i32 % 64i32;
         q = (*mem.offset(q as isize)).b32.s1;
-        n = n + 64i32 * (*mem.offset(q as isize)).b16.s1 as libc::c_int;
+        n = n + 64i32 * (*mem.offset(q as isize)).b16.s1 as i32;
         q = (*mem.offset(q as isize)).b32.s1;
         n = n + 64i32
             * 64i32
-            * ((*mem.offset(q as isize)).b16.s1 as libc::c_int
+            * ((*mem.offset(q as isize)).b16.s1 as i32
                 + 64i32
                     * (*mem.offset((*mem.offset(q as isize)).b32.s1 as isize))
                         .b16
-                        .s1 as libc::c_int)
+                        .s1 as i32)
     }
     print_int(n);
 }
@@ -1003,22 +1003,22 @@ pub unsafe extern "C" fn print_roman_int(mut n: i32) {
         if n <= 0i32 {
             return;
         }
-        k = (j as libc::c_int + 2i32) as u8;
+        k = (j as i32 + 2i32) as u8;
         u = v
-            / (*roman_data.offset((k as libc::c_int - 1i32) as isize) as libc::c_int - '0' as i32);
-        if *roman_data.offset((k as libc::c_int - 1i32) as isize) as libc::c_int == '2' as i32 {
-            k = (k as libc::c_int + 2i32) as u8;
+            / (*roman_data.offset((k as i32 - 1i32) as isize) as i32 - '0' as i32);
+        if *roman_data.offset((k as i32 - 1i32) as isize) as i32 == '2' as i32 {
+            k = (k as i32 + 2i32) as u8;
             u = u
-                / (*roman_data.offset((k as libc::c_int - 1i32) as isize) as libc::c_int
+                / (*roman_data.offset((k as i32 - 1i32) as isize) as i32
                     - '0' as i32)
         }
         if n + u >= v {
             print_char(*roman_data.offset(k as isize) as i32);
             n = n + u
         } else {
-            j = (j as libc::c_int + 2i32) as u8;
+            j = (j as i32 + 2i32) as u8;
             v = v
-                / (*roman_data.offset((j as libc::c_int - 1i32) as isize) as libc::c_int
+                / (*roman_data.offset((j as i32 - 1i32) as isize) as i32
                     - '0' as i32)
         }
     }

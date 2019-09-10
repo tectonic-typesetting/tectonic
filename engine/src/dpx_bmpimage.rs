@@ -14,12 +14,12 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn ttstub_input_seek(
         handle: rust_input_handle_t,
         offset: ssize_t,
-        whence: libc::c_int,
+        whence: i32,
     ) -> size_t;
     #[no_mangle]
     fn ttstub_input_read(
@@ -55,24 +55,24 @@ extern "C" {
      * already removed that.
      */
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn pdf_new_stream(flags: libc::c_int) -> *mut pdf_obj;
+    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_add_stream(
         stream: *mut pdf_obj,
         stream_data_ptr: *const libc::c_void,
-        stream_data_len: libc::c_int,
+        stream_data_len: i32,
     );
     #[no_mangle]
     fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_stream_set_predictor(
         stream: *mut pdf_obj,
-        predictor: libc::c_int,
+        predictor: i32,
         columns: i32,
-        bpc: libc::c_int,
-        colors: libc::c_int,
+        bpc: i32,
+        colors: i32,
     );
     #[no_mangle]
     fn pdf_ximage_init_image_info(info: *mut ximage_info);
@@ -136,12 +136,12 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ximage_info {
-    pub flags: libc::c_int,
-    pub width: libc::c_int,
-    pub height: libc::c_int,
-    pub bits_per_component: libc::c_int,
-    pub num_components: libc::c_int,
-    pub min_dpi: libc::c_int,
+    pub flags: i32,
+    pub width: i32,
+    pub height: i32,
+    pub bits_per_component: i32,
+    pub num_components: i32,
+    pub min_dpi: i32,
     pub xdensity: f64,
     pub ydensity: f64,
 }
@@ -152,15 +152,15 @@ pub struct hdr_info {
     pub offset: libc::c_uint,
     pub hsize: libc::c_uint,
     pub width: libc::c_uint,
-    pub height: libc::c_int,
-    pub compression: libc::c_int,
+    pub height: i32,
+    pub compression: i32,
     pub bit_count: u16,
-    pub psize: libc::c_int,
+    pub psize: i32,
     pub x_pix_per_meter: libc::c_uint,
     pub y_pix_per_meter: libc::c_uint,
 }
 #[no_mangle]
-pub unsafe extern "C" fn check_for_bmp(mut handle: rust_input_handle_t) -> libc::c_int {
+pub unsafe extern "C" fn check_for_bmp(mut handle: rust_input_handle_t) -> i32 {
     let mut sigbytes: [u8; 2] = [0; 2];
     if handle.is_null() {
         return 0i32;
@@ -172,8 +172,8 @@ pub unsafe extern "C" fn check_for_bmp(mut handle: rust_input_handle_t) -> libc:
         ::std::mem::size_of::<[u8; 2]>() as u64,
     ) as u64
         != ::std::mem::size_of::<[u8; 2]>() as u64
-        || sigbytes[0] as libc::c_int != 'B' as i32
-        || sigbytes[1] as libc::c_int != 'M' as i32
+        || sigbytes[0] as i32 != 'B' as i32
+        || sigbytes[1] as i32 != 'M' as i32
     {
         return 0i32;
     }
@@ -202,8 +202,8 @@ pub unsafe extern "C" fn bmp_get_bbox(
     mut height: *mut libc::c_uint,
     mut xdensity: *mut f64,
     mut ydensity: *mut f64,
-) -> libc::c_int {
-    let mut r: libc::c_int = 0;
+) -> i32 {
+    let mut r: i32 = 0;
     let mut hdr: hdr_info = {
         let mut init = hdr_info {
             offset: 0i32 as libc::c_uint,
@@ -254,7 +254,7 @@ pub unsafe extern "C" fn bmp_get_bbox(
 pub unsafe extern "C" fn bmp_include_image(
     mut ximage: *mut pdf_ximage,
     mut handle: rust_input_handle_t,
-) -> libc::c_int {
+) -> i32 {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut colorspace: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -282,9 +282,9 @@ pub unsafe extern "C" fn bmp_include_image(
         };
         init
     };
-    let mut num_palette: libc::c_int = 0;
-    let mut flip: libc::c_int = 0;
-    let mut i: libc::c_int = 0;
+    let mut num_palette: i32 = 0;
+    let mut flip: i32 = 0;
+    let mut i: i32 = 0;
     pdf_ximage_init_image_info(&mut info);
     colorspace = 0 as *mut pdf_obj;
     stream_dict = colorspace;
@@ -294,7 +294,7 @@ pub unsafe extern "C" fn bmp_include_image(
         return -1i32;
     }
     get_density(&mut info.xdensity, &mut info.ydensity, &mut hdr);
-    info.width = hdr.width as libc::c_int;
+    info.width = hdr.width as i32;
     info.height = hdr.height;
     if info.height < 0i32 {
         info.height = -info.height;
@@ -302,14 +302,14 @@ pub unsafe extern "C" fn bmp_include_image(
     } else {
         flip = 1i32
     }
-    if (hdr.bit_count as libc::c_int) < 24i32 {
-        if hdr.bit_count as libc::c_int != 1i32
-            && hdr.bit_count as libc::c_int != 4i32
-            && hdr.bit_count as libc::c_int != 8i32
+    if (hdr.bit_count as i32) < 24i32 {
+        if hdr.bit_count as i32 != 1i32
+            && hdr.bit_count as i32 != 4i32
+            && hdr.bit_count as i32 != 8i32
         {
             dpx_warning(
                 b"Unsupported palette size: %hu\x00" as *const u8 as *const i8,
-                hdr.bit_count as libc::c_int,
+                hdr.bit_count as i32,
             );
             return -1i32;
         }
@@ -317,10 +317,10 @@ pub unsafe extern "C" fn bmp_include_image(
             .offset
             .wrapping_sub(hdr.hsize)
             .wrapping_sub(14i32 as libc::c_uint)
-            .wrapping_div(hdr.psize as libc::c_uint) as libc::c_int;
-        info.bits_per_component = hdr.bit_count as libc::c_int;
+            .wrapping_div(hdr.psize as libc::c_uint) as i32;
+        info.bits_per_component = hdr.bit_count as i32;
         info.num_components = 1i32
-    } else if hdr.bit_count as libc::c_int == 24i32 {
+    } else if hdr.bit_count as i32 == 24i32 {
         /* full color */
         num_palette = 1i32; /* dummy */
         info.bits_per_component = 8i32;
@@ -328,7 +328,7 @@ pub unsafe extern "C" fn bmp_include_image(
     } else {
         dpx_warning(
             b"Unkown/Unsupported BMP bitCount value: %hu\x00" as *const u8 as *const i8,
-            hdr.bit_count as libc::c_int,
+            hdr.bit_count as i32,
         );
         return -1i32;
     }
@@ -346,7 +346,7 @@ pub unsafe extern "C" fn bmp_include_image(
     stream = pdf_new_stream(1i32 << 0i32);
     stream_dict = pdf_stream_dict(stream);
     /* Color space: Indexed or DeviceRGB */
-    if (hdr.bit_count as libc::c_int) < 24i32 {
+    if (hdr.bit_count as i32) < 24i32 {
         let mut lookup: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut palette: *mut u8 = 0 as *mut u8;
         let mut bgrq: [u8; 4] = [0; 4];
@@ -399,15 +399,15 @@ pub unsafe extern "C" fn bmp_include_image(
         colorspace,
     );
     /* Raster data of BMP is four-byte aligned. */
-    let mut rowbytes: libc::c_int = 0;
-    let mut n: libc::c_int = 0;
+    let mut rowbytes: i32 = 0;
+    let mut n: i32 = 0;
     let mut p: *mut u8 = 0 as *mut u8;
     let mut stream_data_ptr: *mut u8 = 0 as *mut u8;
-    rowbytes = (info.width * hdr.bit_count as libc::c_int + 7i32) / 8i32;
+    rowbytes = (info.width * hdr.bit_count as i32 + 7i32) / 8i32;
     ttstub_input_seek(handle, hdr.offset as ssize_t, 0i32);
     if hdr.compression == 0i32 {
-        let mut dib_rowbytes: libc::c_int = 0;
-        let mut padding: libc::c_int = 0;
+        let mut dib_rowbytes: i32 = 0;
+        let mut padding: i32 = 0;
         padding = if rowbytes % 4i32 != 0 {
             4i32 - rowbytes % 4i32
         } else {
@@ -468,7 +468,7 @@ pub unsafe extern "C" fn bmp_include_image(
         return -1i32;
     }
     /* gbr --> rgb */
-    if hdr.bit_count as libc::c_int == 24i32 {
+    if hdr.bit_count as i32 == 24i32 {
         n = 0i32;
         while n < info.width * info.height * 3i32 {
             let mut g: u8 = 0;
@@ -494,7 +494,7 @@ pub unsafe extern "C" fn bmp_include_image(
     }
     free(stream_data_ptr as *mut libc::c_void);
     /* Predictor is usually not so efficient for indexed images. */
-    if hdr.bit_count as libc::c_int >= 24i32
+    if hdr.bit_count as i32 >= 24i32
         && info.bits_per_component >= 8i32
         && info.height > 64i32
     {
@@ -516,7 +516,7 @@ pub unsafe extern "C" fn bmp_include_image(
 unsafe extern "C" fn read_header(
     mut handle: rust_input_handle_t,
     mut hdr: *mut hdr_info,
-) -> libc::c_int {
+) -> i32 {
     let mut buf: [u8; 142] = [0; 142];
     let mut p: *mut u8 = 0 as *mut u8;
     p = buf.as_mut_ptr();
@@ -529,7 +529,7 @@ unsafe extern "C" fn read_header(
         dpx_warning(b"Could not read BMP file header...\x00" as *const u8 as *const i8);
         return -1i32;
     }
-    if *p.offset(0) as libc::c_int != 'B' as i32 || *p.offset(1) as libc::c_int != 'M' as i32 {
+    if *p.offset(0) as i32 != 'B' as i32 || *p.offset(1) as i32 != 'M' as i32 {
         dpx_warning(
             b"File not starting with \'B\' \'M\'... Not a BMP file?\x00" as *const u8
                 as *const i8,
@@ -539,26 +539,26 @@ unsafe extern "C" fn read_header(
     p = p.offset(2);
     /* fsize  = ULONG_LE(p); */
     p = p.offset(4);
-    if *p.offset(0) as libc::c_int
-        + ((*p.offset(1) as libc::c_int) << 8i32)
-        + ((*p.offset(2) as libc::c_int) << 16i32)
-        + ((*p.offset(3) as libc::c_int) << 24i32)
+    if *p.offset(0) as i32
+        + ((*p.offset(1) as i32) << 8i32)
+        + ((*p.offset(2) as i32) << 16i32)
+        + ((*p.offset(3) as i32) << 24i32)
         != 0i32
     {
         dpx_warning(b"Not a BMP file???\x00" as *const u8 as *const i8);
         return -1i32;
     }
     p = p.offset(4);
-    (*hdr).offset = (*p.offset(0) as libc::c_int
-        + ((*p.offset(1) as libc::c_int) << 8i32)
-        + ((*p.offset(2) as libc::c_int) << 16i32)
-        + ((*p.offset(3) as libc::c_int) << 24i32)) as libc::c_uint;
+    (*hdr).offset = (*p.offset(0) as i32
+        + ((*p.offset(1) as i32) << 8i32)
+        + ((*p.offset(2) as i32) << 16i32)
+        + ((*p.offset(3) as i32) << 24i32)) as libc::c_uint;
     p = p.offset(4);
     /* info header */
-    (*hdr).hsize = (*p.offset(0) as libc::c_int
-        + ((*p.offset(1) as libc::c_int) << 8i32)
-        + ((*p.offset(2) as libc::c_int) << 16i32)
-        + ((*p.offset(3) as libc::c_int) << 24i32)) as libc::c_uint; /* undefined. FIXME */
+    (*hdr).hsize = (*p.offset(0) as i32
+        + ((*p.offset(1) as i32) << 8i32)
+        + ((*p.offset(2) as i32) << 16i32)
+        + ((*p.offset(3) as i32) << 24i32)) as libc::c_uint; /* undefined. FIXME */
     p = p.offset(4); /* undefined. FIXME */
     if ttstub_input_read(
         handle,
@@ -571,14 +571,14 @@ unsafe extern "C" fn read_header(
     }
     match (*hdr).hsize {
         12 => {
-            (*hdr).width = (*p.offset(0) as libc::c_int + ((*p.offset(1) as libc::c_int) << 8i32))
+            (*hdr).width = (*p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32))
                 as libc::c_uint;
             p = p.offset(2);
-            (*hdr).height = *p.offset(0) as libc::c_int + ((*p.offset(1) as libc::c_int) << 8i32);
+            (*hdr).height = *p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32);
             p = p.offset(2);
             (*hdr).x_pix_per_meter = 0i32 as libc::c_uint;
             (*hdr).y_pix_per_meter = 0i32 as libc::c_uint;
-            if *p.offset(0) as libc::c_int + ((*p.offset(1) as libc::c_int) << 8i32) != 1i32 {
+            if *p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32) != 1i32 {
                 dpx_warning(
                     b"Unknown bcPlanes value in BMP COREHEADER.\x00" as *const u8
                         as *const i8,
@@ -586,26 +586,26 @@ unsafe extern "C" fn read_header(
                 return -1i32;
             }
             p = p.offset(2);
-            (*hdr).bit_count = (*p.offset(0) as libc::c_int
-                + ((*p.offset(1) as libc::c_int) << 8i32))
+            (*hdr).bit_count = (*p.offset(0) as i32
+                + ((*p.offset(1) as i32) << 8i32))
                 as u16;
             p = p.offset(2);
             (*hdr).compression = 0i32;
             (*hdr).psize = 3i32
         }
         40 | 64 | 108 | 124 => {
-            (*hdr).width = (*p.offset(0) as libc::c_int
-                + ((*p.offset(1) as libc::c_int) << 8i32)
-                + ((*p.offset(2) as libc::c_int) << 16i32)
-                + ((*p.offset(3) as libc::c_int) << 24i32))
+            (*hdr).width = (*p.offset(0) as i32
+                + ((*p.offset(1) as i32) << 8i32)
+                + ((*p.offset(2) as i32) << 16i32)
+                + ((*p.offset(3) as i32) << 24i32))
                 as libc::c_uint;
             p = p.offset(4);
-            (*hdr).height = *p.offset(0) as libc::c_int
-                + ((*p.offset(1) as libc::c_int) << 8i32)
-                + ((*p.offset(2) as libc::c_int) << 16i32)
-                + ((*p.offset(3) as libc::c_int) << 24i32);
+            (*hdr).height = *p.offset(0) as i32
+                + ((*p.offset(1) as i32) << 8i32)
+                + ((*p.offset(2) as i32) << 16i32)
+                + ((*p.offset(3) as i32) << 24i32);
             p = p.offset(4);
-            if *p.offset(0) as libc::c_int + ((*p.offset(1) as libc::c_int) << 8i32) != 1i32 {
+            if *p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32) != 1i32 {
                 dpx_warning(
                     b"Unknown biPlanes value in BMP INFOHEADER.\x00" as *const u8
                         as *const i8,
@@ -613,27 +613,27 @@ unsafe extern "C" fn read_header(
                 return -1i32;
             }
             p = p.offset(2);
-            (*hdr).bit_count = (*p.offset(0) as libc::c_int
-                + ((*p.offset(1) as libc::c_int) << 8i32))
+            (*hdr).bit_count = (*p.offset(0) as i32
+                + ((*p.offset(1) as i32) << 8i32))
                 as u16;
             p = p.offset(2);
-            (*hdr).compression = *p.offset(0) as libc::c_int
-                + ((*p.offset(1) as libc::c_int) << 8i32)
-                + ((*p.offset(2) as libc::c_int) << 16i32)
-                + ((*p.offset(3) as libc::c_int) << 24i32);
+            (*hdr).compression = *p.offset(0) as i32
+                + ((*p.offset(1) as i32) << 8i32)
+                + ((*p.offset(2) as i32) << 16i32)
+                + ((*p.offset(3) as i32) << 24i32);
             p = p.offset(4);
             /* ignore biSizeImage */
             p = p.offset(4);
-            (*hdr).x_pix_per_meter = (*p.offset(0) as libc::c_int
-                + ((*p.offset(1) as libc::c_int) << 8i32)
-                + ((*p.offset(2) as libc::c_int) << 16i32)
-                + ((*p.offset(3) as libc::c_int) << 24i32))
+            (*hdr).x_pix_per_meter = (*p.offset(0) as i32
+                + ((*p.offset(1) as i32) << 8i32)
+                + ((*p.offset(2) as i32) << 16i32)
+                + ((*p.offset(3) as i32) << 24i32))
                 as libc::c_uint;
             p = p.offset(4);
-            (*hdr).y_pix_per_meter = (*p.offset(0) as libc::c_int
-                + ((*p.offset(1) as libc::c_int) << 8i32)
-                + ((*p.offset(2) as libc::c_int) << 16i32)
-                + ((*p.offset(3) as libc::c_int) << 24i32))
+            (*hdr).y_pix_per_meter = (*p.offset(0) as i32
+                + ((*p.offset(1) as i32) << 8i32)
+                + ((*p.offset(2) as i32) << 16i32)
+                + ((*p.offset(3) as i32) << 24i32))
                 as libc::c_uint;
             p = p.offset(4);
             (*hdr).psize = 4i32
@@ -647,19 +647,19 @@ unsafe extern "C" fn read_header(
 }
 unsafe extern "C" fn read_raster_rle8(
     mut data_ptr: *mut u8,
-    mut width: libc::c_int,
-    mut height: libc::c_int,
+    mut width: i32,
+    mut height: i32,
     mut handle: rust_input_handle_t,
-) -> libc::c_int {
-    let mut count: libc::c_int = 0i32;
+) -> i32 {
+    let mut count: i32 = 0i32;
     let mut p: *mut u8 = 0 as *mut u8;
     let mut b0: u8 = 0;
     let mut b1: u8 = 0;
-    let mut h: libc::c_int = 0;
-    let mut v: libc::c_int = 0;
-    let mut rowbytes: libc::c_int = 0;
-    let mut eol: libc::c_int = 0;
-    let mut eoi: libc::c_int = 0;
+    let mut h: i32 = 0;
+    let mut v: i32 = 0;
+    let mut rowbytes: i32 = 0;
+    let mut eol: i32 = 0;
+    let mut eoi: i32 = 0;
     p = data_ptr;
     rowbytes = width;
     memset(
@@ -677,8 +677,8 @@ unsafe extern "C" fn read_raster_rle8(
             b1 = tt_get_unsigned_byte(handle);
             count += 2i32;
             p = data_ptr.offset((v * rowbytes) as isize).offset(h as isize);
-            if b0 as libc::c_int == 0i32 {
-                match b1 as libc::c_int {
+            if b0 as i32 == 0i32 {
+                match b1 as i32 {
                     0 => {
                         /* EOL */
                         eol = 1i32
@@ -688,12 +688,12 @@ unsafe extern "C" fn read_raster_rle8(
                         eoi = 1i32
                     }
                     2 => {
-                        h += tt_get_unsigned_byte(handle) as libc::c_int;
-                        v += tt_get_unsigned_byte(handle) as libc::c_int;
+                        h += tt_get_unsigned_byte(handle) as i32;
+                        v += tt_get_unsigned_byte(handle) as i32;
                         count += 2i32
                     }
                     _ => {
-                        h += b1 as libc::c_int;
+                        h += b1 as i32;
                         if h > width {
                             dpx_warning(
                                 b"RLE decode failed...\x00" as *const u8 as *const i8,
@@ -705,22 +705,22 @@ unsafe extern "C" fn read_raster_rle8(
                         {
                             return -1i32;
                         }
-                        count += b1 as libc::c_int;
-                        if b1 as libc::c_int % 2i32 != 0 {
+                        count += b1 as i32;
+                        if b1 as i32 % 2i32 != 0 {
                             tt_get_unsigned_byte(handle);
                             count += 1
                         }
                     }
                 }
             } else {
-                h += b0 as libc::c_int;
+                h += b0 as i32;
                 if h > width {
                     dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
                     return -1i32;
                 }
                 memset(
                     p as *mut libc::c_void,
-                    b1 as libc::c_int,
+                    b1 as i32,
                     b0 as u64,
                 );
             }
@@ -729,13 +729,13 @@ unsafe extern "C" fn read_raster_rle8(
         if eol == 0 && eoi == 0 {
             b0 = tt_get_unsigned_byte(handle);
             b1 = tt_get_unsigned_byte(handle);
-            if b0 as libc::c_int != 0i32 {
+            if b0 as i32 != 0i32 {
                 dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
                 return -1i32;
             } else {
-                if b1 as libc::c_int == 0x1i32 {
+                if b1 as i32 == 0x1i32 {
                     eoi = 1i32
-                } else if b1 as libc::c_int != 0i32 {
+                } else if b1 as i32 != 0i32 {
                     dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
                     return -1i32;
                 }
@@ -747,22 +747,22 @@ unsafe extern "C" fn read_raster_rle8(
 }
 unsafe extern "C" fn read_raster_rle4(
     mut data_ptr: *mut u8,
-    mut width: libc::c_int,
-    mut height: libc::c_int,
+    mut width: i32,
+    mut height: i32,
     mut handle: rust_input_handle_t,
-) -> libc::c_int {
-    let mut count: libc::c_int = 0i32;
+) -> i32 {
+    let mut count: i32 = 0i32;
     let mut p: *mut u8 = 0 as *mut u8;
     let mut b0: u8 = 0;
     let mut b1: u8 = 0;
     let mut b: u8 = 0;
-    let mut h: libc::c_int = 0;
-    let mut v: libc::c_int = 0;
-    let mut rowbytes: libc::c_int = 0;
-    let mut eol: libc::c_int = 0;
-    let mut eoi: libc::c_int = 0;
-    let mut i: libc::c_int = 0;
-    let mut nbytes: libc::c_int = 0;
+    let mut h: i32 = 0;
+    let mut v: i32 = 0;
+    let mut rowbytes: i32 = 0;
+    let mut eol: i32 = 0;
+    let mut eoi: i32 = 0;
+    let mut i: i32 = 0;
+    let mut nbytes: i32 = 0;
     p = data_ptr;
     rowbytes = (width + 1i32) / 2i32;
     memset(
@@ -782,8 +782,8 @@ unsafe extern "C" fn read_raster_rle4(
             p = data_ptr
                 .offset((v * rowbytes) as isize)
                 .offset((h / 2i32) as isize);
-            if b0 as libc::c_int == 0i32 {
-                match b1 as libc::c_int {
+            if b0 as i32 == 0i32 {
+                match b1 as i32 {
                     0 => {
                         /* Check for EOL and EOI marker */
                         /* EOL */
@@ -794,18 +794,18 @@ unsafe extern "C" fn read_raster_rle4(
                         eoi = 1i32
                     }
                     2 => {
-                        h += tt_get_unsigned_byte(handle) as libc::c_int;
-                        v += tt_get_unsigned_byte(handle) as libc::c_int;
+                        h += tt_get_unsigned_byte(handle) as i32;
+                        v += tt_get_unsigned_byte(handle) as i32;
                         count += 2i32
                     }
                     _ => {
-                        if h + b1 as libc::c_int > width {
+                        if h + b1 as i32 > width {
                             dpx_warning(
                                 b"RLE decode failed...\x00" as *const u8 as *const i8,
                             );
                             return -1i32;
                         }
-                        nbytes = (b1 as libc::c_int + 1i32) / 2i32;
+                        nbytes = (b1 as i32 + 1i32) / 2i32;
                         if h % 2i32 != 0 {
                             /* starting at hi-nib */
                             i = 0i32;
@@ -813,10 +813,10 @@ unsafe extern "C" fn read_raster_rle4(
                                 b = tt_get_unsigned_byte(handle);
                                 let fresh0 = p;
                                 p = p.offset(1);
-                                *fresh0 = (*fresh0 as libc::c_int
-                                    | b as libc::c_int >> 4i32 & 0xfi32)
+                                *fresh0 = (*fresh0 as i32
+                                    | b as i32 >> 4i32 & 0xfi32)
                                     as u8;
-                                *p = ((b as libc::c_int) << 4i32 & 0xf0i32) as u8;
+                                *p = ((b as i32) << 4i32 & 0xf0i32) as u8;
                                 i += 1
                             }
                         } else if ttstub_input_read(
@@ -827,7 +827,7 @@ unsafe extern "C" fn read_raster_rle4(
                         {
                             return -1i32;
                         }
-                        h += b1 as libc::c_int;
+                        h += b1 as i32;
                         count += nbytes;
                         if nbytes % 2i32 != 0 {
                             tt_get_unsigned_byte(handle);
@@ -836,30 +836,30 @@ unsafe extern "C" fn read_raster_rle4(
                     }
                 }
             } else {
-                if h + b0 as libc::c_int > width {
+                if h + b0 as i32 > width {
                     dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
                     return -1i32;
                 }
                 if h % 2i32 != 0 {
                     let fresh1 = p;
                     p = p.offset(1);
-                    *fresh1 = (b1 as libc::c_int >> 4i32 & 0xfi32) as u8;
-                    b1 = ((b1 as libc::c_int) << 4i32 & 0xf0i32
-                        | b1 as libc::c_int >> 4i32 & 0xfi32)
+                    *fresh1 = (b1 as i32 >> 4i32 & 0xfi32) as u8;
+                    b1 = ((b1 as i32) << 4i32 & 0xf0i32
+                        | b1 as i32 >> 4i32 & 0xfi32)
                         as u8;
                     b0 = b0.wrapping_sub(1);
                     h += 1
                 }
-                nbytes = (b0 as libc::c_int + 1i32) / 2i32;
+                nbytes = (b0 as i32 + 1i32) / 2i32;
                 memset(
                     p as *mut libc::c_void,
-                    b1 as libc::c_int,
+                    b1 as i32,
                     nbytes as u64,
                 );
-                h += b0 as libc::c_int;
+                h += b0 as i32;
                 if h % 2i32 != 0 {
                     let ref mut fresh2 = *p.offset((nbytes - 1i32) as isize);
-                    *fresh2 = (*fresh2 as libc::c_int & 0xf0i32) as u8
+                    *fresh2 = (*fresh2 as i32 & 0xf0i32) as u8
                 }
             }
         }
@@ -867,16 +867,16 @@ unsafe extern "C" fn read_raster_rle4(
         if eol == 0 && eoi == 0 {
             b0 = tt_get_unsigned_byte(handle);
             b1 = tt_get_unsigned_byte(handle);
-            if b0 as libc::c_int != 0i32 {
+            if b0 as i32 != 0i32 {
                 dpx_warning(
                     b"No EOL/EOI marker. RLE decode failed...\x00" as *const u8
                         as *const i8,
                 );
                 return -1i32;
             } else {
-                if b1 as libc::c_int == 0x1i32 {
+                if b1 as i32 == 0x1i32 {
                     eoi = 1i32
-                } else if b1 as libc::c_int != 0i32 {
+                } else if b1 as i32 != 0i32 {
                     dpx_warning(
                         b"No EOL/EOI marker. RLE decode failed...\x00" as *const u8
                             as *const i8,

@@ -33,23 +33,23 @@ extern "C" {
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> libc::c_int;
+    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
@@ -88,11 +88,11 @@ extern "C" {
      * already removed that.
      */
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn spc_begin_annot(spe: *mut spc_env, annot_dict: *mut pdf_obj) -> libc::c_int;
+    fn spc_begin_annot(spe: *mut spc_env, annot_dict: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn spc_end_annot(spe: *mut spc_env) -> libc::c_int;
+    fn spc_end_annot(spe: *mut spc_env) -> i32;
     #[no_mangle]
     fn parse_float_decimal(
         pp: *mut *const i8,
@@ -143,9 +143,9 @@ extern "C" {
     fn pdf_doc_add_names(
         category: *const i8,
         key: *const libc::c_void,
-        keylen: libc::c_int,
+        keylen: i32,
         value: *mut pdf_obj,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn pdf_doc_add_page_content(buffer: *const i8, length: libc::c_uint);
     #[no_mangle]
@@ -160,32 +160,32 @@ extern "C" {
         y: f64,
         w: f64,
         h: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
-    fn pdf_dev_concat(M: *const pdf_tmatrix) -> libc::c_int;
+    fn pdf_dev_concat(M: *const pdf_tmatrix) -> i32;
     #[no_mangle]
     fn pdf_dev_transform(p: *mut pdf_coord, M: *const pdf_tmatrix);
     #[no_mangle]
-    fn pdf_dev_gsave() -> libc::c_int;
+    fn pdf_dev_gsave() -> i32;
     #[no_mangle]
-    fn pdf_dev_grestore() -> libc::c_int;
+    fn pdf_dev_grestore() -> i32;
     #[no_mangle]
-    fn pdf_ximage_get_resname(xobj_id: libc::c_int) -> *mut i8;
+    fn pdf_ximage_get_resname(xobj_id: i32) -> *mut i8;
     #[no_mangle]
-    fn pdf_ximage_get_reference(xobj_id: libc::c_int) -> *mut pdf_obj;
+    fn pdf_ximage_get_reference(xobj_id: i32) -> *mut pdf_obj;
     /* Please use different interface than findresource...
      * This is not intended to be used for specifying page number and others.
      * Only pdf:image special in spc_pdfm.c want optinal dict!
      */
     #[no_mangle]
-    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> libc::c_int;
+    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> i32;
     #[no_mangle]
     fn pdf_ximage_scale_image(
-        id: libc::c_int,
+        id: i32,
         M: *mut pdf_tmatrix,
         r: *mut pdf_rect,
         p: *mut transform_info,
-    ) -> libc::c_int;
+    ) -> i32;
 }
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
@@ -228,7 +228,7 @@ pub struct spc_env {
     pub x_user: f64,
     pub y_user: f64,
     pub mag: f64,
-    pub pg: libc::c_int,
+    pub pg: i32,
     /* current page in PDF */
 }
 #[derive(Copy, Clone)]
@@ -240,7 +240,7 @@ pub struct spc_arg {
     pub command: *const i8,
 }
 pub type spc_handler_fn_ptr =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int>;
+    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
@@ -253,12 +253,12 @@ pub struct spc_html_ {
     pub opts: C2RustUnnamed_0,
     pub link_dict: *mut pdf_obj,
     pub baseurl: *mut i8,
-    pub pending_type: libc::c_int,
+    pub pending_type: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
-    pub extensions: libc::c_int,
+    pub extensions: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -286,13 +286,13 @@ pub struct transform_info {
     pub depth: f64,
     pub matrix: pdf_tmatrix,
     pub bbox: pdf_rect,
-    pub flags: libc::c_int,
+    pub flags: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct load_options {
-    pub page_no: libc::c_int,
-    pub bbox_type: libc::c_int,
+    pub page_no: i32,
+    pub bbox_type: i32,
     pub dict: *mut pdf_obj,
 }
 #[derive(Copy, Clone)]
@@ -338,18 +338,18 @@ unsafe extern "C" fn parse_key_val(
     mut endptr: *const i8,
     mut kp: *mut *mut i8,
     mut vp: *mut *mut i8,
-) -> libc::c_int {
+) -> i32 {
     let mut q: *const i8 = 0 as *const i8; /* skip '="' */
                                                                
     let mut p: *const i8 = 0 as *const i8; /* include trailing NULL here!!! */
     let mut k: *mut i8 = 0 as *mut i8; /* we may want to add '/' */
     let mut v: *mut i8 = 0 as *mut i8; /* Should be checked somewhere else */
-    let mut n: libc::c_int = 0; /* Assume this is URL */
-    let mut error: libc::c_int = 0i32;
+    let mut n: i32 = 0; /* Assume this is URL */
+    let mut error: i32 = 0i32;
     p = *pp;
     while p < endptr
-        && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as u16 as libc::c_int
+        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
+            & _ISspace as i32 as u16 as i32
             != 0
     {
         p = p.offset(1)
@@ -359,11 +359,11 @@ unsafe extern "C" fn parse_key_val(
     q = p;
     n = 0i32;
     while p < endptr
-        && (*p as libc::c_int >= 'a' as i32 && *p as libc::c_int <= 'z' as i32
-            || *p as libc::c_int >= 'A' as i32 && *p as libc::c_int <= 'Z' as i32
-            || *p as libc::c_int >= '0' as i32 && *p as libc::c_int <= '9' as i32
-            || *p as libc::c_int == '-' as i32
-            || *p as libc::c_int == ':' as i32)
+        && (*p as i32 >= 'a' as i32 && *p as i32 <= 'z' as i32
+            || *p as i32 >= 'A' as i32 && *p as i32 <= 'Z' as i32
+            || *p as i32 >= '0' as i32 && *p as i32 <= '9' as i32
+            || *p as i32 == '-' as i32
+            || *p as i32 == ':' as i32)
     {
         n += 1;
         p = p.offset(1)
@@ -383,8 +383,8 @@ unsafe extern "C" fn parse_key_val(
     );
     *k.offset(n as isize) = '\u{0}' as i32 as i8;
     if p.offset(2) >= endptr
-        || *p.offset(0) as libc::c_int != '=' as i32
-        || *p.offset(1) as libc::c_int != '\"' as i32 && *p.offset(1) as libc::c_int != '\'' as i32
+        || *p.offset(0) as i32 != '=' as i32
+        || *p.offset(1) as i32 != '\"' as i32 && *p.offset(1) as i32 != '\'' as i32
     {
         k = mfree(k as *mut libc::c_void) as *mut i8;
         *pp = p;
@@ -394,11 +394,11 @@ unsafe extern "C" fn parse_key_val(
         p = p.offset(2);
         q = p;
         n = 0i32;
-        while p < endptr && *p as libc::c_int != qchr as libc::c_int {
+        while p < endptr && *p as i32 != qchr as i32 {
             p = p.offset(1);
             n += 1
         }
-        if p == endptr || *p as libc::c_int != qchr as libc::c_int {
+        if p == endptr || *p as i32 != qchr as i32 {
             error = -1i32
         } else {
             v = new(((n + 1i32) as u32 as u64)
@@ -421,39 +421,39 @@ unsafe extern "C" fn parse_key_val(
 unsafe extern "C" fn read_html_tag(
     mut name: *mut i8,
     mut attr: *mut pdf_obj,
-    mut type_0: *mut libc::c_int,
+    mut type_0: *mut i32,
     mut pp: *mut *const i8,
     mut endptr: *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut p: *const i8 = *pp;
-    let mut n: libc::c_int = 0i32;
-    let mut error: libc::c_int = 0i32;
+    let mut n: i32 = 0i32;
+    let mut error: i32 = 0i32;
     while p < endptr
-        && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as u16 as libc::c_int
+        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
+            & _ISspace as i32 as u16 as i32
             != 0
     {
         p = p.offset(1)
     }
-    if p >= endptr || *p as libc::c_int != '<' as i32 {
+    if p >= endptr || *p as i32 != '<' as i32 {
         return -1i32;
     }
     *type_0 = 1i32;
     p = p.offset(1);
     while p < endptr
-        && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as u16 as libc::c_int
+        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
+            & _ISspace as i32 as u16 as i32
             != 0
     {
         p = p.offset(1)
     }
-    if p < endptr && *p as libc::c_int == '/' as i32 {
+    if p < endptr && *p as i32 == '/' as i32 {
         *type_0 = 2i32;
         p = p.offset(1);
         while p < endptr
-            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISspace as libc::c_int as u16 as libc::c_int
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                as i32
+                & _ISspace as i32 as u16 as i32
                 != 0
         {
             p = p.offset(1)
@@ -462,11 +462,11 @@ unsafe extern "C" fn read_html_tag(
     n = 0i32;
     while p < endptr
         && n < 127i32
-        && !(*p as libc::c_int == '>' as i32
-            || *p as libc::c_int == '/' as i32
-            || *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISspace as libc::c_int as u16 as libc::c_int
+        && !(*p as i32 == '>' as i32
+            || *p as i32 == '/' as i32
+            || *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                as i32
+                & _ISspace as i32 as u16 as i32
                 != 0)
     {
         *name.offset(n as isize) = *p;
@@ -476,27 +476,27 @@ unsafe extern "C" fn read_html_tag(
     *name.offset(n as isize) = '\u{0}' as i32 as i8;
     if n == 0i32
         || p == endptr
-        || !(*p as libc::c_int == '>' as i32
-            || *p as libc::c_int == '/' as i32
-            || *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISspace as libc::c_int as u16 as libc::c_int
+        || !(*p as i32 == '>' as i32
+            || *p as i32 == '/' as i32
+            || *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                as i32
+                & _ISspace as i32 as u16 as i32
                 != 0)
     {
         *pp = p;
         return -1i32;
     }
     while p < endptr
-        && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as u16 as libc::c_int
+        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
+            & _ISspace as i32 as u16 as i32
             != 0
     {
         p = p.offset(1)
     }
     while p < endptr
         && error == 0
-        && *p as libc::c_int != '/' as i32
-        && *p as libc::c_int != '>' as i32
+        && *p as i32 != '/' as i32
+        && *p as i32 != '>' as i32
     {
         let mut kp: *mut i8 = 0 as *mut i8;
         let mut vp: *mut i8 = 0 as *mut i8;
@@ -504,9 +504,9 @@ unsafe extern "C" fn read_html_tag(
         if error == 0 {
             if !kp.is_null() {
                 let mut _p: *mut i8 = kp;
-                while *_p as libc::c_int != 0i32 {
-                    if *_p as libc::c_int >= 'A' as i32 && *_p as libc::c_int <= 'Z' as i32 {
-                        *_p = (*_p as libc::c_int - 'A' as i32 + 'a' as i32) as i8
+                while *_p as i32 != 0i32 {
+                    if *_p as i32 >= 'A' as i32 && *_p as i32 <= 'Z' as i32 {
+                        *_p = (*_p as i32 - 'A' as i32 + 'a' as i32) as i8
                     }
                     _p = _p.offset(1)
                 }
@@ -523,9 +523,9 @@ unsafe extern "C" fn read_html_tag(
             free(vp as *mut libc::c_void);
         }
         while p < endptr
-            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISspace as libc::c_int as u16 as libc::c_int
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                as i32
+                & _ISspace as i32 as u16 as i32
                 != 0
         {
             p = p.offset(1)
@@ -535,28 +535,28 @@ unsafe extern "C" fn read_html_tag(
         *pp = p;
         return error;
     }
-    if p < endptr && *p as libc::c_int == '/' as i32 {
+    if p < endptr && *p as i32 == '/' as i32 {
         *type_0 = 1i32;
         p = p.offset(1);
         while p < endptr
-            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISspace as libc::c_int as u16 as libc::c_int
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                as i32
+                & _ISspace as i32 as u16 as i32
                 != 0
         {
             p = p.offset(1)
         }
     }
-    if p == endptr || *p as libc::c_int != '>' as i32 {
+    if p == endptr || *p as i32 != '>' as i32 {
         *pp = p;
         return -1i32;
     }
     p = p.offset(1);
     if !name.is_null() {
         let mut _p_0: *mut i8 = name;
-        while *_p_0 as libc::c_int != 0i32 {
-            if *_p_0 as libc::c_int >= 'A' as i32 && *_p_0 as libc::c_int <= 'Z' as i32 {
-                *_p_0 = (*_p_0 as libc::c_int - 'A' as i32 + 'a' as i32) as i8
+        while *_p_0 as i32 != 0i32 {
+            if *_p_0 as i32 >= 'A' as i32 && *_p_0 as i32 <= 'Z' as i32 {
+                *_p_0 = (*_p_0 as i32 - 'A' as i32 + 'a' as i32) as i8
             }
             _p_0 = _p_0.offset(1)
         }
@@ -564,7 +564,7 @@ unsafe extern "C" fn read_html_tag(
     *pp = p;
     return 0i32;
 }
-unsafe extern "C" fn spc_handler_html__init(mut dp: *mut libc::c_void) -> libc::c_int {
+unsafe extern "C" fn spc_handler_html__init(mut dp: *mut libc::c_void) -> i32 {
     let mut sd: *mut spc_html_ = dp as *mut spc_html_;
     (*sd).link_dict = 0 as *mut pdf_obj;
     (*sd).baseurl = 0 as *mut i8;
@@ -574,7 +574,7 @@ unsafe extern "C" fn spc_handler_html__init(mut dp: *mut libc::c_void) -> libc::
 unsafe extern "C" fn spc_handler_html__clean(
     mut spe: *mut spc_env,
     mut dp: *mut libc::c_void,
-) -> libc::c_int {
+) -> i32 {
     let mut sd: *mut spc_html_ = dp as *mut spc_html_;
     free((*sd).baseurl as *mut libc::c_void);
     if (*sd).pending_type >= 0i32 || !(*sd).link_dict.is_null() {
@@ -592,7 +592,7 @@ unsafe extern "C" fn spc_handler_html__clean(
 unsafe extern "C" fn spc_handler_html__bophook(
     mut spe: *mut spc_env,
     mut dp: *mut libc::c_void,
-) -> libc::c_int {
+) -> i32 {
     let mut sd: *mut spc_html_ = dp as *mut spc_html_;
     if (*sd).pending_type >= 0i32 {
         spc_warn(
@@ -606,7 +606,7 @@ unsafe extern "C" fn spc_handler_html__bophook(
 unsafe extern "C" fn spc_handler_html__eophook(
     mut spe: *mut spc_env,
     mut dp: *mut libc::c_void,
-) -> libc::c_int {
+) -> i32 {
     let mut sd: *mut spc_html_ = dp as *mut spc_html_;
     if (*sd).pending_type >= 0i32 {
         spc_warn(
@@ -621,25 +621,25 @@ unsafe extern "C" fn fqurl(
     mut name: *const i8,
 ) -> *mut i8 {
     let mut q: *mut i8 = 0 as *mut i8;
-    let mut len: libc::c_int = 0i32;
-    len = strlen(name) as libc::c_int;
+    let mut len: i32 = 0i32;
+    len = strlen(name) as i32;
     if !baseurl.is_null() {
         len = (len as u64)
             .wrapping_add(strlen(baseurl).wrapping_add(1i32 as u64))
-            as libc::c_int as libc::c_int
+            as i32 as i32
     }
     q = new(((len + 1i32) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
         as u32) as *mut i8;
     *q = '\u{0}' as i32 as i8;
-    if !baseurl.is_null() && *baseurl.offset(0) as libc::c_int != 0 {
+    if !baseurl.is_null() && *baseurl.offset(0) as i32 != 0 {
         let mut p: *mut i8 = 0 as *mut i8;
         strcpy(q, baseurl);
         p = q.offset(strlen(q) as isize).offset(-1);
-        if *p as libc::c_int == '/' as i32 {
+        if *p as i32 == '/' as i32 {
             *p = '\u{0}' as i32 as i8
         }
-        if *name.offset(0) as libc::c_int != 0 && *name.offset(0) as libc::c_int != '/' as i32 {
+        if *name.offset(0) as i32 != 0 && *name.offset(0) as i32 != '/' as i32 {
             strcat(q, b"/\x00" as *const u8 as *const i8);
         }
     }
@@ -650,7 +650,7 @@ unsafe extern "C" fn html_open_link(
     mut spe: *mut spc_env,
     mut name: *const i8,
     mut sd: *mut spc_html_,
-) -> libc::c_int {
+) -> i32 {
     let mut color: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut url: *mut i8 = 0 as *mut i8;
     if !name.is_null() {
@@ -698,7 +698,7 @@ unsafe extern "C" fn html_open_link(
         color,
     );
     url = fqurl((*sd).baseurl, name);
-    if *url.offset(0) as libc::c_int == '#' as i32 {
+    if *url.offset(0) as i32 == '#' as i32 {
         /* url++; causes memory leak in free(url) */
         pdf_add_dict(
             (*sd).link_dict,
@@ -738,8 +738,8 @@ unsafe extern "C" fn html_open_dest(
     mut spe: *mut spc_env,
     mut name: *const i8,
     mut sd: *mut spc_html_,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0;
+) -> i32 {
+    let mut error: i32 = 0;
     let mut array: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut page_ref: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
@@ -771,7 +771,7 @@ unsafe extern "C" fn html_open_dest(
     error = pdf_doc_add_names(
         b"Dests\x00" as *const u8 as *const i8,
         name as *const libc::c_void,
-        strlen(name) as libc::c_int,
+        strlen(name) as i32,
         array,
     );
     if error != 0 {
@@ -788,10 +788,10 @@ unsafe extern "C" fn spc_html__anchor_open(
     mut spe: *mut spc_env,
     mut attr: *mut pdf_obj,
     mut sd: *mut spc_html_,
-) -> libc::c_int {
+) -> i32 {
     let mut href: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut name: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut error: libc::c_int = 0i32;
+    let mut error: i32 = 0i32;
     if (*sd).pending_type >= 0i32 || !(*sd).link_dict.is_null() {
         spc_warn(
             spe,
@@ -826,8 +826,8 @@ unsafe extern "C" fn spc_html__anchor_open(
 unsafe extern "C" fn spc_html__anchor_close(
     mut spe: *mut spc_env,
     mut sd: *mut spc_html_,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
+) -> i32 {
+    let mut error: i32 = 0i32;
     match (*sd).pending_type {
         0 => {
             if !(*sd).link_dict.is_null() {
@@ -860,7 +860,7 @@ unsafe extern "C" fn spc_html__base_empty(
     mut spe: *mut spc_env,
     mut attr: *mut pdf_obj,
     mut sd: *mut spc_html_,
-) -> libc::c_int {
+) -> i32 {
     let mut href: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut vp: *mut i8 = 0 as *mut i8;
     href = pdf_lookup_dict(attr, b"href\x00" as *const u8 as *const i8);
@@ -910,13 +910,13 @@ unsafe extern "C" fn atopt(mut a: *const i8) -> f64 {
         b"px\x00" as *const u8 as *const i8,
         0 as *const i8,
     ];
-    let mut k: libc::c_int = 0;
+    let mut k: i32 = 0;
     q = parse_float_decimal(&mut p, p.offset(strlen(p) as isize));
     if q.is_null() {
         dpx_warning(
             b"Invalid length value: %s (%c)\x00" as *const u8 as *const i8,
             a,
-            *p as libc::c_int,
+            *p as i32,
         );
         return 0.0f64;
     }
@@ -951,7 +951,7 @@ unsafe extern "C" fn atopt(mut a: *const i8) -> f64 {
     return v * u;
 }
 /* Replicated from spc_tpic */
-unsafe extern "C" fn create_xgstate(mut a: f64, mut f_ais: libc::c_int) -> *mut pdf_obj
+unsafe extern "C" fn create_xgstate(mut a: f64, mut f_ais: i32) -> *mut pdf_obj
 /* alpha is shape */ {
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
     dict = pdf_new_dict();
@@ -977,7 +977,7 @@ unsafe extern "C" fn create_xgstate(mut a: f64, mut f_ais: libc::c_int) -> *mut 
 unsafe extern "C" fn check_resourcestatus(
     mut category: *const i8,
     mut resname: *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut dict1: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut dict2: *mut pdf_obj = 0 as *mut pdf_obj;
     dict1 = pdf_doc_current_page_resources();
@@ -996,7 +996,7 @@ unsafe extern "C" fn check_resourcestatus(
 unsafe extern "C" fn spc_html__img_empty(
     mut spe: *mut spc_env,
     mut attr: *mut pdf_obj,
-) -> libc::c_int {
+) -> i32 {
     let mut src: *mut pdf_obj = 0 as *mut pdf_obj; /* meaning fully opaque */
     let mut obj: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut ti: transform_info = transform_info {
@@ -1027,8 +1027,8 @@ unsafe extern "C" fn spc_html__img_empty(
         };
         init
     };
-    let mut id: libc::c_int = 0;
-    let mut error: libc::c_int = 0i32;
+    let mut id: i32 = 0;
+    let mut error: i32 = 0i32;
     let mut alpha: f64 = 1.0f64;
     /* ENABLE_HTML_SVG_OPACITY */
     let mut M: pdf_tmatrix = pdf_tmatrix {
@@ -1105,15 +1105,15 @@ unsafe extern "C" fn spc_html__img_empty(
             e: 0.,
             f: 0.,
         };
-        while *p as libc::c_int != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISspace as libc::c_int as u16 as libc::c_int
+        while *p as i32 != 0
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                as i32
+                & _ISspace as i32 as u16 as i32
                 != 0
         {
             p = p.offset(1)
         }
-        while *p as libc::c_int != 0 && error == 0 {
+        while *p as i32 != 0 && error == 0 {
             N.a = 1.0f64;
             N.b = 0.0f64;
             N.c = 0.0f64;
@@ -1137,20 +1137,20 @@ unsafe extern "C" fn spc_html__img_empty(
                 M.d = N.c * _tmp_b + N.d * _tmp_d;
                 M.e += N.e * _tmp_a + N.f * _tmp_c;
                 M.f += N.e * _tmp_b + N.f * _tmp_d;
-                while *p as libc::c_int != 0
-                    && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                        as libc::c_int
-                        & _ISspace as libc::c_int as u16 as libc::c_int
+                while *p as i32 != 0
+                    && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                        as i32
+                        & _ISspace as i32 as u16 as i32
                         != 0
                 {
                     p = p.offset(1)
                 }
-                if *p as libc::c_int == ',' as i32 {
+                if *p as i32 == ',' as i32 {
                     p = p.offset(1);
-                    while *p as libc::c_int != 0
-                        && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                            as libc::c_int
-                            & _ISspace as libc::c_int as u16 as libc::c_int
+                    while *p as i32 != 0
+                        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                            as i32
+                            & _ISspace as i32 as u16 as i32
                             != 0
                     {
                         p = p.offset(1)
@@ -1186,7 +1186,7 @@ unsafe extern "C" fn spc_html__img_empty(
         graphics_mode();
         pdf_dev_gsave();
         let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
-        let mut a: libc::c_int = round(100.0f64 * alpha) as libc::c_int;
+        let mut a: i32 = round(100.0f64 * alpha) as i32;
         if a != 0i32 {
             res_name = new(
                 (strlen(b"_Tps_a100_\x00" as *const u8 as *const i8)
@@ -1269,12 +1269,12 @@ unsafe extern "C" fn spc_html__img_empty(
 unsafe extern "C" fn spc_handler_html_default(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let mut sd: *mut spc_html_ = &mut _html_state; /* treat "open" same as "empty" */
     let mut name: [i8; 128] = [0; 128]; /* treat "open" same as "empty" */
     let mut attr: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut error: libc::c_int = 0i32;
-    let mut type_0: libc::c_int = 1i32;
+    let mut error: i32 = 0i32;
+    let mut type_0: i32 = 1i32;
     if (*ap).curptr >= (*ap).endptr {
         return 0i32;
     }
@@ -1335,9 +1335,9 @@ unsafe extern "C" fn spc_handler_html_default(
     pdf_release_obj(attr);
     while (*ap).curptr < (*ap).endptr
         && *(*__ctype_b_loc())
-            .offset(*(*ap).curptr.offset(0) as u8 as libc::c_int as isize)
-            as libc::c_int
-            & _ISspace as libc::c_int as u16 as libc::c_int
+            .offset(*(*ap).curptr.offset(0) as u8 as i32 as isize)
+            as i32
+            & _ISspace as i32 as u16 as i32
             != 0
     {
         (*ap).curptr = (*ap).curptr.offset(1)
@@ -1349,10 +1349,10 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
     mut M: *mut pdf_tmatrix,
     mut ptr: *const i8,
     mut nextptr: *mut *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = ptr;
-    let mut n: libc::c_int = 0;
+    let mut n: i32 = 0;
     let mut v: [f64; 6] = [0.; 6];
     static mut _tkeys: [*const i8; 7] = [
         b"matrix\x00" as *const u8 as *const i8,
@@ -1363,10 +1363,10 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
         b"skewY\x00" as *const u8 as *const i8,
         0 as *const i8,
     ];
-    let mut k: libc::c_int = 0;
-    while *p as libc::c_int != 0
-        && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as u16 as libc::c_int
+    let mut k: i32 = 0;
+    while *p as i32 != 0
+        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
+            & _ISspace as i32 as u16 as i32
             != 0
     {
         p = p.offset(1)
@@ -1382,48 +1382,48 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
     }
     free(q as *mut libc::c_void);
     /* handle args */
-    while *p as libc::c_int != 0
-        && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as u16 as libc::c_int
+    while *p as i32 != 0
+        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
+            & _ISspace as i32 as u16 as i32
             != 0
     {
         p = p.offset(1)
     }
-    if *p as libc::c_int != '(' as i32 || *p.offset(1) as libc::c_int == 0i32 {
+    if *p as i32 != '(' as i32 || *p.offset(1) as i32 == 0i32 {
         return -1i32;
     }
     p = p.offset(1);
-    while *p as libc::c_int != 0
-        && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as u16 as libc::c_int
+    while *p as i32 != 0
+        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
+            & _ISspace as i32 as u16 as i32
             != 0
     {
         p = p.offset(1)
     }
     n = 0i32;
-    while n < 6i32 && *p as libc::c_int != 0 && *p as libc::c_int != ')' as i32 {
+    while n < 6i32 && *p as i32 != 0 && *p as i32 != ')' as i32 {
         q = parse_float_decimal(&mut p, p.offset(strlen(p) as isize));
         if q.is_null() {
             break;
         }
         v[n as usize] = atof(q);
-        if *p as libc::c_int == ',' as i32 {
+        if *p as i32 == ',' as i32 {
             p = p.offset(1)
         }
-        while *p as libc::c_int != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISspace as libc::c_int as u16 as libc::c_int
+        while *p as i32 != 0
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                as i32
+                & _ISspace as i32 as u16 as i32
                 != 0
         {
             p = p.offset(1)
         }
-        if *p as libc::c_int == ',' as i32 {
+        if *p as i32 == ',' as i32 {
             p = p.offset(1);
-            while *p as libc::c_int != 0
-                && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                    as libc::c_int
-                    & _ISspace as libc::c_int as u16 as libc::c_int
+            while *p as i32 != 0
+                && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                    as i32
+                    & _ISspace as i32 as u16 as i32
                     != 0
             {
                 p = p.offset(1)
@@ -1432,7 +1432,7 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
         free(q as *mut libc::c_void);
         n += 1
     }
-    if *p as libc::c_int != ')' as i32 {
+    if *p as i32 != ')' as i32 {
         return -1i32;
     }
     p = p.offset(1);
@@ -1508,42 +1508,42 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
 }
 /* ENABLE_HTML_SVG_TRANSFORM */
 #[no_mangle]
-pub unsafe extern "C" fn spc_html_at_begin_document() -> libc::c_int {
+pub unsafe extern "C" fn spc_html_at_begin_document() -> i32 {
     let mut sd: *mut spc_html_ = &mut _html_state;
     return spc_handler_html__init(sd as *mut libc::c_void);
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_html_at_begin_page() -> libc::c_int {
+pub unsafe extern "C" fn spc_html_at_begin_page() -> i32 {
     let mut sd: *mut spc_html_ = &mut _html_state;
     return spc_handler_html__bophook(0 as *mut spc_env, sd as *mut libc::c_void);
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_html_at_end_page() -> libc::c_int {
+pub unsafe extern "C" fn spc_html_at_end_page() -> i32 {
     let mut sd: *mut spc_html_ = &mut _html_state;
     return spc_handler_html__eophook(0 as *mut spc_env, sd as *mut libc::c_void);
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_html_at_end_document() -> libc::c_int {
+pub unsafe extern "C" fn spc_html_at_end_document() -> i32 {
     let mut sd: *mut spc_html_ = &mut _html_state;
     return spc_handler_html__clean(0 as *mut spc_env, sd as *mut libc::c_void);
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_html_check_special(
     mut buffer: *const i8,
-    mut size: libc::c_int,
+    mut size: i32,
 ) -> bool {
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     p = buffer;
     endptr = p.offset(size as isize);
     while p < endptr
-        && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as u16 as libc::c_int
+        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
+            & _ISspace as i32 as u16 as i32
             != 0
     {
         p = p.offset(1)
     }
-    size = endptr.wrapping_offset_from(p) as i64 as libc::c_int;
+    size = endptr.wrapping_offset_from(p) as i64 as i32;
     if size as u64 >= strlen(b"html:\x00" as *const u8 as *const i8)
         && memcmp(
             p as *const libc::c_void,
@@ -1581,7 +1581,7 @@ pub unsafe extern "C" fn spc_html_setup_handler(
     mut sph: *mut spc_handler,
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     if !sph.is_null() && !spe.is_null() && !ap.is_null() {
     } else {
         __assert_fail(b"sph && spe && ap\x00" as *const u8 as
@@ -1593,9 +1593,9 @@ pub unsafe extern "C" fn spc_html_setup_handler(
     }
     while (*ap).curptr < (*ap).endptr
         && *(*__ctype_b_loc())
-            .offset(*(*ap).curptr.offset(0) as u8 as libc::c_int as isize)
-            as libc::c_int
-            & _ISspace as libc::c_int as u16 as libc::c_int
+            .offset(*(*ap).curptr.offset(0) as u8 as i32 as isize)
+            as i32
+            & _ISspace as i32 as u16 as i32
             != 0
     {
         (*ap).curptr = (*ap).curptr.offset(1)
@@ -1616,16 +1616,16 @@ pub unsafe extern "C" fn spc_html_setup_handler(
     (*sph).key = b"html:\x00" as *const u8 as *const i8;
     (*sph).exec = Some(
         spc_handler_html_default
-            as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+            as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
     );
     (*ap).curptr = (*ap)
         .curptr
         .offset(strlen(b"html:\x00" as *const u8 as *const i8) as isize);
     while (*ap).curptr < (*ap).endptr
         && *(*__ctype_b_loc())
-            .offset(*(*ap).curptr.offset(0) as u8 as libc::c_int as isize)
-            as libc::c_int
-            & _ISspace as libc::c_int as u16 as libc::c_int
+            .offset(*(*ap).curptr.offset(0) as u8 as i32 as isize)
+            as i32
+            & _ISspace as i32 as u16 as i32
             != 0
     {
         (*ap).curptr = (*ap).curptr.offset(1)

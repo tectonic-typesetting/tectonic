@@ -19,30 +19,30 @@ extern "C" {
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
-    fn atoi(__nptr: *const i8) -> libc::c_int;
+    fn atoi(__nptr: *const i8) -> i32;
     #[no_mangle]
-    fn strtoul(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> u64;
+    fn strtoul(_: *const i8, _: *mut *mut i8, _: i32) -> u64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_output_open(path: *const i8, is_gz: libc::c_int) -> rust_output_handle_t;
+    fn ttstub_output_open(path: *const i8, is_gz: i32) -> rust_output_handle_t;
     #[no_mangle]
     fn ttstub_output_open_stdout() -> rust_output_handle_t;
     #[no_mangle]
-    fn ttstub_output_putc(handle: rust_output_handle_t, c: libc::c_int) -> libc::c_int;
+    fn ttstub_output_putc(handle: rust_output_handle_t, c: i32) -> i32;
     #[no_mangle]
     fn ttstub_output_write(
         handle: rust_output_handle_t,
@@ -50,14 +50,14 @@ extern "C" {
         len: size_t,
     ) -> size_t;
     #[no_mangle]
-    fn ttstub_output_close(handle: rust_output_handle_t) -> libc::c_int;
+    fn ttstub_output_close(handle: rust_output_handle_t) -> i32;
     #[no_mangle]
     fn ttstub_input_get_size(handle: rust_input_handle_t) -> size_t;
     #[no_mangle]
     fn ttstub_input_seek(
         handle: rust_input_handle_t,
         offset: ssize_t,
-        whence: libc::c_int,
+        whence: i32,
     ) -> size_t;
     #[no_mangle]
     fn ttstub_input_read(
@@ -66,9 +66,9 @@ extern "C" {
         len: size_t,
     ) -> ssize_t;
     #[no_mangle]
-    fn ttstub_input_getc(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    fn ttstub_input_ungetc(handle: rust_input_handle_t, ch: libc::c_int) -> libc::c_int;
+    fn ttstub_input_ungetc(handle: rust_input_handle_t, ch: i32) -> i32;
     #[no_mangle]
     fn ht_init_table(ht: *mut ht_table, hval_free_fn: hval_free_func);
     #[no_mangle]
@@ -77,19 +77,19 @@ extern "C" {
     fn ht_lookup_table(
         ht: *mut ht_table,
         key: *const libc::c_void,
-        keylen: libc::c_int,
+        keylen: i32,
     ) -> *mut libc::c_void;
     #[no_mangle]
     fn ht_append_table(
         ht: *mut ht_table,
         key: *const libc::c_void,
-        keylen: libc::c_int,
+        keylen: i32,
         value: *mut libc::c_void,
     );
     #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
-    fn sscanf(_: *const i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sscanf(_: *const i8, _: *const i8, _: ...) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -146,7 +146,7 @@ extern "C" {
     #[no_mangle]
     fn tt_mfgets(
         buffer: *mut i8,
-        length: libc::c_int,
+        length: i32,
         file: rust_input_handle_t,
     ) -> *mut i8;
     #[no_mangle]
@@ -183,7 +183,7 @@ extern "C" {
         pf: *mut pdf_file,
     ) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_sprint_number(buf: *mut i8, value: f64) -> libc::c_int;
+    fn pdf_sprint_number(buf: *mut i8, value: f64) -> i32;
 }
 pub type __ssize_t = i64;
 pub type C2RustUnnamed = libc::c_uint;
@@ -207,7 +207,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[repr(C)]
 pub struct ht_entry {
     pub key: *mut i8,
-    pub keylen: libc::c_int,
+    pub keylen: i32,
     pub value: *mut libc::c_void,
     pub next: *mut ht_entry,
 }
@@ -215,18 +215,18 @@ pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> (
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_table {
-    pub count: libc::c_int,
+    pub count: i32,
     pub hval_free_fn: hval_free_func,
     pub table: [*mut ht_entry; 503],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_obj {
-    pub type_0: libc::c_int,
+    pub type_0: i32,
     pub label: libc::c_uint,
     pub generation: u16,
     pub refcount: libc::c_uint,
-    pub flags: libc::c_int,
+    pub flags: i32,
     pub data: *mut libc::c_void,
 }
 #[derive(Copy, Clone)]
@@ -236,8 +236,8 @@ pub struct pdf_file {
     pub trailer: *mut pdf_obj,
     pub xref_table: *mut xref_entry,
     pub catalog: *mut pdf_obj,
-    pub num_obj: libc::c_int,
-    pub file_size: libc::c_int,
+    pub num_obj: i32,
+    pub file_size: i32,
     pub version: libc::c_uint,
     /* External interface to pdf routines */
     /* Name does not include the / */
@@ -283,7 +283,7 @@ pub struct pdf_dict {
 pub struct pdf_stream {
     pub dict: *mut pdf_obj,
     pub stream: *mut u8,
-    pub objstm_data: *mut libc::c_int,
+    pub objstm_data: *mut i32,
     pub stream_length: libc::c_uint,
     pub max_length: libc::c_uint,
     pub _flags: i32,
@@ -292,9 +292,9 @@ pub struct pdf_stream {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct decode_parms {
-    pub predictor: libc::c_int,
-    pub colors: libc::c_int,
-    pub bits_per_component: libc::c_int,
+    pub predictor: i32,
+    pub colors: i32,
+    pub bits_per_component: i32,
     pub columns: i32,
 }
 #[derive(Copy, Clone)]
@@ -365,9 +365,9 @@ unsafe extern "C" fn strstartswith(
     return 0 as *const i8;
 }
 static mut pdf_output_handle: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
-static mut pdf_output_file_position: libc::c_int = 0i32;
-static mut pdf_output_line_position: libc::c_int = 0i32;
-static mut compression_saved: libc::c_int = 0i32;
+static mut pdf_output_file_position: i32 = 0i32;
+static mut pdf_output_line_position: i32 = 0i32;
+static mut compression_saved: i32 = 0i32;
 static mut format_buffer: [i8; 4096] = [0; 4096];
 static mut output_xref: *mut xref_entry = 0 as *const xref_entry as *mut xref_entry;
 static mut pdf_max_ind_objects: libc::c_uint = 0;
@@ -379,18 +379,18 @@ static mut enc_mode: bool = false;
 static mut doc_enc_mode: bool = false;
 static mut trailer_dict: *mut pdf_obj = 0 as *const pdf_obj as *mut pdf_obj;
 static mut xref_stream: *mut pdf_obj = 0 as *const pdf_obj as *mut pdf_obj;
-static mut verbose: libc::c_int = 0i32;
+static mut verbose: i32 = 0i32;
 static mut compression_level: i8 = 9i32 as i8;
 static mut compression_use_predictor: i8 = 1i32 as i8;
 #[no_mangle]
-pub unsafe extern "C" fn pdf_set_compression(mut level: libc::c_int) {
+pub unsafe extern "C" fn pdf_set_compression(mut level: i32) {
     _tt_abort(
         b"You don\'t have compression compiled in. Possibly libz wasn\'t found by configure.\x00"
             as *const u8 as *const i8,
     );
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_set_use_predictor(mut bval: libc::c_int) {
+pub unsafe extern "C" fn pdf_set_use_predictor(mut bval: i32) {
     compression_use_predictor = (if bval != 0 { 1i32 } else { 0i32 }) as i8;
 }
 static mut pdf_version: libc::c_uint = 5i32 as libc::c_uint;
@@ -406,15 +406,15 @@ pub unsafe extern "C" fn pdf_get_version() -> libc::c_uint {
     return pdf_version;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_obj_get_verbose() -> libc::c_int {
+pub unsafe extern "C" fn pdf_obj_get_verbose() -> i32 {
     return verbose;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_obj_set_verbose(mut level: libc::c_int) {
+pub unsafe extern "C" fn pdf_obj_set_verbose(mut level: i32) {
     verbose = level;
 }
 static mut current_objstm: *mut pdf_obj = 0 as *const pdf_obj as *mut pdf_obj;
-static mut do_objstm: libc::c_int = 0;
+static mut do_objstm: i32 = 0;
 unsafe extern "C" fn add_xref_entry(
     mut label: libc::c_uint,
     mut type_0: u8,
@@ -495,7 +495,7 @@ pub unsafe extern "C" fn pdf_out_init(
     pdf_out(
         pdf_output_handle,
         b"%PDF-1.\x00" as *const u8 as *const i8 as *const libc::c_void,
-        strlen(b"%PDF-1.\x00" as *const u8 as *const i8) as libc::c_int,
+        strlen(b"%PDF-1.\x00" as *const u8 as *const i8) as i32,
     );
     v = ('0' as i32 as libc::c_uint).wrapping_add(pdf_version) as i8;
     pdf_out(
@@ -511,13 +511,13 @@ pub unsafe extern "C" fn pdf_out_init(
     pdf_out(
         pdf_output_handle,
         b"%\xe4\xf0\xed\xf8\n\x00" as *const u8 as *const i8 as *const libc::c_void,
-        strlen(b"%\xe4\xf0\xed\xf8\n\x00" as *const u8 as *const i8) as libc::c_int,
+        strlen(b"%\xe4\xf0\xed\xf8\n\x00" as *const u8 as *const i8) as i32,
     );
     enc_mode = 0i32 != 0;
     doc_enc_mode = do_encryption;
 }
 unsafe extern "C" fn dump_xref_table() {
-    let mut length: libc::c_int = 0;
+    let mut length: i32 = 0;
     let mut i: libc::c_uint = 0;
     pdf_out(
         pdf_output_handle,
@@ -543,18 +543,18 @@ unsafe extern "C" fn dump_xref_table() {
     i = 0i32 as libc::c_uint;
     while i < next_label {
         let mut type_0: u8 = (*output_xref.offset(i as isize)).type_0;
-        if type_0 as libc::c_int > 1i32 {
+        if type_0 as i32 > 1i32 {
             _tt_abort(
                 b"object type %c not allowed in xref table\x00" as *const u8 as *const i8,
-                type_0 as libc::c_int,
+                type_0 as i32,
             );
         }
         length = sprintf(
             format_buffer.as_mut_ptr(),
             b"%010u %05hu %c \n\x00" as *const u8 as *const i8,
             (*output_xref.offset(i as isize)).field2,
-            (*output_xref.offset(i as isize)).field3 as libc::c_int,
-            if type_0 as libc::c_int != 0 {
+            (*output_xref.offset(i as isize)).field3 as i32,
+            if type_0 as i32 != 0 {
                 'n' as i32
             } else {
                 'f' as i32
@@ -641,12 +641,12 @@ unsafe extern "C" fn dump_xref_stream() {
         }
         f3 = (*output_xref.offset(i as isize)).field3;
         buf[poslen.wrapping_add(1i32 as libc::c_uint) as usize] =
-            (f3 as libc::c_int >> 8i32) as u8;
+            (f3 as i32 >> 8i32) as u8;
         buf[poslen.wrapping_add(2i32 as libc::c_uint) as usize] = f3 as u8;
         pdf_add_stream(
             xref_stream,
             &mut buf as *mut [u8; 7] as *const libc::c_void,
-            poslen.wrapping_add(3i32 as libc::c_uint) as libc::c_int,
+            poslen.wrapping_add(3i32 as libc::c_uint) as i32,
         );
         i = i.wrapping_add(1)
     }
@@ -655,7 +655,7 @@ unsafe extern "C" fn dump_xref_stream() {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_out_flush() {
     if !pdf_output_handle.is_null() {
-        let mut length: libc::c_int = 0;
+        let mut length: i32 = 0;
         /* Flush current object stream */
         if !current_objstm.is_null() {
             release_objstm(current_objstm);
@@ -705,7 +705,7 @@ pub unsafe extern "C" fn pdf_out_flush() {
             6i32,
         );
         if verbose != 0 {
-            if compression_level as libc::c_int > 0i32 {
+            if compression_level as i32 > 0i32 {
                 dpx_message(
                     b"Compression saved %d bytes%s\n\x00" as *const u8 as *const i8,
                     compression_saved,
@@ -794,11 +794,11 @@ unsafe extern "C" fn pdf_out_char(mut handle: rust_output_handle_t, mut c: i8) {
             1i32,
         );
     } else {
-        ttstub_output_putc(handle, c as libc::c_int);
+        ttstub_output_putc(handle, c as i32);
         /* Keep tallys for xref table *only* if writing a pdf file. */
         if handle == pdf_output_handle {
             pdf_output_file_position += 1i32;
-            if c as libc::c_int == '\n' as i32 {
+            if c as i32 == '\n' as i32 {
                 pdf_output_line_position = 0i32
             } else {
                 pdf_output_line_position += 1i32
@@ -812,7 +812,7 @@ static mut xchar: [i8; 17] = [
 unsafe extern "C" fn pdf_out(
     mut handle: rust_output_handle_t,
     mut buffer: *const libc::c_void,
-    mut length: libc::c_int,
+    mut length: i32,
 ) {
     if !output_stream.is_null() && handle == pdf_output_handle {
         pdf_add_stream(output_stream, buffer, length);
@@ -824,7 +824,7 @@ unsafe extern "C" fn pdf_out(
             pdf_output_line_position += length;
             /* "foo\nbar\n "... */
             if length > 0i32
-                && *(buffer as *const i8).offset((length - 1i32) as isize) as libc::c_int
+                && *(buffer as *const i8).offset((length - 1i32) as isize) as i32
                     == '\n' as i32
             {
                 pdf_output_line_position = 0i32
@@ -834,14 +834,14 @@ unsafe extern "C" fn pdf_out(
 }
 /*  returns 1 if a white-space character is necessary to separate
 an object of type1 followed by an object of type2              */
-unsafe extern "C" fn pdf_need_white(mut type1: libc::c_int, mut type2: libc::c_int) -> libc::c_int {
+unsafe extern "C" fn pdf_need_white(mut type1: i32, mut type2: i32) -> i32 {
     return !(type1 == 3i32
         || type1 == 5i32
         || type1 == 6i32
         || type2 == 3i32
         || type2 == 4i32
         || type2 == 5i32
-        || type2 == 6i32) as libc::c_int;
+        || type2 == 6i32) as i32;
 }
 unsafe extern "C" fn pdf_out_white(mut handle: rust_output_handle_t) {
     if handle == pdf_output_handle && pdf_output_line_position >= 80i32 {
@@ -850,7 +850,7 @@ unsafe extern "C" fn pdf_out_white(mut handle: rust_output_handle_t) {
         pdf_out_char(handle, ' ' as i32 as i8);
     };
 }
-unsafe extern "C" fn pdf_new_obj(mut type_0: libc::c_int) -> *mut pdf_obj {
+unsafe extern "C" fn pdf_new_obj(mut type_0: i32) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     if type_0 > 10i32 || type_0 < 0i32 {
         _tt_abort(
@@ -870,7 +870,7 @@ unsafe extern "C" fn pdf_new_obj(mut type_0: libc::c_int) -> *mut pdf_obj {
     return result;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_obj_typeof(mut object: *mut pdf_obj) -> libc::c_int {
+pub unsafe extern "C" fn pdf_obj_typeof(mut object: *mut pdf_obj) -> i32 {
     if object.is_null() || (*object).type_0 <= 0i32 || (*object).type_0 > 10i32 {
         return 0i32;
     }
@@ -955,7 +955,7 @@ unsafe extern "C" fn write_indirect(
     mut indirect: *mut pdf_indirect,
     mut handle: rust_output_handle_t,
 ) {
-    let mut length: libc::c_int = 0;
+    let mut length: i32 = 0;
     if (*indirect).pf.is_null() {
     } else {
         __assert_fail(
@@ -972,7 +972,7 @@ unsafe extern "C" fn write_indirect(
         format_buffer.as_mut_ptr(),
         b"%u %hu R\x00" as *const u8 as *const i8,
         (*indirect).label,
-        (*indirect).generation as libc::c_int,
+        (*indirect).generation as i32,
     );
     pdf_out(
         handle,
@@ -1069,7 +1069,7 @@ unsafe extern "C" fn release_number(mut data: *mut pdf_number) {
     free(data as *mut libc::c_void);
 }
 unsafe extern "C" fn write_number(mut number: *mut pdf_number, mut handle: rust_output_handle_t) {
-    let mut count: libc::c_int = 0;
+    let mut count: i32 = 0;
     count = pdf_sprint_number(format_buffer.as_mut_ptr(), (*number).value);
     pdf_out(
         handle,
@@ -1217,17 +1217,17 @@ pub unsafe extern "C" fn pdfobj_escape_str(
          * We always write three octal digits. Optimization only gives few Kb
          * smaller size for most documents when zlib compressed.
          */
-        if (ch as libc::c_int) < 32i32 || ch as libc::c_int > 126i32 {
+        if (ch as i32) < 32i32 || ch as i32 > 126i32 {
             let fresh4 = result; /* Shouldn't use format_buffer[]. */
             result = result.wrapping_add(1);
             *buffer.offset(fresh4 as isize) = '\\' as i32 as i8;
             result = (result as u64).wrapping_add(sprintf(
                 buffer.offset(result as isize),
                 b"%03o\x00" as *const u8 as *const i8,
-                ch as libc::c_int,
+                ch as i32,
             ) as u64) as size_t as size_t
         } else {
-            match ch as libc::c_int {
+            match ch as i32 {
                 40 => {
                     let fresh5 = result;
                     result = result.wrapping_add(1);
@@ -1266,8 +1266,8 @@ pub unsafe extern "C" fn pdfobj_escape_str(
 unsafe extern "C" fn write_string(mut str: *mut pdf_string, mut handle: rust_output_handle_t) {
     let mut s: *mut u8 = 0 as *mut u8;
     let mut wbuf: [i8; 4096] = [0; 4096];
-    let mut nescc: libc::c_int = 0i32;
-    let mut count: libc::c_int = 0;
+    let mut nescc: i32 = 0i32;
+    let mut count: i32 = 0;
     let mut i: size_t = 0;
     let mut len: size_t = 0i32 as size_t;
     if enc_mode {
@@ -1281,8 +1281,8 @@ unsafe extern "C" fn write_string(mut str: *mut pdf_string, mut handle: rust_out
      */
     i = 0i32 as size_t;
     while i < len {
-        if *(*__ctype_b_loc()).offset(*s.offset(i as isize) as libc::c_int as isize) as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+        if *(*__ctype_b_loc()).offset(*s.offset(i as isize) as i32 as isize) as i32
+            & _ISprint as i32 as u16 as i32
             == 0
         {
             nescc += 1
@@ -1299,11 +1299,11 @@ unsafe extern "C" fn write_string(mut str: *mut pdf_string, mut handle: rust_out
         while i < len {
             pdf_out_char(
                 handle,
-                xchar[(*s.offset(i as isize) as libc::c_int >> 4i32 & 0xfi32) as usize],
+                xchar[(*s.offset(i as isize) as i32 >> 4i32 & 0xfi32) as usize],
             );
             pdf_out_char(
                 handle,
-                xchar[(*s.offset(i as isize) as libc::c_int & 0xfi32) as usize],
+                xchar[(*s.offset(i as isize) as i32 & 0xfi32) as usize],
             );
             i = i.wrapping_add(1)
         }
@@ -1325,13 +1325,13 @@ unsafe extern "C" fn write_string(mut str: *mut pdf_string, mut handle: rust_out
                 4096i32 as size_t,
                 &mut *s.offset(i as isize),
                 1i32 as size_t,
-            ) as libc::c_int;
+            ) as i32;
             pdf_out(handle, wbuf.as_mut_ptr() as *const libc::c_void, count);
             i = i.wrapping_add(1)
         }
         pdf_out_char(handle, ')' as i32 as i8);
     }
-    if enc_mode as libc::c_int != 0 && !s.is_null() {
+    if enc_mode as i32 != 0 && !s.is_null() {
         free(s as *mut libc::c_void);
     };
 }
@@ -1409,14 +1409,14 @@ pub unsafe extern "C" fn pdf_new_name(mut name: *const i8) -> *mut pdf_obj {
 }
 unsafe extern "C" fn write_name(mut name: *mut pdf_name, mut handle: rust_output_handle_t) {
     let mut s: *mut i8 = 0 as *mut i8;
-    let mut i: libc::c_int = 0;
-    let mut length: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut length: i32 = 0;
     s = (*name).name;
     length = (if !(*name).name.is_null() {
         strlen((*name).name)
     } else {
         0i32 as u64
-    }) as libc::c_int;
+    }) as i32;
     /*
      * From PDF Reference, 3rd ed., p.33:
      *
@@ -1431,29 +1431,29 @@ unsafe extern "C" fn write_name(mut name: *mut pdf_name, mut handle: rust_output
     pdf_out_char(handle, '/' as i32 as i8);
     i = 0i32;
     while i < length {
-        if (*s.offset(i as isize) as libc::c_int) < '!' as i32
-            || *s.offset(i as isize) as libc::c_int > '~' as i32
-            || *s.offset(i as isize) as libc::c_int == '#' as i32
-            || (*s.offset(i as isize) as libc::c_int == '(' as i32
-                || *s.offset(i as isize) as libc::c_int == ')' as i32
-                || *s.offset(i as isize) as libc::c_int == '/' as i32
-                || *s.offset(i as isize) as libc::c_int == '<' as i32
-                || *s.offset(i as isize) as libc::c_int == '>' as i32
-                || *s.offset(i as isize) as libc::c_int == '[' as i32
-                || *s.offset(i as isize) as libc::c_int == ']' as i32
-                || *s.offset(i as isize) as libc::c_int == '{' as i32
-                || *s.offset(i as isize) as libc::c_int == '}' as i32
-                || *s.offset(i as isize) as libc::c_int == '%' as i32)
+        if (*s.offset(i as isize) as i32) < '!' as i32
+            || *s.offset(i as isize) as i32 > '~' as i32
+            || *s.offset(i as isize) as i32 == '#' as i32
+            || (*s.offset(i as isize) as i32 == '(' as i32
+                || *s.offset(i as isize) as i32 == ')' as i32
+                || *s.offset(i as isize) as i32 == '/' as i32
+                || *s.offset(i as isize) as i32 == '<' as i32
+                || *s.offset(i as isize) as i32 == '>' as i32
+                || *s.offset(i as isize) as i32 == '[' as i32
+                || *s.offset(i as isize) as i32 == ']' as i32
+                || *s.offset(i as isize) as i32 == '{' as i32
+                || *s.offset(i as isize) as i32 == '}' as i32
+                || *s.offset(i as isize) as i32 == '%' as i32)
         {
             /*     ^ "space" is here. */
             pdf_out_char(handle, '#' as i32 as i8);
             pdf_out_char(
                 handle,
-                xchar[(*s.offset(i as isize) as libc::c_int >> 4i32 & 0xfi32) as usize],
+                xchar[(*s.offset(i as isize) as i32 >> 4i32 & 0xfi32) as usize],
             );
             pdf_out_char(
                 handle,
-                xchar[(*s.offset(i as isize) as libc::c_int & 0xfi32) as usize],
+                xchar[(*s.offset(i as isize) as i32 & 0xfi32) as usize],
             );
         } else {
             pdf_out_char(handle, *s.offset(i as isize));
@@ -1506,8 +1506,8 @@ unsafe extern "C" fn write_array(mut array: *mut pdf_array, mut handle: rust_out
     pdf_out_char(handle, '[' as i32 as i8);
     if (*array).size > 0i32 as libc::c_uint {
         let mut i: libc::c_uint = 0;
-        let mut type1: libc::c_int = 10i32;
-        let mut type2: libc::c_int = 0;
+        let mut type1: i32 = 10i32;
+        let mut type2: i32 = 0;
         i = 0i32 as libc::c_uint;
         while i < (*array).size {
             if !(*(*array).values.offset(i as isize)).is_null() {
@@ -1531,7 +1531,7 @@ unsafe extern "C" fn write_array(mut array: *mut pdf_array, mut handle: rust_out
 #[no_mangle]
 pub unsafe extern "C" fn pdf_get_array(
     mut array: *mut pdf_obj,
-    mut idx: libc::c_int,
+    mut idx: i32,
 ) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut data: *mut pdf_array = 0 as *mut pdf_array;
@@ -1679,7 +1679,7 @@ pub unsafe extern "C" fn pdf_add_dict(
     mut dict: *mut pdf_obj,
     mut key: *mut pdf_obj,
     mut value: *mut pdf_obj,
-) -> libc::c_int {
+) -> i32 {
     let mut data: *mut pdf_dict = 0 as *mut pdf_dict;
     let mut new_node: *mut pdf_dict = 0 as *mut pdf_dict;
     if dict.is_null() || (*dict).type_0 != 6i32 {
@@ -1780,11 +1780,11 @@ pub unsafe extern "C" fn pdf_merge_dict(mut dict1: *mut pdf_obj, mut dict2: *mut
 pub unsafe extern "C" fn pdf_foreach_dict(
     mut dict: *mut pdf_obj,
     mut proc_0: Option<
-        unsafe extern "C" fn(_: *mut pdf_obj, _: *mut pdf_obj, _: *mut libc::c_void) -> libc::c_int,
+        unsafe extern "C" fn(_: *mut pdf_obj, _: *mut pdf_obj, _: *mut libc::c_void) -> i32,
     >,
     mut pdata: *mut libc::c_void,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
+) -> i32 {
+    let mut error: i32 = 0i32;
     let mut data: *mut pdf_dict = 0 as *mut pdf_dict;
     if proc_0.is_some() {
     } else {
@@ -1905,7 +1905,7 @@ pub unsafe extern "C" fn pdf_remove_dict(mut dict: *mut pdf_obj, mut name: *cons
     while !(*data).key.is_null() {
         if !(*data).key.is_null()
             && !name.is_null()
-            && streq_ptr((*((*(*data).key).data as *mut pdf_name)).name, name) as libc::c_int != 0
+            && streq_ptr((*((*(*data).key).data as *mut pdf_name)).name, name) as i32 != 0
         {
             pdf_release_obj((*data).key);
             pdf_release_obj((*data).value);
@@ -1919,7 +1919,7 @@ pub unsafe extern "C" fn pdf_remove_dict(mut dict: *mut pdf_obj, mut name: *cons
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_new_stream(mut flags: libc::c_int) -> *mut pdf_obj {
+pub unsafe extern "C" fn pdf_new_stream(mut flags: i32) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut data: *mut pdf_stream = 0 as *mut pdf_stream;
     result = pdf_new_obj(7i32);
@@ -1936,7 +1936,7 @@ pub unsafe extern "C" fn pdf_new_stream(mut flags: libc::c_int) -> *mut pdf_obj 
     (*data).stream = 0 as *mut u8;
     (*data).stream_length = 0i32 as libc::c_uint;
     (*data).max_length = 0i32 as libc::c_uint;
-    (*data).objstm_data = 0 as *mut libc::c_int;
+    (*data).objstm_data = 0 as *mut i32;
     (*data).decodeparms.predictor = 2i32;
     (*data).decodeparms.columns = 0i32;
     (*data).decodeparms.bits_per_component = 0i32;
@@ -1948,10 +1948,10 @@ pub unsafe extern "C" fn pdf_new_stream(mut flags: libc::c_int) -> *mut pdf_obj 
 #[no_mangle]
 pub unsafe extern "C" fn pdf_stream_set_predictor(
     mut stream: *mut pdf_obj,
-    mut predictor: libc::c_int,
+    mut predictor: i32,
     mut columns: i32,
-    mut bpc: libc::c_int,
-    mut colors: libc::c_int,
+    mut bpc: i32,
+    mut colors: i32,
 ) {
     let mut data: *mut pdf_stream = 0 as *mut pdf_stream;
     if pdf_obj_typeof(stream) != 7i32 {
@@ -1996,7 +1996,7 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
         && streq_ptr(
             b"Metadata\x00" as *const u8 as *const i8,
             pdf_name_value(type_0),
-        ) as libc::c_int
+        ) as i32
             != 0
     {
         (*stream)._flags &= !(1i32 << 0i32)
@@ -2031,7 +2031,7 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
         pdf_out(
             handle,
             filtered as *const libc::c_void,
-            filtered_length as libc::c_int,
+            filtered_length as i32,
         );
     }
     free(filtered as *mut libc::c_void);
@@ -2056,7 +2056,7 @@ unsafe extern "C" fn release_stream(mut stream: *mut pdf_stream) {
     pdf_release_obj((*stream).dict);
     (*stream).dict = 0 as *mut pdf_obj;
     (*stream).stream = mfree((*stream).stream as *mut libc::c_void) as *mut u8;
-    (*stream).objstm_data = mfree((*stream).objstm_data as *mut libc::c_void) as *mut libc::c_int;
+    (*stream).objstm_data = mfree((*stream).objstm_data as *mut libc::c_void) as *mut i32;
     free(stream as *mut libc::c_void);
 }
 #[no_mangle]
@@ -2098,7 +2098,7 @@ pub unsafe extern "C" fn pdf_stream_dataptr(mut stream: *mut pdf_obj) -> *const 
     return (*data).stream as *const libc::c_void;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_stream_length(mut stream: *mut pdf_obj) -> libc::c_int {
+pub unsafe extern "C" fn pdf_stream_length(mut stream: *mut pdf_obj) -> i32 {
     let mut data: *mut pdf_stream = 0 as *mut pdf_stream;
     if stream.is_null() || (*stream).type_0 != 7i32 {
         _tt_abort(
@@ -2114,9 +2114,9 @@ pub unsafe extern "C" fn pdf_stream_length(mut stream: *mut pdf_obj) -> libc::c_
         );
     }
     data = (*stream).data as *mut pdf_stream;
-    return (*data).stream_length as libc::c_int;
+    return (*data).stream_length as i32;
 }
-unsafe extern "C" fn set_objstm_data(mut objstm: *mut pdf_obj, mut data: *mut libc::c_int) {
+unsafe extern "C" fn set_objstm_data(mut objstm: *mut pdf_obj, mut data: *mut i32) {
     if objstm.is_null() || (*objstm).type_0 != 7i32 {
         _tt_abort(
             b"typecheck: Invalid object type: %d %d (line %d)\x00" as *const u8
@@ -2133,7 +2133,7 @@ unsafe extern "C" fn set_objstm_data(mut objstm: *mut pdf_obj, mut data: *mut li
     let ref mut fresh14 = (*((*objstm).data as *mut pdf_stream)).objstm_data;
     *fresh14 = data;
 }
-unsafe extern "C" fn get_objstm_data(mut objstm: *mut pdf_obj) -> *mut libc::c_int {
+unsafe extern "C" fn get_objstm_data(mut objstm: *mut pdf_obj) -> *mut i32 {
     if objstm.is_null() || (*objstm).type_0 != 7i32 {
         _tt_abort(
             b"typecheck: Invalid object type: %d %d (line %d)\x00" as *const u8
@@ -2153,7 +2153,7 @@ unsafe extern "C" fn get_objstm_data(mut objstm: *mut pdf_obj) -> *mut libc::c_i
 pub unsafe extern "C" fn pdf_add_stream(
     mut stream: *mut pdf_obj,
     mut stream_data: *const libc::c_void,
-    mut length: libc::c_int,
+    mut length: i32,
 ) {
     let mut data: *mut pdf_stream = 0 as *mut pdf_stream;
     if stream.is_null() || (*stream).type_0 != 7i32 {
@@ -2195,12 +2195,12 @@ pub unsafe extern "C" fn pdf_add_stream(
 pub unsafe extern "C" fn pdf_concat_stream(
     mut dst: *mut pdf_obj,
     mut src: *mut pdf_obj,
-) -> libc::c_int {
+) -> i32 {
     let mut stream_data: *const i8 = 0 as *const i8;
-    let mut stream_length: libc::c_int = 0;
+    let mut stream_length: i32 = 0;
     let mut stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut filter: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut error: libc::c_int = 0i32;
+    let mut error: i32 = 0i32;
     if !(!dst.is_null() && pdf_obj_typeof(dst) == 7i32)
         || !(!src.is_null() && pdf_obj_typeof(src) == 7i32)
     {
@@ -2286,7 +2286,7 @@ unsafe extern "C" fn pdf_write_obj(mut object: *mut pdf_obj, mut handle: rust_ou
 }
 /* Write the object to the file */
 unsafe extern "C" fn pdf_flush_obj(mut object: *mut pdf_obj, mut handle: rust_output_handle_t) {
-    let mut length: libc::c_int = 0;
+    let mut length: i32 = 0;
     /*
      * Record file position
      */
@@ -2300,9 +2300,9 @@ unsafe extern "C" fn pdf_flush_obj(mut object: *mut pdf_obj, mut handle: rust_ou
         format_buffer.as_mut_ptr(),
         b"%u %hu obj\n\x00" as *const u8 as *const i8,
         (*object).label,
-        (*object).generation as libc::c_int,
+        (*object).generation as i32,
     );
-    enc_mode = doc_enc_mode as libc::c_int != 0 && (*object).flags & 1i32 << 1i32 == 0;
+    enc_mode = doc_enc_mode as i32 != 0 && (*object).flags & 1i32 << 1i32 == 0;
     pdf_enc_set_label((*object).label);
     pdf_enc_set_generation((*object).generation as libc::c_uint);
     pdf_out(
@@ -2320,9 +2320,9 @@ unsafe extern "C" fn pdf_flush_obj(mut object: *mut pdf_obj, mut handle: rust_ou
 unsafe extern "C" fn pdf_add_objstm(
     mut objstm: *mut pdf_obj,
     mut object: *mut pdf_obj,
-) -> libc::c_int {
-    let mut data: *mut libc::c_int = 0 as *mut libc::c_int;
-    let mut pos: libc::c_int = 0;
+) -> i32 {
+    let mut data: *mut i32 = 0 as *mut i32;
+    let mut pos: i32 = 0;
     if objstm.is_null() || (*objstm).type_0 != 7i32 {
         _tt_abort(
             b"typecheck: Invalid object type: %d %d (line %d)\x00" as *const u8
@@ -2340,7 +2340,7 @@ unsafe extern "C" fn pdf_add_objstm(
     let ref mut fresh15 = *data.offset(0);
     *fresh15 += 1;
     pos = *fresh15;
-    *data.offset((2i32 * pos) as isize) = (*object).label as libc::c_int;
+    *data.offset((2i32 * pos) as isize) = (*object).label as i32;
     *data.offset((2i32 * pos + 1i32) as isize) = pdf_stream_length(objstm);
     add_xref_entry(
         (*object).label,
@@ -2357,8 +2357,8 @@ unsafe extern "C" fn pdf_add_objstm(
     return pos;
 }
 unsafe extern "C" fn release_objstm(mut objstm: *mut pdf_obj) {
-    let mut data: *mut libc::c_int = get_objstm_data(objstm);
-    let mut pos: libc::c_int = *data.offset(0);
+    let mut data: *mut i32 = get_objstm_data(objstm);
+    let mut pos: i32 = *data.offset(0);
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut stream: *mut pdf_stream = 0 as *mut pdf_stream;
     let mut old_buf: *mut u8 = 0 as *mut u8;
@@ -2374,8 +2374,8 @@ unsafe extern "C" fn release_objstm(mut objstm: *mut pdf_obj) {
             as u32,
     ) as *mut u8;
     (*stream).stream_length = 0i32 as libc::c_uint;
-    let mut i: libc::c_int = 2i32 * pos;
-    let mut val: *mut libc::c_int = data.offset(2);
+    let mut i: i32 = 2i32 * pos;
+    let mut val: *mut i32 = data.offset(2);
     loop {
         let fresh16 = i;
         i = i - 1;
@@ -2384,7 +2384,7 @@ unsafe extern "C" fn release_objstm(mut objstm: *mut pdf_obj) {
         }
         let fresh17 = val;
         val = val.offset(1);
-        let mut length: libc::c_int = sprintf(
+        let mut length: i32 = sprintf(
             format_buffer.as_mut_ptr(),
             b"%d \x00" as *const u8 as *const i8,
             *fresh17,
@@ -2414,7 +2414,7 @@ unsafe extern "C" fn release_objstm(mut objstm: *mut pdf_obj) {
     pdf_add_stream(
         objstm,
         old_buf as *const libc::c_void,
-        old_length as libc::c_int,
+        old_length as i32,
     );
     free(old_buf as *mut libc::c_void);
     pdf_release_obj(objstm);
@@ -2451,16 +2451,16 @@ pub unsafe extern "C" fn pdf_release_obj(mut object: *mut pdf_obj) {
         if (*object).label != 0 && !pdf_output_handle.is_null() {
             if do_objstm == 0
                 || (*object).flags & 1i32 << 0i32 != 0
-                || doc_enc_mode as libc::c_int != 0 && (*object).flags & 1i32 << 1i32 != 0
-                || (*object).generation as libc::c_int != 0
+                || doc_enc_mode as i32 != 0 && (*object).flags & 1i32 << 1i32 != 0
+                || (*object).generation as i32 != 0
             {
                 pdf_flush_obj(object, pdf_output_handle);
             } else {
                 if current_objstm.is_null() {
-                    let mut data: *mut libc::c_int =
+                    let mut data: *mut i32 =
                         new(((2i32 * 200i32 + 2i32) as u32 as u64)
-                            .wrapping_mul(::std::mem::size_of::<libc::c_int>() as u64)
-                            as u32) as *mut libc::c_int;
+                            .wrapping_mul(::std::mem::size_of::<i32>() as u64)
+                            as u32) as *mut i32;
                     let ref mut fresh18 = *data.offset(1);
                     *fresh18 = 0i32;
                     *data.offset(0) = *fresh18;
@@ -2514,11 +2514,11 @@ pub unsafe extern "C" fn pdf_release_obj(mut object: *mut pdf_obj) {
  */
 unsafe extern "C" fn tt_mfreadln(
     mut buf: *mut i8,
-    mut size: libc::c_int,
+    mut size: i32,
     mut handle: rust_input_handle_t,
-) -> libc::c_int {
-    let mut c: libc::c_int = 0;
-    let mut len: libc::c_int = 0i32;
+) -> i32 {
+    let mut c: i32 = 0;
+    let mut len: i32 = 0i32;
     loop {
         c = ttstub_input_getc(handle);
         if !(c != -1i32 && c != '\n' as i32 && c != '\r' as i32) {
@@ -2545,8 +2545,8 @@ unsafe extern "C" fn tt_mfreadln(
     }
     return len;
 }
-unsafe extern "C" fn backup_line(mut handle: rust_input_handle_t) -> libc::c_int {
-    let mut ch: libc::c_int = -1i32;
+unsafe extern "C" fn backup_line(mut handle: rust_input_handle_t) -> i32 {
+    let mut ch: i32 = -1i32;
     /* Note: this code should work even if \r\n is eol. It could fail on a
      * machine where \n is eol and there is a \r in the stream --- Highly
      * unlikely in the last few bytes where this is likely to be used.
@@ -2572,29 +2572,29 @@ unsafe extern "C" fn backup_line(mut handle: rust_input_handle_t) -> libc::c_int
 }
 unsafe extern "C" fn find_xref(
     mut handle: rust_input_handle_t,
-    mut file_size: libc::c_int,
-) -> libc::c_int {
-    let mut xref_pos: libc::c_int = 0i32;
-    let mut len: libc::c_int = 0;
-    let mut tries: libc::c_int = 10i32;
+    mut file_size: i32,
+) -> i32 {
+    let mut xref_pos: i32 = 0i32;
+    let mut len: i32 = 0;
+    let mut tries: i32 = 10i32;
     let mut start: *const i8 = 0 as *const i8;
     let mut end: *const i8 = 0 as *const i8;
     let mut number: *mut i8 = 0 as *mut i8;
     loop {
-        let mut currentpos: libc::c_int = 0;
-        let mut n: libc::c_int = 0;
+        let mut currentpos: i32 = 0;
+        let mut n: i32 = 0;
         if backup_line(handle) == 0 {
             tries = 0i32;
             break;
         } else {
-            currentpos = ttstub_input_seek(handle, 0i32 as ssize_t, 1i32) as libc::c_int;
+            currentpos = ttstub_input_seek(handle, 0i32 as ssize_t, 1i32) as i32;
             n = (if strlen(b"startxref\x00" as *const u8 as *const i8)
                 < (file_size - currentpos) as u64
             {
                 strlen(b"startxref\x00" as *const u8 as *const i8)
             } else {
                 (file_size - currentpos) as u64
-            }) as libc::c_int;
+            }) as i32;
             ttstub_input_read(handle, work_buffer.as_mut_ptr(), n as size_t);
             ttstub_input_seek(handle, currentpos as ssize_t, 0i32);
             tries -= 1;
@@ -2627,7 +2627,7 @@ unsafe extern "C" fn find_xref(
     end = start.offset(len as isize);
     skip_white(&mut start, end);
     number = parse_number(&mut start, end);
-    xref_pos = atof(number) as libc::c_int;
+    xref_pos = atof(number) as i32;
     free(number as *mut libc::c_void);
     return xref_pos;
 }
@@ -2637,21 +2637,21 @@ unsafe extern "C" fn find_xref(
  */
 unsafe extern "C" fn parse_trailer(mut pf: *mut pdf_file) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut cur_pos: libc::c_int = 0;
-    let mut nmax: libc::c_int = 0;
-    let mut nread: libc::c_int = 0;
+    let mut cur_pos: i32 = 0;
+    let mut nmax: i32 = 0;
+    let mut nread: i32 = 0;
     /*
      * Fill work_buffer and hope trailer fits. This should
      * be made a bit more robust sometime.
      */
-    cur_pos = ttstub_input_seek((*pf).handle, 0i32 as ssize_t, 1i32) as libc::c_int;
+    cur_pos = ttstub_input_seek((*pf).handle, 0i32 as ssize_t, 1i32) as i32;
     nmax = if (*pf).file_size - cur_pos < 1024i32 {
         (*pf).file_size - cur_pos
     } else {
         1024i32
     };
     nread =
-        ttstub_input_read((*pf).handle, work_buffer.as_mut_ptr(), nmax as size_t) as libc::c_int;
+        ttstub_input_read((*pf).handle, work_buffer.as_mut_ptr(), nmax as size_t) as i32;
     if nread == 0i32
         || strstartswith(
             work_buffer.as_mut_ptr(),
@@ -2688,19 +2688,19 @@ unsafe extern "C" fn parse_trailer(mut pf: *mut pdf_file) -> *mut pdf_obj {
 unsafe extern "C" fn next_object_offset(
     mut pf: *mut pdf_file,
     mut obj_num: libc::c_uint,
-) -> libc::c_int {
-    let mut next: libc::c_int = (*pf).file_size; /* Worst case */
-    let mut i: libc::c_int = 0;
-    let mut curr: libc::c_int = 0;
-    curr = (*(*pf).xref_table.offset(obj_num as isize)).field2 as libc::c_int;
+) -> i32 {
+    let mut next: i32 = (*pf).file_size; /* Worst case */
+    let mut i: i32 = 0;
+    let mut curr: i32 = 0;
+    curr = (*(*pf).xref_table.offset(obj_num as isize)).field2 as i32;
     /* Check all other type 1 objects to find next one */
     i = 0i32;
     while i < (*pf).num_obj {
-        if (*(*pf).xref_table.offset(i as isize)).type_0 as libc::c_int == 1i32
+        if (*(*pf).xref_table.offset(i as isize)).type_0 as i32 == 1i32
             && (*(*pf).xref_table.offset(i as isize)).field2 > curr as libc::c_uint
             && (*(*pf).xref_table.offset(i as isize)).field2 < next as libc::c_uint
         {
-            next = (*(*pf).xref_table.offset(i as isize)).field2 as libc::c_int
+            next = (*(*pf).xref_table.offset(i as isize)).field2 as i32
         }
         i += 1
     }
@@ -2729,10 +2729,10 @@ unsafe extern "C" fn pdf_read_object(
     mut obj_num: libc::c_uint,
     mut obj_gen: u16,
     mut pf: *mut pdf_file,
-    mut offset: libc::c_int,
-    mut limit: libc::c_int,
+    mut offset: i32,
+    mut limit: i32,
 ) -> *mut pdf_obj {
-    let mut length: libc::c_int = 0;
+    let mut length: i32 = 0;
     let mut buffer: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
@@ -2805,21 +2805,21 @@ unsafe extern "C" fn read_objstm(mut pf: *mut pdf_file, mut num: libc::c_uint) -
     let mut current_block: u64;
     let mut offset: libc::c_uint = (*(*pf).xref_table.offset(num as isize)).field2;
     let mut gen: u16 = (*(*pf).xref_table.offset(num as isize)).field3;
-    let mut limit: libc::c_int = next_object_offset(pf, num);
-    let mut n: libc::c_int = 0;
-    let mut first: libc::c_int = 0;
-    let mut header: *mut libc::c_int = 0 as *mut libc::c_int;
+    let mut limit: i32 = next_object_offset(pf, num);
+    let mut n: i32 = 0;
+    let mut first: i32 = 0;
+    let mut header: *mut i32 = 0 as *mut i32;
     let mut data: *mut i8 = 0 as *mut i8;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     let mut objstm: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut type_0: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut n_obj: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut first_obj: *mut pdf_obj = 0 as *mut pdf_obj;
-    objstm = pdf_read_object(num, gen, pf, offset as libc::c_int, limit);
+    objstm = pdf_read_object(num, gen, pf, offset as i32, limit);
     if !objstm.is_null() && pdf_obj_typeof(objstm) == 7i32 {
         let mut tmp: *mut pdf_obj = pdf_stream_uncompress(objstm);
         if !tmp.is_null() {
@@ -2835,17 +2835,17 @@ unsafe extern "C" fn read_objstm(mut pf: *mut pdf_file, mut num: libc::c_uint) -
             {
                 n_obj = pdf_lookup_dict(dict, b"N\x00" as *const u8 as *const i8);
                 if !n_obj.is_null() && pdf_obj_typeof(n_obj) == 2i32 {
-                    n = pdf_number_value(n_obj) as libc::c_int;
+                    n = pdf_number_value(n_obj) as i32;
                     first_obj =
                         pdf_lookup_dict(dict, b"First\x00" as *const u8 as *const i8);
                     if !first_obj.is_null() && pdf_obj_typeof(first_obj) == 2i32 {
-                        first = pdf_number_value(first_obj) as libc::c_int;
+                        first = pdf_number_value(first_obj) as i32;
                         /* reject object streams without object data */
                         if !(first >= pdf_stream_length(objstm)) {
                             header = new(((2i32 * (n + 1i32)) as u32 as u64)
-                                .wrapping_mul(::std::mem::size_of::<libc::c_int>() as u64)
+                                .wrapping_mul(::std::mem::size_of::<i32>() as u64)
                                 as u32)
-                                as *mut libc::c_int;
+                                as *mut i32;
                             set_objstm_data(objstm, header);
                             let fresh20 = header;
                             header = header.offset(1);
@@ -2876,7 +2876,7 @@ unsafe extern "C" fn read_objstm(mut pf: *mut pdf_file, mut num: libc::c_uint) -
                                 }
                                 let fresh23 = header;
                                 header = header.offset(1);
-                                *fresh23 = strtoul(p, &mut q, 10i32) as libc::c_int;
+                                *fresh23 = strtoul(p, &mut q, 10i32) as i32;
                                 if q == p as *mut i8 {
                                     current_block = 13429587009686472387;
                                     break;
@@ -2921,17 +2921,17 @@ unsafe extern "C" fn pdf_get_object(
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     if !(obj_num > 0i32 as libc::c_uint
         && obj_num < (*pf).num_obj as libc::c_uint
-        && ((*(*pf).xref_table.offset(obj_num as isize)).type_0 as libc::c_int == 1i32
-            && (*(*pf).xref_table.offset(obj_num as isize)).field3 as libc::c_int
-                == obj_gen as libc::c_int
-            || (*(*pf).xref_table.offset(obj_num as isize)).type_0 as libc::c_int == 2i32
+        && ((*(*pf).xref_table.offset(obj_num as isize)).type_0 as i32 == 1i32
+            && (*(*pf).xref_table.offset(obj_num as isize)).field3 as i32
+                == obj_gen as i32
+            || (*(*pf).xref_table.offset(obj_num as isize)).type_0 as i32 == 2i32
                 && obj_gen == 0))
     {
         dpx_warning(
             b"Trying to read nonexistent or deleted object: %u %hu\x00" as *const u8
                 as *const i8,
             obj_num,
-            obj_gen as libc::c_int,
+            obj_gen as i32,
         );
         return pdf_new_null();
     }
@@ -2939,26 +2939,26 @@ unsafe extern "C" fn pdf_get_object(
     if !result.is_null() {
         return pdf_link_obj(result);
     }
-    if (*(*pf).xref_table.offset(obj_num as isize)).type_0 as libc::c_int == 1i32 {
+    if (*(*pf).xref_table.offset(obj_num as isize)).type_0 as i32 == 1i32 {
         /* type == 1 */
         let mut offset: libc::c_uint = 0;
-        let mut limit: libc::c_int = 0;
+        let mut limit: i32 = 0;
         offset = (*(*pf).xref_table.offset(obj_num as isize)).field2;
         limit = next_object_offset(pf, obj_num);
-        result = pdf_read_object(obj_num, obj_gen, pf, offset as libc::c_int, limit)
+        result = pdf_read_object(obj_num, obj_gen, pf, offset as i32, limit)
     } else {
         /* type == 2 */
         let mut objstm_num: libc::c_uint = (*(*pf).xref_table.offset(obj_num as isize)).field2;
         let mut index: u16 = (*(*pf).xref_table.offset(obj_num as isize)).field3;
         let mut objstm: *mut pdf_obj = 0 as *mut pdf_obj;
-        let mut data: *mut libc::c_int = 0 as *mut libc::c_int;
-        let mut n: libc::c_int = 0;
-        let mut first: libc::c_int = 0;
-        let mut length: libc::c_int = 0;
+        let mut data: *mut i32 = 0 as *mut i32;
+        let mut n: i32 = 0;
+        let mut first: i32 = 0;
+        let mut length: i32 = 0;
         let mut p: *const i8 = 0 as *const i8;
         let mut q: *const i8 = 0 as *const i8;
         if objstm_num >= (*pf).num_obj as libc::c_uint
-            || (*(*pf).xref_table.offset(objstm_num as isize)).type_0 as libc::c_int != 1i32
+            || (*(*pf).xref_table.offset(objstm_num as isize)).type_0 as i32 != 1i32
             || {
                 objstm = (*(*pf).xref_table.offset(objstm_num as isize)).direct;
                 !(!objstm.is_null() || {
@@ -2976,20 +2976,20 @@ unsafe extern "C" fn pdf_get_object(
             let fresh26 = data;
             data = data.offset(1);
             first = *fresh26;
-            if index as libc::c_int >= n
-                || *data.offset((2i32 * index as libc::c_int) as isize) as libc::c_uint != obj_num
+            if index as i32 >= n
+                || *data.offset((2i32 * index as i32) as isize) as libc::c_uint != obj_num
             {
                 current_block = 17536737673648832705;
             } else {
                 length = pdf_stream_length(objstm);
                 p = (pdf_stream_dataptr(objstm) as *const i8)
                     .offset(first as isize)
-                    .offset(*data.offset((2i32 * index as libc::c_int + 1i32) as isize) as isize);
+                    .offset(*data.offset((2i32 * index as i32 + 1i32) as isize) as isize);
                 q = p.offset(
-                    (if index as libc::c_int == n - 1i32 {
+                    (if index as i32 == n - 1i32 {
                         length
                     } else {
-                        first + *data.offset((2i32 * index as libc::c_int + 3i32) as isize)
+                        first + *data.offset((2i32 * index as i32 + 3i32) as isize)
                     }) as isize,
                 );
                 result = parse_pdf_object(&mut p, q, pf);
@@ -3030,7 +3030,7 @@ unsafe extern "C" fn pdf_new_ref(mut object: *mut pdf_obj) -> *mut pdf_obj {
 /* It never return the null object, but the NULL pointer instead */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_deref_obj(mut obj: *mut pdf_obj) -> *mut pdf_obj {
-    let mut count: libc::c_int = 30i32;
+    let mut count: i32 = 30i32;
     if !obj.is_null() {
         obj = pdf_link_obj(obj)
     }
@@ -3066,7 +3066,7 @@ pub unsafe extern "C" fn pdf_deref_obj(mut obj: *mut pdf_obj) -> *mut pdf_obj {
         return obj;
     };
 }
-unsafe extern "C" fn extend_xref(mut pf: *mut pdf_file, mut new_size: libc::c_int) {
+unsafe extern "C" fn extend_xref(mut pf: *mut pdf_file, mut new_size: i32) {
     let mut i: libc::c_uint = 0;
     (*pf).xref_table = renew(
         (*pf).xref_table as *mut libc::c_void,
@@ -3089,12 +3089,12 @@ unsafe extern "C" fn extend_xref(mut pf: *mut pdf_file, mut new_size: libc::c_in
 /* Returns < 0 for error, 1 for success, and 0 when xref stream found. */
 unsafe extern "C" fn parse_xref_table(
     mut pf: *mut pdf_file,
-    mut xref_pos: libc::c_int,
-) -> libc::c_int {
+    mut xref_pos: i32,
+) -> i32 {
     let mut p: *const i8 = 0 as *const i8; /* See, PDF ref. v.1.7, p.91 for "255+1" here. */
     let mut endptr: *const i8 = 0 as *const i8;
     let mut buf: [i8; 256] = [0; 256];
-    let mut len: libc::c_int = 0;
+    let mut len: i32 = 0;
     /*
      * This routine reads one xref segment. It may be called multiple times
      * on the same file.  xref tables sometimes come in pieces.
@@ -3137,7 +3137,7 @@ unsafe extern "C" fn parse_xref_table(
     {
         let mut flag: i8 = 0;
         let mut current_pos: libc::c_uint = 0;
-        let mut i: libc::c_int = 0;
+        let mut i: i32 = 0;
         let mut first: u32 = 0;
         let mut size: u32 = 0;
         let mut offset: u32 = 0;
@@ -3212,10 +3212,10 @@ unsafe extern "C" fn parse_xref_table(
                     }
                     /* The first line of a xref subsection OK. */
                     if ((*pf).num_obj as libc::c_uint) < first.wrapping_add(size) {
-                        extend_xref(pf, first.wrapping_add(size) as libc::c_int);
+                        extend_xref(pf, first.wrapping_add(size) as i32);
                     }
                     /* Start parsing xref subsection body... */
-                    i = first as libc::c_int;
+                    i = first as i32;
                     /* Only white-spaces and/or comment. */
                     while (i as libc::c_uint) < first.wrapping_add(size) {
                         /* PDF spec. requires each xref subsection lines being exactly 20 bytes
@@ -3316,9 +3316,9 @@ unsafe extern "C" fn parse_xref_table(
                                 );
                                 return -1i32;
                             } else {
-                                if flag as libc::c_int != 'n' as i32
-                                    && flag as libc::c_int != 'f' as i32
-                                    || flag as libc::c_int == 'n' as i32
+                                if flag as i32 != 'n' as i32
+                                    && flag as i32 != 'f' as i32
+                                    || flag as i32 == 'n' as i32
                                         && (offset >= (*pf).file_size as libc::c_uint
                                             || offset > 0i32 as libc::c_uint
                                                 && offset < 4i32 as libc::c_uint)
@@ -3335,7 +3335,7 @@ unsafe extern "C" fn parse_xref_table(
                             /* Everything seems to be OK. */
                             if (*(*pf).xref_table.offset(i as isize)).field2 == 0 {
                                 (*(*pf).xref_table.offset(i as isize)).type_0 =
-                                    (flag as libc::c_int == 'n' as i32) as libc::c_int
+                                    (flag as i32 == 'n' as i32) as i32
                                         as u8; /* TODO: change! why? */
                                 (*(*pf).xref_table.offset(i as isize)).field2 = offset;
                                 (*(*pf).xref_table.offset(i as isize)).field3 =
@@ -3352,7 +3352,7 @@ unsafe extern "C" fn parse_xref_table(
 }
 unsafe extern "C" fn parse_xrefstm_field(
     mut p: *mut *const i8,
-    mut length: libc::c_int,
+    mut length: i32,
     mut def: libc::c_uint,
 ) -> libc::c_uint {
     let mut val: libc::c_uint = 0i32 as libc::c_uint;
@@ -3375,12 +3375,12 @@ unsafe extern "C" fn parse_xrefstm_field(
 unsafe extern "C" fn parse_xrefstm_subsec(
     mut pf: *mut pdf_file,
     mut p: *mut *const i8,
-    mut length: *mut libc::c_int,
-    mut W: *mut libc::c_int,
-    mut wsum: libc::c_int,
-    mut first: libc::c_int,
-    mut size: libc::c_int,
-) -> libc::c_int {
+    mut length: *mut i32,
+    mut W: *mut i32,
+    mut wsum: i32,
+    mut first: i32,
+    mut size: i32,
+) -> i32 {
     let mut e: *mut xref_entry = 0 as *mut xref_entry;
     *length -= wsum * size;
     if *length < 0i32 {
@@ -3400,7 +3400,7 @@ unsafe extern "C" fn parse_xrefstm_subsec(
         let mut field2: libc::c_uint = 0;
         let mut field3: u16 = 0;
         type_0 = parse_xrefstm_field(p, *W.offset(0), 1i32 as libc::c_uint) as u8;
-        if type_0 as libc::c_int > 2i32 {
+        if type_0 as i32 > 2i32 {
             dpx_warning(
                 b"Unknown cross-reference stream entry type.\x00" as *const u8
                     as *const i8,
@@ -3419,19 +3419,19 @@ unsafe extern "C" fn parse_xrefstm_subsec(
 }
 unsafe extern "C" fn parse_xref_stream(
     mut pf: *mut pdf_file,
-    mut xref_pos: libc::c_int,
+    mut xref_pos: i32,
     mut trailer: *mut *mut pdf_obj,
-) -> libc::c_int {
+) -> i32 {
     let mut current_block: u64;
     let mut xrefstm: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut size_obj: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut W_obj: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut index_obj: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut size: libc::c_uint = 0;
-    let mut length: libc::c_int = 0;
-    let mut W: [libc::c_int; 3] = [0; 3];
-    let mut i: libc::c_int = 0;
-    let mut wsum: libc::c_int = 0i32;
+    let mut length: i32 = 0;
+    let mut W: [i32; 3] = [0; 3];
+    let mut i: i32 = 0;
+    let mut wsum: i32 = 0i32;
     let mut p: *const i8 = 0 as *const i8;
     xrefstm = pdf_read_object(
         0i32 as libc::c_uint,
@@ -3465,7 +3465,7 @@ unsafe extern "C" fn parse_xref_stream(
                             current_block = 5131529843719913080;
                             break;
                         }
-                        W[i as usize] = pdf_number_value(tmp_0) as libc::c_int;
+                        W[i as usize] = pdf_number_value(tmp_0) as i32;
                         wsum += W[i as usize];
                         i += 1
                     }
@@ -3507,8 +3507,8 @@ unsafe extern "C" fn parse_xref_stream(
                                                 &mut length,
                                                 W.as_mut_ptr(),
                                                 wsum,
-                                                pdf_number_value(first) as libc::c_int,
-                                                pdf_number_value(size_obj) as libc::c_int,
+                                                pdf_number_value(first) as i32,
+                                                pdf_number_value(size_obj) as i32,
                                             ) != 0
                                         {
                                             current_block = 5131529843719913080;
@@ -3523,7 +3523,7 @@ unsafe extern "C" fn parse_xref_stream(
                                 W.as_mut_ptr(),
                                 wsum,
                                 0i32,
-                                size as libc::c_int,
+                                size as i32,
                             ) != 0
                             {
                                 current_block = 5131529843719913080;
@@ -3562,7 +3562,7 @@ unsafe extern "C" fn read_xref(mut pf: *mut pdf_file) -> *mut pdf_obj {
     let mut current_block: u64;
     let mut trailer: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut main_trailer: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut xref_pos: libc::c_int = 0;
+    let mut xref_pos: i32 = 0;
     xref_pos = find_xref((*pf).handle, (*pf).file_size);
     if xref_pos == 0 {
         current_block = 13794981049891343809;
@@ -3574,7 +3574,7 @@ unsafe extern "C" fn read_xref(mut pf: *mut pdf_file) -> *mut pdf_obj {
             14916268686031723178 => {
                 if xref_pos != 0 {
                     let mut prev: *mut pdf_obj = 0 as *mut pdf_obj;
-                    let mut res: libc::c_int = parse_xref_table(pf, xref_pos);
+                    let mut res: i32 = parse_xref_table(pf, xref_pos);
                     if res > 0i32 {
                         /* cross-reference table */
                         let mut xrefstm: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -3596,7 +3596,7 @@ unsafe extern "C" fn read_xref(mut pf: *mut pdf_file) -> *mut pdf_obj {
                                 && pdf_obj_typeof(xrefstm) == 2i32
                                 && parse_xref_stream(
                                     pf,
-                                    pdf_number_value(xrefstm) as libc::c_int,
+                                    pdf_number_value(xrefstm) as i32,
                                     &mut new_trailer,
                                 ) != 0
                             {
@@ -3629,7 +3629,7 @@ unsafe extern "C" fn read_xref(mut pf: *mut pdf_file) -> *mut pdf_obj {
                             current_block = 13794981049891343809;
                             continue;
                         }
-                        xref_pos = pdf_number_value(prev) as libc::c_int
+                        xref_pos = pdf_number_value(prev) as i32
                     } else {
                         xref_pos = 0i32
                     }
@@ -3674,7 +3674,7 @@ unsafe extern "C" fn pdf_file_new(mut handle: rust_input_handle_t) -> *mut pdf_f
     (*pf).catalog = 0 as *mut pdf_obj;
     (*pf).num_obj = 0i32;
     (*pf).version = 0i32 as libc::c_uint;
-    (*pf).file_size = ttstub_input_get_size(handle) as libc::c_int;
+    (*pf).file_size = ttstub_input_get_size(handle) as i32;
     ttstub_input_seek(handle, 0i32 as ssize_t, 2i32);
     return pf;
 }
@@ -3780,7 +3780,7 @@ pub unsafe extern "C" fn pdf_open(
         pf = ht_lookup_table(
             pdf_files,
             ident as *const libc::c_void,
-            strlen(ident) as libc::c_int,
+            strlen(ident) as i32,
         ) as *mut pdf_file
     }
     if !pf.is_null() {
@@ -3788,7 +3788,7 @@ pub unsafe extern "C" fn pdf_open(
     } else {
         let mut new_version: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut version: libc::c_uint = 0i32 as libc::c_uint;
-        let mut r: libc::c_int = parse_pdf_version(handle, &mut version);
+        let mut r: i32 = parse_pdf_version(handle, &mut version);
         if r < 0i32 || version < 1i32 as libc::c_uint || version > pdf_version {
             dpx_warning(
                 b"pdf_open: Not a PDF 1.[1-%u] file.\x00" as *const u8 as *const i8,
@@ -3861,7 +3861,7 @@ pub unsafe extern "C" fn pdf_open(
                             ht_append_table(
                                 pdf_files,
                                 ident as *const libc::c_void,
-                                strlen(ident) as libc::c_int,
+                                strlen(ident) as i32,
                                 pf as *mut libc::c_void,
                             );
                         }
@@ -3907,7 +3907,7 @@ pub unsafe extern "C" fn pdf_files_close() {
 unsafe extern "C" fn parse_pdf_version(
     mut handle: rust_input_handle_t,
     mut ret_version: *mut libc::c_uint,
-) -> libc::c_int {
+) -> i32 {
     let mut buffer: [i8; 10] = *::std::mem::transmute::<&[u8; 10], &mut [i8; 10]>(
         b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
     );
@@ -3936,8 +3936,8 @@ unsafe extern "C" fn parse_pdf_version(
     return 0i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn check_for_pdf(mut handle: rust_input_handle_t) -> libc::c_int {
-    let mut r: libc::c_int = 0;
+pub unsafe extern "C" fn check_for_pdf(mut handle: rust_input_handle_t) -> i32 {
+    let mut r: i32 = 0;
     let mut version: libc::c_uint = 0;
     r = parse_pdf_version(handle, &mut version);
     if r < 0i32 {
@@ -3959,7 +3959,7 @@ unsafe extern "C" fn import_dict(
     mut key: *mut pdf_obj,
     mut value: *mut pdf_obj,
     mut pdata: *mut libc::c_void,
-) -> libc::c_int {
+) -> i32 {
     let mut copy: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     copy = pdata as *mut pdf_obj;
@@ -4000,16 +4000,16 @@ unsafe extern "C" fn pdf_import_indirect(mut object: *mut pdf_obj) -> *mut pdf_o
     }
     if !(obj_num > 0i32 as libc::c_uint
         && obj_num < (*pf).num_obj as libc::c_uint
-        && ((*(*pf).xref_table.offset(obj_num as isize)).type_0 as libc::c_int == 1i32
-            && (*(*pf).xref_table.offset(obj_num as isize)).field3 as libc::c_int
-                == obj_gen as libc::c_int
-            || (*(*pf).xref_table.offset(obj_num as isize)).type_0 as libc::c_int == 2i32
+        && ((*(*pf).xref_table.offset(obj_num as isize)).type_0 as i32 == 1i32
+            && (*(*pf).xref_table.offset(obj_num as isize)).field3 as i32
+                == obj_gen as i32
+            || (*(*pf).xref_table.offset(obj_num as isize)).type_0 as i32 == 2i32
                 && obj_gen == 0))
     {
         dpx_warning(
             b"Can\'t resolve object: %u %u\x00" as *const u8 as *const i8,
             obj_num,
-            obj_gen as libc::c_int,
+            obj_gen as i32,
         );
         return pdf_new_null();
     }
@@ -4030,7 +4030,7 @@ unsafe extern "C" fn pdf_import_indirect(mut object: *mut pdf_obj) -> *mut pdf_o
             dpx_warning(
                 b"Could not read object: %u %u\x00" as *const u8 as *const i8,
                 obj_num,
-                obj_gen as libc::c_int,
+                obj_gen as i32,
             );
             return 0 as *mut pdf_obj;
         }
@@ -4092,7 +4092,7 @@ pub unsafe extern "C" fn pdf_import_object(mut object: *mut pdf_obj) -> *mut pdf
                             _: *mut pdf_obj,
                             _: *mut pdf_obj,
                             _: *mut libc::c_void,
-                        ) -> libc::c_int,
+                        ) -> i32,
                 ),
                 imported as *mut libc::c_void,
             ) < 0i32
@@ -4105,7 +4105,7 @@ pub unsafe extern "C" fn pdf_import_object(mut object: *mut pdf_obj) -> *mut pdf
             imported = pdf_new_array();
             i = 0i32 as libc::c_uint;
             while i < pdf_array_length(object) {
-                tmp = pdf_import_object(pdf_get_array(object, i as libc::c_int));
+                tmp = pdf_import_object(pdf_get_array(object, i as i32));
                 if tmp.is_null() {
                     pdf_release_obj(imported);
                     return 0 as *mut pdf_obj;
@@ -4123,7 +4123,7 @@ pub unsafe extern "C" fn pdf_import_object(mut object: *mut pdf_obj) -> *mut pdf
 pub unsafe extern "C" fn pdf_compare_reference(
     mut ref1: *mut pdf_obj,
     mut ref2: *mut pdf_obj,
-) -> libc::c_int {
+) -> i32 {
     let mut data1: *mut pdf_indirect = 0 as *mut pdf_indirect;
     let mut data2: *mut pdf_indirect = 0 as *mut pdf_indirect;
     if !ref1.is_null()
@@ -4146,8 +4146,8 @@ pub unsafe extern "C" fn pdf_compare_reference(
     data2 = (*ref2).data as *mut pdf_indirect;
     return ((*data1).pf != (*data2).pf
         || (*data1).label != (*data2).label
-        || (*data1).generation as libc::c_int != (*data2).generation as libc::c_int)
-        as libc::c_int;
+        || (*data1).generation as i32 != (*data2).generation as i32)
+        as i32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_obj_reset_global_state() {

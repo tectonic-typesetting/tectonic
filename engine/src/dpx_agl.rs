@@ -17,33 +17,33 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> i64;
+    fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strncpy(_: *mut i8, _: *const i8, _: u64)
         -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
-    fn strchr(_: *const i8, _: libc::c_int) -> *mut i8;
+    fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     /* Tectonic-enabled versions */
     #[no_mangle]
     fn tt_mfgets(
         buffer: *mut i8,
-        length: libc::c_int,
+        length: i32,
         file: rust_input_handle_t,
     ) -> *mut i8;
     /* tmp freed here */
@@ -62,13 +62,13 @@ extern "C" {
     fn ht_lookup_table(
         ht: *mut ht_table,
         key: *const libc::c_void,
-        keylen: libc::c_int,
+        keylen: i32,
     ) -> *mut libc::c_void;
     #[no_mangle]
     fn ht_append_table(
         ht: *mut ht_table,
         key: *const libc::c_void,
-        keylen: libc::c_int,
+        keylen: i32,
         value: *mut libc::c_void,
     );
     #[no_mangle]
@@ -203,15 +203,15 @@ pub type rust_input_handle_t = *mut libc::c_void;
 pub struct agl_name {
     pub name: *mut i8,
     pub suffix: *mut i8,
-    pub n_components: libc::c_int,
+    pub n_components: i32,
     pub unicodes: [i32; 16],
     pub alternate: *mut agl_name,
-    pub is_predef: libc::c_int,
+    pub is_predef: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_table {
-    pub count: libc::c_int,
+    pub count: i32,
     pub hval_free_fn: hval_free_func,
     pub table: [*mut ht_entry; 503],
 }
@@ -219,7 +219,7 @@ pub struct ht_table {
 #[repr(C)]
 pub struct ht_entry {
     pub key: *mut i8,
-    pub keylen: libc::c_int,
+    pub keylen: i32,
     pub value: *mut libc::c_void,
     pub next: *mut ht_entry,
 }
@@ -258,9 +258,9 @@ unsafe extern "C" fn strstartswith(
     }
     return 0 as *const i8;
 }
-static mut verbose: libc::c_int = 0i32;
+static mut verbose: i32 = 0i32;
 #[no_mangle]
-pub unsafe extern "C" fn agl_set_verbose(mut level: libc::c_int) {
+pub unsafe extern "C" fn agl_set_verbose(mut level: i32) {
     verbose = level;
 }
 unsafe extern "C" fn agl_new_name() -> *mut agl_name {
@@ -293,7 +293,7 @@ pub unsafe extern "C" fn agl_chop_suffix(
 ) -> *mut i8 {
     let mut name: *mut i8 = 0 as *mut i8;
     let mut p: *mut i8 = 0 as *mut i8;
-    let mut len: libc::c_int = 0;
+    let mut len: i32 = 0;
     if !glyphname.is_null() && !suffix.is_null() {
     } else {
         __assert_fail(
@@ -308,7 +308,7 @@ pub unsafe extern "C" fn agl_chop_suffix(
     }
     p = strchr(glyphname, '.' as i32);
     if !p.is_null() {
-        len = strlen(glyphname).wrapping_sub(strlen(p)) as libc::c_int;
+        len = strlen(glyphname).wrapping_sub(strlen(p)) as i32;
         if len < 1i32 {
             name = 0 as *mut i8;
             *suffix = new((strlen(glyphname) as u32 as u64)
@@ -322,7 +322,7 @@ pub unsafe extern "C" fn agl_chop_suffix(
                 as u32) as *mut i8;
             strncpy(name, glyphname, len as u64);
             *name.offset(len as isize) = '\u{0}' as i32 as i8;
-            if *p.offset(0) as libc::c_int == '\u{0}' as i32 {
+            if *p.offset(0) as i32 == '\u{0}' as i32 {
                 *suffix = 0 as *mut i8
             } else {
                 *suffix = new((strlen(p).wrapping_add(1i32 as u64) as u32
@@ -369,33 +369,33 @@ static mut modifiers: [*const i8; 21] = [
 unsafe extern "C" fn skip_capital(
     mut p: *mut *const i8,
     mut endptr: *const i8,
-) -> libc::c_int {
-    let mut slen: libc::c_int = 0i32;
-    let mut len: libc::c_int = 0;
-    len = endptr.wrapping_offset_from(*p) as i64 as libc::c_int;
+) -> i32 {
+    let mut slen: i32 = 0i32;
+    let mut len: i32 = 0;
+    len = endptr.wrapping_offset_from(*p) as i64 as i32;
     if len >= 2i32
-        && (**p as libc::c_int == 'A' as i32 && *(*p).offset(1) as libc::c_int == 'E' as i32
-            || **p as libc::c_int == 'O' as i32 && *(*p).offset(1) as libc::c_int == 'E' as i32)
+        && (**p as i32 == 'A' as i32 && *(*p).offset(1) as i32 == 'E' as i32
+            || **p as i32 == 'O' as i32 && *(*p).offset(1) as i32 == 'E' as i32)
     {
         *p = (*p).offset(2);
         slen = 2i32
     } else if len >= 3i32
-        && **p as libc::c_int == 'E' as i32
-        && *(*p).offset(1) as libc::c_int == 't' as i32
-        && *(*p).offset(2) as libc::c_int == 'h' as i32
+        && **p as i32 == 'E' as i32
+        && *(*p).offset(1) as i32 == 't' as i32
+        && *(*p).offset(2) as i32 == 'h' as i32
     {
         *p = (*p).offset(3);
         slen = 3i32
     } else if len >= 5i32
-        && **p as libc::c_int == 'T' as i32
-        && *(*p).offset(1) as libc::c_int == 'h' as i32
-        && *(*p).offset(2) as libc::c_int == 'o' as i32
-        && *(*p).offset(3) as libc::c_int == 'r' as i32
-        && *(*p).offset(4) as libc::c_int == 'n' as i32
+        && **p as i32 == 'T' as i32
+        && *(*p).offset(1) as i32 == 'h' as i32
+        && *(*p).offset(2) as i32 == 'o' as i32
+        && *(*p).offset(3) as i32 == 'r' as i32
+        && *(*p).offset(4) as i32 == 'n' as i32
     {
         *p = (*p).offset(5);
         slen = 5i32
-    } else if len >= 1i32 && **p as libc::c_int >= 'A' as i32 && **p as libc::c_int <= 'Z' as i32 {
+    } else if len >= 1i32 && **p as i32 >= 'A' as i32 && **p as i32 <= 'Z' as i32 {
         *p = (*p).offset(1);
         slen = 1i32
     }
@@ -828,8 +828,8 @@ static mut var_list: [C2RustUnnamed_0; 14] = [
 pub unsafe extern "C" fn agl_suffix_to_otltag(
     mut suffix: *const i8,
 ) -> *const i8 {
-    let mut i: libc::c_int = 0;
-    let mut j: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut j: i32 = 0;
     i = 0i32;
     while !var_list[i as usize].key.is_null() {
         j = 0i32;
@@ -843,7 +843,7 @@ pub unsafe extern "C" fn agl_suffix_to_otltag(
             return var_list[i as usize].otl_tag;
         }
         if !var_list[i as usize].otl_tag.is_null()
-            && streq_ptr(suffix, var_list[i as usize].otl_tag) as libc::c_int != 0
+            && streq_ptr(suffix, var_list[i as usize].otl_tag) as i32 != 0
         {
             return var_list[i as usize].otl_tag;
         }
@@ -866,7 +866,7 @@ unsafe extern "C" fn agl_guess_name(mut glyphname: *const i8) -> ssize_t {
                     .offset(len as isize)
                     .offset(-(strlen(var_list[i as usize].key) as isize)),
                 var_list[i as usize].key,
-            ) as libc::c_int
+            ) as i32
                 != 0
         {
             return i;
@@ -878,16 +878,16 @@ unsafe extern "C" fn agl_guess_name(mut glyphname: *const i8) -> ssize_t {
 unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_name {
     let mut agln: *mut agl_name = 0 as *mut agl_name;
     let mut suffix: *mut i8 = 0 as *mut i8;
-    let mut i: libc::c_int = 0;
-    let mut n: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut n: i32 = 0;
     if glyphname.is_null() {
         return 0 as *mut agl_name;
     }
     agln = agl_new_name();
     suffix = strchr(glyphname, '.' as i32);
     if !suffix.is_null() {
-        n = strlen(glyphname).wrapping_sub(strlen(suffix)) as libc::c_int;
-        if *suffix.offset(1) as libc::c_int != '\u{0}' as i32 {
+        n = strlen(glyphname).wrapping_sub(strlen(suffix)) as i32;
+        if *suffix.offset(1) as i32 != '\u{0}' as i32 {
             (*agln).suffix = new((strlen(suffix) as u32 as u64)
                 .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                 as u32) as *mut i8;
@@ -903,7 +903,7 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_nam
         );
         *(*agln).name.offset(n as isize) = '\u{0}' as i32 as i8
     } else if is_smallcap(glyphname) {
-        n = strlen(glyphname).wrapping_sub(5i32 as u64) as libc::c_int;
+        n = strlen(glyphname).wrapping_sub(5i32 as u64) as i32;
         (*agln).suffix = new((3i32 as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32) as *mut i8;
@@ -917,14 +917,14 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_nam
         i = 0i32;
         while i < n {
             *(*agln).name.offset(i as isize) = (if *(*__ctype_b_loc())
-                .offset(*glyphname.offset(i as isize) as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISupper as libc::c_int as u16 as libc::c_int
+                .offset(*glyphname.offset(i as isize) as u8 as i32 as isize)
+                as i32
+                & _ISupper as i32 as u16 as i32
                 != 0
             {
-                *glyphname.offset(i as isize) as libc::c_int + 32i32
+                *glyphname.offset(i as isize) as i32 + 32i32
             } else {
-                *glyphname.offset(i as isize) as libc::c_int
+                *glyphname.offset(i as isize) as i32
             }) as i8;
             i += 1
         }
@@ -933,10 +933,10 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_nam
         let mut var_idx: ssize_t = 0;
         var_idx = agl_guess_name(glyphname);
         if var_idx < 0i32 as i64 || var_list[var_idx as usize].key.is_null() {
-            n = strlen(glyphname) as libc::c_int
+            n = strlen(glyphname) as i32
         } else {
             n = strlen(glyphname).wrapping_sub(strlen(var_list[var_idx as usize].key))
-                as libc::c_int;
+                as i32;
             if !var_list[var_idx as usize].suffixes[0].is_null() {
                 (*agln).suffix = new((strlen(var_list[var_idx as usize].suffixes[0])
                     .wrapping_add(1i32 as u64)
@@ -1039,9 +1039,9 @@ pub unsafe extern "C" fn agl_close_map() {
 /* Hash */
 unsafe extern "C" fn agl_load_listfile(
     mut filename: *const i8,
-    mut is_predef: libc::c_int,
-) -> libc::c_int {
-    let mut count: libc::c_int = 0i32;
+    mut is_predef: i32,
+) -> i32 {
+    let mut count: i32 = 0i32;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     let mut nextptr: *mut i8 = 0 as *mut i8;
@@ -1069,13 +1069,13 @@ unsafe extern "C" fn agl_load_listfile(
         let mut agln: *mut agl_name = 0 as *mut agl_name;
         let mut duplicate: *mut agl_name = 0 as *mut agl_name;
         let mut name: *mut i8 = 0 as *mut i8;
-        let mut n_unicodes: libc::c_int = 0;
-        let mut i: libc::c_int = 0;
+        let mut n_unicodes: i32 = 0;
+        let mut i: i32 = 0;
         let mut unicodes: [i32; 16] = [0; 16];
         endptr = p.offset(strlen(p) as isize);
         skip_white(&mut p, endptr);
         /* Need table version check. */
-        if p.is_null() || *p.offset(0) as libc::c_int == '#' as i32 || p >= endptr {
+        if p.is_null() || *p.offset(0) as i32 == '#' as i32 || p >= endptr {
             continue;
         }
         nextptr = strchr(p, ';' as i32);
@@ -1084,7 +1084,7 @@ unsafe extern "C" fn agl_load_listfile(
         }
         name = parse_ident(&mut p, nextptr);
         skip_white(&mut p, endptr);
-        if name.is_null() || *p.offset(0) as libc::c_int != ';' as i32 {
+        if name.is_null() || *p.offset(0) as i32 != ';' as i32 {
             dpx_warning(
                 b"Invalid AGL entry: %s\x00" as *const u8 as *const i8,
                 wbuf.as_mut_ptr(),
@@ -1095,10 +1095,10 @@ unsafe extern "C" fn agl_load_listfile(
             skip_white(&mut p, endptr);
             n_unicodes = 0i32;
             while p < endptr
-                && (*p.offset(0) as libc::c_int >= '0' as i32
-                    && *p.offset(0) as libc::c_int <= '9' as i32
-                    || *p.offset(0) as libc::c_int >= 'A' as i32
-                        && *p.offset(0) as libc::c_int <= 'F' as i32)
+                && (*p.offset(0) as i32 >= '0' as i32
+                    && *p.offset(0) as i32 <= '9' as i32
+                    || *p.offset(0) as i32 >= 'A' as i32
+                        && *p.offset(0) as i32 <= 'F' as i32)
             {
                 if n_unicodes >= 16i32 {
                     dpx_warning(b"Too many Unicode values\x00" as *const u8 as *const i8);
@@ -1129,13 +1129,13 @@ unsafe extern "C" fn agl_load_listfile(
                 duplicate = ht_lookup_table(
                     &mut aglmap,
                     name as *const libc::c_void,
-                    strlen(name) as libc::c_int,
+                    strlen(name) as i32,
                 ) as *mut agl_name;
                 if duplicate.is_null() {
                     ht_append_table(
                         &mut aglmap,
                         name as *const libc::c_void,
-                        strlen(name) as libc::c_int,
+                        strlen(name) as i32,
                         agln as *mut libc::c_void,
                     );
                 } else {
@@ -1196,7 +1196,7 @@ pub unsafe extern "C" fn agl_lookup_list(mut glyphname: *const i8) -> *mut agl_n
     agln = ht_lookup_table(
         &mut aglmap,
         glyphname as *const libc::c_void,
-        strlen(glyphname) as libc::c_int,
+        strlen(glyphname) as i32,
     ) as *mut agl_name;
     return agln;
 }
@@ -1230,10 +1230,10 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
          * Check if the 4th character is uppercase hexadecimal digit.
          * "union" should not be treated as Unicode glyph name.
          */
-        if *(*__ctype_b_loc()).offset(c as u8 as libc::c_int as isize) as libc::c_int
-            & _ISdigit as libc::c_int as u16 as libc::c_int
+        if *(*__ctype_b_loc()).offset(c as u8 as i32 as isize) as i32
+            & _ISdigit as i32 as u16 as i32
             != 0
-            || c as libc::c_int >= 'A' as i32 && c as libc::c_int <= 'F' as i32
+            || c as i32 >= 'A' as i32 && c as i32 <= 'F' as i32
         {
             return 1i32 != 0;
         } else {
@@ -1242,16 +1242,16 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
     } else {
         if len <= 7i32 as u64
             && len >= 5i32 as u64
-            && *glyphname.offset(0) as libc::c_int == 'u' as i32
+            && *glyphname.offset(0) as i32 == 'u' as i32
         {
             i = 1i32 as size_t;
             while i < len.wrapping_sub(1i32 as u64) {
                 c = *glyphname.offset(i as isize);
-                if *(*__ctype_b_loc()).offset(c as u8 as libc::c_int as isize)
-                    as libc::c_int
-                    & _ISdigit as libc::c_int as u16 as libc::c_int
+                if *(*__ctype_b_loc()).offset(c as u8 as i32 as isize)
+                    as i32
+                    & _ISdigit as i32 as u16 as i32
                     == 0
-                    && ((c as libc::c_int) < 'A' as i32 || c as libc::c_int > 'F' as i32)
+                    && ((c as i32) < 'A' as i32 || c as i32 > 'F' as i32)
                 {
                     return 0i32 != 0;
                 }
@@ -1270,7 +1270,7 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i
         return -1i32;
     }
     if strlen(glyphname) > 7i32 as u64
-        && *glyphname.offset(7) as libc::c_int != '.' as i32
+        && *glyphname.offset(7) as i32 != '.' as i32
     {
         dpx_warning(
             b"Mapping to multiple Unicode characters not supported.\x00" as *const u8
@@ -1278,35 +1278,35 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i
         );
         return -1i32;
     }
-    if *glyphname.offset(1) as libc::c_int == 'n' as i32 {
+    if *glyphname.offset(1) as i32 == 'n' as i32 {
         p = glyphname.offset(3)
     } else {
         p = glyphname.offset(1)
     }
     ucv = 0i32;
-    while *p as libc::c_int != '\u{0}' as i32 && *p as libc::c_int != '.' as i32 {
-        if *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISdigit as libc::c_int as u16 as libc::c_int
+    while *p as i32 != '\u{0}' as i32 && *p as i32 != '.' as i32 {
+        if *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
+            & _ISdigit as i32 as u16 as i32
             == 0
-            && ((*p as libc::c_int) < 'A' as i32 || *p as libc::c_int > 'F' as i32)
+            && ((*p as i32) < 'A' as i32 || *p as i32 > 'F' as i32)
         {
             dpx_warning(
                 b"Invalid char %c in Unicode glyph name %s.\x00" as *const u8
                     as *const i8,
-                *p as libc::c_int,
+                *p as i32,
                 glyphname,
             );
             return -1i32;
         }
         ucv <<= 4i32;
-        ucv += if *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-            as libc::c_int
-            & _ISdigit as libc::c_int as u16 as libc::c_int
+        ucv += if *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+            as i32
+            & _ISdigit as i32 as u16 as i32
             != 0
         {
-            *p as libc::c_int - '0' as i32
+            *p as i32 - '0' as i32
         } else {
-            *p as libc::c_int - 'A' as i32 + 10i32
+            *p as i32 - 'A' as i32 + 10i32
         };
         p = p.offset(1)
     }
@@ -1326,8 +1326,8 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i
     }
     return ucv;
 }
-unsafe extern "C" fn xtol(mut start: *const i8, mut len: libc::c_int) -> libc::c_int {
-    let mut v: libc::c_int = 0i32;
+unsafe extern "C" fn xtol(mut start: *const i8, mut len: i32) -> i32 {
+    let mut v: i32 = 0i32;
     loop {
         let fresh1 = len;
         len = len - 1;
@@ -1335,14 +1335,14 @@ unsafe extern "C" fn xtol(mut start: *const i8, mut len: libc::c_int) -> libc::c
             break;
         }
         v <<= 4i32;
-        if *(*__ctype_b_loc()).offset(*start as u8 as libc::c_int as isize)
-            as libc::c_int
-            & _ISdigit as libc::c_int as u16 as libc::c_int
+        if *(*__ctype_b_loc()).offset(*start as u8 as i32 as isize)
+            as i32
+            & _ISdigit as i32 as u16 as i32
             != 0
         {
-            v += *start as libc::c_int - '0' as i32
-        } else if *start as libc::c_int >= 'A' as i32 && *start as libc::c_int <= 'F' as i32 {
-            v += *start as libc::c_int - 'A' as i32 + 10i32
+            v += *start as i32 - '0' as i32
+        } else if *start as i32 >= 'A' as i32 && *start as i32 <= 'F' as i32 {
+            v += *start as i32 - 'A' as i32 + 10i32
         } else {
             return -1i32;
         }
@@ -1360,14 +1360,14 @@ unsafe extern "C" fn put_unicode_glyph(
     let mut ucv: i32 = 0;
     p = name;
     ucv = 0i32;
-    if *p.offset(1) as libc::c_int != 'n' as i32 {
+    if *p.offset(1) as i32 != 'n' as i32 {
         p = p.offset(1);
-        ucv = xtol(p, strlen(p) as libc::c_int);
+        ucv = xtol(p, strlen(p) as i32);
         len = (len as u64).wrapping_add(UC_UTF16BE_encode_char(ucv, dstpp, limptr))
             as i32 as i32
     } else {
         p = p.offset(3);
-        while *p as libc::c_int != '\u{0}' as i32 {
+        while *p as i32 != '\u{0}' as i32 {
             ucv = xtol(p, 4i32);
             len = (len as u64).wrapping_add(UC_UTF16BE_encode_char(ucv, dstpp, limptr))
                 as i32 as i32;
@@ -1381,10 +1381,10 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
     mut glyphstr: *const i8,
     mut dstpp: *mut *mut u8,
     mut limptr: *mut u8,
-    mut fail_count: *mut libc::c_int,
+    mut fail_count: *mut i32,
 ) -> i32 {
     let mut len: i32 = 0i32;
-    let mut count: libc::c_int = 0i32;
+    let mut count: i32 = 0i32;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     if !glyphstr.is_null() && !dstpp.is_null() {
@@ -1405,7 +1405,7 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
         let mut name: *mut i8 = 0 as *mut i8;
         let mut delim: *const i8 = 0 as *const i8;
         let mut sub_len: i32 = 0;
-        let mut i: libc::c_int = 0;
+        let mut i: i32 = 0;
         let mut agln0: *mut agl_name = 0 as *mut agl_name;
         let mut agln1: *mut agl_name = 0 as *mut agl_name;
         delim = strchr(p, '_' as i32);
@@ -1525,9 +1525,9 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
 pub unsafe extern "C" fn agl_get_unicodes(
     mut glyphstr: *const i8,
     mut unicodes: *mut i32,
-    mut max_unicodes: libc::c_int,
-) -> libc::c_int {
-    let mut count: libc::c_int = 0i32;
+    mut max_unicodes: i32,
+) -> i32 {
+    let mut count: i32 = 0i32;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     p = glyphstr;
@@ -1539,7 +1539,7 @@ pub unsafe extern "C" fn agl_get_unicodes(
         let mut name: *mut i8 = 0 as *mut i8;
         let mut delim: *const i8 = 0 as *const i8;
         let mut sub_len: i32 = 0;
-        let mut i: libc::c_int = 0;
+        let mut i: i32 = 0;
         let mut agln0: *mut agl_name = 0 as *mut agl_name;
         let mut agln1: *mut agl_name = 0 as *mut agl_name;
         delim = strchr(p, '_' as i32);
@@ -1571,7 +1571,7 @@ pub unsafe extern "C" fn agl_get_unicodes(
         *name.offset(sub_len as isize) = '\u{0}' as i32 as i8;
         if agl_name_is_unicode(name) {
             p = name;
-            if *p.offset(1) as libc::c_int != 'n' as i32 {
+            if *p.offset(1) as i32 != 'n' as i32 {
                 /* uXXXXXXXX */
                 if count >= max_unicodes {
                     free(name as *mut libc::c_void);
@@ -1580,10 +1580,10 @@ pub unsafe extern "C" fn agl_get_unicodes(
                 p = p.offset(1);
                 let fresh2 = count;
                 count = count + 1;
-                *unicodes.offset(fresh2 as isize) = xtol(p, strlen(p) as libc::c_int)
+                *unicodes.offset(fresh2 as isize) = xtol(p, strlen(p) as i32)
             } else {
                 p = p.offset(3);
-                while *p as libc::c_int != '\u{0}' as i32 {
+                while *p as i32 != '\u{0}' as i32 {
                     if count >= max_unicodes {
                         free(name as *mut libc::c_void);
                         return -1i32;

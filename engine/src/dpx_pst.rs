@@ -108,7 +108,7 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type pst_type = libc::c_int;
+pub type pst_type = i32;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -139,22 +139,22 @@ unsafe extern "C" fn pst_parse_any(
     let mut len: libc::c_uint = 0;
     while cur < inbufend
         && !(cur == inbufend
-            || (*cur as libc::c_int == '(' as i32
-                || *cur as libc::c_int == ')' as i32
-                || *cur as libc::c_int == '/' as i32
-                || *cur as libc::c_int == '<' as i32
-                || *cur as libc::c_int == '>' as i32
-                || *cur as libc::c_int == '[' as i32
-                || *cur as libc::c_int == ']' as i32
-                || *cur as libc::c_int == '{' as i32
-                || *cur as libc::c_int == '}' as i32
-                || *cur as libc::c_int == '%' as i32)
-            || (*cur as libc::c_int == ' ' as i32
-                || *cur as libc::c_int == '\t' as i32
-                || *cur as libc::c_int == '\u{c}' as i32
-                || *cur as libc::c_int == '\r' as i32
-                || *cur as libc::c_int == '\n' as i32
-                || *cur as libc::c_int == '\u{0}' as i32))
+            || (*cur as i32 == '(' as i32
+                || *cur as i32 == ')' as i32
+                || *cur as i32 == '/' as i32
+                || *cur as i32 == '<' as i32
+                || *cur as i32 == '>' as i32
+                || *cur as i32 == '[' as i32
+                || *cur as i32 == ']' as i32
+                || *cur as i32 == '{' as i32
+                || *cur as i32 == '}' as i32
+                || *cur as i32 == '%' as i32)
+            || (*cur as i32 == ' ' as i32
+                || *cur as i32 == '\t' as i32
+                || *cur as i32 == '\u{c}' as i32
+                || *cur as i32 == '\r' as i32
+                || *cur as i32 == '\n' as i32
+                || *cur as i32 == '\u{0}' as i32))
     {
         cur = cur.offset(1)
     }
@@ -176,15 +176,15 @@ unsafe extern "C" fn skip_line(
     mut inbufend: *mut u8,
 ) {
     while *inbuf < inbufend
-        && **inbuf as libc::c_int != '\n' as i32
-        && **inbuf as libc::c_int != '\r' as i32
+        && **inbuf as i32 != '\n' as i32
+        && **inbuf as i32 != '\r' as i32
     {
         *inbuf = (*inbuf).offset(1)
     }
-    if *inbuf < inbufend && **inbuf as libc::c_int == '\r' as i32 {
+    if *inbuf < inbufend && **inbuf as i32 == '\r' as i32 {
         *inbuf = (*inbuf).offset(1)
     }
-    if *inbuf < inbufend && **inbuf as libc::c_int == '\n' as i32 {
+    if *inbuf < inbufend && **inbuf as i32 == '\n' as i32 {
         *inbuf = (*inbuf).offset(1)
     };
 }
@@ -192,7 +192,7 @@ unsafe extern "C" fn skip_comments(
     mut inbuf: *mut *mut u8,
     mut inbufend: *mut u8,
 ) {
-    while *inbuf < inbufend && **inbuf as libc::c_int == '%' as i32 {
+    while *inbuf < inbufend && **inbuf as i32 == '%' as i32 {
         skip_line(inbuf, inbufend);
         skip_white_spaces(inbuf, inbufend);
     }
@@ -244,7 +244,7 @@ pub unsafe extern "C" fn pst_get_token(
         return 0 as *mut pst_obj;
     }
     c = **inbuf;
-    match c as libc::c_int {
+    match c as i32 {
         47 => obj = pst_parse_name(inbuf, inbufend),
         91 | 123 => {
             /* This is wrong */
@@ -256,22 +256,22 @@ pub unsafe extern "C" fn pst_get_token(
                 return 0 as *mut pst_obj;
             }
             c = *(*inbuf).offset(1);
-            if c as libc::c_int == '<' as i32 {
+            if c as i32 == '<' as i32 {
                 obj = pst_new_mark();
                 *inbuf = (*inbuf).offset(2)
-            } else if *(*__ctype_b_loc()).offset(c as libc::c_int as isize) as libc::c_int
-                & _ISxdigit as libc::c_int as u16 as libc::c_int
+            } else if *(*__ctype_b_loc()).offset(c as i32 as isize) as i32
+                & _ISxdigit as i32 as u16 as i32
                 != 0
             {
                 obj = pst_parse_string(inbuf, inbufend)
-            } else if c as libc::c_int == '~' as i32 {
+            } else if c as i32 == '~' as i32 {
                 /* ASCII85 */
                 obj = pst_parse_string(inbuf, inbufend)
             }
         }
         40 => obj = pst_parse_string(inbuf, inbufend),
         62 => {
-            if (*inbuf).offset(1) >= inbufend || *(*inbuf).offset(1) as libc::c_int != '>' as i32 {
+            if (*inbuf).offset(1) >= inbufend || *(*inbuf).offset(1) as i32 != '>' as i32 {
                 _tt_abort(
                     b"Unexpected end of ASCII hex string marker.\x00" as *const u8
                         as *const i8,
@@ -299,16 +299,16 @@ pub unsafe extern "C" fn pst_get_token(
             *inbuf = (*inbuf).offset(1)
         }
         _ => {
-            if c as libc::c_int == 't' as i32 || c as libc::c_int == 'f' as i32 {
+            if c as i32 == 't' as i32 || c as i32 == 'f' as i32 {
                 obj = pst_parse_boolean(inbuf, inbufend)
-            } else if c as libc::c_int == 'n' as i32 {
+            } else if c as i32 == 'n' as i32 {
                 obj = pst_parse_null(inbuf, inbufend)
-            } else if c as libc::c_int == '+' as i32
-                || c as libc::c_int == '-' as i32
-                || *(*__ctype_b_loc()).offset(c as libc::c_int as isize) as libc::c_int
-                    & _ISdigit as libc::c_int as u16 as libc::c_int
+            } else if c as i32 == '+' as i32
+                || c as i32 == '-' as i32
+                || *(*__ctype_b_loc()).offset(c as i32 as isize) as i32
+                    & _ISdigit as i32 as u16 as i32
                     != 0
-                || c as libc::c_int == '.' as i32
+                || c as i32 == '.' as i32
             {
                 obj = pst_parse_number(inbuf, inbufend)
             }

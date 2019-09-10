@@ -12,11 +12,11 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_output_flush(handle: rust_output_handle_t) -> libc::c_int;
+    fn ttstub_output_flush(handle: rust_output_handle_t) -> i32;
     #[no_mangle]
-    static mut file_line_error_style_p: libc::c_int;
+    static mut file_line_error_style_p: i32;
     #[no_mangle]
-    static mut halt_on_error_p: libc::c_int;
+    static mut halt_on_error_p: i32;
     #[no_mangle]
     static mut rust_stdout: rust_output_handle_t;
     #[no_mangle]
@@ -96,7 +96,7 @@ unsafe extern "C" fn pre_error_message() {
     if job_name == 0i32 {
         open_log_file();
     }
-    if interaction as libc::c_int == 0i32 {
+    if interaction as i32 == 0i32 {
         selector -= 1
     }
     if file_line_error_style_p != 0 {
@@ -106,11 +106,11 @@ unsafe extern "C" fn pre_error_message() {
     };
 }
 /*82: */
-unsafe extern "C" fn post_error_message(mut need_to_print_it: libc::c_int) {
-    if interaction as libc::c_int == 3i32 {
+unsafe extern "C" fn post_error_message(mut need_to_print_it: i32) {
+    if interaction as i32 == 3i32 {
         interaction = 2i32 as u8
     }
-    if need_to_print_it != 0 && log_opened as libc::c_int != 0 {
+    if need_to_print_it != 0 && log_opened as i32 != 0 {
         error();
     }
     history = HISTORY_FATAL_ERROR;
@@ -119,7 +119,7 @@ unsafe extern "C" fn post_error_message(mut need_to_print_it: libc::c_int) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn error() {
-    if (history as libc::c_uint) < HISTORY_ERROR_ISSUED as libc::c_int as libc::c_uint {
+    if (history as libc::c_uint) < HISTORY_ERROR_ISSUED as i32 as libc::c_uint {
         history = HISTORY_ERROR_ISSUED
     }
     print_char('.' as i32);
@@ -136,7 +136,7 @@ pub unsafe extern "C" fn error() {
      * error_stop_mode" that would let the use interactively try to solve the
      * error. */
     error_count += 1;
-    if error_count as libc::c_int == 100i32 {
+    if error_count as i32 == 100i32 {
         print_nl_cstr(
             b"(That makes 100 errors; please try again.)\x00" as *const u8 as *const i8,
         );
@@ -147,20 +147,20 @@ pub unsafe extern "C" fn error() {
                 as *const i8,
         );
     }
-    if interaction as libc::c_int > 0i32 {
+    if interaction as i32 > 0i32 {
         selector -= 1
     }
     if use_err_help {
         print_ln();
         give_err_help();
     } else {
-        while help_ptr as libc::c_int > 0i32 {
+        while help_ptr as i32 > 0i32 {
             help_ptr = help_ptr.wrapping_sub(1);
             print_nl_cstr(help_line[help_ptr as usize]);
         }
     }
     print_ln();
-    if interaction as libc::c_int > 0i32 {
+    if interaction as i32 > 0i32 {
         selector += 1
     }
     print_ln();
@@ -192,7 +192,7 @@ pub unsafe extern "C" fn overflow(mut s: *const i8, mut n: i32) -> ! {
 #[no_mangle]
 pub unsafe extern "C" fn confusion(mut s: *const i8) -> ! {
     pre_error_message();
-    if (history as libc::c_uint) < HISTORY_ERROR_ISSUED as libc::c_int as libc::c_uint {
+    if (history as libc::c_uint) < HISTORY_ERROR_ISSUED as i32 as libc::c_uint {
         print_cstr(b"This can\'t happen (\x00" as *const u8 as *const i8);
         print_cstr(s);
         print_char(')' as i32);

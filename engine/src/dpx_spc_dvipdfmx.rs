@@ -18,9 +18,9 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
@@ -61,7 +61,7 @@ pub struct spc_env {
     pub x_user: f64,
     pub y_user: f64,
     pub mag: f64,
-    pub pg: libc::c_int,
+    pub pg: i32,
     /* current page in PDF */
 }
 #[derive(Copy, Clone)]
@@ -73,7 +73,7 @@ pub struct spc_arg {
     pub command: *const i8,
 }
 pub type spc_handler_fn_ptr =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int>;
+    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
@@ -116,7 +116,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 unsafe extern "C" fn spc_handler_null(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     (*args).curptr = (*args).endptr;
     return 0i32;
 }
@@ -126,7 +126,7 @@ static mut dvipdfmx_handlers: [spc_handler; 1] = unsafe {
             key: b"config\x00" as *const u8 as *const i8,
             exec: Some(
                 spc_handler_null
-                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
             ),
         };
         init
@@ -135,7 +135,7 @@ static mut dvipdfmx_handlers: [spc_handler; 1] = unsafe {
 #[no_mangle]
 pub unsafe extern "C" fn spc_dvipdfmx_check_special(
     mut buf: *const i8,
-    mut len: libc::c_int,
+    mut len: i32,
 ) -> bool {
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
@@ -177,8 +177,8 @@ pub unsafe extern "C" fn spc_dvipdfmx_setup_handler(
     mut sph: *mut spc_handler,
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int {
-    let mut error: libc::c_int = -1i32;
+) -> i32 {
+    let mut error: i32 = -1i32;
     let mut i: size_t = 0;
     let mut q: *mut i8 = 0 as *mut i8;
     if !sph.is_null() && !spe.is_null() && !ap.is_null() {

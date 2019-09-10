@@ -23,7 +23,7 @@ extern "C" {
     #[no_mangle]
     fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_new_dict() -> *mut pdf_obj;
     /* The internal, C/C++ interface: */
@@ -37,29 +37,29 @@ extern "C" {
     fn ht_lookup_table(
         ht: *mut ht_table,
         key: *const libc::c_void,
-        keylen: libc::c_int,
+        keylen: i32,
     ) -> *mut libc::c_void;
     #[no_mangle]
     fn ht_append_table(
         ht: *mut ht_table,
         key: *const libc::c_void,
-        keylen: libc::c_int,
+        keylen: i32,
         value: *mut libc::c_void,
     );
     #[no_mangle]
-    fn ht_set_iter(ht: *mut ht_table, iter: *mut ht_iter) -> libc::c_int;
+    fn ht_set_iter(ht: *mut ht_table, iter: *mut ht_iter) -> i32;
     #[no_mangle]
     fn ht_clear_iter(iter: *mut ht_iter);
     #[no_mangle]
-    fn ht_iter_getkey(iter: *mut ht_iter, keylen: *mut libc::c_int) -> *mut i8;
+    fn ht_iter_getkey(iter: *mut ht_iter, keylen: *mut i32) -> *mut i8;
     #[no_mangle]
     fn ht_iter_getval(iter: *mut ht_iter) -> *mut libc::c_void;
     #[no_mangle]
-    fn ht_iter_next(iter: *mut ht_iter) -> libc::c_int;
+    fn ht_iter_next(iter: *mut ht_iter) -> i32;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> libc::c_int;
+    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
@@ -83,7 +83,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -127,12 +127,12 @@ pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type size_t = u64;
 pub type __compar_fn_t =
-    Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> libc::c_int>;
+    Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_entry {
     pub key: *mut i8,
-    pub keylen: libc::c_int,
+    pub keylen: i32,
     pub value: *mut libc::c_void,
     pub next: *mut ht_entry,
 }
@@ -140,14 +140,14 @@ pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> (
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_table {
-    pub count: libc::c_int,
+    pub count: i32,
     pub hval_free_fn: hval_free_func,
     pub table: [*mut ht_entry; 503],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_iter {
-    pub index: libc::c_int,
+    pub index: i32,
     pub curr: *mut libc::c_void,
     pub hash: *mut ht_table,
 }
@@ -177,14 +177,14 @@ pub struct ht_iter {
 #[repr(C)]
 pub struct obj_data {
     pub object: *mut pdf_obj,
-    pub closed: libc::c_int,
+    pub closed: i32,
     /* 1 if object is closed */
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct named_object {
     pub key: *mut i8,
-    pub keylen: libc::c_int,
+    pub keylen: i32,
     pub value: *mut pdf_obj,
 }
 #[inline]
@@ -194,44 +194,44 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 }
 unsafe extern "C" fn printable_key(
     mut key: *const i8,
-    mut keylen: libc::c_int,
+    mut keylen: i32,
 ) -> *mut i8 {
     static mut pkey: [i8; 36] = [0; 36];
-    let mut i: libc::c_int = 0;
-    let mut len: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut len: i32 = 0;
     let mut hi: u8 = 0;
     let mut lo: u8 = 0;
     i = 0i32;
     len = 0i32;
     while i < keylen && len < 32i32 {
         if *(*__ctype_b_loc())
-            .offset(*key.offset(i as isize) as u8 as libc::c_int as isize)
-            as libc::c_int
-            & _ISprint as libc::c_int as u16 as libc::c_int
+            .offset(*key.offset(i as isize) as u8 as i32 as isize)
+            as i32
+            & _ISprint as i32 as u16 as i32
             != 0
         {
             let fresh0 = len;
             len = len + 1;
             pkey[fresh0 as usize] = *key.offset(i as isize)
         } else {
-            hi = (*key.offset(i as isize) as libc::c_int >> 4i32 & 0xffi32) as u8;
-            lo = (*key.offset(i as isize) as libc::c_int & 0xffi32) as u8;
+            hi = (*key.offset(i as isize) as i32 >> 4i32 & 0xffi32) as u8;
+            lo = (*key.offset(i as isize) as i32 & 0xffi32) as u8;
             let fresh1 = len;
             len = len + 1;
             pkey[fresh1 as usize] = '#' as i32 as i8;
             let fresh2 = len;
             len = len + 1;
-            pkey[fresh2 as usize] = (if (hi as libc::c_int) < 10i32 {
-                hi as libc::c_int + '0' as i32
+            pkey[fresh2 as usize] = (if (hi as i32) < 10i32 {
+                hi as i32 + '0' as i32
             } else {
-                hi as libc::c_int - 10i32 + 'A' as i32
+                hi as i32 - 10i32 + 'A' as i32
             }) as i8;
             let fresh3 = len;
             len = len + 1;
-            pkey[fresh3 as usize] = (if (lo as libc::c_int) < 10i32 {
-                lo as libc::c_int + '0' as i32
+            pkey[fresh3 as usize] = (if (lo as i32) < 10i32 {
+                lo as i32 + '0' as i32
             } else {
-                lo as libc::c_int - 10i32 + 'A' as i32
+                lo as i32 - 10i32 + 'A' as i32
             }) as i8
         }
         i += 1
@@ -270,7 +270,7 @@ unsafe extern "C" fn check_objects_defined(mut ht_tab: *mut ht_table) {
     if ht_set_iter(ht_tab, &mut iter) >= 0i32 {
         loop {
             let mut key: *mut i8 = 0 as *mut i8;
-            let mut keylen: libc::c_int = 0;
+            let mut keylen: i32 = 0;
             let mut value: *mut obj_data = 0 as *mut obj_data;
             key = ht_iter_getkey(&mut iter, &mut keylen);
             value = ht_iter_getval(&mut iter) as *mut obj_data;
@@ -323,9 +323,9 @@ pub unsafe extern "C" fn pdf_delete_name_tree(mut names: *mut *mut ht_table) {
 pub unsafe extern "C" fn pdf_names_add_object(
     mut names: *mut ht_table,
     mut key: *const libc::c_void,
-    mut keylen: libc::c_int,
+    mut keylen: i32,
     mut object: *mut pdf_obj,
-) -> libc::c_int {
+) -> i32 {
     let mut value: *mut obj_data = 0 as *mut obj_data;
     if !names.is_null() && !object.is_null() {
     } else {
@@ -383,7 +383,7 @@ pub unsafe extern "C" fn pdf_names_add_object(
 pub unsafe extern "C" fn pdf_names_lookup_reference(
     mut names: *mut ht_table,
     mut key: *const libc::c_void,
-    mut keylen: libc::c_int,
+    mut keylen: i32,
 ) -> *mut pdf_obj {
     let mut value: *mut obj_data = 0 as *mut obj_data;
     let mut object: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -424,7 +424,7 @@ pub unsafe extern "C" fn pdf_names_lookup_reference(
 pub unsafe extern "C" fn pdf_names_lookup_object(
     mut names: *mut ht_table,
     mut key: *const libc::c_void,
-    mut keylen: libc::c_int,
+    mut keylen: i32,
 ) -> *mut pdf_obj {
     let mut value: *mut obj_data = 0 as *mut obj_data;
     if !names.is_null() {
@@ -461,8 +461,8 @@ pub unsafe extern "C" fn pdf_names_lookup_object(
 pub unsafe extern "C" fn pdf_names_close_object(
     mut names: *mut ht_table,
     mut key: *const libc::c_void,
-    mut keylen: libc::c_int,
-) -> libc::c_int {
+    mut keylen: i32,
+) -> i32 {
     let mut value: *mut obj_data = 0 as *mut obj_data;
     if !names.is_null() {
     } else {
@@ -510,11 +510,11 @@ pub unsafe extern "C" fn pdf_names_close_object(
 unsafe extern "C" fn cmp_key(
     mut d1: *const libc::c_void,
     mut d2: *const libc::c_void,
-) -> libc::c_int {
+) -> i32 {
     let mut sd1: *const named_object = 0 as *const named_object;
     let mut sd2: *const named_object = 0 as *const named_object;
-    let mut keylen: libc::c_int = 0;
-    let mut cmp: libc::c_int = 0;
+    let mut keylen: i32 = 0;
+    let mut cmp: i32 = 0;
     sd1 = d1 as *const named_object;
     sd2 = d2 as *const named_object;
     if (*sd1).key.is_null() {
@@ -540,11 +540,11 @@ unsafe extern "C" fn cmp_key(
 }
 unsafe extern "C" fn build_name_tree(
     mut first: *mut named_object,
-    mut num_leaves: libc::c_int,
-    mut is_root: libc::c_int,
+    mut num_leaves: i32,
+    mut is_root: i32,
 ) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     result = pdf_new_dict();
     /*
      * According to PDF Refrence, Third Edition (p.101-102), a name tree
@@ -619,8 +619,8 @@ unsafe extern "C" fn build_name_tree(
         i = 0i32;
         while i < 4i32 {
             let mut subtree: *mut pdf_obj = 0 as *mut pdf_obj;
-            let mut start: libc::c_int = 0;
-            let mut end: libc::c_int = 0;
+            let mut start: i32 = 0;
+            let mut end: i32 = 0;
             start = i * num_leaves / 4i32;
             end = (i + 1i32) * num_leaves / 4i32;
             subtree = build_name_tree(&mut *first.offset(start as isize), end - start, 0i32);
@@ -638,7 +638,7 @@ unsafe extern "C" fn build_name_tree(
 }
 unsafe extern "C" fn flat_table(
     mut ht_tab: *mut ht_table,
-    mut num_entries: *mut libc::c_int,
+    mut num_entries: *mut i32,
     mut filter: *mut ht_table,
 ) -> *mut named_object {
     let mut objects: *mut named_object = 0 as *mut named_object;
@@ -647,7 +647,7 @@ unsafe extern "C" fn flat_table(
         curr: 0 as *mut libc::c_void,
         hash: 0 as *mut ht_table,
     };
-    let mut count: libc::c_int = 0;
+    let mut count: i32 = 0;
     if !ht_tab.is_null() {
     } else {
         __assert_fail(
@@ -668,7 +668,7 @@ unsafe extern "C" fn flat_table(
         let mut current_block_19: u64;
         loop {
             let mut key: *mut i8 = 0 as *mut i8;
-            let mut keylen: libc::c_int = 0;
+            let mut keylen: i32 = 0;
             let mut value: *mut obj_data = 0 as *mut obj_data;
             key = ht_iter_getkey(&mut iter, &mut keylen);
             if !filter.is_null() {
@@ -678,7 +678,7 @@ unsafe extern "C" fn flat_table(
                     current_block_19 = 15240798224410183470;
                 } else {
                     key = pdf_string_value(new_obj) as *mut i8;
-                    keylen = pdf_string_length(new_obj) as libc::c_int;
+                    keylen = pdf_string_length(new_obj) as i32;
                     current_block_19 = 12800627514080957624;
                 }
             } else {
@@ -761,7 +761,7 @@ unsafe extern "C" fn flat_table(
 #[no_mangle]
 pub unsafe extern "C" fn pdf_names_create_tree(
     mut names: *mut ht_table,
-    mut count: *mut libc::c_int,
+    mut count: *mut i32,
     mut filter: *mut ht_table,
 ) -> *mut pdf_obj {
     let mut name_tree: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -779,7 +779,7 @@ pub unsafe extern "C" fn pdf_names_create_tree(
                     as unsafe extern "C" fn(
                         _: *const libc::c_void,
                         _: *const libc::c_void,
-                    ) -> libc::c_int,
+                    ) -> i32,
             ),
         );
         name_tree = build_name_tree(flat, *count, 1i32);

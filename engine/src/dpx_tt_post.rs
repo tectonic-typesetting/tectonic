@@ -18,7 +18,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
     #[no_mangle]
@@ -122,7 +122,7 @@ pub struct sfnt_table_directory {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt {
-    pub type_0: libc::c_int,
+    pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
     pub offset: SFNT_ULONG,
@@ -181,25 +181,25 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 unsafe extern "C" fn read_v2_post_names(
     mut post: *mut tt_post_table,
     mut sfont: *mut sfnt,
-) -> libc::c_int {
+) -> i32 {
     let mut i: USHORT = 0;
     let mut idx: USHORT = 0;
     let mut indices: *mut USHORT = 0 as *mut USHORT;
     let mut maxidx: USHORT = 0;
-    let mut len: libc::c_int = 0;
+    let mut len: i32 = 0;
     (*post).numberOfGlyphs = tt_get_unsigned_pair((*sfont).handle);
     indices = new(((*post).numberOfGlyphs as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<USHORT>() as u64)
         as u32) as *mut USHORT;
     maxidx = 257i32 as USHORT;
     i = 0i32 as USHORT;
-    while (i as libc::c_int) < (*post).numberOfGlyphs as libc::c_int {
+    while (i as i32) < (*post).numberOfGlyphs as i32 {
         idx = tt_get_unsigned_pair((*sfont).handle);
-        if idx as libc::c_int >= 258i32 {
-            if idx as libc::c_int > maxidx as libc::c_int {
+        if idx as i32 >= 258i32 {
+            if idx as i32 > maxidx as i32 {
                 maxidx = idx
             }
-            if idx as libc::c_int > 32767i32 {
+            if idx as i32 > 32767i32 {
                 /* Although this is strictly speaking out of spec, it seems to work
                 and there are real-life fonts that use it.
                 We show a warning only once, instead of thousands of times */
@@ -208,7 +208,7 @@ unsafe extern "C" fn read_v2_post_names(
                     dpx_warning(
                         b"TrueType post table name index %u > 32767\x00" as *const u8
                             as *const i8,
-                        idx as libc::c_int,
+                        idx as i32,
                     );
                     warning_issued = 1i32 as i8
                 }
@@ -223,17 +223,17 @@ unsafe extern "C" fn read_v2_post_names(
         *indices.offset(i as isize) = idx;
         i = i.wrapping_add(1)
     }
-    (*post).count = (maxidx as libc::c_int - 257i32) as USHORT;
-    if ((*post).count as libc::c_int) < 1i32 {
+    (*post).count = (maxidx as i32 - 257i32) as USHORT;
+    if ((*post).count as i32) < 1i32 {
         (*post).names = 0 as *mut *mut i8
     } else {
         (*post).names = new(((*post).count as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<*mut i8>() as u64)
             as u32) as *mut *mut i8;
         i = 0i32 as USHORT;
-        while (i as libc::c_int) < (*post).count as libc::c_int {
+        while (i as i32) < (*post).count as i32 {
             /* read Pascal strings */
-            len = tt_get_unsigned_byte((*sfont).handle) as libc::c_int;
+            len = tt_get_unsigned_byte((*sfont).handle) as i32;
             if len > 0i32 {
                 let ref mut fresh0 = *(*post).names.offset(i as isize);
                 *fresh0 = new(((len + 1i32) as u32 as u64)
@@ -256,20 +256,20 @@ unsafe extern "C" fn read_v2_post_names(
         .wrapping_mul(::std::mem::size_of::<*const i8>() as u64)
         as u32) as *mut *const i8;
     i = 0i32 as USHORT;
-    while (i as libc::c_int) < (*post).numberOfGlyphs as libc::c_int {
+    while (i as i32) < (*post).numberOfGlyphs as i32 {
         idx = *indices.offset(i as isize);
-        if (idx as libc::c_int) < 258i32 {
+        if (idx as i32) < 258i32 {
             let ref mut fresh2 = *(*post).glyphNamePtr.offset(i as isize);
             *fresh2 = macglyphorder[idx as usize]
-        } else if idx as libc::c_int - 258i32 < (*post).count as libc::c_int {
+        } else if idx as i32 - 258i32 < (*post).count as i32 {
             let ref mut fresh3 = *(*post).glyphNamePtr.offset(i as isize);
-            *fresh3 = *(*post).names.offset((idx as libc::c_int - 258i32) as isize)
+            *fresh3 = *(*post).names.offset((idx as i32 - 258i32) as isize)
         } else {
             dpx_warning(
                 b"Invalid glyph name index number: %u (>= %u)\x00" as *const u8
                     as *const i8,
-                idx as libc::c_int,
-                (*post).count as libc::c_int + 258i32,
+                idx as i32,
+                (*post).count as i32 + 258i32,
             );
             free(indices as *mut libc::c_void);
             return -1i32;
@@ -346,9 +346,9 @@ pub unsafe extern "C" fn tt_lookup_post_table(
         );
     }
     gid = 0i32 as USHORT;
-    while (gid as libc::c_int) < (*post).count as libc::c_int {
+    while (gid as i32) < (*post).count as i32 {
         if !(*(*post).glyphNamePtr.offset(gid as isize)).is_null()
-            && streq_ptr(glyphname, *(*post).glyphNamePtr.offset(gid as isize)) as libc::c_int != 0
+            && streq_ptr(glyphname, *(*post).glyphNamePtr.offset(gid as isize)) as i32 != 0
         {
             return gid;
         }
@@ -361,7 +361,7 @@ pub unsafe extern "C" fn tt_get_glyphname(
     mut post: *mut tt_post_table,
     mut gid: USHORT,
 ) -> *mut i8 {
-    if (gid as libc::c_int) < (*post).count as libc::c_int
+    if (gid as i32) < (*post).count as i32
         && !(*(*post).glyphNamePtr.offset(gid as isize)).is_null()
     {
         return xstrdup(*(*post).glyphNamePtr.offset(gid as isize));
@@ -410,7 +410,7 @@ pub unsafe extern "C" fn tt_release_post_table(mut post: *mut tt_post_table) {
     }
     if !(*post).names.is_null() {
         i = 0i32 as USHORT;
-        while (i as libc::c_int) < (*post).count as libc::c_int {
+        while (i as i32) < (*post).count as i32 {
             free(*(*post).names.offset(i as isize) as *mut libc::c_void);
             i = i.wrapping_add(1)
         }

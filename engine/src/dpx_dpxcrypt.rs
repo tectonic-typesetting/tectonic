@@ -8,11 +8,11 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn rand() -> libc::c_int;
+    fn rand() -> i32;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -67,7 +67,7 @@ pub struct MD5_CONTEXT {
     pub D: u32,
     pub nblocks: size_t,
     pub buf: [u8; 64],
-    pub count: libc::c_int,
+    pub count: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -82,7 +82,7 @@ pub struct SHA256_CONTEXT {
     pub h7: u32,
     pub nblocks: size_t,
     pub buf: [u8; 64],
-    pub count: libc::c_int,
+    pub count: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -102,19 +102,19 @@ pub struct SHA512_CONTEXT {
     pub state: SHA512_STATE,
     pub nblocks: size_t,
     pub buf: [u8; 128],
-    pub count: libc::c_int,
+    pub count: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ARC4_CONTEXT {
-    pub idx_i: libc::c_int,
-    pub idx_j: libc::c_int,
+    pub idx_i: i32,
+    pub idx_j: i32,
     pub sbox: [u8; 256],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct AES_CONTEXT {
-    pub nrounds: libc::c_int,
+    pub nrounds: i32,
     pub rk: [u32; 60],
     pub iv: [u8; 16],
 }
@@ -137,7 +137,7 @@ pub struct AES_CONTEXT {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-unsafe extern "C" fn _gcry_burn_stack(mut bytes: libc::c_int) {
+unsafe extern "C" fn _gcry_burn_stack(mut bytes: i32) {
     let mut buf: [i8; 64] = [0; 64];
     memset(
         buf.as_mut_ptr() as *mut libc::c_void,
@@ -146,7 +146,7 @@ unsafe extern "C" fn _gcry_burn_stack(mut bytes: libc::c_int) {
     );
     bytes = (bytes as u64)
         .wrapping_sub(::std::mem::size_of::<[i8; 64]>() as u64)
-        as libc::c_int as libc::c_int;
+        as i32 as i32;
     if bytes > 0i32 {
         _gcry_burn_stack(bytes);
     };
@@ -714,7 +714,7 @@ pub unsafe extern "C" fn MD5_write(
             (80i32 as u64).wrapping_add(
                 (6i32 as u64)
                     .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
-            ) as libc::c_int,
+            ) as i32,
         );
         (*hd).count = 0i32;
         (*hd).nblocks = (*hd).nblocks.wrapping_add(1)
@@ -740,7 +740,7 @@ pub unsafe extern "C" fn MD5_write(
         (80i32 as u64).wrapping_add(
             (6i32 as u64)
                 .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
-        ) as libc::c_int,
+        ) as i32,
     );
     while inlen >= 64i32 as libc::c_uint {
         transform(hd, inbuf);
@@ -826,7 +826,7 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut u8, mut hd: *mut MD5_CONTEXT
         (80i32 as u64).wrapping_add(
             (6i32 as u64)
                 .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
-        ) as libc::c_int,
+        ) as i32,
     );
     p = outbuf;
     /* little endian */
@@ -1006,7 +1006,7 @@ unsafe extern "C" fn _SHA256_transform(
     let mut t1: u32 = 0;
     let mut t2: u32 = 0;
     let mut w: [u32; 64] = [0; 64];
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     a = (*hd).h0;
     b = (*hd).h1;
     c = (*hd).h2;
@@ -1181,7 +1181,7 @@ pub unsafe extern "C" fn SHA256_write(
     if (*hd).count == 64i32 {
         /* flush the buffer */
         stack_burn = _SHA256_transform(hd, (*hd).buf.as_mut_ptr());
-        _gcry_burn_stack(stack_burn as libc::c_int);
+        _gcry_burn_stack(stack_burn as i32);
         (*hd).count = 0i32;
         (*hd).nblocks = (*hd).nblocks.wrapping_add(1)
     }
@@ -1202,7 +1202,7 @@ pub unsafe extern "C" fn SHA256_write(
             return;
         }
     }
-    _gcry_burn_stack(stack_burn as libc::c_int);
+    _gcry_burn_stack(stack_burn as i32);
     while inlen >= 64i32 as libc::c_uint {
         stack_burn = _SHA256_transform(hd, inbuf);
         (*hd).count = 0i32;
@@ -1282,7 +1282,7 @@ pub unsafe extern "C" fn SHA256_final(mut outbuf: *mut u8, mut hd: *mut SHA256_C
     buf_put_be32((*hd).buf.as_mut_ptr().offset(56) as *mut libc::c_void, msb);
     buf_put_be32((*hd).buf.as_mut_ptr().offset(60) as *mut libc::c_void, lsb);
     burn = _SHA256_transform(hd, (*hd).buf.as_mut_ptr());
-    _gcry_burn_stack(burn as libc::c_int);
+    _gcry_burn_stack(burn as i32);
     p = outbuf;
     *(p as *mut u32) = _gcry_bswap32((*hd).h0);
     p = p.offset(4);
@@ -1447,7 +1447,7 @@ unsafe extern "C" fn __transform(
     let mut g: u64 = 0;
     let mut h: u64 = 0;
     let mut w: [u64; 16] = [0; 16];
-    let mut t: libc::c_int = 0;
+    let mut t: i32 = 0;
     /* get values from the chaining vars */
     a = (*hd).h0;
     b = (*hd).h1;
@@ -2184,7 +2184,7 @@ pub unsafe extern "C" fn SHA512_write(
     if (*hd).count == 128i32 {
         /* flush the buffer */
         stack_burn = _SHA512_transform(hd, (*hd).buf.as_mut_ptr());
-        _gcry_burn_stack(stack_burn as libc::c_int);
+        _gcry_burn_stack(stack_burn as i32);
         (*hd).count = 0i32;
         (*hd).nblocks = (*hd).nblocks.wrapping_add(1)
     }
@@ -2205,7 +2205,7 @@ pub unsafe extern "C" fn SHA512_write(
             return;
         }
     }
-    _gcry_burn_stack(stack_burn as libc::c_int);
+    _gcry_burn_stack(stack_burn as i32);
     while inlen >= 128i32 as libc::c_uint {
         stack_burn = _SHA512_transform(hd, inbuf);
         (*hd).count = 0i32;
@@ -2280,7 +2280,7 @@ pub unsafe extern "C" fn SHA512_final(mut outbuf: *mut u8, mut hd: *mut SHA512_C
     buf_put_be64((*hd).buf.as_mut_ptr().offset(112) as *mut libc::c_void, msb);
     buf_put_be64((*hd).buf.as_mut_ptr().offset(120) as *mut libc::c_void, lsb);
     stack_burn_depth = _SHA512_transform(hd, (*hd).buf.as_mut_ptr());
-    _gcry_burn_stack(stack_burn_depth as libc::c_int);
+    _gcry_burn_stack(stack_burn_depth as i32);
     p = outbuf;
     *(p as *mut u64) = _gcry_bswap64((*hd).state.h0);
     p = p.offset(8);
@@ -2332,10 +2332,10 @@ unsafe extern "C" fn do_encrypt_stream(
     mut inbuf: *const u8,
     mut len: libc::c_uint,
 ) {
-    let mut i: libc::c_int = (*ctx).idx_i; /* and seems to be faster than mod */
-    let mut j: libc::c_int = (*ctx).idx_j;
+    let mut i: i32 = (*ctx).idx_i; /* and seems to be faster than mod */
+    let mut j: i32 = (*ctx).idx_j;
     let mut sbox: *mut u8 = (*ctx).sbox.as_mut_ptr();
-    let mut t: libc::c_int = 0;
+    let mut t: i32 = 0;
     loop {
         let fresh40 = len;
         len = len.wrapping_sub(1);
@@ -2344,20 +2344,20 @@ unsafe extern "C" fn do_encrypt_stream(
         }
         i += 1;
         i = i & 255i32;
-        j += *sbox.offset(i as isize) as libc::c_int;
+        j += *sbox.offset(i as isize) as i32;
         j &= 255i32;
-        t = *sbox.offset(i as isize) as libc::c_int;
+        t = *sbox.offset(i as isize) as i32;
         *sbox.offset(i as isize) = *sbox.offset(j as isize);
         *sbox.offset(j as isize) = t as u8;
         let fresh41 = inbuf;
         inbuf = inbuf.offset(1);
         let fresh42 = outbuf;
         outbuf = outbuf.offset(1);
-        *fresh42 = (*fresh41 as libc::c_int
+        *fresh42 = (*fresh41 as i32
             ^ *sbox.offset(
-                (*sbox.offset(i as isize) as libc::c_int + *sbox.offset(j as isize) as libc::c_int
+                (*sbox.offset(i as isize) as i32 + *sbox.offset(j as isize) as i32
                     & 255i32) as isize,
-            ) as libc::c_int) as u8
+            ) as i32) as u8
     }
     (*ctx).idx_i = i;
     (*ctx).idx_j = j;
@@ -2377,8 +2377,8 @@ unsafe extern "C" fn do_arcfour_setkey(
     mut key: *const u8,
     mut keylen: libc::c_uint,
 ) {
-    let mut i: libc::c_int = 0;
-    let mut j: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut j: i32 = 0;
     let mut karr: [u8; 256] = [0; 256];
     (*ctx).idx_j = 0i32;
     (*ctx).idx_i = (*ctx).idx_j;
@@ -2395,9 +2395,9 @@ unsafe extern "C" fn do_arcfour_setkey(
     j = 0i32;
     i = j;
     while i < 256i32 {
-        let mut t: libc::c_int = 0;
-        j = (j + (*ctx).sbox[i as usize] as libc::c_int + karr[i as usize] as libc::c_int) % 256i32;
-        t = (*ctx).sbox[i as usize] as libc::c_int;
+        let mut t: i32 = 0;
+        j = (j + (*ctx).sbox[i as usize] as i32 + karr[i as usize] as i32) % 256i32;
+        t = (*ctx).sbox[i as usize] as i32;
         (*ctx).sbox[i as usize] = (*ctx).sbox[j as usize];
         (*ctx).sbox[j as usize] = t as u8;
         i += 1
@@ -2443,7 +2443,7 @@ pub unsafe extern "C" fn AES_ecb_encrypt(
     (*ctx).nrounds = rijndaelSetupEncrypt(
         (*ctx).rk.as_mut_ptr(),
         key,
-        key_len.wrapping_mul(8i32 as u64) as libc::c_int,
+        key_len.wrapping_mul(8i32 as u64) as i32,
     );
     inptr = plain;
     outptr = *cipher;
@@ -2478,7 +2478,7 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
     mut key: *const u8,
     mut key_len: size_t,
     mut iv: *const u8,
-    mut padding: libc::c_int,
+    mut padding: i32,
     mut plain: *const u8,
     mut plain_len: size_t,
     mut cipher: *mut *mut u8,
@@ -2495,7 +2495,7 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
     let mut block: [u8; 16] = [0; 16];
     let mut len: size_t = 0;
     let mut i: size_t = 0;
-    let mut padbytes: libc::c_int = 0;
+    let mut padbytes: i32 = 0;
     ctx = &mut aes;
     if !iv.is_null() {
         memcpy(
@@ -2521,7 +2521,7 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
         (16i32 as u64).wrapping_sub(plain_len.wrapping_rem(16i32 as u64))
     } else {
         0i32 as u64
-    }) as libc::c_int;
+    }) as i32;
     /* We do NOT write IV to the output stream if IV is explicitly specified. */
     *cipher_len = plain_len
         .wrapping_add((if !iv.is_null() { 0i32 } else { 16i32 }) as u64)
@@ -2532,7 +2532,7 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
     (*ctx).nrounds = rijndaelSetupEncrypt(
         (*ctx).rk.as_mut_ptr(),
         key,
-        key_len.wrapping_mul(8i32 as u64) as libc::c_int,
+        key_len.wrapping_mul(8i32 as u64) as i32,
     );
     inptr = plain;
     outptr = *cipher;
@@ -2548,8 +2548,8 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
     while len >= 16i32 as u64 {
         i = 0i32 as size_t;
         while i < 16i32 as u64 {
-            block[i as usize] = (*inptr.offset(i as isize) as libc::c_int
-                ^ (*ctx).iv[i as usize] as libc::c_int)
+            block[i as usize] = (*inptr.offset(i as isize) as i32
+                ^ (*ctx).iv[i as usize] as i32)
                 as u8;
             i = i.wrapping_add(1)
         }
@@ -2571,14 +2571,14 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
     if len > 0i32 as u64 || padding != 0 {
         i = 0i32 as size_t;
         while i < len {
-            block[i as usize] = (*inptr.offset(i as isize) as libc::c_int
-                ^ (*ctx).iv[i as usize] as libc::c_int)
+            block[i as usize] = (*inptr.offset(i as isize) as i32
+                ^ (*ctx).iv[i as usize] as i32)
                 as u8;
             i = i.wrapping_add(1)
         }
         i = len;
         while i < 16i32 as u64 {
-            block[i as usize] = (padbytes ^ (*ctx).iv[i as usize] as libc::c_int) as u8;
+            block[i as usize] = (padbytes ^ (*ctx).iv[i as usize] as i32) as u8;
             i = i.wrapping_add(1)
         }
         rijndaelEncrypt(
@@ -3914,8 +3914,8 @@ static mut rcon: [u32; 10] = [
 unsafe extern "C" fn rijndaelSetupEncrypt(
     mut rk: *mut u32,
     mut key: *const u8,
-    mut keybits: libc::c_int,
-) -> libc::c_int {
+    mut keybits: i32,
+) -> i32 {
     let mut i: libc::c_uint = 0i32 as libc::c_uint;
     let mut temp: u32 = 0;
     *rk.offset(0) = (*key.offset(0) as u32) << 24i32
@@ -4027,7 +4027,7 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
 }
 unsafe extern "C" fn rijndaelEncrypt(
     mut rk: *const u32,
-    mut nrounds: libc::c_int,
+    mut nrounds: i32,
     mut plaintext: *const u8,
     mut ciphertext: *mut u8,
 ) {

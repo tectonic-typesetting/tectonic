@@ -14,7 +14,7 @@ extern "C" {
     #[no_mangle]
     static mut eqtb: *mut memory_word;
     #[no_mangle]
-    static mut file_line_error_style_p: libc::c_int;
+    static mut file_line_error_style_p: i32;
     #[no_mangle]
     static mut help_line: [*const i8; 6];
     #[no_mangle]
@@ -199,7 +199,7 @@ pub struct list_state_record {
 }
 #[inline]
 unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
-    return ((*mem.offset(p as isize)).b16.s1 as libc::c_int) < 9i32;
+    return ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32;
 }
 /* tectonic/xetex-pagebuilder.c: the page builder
    Copyright 2017-2018 The Tectonic Project
@@ -314,14 +314,14 @@ unsafe extern "C" fn ensure_vbox(mut n: eight_bits) {
             + 13i32
             + 256i32
             + 4i32
-            + n as libc::c_int) as isize,
+            + n as i32) as isize,
     ))
     .b32
     .s1;
     if p == -0xfffffffi32 {
         return;
     }
-    if (*mem.offset(p as isize)).b16.s1 as libc::c_int != 0i32 {
+    if (*mem.offset(p as isize)).b16.s1 as i32 != 0i32 {
         return;
     }
     if file_line_error_style_p != 0 {
@@ -357,7 +357,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
     let mut save_split_top_skip: i32 = 0;
     let mut process_inserts: bool = false;
     /*1048: "Set the value of output_penalty" */
-    if (*mem.offset(best_page_break as isize)).b16.s1 as libc::c_int == 12i32 {
+    if (*mem.offset(best_page_break as isize)).b16.s1 as i32 == 12i32 {
         geq_word_define(
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -556,7 +556,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                         + 13i32
                         + 256i32
                         + 4i32
-                        + n as libc::c_int) as isize,
+                        + n as i32) as isize,
                 ))
                 .b32
                 .s1 == -0xfffffffi32
@@ -577,7 +577,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                             + 13i32
                             + 256i32
                             + 4i32
-                            + n as libc::c_int) as isize,
+                            + n as i32) as isize,
                     ))
                     .b32
                     .s1 = new_null_box()
@@ -598,7 +598,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                         + 13i32
                         + 256i32
                         + 4i32
-                        + n as libc::c_int) as isize,
+                        + n as i32) as isize,
                 ))
                 .b32
                 .s1 + 5i32;
@@ -615,14 +615,14 @@ unsafe extern "C" fn fire_up(mut c: i32) {
     prev_p = 4999999i32 - 2i32;
     p = (*mem.offset(prev_p as isize)).b32.s1;
     while p != best_page_break {
-        if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 3i32 {
+        if (*mem.offset(p as isize)).b16.s1 as i32 == 3i32 {
             if process_inserts {
                 /*1055: "Either insert the material specified by node p into
                  * the appropriate box, or hold it for the next page; also
                  * delete node p from the current page." */
                 r = (*mem.offset(4999999)).b32.s1;
-                while (*mem.offset(r as isize)).b16.s0 as libc::c_int
-                    != (*mem.offset(p as isize)).b16.s0 as libc::c_int
+                while (*mem.offset(r as isize)).b16.s0 as i32
+                    != (*mem.offset(p as isize)).b16.s0 as i32
                 {
                     r = (*mem.offset(r as isize)).b32.s1
                 }
@@ -637,7 +637,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                         /*1056: "Wrap up the box specified by node r,
                          * splitting node p if called for; set wait = true if
                          * node p holds a remainder after splitting" */
-                        if (*mem.offset(r as isize)).b16.s1 as libc::c_int == 1i32 {
+                        if (*mem.offset(r as isize)).b16.s1 as i32 == 1i32 {
                             if (*mem.offset((r + 1i32) as isize)).b32.s0 == p
                                 && (*mem.offset((r + 1i32) as isize)).b32.s1 != -0xfffffffi32
                             {
@@ -699,7 +699,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                                     + 13i32
                                     + 256i32
                                     + 4i32
-                                    + n as libc::c_int) as isize,
+                                    + n as i32) as isize,
                             ))
                             .b32
                             .s1 + 5i32) as isize,
@@ -723,7 +723,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                                     + 13i32
                                     + 256i32
                                     + 4i32
-                                    + n as libc::c_int) as isize,
+                                    + n as i32) as isize,
                             ))
                             .b32
                             .s1,
@@ -745,7 +745,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                                 + 13i32
                                 + 256i32
                                 + 4i32
-                                + n as libc::c_int) as isize,
+                                + n as i32) as isize,
                         ))
                         .b32
                         .s1 = vpackage(temp_ptr, 0i32, 1i32 as small_number, 0x3fffffffi32)
@@ -768,7 +768,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                 }
                 p = prev_p
             }
-        } else if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 4i32 {
+        } else if (*mem.offset(p as isize)).b16.s1 as i32 == 4i32 {
             if (*mem.offset((p + 1i32) as isize)).b32.s0 != 0i32 {
                 /*1057: "Either append the insertion node p after node q, and
                  * remove it from the current page, or delete node(p)" */
@@ -1273,7 +1273,7 @@ pub unsafe extern "C" fn build_page() {
     let mut h: scaled_t = 0;
     let mut w: scaled_t = 0;
     if (*mem.offset((4999999i32 - 1i32) as isize)).b32.s1 == -0xfffffffi32
-        || output_active as libc::c_int != 0
+        || output_active as i32 != 0
     {
         return;
     }
@@ -1284,16 +1284,16 @@ pub unsafe extern "C" fn build_page() {
         last_penalty = 0i32;
         last_kern = 0i32;
         last_node_type =
-            (*mem.offset(p as isize)).b16.s1 as libc::c_int + 1i32;
-        if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 10i32 {
+            (*mem.offset(p as isize)).b16.s1 as i32 + 1i32;
+        if (*mem.offset(p as isize)).b16.s1 as i32 == 10i32 {
             last_glue = (*mem.offset((p + 1i32) as isize)).b32.s0;
             let ref mut fresh6 = (*mem.offset(last_glue as isize)).b32.s1;
             *fresh6 += 1
         } else {
             last_glue = 0x3fffffffi32;
-            if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 12i32 {
+            if (*mem.offset(p as isize)).b16.s1 as i32 == 12i32 {
                 last_penalty = (*mem.offset((p + 1i32) as isize)).b32.s1
-            } else if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 11i32
+            } else if (*mem.offset(p as isize)).b16.s1 as i32 == 11i32
              {
                 last_kern = (*mem.offset((p + 1i32) as isize)).b32.s1
             }
@@ -1316,12 +1316,12 @@ pub unsafe extern "C" fn build_page() {
          * longer, by mentioning the fact that a kern node at the end of the
          * contribution list will not be contributed until we know its
          * successor." */
-        match (*mem.offset(p as isize)).b16.s1 as libc::c_int {
+        match (*mem.offset(p as isize)).b16.s1 as i32 {
             0 | 1 | 2 => {
-                if (page_contents as libc::c_int) < 2i32 {
+                if (page_contents as i32) < 2i32 {
                     /*1036: "Initialize the current page, insert the \topskip glue
                  * ahead of p, and goto continue." */
-                    if page_contents as libc::c_int == 0i32 {
+                    if page_contents as i32 == 0i32 {
                         freeze_page_specs(2i32 as
                                               small_number); /* "now temp_ptr = glue_ptr(q) */
                     } else { page_contents = 2i32 as u8 }
@@ -1351,8 +1351,8 @@ pub unsafe extern "C" fn build_page() {
             }
             8 => {
                 /*1401: "Prepare to move whatsit p to the current page, then goto contribute" */
-                if (*mem.offset(p as isize)).b16.s0 as libc::c_int == 43i32 ||
-                       (*mem.offset(p as isize)).b16.s0 as libc::c_int ==
+                if (*mem.offset(p as isize)).b16.s0 as i32 == 43i32 ||
+                       (*mem.offset(p as isize)).b16.s0 as i32 ==
                            44i32 {
                     page_so_far[1] +=
                         page_so_far[7] +
@@ -1362,7 +1362,7 @@ pub unsafe extern "C" fn build_page() {
                 current_block = 11918621130838443904;
             }
             10 => {
-                if (page_contents as libc::c_int) < 2i32 {
+                if (page_contents as i32) < 2i32 {
                     current_block = 15559656170992153795;
                 } else if is_non_discardable_node(page_tail) {
                     pi = 0i32;
@@ -1370,19 +1370,19 @@ pub unsafe extern "C" fn build_page() {
                 } else { current_block = 5579886686420104461; }
             }
             11 => {
-                if (page_contents as libc::c_int) < 2i32 {
+                if (page_contents as i32) < 2i32 {
                     current_block = 15559656170992153795;
                 } else if (*mem.offset(p as isize)).b32.s1 == -0xfffffffi32 {
                     return
                 } else if (*mem.offset((*mem.offset(p as isize)).b32.s1 as
-                                           isize)).b16.s1 as libc::c_int ==
+                                           isize)).b16.s1 as i32 ==
                               10i32 {
                     pi = 0i32;
                     current_block = 13253659531982233645;
                 } else { current_block = 5579886686420104461; }
             }
             12 => {
-                if (page_contents as libc::c_int) < 2i32 {
+                if (page_contents as i32) < 2i32 {
                     current_block = 15559656170992153795;
                 } else {
                     pi = (*mem.offset((p + 1i32) as isize)).b32.s1;
@@ -1392,18 +1392,18 @@ pub unsafe extern "C" fn build_page() {
             4 => { current_block = 11918621130838443904; }
             3 => {
                 /*1043: "Append an insertion to the current page and goto contribute" */
-                if page_contents as libc::c_int == 0i32 {
+                if page_contents as i32 == 0i32 {
                     freeze_page_specs(1i32 as small_number);
                 }
                 n = (*mem.offset(p as isize)).b16.s0 as u8;
                 r = 4999999i32;
-                while n as libc::c_int >=
+                while n as i32 >=
                           (*mem.offset((*mem.offset(r as isize)).b32.s1 as
-                                           isize)).b16.s0 as libc::c_int {
+                                           isize)).b16.s0 as i32 {
                     r = (*mem.offset(r as isize)).b32.s1
                 }
-                if (*mem.offset(r as isize)).b16.s0 as libc::c_int !=
-                       n as libc::c_int {
+                if (*mem.offset(r as isize)).b16.s0 as i32 !=
+                       n as i32 {
                     /*1044: "Create a page insertion node with subtype(r) = n, and
                  * include the glue correction for box `n` in the current page
                  * state" */
@@ -1420,7 +1420,7 @@ pub unsafe extern "C" fn build_page() {
                                           15000i32 + 12i32 + 9000i32 + 1i32 +
                                           1i32 + 19i32 + 256i32 + 256i32 +
                                           13i32 + 256i32 + 4i32 +
-                                          n as libc::c_int) as isize)).b32.s1
+                                          n as i32) as isize)).b32.s1
                            == -0xfffffffi32 {
                         (*mem.offset((r + 3i32) as isize)).b32.s1 = 0i32
                     } else {
@@ -1436,7 +1436,7 @@ pub unsafe extern "C" fn build_page() {
                                                              19i32 + 256i32 +
                                                              256i32 + 13i32 +
                                                              256i32 + 4i32 +
-                                                             n as libc::c_int)
+                                                             n as i32)
                                                             as isize)).b32.s1
                                               + 3i32) as isize)).b32.s1 +
                                 (*mem.offset(((*eqtb.offset((1i32 +
@@ -1457,7 +1457,7 @@ pub unsafe extern "C" fn build_page() {
                                                                  256i32 + 4i32
                                                                  +
                                                                  n as
-                                                                     libc::c_int)
+                                                                     i32)
                                                                 as
                                                                 isize)).b32.s1
                                                   + 2i32) as isize)).b32.s1
@@ -1467,7 +1467,7 @@ pub unsafe extern "C" fn build_page() {
                         (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
                                            (0x10ffffi32 + 1i32) + 1i32 +
                                            15000i32 + 12i32 + 9000i32 + 1i32 +
-                                           1i32 + 19i32 + n as libc::c_int) as
+                                           1i32 + 19i32 + n as i32) as
                                           isize)).b32.s1;
                     if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
                                           (0x10ffffi32 + 1i32) + 1i32 +
@@ -1481,7 +1481,7 @@ pub unsafe extern "C" fn build_page() {
                                           (0x10ffffi32 + 1i32) +
                                           (0x10ffffi32 + 1i32) +
                                           (0x10ffffi32 + 1i32) + 85i32 +
-                                          n as libc::c_int) as isize)).b32.s1
+                                          n as i32) as isize)).b32.s1
                            == 1000i32 {
                         h = (*mem.offset((r + 3i32) as isize)).b32.s1
                     } else {
@@ -1503,18 +1503,18 @@ pub unsafe extern "C" fn build_page() {
                                                    (0x10ffffi32 + 1i32) +
                                                    (0x10ffffi32 + 1i32) +
                                                    (0x10ffffi32 + 1i32) +
-                                                   85i32 + n as libc::c_int)
+                                                   85i32 + n as i32)
                                                   as isize)).b32.s1
                     }
                     page_so_far[0] -=
                         h + (*mem.offset((q + 1i32) as isize)).b32.s1;
                     page_so_far[(2i32 +
                                      (*mem.offset(q as isize)).b16.s1 as
-                                         libc::c_int) as usize] +=
+                                         i32) as usize] +=
                         (*mem.offset((q + 2i32) as isize)).b32.s1;
                     page_so_far[6] +=
                         (*mem.offset((q + 3i32) as isize)).b32.s1;
-                    if (*mem.offset(q as isize)).b16.s0 as libc::c_int != 0i32
+                    if (*mem.offset(q as isize)).b16.s0 as i32 != 0i32
                            &&
                            (*mem.offset((q + 3i32) as isize)).b32.s1 != 0i32 {
                         if file_line_error_style_p != 0 {
@@ -1541,7 +1541,7 @@ pub unsafe extern "C" fn build_page() {
                         error();
                     }
                 }
-                if (*mem.offset(r as isize)).b16.s1 as libc::c_int == 1i32 {
+                if (*mem.offset(r as isize)).b16.s1 as i32 == 1i32 {
                     insert_penalties +=
                         (*mem.offset((p + 1i32) as isize)).b32.s1
                 } else {
@@ -1561,7 +1561,7 @@ pub unsafe extern "C" fn build_page() {
                                           (0x10ffffi32 + 1i32) +
                                           (0x10ffffi32 + 1i32) +
                                           (0x10ffffi32 + 1i32) + 85i32 +
-                                          n as libc::c_int) as isize)).b32.s1
+                                          n as i32) as isize)).b32.s1
                            == 1000i32 {
                         h = (*mem.offset((p + 3i32) as isize)).b32.s1
                     } else {
@@ -1583,7 +1583,7 @@ pub unsafe extern "C" fn build_page() {
                                                    (0x10ffffi32 + 1i32) +
                                                    (0x10ffffi32 + 1i32) +
                                                    (0x10ffffi32 + 1i32) +
-                                                   85i32 + n as libc::c_int)
+                                                   85i32 + n as i32)
                                                   as isize)).b32.s1
                     }
                     if (h <= 0i32 || h <= delta) &&
@@ -1604,7 +1604,7 @@ pub unsafe extern "C" fn build_page() {
                                                   (0x10ffffi32 + 1i32) + 85i32
                                                   + 256i32 +
                                                   (0x10ffffi32 + 1i32) + 23i32
-                                                  + n as libc::c_int) as
+                                                  + n as i32) as
                                                  isize)).b32.s1 {
                         page_so_far[0] -= h;
                         let ref mut fresh8 =
@@ -1636,7 +1636,7 @@ pub unsafe extern "C" fn build_page() {
                                               (0x10ffffi32 + 1i32) +
                                               (0x10ffffi32 + 1i32) +
                                               (0x10ffffi32 + 1i32) + 85i32 +
-                                              n as libc::c_int) as
+                                              n as i32) as
                                              isize)).b32.s1 <= 0i32 {
                             w = 0x3fffffffi32
                         } else {
@@ -1656,7 +1656,7 @@ pub unsafe extern "C" fn build_page() {
                                                   (0x10ffffi32 + 1i32) +
                                                   (0x10ffffi32 + 1i32) +
                                                   (0x10ffffi32 + 1i32) + 85i32
-                                                  + n as libc::c_int) as
+                                                  + n as i32) as
                                                  isize)).b32.s1 != 1000i32 {
                                 w =
                                     x_over_n(w,
@@ -1691,7 +1691,7 @@ pub unsafe extern "C" fn build_page() {
                                                                      1i32) +
                                                                 85i32 +
                                                                 n as
-                                                                    libc::c_int)
+                                                                    i32)
                                                                as
                                                                isize)).b32.s1)
                                         * 1000i32
@@ -1713,7 +1713,7 @@ pub unsafe extern "C" fn build_page() {
                                                   (0x10ffffi32 + 1i32) + 85i32
                                                   + 256i32 +
                                                   (0x10ffffi32 + 1i32) + 23i32
-                                                  + n as libc::c_int) as
+                                                  + n as i32) as
                                                  isize)).b32.s1 -
                                    (*mem.offset((r + 3i32) as isize)).b32.s1 {
                             w =
@@ -1733,7 +1733,7 @@ pub unsafe extern "C" fn build_page() {
                                                    (0x10ffffi32 + 1i32) +
                                                    85i32 + 256i32 +
                                                    (0x10ffffi32 + 1i32) +
-                                                   23i32 + n as libc::c_int)
+                                                   23i32 + n as i32)
                                                   as isize)).b32.s1 -
                                     (*mem.offset((r + 3i32) as isize)).b32.s1
                         }
@@ -1757,7 +1757,7 @@ pub unsafe extern "C" fn build_page() {
                                               (0x10ffffi32 + 1i32) +
                                               (0x10ffffi32 + 1i32) +
                                               (0x10ffffi32 + 1i32) + 85i32 +
-                                              n as libc::c_int) as
+                                              n as i32) as
                                              isize)).b32.s1 != 1000i32 {
                             best_height_plus_depth =
                                 x_over_n(best_height_plus_depth, 1000i32) *
@@ -1776,7 +1776,7 @@ pub unsafe extern "C" fn build_page() {
                                                        + (0x10ffffi32 + 1i32)
                                                        + (0x10ffffi32 + 1i32)
                                                        + 85i32 +
-                                                       n as libc::c_int) as
+                                                       n as i32) as
                                                       isize)).b32.s1
                         }
                         page_so_far[0] -= best_height_plus_depth;
@@ -1786,7 +1786,7 @@ pub unsafe extern "C" fn build_page() {
                         if q == -0xfffffffi32 {
                             insert_penalties += -10000i32
                         } else if (*mem.offset(q as isize)).b16.s1 as
-                                      libc::c_int == 12i32 {
+                                      i32 == 12i32 {
                             insert_penalties +=
                                 (*mem.offset((q + 1i32) as isize)).b32.s1
                         }
@@ -1863,9 +1863,9 @@ pub unsafe extern "C" fn build_page() {
                     /* ... resuming 1032 ... I believe the "goto" here can only be
          * triggered if p is a penalty node, and we decided not to break. */
                     {
-                        if ((*mem.offset(p as isize)).b16.s1 as libc::c_int) <
+                        if ((*mem.offset(p as isize)).b16.s1 as i32) <
                                10i32 ||
-                               (*mem.offset(p as isize)).b16.s1 as libc::c_int
+                               (*mem.offset(p as isize)).b16.s1 as i32
                                    > 11i32 {
                             current_block = 11918621130838443904;
                         } else { current_block = 5579886686420104461; }
@@ -1912,17 +1912,17 @@ pub unsafe extern "C" fn build_page() {
             5579886686420104461 => {
                 /*1039: "Update the current page measurements with respect to the glue or kern
          * specified by node p" */
-                if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 11i32 {
+                if (*mem.offset(p as isize)).b16.s1 as i32 == 11i32 {
                     q = p
                 } else {
                     q = (*mem.offset((p + 1i32) as isize)).b32.s0;
                     page_so_far[(2i32 +
                                      (*mem.offset(q as isize)).b16.s1 as
-                                         libc::c_int) as usize] +=
+                                         i32) as usize] +=
                         (*mem.offset((q + 2i32) as isize)).b32.s1;
                     page_so_far[6] +=
                         (*mem.offset((q + 3i32) as isize)).b32.s1;
-                    if (*mem.offset(q as isize)).b16.s0 as libc::c_int != 0i32
+                    if (*mem.offset(q as isize)).b16.s0 as i32 != 0i32
                            &&
                            (*mem.offset((q + 3i32) as isize)).b32.s1 != 0i32 {
                         if file_line_error_style_p != 0 {

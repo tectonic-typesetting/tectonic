@@ -12,13 +12,13 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn CMap_get_CIDSysInfo(cmap: *mut CMap) -> *mut CIDSysInfo;
     #[no_mangle]
-    fn CMap_get_wmode(cmap: *mut CMap) -> libc::c_int;
+    fn CMap_get_wmode(cmap: *mut CMap) -> i32;
     #[no_mangle]
     fn CMap_get_name(cmap: *mut CMap) -> *mut i8;
     #[no_mangle]
@@ -33,7 +33,7 @@ extern "C" {
     #[no_mangle]
     static mut CSI_UNICODE: CIDSysInfo;
     #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
@@ -51,14 +51,14 @@ extern "C" {
      * already removed that.
      */
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn pdf_new_stream(flags: libc::c_int) -> *mut pdf_obj;
+    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_add_stream(
         stream: *mut pdf_obj,
         stream_data_ptr: *const libc::c_void,
-        stream_data_len: libc::c_int,
+        stream_data_len: i32,
     );
     #[no_mangle]
     fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
@@ -115,13 +115,13 @@ extern "C" {
         category: *const i8,
         resname: *const i8,
         object: *mut pdf_obj,
-        flags: libc::c_int,
-    ) -> libc::c_int;
+        flags: i32,
+    ) -> i32;
     #[no_mangle]
     fn pdf_findresource(category: *const i8, resname: *const i8)
-        -> libc::c_int;
+        -> i32;
     #[no_mangle]
-    fn pdf_get_resource_reference(res_id: libc::c_int) -> *mut pdf_obj;
+    fn pdf_get_resource_reference(res_id: i32) -> *mut pdf_obj;
 }
 pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -149,7 +149,7 @@ pub type size_t = u64;
 pub struct CIDSysInfo {
     pub registry: *mut i8,
     pub ordering: *mut i8,
-    pub supplement: libc::c_int,
+    pub supplement: i32,
 }
 /* Codespacerange */
 #[derive(Copy, Clone)]
@@ -163,7 +163,7 @@ pub struct rangeDef {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mapDef {
-    pub flag: libc::c_int,
+    pub flag: i32,
     pub len: size_t,
     pub code: *mut u8,
     pub next: *mut mapDef,
@@ -174,23 +174,23 @@ pub struct mapDef {
 pub struct mapData {
     pub data: *mut u8,
     pub prev: *mut mapData,
-    pub pos: libc::c_int,
+    pub pos: i32,
     /* Position of next free data segment */
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CMap {
     pub name: *mut i8,
-    pub type_0: libc::c_int,
-    pub wmode: libc::c_int,
+    pub type_0: i32,
+    pub wmode: i32,
     pub CSI: *mut CIDSysInfo,
     pub useCMap: *mut CMap,
     pub codespace: C2RustUnnamed_0,
     pub mapTbl: *mut mapDef,
     pub mapData: *mut mapData,
-    pub flags: libc::c_int,
+    pub flags: i32,
     pub profile: C2RustUnnamed,
-    pub reverseMap: *mut libc::c_int,
+    pub reverseMap: *mut i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -250,10 +250,10 @@ pub struct sbuf {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_1 {
-    pub start: libc::c_int,
-    pub count: libc::c_int,
+    pub start: i32,
+    pub count: i32,
 }
-unsafe extern "C" fn block_count(mut mtab: *mut mapDef, mut c: libc::c_int) -> size_t {
+unsafe extern "C" fn block_count(mut mtab: *mut mapDef, mut c: i32) -> size_t {
     let mut count: size_t = 0i32 as size_t;
     let mut n: size_t = 0;
     n = (*mtab.offset(c as isize))
@@ -278,10 +278,10 @@ unsafe extern "C" fn block_count(mut mtab: *mut mapDef, mut c: libc::c_int) -> s
             (*mtab.offset(c as isize)).code as *const libc::c_void,
             n,
         ) == 0
-            && (*(*mtab.offset((c - 1i32) as isize)).code.offset(n as isize) as libc::c_int)
+            && (*(*mtab.offset((c - 1i32) as isize)).code.offset(n as isize) as i32)
                 < 255i32
-            && *(*mtab.offset((c - 1i32) as isize)).code.offset(n as isize) as libc::c_int + 1i32
-                == *(*mtab.offset(c as isize)).code.offset(n as isize) as libc::c_int)
+            && *(*mtab.offset((c - 1i32) as isize)).code.offset(n as isize) as i32 + 1i32
+                == *(*mtab.offset(c as isize)).code.offset(n as isize) as i32)
         {
             break;
         }
@@ -294,21 +294,21 @@ unsafe extern "C" fn sputx(
     mut c: u8,
     mut s: *mut *mut i8,
     mut end: *mut i8,
-) -> libc::c_int {
-    let mut hi: i8 = (c as libc::c_int >> 4i32) as i8;
-    let mut lo: i8 = (c as libc::c_int & 0xfi32) as i8;
+) -> i32 {
+    let mut hi: i8 = (c as i32 >> 4i32) as i8;
+    let mut lo: i8 = (c as i32 & 0xfi32) as i8;
     if (*s).offset(2) > end {
         _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
     }
-    **s = (if (hi as libc::c_int) < 10i32 {
-        hi as libc::c_int + '0' as i32
+    **s = (if (hi as i32) < 10i32 {
+        hi as i32 + '0' as i32
     } else {
-        hi as libc::c_int + '7' as i32
+        hi as i32 + '7' as i32
     }) as i8;
-    *(*s).offset(1) = (if (lo as libc::c_int) < 10i32 {
-        lo as libc::c_int + '0' as i32
+    *(*s).offset(1) = (if (lo as i32) < 10i32 {
+        lo as i32 + '0' as i32
     } else {
-        lo as libc::c_int + '7' as i32
+        lo as i32 + '7' as i32
     }) as i8;
     *s = (*s).offset(2);
     return 2i32;
@@ -320,7 +320,7 @@ unsafe extern "C" fn write_map(
     mut depth: size_t,
     mut wbuf: *mut sbuf,
     mut stream: *mut pdf_obj,
-) -> libc::c_int {
+) -> i32 {
     let mut c: size_t = 0;
     let mut i: size_t = 0;
     let mut block_length: size_t = 0;
@@ -349,10 +349,10 @@ unsafe extern "C" fn write_map(
         {
             match (*mtab.offset(c as isize)).flag & 0xfi32 {
                 1 | 4 => {
-                    block_length = block_count(mtab, c as libc::c_int);
+                    block_length = block_count(mtab, c as i32);
                     if block_length >= 2i32 as u64 {
-                        blocks[num_blocks as usize].start = c as libc::c_int;
-                        blocks[num_blocks as usize].count = block_length as libc::c_int;
+                        blocks[num_blocks as usize].start = c as i32;
+                        blocks[num_blocks as usize].count = block_length as i32;
                         num_blocks = num_blocks.wrapping_add(1);
                         c = (c as u64).wrapping_add(block_length) as size_t as size_t
                     } else {
@@ -428,18 +428,18 @@ unsafe extern "C" fn write_map(
             pdf_add_stream(
                 stream,
                 fmt_buf.as_mut_ptr() as *const libc::c_void,
-                strlen(fmt_buf.as_mut_ptr()) as libc::c_int,
+                strlen(fmt_buf.as_mut_ptr()) as i32,
             );
             pdf_add_stream(
                 stream,
                 (*wbuf).buf as *const libc::c_void,
-                (*wbuf).curptr.wrapping_offset_from((*wbuf).buf) as i64 as libc::c_int,
+                (*wbuf).curptr.wrapping_offset_from((*wbuf).buf) as i64 as i32,
             );
             (*wbuf).curptr = (*wbuf).buf;
             pdf_add_stream(
                 stream,
                 b"endbfchar\n\x00" as *const u8 as *const i8 as *const libc::c_void,
-                strlen(b"endbfchar\n\x00" as *const u8 as *const i8) as libc::c_int,
+                strlen(b"endbfchar\n\x00" as *const u8 as *const i8) as i32,
             );
             count = 0i32 as size_t
         }
@@ -456,18 +456,18 @@ unsafe extern "C" fn write_map(
             pdf_add_stream(
                 stream,
                 fmt_buf_0.as_mut_ptr() as *const libc::c_void,
-                strlen(fmt_buf_0.as_mut_ptr()) as libc::c_int,
+                strlen(fmt_buf_0.as_mut_ptr()) as i32,
             );
             pdf_add_stream(
                 stream,
                 (*wbuf).buf as *const libc::c_void,
-                (*wbuf).curptr.wrapping_offset_from((*wbuf).buf) as i64 as libc::c_int,
+                (*wbuf).curptr.wrapping_offset_from((*wbuf).buf) as i64 as i32,
             );
             (*wbuf).curptr = (*wbuf).buf;
             pdf_add_stream(
                 stream,
                 b"endbfchar\n\x00" as *const u8 as *const i8 as *const libc::c_void,
-                strlen(b"endbfchar\n\x00" as *const u8 as *const i8) as libc::c_int,
+                strlen(b"endbfchar\n\x00" as *const u8 as *const i8) as i32,
             );
             count = 0i32 as size_t
         }
@@ -479,7 +479,7 @@ unsafe extern "C" fn write_map(
         pdf_add_stream(
             stream,
             fmt_buf_0.as_mut_ptr() as *const libc::c_void,
-            strlen(fmt_buf_0.as_mut_ptr()) as libc::c_int,
+            strlen(fmt_buf_0.as_mut_ptr()) as i32,
         );
         i = 0i32 as size_t;
         while i < num_blocks {
@@ -550,16 +550,16 @@ unsafe extern "C" fn write_map(
         pdf_add_stream(
             stream,
             (*wbuf).buf as *const libc::c_void,
-            (*wbuf).curptr.wrapping_offset_from((*wbuf).buf) as i64 as libc::c_int,
+            (*wbuf).curptr.wrapping_offset_from((*wbuf).buf) as i64 as i32,
         );
         (*wbuf).curptr = (*wbuf).buf;
         pdf_add_stream(
             stream,
             b"endbfrange\n\x00" as *const u8 as *const i8 as *const libc::c_void,
-            strlen(b"endbfrange\n\x00" as *const u8 as *const i8) as libc::c_int,
+            strlen(b"endbfrange\n\x00" as *const u8 as *const i8) as i32,
         );
     }
-    return count as libc::c_int;
+    return count as i32;
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -699,7 +699,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
         strlen(
             b"/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n\x00" as *const u8
                 as *const i8,
-        ) as libc::c_int,
+        ) as i32,
     );
     wbuf.curptr = wbuf.curptr.offset(sprintf(
         wbuf.curptr,
@@ -729,7 +729,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
     pdf_add_stream(
         stream,
         wbuf.buf as *const libc::c_void,
-        wbuf.curptr.wrapping_offset_from(wbuf.buf) as i64 as libc::c_int,
+        wbuf.curptr.wrapping_offset_from(wbuf.buf) as i64 as i32,
     );
     wbuf.curptr = wbuf.buf;
     /* codespacerange */
@@ -782,13 +782,13 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
     pdf_add_stream(
         stream,
         wbuf.buf as *const libc::c_void,
-        wbuf.curptr.wrapping_offset_from(wbuf.buf) as i64 as libc::c_int,
+        wbuf.curptr.wrapping_offset_from(wbuf.buf) as i64 as i32,
     );
     wbuf.curptr = wbuf.buf;
     pdf_add_stream(
         stream,
         b"endcodespacerange\n\x00" as *const u8 as *const i8 as *const libc::c_void,
-        strlen(b"endcodespacerange\n\x00" as *const u8 as *const i8) as libc::c_int,
+        strlen(b"endcodespacerange\n\x00" as *const u8 as *const i8) as i32,
     );
     /* CMap body */
     if !(*cmap).mapTbl.is_null() {
@@ -817,17 +817,17 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
             pdf_add_stream(
                 stream,
                 fmt_buf.as_mut_ptr() as *const libc::c_void,
-                strlen(fmt_buf.as_mut_ptr()) as libc::c_int,
+                strlen(fmt_buf.as_mut_ptr()) as i32,
             );
             pdf_add_stream(
                 stream,
                 wbuf.buf as *const libc::c_void,
-                wbuf.curptr.wrapping_offset_from(wbuf.buf) as i64 as libc::c_int,
+                wbuf.curptr.wrapping_offset_from(wbuf.buf) as i64 as i32,
             );
             pdf_add_stream(
                 stream,
                 b"endbfchar\n\x00" as *const u8 as *const i8 as *const libc::c_void,
-                strlen(b"endbfchar\n\x00" as *const u8 as *const i8) as libc::c_int,
+                strlen(b"endbfchar\n\x00" as *const u8 as *const i8) as i32,
             );
             count = 0i32 as size_t;
             wbuf.curptr = wbuf.buf
@@ -841,7 +841,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
         strlen(
             b"endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend\n\x00" as *const u8
                 as *const i8,
-        ) as libc::c_int,
+        ) as i32,
     );
     free(codestr as *mut libc::c_void);
     free(wbuf.buf as *mut libc::c_void);

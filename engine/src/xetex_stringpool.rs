@@ -46,9 +46,9 @@ static mut string_constants: [*const i8; 3] = [
     0 as *const i8,
 ];
 #[no_mangle]
-pub unsafe extern "C" fn load_pool_strings(mut spare_size: i32) -> libc::c_int {
+pub unsafe extern "C" fn load_pool_strings(mut spare_size: i32) -> i32 {
     let mut s: *const i8 = 0 as *const i8;
-    let mut i: libc::c_int = 0i32;
+    let mut i: i32 = 0i32;
     let mut total_len: size_t = 0i32 as size_t;
     let mut g: str_number = 0i32;
     loop {
@@ -148,7 +148,7 @@ pub unsafe extern "C" fn str_eq_buf(mut s: str_number, mut k: i32) -> bool {
                     j += 1
                 }
             }
-        } else if *str_pool.offset(j as isize) as libc::c_int != *buffer.offset(k as isize) {
+        } else if *str_pool.offset(j as isize) as i32 != *buffer.offset(k as isize) {
             return 0i32 != 0;
         }
         j += 1;
@@ -172,21 +172,21 @@ pub unsafe extern "C" fn str_eq_str(mut s: str_number, mut t: str_number) -> boo
             } else if s
                 != *str_pool
                     .offset(*str_start.offset((t as i64 - 65536) as isize) as isize)
-                    as libc::c_int
+                    as i32
             {
                 return 0i32 != 0;
             }
         } else if (t as i64) < 65536 {
             if *str_pool.offset(*str_start.offset((s as i64 - 65536) as isize) as isize)
-                as libc::c_int
+                as i32
                 != t
             {
                 return 0i32 != 0;
             }
         } else if *str_pool.offset(*str_start.offset((s as i64 - 65536) as isize) as isize)
-            as libc::c_int
+            as i32
             != *str_pool.offset(*str_start.offset((t as i64 - 65536) as isize) as isize)
-                as libc::c_int
+                as i32
         {
             return 0i32 != 0;
         }
@@ -194,8 +194,8 @@ pub unsafe extern "C" fn str_eq_str(mut s: str_number, mut t: str_number) -> boo
         j = *str_start.offset((s as i64 - 65536) as isize);
         k = *str_start.offset((t as i64 - 65536) as isize);
         while j < *str_start.offset(((s + 1i32) as i64 - 65536) as isize) {
-            if *str_pool.offset(j as isize) as libc::c_int
-                != *str_pool.offset(k as isize) as libc::c_int
+            if *str_pool.offset(j as isize) as i32
+                != *str_pool.offset(k as isize) as i32
             {
                 return 0i32 != 0;
             }

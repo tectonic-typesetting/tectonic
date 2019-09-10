@@ -19,27 +19,27 @@ extern "C" {
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
-    fn atoi(__nptr: *const i8) -> libc::c_int;
+    fn atoi(__nptr: *const i8) -> i32;
     #[no_mangle]
-    fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> i64;
+    fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
     #[no_mangle]
-    fn strtoul(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> u64;
+    fn strtoul(_: *const i8, _: *mut *mut i8, _: i32) -> u64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
-    fn strchr(_: *const i8, _: libc::c_int) -> *mut i8;
+    fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
     fn strstr(_: *const i8, _: *const i8) -> *mut i8;
     #[no_mangle]
@@ -48,11 +48,11 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -80,7 +80,7 @@ extern "C" {
     #[no_mangle]
     fn tt_mfgets(
         buffer: *mut i8,
-        length: libc::c_int,
+        length: i32,
         file: rust_input_handle_t,
     ) -> *mut i8;
     /* Tectonic-enabled I/O alternatives */
@@ -98,19 +98,19 @@ extern "C" {
     fn ht_lookup_table(
         ht: *mut ht_table,
         key: *const libc::c_void,
-        keylen: libc::c_int,
+        keylen: i32,
     ) -> *mut libc::c_void;
     #[no_mangle]
     fn ht_remove_table(
         ht: *mut ht_table,
         key: *const libc::c_void,
-        keylen: libc::c_int,
-    ) -> libc::c_int;
+        keylen: i32,
+    ) -> i32;
     #[no_mangle]
     fn ht_insert_table(
         ht: *mut ht_table,
         key: *const libc::c_void,
-        keylen: libc::c_int,
+        keylen: i32,
         value: *mut libc::c_void,
     );
     #[no_mangle]
@@ -176,7 +176,7 @@ extern "C" {
     #[no_mangle]
     fn sfd_get_subfont_ids(
         sfd_name: *const i8,
-        num_subfonts: *mut libc::c_int,
+        num_subfonts: *mut i32,
     ) -> *mut *mut i8;
 }
 pub type C2RustUnnamed = libc::c_uint;
@@ -227,16 +227,16 @@ pub struct fontmap_opt {
     pub slant: f64,
     pub extend: f64,
     pub bold: f64,
-    pub mapc: libc::c_int,
-    pub flags: libc::c_int,
+    pub mapc: i32,
+    pub flags: i32,
     pub otl_tags: *mut i8,
     pub tounicode: *mut i8,
     pub cff_charsets: *mut libc::c_void,
     pub design_size: f64,
     pub charcoll: *mut i8,
-    pub index: libc::c_int,
-    pub style: libc::c_int,
-    pub stemv: libc::c_int,
+    pub index: i32,
+    pub style: i32,
+    pub stemv: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -256,7 +256,7 @@ pub struct C2RustUnnamed_0 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_table {
-    pub count: libc::c_int,
+    pub count: i32,
     pub hval_free_fn: hval_free_func,
     pub table: [*mut ht_entry; 503],
 }
@@ -264,7 +264,7 @@ pub struct ht_table {
 #[repr(C)]
 pub struct ht_entry {
     pub key: *mut i8,
-    pub keylen: libc::c_int,
+    pub keylen: i32,
     pub value: *mut libc::c_void,
     pub next: *mut ht_entry,
 }
@@ -301,9 +301,9 @@ unsafe extern "C" fn strstartswith(
     }
     return 0 as *const i8;
 }
-static mut verbose: libc::c_int = 0i32;
+static mut verbose: i32 = 0i32;
 #[no_mangle]
-pub unsafe extern "C" fn pdf_fontmap_set_verbose(mut level: libc::c_int) {
+pub unsafe extern "C" fn pdf_fontmap_set_verbose(mut level: i32) {
     verbose = level;
 }
 #[no_mangle]
@@ -426,12 +426,12 @@ unsafe extern "C" fn fill_in_defaults(
         && (streq_ptr(
             (*mrec).enc_name,
             b"default\x00" as *const u8 as *const i8,
-        ) as libc::c_int
+        ) as i32
             != 0
             || streq_ptr(
                 (*mrec).enc_name,
                 b"none\x00" as *const u8 as *const i8,
-            ) as libc::c_int
+            ) as i32
                 != 0)
     {
         (*mrec).enc_name = mfree((*mrec).enc_name as *mut libc::c_void) as *mut i8
@@ -440,12 +440,12 @@ unsafe extern "C" fn fill_in_defaults(
         && (streq_ptr(
             (*mrec).font_name,
             b"default\x00" as *const u8 as *const i8,
-        ) as libc::c_int
+        ) as i32
             != 0
             || streq_ptr(
                 (*mrec).font_name,
                 b"none\x00" as *const u8 as *const i8,
-            ) as libc::c_int
+            ) as i32
                 != 0)
     {
         (*mrec).font_name = mfree((*mrec).font_name as *mut libc::c_void) as *mut i8
@@ -476,12 +476,12 @@ unsafe extern "C" fn fill_in_defaults(
         if (streq_ptr(
             (*mrec).enc_name,
             b"Identity-H\x00" as *const u8 as *const i8,
-        ) as libc::c_int
+        ) as i32
             != 0
             || streq_ptr(
                 (*mrec).enc_name,
                 b"Identity-V\x00" as *const u8 as *const i8,
-            ) as libc::c_int
+            ) as i32
                 != 0)
             && (!strstr(
                 (*mrec).charmap.sfd_name,
@@ -528,7 +528,7 @@ unsafe extern "C" fn fill_in_defaults(
 }
 unsafe extern "C" fn tt_readline(
     mut buf: *mut i8,
-    mut buf_len: libc::c_int,
+    mut buf_len: i32,
     mut handle: rust_input_handle_t,
 ) -> *mut i8 {
     let mut p: *mut i8 = 0 as *mut i8;
@@ -561,10 +561,10 @@ unsafe extern "C" fn skip_blank(mut pp: *mut *const i8, mut endptr: *const i8) {
         return;
     }
     while p < endptr
-        && (*p as libc::c_int & !0x7fi32 == 0i32
-            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISblank as libc::c_int as u16 as libc::c_int
+        && (*p as i32 & !0x7fi32 == 0i32
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                as i32
+                & _ISblank as i32 as u16 as i32
                 != 0)
     {
         p = p.offset(1)
@@ -581,14 +581,14 @@ unsafe extern "C" fn parse_string_value(
     if p.is_null() || p >= endptr {
         return 0 as *mut i8;
     }
-    if *p as libc::c_int == '\"' as i32 {
+    if *p as i32 == '\"' as i32 {
         q = parse_c_string(&mut p, endptr)
     } else {
         n = 0i32 as libc::c_uint;
         while p < endptr
-            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISspace as libc::c_int as u16 as libc::c_int
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                as i32
+                & _ISspace as i32 as u16 as i32
                 == 0
         {
             p = p.offset(1);
@@ -614,13 +614,13 @@ unsafe extern "C" fn parse_string_value(
 unsafe extern "C" fn parse_integer_value(
     mut pp: *mut *const i8,
     mut endptr: *const i8,
-    mut base: libc::c_int,
+    mut base: i32,
 ) -> *mut i8 {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = *pp;
-    let mut has_sign: libc::c_int = 0i32;
-    let mut has_prefix: libc::c_int = 0i32;
-    let mut n: libc::c_int = 0;
+    let mut has_sign: i32 = 0i32;
+    let mut has_prefix: i32 = 0i32;
+    let mut n: i32 = 0;
     if base == 0i32 || base >= 2i32 && base <= 36i32 {
     } else {
         __assert_fail(
@@ -636,14 +636,14 @@ unsafe extern "C" fn parse_integer_value(
     if p.is_null() || p >= endptr {
         return 0 as *mut i8;
     }
-    if *p as libc::c_int == '-' as i32 || *p as libc::c_int == '+' as i32 {
+    if *p as i32 == '-' as i32 || *p as i32 == '+' as i32 {
         p = p.offset(1);
         has_sign = 1i32
     }
     if (base == 0i32 || base == 16i32)
         && p.offset(2) <= endptr
-        && *p.offset(0) as libc::c_int == '0' as i32
-        && *p.offset(1) as libc::c_int == 'x' as i32
+        && *p.offset(0) as i32 == '0' as i32
+        && *p.offset(1) as i32 == 'x' as i32
     {
         p = p.offset(2);
         has_prefix = 1i32
@@ -651,7 +651,7 @@ unsafe extern "C" fn parse_integer_value(
     if base == 0i32 {
         if has_prefix != 0 {
             base = 16i32
-        } else if p < endptr && *p as libc::c_int == '0' as i32 {
+        } else if p < endptr && *p as i32 == '0' as i32 {
             base = 8i32
         } else {
             base = 10i32
@@ -660,14 +660,14 @@ unsafe extern "C" fn parse_integer_value(
     n = 0i32;
     while p < endptr
         && (base <= 10i32
-            && *p as libc::c_int >= '0' as i32
-            && (*p as libc::c_int) < '0' as i32 + base
+            && *p as i32 >= '0' as i32
+            && (*p as i32) < '0' as i32 + base
             || base > 10i32
-                && (*p as libc::c_int >= '0' as i32 && *p as libc::c_int <= '9' as i32
-                    || *p as libc::c_int >= 'a' as i32
-                        && (*p as libc::c_int) < 'a' as i32 + (base - 10i32)
-                    || *p as libc::c_int >= 'A' as i32
-                        && (*p as libc::c_int) < 'A' as i32 + (base - 10i32)))
+                && (*p as i32 >= '0' as i32 && *p as i32 <= '9' as i32
+                    || *p as i32 >= 'a' as i32
+                        && (*p as i32) < 'a' as i32 + (base - 10i32)
+                    || *p as i32 >= 'A' as i32
+                        && (*p as i32) < 'A' as i32 + (base - 10i32)))
     {
         p = p.offset(1);
         n += 1
@@ -697,7 +697,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
     mut mrec: *mut fontmap_rec,
     mut mapdef: *const i8,
     mut endptr: *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut p: *const i8 = mapdef;
     /*
      * Parse record line in map file.  First two fields (after TeX font
@@ -713,13 +713,13 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
      */
     skip_blank(&mut p, endptr);
     /* encoding field */
-    if p < endptr && *p as libc::c_int != '-' as i32 {
+    if p < endptr && *p as i32 != '-' as i32 {
         /* May be NULL */
         (*mrec).enc_name = parse_string_value(&mut p, endptr);
         skip_blank(&mut p, endptr);
     }
     /* fontname or font filename field */
-    if p < endptr && *p as libc::c_int != '-' as i32 {
+    if p < endptr && *p as i32 != '-' as i32 {
         /* May be NULL */
         (*mrec).font_name = parse_string_value(&mut p, endptr);
         skip_blank(&mut p, endptr);
@@ -738,16 +738,16 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
     skip_blank(&mut p, endptr);
     /* Parse any remaining arguments */
     while p.offset(1) < endptr
-        && *p as libc::c_int != '\r' as i32
-        && *p as libc::c_int != '\n' as i32
-        && *p as libc::c_int == '-' as i32
+        && *p as i32 != '\r' as i32
+        && *p as i32 != '\n' as i32
+        && *p as i32 == '-' as i32
     {
         let mut q: *mut i8 = 0 as *mut i8;
         let mut mopt: i8 = *p.offset(1);
-        let mut v: libc::c_int = 0;
+        let mut v: i32 = 0;
         p = p.offset(2);
         skip_blank(&mut p, endptr);
-        match mopt as libc::c_int {
+        match mopt as i32 {
             115 => {
                 /* Slant option */
                 q = parse_float_decimal(&mut p, endptr);
@@ -833,7 +833,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                     );
                     return -1i32;
                 }
-                v = strtol(q, 0 as *mut *mut i8, 0i32) as libc::c_int;
+                v = strtol(q, 0 as *mut *mut i8, 0i32) as i32;
                 if v < 0i32 || v > 16i32 {
                     dpx_warning(
                         b"Invalid value for option \'p\': %s\x00" as *const u8
@@ -868,7 +868,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                     );
                     return -1i32;
                 }
-                (*mrec).opt.stemv = strtol(q, 0 as *mut *mut i8, 0i32) as libc::c_int;
+                (*mrec).opt.stemv = strtol(q, 0 as *mut *mut i8, 0i32) as i32;
                 free(q as *mut libc::c_void);
             }
             108 => {
@@ -890,8 +890,8 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                  */
                 /* Map single bytes char 0xab to double byte char 0xcdab  */
                 if p.offset(4) <= endptr
-                    && *p.offset(0) as libc::c_int == '<' as i32
-                    && *p.offset(3) as libc::c_int == '>' as i32
+                    && *p.offset(0) as i32 == '<' as i32
+                    && *p.offset(3) as i32 == '>' as i32
                 {
                     p = p.offset(1);
                     q = parse_integer_value(&mut p, endptr, 16i32);
@@ -902,7 +902,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                         );
                         return -1i32;
                     } else {
-                        if p < endptr && *p as libc::c_int != '>' as i32 {
+                        if p < endptr && *p as i32 != '>' as i32 {
                             dpx_warning(
                                 b"Invalid value for option \'m\': %s\x00" as *const u8
                                     as *const i8,
@@ -912,8 +912,8 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                             return -1i32;
                         }
                     }
-                    v = strtol(q, 0 as *mut *mut i8, 16i32) as libc::c_int;
-                    (*mrec).opt.mapc = ((v << 8i32) as i64 & 0xff00) as libc::c_int;
+                    v = strtol(q, 0 as *mut *mut i8, 16i32) as i32;
+                    (*mrec).opt.mapc = ((v << 8i32) as i64 & 0xff00) as i32;
                     free(q as *mut libc::c_void);
                     p = p.offset(1)
                 } else if p.offset(4) <= endptr
@@ -950,7 +950,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                     r = r.offset(1);
                     rr = r;
                     skip_blank(&mut rr, r.offset(strlen(r) as isize));
-                    if *rr as libc::c_int == '\u{0}' as i32 {
+                    if *rr as i32 == '\u{0}' as i32 {
                         dpx_warning(
                             b"Invalid value for option \'m\': %s,\x00" as *const u8
                                 as *const i8,
@@ -981,9 +981,9 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                     } else {
                         if p < endptr
                             && *(*__ctype_b_loc())
-                                .offset(*p as u8 as libc::c_int as isize)
-                                as libc::c_int
-                                & _ISspace as libc::c_int as u16 as libc::c_int
+                                .offset(*p as u8 as i32 as isize)
+                                as i32
+                                & _ISspace as i32 as u16 as i32
                                 == 0
                         {
                             dpx_warning(
@@ -995,8 +995,8 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                             return -1i32;
                         }
                     }
-                    v = strtol(q, 0 as *mut *mut i8, 16i32) as libc::c_int;
-                    (*mrec).opt.mapc = ((v << 8i32) as i64 & 0xff00) as libc::c_int;
+                    v = strtol(q, 0 as *mut *mut i8, 16i32) as i32;
+                    (*mrec).opt.mapc = ((v << 8i32) as i64 & 0xff00) as i32;
                     free(q as *mut libc::c_void);
                 } else {
                     dpx_warning(
@@ -1040,17 +1040,17 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
             _ => {
                 dpx_warning(
                     b"Unrecognized font map option: \'%c\'\x00" as *const u8 as *const i8,
-                    mopt as libc::c_int,
+                    mopt as i32,
                 );
                 return -1i32;
             }
         }
         skip_blank(&mut p, endptr);
     }
-    if p < endptr && *p as libc::c_int != '\r' as i32 && *p as libc::c_int != '\n' as i32 {
+    if p < endptr && *p as i32 != '\r' as i32 && *p as i32 != '\n' as i32 {
         dpx_warning(
             b"Invalid char in fontmap line: %c\x00" as *const u8 as *const i8,
-            *p as libc::c_int,
+            *p as i32,
         );
         return -1i32;
     }
@@ -1061,13 +1061,13 @@ unsafe extern "C" fn fontmap_parse_mapdef_dps(
     mut mrec: *mut fontmap_rec,
     mut mapdef: *const i8,
     mut endptr: *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut p: *const i8 = mapdef;
     let mut q: *mut i8 = 0 as *mut i8;
     skip_blank(&mut p, endptr);
     /* The first field (after TFM name) must be PostScript name. */
     /* However, pdftex.map allows a line without PostScript name. */
-    if *p as libc::c_int != '\"' as i32 && *p as libc::c_int != '<' as i32 {
+    if *p as i32 != '\"' as i32 && *p as i32 != '<' as i32 {
         if p < endptr {
             q = parse_string_value(&mut p, endptr);
             free(q as *mut libc::c_void);
@@ -1082,22 +1082,22 @@ unsafe extern "C" fn fontmap_parse_mapdef_dps(
     }
     /* Parse any remaining arguments */
     while p < endptr
-        && *p as libc::c_int != '\r' as i32
-        && *p as libc::c_int != '\n' as i32
-        && (*p as libc::c_int == '<' as i32 || *p as libc::c_int == '\"' as i32)
+        && *p as i32 != '\r' as i32
+        && *p as i32 != '\n' as i32
+        && (*p as i32 == '<' as i32 || *p as i32 == '\"' as i32)
     {
-        match *p as libc::c_int {
+        match *p as i32 {
             60 => {
                 p = p.offset(1); /*skip */
                 if p < endptr
-                    && (*p as libc::c_int == '[' as i32 || *p as libc::c_int == '<' as i32)
+                    && (*p as i32 == '[' as i32 || *p as i32 == '<' as i32)
                 {
                     p = p.offset(1)
                 }
                 skip_blank(&mut p, endptr);
                 q = parse_string_value(&mut p, endptr);
                 if !q.is_null() {
-                    let mut n: libc::c_int = strlen(q) as libc::c_int;
+                    let mut n: i32 = strlen(q) as i32;
                     if n > 4i32
                         && !strstartswith(
                             q.offset(n as isize).offset(-4),
@@ -1167,10 +1167,10 @@ unsafe extern "C" fn fontmap_parse_mapdef_dps(
         }
         skip_blank(&mut p, endptr);
     }
-    if p < endptr && *p as libc::c_int != '\r' as i32 && *p as libc::c_int != '\n' as i32 {
+    if p < endptr && *p as i32 != '\r' as i32 && *p as i32 != '\n' as i32 {
         dpx_warning(
             b"Invalid char in fontmap line: %c\x00" as *const u8 as *const i8,
-            *p as libc::c_int,
+            *p as i32,
         );
         return -1i32;
     }
@@ -1184,26 +1184,26 @@ unsafe extern "C" fn chop_sfd_name(
     let mut fontname: *mut i8 = 0 as *mut i8;
     let mut p: *mut i8 = 0 as *mut i8;
     let mut q: *mut i8 = 0 as *mut i8;
-    let mut m: libc::c_int = 0;
-    let mut n: libc::c_int = 0;
-    let mut len: libc::c_int = 0;
+    let mut m: i32 = 0;
+    let mut n: i32 = 0;
+    let mut len: i32 = 0;
     *sfd_name = 0 as *mut i8;
     p = strchr(tex_name, '@' as i32);
     if p.is_null()
-        || *p.offset(1) as libc::c_int == '\u{0}' as i32
+        || *p.offset(1) as i32 == '\u{0}' as i32
         || p == tex_name as *mut i8
     {
         return 0 as *mut i8;
     }
-    m = p.wrapping_offset_from(tex_name) as i64 as libc::c_int;
+    m = p.wrapping_offset_from(tex_name) as i64 as i32;
     p = p.offset(1);
     q = strchr(p, '@' as i32);
     if q.is_null() || q == p {
         return 0 as *mut i8;
     }
-    n = q.wrapping_offset_from(p) as i64 as libc::c_int;
+    n = q.wrapping_offset_from(p) as i64 as i32;
     q = q.offset(1);
-    len = strlen(tex_name).wrapping_sub(n as u64) as libc::c_int;
+    len = strlen(tex_name).wrapping_sub(n as u64) as i32;
     fontname = new(((len + 1i32) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
         as u32) as *mut i8;
@@ -1233,20 +1233,20 @@ unsafe extern "C" fn make_subfont_name(
     mut sub_id: *const i8,
 ) -> *mut i8 {
     let mut tfm_name: *mut i8 = 0 as *mut i8;
-    let mut n: libc::c_int = 0;
-    let mut m: libc::c_int = 0;
+    let mut n: i32 = 0;
+    let mut m: i32 = 0;
     let mut p: *mut i8 = 0 as *mut i8;
     let mut q: *mut i8 = 0 as *mut i8;
     p = strchr(map_name, '@' as i32);
     if p.is_null() || p == map_name as *mut i8 {
         return 0 as *mut i8;
     }
-    m = p.wrapping_offset_from(map_name) as i64 as libc::c_int;
+    m = p.wrapping_offset_from(map_name) as i64 as i32;
     q = strchr(p.offset(1), '@' as i32);
     if q.is_null() || q == p.offset(1) {
         return 0 as *mut i8;
     }
-    n = q.wrapping_offset_from(p) as i64 as libc::c_int + 1i32;
+    n = q.wrapping_offset_from(p) as i64 as i32 + 1i32;
     if strlen(sfd_name) != (n - 2i32) as u64
         || memcmp(
             p.offset(1) as *const libc::c_void,
@@ -1285,7 +1285,7 @@ unsafe extern "C" fn make_subfont_name(
 pub unsafe extern "C" fn pdf_append_fontmap_record(
     mut kp: *const i8,
     mut vp: *const fontmap_rec,
-) -> libc::c_int {
+) -> i32 {
     let mut mrec: *mut fontmap_rec = 0 as *mut fontmap_rec; /* link */
     let mut fnt_name: *mut i8 = 0 as *mut i8; /* link to this entry */
     let mut sfd_name: *mut i8 = 0 as *mut i8;
@@ -1303,7 +1303,7 @@ pub unsafe extern "C" fn pdf_append_fontmap_record(
     if !fnt_name.is_null() && !sfd_name.is_null() {
         let mut tfm_name: *mut i8 = 0 as *mut i8;
         let mut subfont_ids: *mut *mut i8 = 0 as *mut *mut i8;
-        let mut n: libc::c_int = 0i32;
+        let mut n: i32 = 0i32;
         subfont_ids = sfd_get_subfont_ids(sfd_name, &mut n);
         if subfont_ids.is_null() {
             return -1i32;
@@ -1321,7 +1321,7 @@ pub unsafe extern "C" fn pdf_append_fontmap_record(
             mrec = ht_lookup_table(
                 fontmap,
                 tfm_name as *const libc::c_void,
-                strlen(tfm_name) as libc::c_int,
+                strlen(tfm_name) as i32,
             ) as *mut fontmap_rec;
             if mrec.is_null() {
                 mrec = new((1i32 as u32 as u64)
@@ -1334,7 +1334,7 @@ pub unsafe extern "C" fn pdf_append_fontmap_record(
                 ht_insert_table(
                     fontmap,
                     tfm_name as *const libc::c_void,
-                    strlen(tfm_name) as libc::c_int,
+                    strlen(tfm_name) as i32,
                     mrec as *mut libc::c_void,
                 );
             }
@@ -1346,20 +1346,20 @@ pub unsafe extern "C" fn pdf_append_fontmap_record(
     mrec = ht_lookup_table(
         fontmap,
         kp as *const libc::c_void,
-        strlen(kp) as libc::c_int,
+        strlen(kp) as i32,
     ) as *mut fontmap_rec;
     if mrec.is_null() {
         mrec = new((1i32 as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as u64)
             as u32) as *mut fontmap_rec;
         pdf_copy_fontmap_record(mrec, vp);
-        if !(*mrec).map_name.is_null() && streq_ptr(kp, (*mrec).map_name) as libc::c_int != 0 {
+        if !(*mrec).map_name.is_null() && streq_ptr(kp, (*mrec).map_name) as i32 != 0 {
             (*mrec).map_name = mfree((*mrec).map_name as *mut libc::c_void) as *mut i8
         }
         ht_insert_table(
             fontmap,
             kp as *const libc::c_void,
-            strlen(kp) as libc::c_int,
+            strlen(kp) as i32,
             mrec as *mut libc::c_void,
         );
     }
@@ -1369,7 +1369,7 @@ pub unsafe extern "C" fn pdf_append_fontmap_record(
     return 0i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_remove_fontmap_record(mut kp: *const i8) -> libc::c_int {
+pub unsafe extern "C" fn pdf_remove_fontmap_record(mut kp: *const i8) -> i32 {
     let mut fnt_name: *mut i8 = 0 as *mut i8;
     let mut sfd_name: *mut i8 = 0 as *mut i8;
     if kp.is_null() {
@@ -1385,7 +1385,7 @@ pub unsafe extern "C" fn pdf_remove_fontmap_record(mut kp: *const i8) -> libc::c
     if !fnt_name.is_null() && !sfd_name.is_null() {
         let mut tfm_name: *mut i8 = 0 as *mut i8;
         let mut subfont_ids: *mut *mut i8 = 0 as *mut *mut i8;
-        let mut n: libc::c_int = 0i32;
+        let mut n: i32 = 0i32;
         subfont_ids = sfd_get_subfont_ids(sfd_name, &mut n);
         if subfont_ids.is_null() {
             return -1i32;
@@ -1412,7 +1412,7 @@ pub unsafe extern "C" fn pdf_remove_fontmap_record(mut kp: *const i8) -> libc::c
             ht_remove_table(
                 fontmap,
                 tfm_name as *const libc::c_void,
-                strlen(tfm_name) as libc::c_int,
+                strlen(tfm_name) as i32,
             );
             free(tfm_name as *mut libc::c_void);
         }
@@ -1422,7 +1422,7 @@ pub unsafe extern "C" fn pdf_remove_fontmap_record(mut kp: *const i8) -> libc::c
     ht_remove_table(
         fontmap,
         kp as *const libc::c_void,
-        strlen(kp) as libc::c_int,
+        strlen(kp) as i32,
     );
     if verbose > 3i32 {
         dpx_message(b"\n\x00" as *const u8 as *const i8);
@@ -1451,7 +1451,7 @@ pub unsafe extern "C" fn pdf_insert_fontmap_record(
     if !fnt_name.is_null() && !sfd_name.is_null() {
         let mut tfm_name: *mut i8 = 0 as *mut i8;
         let mut subfont_ids: *mut *mut i8 = 0 as *mut *mut i8;
-        let mut n: libc::c_int = 0i32;
+        let mut n: i32 = 0i32;
         subfont_ids = sfd_get_subfont_ids(sfd_name, &mut n);
         if subfont_ids.is_null() {
             dpx_warning(
@@ -1491,7 +1491,7 @@ pub unsafe extern "C" fn pdf_insert_fontmap_record(
             ht_insert_table(
                 fontmap,
                 tfm_name as *const libc::c_void,
-                strlen(tfm_name) as libc::c_int,
+                strlen(tfm_name) as i32,
                 mrec as *mut libc::c_void,
             );
             free(tfm_name as *mut libc::c_void);
@@ -1503,13 +1503,13 @@ pub unsafe extern "C" fn pdf_insert_fontmap_record(
         .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as u64)
         as u32) as *mut fontmap_rec;
     pdf_copy_fontmap_record(mrec, vp);
-    if !(*mrec).map_name.is_null() && streq_ptr(kp, (*mrec).map_name) as libc::c_int != 0 {
+    if !(*mrec).map_name.is_null() && streq_ptr(kp, (*mrec).map_name) as i32 != 0 {
         (*mrec).map_name = mfree((*mrec).map_name as *mut libc::c_void) as *mut i8
     }
     ht_insert_table(
         fontmap,
         kp as *const libc::c_void,
-        strlen(kp) as libc::c_int,
+        strlen(kp) as i32,
         mrec as *mut libc::c_void,
     );
     if verbose > 3i32 {
@@ -1521,10 +1521,10 @@ pub unsafe extern "C" fn pdf_insert_fontmap_record(
 pub unsafe extern "C" fn pdf_read_fontmap_line(
     mut mrec: *mut fontmap_rec,
     mut mline: *const i8,
-    mut mline_len: libc::c_int,
-    mut format: libc::c_int,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0;
+    mut mline_len: i32,
+    mut format: i32,
+) -> i32 {
+    let mut error: i32 = 0;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
@@ -1588,7 +1588,7 @@ pub unsafe extern "C" fn pdf_read_fontmap_line(
  * DVIPDFM fontmap line otherwise.
  */
 #[no_mangle]
-pub unsafe extern "C" fn is_pdfm_mapline(mut mline: *const i8) -> libc::c_int
+pub unsafe extern "C" fn is_pdfm_mapline(mut mline: *const i8) -> i32
 /* NULL terminated. */ {
     let mut n: libc::c_uint = 0i32 as libc::c_uint; /* DVIPS/pdfTeX format */
     let mut p: *const i8 = 0 as *const i8;
@@ -1601,15 +1601,15 @@ pub unsafe extern "C" fn is_pdfm_mapline(mut mline: *const i8) -> libc::c_int
     skip_blank(&mut p, endptr);
     while p < endptr {
         /* Break if '-' preceeded by blanks is found. (DVIPDFM format) */
-        if *p as libc::c_int == '-' as i32 {
+        if *p as i32 == '-' as i32 {
             return 1i32;
         }
         n = n.wrapping_add(1);
         while p < endptr
-            && !(*p as libc::c_int & !0x7fi32 == 0i32
-                && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                    as libc::c_int
-                    & _ISblank as libc::c_int as u16 as libc::c_int
+            && !(*p as i32 & !0x7fi32 == 0i32
+                && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                    as i32
+                    & _ISblank as i32 as u16 as i32
                     != 0)
         {
             p = p.offset(1)
@@ -1627,16 +1627,16 @@ pub unsafe extern "C" fn is_pdfm_mapline(mut mline: *const i8) -> libc::c_int
 #[no_mangle]
 pub unsafe extern "C" fn pdf_load_fontmap_file(
     mut filename: *const i8,
-    mut mode: libc::c_int,
-) -> libc::c_int {
+    mut mode: i32,
+) -> i32 {
     let mut mrec: *mut fontmap_rec = 0 as *mut fontmap_rec;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
-    let mut llen: libc::c_int = 0;
-    let mut lpos: libc::c_int = 0i32;
-    let mut error: libc::c_int = 0i32;
-    let mut format: libc::c_int = 0i32;
+    let mut llen: i32 = 0;
+    let mut lpos: i32 = 0i32;
+    let mut error: i32 = 0i32;
+    let mut format: i32 = 0i32;
     if !filename.is_null() {
     } else {
         __assert_fail(
@@ -1680,9 +1680,9 @@ pub unsafe extern "C" fn pdf_load_fontmap_file(
         p = tt_readline(work_buffer.as_mut_ptr(), 1024i32, handle);
         !p.is_null()
     } {
-        let mut m: libc::c_int = 0;
+        let mut m: i32 = 0;
         lpos += 1;
-        llen = strlen(work_buffer.as_mut_ptr()) as libc::c_int;
+        llen = strlen(work_buffer.as_mut_ptr()) as i32;
         endptr = p.offset(llen as isize);
         skip_blank(&mut p, endptr);
         if p == endptr {
@@ -1751,10 +1751,10 @@ pub unsafe extern "C" fn pdf_load_fontmap_file(
 pub unsafe extern "C" fn pdf_insert_native_fontmap_record(
     mut path: *const i8,
     mut index: u32,
-    mut layout_dir: libc::c_int,
-    mut extend: libc::c_int,
-    mut slant: libc::c_int,
-    mut embolden: libc::c_int,
+    mut layout_dir: i32,
+    mut extend: i32,
+    mut slant: i32,
+    mut embolden: i32,
 ) -> *mut fontmap_rec {
     let mut fontmap_key: *mut i8 = 0 as *mut i8;
     let mut mrec: *mut fontmap_rec = 0 as *mut fontmap_rec;
@@ -1799,7 +1799,7 @@ pub unsafe extern "C" fn pdf_insert_native_fontmap_record(
         b"Identity-V\x00" as *const u8 as *const i8
     });
     (*mrec).font_name = mstrdup(path);
-    (*mrec).opt.index = index as libc::c_int;
+    (*mrec).opt.index = index as i32;
     if layout_dir != 0i32 {
         (*mrec).opt.flags |= 1i32 << 2i32
     }
@@ -1825,7 +1825,7 @@ pub unsafe extern "C" fn pdf_lookup_fontmap_record(
         mrec = ht_lookup_table(
             fontmap,
             tfm_name as *const libc::c_void,
-            strlen(tfm_name) as libc::c_int,
+            strlen(tfm_name) as i32,
         ) as *mut fontmap_rec
     }
     return mrec;
@@ -1895,7 +1895,7 @@ unsafe extern "C" fn substr(
 ) -> *mut i8 {
     let mut sstr: *mut i8 = 0 as *mut i8;
     let mut endptr: *const i8 = 0 as *const i8;
-    endptr = strchr(*str, stop as libc::c_int);
+    endptr = strchr(*str, stop as i32);
     if endptr.is_null() || endptr == *str {
         return 0 as *mut i8;
     }
@@ -1944,8 +1944,8 @@ unsafe extern "C" fn strip_options(
     let mut font_name: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = 0 as *const i8;
     let mut next: *mut i8 = 0 as *mut i8;
-    let mut have_csi: libc::c_int = 0i32;
-    let mut have_style: libc::c_int = 0i32;
+    let mut have_csi: i32 = 0i32;
+    let mut have_style: i32 = 0i32;
     if !opt.is_null() {
     } else {
         __assert_fail(
@@ -1964,23 +1964,23 @@ unsafe extern "C" fn strip_options(
     (*opt).index = 0i32;
     (*opt).style = 0i32;
     (*opt).flags = 0i32;
-    if *p as libc::c_int == ':' as i32
-        && *(*__ctype_b_loc()).offset(*p.offset(1) as u8 as libc::c_int as isize)
-            as libc::c_int
-            & _ISdigit as libc::c_int as u16 as libc::c_int
+    if *p as i32 == ':' as i32
+        && *(*__ctype_b_loc()).offset(*p.offset(1) as u8 as i32 as isize)
+            as i32
+            & _ISdigit as i32 as u16 as i32
             != 0
     {
-        (*opt).index = strtoul(p.offset(1), &mut next, 10i32) as libc::c_int;
-        if *next as libc::c_int == ':' as i32 {
+        (*opt).index = strtoul(p.offset(1), &mut next, 10i32) as i32;
+        if *next as i32 == ':' as i32 {
             p = next.offset(1)
         } else {
             (*opt).index = 0i32
         }
     }
-    if *p as libc::c_int == '!' as i32 {
+    if *p as i32 == '!' as i32 {
         /* no-embedding */
         p = p.offset(1);
-        if *p as libc::c_int == '\u{0}' as i32 {
+        if *p as i32 == '\u{0}' as i32 {
             _tt_abort(
                 b"Invalid map record: %s (--> %s)\x00" as *const u8 as *const i8,
                 map_name,
@@ -2025,7 +2025,7 @@ unsafe extern "C" fn strip_options(
         if !next.is_null() {
             (*opt).charcoll = substr(&mut p, ',' as i32 as i8);
             have_style = 1i32
-        } else if *p.offset(0) as libc::c_int == '\u{0}' as i32 {
+        } else if *p.offset(0) as i32 == '\u{0}' as i32 {
             _tt_abort(
                 b"Invalid map record: %s.\x00" as *const u8 as *const i8,
                 map_name,

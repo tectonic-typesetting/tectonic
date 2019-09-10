@@ -23,14 +23,14 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn strncpy(_: *mut i8, _: *const i8, _: u64)
         -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
@@ -38,7 +38,7 @@ extern "C" {
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn parse_c_ident(
         pp: *mut *const i8,
@@ -49,25 +49,25 @@ extern "C" {
     #[no_mangle]
     fn pdf_clear_fontmap_record(mrec: *mut fontmap_rec);
     #[no_mangle]
-    fn pdf_load_fontmap_file(filename: *const i8, mode: libc::c_int) -> libc::c_int;
+    fn pdf_load_fontmap_file(filename: *const i8, mode: i32) -> i32;
     #[no_mangle]
     fn pdf_read_fontmap_line(
         mrec: *mut fontmap_rec,
         mline: *const i8,
-        mline_strlen: libc::c_int,
-        format: libc::c_int,
-    ) -> libc::c_int;
+        mline_strlen: i32,
+        format: i32,
+    ) -> i32;
     #[no_mangle]
-    fn pdf_append_fontmap_record(kp: *const i8, mrec: *const fontmap_rec) -> libc::c_int;
+    fn pdf_append_fontmap_record(kp: *const i8, mrec: *const fontmap_rec) -> i32;
     #[no_mangle]
-    fn pdf_remove_fontmap_record(kp: *const i8) -> libc::c_int;
+    fn pdf_remove_fontmap_record(kp: *const i8) -> i32;
     #[no_mangle]
     fn pdf_insert_fontmap_record(
         kp: *const i8,
         mrec: *const fontmap_rec,
     ) -> *mut fontmap_rec;
     #[no_mangle]
-    fn is_pdfm_mapline(mline: *const i8) -> libc::c_int;
+    fn is_pdfm_mapline(mline: *const i8) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -104,20 +104,20 @@ extern "C" {
      * XFrom (content grabbing) and Metapost support want them.
      */
     #[no_mangle]
-    fn pdf_dev_reset_fonts(newpage: libc::c_int);
+    fn pdf_dev_reset_fonts(newpage: i32);
     #[no_mangle]
-    fn pdf_dev_reset_color(force: libc::c_int);
+    fn pdf_dev_reset_color(force: i32);
     #[no_mangle]
     fn pdf_doc_add_page_content(buffer: *const i8, length: libc::c_uint);
     /* Similar to bop_content */
     #[no_mangle]
     fn pdf_doc_set_bgcolor(color: *const pdf_color);
     #[no_mangle]
-    fn pdf_dev_concat(M: *const pdf_tmatrix) -> libc::c_int;
+    fn pdf_dev_concat(M: *const pdf_tmatrix) -> i32;
     #[no_mangle]
-    fn pdf_dev_gsave() -> libc::c_int;
+    fn pdf_dev_gsave() -> i32;
     #[no_mangle]
-    fn pdf_dev_grestore() -> libc::c_int;
+    fn pdf_dev_grestore() -> i32;
     #[no_mangle]
     fn pdf_dev_set_fixed_point(x: f64, y: f64);
     #[no_mangle]
@@ -162,14 +162,14 @@ extern "C" {
         spe: *mut spc_env,
         colorspec: *mut pdf_color,
         args: *mut spc_arg,
-        syntax: libc::c_int,
-    ) -> libc::c_int;
+        syntax: i32,
+    ) -> i32;
     #[no_mangle]
     fn spc_util_read_numbers(
         values: *mut f64,
-        num_values: libc::c_int,
+        num_values: i32,
         args: *mut spc_arg,
-    ) -> libc::c_int;
+    ) -> i32;
 }
 pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -199,7 +199,7 @@ pub struct spc_env {
     pub x_user: f64,
     pub y_user: f64,
     pub mag: f64,
-    pub pg: libc::c_int,
+    pub pg: i32,
     /* current page in PDF */
 }
 #[derive(Copy, Clone)]
@@ -211,7 +211,7 @@ pub struct spc_arg {
     pub command: *const i8,
 }
 pub type spc_handler_fn_ptr =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int>;
+    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
@@ -233,16 +233,16 @@ pub struct fontmap_opt {
     pub slant: f64,
     pub extend: f64,
     pub bold: f64,
-    pub mapc: libc::c_int,
-    pub flags: libc::c_int,
+    pub mapc: i32,
+    pub flags: i32,
     pub otl_tags: *mut i8,
     pub tounicode: *mut i8,
     pub cff_charsets: *mut libc::c_void,
     pub design_size: f64,
     pub charcoll: *mut i8,
-    pub index: libc::c_int,
-    pub style: libc::c_int,
-    pub stemv: libc::c_int,
+    pub index: i32,
+    pub style: i32,
+    pub stemv: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -269,7 +269,7 @@ pub struct pdf_tmatrix {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
-    pub num_components: libc::c_int,
+    pub num_components: i32,
     pub spot_color_name: *mut i8,
     pub values: [f64; 4],
 }
@@ -325,7 +325,7 @@ pub unsafe extern "C" fn spc_handler_xtx_do_transform(
     mut d: f64,
     mut e: f64,
     mut f: f64,
-) -> libc::c_int {
+) -> i32 {
     let mut M: pdf_tmatrix = {
         let mut init = pdf_tmatrix {
             a: 0i32 as f64,
@@ -353,7 +353,7 @@ pub unsafe extern "C" fn spc_handler_xtx_do_transform(
 unsafe extern "C" fn spc_handler_xtx_scale(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let mut values: [f64; 2] = [0.; 2];
     if spc_util_read_numbers(&mut *values.as_mut_ptr().offset(0), 2i32, args) < 2i32 {
         return -1i32;
@@ -372,11 +372,11 @@ unsafe extern "C" fn spc_handler_xtx_scale(
 }
 /* Scaling without gsave/grestore. */
 static mut scaleFactors: *mut pdf_coord = 0 as *const pdf_coord as *mut pdf_coord;
-static mut scaleFactorCount: libc::c_int = -1i32;
+static mut scaleFactorCount: i32 = -1i32;
 unsafe extern "C" fn spc_handler_xtx_bscale(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let mut values: [f64; 2] = [0.; 2];
     scaleFactorCount += 1;
     if scaleFactorCount & 0xfi32 == 0 {
@@ -409,7 +409,7 @@ unsafe extern "C" fn spc_handler_xtx_bscale(
 unsafe extern "C" fn spc_handler_xtx_escale(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let fresh0 = scaleFactorCount;
     scaleFactorCount = scaleFactorCount - 1;
     let mut factor: pdf_coord = *scaleFactors.offset(fresh0 as isize);
@@ -428,7 +428,7 @@ unsafe extern "C" fn spc_handler_xtx_escale(
 unsafe extern "C" fn spc_handler_xtx_rotate(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let mut value: f64 = 0.;
     if spc_util_read_numbers(&mut value, 1i32, args) < 1i32 {
         return -1i32;
@@ -449,7 +449,7 @@ unsafe extern "C" fn spc_handler_xtx_rotate(
 pub unsafe extern "C" fn spc_handler_xtx_gsave(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     pdf_dev_gsave();
     return 0i32;
 }
@@ -457,7 +457,7 @@ pub unsafe extern "C" fn spc_handler_xtx_gsave(
 pub unsafe extern "C" fn spc_handler_xtx_grestore(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     pdf_dev_grestore();
     /*
      * Unfortunately, the following line is necessary in case
@@ -476,14 +476,14 @@ pub unsafe extern "C" fn spc_handler_xtx_grestore(
 unsafe extern "C" fn spc_handler_xtx_papersize(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     return 0i32;
 }
 unsafe extern "C" fn spc_handler_xtx_backgroundcolor(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0;
+) -> i32 {
+    let mut error: i32 = 0;
     let mut colorspec: pdf_color = pdf_color {
         num_components: 0,
         spot_color_name: 0 as *mut i8,
@@ -504,11 +504,11 @@ unsafe extern "C" fn spc_handler_xtx_backgroundcolor(
 unsafe extern "C" fn spc_handler_xtx_fontmapline(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let mut mrec: *mut fontmap_rec = 0 as *mut fontmap_rec;
     let mut map_name: *mut i8 = 0 as *mut i8;
     let mut opchr: i8 = 0;
-    let mut error: libc::c_int = 0i32;
+    let mut error: i32 = 0i32;
     static mut buffer: [i8; 1024] = [0; 1024];
     let mut p: *const i8 = 0 as *const i8;
     let mut q: *mut i8 = 0 as *mut i8;
@@ -521,11 +521,11 @@ unsafe extern "C" fn spc_handler_xtx_fontmapline(
         return -1i32;
     }
     opchr = *(*ap).curptr.offset(0);
-    if opchr as libc::c_int == '-' as i32 || opchr as libc::c_int == '+' as i32 {
+    if opchr as i32 == '-' as i32 || opchr as i32 == '+' as i32 {
         (*ap).curptr = (*ap).curptr.offset(1)
     }
     skip_white(&mut (*ap).curptr, (*ap).endptr);
-    match opchr as libc::c_int {
+    match opchr as i32 {
         45 => {
             map_name = parse_ident(&mut (*ap).curptr, (*ap).endptr);
             if !map_name.is_null() {
@@ -558,7 +558,7 @@ unsafe extern "C" fn spc_handler_xtx_fontmapline(
             error = pdf_read_fontmap_line(
                 mrec,
                 buffer.as_mut_ptr(),
-                (*ap).endptr.wrapping_offset_from((*ap).curptr) as i64 as libc::c_int,
+                (*ap).endptr.wrapping_offset_from((*ap).curptr) as i64 as i32,
                 is_pdfm_mapline(buffer.as_mut_ptr()),
             );
             if error != 0 {
@@ -566,7 +566,7 @@ unsafe extern "C" fn spc_handler_xtx_fontmapline(
                     spe,
                     b"Invalid fontmap line.\x00" as *const u8 as *const i8,
                 );
-            } else if opchr as libc::c_int == '+' as i32 {
+            } else if opchr as i32 == '+' as i32 {
                 pdf_append_fontmap_record((*mrec).map_name, mrec);
             } else {
                 pdf_insert_fontmap_record((*mrec).map_name, mrec);
@@ -583,15 +583,15 @@ unsafe extern "C" fn spc_handler_xtx_fontmapline(
 unsafe extern "C" fn spc_handler_xtx_fontmapfile(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let mut mapfile: *mut i8 = 0 as *mut i8;
-    let mut mode: libc::c_int = 0;
-    let mut error: libc::c_int = 0i32;
+    let mut mode: i32 = 0;
+    let mut error: i32 = 0i32;
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr >= (*args).endptr {
         return 0i32;
     }
-    match *(*args).curptr.offset(0) as libc::c_int {
+    match *(*args).curptr.offset(0) as i32 {
         45 => {
             mode = '-' as i32;
             (*args).curptr = (*args).curptr.offset(1)
@@ -618,7 +618,7 @@ static mut overlay_name: [i8; 256] = [0; 256];
 unsafe extern "C" fn spc_handler_xtx_initoverlay(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr >= (*args).endptr {
         return -1i32;
@@ -636,7 +636,7 @@ unsafe extern "C" fn spc_handler_xtx_initoverlay(
 unsafe extern "C" fn spc_handler_xtx_clipoverlay(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr >= (*args).endptr {
         return -1i32;
@@ -665,23 +665,23 @@ unsafe extern "C" fn spc_handler_xtx_clipoverlay(
 unsafe extern "C" fn spc_handler_xtx_renderingmode(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let mut value: f64 = 0.;
     if spc_util_read_numbers(&mut value, 1i32, args) < 1i32 {
         return -1i32;
     }
-    if (value as libc::c_int) < 0i32 || value as libc::c_int > 7i32 {
+    if (value as i32) < 0i32 || value as i32 > 7i32 {
         spc_warn(
             spe,
             b"Invalid text rendering mode %d.\n\x00" as *const u8 as *const i8,
-            value as libc::c_int,
+            value as i32,
         );
         return -1i32;
     }
     sprintf(
         work_buffer.as_mut_ptr(),
         b" %d Tr\x00" as *const u8 as *const i8,
-        value as libc::c_int,
+        value as i32,
     );
     pdf_doc_add_page_content(
         work_buffer.as_mut_ptr(),
@@ -704,7 +704,7 @@ unsafe extern "C" fn spc_handler_xtx_renderingmode(
 unsafe extern "C" fn spc_handler_xtx_unsupportedcolor(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     spc_warn(spe,
              b"xetex-style \\special{x:%s} is not supported by this driver;\nupdate document or driver to use \\special{color} instead.\x00"
                  as *const u8 as *const i8, (*args).command);
@@ -714,7 +714,7 @@ unsafe extern "C" fn spc_handler_xtx_unsupportedcolor(
 unsafe extern "C" fn spc_handler_xtx_unsupported(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     spc_warn(
         spe,
         b"xetex-style \\special{x:%s} is not supported by this driver.\x00" as *const u8
@@ -731,7 +731,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"textcolor\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_unsupportedcolor
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -741,7 +741,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"textcolorpush\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_unsupportedcolor
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -751,7 +751,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"textcolorpop\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_unsupportedcolor
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -761,7 +761,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"rulecolor\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_unsupportedcolor
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -771,7 +771,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"rulecolorpush\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_unsupportedcolor
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -781,7 +781,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"rulecolorpop\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_unsupportedcolor
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -791,7 +791,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"papersize\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_papersize
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -801,7 +801,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"backgroundcolor\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_backgroundcolor
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -811,7 +811,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"gsave\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_gsave
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -821,7 +821,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"grestore\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_grestore
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -831,7 +831,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"scale\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_scale
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -841,7 +841,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"bscale\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_bscale
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -851,7 +851,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"escale\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_escale
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -861,7 +861,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"rotate\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_rotate
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -871,7 +871,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"fontmapline\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_fontmapline
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -881,7 +881,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"fontmapfile\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_fontmapfile
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -891,7 +891,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"shadow\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_unsupported
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -901,7 +901,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"colorshadow\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_unsupported
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -911,7 +911,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"renderingmode\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_renderingmode
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -921,7 +921,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"initoverlay\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_initoverlay
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -931,7 +931,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
                 key: b"clipoverlay\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_xtx_clipoverlay
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -941,7 +941,7 @@ static mut xtx_handlers: [spc_handler; 21] = unsafe {
 #[no_mangle]
 pub unsafe extern "C" fn spc_xtx_check_special(
     mut buf: *const i8,
-    mut len: libc::c_int,
+    mut len: i32,
 ) -> bool {
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
@@ -991,8 +991,8 @@ pub unsafe extern "C" fn spc_xtx_setup_handler(
     mut sph: *mut spc_handler,
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int {
-    let mut error: libc::c_int = -1i32;
+) -> i32 {
+    let mut error: i32 = -1i32;
     let mut i: libc::c_uint = 0;
     let mut q: *mut i8 = 0 as *mut i8;
     if !sph.is_null() && !spe.is_null() && !ap.is_null() {

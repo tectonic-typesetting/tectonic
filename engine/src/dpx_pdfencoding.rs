@@ -11,11 +11,11 @@ extern "C" {
     pub type pdf_obj;
     pub type pdf_file;
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_new_dict() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_get_array(array: *mut pdf_obj, idx: libc::c_int) -> *mut pdf_obj;
+    fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
     #[no_mangle]
@@ -33,7 +33,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_version() -> libc::c_uint;
     #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.
@@ -52,7 +52,7 @@ extern "C" {
      * will one day eliminate all of the global state and get rid of all of
      * these. */
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn ttstub_input_read(
         handle: rust_input_handle_t,
@@ -65,14 +65,14 @@ extern "C" {
     fn ttstub_input_open(
         path: *const i8,
         format: tt_input_format_type,
-        is_gz: libc::c_int,
+        is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const i8,
@@ -83,7 +83,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     /* Tectonic-enabled I/O alternatives */
@@ -160,7 +160,7 @@ extern "C" {
         name: *const i8,
         dstpp: *mut *mut u8,
         limptr: *mut u8,
-        num_fails: *mut libc::c_int,
+        num_fails: *mut i32,
     ) -> i32;
     #[no_mangle]
     fn agl_lookup_list(glyphname: *const i8) -> *mut agl_name;
@@ -173,9 +173,9 @@ extern "C" {
     #[no_mangle]
     fn CMap_set_name(cmap: *mut CMap, name: *const i8);
     #[no_mangle]
-    fn CMap_set_type(cmap: *mut CMap, type_0: libc::c_int);
+    fn CMap_set_type(cmap: *mut CMap, type_0: i32);
     #[no_mangle]
-    fn CMap_set_wmode(cmap: *mut CMap, wmode: libc::c_int);
+    fn CMap_set_wmode(cmap: *mut CMap, wmode: i32);
     #[no_mangle]
     fn CMap_set_CIDSysInfo(cmap: *mut CMap, csi: *const CIDSysInfo);
     /* charName not supported */
@@ -186,14 +186,14 @@ extern "C" {
         srcdim: size_t,
         dest: *const u8,
         destdim: size_t,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn CMap_add_codespacerange(
         cmap: *mut CMap,
         codelo: *const u8,
         codehi: *const u8,
         dim: size_t,
-    ) -> libc::c_int;
+    ) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -216,9 +216,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn CMap_parse_check_sig(handle: rust_input_handle_t) -> libc::c_int;
+    fn CMap_parse_check_sig(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    fn CMap_parse(cmap: *mut CMap, handle: rust_input_handle_t) -> libc::c_int;
+    fn CMap_parse(cmap: *mut CMap, handle: rust_input_handle_t) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -275,7 +275,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 pub struct pdf_encoding {
     pub ident: *mut i8,
     pub enc_name: *mut i8,
-    pub flags: libc::c_int,
+    pub flags: i32,
     pub glyphs: [*mut i8; 256],
     pub is_used: [i8; 256],
     pub baseenc: *mut pdf_encoding,
@@ -285,24 +285,24 @@ pub struct pdf_encoding {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
-    pub count: libc::c_int,
-    pub capacity: libc::c_int,
+    pub count: i32,
+    pub capacity: i32,
     pub encodings: *mut pdf_encoding,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CMap {
     pub name: *mut i8,
-    pub type_0: libc::c_int,
-    pub wmode: libc::c_int,
+    pub type_0: i32,
+    pub wmode: i32,
     pub CSI: *mut CIDSysInfo,
     pub useCMap: *mut CMap,
     pub codespace: C2RustUnnamed_1,
     pub mapTbl: *mut mapDef,
     pub mapData: *mut mapData,
-    pub flags: libc::c_int,
+    pub flags: i32,
     pub profile: C2RustUnnamed_0,
-    pub reverseMap: *mut libc::c_int,
+    pub reverseMap: *mut i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -317,12 +317,12 @@ pub struct C2RustUnnamed_0 {
 pub struct mapData {
     pub data: *mut u8,
     pub prev: *mut mapData,
-    pub pos: libc::c_int,
+    pub pos: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mapDef {
-    pub flag: libc::c_int,
+    pub flag: i32,
     pub len: size_t,
     pub code: *mut u8,
     pub next: *mut mapDef,
@@ -346,7 +346,7 @@ pub struct rangeDef {
 pub struct CIDSysInfo {
     pub registry: *mut i8,
     pub ordering: *mut i8,
-    pub supplement: libc::c_int,
+    pub supplement: i32,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -374,10 +374,10 @@ pub struct CIDSysInfo {
 pub struct agl_name {
     pub name: *mut i8,
     pub suffix: *mut i8,
-    pub n_components: libc::c_int,
+    pub n_components: i32,
     pub unicodes: [i32; 16],
     pub alternate: *mut agl_name,
-    pub is_predef: libc::c_int,
+    pub is_predef: i32,
 }
 #[inline]
 unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
@@ -397,7 +397,7 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 }
 static mut verbose: u8 = 0i32 as u8;
 #[no_mangle]
-pub unsafe extern "C" fn pdf_encoding_set_verbose(mut level: libc::c_int) {
+pub unsafe extern "C" fn pdf_encoding_set_verbose(mut level: i32) {
     verbose = level as u8;
 }
 unsafe extern "C" fn pdf_init_encoding_struct(mut encoding: *mut pdf_encoding) {
@@ -529,7 +529,7 @@ unsafe extern "C" fn pdf_flush_encoding(mut encoding: *mut pdf_encoding) {
     };
 }
 unsafe extern "C" fn pdf_clean_encoding_struct(mut encoding: *mut pdf_encoding) {
-    let mut code: libc::c_int = 0;
+    let mut code: i32 = 0;
     if !encoding.is_null() {
     } else {
         __assert_fail(
@@ -584,8 +584,8 @@ unsafe extern "C" fn is_similar_charset(
     mut enc_vec: *mut *mut i8,
     mut enc_vec2: *mut *const i8,
 ) -> bool {
-    let mut code: libc::c_int = 0;
-    let mut same: libc::c_int = 0i32;
+    let mut code: i32 = 0;
+    let mut same: i32 = 0i32;
     code = 0i32;
     while code < 256i32 {
         if !(!(*enc_vec.offset(code as isize)).is_null()
@@ -615,9 +615,9 @@ unsafe extern "C" fn make_encoding_differences(
     mut is_used: *const i8,
 ) -> *mut pdf_obj {
     let mut differences: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut code: libc::c_int = 0;
-    let mut count: libc::c_int = 0i32;
-    let mut skipping: libc::c_int = 1i32;
+    let mut code: i32 = 0;
+    let mut count: i32 = 0i32;
+    let mut skipping: i32 = 1i32;
     if !enc_vec.is_null() {
     } else {
         __assert_fail(
@@ -675,7 +675,7 @@ unsafe extern "C" fn make_encoding_differences(
     }
     return differences;
 }
-unsafe extern "C" fn load_encoding_file(mut filename: *const i8) -> libc::c_int {
+unsafe extern "C" fn load_encoding_file(mut filename: *const i8) -> i32 {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut enc_name: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut encoding_array: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -683,9 +683,9 @@ unsafe extern "C" fn load_encoding_file(mut filename: *const i8) -> libc::c_int 
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     let mut enc_vec: [*const i8; 256] = [0 as *const i8; 256];
-    let mut code: libc::c_int = 0;
-    let mut fsize: libc::c_int = 0;
-    let mut enc_id: libc::c_int = 0;
+    let mut code: i32 = 0;
+    let mut fsize: i32 = 0;
+    let mut enc_id: i32 = 0;
     if filename.is_null() {
         return -1i32;
     }
@@ -703,7 +703,7 @@ unsafe extern "C" fn load_encoding_file(mut filename: *const i8) -> libc::c_int 
     if handle.is_null() {
         return -1i32;
     }
-    fsize = ttstub_input_get_size(handle) as libc::c_int;
+    fsize = ttstub_input_get_size(handle) as i32;
     wbuf_0 = new(((fsize + 1i32) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
         as u32) as *mut i8;
@@ -721,11 +721,11 @@ unsafe extern "C" fn load_encoding_file(mut filename: *const i8) -> libc::c_int 
     /*
      * Skip comment lines.
      */
-    while p < endptr && *p.offset(0) as libc::c_int == '%' as i32 {
+    while p < endptr && *p.offset(0) as i32 == '%' as i32 {
         pdfparse_skip_line(&mut p, endptr);
         skip_white(&mut p, endptr);
     }
-    if *p.offset(0) as libc::c_int == '/' as i32 {
+    if *p.offset(0) as i32 == '/' as i32 {
         enc_name = parse_pdf_name(&mut p, endptr)
     }
     skip_white(&mut p, endptr);
@@ -752,7 +752,7 @@ unsafe extern "C" fn load_encoding_file(mut filename: *const i8) -> libc::c_int 
         0i32,
     );
     if !enc_name.is_null() {
-        if verbose as libc::c_int > 1i32 {
+        if verbose as i32 > 1i32 {
             dpx_message(
                 b"[%s]\x00" as *const u8 as *const i8,
                 pdf_name_value(enc_name),
@@ -823,10 +823,10 @@ unsafe extern "C" fn pdf_encoding_new_encoding(
     mut ident: *const i8,
     mut encoding_vec: *mut *const i8,
     mut baseenc_name: *const i8,
-    mut flags: libc::c_int,
-) -> libc::c_int {
-    let mut enc_id: libc::c_int = 0;
-    let mut code: libc::c_int = 0;
+    mut flags: i32,
+) -> i32 {
+    let mut enc_id: i32 = 0;
+    let mut code: i32 = 0;
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     enc_id = enc_cache.count;
     let fresh0 = enc_cache.count;
@@ -880,7 +880,7 @@ unsafe extern "C" fn pdf_encoding_new_encoding(
         && is_similar_charset(
             (*encoding).glyphs.as_mut_ptr(),
             WinAnsiEncoding.as_mut_ptr(),
-        ) as libc::c_int
+        ) as i32
             != 0
     {
         /* Dvipdfmx default setting. */
@@ -888,7 +888,7 @@ unsafe extern "C" fn pdf_encoding_new_encoding(
     }
     /* TODO: make base encoding configurable */
     if !baseenc_name.is_null() {
-        let mut baseenc_id: libc::c_int = pdf_encoding_findresource(baseenc_name);
+        let mut baseenc_id: i32 = pdf_encoding_findresource(baseenc_name);
         if baseenc_id < 0i32 || pdf_encoding_is_predefined(baseenc_id) == 0 {
             _tt_abort(
                 b"Illegal base encoding %s for encoding %s\n\x00" as *const u8
@@ -910,7 +910,7 @@ unsafe extern "C" fn pdf_encoding_new_encoding(
  */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_encoding_complete() {
-    let mut enc_id: libc::c_int = 0;
+    let mut enc_id: i32 = 0;
     enc_id = 0i32;
     while enc_id < enc_cache.count {
         if pdf_encoding_is_predefined(enc_id) == 0 {
@@ -922,9 +922,9 @@ pub unsafe extern "C" fn pdf_encoding_complete() {
              * an incorrect implementation in Acrobat 4 and earlier. Hence,
              * we do use a base encodings for PDF versions >= 1.3.
              */
-            let mut with_base: libc::c_int = ((*encoding).flags & 1i32 << 1i32 == 0
+            let mut with_base: i32 = ((*encoding).flags & 1i32 << 1i32 == 0
                 || pdf_get_version() >= 4i32 as libc::c_uint)
-                as libc::c_int;
+                as i32;
             if (*encoding).resource.is_null() {
             } else {
                 __assert_fail(
@@ -968,7 +968,7 @@ pub unsafe extern "C" fn pdf_encoding_complete() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_close_encodings() {
-    let mut enc_id: libc::c_int = 0;
+    let mut enc_id: i32 = 0;
     if !enc_cache.encodings.is_null() {
         enc_id = 0i32;
         while enc_id < enc_cache.count {
@@ -989,8 +989,8 @@ pub unsafe extern "C" fn pdf_close_encodings() {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_encoding_findresource(
     mut enc_name: *const i8,
-) -> libc::c_int {
-    let mut enc_id: libc::c_int = 0;
+) -> i32 {
+    let mut enc_id: i32 = 0;
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if !enc_name.is_null() {
     } else {
@@ -1008,12 +1008,12 @@ pub unsafe extern "C" fn pdf_encoding_findresource(
     while enc_id < enc_cache.count {
         encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
         if !(*encoding).ident.is_null()
-            && streq_ptr(enc_name, (*encoding).ident) as libc::c_int != 0
+            && streq_ptr(enc_name, (*encoding).ident) as i32 != 0
         {
             return enc_id;
         } else {
             if !(*encoding).enc_name.is_null()
-                && streq_ptr(enc_name, (*encoding).enc_name) as libc::c_int != 0
+                && streq_ptr(enc_name, (*encoding).enc_name) as i32 != 0
             {
                 return enc_id;
             }
@@ -1027,7 +1027,7 @@ pub unsafe extern "C" fn pdf_encoding_findresource(
  */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_encoding_get_encoding(
-    mut enc_id: libc::c_int,
+    mut enc_id: i32,
 ) -> *mut *mut i8 {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
@@ -1040,7 +1040,7 @@ pub unsafe extern "C" fn pdf_encoding_get_encoding(
     return (*encoding).glyphs.as_mut_ptr();
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_get_encoding_obj(mut enc_id: libc::c_int) -> *mut pdf_obj {
+pub unsafe extern "C" fn pdf_get_encoding_obj(mut enc_id: i32) -> *mut pdf_obj {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
         _tt_abort(
@@ -1052,7 +1052,7 @@ pub unsafe extern "C" fn pdf_get_encoding_obj(mut enc_id: libc::c_int) -> *mut p
     return (*encoding).resource;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_encoding_is_predefined(mut enc_id: libc::c_int) -> libc::c_int {
+pub unsafe extern "C" fn pdf_encoding_is_predefined(mut enc_id: i32) -> i32 {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
         _tt_abort(
@@ -1068,7 +1068,7 @@ pub unsafe extern "C" fn pdf_encoding_is_predefined(mut enc_id: libc::c_int) -> 
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_encoding_used_by_type3(mut enc_id: libc::c_int) {
+pub unsafe extern "C" fn pdf_encoding_used_by_type3(mut enc_id: i32) {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
         _tt_abort(
@@ -1080,7 +1080,7 @@ pub unsafe extern "C" fn pdf_encoding_used_by_type3(mut enc_id: libc::c_int) {
     (*encoding).flags |= 1i32 << 1i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_encoding_get_name(mut enc_id: libc::c_int) -> *mut i8 {
+pub unsafe extern "C" fn pdf_encoding_get_name(mut enc_id: i32) -> *mut i8 {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
         _tt_abort(
@@ -1096,11 +1096,11 @@ static mut range_min: [u8; 1] = [0u32 as u8];
 static mut range_max: [u8; 1] = [0xffu32 as u8];
 #[no_mangle]
 pub unsafe extern "C" fn pdf_encoding_add_usedchars(
-    mut encoding_id: libc::c_int,
+    mut encoding_id: i32,
     mut is_used: *const i8,
 ) {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
-    let mut code: libc::c_int = 0;
+    let mut code: i32 = 0;
     if encoding_id < 0i32 || encoding_id >= enc_cache.count {
         _tt_abort(
             b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
@@ -1113,14 +1113,14 @@ pub unsafe extern "C" fn pdf_encoding_add_usedchars(
     encoding = &mut *enc_cache.encodings.offset(encoding_id as isize) as *mut pdf_encoding;
     code = 0i32;
     while code <= 0xffi32 {
-        (*encoding).is_used[code as usize] = ((*encoding).is_used[code as usize] as libc::c_int
-            | *is_used.offset(code as isize) as libc::c_int)
+        (*encoding).is_used[code as usize] = ((*encoding).is_used[code as usize] as i32
+            | *is_used.offset(code as isize) as i32)
             as i8;
         code += 1
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_encoding_get_tounicode(mut encoding_id: libc::c_int) -> *mut pdf_obj {
+pub unsafe extern "C" fn pdf_encoding_get_tounicode(mut encoding_id: i32) -> *mut pdf_obj {
     if encoding_id < 0i32 || encoding_id >= enc_cache.count {
         _tt_abort(
             b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
@@ -1147,8 +1147,8 @@ pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
 ) -> *mut pdf_obj {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut cmap: *mut CMap = 0 as *mut CMap;
-    let mut code: libc::c_int = 0;
-    let mut all_predef: libc::c_int = 0;
+    let mut code: i32 = 0;
+    let mut all_predef: i32 = 0;
     let mut cmap_name: *mut i8 = 0 as *mut i8;
     let mut p: *mut u8 = 0 as *mut u8;
     let mut endptr: *mut u8 = 0 as *mut u8;
@@ -1191,7 +1191,7 @@ pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
         if !(!is_used.is_null() && *is_used.offset(code as isize) == 0) {
             if !(*enc_vec.offset(code as isize)).is_null() {
                 let mut len: i32 = 0;
-                let mut fail_count: libc::c_int = 0i32;
+                let mut fail_count: i32 = 0i32;
                 let mut agln: *mut agl_name = agl_lookup_list(*enc_vec.offset(code as isize));
                 /* Adobe glyph naming conventions are not used by viewers,
                  * hence even ligatures (e.g, "f_i") must be explicitly defined
@@ -1217,7 +1217,7 @@ pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
                             wbuf.as_mut_ptr().offset(1),
                             len as size_t,
                         );
-                        all_predef &= (!agln.is_null() && (*agln).is_predef != 0) as libc::c_int
+                        all_predef &= (!agln.is_null() && (*agln).is_predef != 0) as i32
                     }
                 }
             }

@@ -14,11 +14,11 @@ extern "C" {
     pub type pdf_obj;
     pub type pdf_font;
     #[no_mangle]
-    fn pdf_font_set_fontname(font: *mut pdf_font, fontname: *const i8) -> libc::c_int;
+    fn pdf_font_set_fontname(font: *mut pdf_font, fontname: *const i8) -> i32;
     #[no_mangle]
-    fn pdf_font_get_param(font: *mut pdf_font, type_0: libc::c_int) -> f64;
+    fn pdf_font_get_param(font: *mut pdf_font, type_0: i32) -> f64;
     #[no_mangle]
-    fn pdf_font_get_encoding(font: *mut pdf_font) -> libc::c_int;
+    fn pdf_font_get_encoding(font: *mut pdf_font) -> i32;
     #[no_mangle]
     fn pdf_font_get_usedchars(font: *mut pdf_font) -> *mut i8;
     #[no_mangle]
@@ -31,12 +31,12 @@ extern "C" {
     fn pdf_add_stream(
         stream: *mut pdf_obj,
         stream_data_ptr: *const libc::c_void,
-        stream_data_len: libc::c_int,
+        stream_data_len: i32,
     );
     #[no_mangle]
-    fn pdf_new_stream(flags: libc::c_int) -> *mut pdf_obj;
+    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_new_dict() -> *mut pdf_obj;
     #[no_mangle]
@@ -59,13 +59,13 @@ extern "C" {
         _: *mut FILE,
     ) -> u64;
     #[no_mangle]
-    fn fgetc(__stream: *mut FILE) -> libc::c_int;
+    fn fgetc(__stream: *mut FILE) -> i32;
     #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn fopen(_: *const i8, _: *const i8) -> *mut FILE;
     #[no_mangle]
-    fn fclose(__stream: *mut FILE) -> libc::c_int;
+    fn fclose(__stream: *mut FILE) -> i32;
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
@@ -78,7 +78,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn floor(_: f64) -> f64;
     #[no_mangle]
@@ -157,21 +157,21 @@ extern "C" {
     #[no_mangle]
     static mut work_buffer: [i8; 0];
     #[no_mangle]
-    fn pdf_sprint_number(buf: *mut i8, value: f64) -> libc::c_int;
+    fn pdf_sprint_number(buf: *mut i8, value: f64) -> i32;
     #[no_mangle]
-    fn pdf_encoding_used_by_type3(enc_id: libc::c_int);
+    fn pdf_encoding_used_by_type3(enc_id: i32);
     /* WARNING:
      * Pointer(s) may change after another encoding is loaded.
      */
     #[no_mangle]
-    fn pdf_encoding_get_name(enc_id: libc::c_int) -> *mut i8;
+    fn pdf_encoding_get_name(enc_id: i32) -> *mut i8;
     #[no_mangle]
-    fn pdf_encoding_get_encoding(enc_id: libc::c_int) -> *mut *mut i8;
+    fn pdf_encoding_get_encoding(enc_id: i32) -> *mut *mut i8;
     #[no_mangle]
-    fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
+    fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
     /* From TFM header */
     #[no_mangle]
-    fn tfm_get_design_size(font_id: libc::c_int) -> f64;
+    fn tfm_get_design_size(font_id: i32) -> f64;
 }
 pub type __off_t = i64;
 pub type __off64_t = i64;
@@ -179,7 +179,7 @@ pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
-    pub _flags: libc::c_int,
+    pub _flags: i32,
     pub _IO_read_ptr: *mut i8,
     pub _IO_read_end: *mut i8,
     pub _IO_read_base: *mut i8,
@@ -193,8 +193,8 @@ pub struct _IO_FILE {
     pub _IO_save_end: *mut i8,
     pub _markers: *mut _IO_marker,
     pub _chain: *mut _IO_FILE,
-    pub _fileno: libc::c_int,
-    pub _flags2: libc::c_int,
+    pub _fileno: i32,
+    pub _flags2: i32,
     pub _old_offset: __off_t,
     pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
@@ -206,7 +206,7 @@ pub struct _IO_FILE {
     pub _freeres_list: *mut _IO_FILE,
     pub _freeres_buf: *mut libc::c_void,
     pub __pad5: size_t,
-    pub _mode: libc::c_int,
+    pub _mode: i32,
     pub _unused2: [i8; 20],
 }
 pub type _IO_lock_t = ();
@@ -231,12 +231,12 @@ pub struct pk_header_ {
     pub bm_ht: u32,
     pub bm_hoff: i32,
     pub bm_voff: i32,
-    pub dyn_f: libc::c_int,
-    pub run_color: libc::c_int,
+    pub dyn_f: i32,
+    pub run_color: i32,
 }
 static mut base_dpi: libc::c_uint = 600u32;
 #[no_mangle]
-pub unsafe extern "C" fn PKFont_set_dpi(mut dpi: libc::c_int) {
+pub unsafe extern "C" fn PKFont_set_dpi(mut dpi: i32) {
     if dpi <= 0i32 {
         _tt_abort(
             b"Invalid DPI: %d\n\x00" as *const u8 as *const i8,
@@ -253,7 +253,7 @@ unsafe extern "C" fn truedpi(
 ) -> libc::c_uint {
     let mut dpi: libc::c_uint = bdpi;
     let mut design_size: f64 = 0.;
-    let mut tfm_id: libc::c_int = 0;
+    let mut tfm_id: i32 = 0;
     tfm_id = tfm_open(ident, 0i32);
     if tfm_id < 0i32 {
         return dpi;
@@ -286,10 +286,10 @@ unsafe extern "C" fn dpx_open_pk_font_at(
     return fp;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_font_open_pkfont(mut font: *mut pdf_font) -> libc::c_int {
+pub unsafe extern "C" fn pdf_font_open_pkfont(mut font: *mut pdf_font) -> i32 {
     let mut ident: *mut i8 = 0 as *mut i8;
     let mut point_size: f64 = 0.;
-    let mut encoding_id: libc::c_int = 0;
+    let mut encoding_id: i32 = 0;
     let mut dpi: libc::c_uint = 0;
     let mut fp: *mut FILE = 0 as *mut FILE;
     ident = pdf_font_get_ident(font);
@@ -346,8 +346,8 @@ unsafe extern "C" fn fill_black_run(
         .wrapping_sub(1i32 as libc::c_uint);
     while left <= right {
         let ref mut fresh0 = *dp.offset(left.wrapping_div(8i32 as libc::c_uint) as isize);
-        *fresh0 = (*fresh0 as libc::c_int
-            & mask[left.wrapping_rem(8i32 as libc::c_uint) as usize] as libc::c_int)
+        *fresh0 = (*fresh0 as i32
+            & mask[left.wrapping_rem(8i32 as libc::c_uint) as usize] as i32)
             as u8;
         left = left.wrapping_add(1)
     }
@@ -359,14 +359,14 @@ unsafe extern "C" fn fill_white_run(mut run_count: u32) -> u32 {
 }
 unsafe extern "C" fn pk_packed_num(
     mut np: *mut u32,
-    mut dyn_f: libc::c_int,
+    mut dyn_f: i32,
     mut dp: *mut u8,
     mut pl: u32,
 ) -> u32 {
     let mut nmbr: u32 = 0i32 as u32;
     let mut i: u32 = *np;
-    let mut nyb: libc::c_int = 0;
-    let mut j: libc::c_int = 0;
+    let mut nyb: i32 = 0;
+    let mut j: i32 = 0;
     if i.wrapping_div(2i32 as libc::c_uint) == pl {
         dpx_warning(
             b"EOD reached while unpacking pk_packed_num.\x00" as *const u8 as *const i8,
@@ -374,9 +374,9 @@ unsafe extern "C" fn pk_packed_num(
         return 0i32 as u32;
     }
     nyb = if i.wrapping_rem(2i32 as libc::c_uint) != 0 {
-        *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as libc::c_int & 0xfi32
+        *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as i32 & 0xfi32
     } else {
-        *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as libc::c_int >> 4i32 & 0xfi32
+        *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as i32 >> 4i32 & 0xfi32
     };
     i = i.wrapping_add(1);
     if nyb == 0i32 {
@@ -390,10 +390,10 @@ unsafe extern "C" fn pk_packed_num(
                 break;
             } else {
                 nyb = if i.wrapping_rem(2i32 as libc::c_uint) != 0 {
-                    *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as libc::c_int
+                    *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as i32
                         & 0xfi32
                 } else {
-                    *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as libc::c_int >> 4i32
+                    *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as i32 >> 4i32
                         & 0xfi32
                 };
                 i = i.wrapping_add(1);
@@ -418,10 +418,10 @@ unsafe extern "C" fn pk_packed_num(
                 break;
             } else {
                 nyb = if i.wrapping_rem(2i32 as libc::c_uint) != 0 {
-                    *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as libc::c_int
+                    *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as i32
                         & 0xfi32
                 } else {
-                    *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as libc::c_int >> 4i32
+                    *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as i32 >> 4i32
                         & 0xfi32
                 };
                 i = i.wrapping_add(1);
@@ -445,9 +445,9 @@ unsafe extern "C" fn pk_packed_num(
         }
         nmbr = ((nyb - dyn_f - 1i32) * 16i32
             + (if i.wrapping_rem(2i32 as libc::c_uint) != 0 {
-                *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as libc::c_int & 0xfi32
+                *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as i32 & 0xfi32
             } else {
-                *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as libc::c_int >> 4i32
+                *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as i32 >> 4i32
                     & 0xfi32
             })
             + dyn_f
@@ -462,17 +462,17 @@ unsafe extern "C" fn send_out(
     mut rowbytes: u32,
     mut stream: *mut pdf_obj,
 ) {
-    pdf_add_stream(stream, rowptr as *mut libc::c_void, rowbytes as libc::c_int);
+    pdf_add_stream(stream, rowptr as *mut libc::c_void, rowbytes as i32);
 }
 unsafe extern "C" fn pk_decode_packed(
     mut stream: *mut pdf_obj,
     mut wd: u32,
     mut ht: u32,
-    mut dyn_f: libc::c_int,
-    mut run_color: libc::c_int,
+    mut dyn_f: i32,
+    mut run_color: i32,
     mut dp: *mut u8,
     mut pl: u32,
-) -> libc::c_int {
+) -> i32 {
     let mut rowptr: *mut u8 = 0 as *mut u8;
     let mut rowbytes: u32 = 0;
     let mut i: u32 = 0;
@@ -528,11 +528,11 @@ unsafe extern "C" fn pk_decode_packed(
         }
         /* Read nybbles until we have a full row */
         while np.wrapping_div(2i32 as libc::c_uint) < pl && rowbits_left > 0i32 as libc::c_uint {
-            let mut nyb: libc::c_int = 0;
+            let mut nyb: i32 = 0;
             nyb = if np.wrapping_rem(2i32 as libc::c_uint) != 0 {
-                *dp.offset(np.wrapping_div(2i32 as libc::c_uint) as isize) as libc::c_int & 0xfi32
+                *dp.offset(np.wrapping_div(2i32 as libc::c_uint) as isize) as i32 & 0xfi32
             } else {
-                *dp.offset(np.wrapping_div(2i32 as libc::c_uint) as isize) as libc::c_int >> 4i32
+                *dp.offset(np.wrapping_div(2i32 as libc::c_uint) as isize) as i32 >> 4i32
                     & 0xfi32
             };
             if nyb == 14i32 {
@@ -562,7 +562,7 @@ unsafe extern "C" fn pk_decode_packed(
                 } else {
                     run_count
                 };
-                run_color = (run_color == 0) as libc::c_int;
+                run_color = (run_color == 0) as i32;
                 run_count = (run_count as libc::c_uint).wrapping_sub(nbits) as u32;
                 match run_color {
                     0 => {
@@ -597,11 +597,11 @@ unsafe extern "C" fn pk_decode_bitmap(
     mut stream: *mut pdf_obj,
     mut wd: u32,
     mut ht: u32,
-    mut dyn_f: libc::c_int,
-    mut run_color: libc::c_int,
+    mut dyn_f: i32,
+    mut run_color: i32,
     mut dp: *mut u8,
     mut pl: u32,
-) -> libc::c_int {
+) -> i32 {
     let mut rowptr: *mut u8 = 0 as *mut u8;
     let mut c: u8 = 0;
     let mut i: u32 = 0;
@@ -653,13 +653,13 @@ unsafe extern "C" fn pk_decode_bitmap(
     i = 0i32 as u32; /* flip bit */
     j = 0i32 as u32;
     while i < ht.wrapping_mul(wd) {
-        c = (*dp.offset(i.wrapping_div(8i32 as libc::c_uint) as isize) as libc::c_int
-            & mask[i.wrapping_rem(8i32 as libc::c_uint) as usize] as libc::c_int)
+        c = (*dp.offset(i.wrapping_div(8i32 as libc::c_uint) as isize) as i32
+            & mask[i.wrapping_rem(8i32 as libc::c_uint) as usize] as i32)
             as u8;
-        if c as libc::c_int == 0i32 {
+        if c as i32 == 0i32 {
             let ref mut fresh2 = *rowptr.offset(j.wrapping_div(8i32 as libc::c_uint) as isize);
-            *fresh2 = (*fresh2 as libc::c_int
-                | mask[i.wrapping_rem(8i32 as libc::c_uint) as usize] as libc::c_int)
+            *fresh2 = (*fresh2 as i32
+                | mask[i.wrapping_rem(8i32 as libc::c_uint) as usize] as i32)
                 as u8
         }
         j = j.wrapping_add(1);
@@ -691,7 +691,7 @@ unsafe extern "C" fn read_pk_char_header(
     mut h: *mut pk_header_,
     mut opcode: u8,
     mut fp: *mut FILE,
-) -> libc::c_int {
+) -> i32 {
     if !h.is_null() {
     } else {
         __assert_fail(
@@ -704,13 +704,13 @@ unsafe extern "C" fn read_pk_char_header(
             .as_ptr(),
         );
     }
-    if opcode as libc::c_int & 4i32 == 0i32 {
+    if opcode as i32 & 4i32 == 0i32 {
         /* short */
-        (*h).pkt_len = ((opcode as libc::c_int & 3i32) << 8i32
-            | get_unsigned_byte(fp) as libc::c_int) as u32; /* TFM width */
+        (*h).pkt_len = ((opcode as i32 & 3i32) << 8i32
+            | get_unsigned_byte(fp) as i32) as u32; /* TFM width */
         (*h).chrcode = get_unsigned_byte(fp) as i32; /* horizontal escapement */
         (*h).wd = get_unsigned_triple(fp) as i32; /* extended short */
-        (*h).dx = (get_unsigned_byte(fp) as libc::c_int) << 16i32;
+        (*h).dx = (get_unsigned_byte(fp) as i32) << 16i32;
         (*h).dy = 0i32;
         (*h).bm_wd = get_unsigned_byte(fp) as u32;
         (*h).bm_ht = get_unsigned_byte(fp) as u32;
@@ -718,7 +718,7 @@ unsafe extern "C" fn read_pk_char_header(
         (*h).bm_voff = get_signed_byte(fp) as i32;
         (*h).pkt_len = ((*h).pkt_len as libc::c_uint).wrapping_sub(8i32 as libc::c_uint) as u32
             as u32
-    } else if opcode as libc::c_int & 7i32 == 7i32 {
+    } else if opcode as i32 & 7i32 == 7i32 {
         /* long */
         (*h).pkt_len = get_positive_quad(
             fp,
@@ -744,11 +744,11 @@ unsafe extern "C" fn read_pk_char_header(
         (*h).pkt_len = ((*h).pkt_len as libc::c_uint).wrapping_sub(28i32 as libc::c_uint)
             as u32
     } else {
-        (*h).pkt_len = ((opcode as libc::c_int & 3i32) << 16i32
-            | get_unsigned_pair(fp) as libc::c_int) as u32;
+        (*h).pkt_len = ((opcode as i32 & 3i32) << 16i32
+            | get_unsigned_pair(fp) as i32) as u32;
         (*h).chrcode = get_unsigned_byte(fp) as i32;
         (*h).wd = get_unsigned_triple(fp) as i32;
-        (*h).dx = (get_unsigned_pair(fp) as libc::c_int) << 16i32;
+        (*h).dx = (get_unsigned_pair(fp) as i32) << 16i32;
         (*h).dy = 0i32;
         (*h).bm_wd = get_unsigned_pair(fp) as u32;
         (*h).bm_ht = get_unsigned_pair(fp) as u32;
@@ -757,8 +757,8 @@ unsafe extern "C" fn read_pk_char_header(
         (*h).pkt_len = ((*h).pkt_len as libc::c_uint).wrapping_sub(13i32 as libc::c_uint)
             as u32
     }
-    (*h).dyn_f = opcode as libc::c_int / 16i32;
-    (*h).run_color = if opcode as libc::c_int & 8i32 != 0 {
+    (*h).dyn_f = opcode as i32 / 16i32;
+    (*h).run_color = if opcode as i32 & 8i32 != 0 {
         1i32
     } else {
         0i32
@@ -785,7 +785,7 @@ unsafe extern "C" fn create_pk_CharProc_stream(
     let mut lly: i32 = 0;
     let mut urx: i32 = 0;
     let mut ury: i32 = 0;
-    let mut len: libc::c_int = 0;
+    let mut len: i32 = 0;
     llx = -(*pkh).bm_hoff;
     lly = ((*pkh).bm_voff as libc::c_uint).wrapping_sub((*pkh).bm_ht) as i32;
     urx = (*pkh).bm_wd.wrapping_sub((*pkh).bm_hoff as libc::c_uint) as i32;
@@ -894,7 +894,7 @@ unsafe extern "C" fn create_pk_CharProc_stream(
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::c_int {
+pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
     let mut fontdict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut usedchars: *mut i8 = 0 as *mut i8;
     let mut ident: *mut i8 = 0 as *mut i8;
@@ -902,11 +902,11 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     let mut fp: *mut FILE = 0 as *mut FILE;
     let mut point_size: f64 = 0.;
     let mut pix2charu: f64 = 0.;
-    let mut opcode: libc::c_int = 0;
-    let mut code: libc::c_int = 0;
-    let mut firstchar: libc::c_int = 0;
-    let mut lastchar: libc::c_int = 0;
-    let mut prev: libc::c_int = 0;
+    let mut opcode: i32 = 0;
+    let mut code: i32 = 0;
+    let mut firstchar: i32 = 0;
+    let mut lastchar: i32 = 0;
+    let mut prev: i32 = 0;
     let mut charprocs: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut procset: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut encoding: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -919,10 +919,10 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
         ury: 0.,
     };
     let mut charavail: [i8; 256] = [0; 256];
-    let mut encoding_id: libc::c_int = 0;
+    let mut encoding_id: i32 = 0;
     let mut enc_vec: *mut *mut i8 = 0 as *mut *mut i8;
     /* ENABLE_GLYPHENC */
-    let mut error: libc::c_int = 0i32;
+    let mut error: i32 = 0i32;
     if !pdf_font_is_in_use(font) {
         return 0i32;
     }
@@ -1086,7 +1086,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                         sprintf(
                             charname,
                             b"x%02X\x00" as *const u8 as *const i8,
-                            pkh.chrcode as u8 as libc::c_int,
+                            pkh.chrcode as u8 as i32,
                         );
                     }
                 } else {
@@ -1095,7 +1095,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                     sprintf(
                         charname,
                         b"x%02X\x00" as *const u8 as *const i8,
-                        pkh.chrcode as u8 as libc::c_int,
+                        pkh.chrcode as u8 as i32,
                     );
                 }
                 pdf_add_dict(charprocs, pdf_new_name(charname), pdf_ref_obj(charproc));
@@ -1130,7 +1130,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     /* Check if we really got all glyphs needed. */
     code = 0i32;
     while code < 256i32 {
-        if *usedchars.offset(code as isize) as libc::c_int != 0 && charavail[code as usize] == 0 {
+        if *usedchars.offset(code as isize) as i32 != 0 && charavail[code as usize] == 0 {
             dpx_warning(
                 b"Missing glyph code=0x%02x in PK font \"%s\".\x00" as *const u8
                     as *const i8,
@@ -1201,7 +1201,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                     sprintf(
                         charname_0,
                         b"x%02X\x00" as *const u8 as *const i8,
-                        code as u8 as libc::c_int,
+                        code as u8 as i32,
                     );
                 }
             } else {
@@ -1210,7 +1210,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                 sprintf(
                     charname_0,
                     b"x%02X\x00" as *const u8 as *const i8,
-                    code as u8 as libc::c_int,
+                    code as u8 as i32,
                 );
             }
             pdf_add_array(tmp_array, pdf_new_name(charname_0));

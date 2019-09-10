@@ -11,9 +11,9 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn abs(_: libc::c_int) -> libc::c_int;
+    fn abs(_: i32) -> i32;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
@@ -22,7 +22,7 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_output_open(path: *const i8, is_gz: libc::c_int) -> rust_output_handle_t;
+    fn ttstub_output_open(path: *const i8, is_gz: i32) -> rust_output_handle_t;
     #[no_mangle]
     fn ttstub_output_open_stdout() -> rust_output_handle_t;
     #[no_mangle]
@@ -32,14 +32,14 @@ extern "C" {
         len: size_t,
     ) -> size_t;
     #[no_mangle]
-    fn ttstub_output_flush(handle: rust_output_handle_t) -> libc::c_int;
+    fn ttstub_output_flush(handle: rust_output_handle_t) -> i32;
     #[no_mangle]
-    fn ttstub_output_close(handle: rust_output_handle_t) -> libc::c_int;
+    fn ttstub_output_close(handle: rust_output_handle_t) -> i32;
     #[no_mangle]
     fn ttstub_input_open(
         path: *const i8,
         format: tt_input_format_type,
-        is_gz: libc::c_int,
+        is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
     fn ttstub_input_read(
@@ -48,7 +48,7 @@ extern "C" {
         len: size_t,
     ) -> ssize_t;
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
@@ -90,7 +90,7 @@ extern "C" {
     #[no_mangle]
     fn alter_page_so_far();
     #[no_mangle]
-    fn load_pool_strings(spare_size: i32) -> libc::c_int;
+    fn load_pool_strings(spare_size: i32) -> i32;
     #[no_mangle]
     fn alter_prev_graf();
     #[no_mangle]
@@ -236,11 +236,11 @@ extern "C" {
     #[no_mangle]
     fn deinitialize_shipout_variables();
     #[no_mangle]
-    fn release_font_engine(engine: *mut libc::c_void, type_flag: libc::c_int);
+    fn release_font_engine(engine: *mut libc::c_void, type_flag: i32);
     #[no_mangle]
-    fn maketexstring(s: *const i8) -> libc::c_int;
+    fn maketexstring(s: *const i8) -> i32;
     #[no_mangle]
-    fn set_cp_code(fontNum: libc::c_int, code: libc::c_uint, side: libc::c_int, value: libc::c_int);
+    fn set_cp_code(fontNum: i32, code: libc::c_uint, side: i32, value: i32);
     /* synctex.h
 
     Copyright (c) 2008, 2009 jerome DOT laurens AT u-bourgogne DOT fr
@@ -703,9 +703,9 @@ pub static mut save_size: i32 = 0;
 #[no_mangle]
 pub static mut expand_depth: i32 = 0;
 #[no_mangle]
-pub static mut file_line_error_style_p: libc::c_int = 0;
+pub static mut file_line_error_style_p: i32 = 0;
 #[no_mangle]
-pub static mut halt_on_error_p: libc::c_int = 0;
+pub static mut halt_on_error_p: i32 = 0;
 #[no_mangle]
 pub static mut quoted_filename: bool = false;
 #[no_mangle]
@@ -1358,7 +1358,7 @@ pub static mut xtx_ligature_present: bool = false;
 #[no_mangle]
 pub static mut delta: scaled_t = 0;
 #[no_mangle]
-pub static mut synctex_enabled: libc::c_int = 0;
+pub static mut synctex_enabled: i32 = 0;
 #[no_mangle]
 pub static mut used_tectonic_coda_tokens: bool = false;
 #[no_mangle]
@@ -1576,7 +1576,7 @@ unsafe extern "C" fn sort_avail() {
 /*276: */
 unsafe extern "C" fn primitive(mut ident: *const i8, mut c: u16, mut o: i32) {
     let mut prim_val: i32 = 0;
-    let mut len: libc::c_int = strlen(ident) as libc::c_int;
+    let mut len: i32 = strlen(ident) as i32;
     if len > 1i32 {
         let mut s: str_number = maketexstring(ident);
         if first + len > buf_size + 1i32 {
@@ -1585,7 +1585,7 @@ unsafe extern "C" fn primitive(mut ident: *const i8, mut c: u16, mut o: i32) {
                 buf_size,
             );
         }
-        let mut i: libc::c_int = 0i32;
+        let mut i: i32 = 0i32;
         while i < len {
             *buffer.offset((first + i) as isize) = *ident.offset(i as isize) as UnicodeScalar;
             i += 1
@@ -1596,7 +1596,7 @@ unsafe extern "C" fn primitive(mut ident: *const i8, mut c: u16, mut o: i32) {
         (*hash.offset(cur_val as isize)).s1 = s;
         prim_val = prim_lookup(s)
     } else {
-        cur_val = *ident.offset(0) as libc::c_int + (1i32 + (0x10ffffi32 + 1i32));
+        cur_val = *ident.offset(0) as i32 + (1i32 + (0x10ffffi32 + 1i32));
         prim_val = prim_lookup(*ident.offset(0) as str_number)
     }
     (*eqtb.offset(cur_val as isize)).b16.s0 = 1i32 as u16;
@@ -1617,10 +1617,10 @@ pub unsafe extern "C" fn new_trie_op(
     let mut h: i32 = 0;
     let mut u: trie_opcode = 0;
     let mut l: i32 = 0;
-    h = (abs(n as libc::c_int
-        + 313i32 * d as libc::c_int
-        + 361i32 * v as libc::c_int
-        + 1009i32 * cur_lang as libc::c_int) as i64
+    h = (abs(n as i32
+        + 313i32 * d as i32
+        + 361i32 * v as i32
+        + 1009i32 * cur_lang as i32) as i64
         % (35111 - -35111)
         + -35111) as i32;
     loop {
@@ -1642,7 +1642,7 @@ pub unsafe extern "C" fn new_trie_op(
             trie_op_ptr += 1;
             u = u.wrapping_add(1);
             trie_used[cur_lang as usize] = u;
-            if u as libc::c_int > max_op_used as libc::c_int {
+            if u as i32 > max_op_used as i32 {
                 max_op_used = u
             }
             hyf_distance[trie_op_ptr as usize] = d;
@@ -1653,10 +1653,10 @@ pub unsafe extern "C" fn new_trie_op(
             trie_op_val[trie_op_ptr as usize] = u;
             return u;
         }
-        if hyf_distance[l as usize] as libc::c_int == d as libc::c_int
-            && hyf_num[l as usize] as libc::c_int == n as libc::c_int
-            && hyf_next[l as usize] as libc::c_int == v as libc::c_int
-            && trie_op_lang[l as usize] as libc::c_int == cur_lang as libc::c_int
+        if hyf_distance[l as usize] as i32 == d as i32
+            && hyf_num[l as usize] as i32 == n as i32
+            && hyf_next[l as usize] as i32 == v as i32
+            && trie_op_lang[l as usize] as i32 == cur_lang as i32
         {
             return trie_op_val[l as usize];
         }
@@ -1671,8 +1671,8 @@ pub unsafe extern "C" fn new_trie_op(
 pub unsafe extern "C" fn trie_node(mut p: trie_pointer) -> trie_pointer {
     let mut h: trie_pointer = 0;
     let mut q: trie_pointer = 0;
-    h = abs(*trie_c.offset(p as isize) as libc::c_int
-        + 1009i32 * *trie_o.offset(p as isize) as libc::c_int
+    h = abs(*trie_c.offset(p as isize) as i32
+        + 1009i32 * *trie_o.offset(p as isize) as i32
         + 2718i32 * *trie_l.offset(p as isize)
         + 3142i32 * *trie_r.offset(p as isize))
         % trie_size;
@@ -1682,9 +1682,9 @@ pub unsafe extern "C" fn trie_node(mut p: trie_pointer) -> trie_pointer {
             *trie_hash.offset(h as isize) = p;
             return p;
         }
-        if *trie_c.offset(q as isize) as libc::c_int == *trie_c.offset(p as isize) as libc::c_int
-            && *trie_o.offset(q as isize) as libc::c_int
-                == *trie_o.offset(p as isize) as libc::c_int
+        if *trie_c.offset(q as isize) as i32 == *trie_c.offset(p as isize) as i32
+            && *trie_o.offset(q as isize) as i32
+                == *trie_o.offset(p as isize) as i32
             && *trie_l.offset(q as isize) == *trie_l.offset(p as isize)
             && *trie_r.offset(q as isize) == *trie_r.offset(p as isize)
         {
@@ -1719,7 +1719,7 @@ pub unsafe extern "C" fn first_fit(mut p: trie_pointer) {
     c = *trie_c.offset(p as isize);
     z = trie_min[c as usize];
     's_31: loop {
-        h = z - c as libc::c_int;
+        h = z - c as i32;
         if trie_max < h + max_hyph_char {
             if trie_size <= h + max_hyph_char {
                 overflow(
@@ -1743,7 +1743,7 @@ pub unsafe extern "C" fn first_fit(mut p: trie_pointer) {
                 if !(q > 0i32) {
                     break 's_31;
                 }
-                if *trie_trl.offset((h + *trie_c.offset(q as isize) as libc::c_int) as isize)
+                if *trie_trl.offset((h + *trie_c.offset(q as isize) as i32) as isize)
                     == 0i32
                 {
                     break;
@@ -1759,7 +1759,7 @@ pub unsafe extern "C" fn first_fit(mut p: trie_pointer) {
     *trie_hash.offset(p as isize) = h;
     q = p;
     loop {
-        z = h + *trie_c.offset(q as isize) as libc::c_int;
+        z = h + *trie_c.offset(q as isize) as i32;
         l = *trie_tro.offset(z as isize);
         r = *trie_trl.offset(z as isize);
         *trie_tro.offset(r as isize) = l;
@@ -1809,9 +1809,9 @@ pub unsafe extern "C" fn trie_fix(mut p: trie_pointer) {
     loop {
         q = *trie_l.offset(p as isize);
         c = *trie_c.offset(p as isize);
-        *trie_trl.offset((z + c as libc::c_int) as isize) = *trie_hash.offset(q as isize);
-        *trie_trc.offset((z + c as libc::c_int) as isize) = c;
-        *trie_tro.offset((z + c as libc::c_int) as isize) =
+        *trie_trl.offset((z + c as i32) as isize) = *trie_hash.offset(q as isize);
+        *trie_trc.offset((z + c as i32) as isize) = c;
+        *trie_tro.offset((z + c as i32) as isize) =
             *trie_o.offset(p as isize) as trie_pointer;
         if q > 0i32 {
             trie_fix(q);
@@ -1931,9 +1931,9 @@ unsafe extern "C" fn new_patterns() {
         digit_sensed = 0i32 != 0;
         loop {
             get_x_token();
-            match cur_cmd as libc::c_int {
+            match cur_cmd as i32 {
                 11 | 12 => {
-                    if digit_sensed as libc::c_int != 0
+                    if digit_sensed as i32 != 0
                         || cur_chr < '0' as i32
                         || cur_chr > '9' as i32
                     {
@@ -1980,19 +1980,19 @@ unsafe extern "C" fn new_patterns() {
                         if cur_chr > max_hyph_char {
                             max_hyph_char = cur_chr
                         }
-                        if (k as libc::c_int) < max_hyphenatable_length() {
+                        if (k as i32) < max_hyphenatable_length() {
                             k += 1;
                             hc[k as usize] = cur_chr;
                             hyf[k as usize] = 0i32 as u8;
                             digit_sensed = 0i32 != 0
                         }
-                    } else if (k as libc::c_int) < max_hyphenatable_length() {
+                    } else if (k as i32) < max_hyphenatable_length() {
                         hyf[k as usize] = (cur_chr - 48i32) as u8;
                         digit_sensed = 1i32 != 0
                     }
                 }
                 10 | 2 => {
-                    if k as libc::c_int > 0i32 {
+                    if k as i32 > 0i32 {
                         /*998:*/
                         if hc[1] == 0i32 {
                             hyf[0] = 0i32 as u8
@@ -2003,34 +2003,34 @@ unsafe extern "C" fn new_patterns() {
                         l = k;
                         v = 0i32 as trie_opcode;
                         loop {
-                            if hyf[l as usize] as libc::c_int != 0i32 {
+                            if hyf[l as usize] as i32 != 0i32 {
                                 v = new_trie_op(
-                                    (k as libc::c_int - l as libc::c_int) as small_number,
+                                    (k as i32 - l as i32) as small_number,
                                     hyf[l as usize] as small_number,
                                     v,
                                 )
                             }
-                            if !(l as libc::c_int > 0i32) {
+                            if !(l as i32 > 0i32) {
                                 break;
                             }
                             l -= 1
                         }
                         q = 0i32;
                         hc[0] = cur_lang as i32;
-                        while l as libc::c_int <= k as libc::c_int {
+                        while l as i32 <= k as i32 {
                             c = hc[l as usize] as UTF16_code;
                             l += 1;
                             p = *trie_l.offset(q as isize);
                             first_child = 1i32 != 0;
                             while p > 0i32
-                                && c as libc::c_int > *trie_c.offset(p as isize) as libc::c_int
+                                && c as i32 > *trie_c.offset(p as isize) as i32
                             {
                                 q = p;
                                 p = *trie_r.offset(q as isize);
                                 first_child = 0i32 != 0
                             }
                             if p == 0i32
-                                || (c as libc::c_int) < *trie_c.offset(p as isize) as libc::c_int
+                                || (c as i32) < *trie_c.offset(p as isize) as i32
                             {
                                 /*999:*/
                                 if trie_ptr == trie_size {
@@ -2053,7 +2053,7 @@ unsafe extern "C" fn new_patterns() {
                             }
                             q = p
                         }
-                        if *trie_o.offset(q as isize) as libc::c_int != 0i32 {
+                        if *trie_o.offset(q as isize) as i32 != 0i32 {
                             if file_line_error_style_p != 0 {
                                 print_file_line();
                             } else {
@@ -2069,7 +2069,7 @@ unsafe extern "C" fn new_patterns() {
                         }
                         *trie_o.offset(q as isize) = v
                     }
-                    if cur_cmd as libc::c_int == 2i32 {
+                    if cur_cmd as i32 == 2i32 {
                         break;
                     }
                     k = 0i32 as libc::c_short;
@@ -2128,11 +2128,11 @@ unsafe extern "C" fn new_patterns() {
             loop {
                 q = p;
                 p = *trie_r.offset(q as isize);
-                if p == 0i32 || c as libc::c_int <= *trie_c.offset(p as isize) as libc::c_int {
+                if p == 0i32 || c as i32 <= *trie_c.offset(p as isize) as i32 {
                     break;
                 }
             }
-            if p == 0i32 || (c as libc::c_int) < *trie_c.offset(p as isize) as libc::c_int {
+            if p == 0i32 || (c as i32) < *trie_c.offset(p as isize) as i32 {
                 /*:1644*/
                 /*999:*/
                 if trie_ptr == trie_size {
@@ -2157,7 +2157,7 @@ unsafe extern "C" fn new_patterns() {
             p = *trie_l.offset(q as isize);
             first_child = 1i32 != 0;
             c = 0i32 as UTF16_code;
-            while c as libc::c_int <= 255i32 {
+            while c as i32 <= 255i32 {
                 if (*eqtb.offset(
                     (1i32
                         + (0x10ffffi32 + 1i32)
@@ -2178,11 +2178,11 @@ unsafe extern "C" fn new_patterns() {
                         + 1i32
                         + 3i32 * 256i32
                         + (0x10ffffi32 + 1i32)
-                        + c as libc::c_int) as isize,
+                        + c as i32) as isize,
                 ))
                 .b32
                 .s1 > 0i32
-                    || c as libc::c_int == 255i32 && first_child as libc::c_int != 0
+                    || c as i32 == 255i32 && first_child as i32 != 0
                 {
                     if p == 0i32 {
                         /*999:*/
@@ -2226,7 +2226,7 @@ unsafe extern "C" fn new_patterns() {
                             + 1i32
                             + 3i32 * 256i32
                             + (0x10ffffi32 + 1i32)
-                            + c as libc::c_int) as isize,
+                            + c as i32) as isize,
                     ))
                     .b32
                     .s1 as trie_opcode;
@@ -2274,7 +2274,7 @@ pub unsafe extern "C" fn init_trie() {
     if j <= for_end {
         loop {
             op_start[j as usize] =
-                op_start[(j - 1i32) as usize] + trie_used[(j - 1i32) as usize] as libc::c_int;
+                op_start[(j - 1i32) as usize] + trie_used[(j - 1i32) as usize] as i32;
             let fresh4 = j;
             j = j + 1;
             if !(fresh4 < for_end) {
@@ -2289,7 +2289,7 @@ pub unsafe extern "C" fn init_trie() {
         loop {
             _trie_op_hash_array[(j as i64 - -35111) as usize] = op_start
                 [trie_op_lang[j as usize] as usize]
-                + trie_op_val[j as usize] as libc::c_int;
+                + trie_op_val[j as usize] as i32;
             let fresh5 = j;
             j = j + 1;
             if !(fresh5 < for_end_0) {
@@ -2539,12 +2539,12 @@ unsafe extern "C" fn new_hyph_exceptions() {
     }
     if trie_not_ready {
         hyph_index = 0i32
-    } else if *trie_trc.offset((hyph_start + cur_lang as libc::c_int) as isize) as libc::c_int
-        != cur_lang as libc::c_int
+    } else if *trie_trc.offset((hyph_start + cur_lang as i32) as isize) as i32
+        != cur_lang as i32
     {
         hyph_index = 0i32
     } else {
-        hyph_index = *trie_trl.offset((hyph_start + cur_lang as libc::c_int) as isize)
+        hyph_index = *trie_trl.offset((hyph_start + cur_lang as i32) as isize)
     }
     /*970:*/
     n = 0i32 as libc::c_short;
@@ -2552,11 +2552,11 @@ unsafe extern "C" fn new_hyph_exceptions() {
     's_91: loop {
         get_x_token();
         loop {
-            match cur_cmd as libc::c_int {
+            match cur_cmd as i32 {
                 11 | 12 | 68 => {
                     if cur_chr == '-' as i32 {
                         /*973:*/
-                        if (n as libc::c_int) < max_hyphenatable_length() {
+                        if (n as i32) < max_hyphenatable_length() {
                             q = get_avail();
                             (*mem.offset(q as isize)).b32.s1 = p;
                             (*mem.offset(q as isize)).b32.s0 = n as i32;
@@ -2588,7 +2588,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                             ))
                             .b32
                             .s1
-                        } else if *trie_trc.offset((hyph_index + cur_chr) as isize) as libc::c_int
+                        } else if *trie_trc.offset((hyph_index + cur_chr) as isize) as i32
                             != cur_chr
                         {
                             hc[0] = 0i32
@@ -2611,7 +2611,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                                 as *const u8
                                 as *const i8;
                             error();
-                        } else if (n as libc::c_int) < max_hyphenatable_length() {
+                        } else if (n as i32) < max_hyphenatable_length() {
                             n += 1;
                             if (hc[0] as i64) < 65536 {
                                 hc[n as usize] = hc[0]
@@ -2633,7 +2633,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                     cur_cmd = 68i32 as eight_bits
                 }
                 10 | 2 => {
-                    if n as libc::c_int > 1i32 {
+                    if n as i32 > 1i32 {
                         current_block = 10753070352654377903;
                         break;
                     } else {
@@ -2665,7 +2665,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                 /*974:*/
                 n += 1;
                 hc[n as usize] = cur_lang as i32;
-                if pool_ptr + n as libc::c_int > pool_size {
+                if pool_ptr + n as i32 > pool_size {
                     overflow(
                         b"pool size\x00" as *const u8 as *const i8,
                         pool_size - init_pool_ptr,
@@ -2673,8 +2673,8 @@ unsafe extern "C" fn new_hyph_exceptions() {
                 }
                 h = 0i32 as hyph_pointer;
                 j = 1i32 as libc::c_short;
-                while j as libc::c_int <= n as libc::c_int {
-                    h = ((h as libc::c_int + h as libc::c_int + hc[j as usize]) % 607i32)
+                while j as i32 <= n as i32 {
+                    h = ((h as i32 + h as i32 + hc[j as usize]) % 607i32)
                         as hyph_pointer;
                     *str_pool.offset(pool_ptr as isize) = hc[j as usize] as packed_UTF16_code;
                     pool_ptr += 1;
@@ -2700,8 +2700,8 @@ unsafe extern "C" fn new_hyph_exceptions() {
                         u = *str_start.offset((k as i64 - 65536) as isize);
                         v = *str_start.offset((s as i64 - 65536) as isize);
                         loop {
-                            if *str_pool.offset(u as isize) as libc::c_int
-                                != *str_pool.offset(v as isize) as libc::c_int
+                            if *str_pool.offset(u as isize) as i32
+                                != *str_pool.offset(v as isize) as i32
                             {
                                 current_block = 876886731760051519;
                                 break;
@@ -2728,7 +2728,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                     }
                     /*:975*/
                     /*:976*/
-                    if *hyph_link.offset(h as isize) as libc::c_int == 0i32 {
+                    if *hyph_link.offset(h as isize) as i32 == 0i32 {
                         *hyph_link.offset(h as isize) = hyph_next as hyph_pointer;
                         if hyph_next >= hyph_size {
                             hyph_next = 607i32
@@ -2737,14 +2737,14 @@ unsafe extern "C" fn new_hyph_exceptions() {
                             hyph_next += 1
                         }
                     }
-                    h = (*hyph_link.offset(h as isize) as libc::c_int - 1i32) as hyph_pointer
+                    h = (*hyph_link.offset(h as isize) as i32 - 1i32) as hyph_pointer
                 }
                 *hyph_word.offset(h as isize) = s;
                 *hyph_list.offset(h as isize) = p
             }
             _ => {}
         }
-        if cur_cmd as libc::c_int == 2i32 {
+        if cur_cmd as i32 == 2i32 {
             return;
         }
         n = 0i32 as libc::c_short;
@@ -2763,17 +2763,17 @@ pub unsafe extern "C" fn prefixed_command() {
     let mut n: i32 = 0;
     let mut e: bool = false;
     a = 0i32 as small_number;
-    while cur_cmd as libc::c_int == 95i32 {
-        if a as libc::c_int / cur_chr & 1i32 == 0 {
-            a = (a as libc::c_int + cur_chr) as small_number
+    while cur_cmd as i32 == 95i32 {
+        if a as i32 / cur_chr & 1i32 == 0 {
+            a = (a as i32 + cur_chr) as small_number
         }
         loop {
             get_x_token();
-            if !(cur_cmd as libc::c_int == 10i32 || cur_cmd as libc::c_int == 0i32) {
+            if !(cur_cmd as i32 == 10i32 || cur_cmd as i32 == 0i32) {
                 break;
             }
         }
-        if cur_cmd as libc::c_int <= 71i32 {
+        if cur_cmd as i32 <= 71i32 {
             /*1247:*/
             if file_line_error_style_p != 0 {
                 print_file_line();
@@ -2823,13 +2823,13 @@ pub unsafe extern "C" fn prefixed_command() {
             show_cur_cmd_chr();
         }
     }
-    if a as libc::c_int >= 8i32 {
+    if a as i32 >= 8i32 {
         j = 0x1c00000i32 + 1i32;
-        a = (a as libc::c_int - 8i32) as small_number
+        a = (a as i32 - 8i32) as small_number
     } else {
         j = 0i32
     }
-    if cur_cmd as libc::c_int != 99i32 && (a as libc::c_int % 4i32 != 0i32 || j != 0i32) {
+    if cur_cmd as i32 != 99i32 && (a as i32 % 4i32 != 0i32 || j != 0i32) {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
@@ -2909,17 +2909,17 @@ pub unsafe extern "C" fn prefixed_command() {
         .b32
         .s1 < 0i32
         {
-            if a as libc::c_int >= 4i32 {
-                a = (a as libc::c_int - 4i32) as small_number
+            if a as i32 >= 4i32 {
+                a = (a as i32 - 4i32) as small_number
             }
-        } else if (a as libc::c_int) < 4i32 {
-            a = (a as libc::c_int + 4i32) as small_number
+        } else if (a as i32) < 4i32 {
+            a = (a as i32 + 4i32) as small_number
         }
     }
-    match cur_cmd as libc::c_int {
+    match cur_cmd as i32 {
         89 => {
             /*1252:*/
-            if a as libc::c_int >= 4i32 {
+            if a as i32 >= 4i32 {
                 geq_define(1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
                                + 1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 +
                                1i32 + 19i32 + 256i32 + 256i32 + 13i32 + 256i32
@@ -2932,7 +2932,7 @@ pub unsafe extern "C" fn prefixed_command() {
             }
         }
         99 => {
-            if cur_chr & 1i32 != 0 && (a as libc::c_int) < 4i32 &&
+            if cur_chr & 1i32 != 0 && (a as i32) < 4i32 &&
                    (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
                                       (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
                                       12i32 + 9000i32 + 1i32 + 1i32 + 19i32 +
@@ -2945,7 +2945,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                       (0x10ffffi32 + 1i32) +
                                       (0x10ffffi32 + 1i32) + 43i32) as
                                      isize)).b32.s1 >= 0i32 {
-                a = (a as libc::c_int + 4i32) as small_number
+                a = (a as i32 + 4i32) as small_number
             }
             e = cur_chr >= 2i32;
             get_r_token();
@@ -2958,11 +2958,11 @@ pub unsafe extern "C" fn prefixed_command() {
                     (*mem.offset(def_ref as isize)).b32.s1;
                 (*mem.offset(def_ref as isize)).b32.s1 = q
             }
-            if a as libc::c_int >= 4i32 {
-                geq_define(p, (113i32 + a as libc::c_int % 4i32) as u16,
+            if a as i32 >= 4i32 {
+                geq_define(p, (113i32 + a as i32 % 4i32) as u16,
                            def_ref);
             } else {
-                eq_define(p, (113i32 + a as libc::c_int % 4i32) as u16,
+                eq_define(p, (113i32 + a as i32 % 4i32) as u16,
                           def_ref);
             }
         }
@@ -2973,11 +2973,11 @@ pub unsafe extern "C" fn prefixed_command() {
             if n == 0i32 {
                 loop  {
                     get_token();
-                    if !(cur_cmd as libc::c_int == 10i32) { break ; }
+                    if !(cur_cmd as i32 == 10i32) { break ; }
                 }
                 if cur_tok == 0x1800000i32 + '=' as i32 {
                     get_token();
-                    if cur_cmd as libc::c_int == 10i32 { get_token(); }
+                    if cur_cmd as i32 == 10i32 { get_token(); }
                 }
             } else {
                 get_token();
@@ -2987,11 +2987,11 @@ pub unsafe extern "C" fn prefixed_command() {
                 cur_tok = q;
                 back_input();
             }
-            if cur_cmd as libc::c_int >= 113i32 {
+            if cur_cmd as i32 >= 113i32 {
                 let ref mut fresh12 = (*mem.offset(cur_chr as isize)).b32.s0;
                 *fresh12 += 1
-            } else if cur_cmd as libc::c_int == 91i32 ||
-                          cur_cmd as libc::c_int == 72i32 {
+            } else if cur_cmd as i32 == 91i32 ||
+                          cur_cmd as i32 == 72i32 {
                 if cur_chr < 0i32 || cur_chr > 19i32 {
                     /* 19 = lo_mem_stat_max, I think */
                     let ref mut fresh13 =
@@ -2999,7 +2999,7 @@ pub unsafe extern "C" fn prefixed_command() {
                     *fresh13 += 1
                 }
             }
-            if a as libc::c_int >= 4i32 {
+            if a as i32 >= 4i32 {
                 geq_define(p, cur_cmd as u16, cur_chr);
             } else { eq_define(p, cur_cmd as u16, cur_chr); }
         }
@@ -3050,7 +3050,7 @@ pub unsafe extern "C" fn prefixed_command() {
                     end_diagnostic(0i32 != 0);
                 }
                 n = n * 256i32 + cur_val;
-                if a as libc::c_int >= 4i32 {
+                if a as i32 >= 4i32 {
                     geq_define(p, 122i32 as u16, n);
                 } else { eq_define(p, 122i32 as u16, n); }
                 if p -
@@ -3074,7 +3074,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                           (0x10ffffi32 + 1i32) +
                                           (0x10ffffi32 + 1i32) + 55i32) as
                                          isize)).b32.s1 {
-                    if a as libc::c_int >= 4i32 {
+                    if a as i32 >= 4i32 {
                         geq_word_define(1i32 + (0x10ffffi32 + 1i32) +
                                             (0x10ffffi32 + 1i32) + 1i32 +
                                             15000i32 + 12i32 + 9000i32 + 1i32
@@ -3149,7 +3149,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                           (0x10ffffi32 + 1i32) +
                                           (0x10ffffi32 + 1i32) + 56i32) as
                                          isize)).b32.s1 {
-                    if a as libc::c_int >= 4i32 {
+                    if a as i32 >= 4i32 {
                         geq_word_define(1i32 + (0x10ffffi32 + 1i32) +
                                             (0x10ffffi32 + 1i32) + 1i32 +
                                             15000i32 + 12i32 + 9000i32 + 1i32
@@ -3207,26 +3207,26 @@ pub unsafe extern "C" fn prefixed_command() {
                 n = cur_chr;
                 get_r_token();
                 p = cur_cs;
-                if a as libc::c_int >= 4i32 {
+                if a as i32 >= 4i32 {
                     geq_define(p, 0i32 as u16, 0x10ffffi32 + 1i32);
                 } else { eq_define(p, 0i32 as u16, 0x10ffffi32 + 1i32); }
                 scan_optional_equals();
                 match n {
                     0 => {
                         scan_usv_num();
-                        if a as libc::c_int >= 4i32 {
+                        if a as i32 >= 4i32 {
                             geq_define(p, 68i32 as u16, cur_val);
                         } else { eq_define(p, 68i32 as u16, cur_val); }
                     }
                     1 => {
                         scan_fifteen_bit_int();
-                        if a as libc::c_int >= 4i32 {
+                        if a as i32 >= 4i32 {
                             geq_define(p, 69i32 as u16, cur_val);
                         } else { eq_define(p, 69i32 as u16, cur_val); }
                     }
                     8 => {
                         scan_xetex_math_char_int();
-                        if a as libc::c_int >= 4i32 {
+                        if a as i32 >= 4i32 {
                             geq_define(p, 70i32 as u16, cur_val);
                         } else { eq_define(p, 70i32 as u16, cur_val); }
                     }
@@ -3248,7 +3248,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                 i32;
                         scan_usv_num();
                         n = n + cur_val;
-                        if a as libc::c_int >= 4i32 {
+                        if a as i32 >= 4i32 {
                             geq_define(p, 70i32 as u16, n);
                         } else { eq_define(p, 70i32 as u16, n); }
                     }
@@ -3264,13 +3264,13 @@ pub unsafe extern "C" fn prefixed_command() {
                                                  isize)).b32.s0;
                             *fresh14 += 1;
                             if j == 5i32 { j = 72i32 } else { j = 91i32 }
-                            if a as libc::c_int >= 4i32 {
+                            if a as i32 >= 4i32 {
                                 geq_define(p, j as u16, cur_ptr);
                             } else { eq_define(p, j as u16, cur_ptr); }
                         } else {
                             match n {
                                 2 => {
-                                    if a as libc::c_int >= 4i32 {
+                                    if a as i32 >= 4i32 {
                                         geq_define(p, 74i32 as u16,
                                                    1i32 + (0x10ffffi32 + 1i32)
                                                        + (0x10ffffi32 + 1i32)
@@ -3307,7 +3307,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                     }
                                 }
                                 3 => {
-                                    if a as libc::c_int >= 4i32 {
+                                    if a as i32 >= 4i32 {
                                         geq_define(p, 75i32 as u16,
                                                    1i32 + (0x10ffffi32 + 1i32)
                                                        + (0x10ffffi32 + 1i32)
@@ -3348,7 +3348,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                     }
                                 }
                                 4 => {
-                                    if a as libc::c_int >= 4i32 {
+                                    if a as i32 >= 4i32 {
                                         geq_define(p, 76i32 as u16,
                                                    1i32 + (0x10ffffi32 + 1i32)
                                                        + (0x10ffffi32 + 1i32)
@@ -3366,7 +3366,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                     }
                                 }
                                 5 => {
-                                    if a as libc::c_int >= 4i32 {
+                                    if a as i32 >= 4i32 {
                                         geq_define(p, 77i32 as u16,
                                                    1i32 + (0x10ffffi32 + 1i32)
                                                        + (0x10ffffi32 + 1i32)
@@ -3385,7 +3385,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                     }
                                 }
                                 6 => {
-                                    if a as libc::c_int >= 4i32 {
+                                    if a as i32 >= 4i32 {
                                         geq_define(p, 73i32 as u16,
                                                    1i32 + (0x10ffffi32 + 1i32)
                                                        + (0x10ffffi32 + 1i32)
@@ -3437,14 +3437,14 @@ pub unsafe extern "C" fn prefixed_command() {
             get_r_token();
             p = cur_cs;
             read_toks(n, p, j);
-            if a as libc::c_int >= 4i32 {
+            if a as i32 >= 4i32 {
                 geq_define(p, 113i32 as u16, cur_val);
             } else { eq_define(p, 113i32 as u16, cur_val); }
         }
         72 | 73 => {
             q = cur_cs;
             e = 0i32 != 0;
-            if cur_cmd as libc::c_int == 72i32 {
+            if cur_cmd as i32 == 72i32 {
                 if cur_chr == 0i32 {
                     scan_register_num();
                     if cur_val > 255i32 {
@@ -3476,16 +3476,16 @@ pub unsafe extern "C" fn prefixed_command() {
             scan_optional_equals();
             loop  {
                 get_x_token();
-                if !(cur_cmd as libc::c_int == 10i32 ||
-                         cur_cmd as libc::c_int == 0i32) {
+                if !(cur_cmd as i32 == 10i32 ||
+                         cur_cmd as i32 == 0i32) {
                     break ;
                 }
             }
-            if cur_cmd as libc::c_int != 1i32 {
+            if cur_cmd as i32 != 1i32 {
                 /*1262:*/
-                if cur_cmd as libc::c_int == 72i32 ||
-                       cur_cmd as libc::c_int == 73i32 {
-                    if cur_cmd as libc::c_int == 72i32 {
+                if cur_cmd as i32 == 72i32 ||
+                       cur_cmd as i32 == 73i32 {
+                    if cur_cmd as i32 == 72i32 {
                         if cur_chr == 0i32 {
                             scan_register_num(); /* "extended delimiter code flag" */
                             if cur_val < 256i32 {
@@ -3536,10 +3536,10 @@ pub unsafe extern "C" fn prefixed_command() {
                     } else { q = (*eqtb.offset(cur_chr as isize)).b32.s1 }
                     if q == -0xfffffffi32 {
                         if e {
-                            if a as libc::c_int >= 4i32 {
+                            if a as i32 >= 4i32 {
                                 gsa_def(p, -0xfffffffi32);
                             } else { sa_def(p, -0xfffffffi32); }
-                        } else if a as libc::c_int >= 4i32 {
+                        } else if a as i32 >= 4i32 {
                             geq_define(p, 103i32 as u16, -0xfffffffi32);
                         } else {
                             eq_define(p, 103i32 as u16, -0xfffffffi32);
@@ -3549,10 +3549,10 @@ pub unsafe extern "C" fn prefixed_command() {
                             (*mem.offset(q as isize)).b32.s0;
                         *fresh15 += 1;
                         if e {
-                            if a as libc::c_int >= 4i32 {
+                            if a as i32 >= 4i32 {
                                 gsa_def(p, q);
                             } else { sa_def(p, q); }
-                        } else if a as libc::c_int >= 4i32 {
+                        } else if a as i32 >= 4i32 {
                             geq_define(p, 113i32 as u16, q);
                         } else { eq_define(p, 113i32 as u16, q); }
                     }
@@ -3568,10 +3568,10 @@ pub unsafe extern "C" fn prefixed_command() {
                     if (*mem.offset(def_ref as isize)).b32.s1 == -0xfffffffi32
                        {
                         if e {
-                            if a as libc::c_int >= 4i32 {
+                            if a as i32 >= 4i32 {
                                 gsa_def(p, -0xfffffffi32);
                             } else { sa_def(p, -0xfffffffi32); }
-                        } else if a as libc::c_int >= 4i32 {
+                        } else if a as i32 >= 4i32 {
                             geq_define(p, 103i32 as u16, -0xfffffffi32);
                         } else {
                             eq_define(p, 103i32 as u16, -0xfffffffi32);
@@ -3596,10 +3596,10 @@ pub unsafe extern "C" fn prefixed_command() {
                             (*mem.offset(def_ref as isize)).b32.s1 = q
                         }
                         if e {
-                            if a as libc::c_int >= 4i32 {
+                            if a as i32 >= 4i32 {
                                 gsa_def(p, def_ref);
                             } else { sa_def(p, def_ref); }
-                        } else if a as libc::c_int >= 4i32 {
+                        } else if a as i32 >= 4i32 {
                             geq_define(p, 113i32 as u16, def_ref);
                         } else { eq_define(p, 113i32 as u16, def_ref); }
                     }
@@ -3610,7 +3610,7 @@ pub unsafe extern "C" fn prefixed_command() {
             p = cur_chr;
             scan_optional_equals();
             scan_int();
-            if a as libc::c_int >= 4i32 {
+            if a as i32 >= 4i32 {
                 geq_word_define(p, cur_val);
             } else { eq_word_define(p, cur_val); }
         }
@@ -3618,7 +3618,7 @@ pub unsafe extern "C" fn prefixed_command() {
             p = cur_chr;
             scan_optional_equals();
             scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
-            if a as libc::c_int >= 4i32 {
+            if a as i32 >= 4i32 {
                 geq_word_define(p, cur_val);
             } else { eq_word_define(p, cur_val); }
         }
@@ -3630,7 +3630,7 @@ pub unsafe extern "C" fn prefixed_command() {
                 scan_glue(3i32 as small_number);
             } else { scan_glue(2i32 as small_number); }
             trap_zero_glue();
-            if a as libc::c_int >= 4i32 {
+            if a as i32 >= 4i32 {
                 geq_define(p, 119i32 as u16, cur_val);
             } else { eq_define(p, 119i32 as u16, cur_val); }
         }
@@ -3657,7 +3657,7 @@ pub unsafe extern "C" fn prefixed_command() {
                          65536) as i32;
                 scan_optional_equals();
                 scan_char_class();
-                if a as libc::c_int >= 4i32 {
+                if a as i32 >= 4i32 {
                     geq_define(p, 122i32 as u16,
                                (cur_val as i64 * 65536 +
                                     n as i64) as i32);
@@ -3678,7 +3678,7 @@ pub unsafe extern "C" fn prefixed_command() {
                 p = p + cur_val;
                 scan_optional_equals();
                 scan_xetex_math_char_int();
-                if a as libc::c_int >= 4i32 {
+                if a as i32 >= 4i32 {
                     geq_define(p, 122i32 as u16, cur_val);
                 } else { eq_define(p, 122i32 as u16, cur_val); }
             } else if cur_chr ==
@@ -3706,7 +3706,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                                         24i32) as i32;
                 scan_usv_num();
                 n = n + cur_val;
-                if a as libc::c_int >= 4i32 {
+                if a as i32 >= 4i32 {
                     geq_define(p, 122i32 as u16, n);
                 } else { eq_define(p, 122i32 as u16, n); }
             } else if cur_chr ==
@@ -3723,7 +3723,7 @@ pub unsafe extern "C" fn prefixed_command() {
                 p = p + cur_val;
                 scan_optional_equals();
                 scan_int();
-                if a as libc::c_int >= 4i32 {
+                if a as i32 >= 4i32 {
                     geq_word_define(p, cur_val);
                 } else { eq_word_define(p, cur_val); }
             } else {
@@ -3736,7 +3736,7 @@ pub unsafe extern "C" fn prefixed_command() {
                 n = n + cur_val * 0x200000i32;
                 scan_usv_num();
                 n = n + cur_val;
-                if a as libc::c_int >= 4i32 {
+                if a as i32 >= 4i32 {
                     geq_word_define(p, n);
                 } else { eq_word_define(p, n); }
             }
@@ -3839,7 +3839,7 @@ pub unsafe extern "C" fn prefixed_command() {
                     n =
                         ((*eqtb.offset(p as isize)).b32.s1 as i64 /
                              65536) as i32;
-                    if a as libc::c_int >= 4i32 {
+                    if a as i32 >= 4i32 {
                         geq_define(p, 122i32 as u16,
                                    (n as i64 * 65536 +
                                         cur_val as i64) as i32);
@@ -3848,7 +3848,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                   (n as i64 * 65536 +
                                        cur_val as i64) as i32);
                     }
-                } else if a as libc::c_int >= 4i32 {
+                } else if a as i32 >= 4i32 {
                     geq_define(p, 122i32 as u16, cur_val);
                 } else { eq_define(p, 122i32 as u16, cur_val); }
             } else if p <
@@ -3877,10 +3877,10 @@ pub unsafe extern "C" fn prefixed_command() {
                                                                              libc::c_uint)
                             as i32
                 }
-                if a as libc::c_int >= 4i32 {
+                if a as i32 >= 4i32 {
                     geq_define(p, 122i32 as u16, cur_val);
                 } else { eq_define(p, 122i32 as u16, cur_val); }
-            } else if a as libc::c_int >= 4i32 {
+            } else if a as i32 >= 4i32 {
                 geq_word_define(p, cur_val);
             } else { eq_word_define(p, cur_val); }
         }
@@ -3890,14 +3890,14 @@ pub unsafe extern "C" fn prefixed_command() {
             p = p + cur_val;
             scan_optional_equals();
             scan_font_ident();
-            if a as libc::c_int >= 4i32 {
+            if a as i32 >= 4i32 {
                 geq_define(p, 122i32 as u16, cur_val);
             } else { eq_define(p, 122i32 as u16, cur_val); }
         }
         91 | 92 | 93 | 94 => { do_register_command(a); }
         100 => {
             scan_register_num();
-            if a as libc::c_int >= 4i32 {
+            if a as i32 >= 4i32 {
                 n = 0x40008000i32 + cur_val
             } else { n = 0x40000000i32 + cur_val }
             scan_optional_equals();
@@ -3967,7 +3967,7 @@ pub unsafe extern "C" fn prefixed_command() {
                     j += 1
                 }
             }
-            if a as libc::c_int >= 4i32 {
+            if a as i32 >= 4i32 {
                 geq_define(q, 120i32 as u16, p);
             } else { eq_define(q, 120i32 as u16, p); }
         }
@@ -3988,7 +3988,7 @@ pub unsafe extern "C" fn prefixed_command() {
                     error();
                     loop  {
                         get_token();
-                        if !(cur_cmd as libc::c_int != 2i32) { break ; }
+                        if !(cur_cmd as i32 != 2i32) { break ; }
                     }
                     return
                 }
@@ -4059,7 +4059,7 @@ unsafe extern "C" fn store_fmt_file() {
         print_cstr(b"You can\'t dump inside a group\x00" as *const u8 as *const i8);
         help_ptr = 1i32 as u8;
         help_line[0] = b"`{...\\dump}\' is a no-no.\x00" as *const u8 as *const i8;
-        if interaction as libc::c_int == 3i32 {
+        if interaction as i32 == 3i32 {
             interaction = 2i32 as u8
         }
         if log_opened {
@@ -4170,7 +4170,7 @@ unsafe extern "C" fn store_fmt_file() {
         .s1,
     );
     print_char(')' as i32);
-    if interaction as libc::c_int == 0i32 {
+    if interaction as i32 == 0i32 {
         selector = SELECTOR_LOG_ONLY
     } else {
         selector = SELECTOR_TERM_AND_LOG
@@ -4447,10 +4447,10 @@ unsafe extern "C" fn store_fmt_file() {
                 break;
             }
             if (*eqtb.offset(j as isize)).b32.s1 == (*eqtb.offset((j + 1i32) as isize)).b32.s1
-                && (*eqtb.offset(j as isize)).b16.s1 as libc::c_int
-                    == (*eqtb.offset((j + 1i32) as isize)).b16.s1 as libc::c_int
-                && (*eqtb.offset(j as isize)).b16.s0 as libc::c_int
-                    == (*eqtb.offset((j + 1i32) as isize)).b16.s0 as libc::c_int
+                && (*eqtb.offset(j as isize)).b16.s1 as i32
+                    == (*eqtb.offset((j + 1i32) as isize)).b16.s1 as i32
+                && (*eqtb.offset(j as isize)).b16.s0 as i32
+                    == (*eqtb.offset((j + 1i32) as isize)).b16.s0 as i32
             {
                 current_block = 8379985486002839332;
                 break;
@@ -4515,10 +4515,10 @@ unsafe extern "C" fn store_fmt_file() {
                 {
                     if (*eqtb.offset(j as isize)).b32.s1
                         != (*eqtb.offset((j + 1i32) as isize)).b32.s1
-                        || (*eqtb.offset(j as isize)).b16.s1 as libc::c_int
-                            != (*eqtb.offset((j + 1i32) as isize)).b16.s1 as libc::c_int
-                        || (*eqtb.offset(j as isize)).b16.s0 as libc::c_int
-                            != (*eqtb.offset((j + 1i32) as isize)).b16.s0 as libc::c_int
+                        || (*eqtb.offset(j as isize)).b16.s1 as i32
+                            != (*eqtb.offset((j + 1i32) as isize)).b16.s1 as i32
+                        || (*eqtb.offset(j as isize)).b16.s0 as i32
+                            != (*eqtb.offset((j + 1i32) as isize)).b16.s0 as i32
                     {
                         break;
                     }
@@ -5276,7 +5276,7 @@ unsafe extern "C" fn store_fmt_file() {
     print_int(35111 as i32);
     k = 255i32;
     while k >= 0i32 {
-        if trie_used[k as usize] as libc::c_int > 0i32 {
+        if trie_used[k as usize] as i32 > 0i32 {
             print_nl_cstr(b"  \x00" as *const u8 as *const i8);
             print_int(trie_used[k as usize] as i32);
             print_cstr(b" for language \x00" as *const u8 as *const i8);
@@ -5662,7 +5662,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                 as u64),
                                     )
                                         as *mut pool_pointer;
-                                    let mut i: libc::c_int = 0;
+                                    let mut i: i32 = 0;
                                     do_undump(
                                         &mut *str_start.offset(0) as *mut pool_pointer
                                             as *mut i8,
@@ -6983,7 +6983,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       size_t,
                                                                                                                   fmt_in);
                                                                                                         let mut i_0:
-                                                                                                                libc::c_int =
+                                                                                                                i32 =
                                                                                                             0;
                                                                                                         do_undump(&mut *font_params.offset(0)
                                                                                                                       as
@@ -7082,7 +7082,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       size_t,
                                                                                                                   fmt_in);
                                                                                                         let mut i_1:
-                                                                                                                libc::c_int =
+                                                                                                                i32 =
                                                                                                             0;
                                                                                                         do_undump(&mut *font_name.offset(0)
                                                                                                                       as
@@ -7142,7 +7142,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                 1
                                                                                                         }
                                                                                                         let mut i_2:
-                                                                                                                libc::c_int =
+                                                                                                                i32 =
                                                                                                             0;
                                                                                                         do_undump(&mut *font_area.offset(0)
                                                                                                                       as
@@ -7356,7 +7356,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       size_t,
                                                                                                                   fmt_in);
                                                                                                         let mut i_3:
-                                                                                                                libc::c_int =
+                                                                                                                i32 =
                                                                                                             0;
                                                                                                         do_undump(&mut *font_glue.offset(0)
                                                                                                                       as
@@ -7427,7 +7427,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                 1
                                                                                                         }
                                                                                                         let mut i_4:
-                                                                                                                libc::c_int =
+                                                                                                                i32 =
                                                                                                             0;
                                                                                                         do_undump(&mut *bchar_label.offset(0)
                                                                                                                       as
@@ -7502,7 +7502,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                 1
                                                                                                         }
                                                                                                         let mut i_5:
-                                                                                                                libc::c_int =
+                                                                                                                i32 =
                                                                                                             0;
                                                                                                         do_undump(&mut *font_bchar.offset(0)
                                                                                                                       as
@@ -7573,7 +7573,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                 1
                                                                                                         }
                                                                                                         let mut i_6:
-                                                                                                                libc::c_int =
+                                                                                                                i32 =
                                                                                                             0;
                                                                                                         do_undump(&mut *font_false_bchar.offset(0)
                                                                                                                       as
@@ -8116,7 +8116,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                   size_t,
                                                                                                                                               fmt_in);
                                                                                                                                     let mut i_7:
-                                                                                                                                            libc::c_int =
+                                                                                                                                            i32 =
                                                                                                                                         0;
                                                                                                                                     do_undump(&mut *hyf_next.as_mut_ptr().offset(1)
                                                                                                                                                   as
@@ -8362,7 +8362,7 @@ unsafe extern "C" fn final_cleanup() {
         open_log_file();
     }
     while input_ptr > 0i32 {
-        if cur_input.state as libc::c_int == 0i32 {
+        if cur_input.state as i32 == 0i32 {
             end_token_list();
         } else {
             end_file_reading();
@@ -8372,11 +8372,11 @@ unsafe extern "C" fn final_cleanup() {
         print_cstr(b" )\x00" as *const u8 as *const i8);
         open_parens -= 1
     }
-    if cur_level as libc::c_int > 1i32 {
+    if cur_level as i32 > 1i32 {
         print_nl('(' as i32);
         print_esc_cstr(b"end occurred \x00" as *const u8 as *const i8);
         print_cstr(b"inside a group at level \x00" as *const u8 as *const i8);
-        print_int(cur_level as libc::c_int - 1i32);
+        print_int(cur_level as i32 - 1i32);
         print_char(')' as i32);
         show_save_groups();
     }
@@ -8396,11 +8396,11 @@ unsafe extern "C" fn final_cleanup() {
         cond_ptr = (*mem.offset(cond_ptr as isize)).b32.s1;
         free_node(temp_ptr, 2i32);
     }
-    if history as libc::c_uint != HISTORY_SPOTLESS as libc::c_int as libc::c_uint {
-        if history as libc::c_uint == HISTORY_WARNING_ISSUED as libc::c_int as libc::c_uint
-            || (interaction as libc::c_int) < 3i32
+    if history as libc::c_uint != HISTORY_SPOTLESS as i32 as libc::c_uint {
+        if history as libc::c_uint == HISTORY_WARNING_ISSUED as i32 as libc::c_uint
+            || (interaction as i32) < 3i32
         {
-            if selector as libc::c_uint == SELECTOR_TERM_AND_LOG as libc::c_int as libc::c_uint {
+            if selector as libc::c_uint == SELECTOR_TERM_AND_LOG as i32 as libc::c_uint {
                 selector = SELECTOR_TERM_ONLY;
                 print_nl_cstr(
                     b"(see the transcript file for additional information)\x00" as *const u8
@@ -8410,19 +8410,19 @@ unsafe extern "C" fn final_cleanup() {
             }
         }
     }
-    if c as libc::c_int == 1i32 {
+    if c as i32 == 1i32 {
         if in_initex_mode {
             let mut for_end: i32 = 0;
             c = 0i32 as small_number;
             for_end = 4i32;
-            if c as libc::c_int <= for_end {
+            if c as i32 <= for_end {
                 loop {
                     if cur_mark[c as usize] != -0xfffffffi32 {
                         delete_token_ref(cur_mark[c as usize]);
                     }
                     let fresh17 = c;
                     c = c + 1;
-                    if !((fresh17 as libc::c_int) < for_end) {
+                    if !((fresh17 as i32) < for_end) {
                         break;
                     }
                 }
@@ -8435,12 +8435,12 @@ unsafe extern "C" fn final_cleanup() {
             let mut for_end_0: i32 = 0;
             c = 2i32 as small_number;
             for_end_0 = 3i32;
-            if c as libc::c_int <= for_end_0 {
+            if c as i32 <= for_end_0 {
                 loop {
                     flush_node_list(disc_ptr[c as usize]);
                     let fresh18 = c;
                     c = c + 1;
-                    if !((fresh18 as libc::c_int) < for_end_0) {
+                    if !((fresh18 as i32) < for_end_0) {
                         break;
                     }
                 }
@@ -8664,7 +8664,7 @@ unsafe extern "C" fn initialize_more_variables() {
     cur_f = 0i32;
     max_hyph_char = 256i32;
     z = 0i32 as hyph_pointer;
-    while z as libc::c_int <= hyph_size {
+    while z as i32 <= hyph_size {
         *hyph_word.offset(z as isize) = 0i32;
         *hyph_list.offset(z as isize) = -0xfffffffi32;
         *hyph_link.offset(z as isize) = 0i32 as hyph_pointer;
@@ -16974,7 +16974,7 @@ pub unsafe extern "C" fn tt_run_engine(
         *font_used.offset(font_k as isize) = 0i32 != 0;
         font_k += 1
     }
-    if interaction as libc::c_int == 0i32 {
+    if interaction as i32 == 0i32 {
         selector = SELECTOR_NO_PRINT
     } else {
         selector = SELECTOR_TERM_ONLY

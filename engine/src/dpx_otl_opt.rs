@@ -22,7 +22,7 @@ extern "C" {
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
@@ -73,7 +73,7 @@ pub struct otl_opt {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct bt_node {
-    pub flag: libc::c_int,
+    pub flag: i32,
     pub left: *mut bt_node,
     pub right: *mut bt_node,
     pub data: [i8; 4],
@@ -81,16 +81,16 @@ pub struct bt_node {
 unsafe extern "C" fn match_expr(
     mut expr: *mut bt_node,
     mut key: *const i8,
-) -> libc::c_int {
-    let mut retval: libc::c_int = 1i32;
-    let mut i: libc::c_int = 0;
+) -> i32 {
+    let mut retval: i32 = 1i32;
+    let mut i: i32 = 0;
     if !expr.is_null() {
         if (*expr).left.is_null() && (*expr).right.is_null() {
             i = 0i32;
             while i < 4i32 {
-                if (*expr).data[i as usize] as libc::c_int != '?' as i32
-                    && (*expr).data[i as usize] as libc::c_int
-                        != *key.offset(i as isize) as libc::c_int
+                if (*expr).data[i as usize] as i32 != '?' as i32
+                    && (*expr).data[i as usize] as i32
+                        != *key.offset(i as isize) as i32
                 {
                     retval = 0i32;
                     break;
@@ -154,7 +154,7 @@ unsafe extern "C" fn parse_expr(
     curr = bt_new_tree();
     root = curr;
     while *pp < endptr {
-        match **pp as libc::c_int {
+        match **pp as i32 {
             33 => {
                 if (*curr).flag & 2i32 != 0 {
                     (*curr).flag &= !(1i32 << 0i32)
@@ -175,7 +175,7 @@ unsafe extern "C" fn parse_expr(
                         );
                         return 0 as *mut bt_node;
                     }
-                    if **pp as libc::c_int != ')' as i32 {
+                    if **pp as i32 != ')' as i32 {
                         dpx_warning(
                             b"Syntax error: Unbalanced ()\n\x00" as *const u8
                                 as *const i8,
@@ -214,7 +214,7 @@ unsafe extern "C" fn parse_expr(
                     (*tmp).left = root;
                     curr = bt_new_tree();
                     (*tmp).right = curr;
-                    if **pp as libc::c_int == '&' as i32 {
+                    if **pp as i32 == '&' as i32 {
                         (*tmp).flag = 1i32
                     } else {
                         (*tmp).flag = 0i32
@@ -233,30 +233,30 @@ unsafe extern "C" fn parse_expr(
             }
             _ => {
                 if (*pp).offset(4) <= endptr {
-                    let mut i: libc::c_int = 0;
+                    let mut i: i32 = 0;
                     i = 0i32;
                     while i < 4i32 {
-                        if **pp as libc::c_int == ' ' as i32
-                            || **pp as libc::c_int == '?' as i32
+                        if **pp as i32 == ' ' as i32
+                            || **pp as i32 == '?' as i32
                             || *(*__ctype_b_loc())
-                                .offset(**pp as u8 as libc::c_int as isize)
-                                as libc::c_int
-                                & _ISalpha as libc::c_int as u16 as libc::c_int
+                                .offset(**pp as u8 as i32 as isize)
+                                as i32
+                                & _ISalpha as i32 as u16 as i32
                                 != 0
                             || *(*__ctype_b_loc())
-                                .offset(**pp as u8 as libc::c_int as isize)
-                                as libc::c_int
-                                & _ISdigit as libc::c_int as u16 as libc::c_int
+                                .offset(**pp as u8 as i32 as isize)
+                                as i32
+                                & _ISdigit as i32 as u16 as i32
                                 != 0
                         {
                             (*curr).data[i as usize] = **pp
-                        } else if **pp as libc::c_int == '_' as i32 {
+                        } else if **pp as i32 == '_' as i32 {
                             (*curr).data[i as usize] = ' ' as i32 as i8
                         } else {
                             dpx_warning(
                                 b"Invalid char in tag: %c\n\x00" as *const u8
                                     as *const i8,
-                                **pp as libc::c_int,
+                                **pp as i32,
                             );
                             bt_release_tree(root);
                             return 0 as *mut bt_node;
@@ -298,7 +298,7 @@ pub unsafe extern "C" fn otl_release_opt(mut opt: *mut otl_opt) {
 pub unsafe extern "C" fn otl_parse_optstring(
     mut opt: *mut otl_opt,
     mut optstr: *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     if !opt.is_null() {
@@ -343,7 +343,7 @@ pub unsafe extern "C" fn otl_parse_optstring(
 pub unsafe extern "C" fn otl_match_optrule(
     mut opt: *mut otl_opt,
     mut tag: *const i8,
-) -> libc::c_int {
+) -> i32 {
     if !tag.is_null() {
     } else {
         __assert_fail(

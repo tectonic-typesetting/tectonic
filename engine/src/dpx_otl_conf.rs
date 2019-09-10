@@ -21,13 +21,13 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
@@ -35,7 +35,7 @@ extern "C" {
     fn ttstub_input_open(
         path: *const i8,
         format: tt_input_format_type,
-        is_gz: libc::c_int,
+        is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
     fn ttstub_input_get_size(handle: rust_input_handle_t) -> size_t;
@@ -46,7 +46,7 @@ extern "C" {
         len: size_t,
     ) -> ssize_t;
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
@@ -70,7 +70,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_get_array(array: *mut pdf_obj, idx: libc::c_int) -> *mut pdf_obj;
+    fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_array_length(array: *mut pdf_obj) -> libc::c_uint;
     #[no_mangle]
@@ -80,15 +80,15 @@ extern "C" {
     #[no_mangle]
     fn pdf_dict_keys(dict: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn agl_get_unicodes(
         glyphstr: *const i8,
         unicodes: *mut i32,
-        max_uncodes: libc::c_int,
-    ) -> libc::c_int;
+        max_uncodes: i32,
+    ) -> i32;
     #[no_mangle]
     fn parse_c_ident(
         pp: *mut *const i8,
@@ -183,9 +183,9 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     }
     return 0i32 != 0;
 }
-static mut verbose: libc::c_int = 0i32;
+static mut verbose: i32 = 0i32;
 #[no_mangle]
-pub unsafe extern "C" fn otl_conf_set_verbose(mut level: libc::c_int) {
+pub unsafe extern "C" fn otl_conf_set_verbose(mut level: i32) {
     verbose = level;
 }
 unsafe extern "C" fn parse_uc_coverage(
@@ -201,13 +201,13 @@ unsafe extern "C" fn parse_uc_coverage(
     if (*pp).offset(1) >= endptr {
         return 0 as *mut pdf_obj;
     }
-    if **pp as libc::c_int == '[' as i32 {
+    if **pp as i32 == '[' as i32 {
         *pp = (*pp).offset(1)
     }
     coverage = pdf_new_array();
     while *pp < endptr {
         skip_white(pp, endptr);
-        match **pp as libc::c_int {
+        match **pp as i32 {
             93 | 59 => {
                 *pp = (*pp).offset(1);
                 return coverage;
@@ -215,8 +215,8 @@ unsafe extern "C" fn parse_uc_coverage(
             44 => *pp = (*pp).offset(1),
             64 => {
                 let mut cvalues: *mut pdf_obj = 0 as *mut pdf_obj;
-                let mut i: libc::c_int = 0;
-                let mut size: libc::c_int = 0;
+                let mut i: i32 = 0;
+                let mut size: i32 = 0;
                 *pp = (*pp).offset(1);
                 glyphclass = parse_c_ident(pp, endptr);
                 cvalues = pdf_lookup_dict(gclass, glyphclass);
@@ -226,7 +226,7 @@ unsafe extern "C" fn parse_uc_coverage(
                         glyphclass,
                     );
                 }
-                size = pdf_array_length(cvalues) as libc::c_int;
+                size = pdf_array_length(cvalues) as i32;
                 i = 0i32;
                 while i < size {
                     pdf_add_array(coverage, pdf_link_obj(pdf_get_array(cvalues, i)));
@@ -242,7 +242,7 @@ unsafe extern "C" fn parse_uc_coverage(
                     );
                 }
                 skip_white(pp, endptr);
-                if (*pp).offset(1) < endptr && **pp as libc::c_int == '-' as i32 {
+                if (*pp).offset(1) < endptr && **pp as i32 == '-' as i32 {
                     value = pdf_new_array();
                     if agl_get_unicodes(glyphname, &mut ucv, 1i32) != 1i32 {
                         _tt_abort(
@@ -296,9 +296,9 @@ unsafe extern "C" fn add_rule(
     let mut glyph1: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut glyph2: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut unicodes: [i32; 16] = [0; 16];
-    let mut i: libc::c_int = 0;
-    let mut n_unicodes: libc::c_int = 0;
-    if *first.offset(0) as libc::c_int == '@' as i32 {
+    let mut i: i32 = 0;
+    let mut n_unicodes: i32 = 0;
+    if *first.offset(0) as i32 == '@' as i32 {
         glyph1 = pdf_lookup_dict(gclass, &mut *first.offset(1));
         if glyph1.is_null() {
             dpx_warning(
@@ -356,7 +356,7 @@ unsafe extern "C" fn add_rule(
             dpx_message(b"\n\x00" as *const u8 as *const i8);
         }
     }
-    if *second.offset(0) as libc::c_int == '@' as i32 {
+    if *second.offset(0) as i32 == '@' as i32 {
         glyph2 = pdf_lookup_dict(gclass, &mut *second.offset(1));
         if glyph2.is_null() {
             dpx_warning(
@@ -446,7 +446,7 @@ unsafe extern "C" fn parse_substrule(
     let mut substrule: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut token: *mut i8 = 0 as *mut i8;
     skip_white(pp, endptr);
-    if *pp < endptr && **pp as libc::c_int == '{' as i32 {
+    if *pp < endptr && **pp as i32 == '{' as i32 {
         *pp = (*pp).offset(1)
     }
     skip_white(pp, endptr);
@@ -454,21 +454,21 @@ unsafe extern "C" fn parse_substrule(
         return 0 as *mut pdf_obj;
     }
     substrule = pdf_new_array();
-    while *pp < endptr && **pp as libc::c_int != '}' as i32 {
+    while *pp < endptr && **pp as i32 != '}' as i32 {
         skip_white(pp, endptr);
         if *pp >= endptr {
             break;
         }
-        if **pp as libc::c_int == '#' as i32 {
+        if **pp as i32 == '#' as i32 {
             while *pp < endptr {
-                if **pp as libc::c_int == '\r' as i32 || **pp as libc::c_int == '\n' as i32 {
+                if **pp as i32 == '\r' as i32 || **pp as i32 == '\n' as i32 {
                     *pp = (*pp).offset(1);
                     break;
                 } else {
                     *pp = (*pp).offset(1)
                 }
             }
-        } else if **pp as libc::c_int == ';' as i32 {
+        } else if **pp as i32 == ';' as i32 {
             *pp = (*pp).offset(1)
         } else {
             skip_white(pp, endptr);
@@ -476,10 +476,10 @@ unsafe extern "C" fn parse_substrule(
             if token.is_null() {
                 break;
             }
-            if streq_ptr(token, b"assign\x00" as *const u8 as *const i8) as libc::c_int
+            if streq_ptr(token, b"assign\x00" as *const u8 as *const i8) as i32
                 != 0
                 || streq_ptr(token, b"substitute\x00" as *const u8 as *const i8)
-                    as libc::c_int
+                    as i32
                     != 0
             {
                 let mut tmp: *mut i8 = 0 as *mut i8;
@@ -508,7 +508,7 @@ unsafe extern "C" fn parse_substrule(
                 }
                 /* (assign|substitute) tag dst src */
                 pdf_add_array(substrule, pdf_new_name(token)); /* = */
-                if (*pp).offset(1) < endptr && **pp as libc::c_int == '.' as i32 {
+                if (*pp).offset(1) < endptr && **pp as i32 == '.' as i32 {
                     *pp = (*pp).offset(1);
                     suffix = parse_c_ident(pp, endptr)
                 } else {
@@ -529,7 +529,7 @@ unsafe extern "C" fn parse_substrule(
             skip_white(pp, endptr);
         }
     }
-    if *pp < endptr && **pp as libc::c_int == '}' as i32 {
+    if *pp < endptr && **pp as i32 == '}' as i32 {
         *pp = (*pp).offset(1)
     }
     return substrule;
@@ -543,7 +543,7 @@ unsafe extern "C" fn parse_block(
     let mut token: *mut i8 = 0 as *mut i8;
     let mut tmp: *mut i8 = 0 as *mut i8;
     skip_white(pp, endptr);
-    if *pp < endptr && **pp as libc::c_int == '{' as i32 {
+    if *pp < endptr && **pp as i32 == '{' as i32 {
         *pp = (*pp).offset(1)
     }
     skip_white(pp, endptr);
@@ -551,21 +551,21 @@ unsafe extern "C" fn parse_block(
         return 0 as *mut pdf_obj;
     }
     rule = pdf_new_dict();
-    while *pp < endptr && **pp as libc::c_int != '}' as i32 {
+    while *pp < endptr && **pp as i32 != '}' as i32 {
         skip_white(pp, endptr);
         if *pp >= endptr {
             break;
         }
-        if **pp as libc::c_int == '#' as i32 {
+        if **pp as i32 == '#' as i32 {
             while *pp < endptr {
-                if **pp as libc::c_int == '\r' as i32 || **pp as libc::c_int == '\n' as i32 {
+                if **pp as i32 == '\r' as i32 || **pp as i32 == '\n' as i32 {
                     *pp = (*pp).offset(1);
                     break;
                 } else {
                     *pp = (*pp).offset(1)
                 }
             }
-        } else if **pp as libc::c_int == ';' as i32 {
+        } else if **pp as i32 == ';' as i32 {
             *pp = (*pp).offset(1)
         } else {
             skip_white(pp, endptr);
@@ -573,18 +573,18 @@ unsafe extern "C" fn parse_block(
             if token.is_null() {
                 break;
             }
-            if streq_ptr(token, b"script\x00" as *const u8 as *const i8) as libc::c_int
+            if streq_ptr(token, b"script\x00" as *const u8 as *const i8) as i32
                 != 0
                 || streq_ptr(token, b"language\x00" as *const u8 as *const i8)
-                    as libc::c_int
+                    as i32
                     != 0
             {
-                let mut i: libc::c_int = 0;
-                let mut len: libc::c_int = 0;
+                let mut i: i32 = 0;
+                let mut len: i32 = 0;
                 skip_white(pp, endptr);
                 len = 0i32;
                 while (*pp).offset(len as isize) < endptr
-                    && *(*pp).offset(len as isize) as libc::c_int != ';' as i32
+                    && *(*pp).offset(len as isize) as i32 != ';' as i32
                 {
                     len += 1
                 }
@@ -599,9 +599,9 @@ unsafe extern "C" fn parse_block(
                     );
                     i = 0i32;
                     while i < len {
-                        if *(*__ctype_b_loc()).offset(**pp as u8 as libc::c_int as isize)
-                            as libc::c_int
-                            & _ISspace as libc::c_int as u16 as libc::c_int
+                        if *(*__ctype_b_loc()).offset(**pp as u8 as i32 as isize)
+                            as i32
+                            & _ISspace as i32 as u16 as i32
                             == 0
                         {
                             *tmp.offset(i as isize) = **pp
@@ -650,13 +650,13 @@ unsafe extern "C" fn parse_block(
                 pdf_add_dict(opt_dict, pdf_new_name(tmp), opt_rule);
                 free(tmp as *mut libc::c_void);
             } else if streq_ptr(token, b"prefered\x00" as *const u8 as *const i8)
-                as libc::c_int
+                as i32
                 != 0
                 || streq_ptr(token, b"required\x00" as *const u8 as *const i8)
-                    as libc::c_int
+                    as i32
                     != 0
                 || streq_ptr(token, b"optional\x00" as *const u8 as *const i8)
-                    as libc::c_int
+                    as i32
                     != 0
             {
                 let mut subst: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -668,7 +668,7 @@ unsafe extern "C" fn parse_block(
                     );
                 }
                 skip_white(pp, endptr);
-                if *pp >= endptr || **pp as libc::c_int != '{' as i32 {
+                if *pp >= endptr || **pp as i32 != '{' as i32 {
                     _tt_abort(b"Syntax error (1)\x00" as *const u8 as *const i8);
                 }
                 rule_block = parse_substrule(gclass, pp, endptr);
@@ -683,7 +683,7 @@ unsafe extern "C" fn parse_block(
                 }
                 pdf_add_array(subst, pdf_new_number(*token.offset(0) as f64));
                 pdf_add_array(subst, rule_block);
-            } else if *token.offset(0) as libc::c_int == '@' as i32 {
+            } else if *token.offset(0) as i32 == '@' as i32 {
                 let mut coverage: *mut pdf_obj = 0 as *mut pdf_obj;
                 skip_white(pp, endptr);
                 *pp = (*pp).offset(1);
@@ -706,7 +706,7 @@ unsafe extern "C" fn parse_block(
             skip_white(pp, endptr);
         }
     }
-    if *pp < endptr && **pp as libc::c_int == '}' as i32 {
+    if *pp < endptr && **pp as i32 == '}' as i32 {
         *pp = (*pp).offset(1)
     }
     return rule;
@@ -720,8 +720,8 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const i8) -> *mut pdf_obj {
     let mut p: *mut i8 = 0 as *mut i8;
     let mut endptr: *mut i8 = 0 as *mut i8;
     let mut pp: *const i8 = 0 as *const i8;
-    let mut size: libc::c_int = 0;
-    let mut len: libc::c_int = 0;
+    let mut size: i32 = 0;
+    let mut len: i32 = 0;
     filename = new((strlen(conf_name)
         .wrapping_add(strlen(b".otl\x00" as *const u8 as *const i8))
         .wrapping_add(1i32 as u64) as u32 as u64)
@@ -734,7 +734,7 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const i8) -> *mut pdf_obj {
         free(filename as *mut libc::c_void);
         return 0 as *mut pdf_obj;
     }
-    size = ttstub_input_get_size(handle as rust_input_handle_t) as libc::c_int;
+    size = ttstub_input_get_size(handle as rust_input_handle_t) as i32;
     if verbose > 0i32 {
         dpx_message(b"\n\x00" as *const u8 as *const i8);
         dpx_message(
@@ -755,7 +755,7 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const i8) -> *mut pdf_obj {
     p = wbuf;
     endptr = p.offset(size as isize);
     while size > 0i32 && p < endptr {
-        len = ttstub_input_read(handle as rust_input_handle_t, p, size as size_t) as libc::c_int;
+        len = ttstub_input_read(handle as rust_input_handle_t, p, size as size_t) as i32;
         if len < 0i32 {
             ttstub_input_close(handle as rust_input_handle_t);
             _tt_abort(

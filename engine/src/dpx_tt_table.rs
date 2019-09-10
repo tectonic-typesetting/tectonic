@@ -14,7 +14,7 @@ extern "C" {
     fn ttstub_input_seek(
         handle: rust_input_handle_t,
         offset: ssize_t,
-        whence: libc::c_int,
+        whence: i32,
     ) -> size_t;
     #[no_mangle]
     fn ttstub_input_read(
@@ -33,7 +33,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
-    fn put_big_endian(s: *mut libc::c_void, q: SFNT_LONG, n: libc::c_int) -> libc::c_int;
+    fn put_big_endian(s: *mut libc::c_void, q: SFNT_LONG, n: i32) -> i32;
     #[no_mangle]
     fn sfnt_find_table_len(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
     #[no_mangle]
@@ -103,7 +103,7 @@ pub struct sfnt_table_directory {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt {
-    pub type_0: libc::c_int,
+    pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
     pub offset: SFNT_ULONG,
@@ -274,7 +274,7 @@ pub struct tt_longMetrics {
 */
 #[no_mangle]
 pub unsafe extern "C" fn tt_pack_head_table(mut table: *mut tt_head_table) -> *mut i8 {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     let mut p: *mut i8 = 0 as *mut i8;
     let mut data: *mut i8 = 0 as *mut i8;
     if table.is_null() {
@@ -354,7 +354,7 @@ pub unsafe extern "C" fn tt_pack_head_table(mut table: *mut tt_head_table) -> *m
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_head_table(mut sfont: *mut sfnt) -> *mut tt_head_table {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     let mut table: *mut tt_head_table = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<tt_head_table>() as u64)
         as u32) as *mut tt_head_table;
@@ -492,7 +492,7 @@ pub unsafe extern "C" fn tt_read_maxp_table(mut sfont: *mut sfnt) -> *mut tt_max
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_pack_hhea_table(mut table: *mut tt_hhea_table) -> *mut i8 {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     let mut p: *mut i8 = 0 as *mut i8;
     let mut data: *mut i8 = 0 as *mut i8;
     data = new((36u64 as u32 as u64)
@@ -569,7 +569,7 @@ pub unsafe extern "C" fn tt_pack_hhea_table(mut table: *mut tt_hhea_table) -> *m
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_hhea_table(mut sfont: *mut sfnt) -> *mut tt_hhea_table {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     let mut len: SFNT_ULONG = 0;
     let mut table: *mut tt_hhea_table = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<tt_hhea_table>() as u64)
@@ -592,20 +592,20 @@ pub unsafe extern "C" fn tt_read_hhea_table(mut sfont: *mut sfnt) -> *mut tt_hhe
         i += 1
     }
     (*table).metricDataFormat = tt_get_signed_pair((*sfont).handle);
-    if (*table).metricDataFormat as libc::c_int != 0i32 {
+    if (*table).metricDataFormat as i32 != 0i32 {
         _tt_abort(b"unknown metricDataFormat\x00" as *const u8 as *const i8);
     }
     (*table).numOfLongHorMetrics = tt_get_unsigned_pair((*sfont).handle);
     len = sfnt_find_table_len(sfont, b"hmtx\x00" as *const u8 as *const i8);
     (*table).numOfExSideBearings = len
-        .wrapping_sub(((*table).numOfLongHorMetrics as libc::c_int * 4i32) as libc::c_uint)
+        .wrapping_sub(((*table).numOfLongHorMetrics as i32 * 4i32) as libc::c_uint)
         .wrapping_div(2i32 as libc::c_uint) as USHORT;
     return table;
 }
 /* vhea */
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_vhea_table(mut sfont: *mut sfnt) -> *mut tt_vhea_table {
-    let mut i: libc::c_int = 0; /* ushort ? */
+    let mut i: i32 = 0; /* ushort ? */
     let mut len: SFNT_ULONG = 0;
     let mut table: *mut tt_vhea_table = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<tt_vhea_table>() as u64)
@@ -631,7 +631,7 @@ pub unsafe extern "C" fn tt_read_vhea_table(mut sfont: *mut sfnt) -> *mut tt_vhe
     (*table).numOfLongVerMetrics = tt_get_unsigned_pair((*sfont).handle);
     len = sfnt_find_table_len(sfont, b"vmtx\x00" as *const u8 as *const i8);
     (*table).numOfExSideBearings = len
-        .wrapping_sub(((*table).numOfLongVerMetrics as libc::c_int * 4i32) as libc::c_uint)
+        .wrapping_sub(((*table).numOfLongVerMetrics as i32 * 4i32) as libc::c_uint)
         .wrapping_div(2i32 as libc::c_uint) as USHORT;
     return table;
 }
@@ -646,8 +646,8 @@ pub unsafe extern "C" fn tt_read_VORG_table(mut sfont: *mut sfnt) -> *mut tt_VOR
             .wrapping_mul(::std::mem::size_of::<tt_VORG_table>() as u64)
             as u32) as *mut tt_VORG_table;
         sfnt_locate_table(sfont, b"VORG\x00" as *const u8 as *const i8);
-        if tt_get_unsigned_pair((*sfont).handle) as libc::c_int != 1i32
-            || tt_get_unsigned_pair((*sfont).handle) as libc::c_int != 0i32
+        if tt_get_unsigned_pair((*sfont).handle) as i32 != 1i32
+            || tt_get_unsigned_pair((*sfont).handle) as i32 != 0i32
         {
             _tt_abort(b"Unsupported VORG version.\x00" as *const u8 as *const i8);
         }
@@ -662,7 +662,7 @@ pub unsafe extern "C" fn tt_read_VORG_table(mut sfont: *mut sfnt) -> *mut tt_VOR
          * glyphIndex order.
          */
         i = 0i32 as USHORT;
-        while (i as libc::c_int) < (*vorg).numVertOriginYMetrics as libc::c_int {
+        while (i as i32) < (*vorg).numVertOriginYMetrics as i32 {
             (*(*vorg).vertOriginYMetrics.offset(i as isize)).glyphIndex =
                 tt_get_unsigned_pair((*sfont).handle);
             (*(*vorg).vertOriginYMetrics.offset(i as isize)).vertOriginY =
@@ -694,11 +694,11 @@ pub unsafe extern "C" fn tt_read_longMetrics(
         .wrapping_mul(::std::mem::size_of::<tt_longMetrics>() as u64)
         as u32) as *mut tt_longMetrics;
     gid = 0i32 as USHORT;
-    while (gid as libc::c_int) < numGlyphs as libc::c_int {
-        if (gid as libc::c_int) < numLongMetrics as libc::c_int {
+    while (gid as i32) < numGlyphs as i32 {
+        if (gid as i32) < numLongMetrics as i32 {
             last_adv = tt_get_unsigned_pair((*sfont).handle)
         }
-        if (gid as libc::c_int) < numLongMetrics as libc::c_int + numExSideBearings as libc::c_int {
+        if (gid as i32) < numLongMetrics as i32 + numExSideBearings as i32 {
             last_esb = tt_get_signed_pair((*sfont).handle)
         }
         (*m.offset(gid as isize)).advance = last_adv;
@@ -712,7 +712,7 @@ pub unsafe extern "C" fn tt_read_longMetrics(
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_os2__table(mut sfont: *mut sfnt) -> *mut tt_os2__table {
     let mut table: *mut tt_os2__table = 0 as *mut tt_os2__table;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     table = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<tt_os2__table>() as u64)
         as u32) as *mut tt_os2__table;
@@ -763,11 +763,11 @@ pub unsafe extern "C" fn tt_read_os2__table(mut sfont: *mut sfnt) -> *mut tt_os2
             (*table).sTypoLineGap = tt_get_signed_pair((*sfont).handle);
             (*table).usWinAscent = tt_get_unsigned_pair((*sfont).handle);
             (*table).usWinDescent = tt_get_unsigned_pair((*sfont).handle);
-            if (*table).version as libc::c_int > 0i32 {
+            if (*table).version as i32 > 0i32 {
                 /* format 1 adds the following 2 fields */
                 (*table).ulCodePageRange1 = tt_get_unsigned_quad((*sfont).handle);
                 (*table).ulCodePageRange2 = tt_get_unsigned_quad((*sfont).handle);
-                if (*table).version as libc::c_int > 1i32 {
+                if (*table).version as i32 > 1i32 {
                     /* and formats 2 and 3 (current) include 5 more.... these share the
                     same fields, only the precise definition of some was changed */
                     (*table).sxHeight = tt_get_signed_pair((*sfont).handle);
@@ -811,7 +811,7 @@ unsafe extern "C" fn tt_get_name(
     let mut num_names: USHORT = 0;
     let mut string_offset: USHORT = 0;
     let mut name_offset: SFNT_ULONG = 0;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     name_offset = sfnt_locate_table(sfont, b"name\x00" as *const u8 as *const i8);
     if tt_get_unsigned_pair((*sfont).handle) != 0 {
         _tt_abort(b"Expecting zero\x00" as *const u8 as *const i8);
@@ -819,7 +819,7 @@ unsafe extern "C" fn tt_get_name(
     num_names = tt_get_unsigned_pair((*sfont).handle);
     string_offset = tt_get_unsigned_pair((*sfont).handle);
     i = 0i32;
-    while i < num_names as libc::c_int {
+    while i < num_names as i32 {
         let mut p_id: USHORT = 0;
         let mut e_id: USHORT = 0;
         let mut n_id: USHORT = 0;
@@ -832,20 +832,20 @@ unsafe extern "C" fn tt_get_name(
         length = tt_get_unsigned_pair((*sfont).handle);
         offset = tt_get_unsigned_pair((*sfont).handle);
         /* language ID value 0xffffu for `accept any language ID' */
-        if p_id as libc::c_int == plat_id as libc::c_int
-            && e_id as libc::c_int == enco_id as libc::c_int
+        if p_id as i32 == plat_id as i32
+            && e_id as i32 == enco_id as i32
             && (lang_id as libc::c_uint == 0xffffu32
-                || l_id as libc::c_int == lang_id as libc::c_int)
-            && n_id as libc::c_int == name_id as libc::c_int
+                || l_id as i32 == lang_id as i32)
+            && n_id as i32 == name_id as i32
         {
-            if length as libc::c_int > destlen as libc::c_int - 1i32 {
+            if length as i32 > destlen as i32 - 1i32 {
                 dpx_warning(
                     b"Name string too long (%u), truncating to %u\x00" as *const u8
                         as *const i8,
-                    length as libc::c_int,
-                    destlen as libc::c_int,
+                    length as i32,
+                    destlen as i32,
                 );
-                length = (destlen as libc::c_int - 1i32) as USHORT
+                length = (destlen as i32 - 1i32) as USHORT
             }
             ttstub_input_seek(
                 (*sfont).handle,
@@ -865,7 +865,7 @@ unsafe extern "C" fn tt_get_name(
             i += 1
         }
     }
-    if i == num_names as libc::c_int {
+    if i == num_names as i32 {
         length = 0i32 as USHORT
     }
     return length;
@@ -926,7 +926,7 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
         0i32 as USHORT,
         6i32 as USHORT,
     );
-    if namelen as libc::c_int != 0i32
+    if namelen as i32 != 0i32
         || {
             namelen = tt_get_name(
                 sfont,
@@ -937,7 +937,7 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
                 0x409u32 as USHORT,
                 6i32 as USHORT,
             );
-            namelen as libc::c_int != 0i32
+            namelen as i32 != 0i32
         }
         || {
             namelen = tt_get_name(
@@ -949,7 +949,7 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
                 0x412u32 as USHORT,
                 6i32 as USHORT,
             );
-            namelen as libc::c_int != 0i32
+            namelen as i32 != 0i32
         }
     {
         return namelen;
@@ -968,7 +968,7 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
         0xffffu32 as USHORT,
         6i32 as USHORT,
     );
-    if namelen as libc::c_int == 0i32 {
+    if namelen as i32 == 0i32 {
         /*
           Finally falling back to Mac Roman name field.
           Warning: Some bad Japanese TTfonts using SJIS encoded string in the

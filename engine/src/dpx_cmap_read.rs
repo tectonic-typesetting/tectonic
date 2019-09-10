@@ -10,16 +10,16 @@ extern crate libc;
 extern "C" {
     pub type pst_obj;
     #[no_mangle]
-    fn CMap_cache_find(cmap_name: *const i8) -> libc::c_int;
+    fn CMap_cache_find(cmap_name: *const i8) -> i32;
     #[no_mangle]
-    fn CMap_cache_get(id: libc::c_int) -> *mut CMap;
+    fn CMap_cache_get(id: i32) -> *mut CMap;
     #[no_mangle]
     fn CMap_add_codespacerange(
         cmap: *mut CMap,
         codelo: *const u8,
         codehi: *const u8,
         dim: size_t,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn CMap_add_notdefrange(
         cmap: *mut CMap,
@@ -27,14 +27,14 @@ extern "C" {
         srchi: *const u8,
         srcdim: size_t,
         dst: CID,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn CMap_add_notdefchar(
         cmap: *mut CMap,
         src: *const u8,
         srcdim: size_t,
         dst: CID,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn CMap_add_cidrange(
         cmap: *mut CMap,
@@ -42,7 +42,7 @@ extern "C" {
         hi: *const u8,
         srcdim: size_t,
         base: CID,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn CMap_add_bfrange(
         cmap: *mut CMap,
@@ -51,14 +51,14 @@ extern "C" {
         srcdim: size_t,
         dest: *const u8,
         destdim: size_t,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn CMap_add_cidchar(
         cmap: *mut CMap,
         src: *const u8,
         srcdim: size_t,
         dest: CID,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn CMap_add_bfchar(
         cmap: *mut CMap,
@@ -66,15 +66,15 @@ extern "C" {
         srcdim: size_t,
         dest: *const u8,
         destdim: size_t,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn CMap_set_CIDSysInfo(cmap: *mut CMap, csi: *const CIDSysInfo);
     #[no_mangle]
     fn CMap_set_usecmap(cmap: *mut CMap, ucmap: *mut CMap);
     #[no_mangle]
-    fn CMap_set_wmode(cmap: *mut CMap, wmode: libc::c_int);
+    fn CMap_set_wmode(cmap: *mut CMap, wmode: i32);
     #[no_mangle]
-    fn CMap_set_type(cmap: *mut CMap, type_0: libc::c_int);
+    fn CMap_set_type(cmap: *mut CMap, type_0: i32);
     #[no_mangle]
     fn CMap_set_name(cmap: *mut CMap, name: *const i8);
     #[no_mangle]
@@ -92,11 +92,11 @@ extern "C" {
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
         -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
     fn strstr(_: *const i8, _: *const i8) -> *mut i8;
     #[no_mangle]
@@ -110,7 +110,7 @@ extern "C" {
     fn ttstub_input_seek(
         handle: rust_input_handle_t,
         offset: ssize_t,
-        whence: libc::c_int,
+        whence: i32,
     ) -> size_t;
     #[no_mangle]
     fn ttstub_input_read(
@@ -156,9 +156,9 @@ extern "C" {
     #[no_mangle]
     fn pst_type_of(obj: *mut pst_obj) -> pst_type;
     #[no_mangle]
-    fn pst_length_of(obj: *mut pst_obj) -> libc::c_int;
+    fn pst_length_of(obj: *mut pst_obj) -> i32;
     #[no_mangle]
-    fn pst_getIV(obj: *mut pst_obj) -> libc::c_int;
+    fn pst_getIV(obj: *mut pst_obj) -> i32;
     #[no_mangle]
     fn pst_getSV(obj: *mut pst_obj) -> *mut u8;
     #[no_mangle]
@@ -193,7 +193,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 pub struct CIDSysInfo {
     pub registry: *mut i8,
     pub ordering: *mut i8,
-    pub supplement: libc::c_int,
+    pub supplement: i32,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -229,7 +229,7 @@ pub struct rangeDef {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mapDef {
-    pub flag: libc::c_int,
+    pub flag: i32,
     pub len: size_t,
     pub code: *mut u8,
     pub next: *mut mapDef,
@@ -240,23 +240,23 @@ pub struct mapDef {
 pub struct mapData {
     pub data: *mut u8,
     pub prev: *mut mapData,
-    pub pos: libc::c_int,
+    pub pos: i32,
     /* Position of next free data segment */
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CMap {
     pub name: *mut i8,
-    pub type_0: libc::c_int,
-    pub wmode: libc::c_int,
+    pub type_0: i32,
+    pub wmode: i32,
     pub CSI: *mut CIDSysInfo,
     pub useCMap: *mut CMap,
     pub codespace: C2RustUnnamed_0,
     pub mapTbl: *mut mapDef,
     pub mapData: *mut mapData,
-    pub flags: libc::c_int,
+    pub flags: i32,
     pub profile: C2RustUnnamed,
-    pub reverseMap: *mut libc::c_int,
+    pub reverseMap: *mut i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -284,7 +284,7 @@ pub struct ifreader {
     pub handle: rust_input_handle_t,
     pub unread: size_t,
 }
-pub type pst_type = libc::c_int;
+pub type pst_type = i32;
 #[inline]
 unsafe extern "C" fn strstartswith(
     mut s: *const i8,
@@ -318,7 +318,7 @@ unsafe extern "C" fn strstartswith(
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-static mut __verbose: libc::c_int = 0i32;
+static mut __verbose: i32 = 0i32;
 unsafe extern "C" fn ifreader_create(
     mut handle: rust_input_handle_t,
     mut size: size_t,
@@ -428,8 +428,8 @@ unsafe extern "C" fn ifreader_read(mut reader: *mut ifreader, mut size: size_t) 
 unsafe extern "C" fn check_next_token(
     mut input: *mut ifreader,
     mut key: *const i8,
-) -> libc::c_int {
-    let mut cmp: libc::c_int = 0;
+) -> i32 {
+    let mut cmp: i32 = 0;
     let mut token: *mut pst_obj = 0 as *mut pst_obj;
     let mut str: *mut i8 = 0 as *mut i8;
     if ifreader_read(input, strlen(key)) == 0i32 as u64 {
@@ -449,13 +449,13 @@ unsafe extern "C" fn get_coderange(
     mut input: *mut ifreader,
     mut codeLo: *mut u8,
     mut codeHi: *mut u8,
-    mut dim: *mut libc::c_int,
-    mut maxlen: libc::c_int,
-) -> libc::c_int {
+    mut dim: *mut i32,
+    mut maxlen: i32,
+) -> i32 {
     let mut tok1: *mut pst_obj = 0 as *mut pst_obj;
     let mut tok2: *mut pst_obj = 0 as *mut pst_obj;
-    let mut dim1: libc::c_int = 0;
-    let mut dim2: libc::c_int = 0;
+    let mut dim1: i32 = 0;
+    let mut dim2: i32 = 0;
     tok1 = pst_get_token(&mut (*input).cursor, (*input).endptr);
     if tok1.is_null() {
         return -1i32;
@@ -495,11 +495,11 @@ unsafe extern "C" fn get_coderange(
 unsafe extern "C" fn do_codespacerange(
     mut cmap: *mut CMap,
     mut input: *mut ifreader,
-    mut count: libc::c_int,
-) -> libc::c_int {
+    mut count: i32,
+) -> i32 {
     let mut codeLo: [u8; 127] = [0; 127];
     let mut codeHi: [u8; 127] = [0; 127];
-    let mut dim: libc::c_int = 0;
+    let mut dim: i32 = 0;
     loop {
         let fresh0 = count;
         count = count - 1;
@@ -536,9 +536,9 @@ unsafe extern "C" fn handle_codearray(
     mut cmap: *mut CMap,
     mut input: *mut ifreader,
     mut codeLo: *mut u8,
-    mut dim: libc::c_int,
-    mut count: libc::c_int,
-) -> libc::c_int {
+    mut dim: i32,
+    mut count: i32,
+) -> i32 {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
     if dim < 1i32 {
         _tt_abort(b"Invalid code range.\x00" as *const u8 as *const i8);
@@ -576,20 +576,20 @@ unsafe extern "C" fn handle_codearray(
         }
         pst_release_obj(tok);
         let ref mut fresh2 = *codeLo.offset((dim - 1i32) as isize);
-        *fresh2 = (*fresh2 as libc::c_int + 1i32) as u8
+        *fresh2 = (*fresh2 as i32 + 1i32) as u8
     }
     return check_next_token(input, b"]\x00" as *const u8 as *const i8);
 }
 unsafe extern "C" fn do_notdefrange(
     mut cmap: *mut CMap,
     mut input: *mut ifreader,
-    mut count: libc::c_int,
-) -> libc::c_int {
+    mut count: i32,
+) -> i32 {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
     let mut codeLo: [u8; 127] = [0; 127];
     let mut codeHi: [u8; 127] = [0; 127];
-    let mut dstCID: libc::c_int = 0;
-    let mut dim: libc::c_int = 0;
+    let mut dstCID: i32 = 0;
+    let mut dim: i32 = 0;
     loop {
         let fresh3 = count;
         count = count - 1;
@@ -641,12 +641,12 @@ unsafe extern "C" fn do_notdefrange(
 unsafe extern "C" fn do_bfrange(
     mut cmap: *mut CMap,
     mut input: *mut ifreader,
-    mut count: libc::c_int,
-) -> libc::c_int {
+    mut count: i32,
+) -> i32 {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
     let mut codeLo: [u8; 127] = [0; 127];
     let mut codeHi: [u8; 127] = [0; 127];
-    let mut srcdim: libc::c_int = 0;
+    let mut srcdim: i32 = 0;
     loop {
         let fresh4 = count;
         count = count - 1;
@@ -685,8 +685,8 @@ unsafe extern "C" fn do_bfrange(
                 input,
                 codeLo.as_mut_ptr(),
                 srcdim,
-                codeHi[(srcdim - 1i32) as usize] as libc::c_int
-                    - codeLo[(srcdim - 1i32) as usize] as libc::c_int
+                codeHi[(srcdim - 1i32) as usize] as i32
+                    - codeLo[(srcdim - 1i32) as usize] as i32
                     + 1i32,
             ) < 0i32
             {
@@ -707,13 +707,13 @@ unsafe extern "C" fn do_bfrange(
 unsafe extern "C" fn do_cidrange(
     mut cmap: *mut CMap,
     mut input: *mut ifreader,
-    mut count: libc::c_int,
-) -> libc::c_int {
+    mut count: i32,
+) -> i32 {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
     let mut codeLo: [u8; 127] = [0; 127];
     let mut codeHi: [u8; 127] = [0; 127];
-    let mut dstCID: libc::c_int = 0;
-    let mut dim: libc::c_int = 0;
+    let mut dstCID: i32 = 0;
+    let mut dim: i32 = 0;
     loop {
         let fresh5 = count;
         count = count - 1;
@@ -765,11 +765,11 @@ unsafe extern "C" fn do_cidrange(
 unsafe extern "C" fn do_notdefchar(
     mut cmap: *mut CMap,
     mut input: *mut ifreader,
-    mut count: libc::c_int,
-) -> libc::c_int {
+    mut count: i32,
+) -> i32 {
     let mut tok1: *mut pst_obj = 0 as *mut pst_obj;
     let mut tok2: *mut pst_obj = 0 as *mut pst_obj;
-    let mut dstCID: libc::c_int = 0;
+    let mut dstCID: i32 = 0;
     loop {
         let fresh6 = count;
         count = count - 1;
@@ -816,8 +816,8 @@ unsafe extern "C" fn do_notdefchar(
 unsafe extern "C" fn do_bfchar(
     mut cmap: *mut CMap,
     mut input: *mut ifreader,
-    mut count: libc::c_int,
-) -> libc::c_int {
+    mut count: i32,
+) -> i32 {
     let mut tok1: *mut pst_obj = 0 as *mut pst_obj;
     let mut tok2: *mut pst_obj = 0 as *mut pst_obj;
     loop {
@@ -867,11 +867,11 @@ unsafe extern "C" fn do_bfchar(
 unsafe extern "C" fn do_cidchar(
     mut cmap: *mut CMap,
     mut input: *mut ifreader,
-    mut count: libc::c_int,
-) -> libc::c_int {
+    mut count: i32,
+) -> i32 {
     let mut tok1: *mut pst_obj = 0 as *mut pst_obj;
     let mut tok2: *mut pst_obj = 0 as *mut pst_obj;
-    let mut dstCID: libc::c_int = 0;
+    let mut dstCID: i32 = 0;
     loop {
         let fresh8 = count;
         count = count - 1;
@@ -915,7 +915,7 @@ unsafe extern "C" fn do_cidchar(
 unsafe extern "C" fn do_cidsysteminfo(
     mut cmap: *mut CMap,
     mut input: *mut ifreader,
-) -> libc::c_int {
+) -> i32 {
     let mut tok1: *mut pst_obj = 0 as *mut pst_obj;
     let mut tok2: *mut pst_obj = 0 as *mut pst_obj;
     let mut csi: CIDSysInfo = {
@@ -926,8 +926,8 @@ unsafe extern "C" fn do_cidsysteminfo(
         };
         init
     };
-    let mut simpledict: libc::c_int = 0i32;
-    let mut error: libc::c_int = 0i32;
+    let mut simpledict: i32 = 0i32;
+    let mut error: i32 = 0i32;
     ifreader_read(input, (127i32 * 2i32) as size_t);
     loop
     /*
@@ -1070,8 +1070,8 @@ unsafe extern "C" fn do_cidsysteminfo(
     return error;
 }
 #[no_mangle]
-pub unsafe extern "C" fn CMap_parse_check_sig(mut handle: rust_input_handle_t) -> libc::c_int {
-    let mut result: libc::c_int = -1i32;
+pub unsafe extern "C" fn CMap_parse_check_sig(mut handle: rust_input_handle_t) -> i32 {
+    let mut result: i32 = -1i32;
     let mut sig: [i8; 65] = [0; 65];
     if handle.is_null() {
         return -1i32;
@@ -1125,12 +1125,12 @@ pub unsafe extern "C" fn CMap_parse_check_sig(mut handle: rust_input_handle_t) -
 pub unsafe extern "C" fn CMap_parse(
     mut cmap: *mut CMap,
     mut handle: rust_input_handle_t,
-) -> libc::c_int {
+) -> i32 {
     let mut tok1: *mut pst_obj = 0 as *mut pst_obj; /* else Simply ignore */
     let mut tok2: *mut pst_obj = 0 as *mut pst_obj;
     let mut input: *mut ifreader = 0 as *mut ifreader;
-    let mut status: libc::c_int = 0i32;
-    let mut tmpint: libc::c_int = -1i32;
+    let mut status: i32 = 0i32;
+    let mut tmpint: i32 = -1i32;
     if !cmap.is_null() && !handle.is_null() {
     } else {
         __assert_fail(
@@ -1243,7 +1243,7 @@ pub unsafe extern "C" fn CMap_parse(
                             strlen(b"usecmap\x00" as *const u8 as *const i8),
                         ) == 0)
                 {
-                    let mut id: libc::c_int = 0;
+                    let mut id: i32 = 0;
                     let mut ucmap: *mut CMap = 0 as *mut CMap;
                     id = CMap_cache_find(pst_data_ptr(tok1) as *const i8);
                     if id < 0i32 {
@@ -1327,6 +1327,6 @@ pub unsafe extern "C" fn CMap_parse(
     return if status < 0i32 {
         -1i32
     } else {
-        CMap_is_valid(cmap) as libc::c_int
+        CMap_is_valid(cmap) as i32
     };
 }

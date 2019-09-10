@@ -44,7 +44,7 @@ extern "C" {
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
@@ -88,8 +88,8 @@ extern "C" {
 #[repr(C)]
 pub struct pdf_res {
     pub ident: *mut i8,
-    pub flags: libc::c_int,
-    pub category: libc::c_int,
+    pub flags: i32,
+    pub category: i32,
     pub cdata: *mut libc::c_void,
     pub object: *mut pdf_obj,
     pub reference: *mut pdf_obj,
@@ -97,15 +97,15 @@ pub struct pdf_res {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct res_cache {
-    pub count: libc::c_int,
-    pub capacity: libc::c_int,
+    pub count: i32,
+    pub capacity: i32,
     pub resources: *mut pdf_res,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
     pub name: *const i8,
-    pub cat_id: libc::c_int,
+    pub cat_id: i32,
 }
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
@@ -261,7 +261,7 @@ pub unsafe extern "C" fn pdf_close_resources() {
             .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as u64)
     {
         let mut rc: *mut res_cache = 0 as *mut res_cache;
-        let mut j: libc::c_int = 0;
+        let mut j: i32 = 0;
         rc = &mut *resources.as_mut_ptr().offset(i as isize) as *mut res_cache;
         j = 0i32;
         while j < (*rc).count {
@@ -276,7 +276,7 @@ pub unsafe extern "C" fn pdf_close_resources() {
         i = i.wrapping_add(1)
     }
 }
-unsafe extern "C" fn get_category(mut category: *const i8) -> libc::c_int {
+unsafe extern "C" fn get_category(mut category: *const i8) -> i32 {
     let mut i: libc::c_uint = 0;
     i = 0i32 as libc::c_uint;
     while (i as u64)
@@ -295,11 +295,11 @@ pub unsafe extern "C" fn pdf_defineresource(
     mut category: *const i8,
     mut resname: *const i8,
     mut object: *mut pdf_obj,
-    mut flags: libc::c_int,
-) -> libc::c_int {
-    let mut res_id: libc::c_int = 0;
+    mut flags: i32,
+) -> i32 {
+    let mut res_id: i32 = 0;
     let mut rc: *mut res_cache = 0 as *mut res_cache;
-    let mut cat_id: libc::c_int = 0;
+    let mut cat_id: i32 = 0;
     let mut res: *mut pdf_res = 0 as *mut pdf_res;
     if !category.is_null() && !object.is_null() {
     } else {
@@ -350,7 +350,7 @@ pub unsafe extern "C" fn pdf_defineresource(
     if res_id == (*rc).count {
         if (*rc).count >= (*rc).capacity {
             (*rc).capacity =
-                ((*rc).capacity as libc::c_uint).wrapping_add(16u32) as libc::c_int as libc::c_int;
+                ((*rc).capacity as libc::c_uint).wrapping_add(16u32) as i32 as i32;
             (*rc).resources = renew(
                 (*rc).resources as *mut libc::c_void,
                 ((*rc).capacity as u32 as u64)
@@ -360,7 +360,7 @@ pub unsafe extern "C" fn pdf_defineresource(
         }
         res = &mut *(*rc).resources.offset(res_id as isize) as *mut pdf_res;
         pdf_init_resource(res);
-        if !resname.is_null() && *resname.offset(0) as libc::c_int != '\u{0}' as i32 {
+        if !resname.is_null() && *resname.offset(0) as i32 != '\u{0}' as i32 {
             (*res).ident = new(
                 (strlen(resname).wrapping_add(1i32 as u64) as u32 as u64)
                     .wrapping_mul(::std::mem::size_of::<i8>() as u64)
@@ -384,10 +384,10 @@ pub unsafe extern "C" fn pdf_defineresource(
 pub unsafe extern "C" fn pdf_findresource(
     mut category: *const i8,
     mut resname: *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut res: *mut pdf_res = 0 as *mut pdf_res;
-    let mut res_id: libc::c_int = 0;
-    let mut cat_id: libc::c_int = 0;
+    let mut res_id: i32 = 0;
+    let mut cat_id: i32 = 0;
     let mut rc: *mut res_cache = 0 as *mut res_cache;
     if !resname.is_null() && !category.is_null() {
     } else {
@@ -441,9 +441,9 @@ pub unsafe extern "C" fn pdf_findresource(
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_get_resource_reference(mut rc_id: libc::c_int) -> *mut pdf_obj {
-    let mut cat_id: libc::c_int = 0;
-    let mut res_id: libc::c_int = 0;
+pub unsafe extern "C" fn pdf_get_resource_reference(mut rc_id: i32) -> *mut pdf_obj {
+    let mut cat_id: i32 = 0;
+    let mut res_id: i32 = 0;
     let mut rc: *mut res_cache = 0 as *mut res_cache;
     let mut res: *mut pdf_res = 0 as *mut pdf_res;
     cat_id = rc_id >> 16i32 & 0xffffi32;

@@ -19,12 +19,12 @@ extern "C" {
                 _: *mut pdf_obj,
                 _: *mut pdf_obj,
                 _: *mut libc::c_void,
-            ) -> libc::c_int,
+            ) -> i32,
         >,
         pdata: *mut libc::c_void,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
     #[no_mangle]
@@ -44,21 +44,21 @@ extern "C" {
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> libc::c_int;
+    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
     fn pdf_get_version() -> libc::c_uint;
     #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
@@ -137,34 +137,34 @@ extern "C" {
         resources: *mut pdf_obj,
     );
     #[no_mangle]
-    fn pdf_dev_setlinewidth(width: f64) -> libc::c_int;
+    fn pdf_dev_setlinewidth(width: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_setmiterlimit(mlimit: f64) -> libc::c_int;
+    fn pdf_dev_setmiterlimit(mlimit: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_setlinecap(style: libc::c_int) -> libc::c_int;
+    fn pdf_dev_setlinecap(style: i32) -> i32;
     #[no_mangle]
-    fn pdf_dev_setlinejoin(style: libc::c_int) -> libc::c_int;
+    fn pdf_dev_setlinejoin(style: i32) -> i32;
     #[no_mangle]
     fn pdf_dev_setdash(
-        count: libc::c_int,
+        count: i32,
         pattern: *mut f64,
         offset: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     /* Path Construction */
     #[no_mangle]
-    fn pdf_dev_moveto(x: f64, y: f64) -> libc::c_int;
+    fn pdf_dev_moveto(x: f64, y: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_lineto(x0: f64, y0: f64) -> libc::c_int;
+    fn pdf_dev_lineto(x0: f64, y0: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_newpath() -> libc::c_int;
+    fn pdf_dev_newpath() -> i32;
     #[no_mangle]
-    fn pdf_dev_flushpath(p_op: i8, fill_rule: libc::c_int) -> libc::c_int;
+    fn pdf_dev_flushpath(p_op: i8, fill_rule: i32) -> i32;
     #[no_mangle]
-    fn pdf_dev_concat(M: *const pdf_tmatrix) -> libc::c_int;
+    fn pdf_dev_concat(M: *const pdf_tmatrix) -> i32;
     #[no_mangle]
-    fn pdf_dev_gsave() -> libc::c_int;
+    fn pdf_dev_gsave() -> i32;
     #[no_mangle]
-    fn pdf_dev_grestore() -> libc::c_int;
+    fn pdf_dev_grestore() -> i32;
     /* extension */
     #[no_mangle]
     fn pdf_dev_arcx(
@@ -174,9 +174,9 @@ extern "C" {
         r_y: f64,
         a_0: f64,
         a_1: f64,
-        a_d: libc::c_int,
+        a_d: i32,
         xar: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn pdf_dev_bspline(
         x0: f64,
@@ -185,9 +185,9 @@ extern "C" {
         y1: f64,
         x2: f64,
         y2: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
-    fn pdf_dev_set_color(color: *const pdf_color, mask: i8, force: libc::c_int);
+    fn pdf_dev_set_color(color: *const pdf_color, mask: i8, force: i32);
     #[no_mangle]
     fn parse_val_ident(
         start: *mut *const i8,
@@ -214,7 +214,7 @@ pub struct spc_env {
     pub x_user: f64,
     pub y_user: f64,
     pub mag: f64,
-    pub pg: libc::c_int,
+    pub pg: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -225,7 +225,7 @@ pub struct spc_arg {
     pub command: *const i8,
 }
 pub type spc_handler_fn_ptr =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int>;
+    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
@@ -235,7 +235,7 @@ pub struct spc_handler {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
-    pub fill: libc::c_int,
+    pub fill: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -245,8 +245,8 @@ pub struct spc_tpic_ {
     pub fill_shape: bool,
     pub fill_color: f64,
     pub points: *mut pdf_coord,
-    pub num_points: libc::c_int,
-    pub max_points: libc::c_int,
+    pub num_points: i32,
+    pub max_points: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -257,7 +257,7 @@ pub struct pdf_coord {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
-    pub num_components: libc::c_int,
+    pub num_components: i32,
     pub spot_color_name: *mut i8,
     pub values: [f64; 4],
 }
@@ -290,10 +290,10 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 unsafe extern "C" fn skip_blank(mut pp: *mut *const i8, mut endptr: *const i8) {
     let mut p: *const i8 = *pp;
     while p < endptr
-        && (*p as libc::c_int & !0x7fi32 == 0i32
-            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
-                as libc::c_int
-                & _ISblank as libc::c_int as u16 as libc::c_int
+        && (*p as i32 & !0x7fi32 == 0i32
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
+                as i32
+                & _ISblank as i32 as u16 as i32
                 != 0)
     {
         p = p.offset(1)
@@ -319,7 +319,7 @@ unsafe extern "C" fn tpic__clear(mut tp: *mut spc_tpic_) {
     (*tp).fill_shape = 0i32 != 0;
     (*tp).fill_color = 0.0f64;
 }
-unsafe extern "C" fn create_xgstate(mut a: f64, mut f_ais: libc::c_int) -> *mut pdf_obj
+unsafe extern "C" fn create_xgstate(mut a: f64, mut f_ais: i32) -> *mut pdf_obj
 /* alpha is shape */ {
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj; /* dash pattern */
     dict = pdf_new_dict();
@@ -345,7 +345,7 @@ unsafe extern "C" fn create_xgstate(mut a: f64, mut f_ais: libc::c_int) -> *mut 
 unsafe extern "C" fn check_resourcestatus(
     mut category: *const i8,
     mut resname: *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut dict1: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut dict2: *mut pdf_obj = 0 as *mut pdf_obj;
     dict1 = pdf_doc_current_page_resources();
@@ -360,7 +360,7 @@ unsafe extern "C" fn check_resourcestatus(
     }
     return 0i32;
 }
-unsafe extern "C" fn set_linestyle(mut pn: f64, mut da: f64) -> libc::c_int {
+unsafe extern "C" fn set_linestyle(mut pn: f64, mut da: f64) -> i32 {
     let mut dp: [f64; 2] = [0.; 2];
     pdf_dev_setlinejoin(1i32);
     pdf_dev_setmiterlimit(1.4f64);
@@ -382,15 +382,15 @@ unsafe extern "C" fn set_linestyle(mut pn: f64, mut da: f64) -> libc::c_int {
 unsafe extern "C" fn set_fillstyle(
     mut g: f64,
     mut a: f64,
-    mut f_ais: libc::c_int,
-) -> libc::c_int {
+    mut f_ais: i32,
+) -> i32 {
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut resname: [i8; 32] = [0; 32];
     let mut buf: [i8; 38] = [0; 38];
-    let mut alp: libc::c_int = 0;
-    let mut len: libc::c_int = 0i32;
+    let mut alp: i32 = 0;
+    let mut len: i32 = 0i32;
     if a > 0.0f64 {
-        alp = round(100.0f64 * a) as libc::c_int;
+        alp = round(100.0f64 * a) as i32;
         sprintf(
             resname.as_mut_ptr(),
             b"_Tps_a%03d_\x00" as *const u8 as *const i8,
@@ -461,7 +461,7 @@ unsafe extern "C" fn set_styles(
     if f_fs {
         let mut g: f64 = 0.;
         let mut a: f64 = 0.;
-        let mut f_ais: libc::c_int = 0;
+        let mut f_ais: i32 = 0;
         if (*tp).mode.fill == 0i32 || (*tp).fill_color == 0. {
             g = 1.0f64 - (*tp).fill_color;
             a = 0.0f64
@@ -493,11 +493,11 @@ unsafe extern "C" fn tpic__polyline(
     mut c: *const pdf_coord,
     mut f_vp: bool,
     mut da: f64,
-) -> libc::c_int {
+) -> i32 {
     let mut pn: f64 = (*tp).pen_size;
     let mut f_fs: bool = (*tp).fill_shape;
-    let mut i: libc::c_int = 0;
-    let mut error: libc::c_int = 0i32;
+    let mut i: i32 = 0;
+    let mut error: i32 = 0i32;
     /*
      * Acrobat claims 'Q' as illegal operation when there are unfinished
      * path (a path without path-painting operator applied)?
@@ -508,16 +508,16 @@ unsafe extern "C" fn tpic__polyline(
         && (*(*tp).points.offset(0)).y
             == (*(*tp).points.offset(((*tp).num_points - 1i32) as isize)).y
     {
-        f_fs as libc::c_int
+        f_fs as i32
     } else {
         0i32
     } != 0;
     f_vp = if pn > 0.0f64 {
-        f_vp as libc::c_int
+        f_vp as i32
     } else {
         0i32
     } != 0;
-    if f_vp as libc::c_int != 0 || f_fs as libc::c_int != 0 {
+    if f_vp as i32 != 0 || f_fs as i32 != 0 {
         pdf_dev_gsave();
         set_styles(tp, c, f_fs, f_vp, pn, da);
         pdf_dev_moveto((*(*tp).points.offset(0)).x, (*(*tp).points.offset(0)).y);
@@ -559,27 +559,27 @@ unsafe extern "C" fn tpic__spline(
     mut c: *const pdf_coord,
     mut f_vp: bool,
     mut da: f64,
-) -> libc::c_int {
+) -> i32 {
     let mut v: [f64; 6] = [0.; 6];
     let mut pn: f64 = (*tp).pen_size;
     let mut f_fs: bool = (*tp).fill_shape;
-    let mut i: libc::c_int = 0;
-    let mut error: libc::c_int = 0i32;
+    let mut i: i32 = 0;
+    let mut error: i32 = 0i32;
     f_fs = if (*(*tp).points.offset(0)).x
         == (*(*tp).points.offset(((*tp).num_points - 1i32) as isize)).x
         && (*(*tp).points.offset(0)).y
             == (*(*tp).points.offset(((*tp).num_points - 1i32) as isize)).y
     {
-        f_fs as libc::c_int
+        f_fs as i32
     } else {
         0i32
     } != 0;
     f_vp = if pn > 0.0f64 {
-        f_vp as libc::c_int
+        f_vp as i32
     } else {
         0i32
     } != 0;
-    if f_vp as libc::c_int != 0 || f_fs as libc::c_int != 0 {
+    if f_vp as i32 != 0 || f_fs as i32 != 0 {
         pdf_dev_gsave();
         set_styles(tp, c, f_fs, f_vp, pn, da);
         pdf_dev_moveto((*(*tp).points.offset(0)).x, (*(*tp).points.offset(0)).y);
@@ -622,21 +622,21 @@ unsafe extern "C" fn tpic__arc(
     mut f_vp: bool,
     mut da: f64,
     mut v: *mut f64,
-) -> libc::c_int
+) -> i32
 /* 6 numbers */ {
     let mut pn: f64 = (*tp).pen_size;
     let mut f_fs: bool = (*tp).fill_shape;
     f_fs = if round(fabs(*v.offset(4) - *v.offset(5)) + 0.5f64) >= 360i32 as f64 {
-        f_fs as libc::c_int
+        f_fs as i32
     } else {
         0i32
     } != 0;
     f_vp = if pn > 0.0f64 {
-        f_vp as libc::c_int
+        f_vp as i32
     } else {
         0i32
     } != 0;
-    if f_vp as libc::c_int != 0 || f_fs as libc::c_int != 0 {
+    if f_vp as i32 != 0 || f_fs as i32 != 0 {
         pdf_dev_gsave();
         set_styles(tp, c, f_fs, f_vp, pn, da);
         /* The arcx operator here draws an excess straight line from current
@@ -667,9 +667,9 @@ unsafe extern "C" fn tpic__arc(
 }
 unsafe extern "C" fn spc_currentpoint(
     mut spe: *mut spc_env,
-    mut pg: *mut libc::c_int,
+    mut pg: *mut i32,
     mut cp: *mut pdf_coord,
-) -> libc::c_int {
+) -> i32 {
     *pg = 0i32;
     (*cp).x = (*spe).x_user;
     (*cp).y = (*spe).y_user;
@@ -678,7 +678,7 @@ unsafe extern "C" fn spc_currentpoint(
 unsafe extern "C" fn spc_handler_tpic_pn(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int
+) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
@@ -710,11 +710,11 @@ unsafe extern "C" fn spc_handler_tpic_pn(
 unsafe extern "C" fn spc_handler_tpic_pa(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int
+) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     let mut v: [f64; 2] = [0.; 2];
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
     } else {
@@ -768,11 +768,11 @@ unsafe extern "C" fn spc_handler_tpic_pa(
 unsafe extern "C" fn spc_handler_tpic_fp(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int
+) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut pg: libc::c_int = 0;
+    let mut pg: i32 = 0;
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
     } else {
         __assert_fail(
@@ -798,11 +798,11 @@ unsafe extern "C" fn spc_handler_tpic_fp(
 unsafe extern "C" fn spc_handler_tpic_ip(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int
+) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut pg: libc::c_int = 0;
+    let mut pg: i32 = 0;
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
     } else {
         __assert_fail(
@@ -828,13 +828,13 @@ unsafe extern "C" fn spc_handler_tpic_ip(
 unsafe extern "C" fn spc_handler_tpic_da(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int
+) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut da: f64 = 0.0f64;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut pg: libc::c_int = 0;
+    let mut pg: i32 = 0;
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
     } else {
         __assert_fail(
@@ -866,13 +866,13 @@ unsafe extern "C" fn spc_handler_tpic_da(
 unsafe extern "C" fn spc_handler_tpic_dt(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int
+) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut da: f64 = 0.0f64;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut pg: libc::c_int = 0;
+    let mut pg: i32 = 0;
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
     } else {
         __assert_fail(
@@ -904,13 +904,13 @@ unsafe extern "C" fn spc_handler_tpic_dt(
 unsafe extern "C" fn spc_handler_tpic_sp(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int
+) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut da: f64 = 0.0f64;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut pg: libc::c_int = 0;
+    let mut pg: i32 = 0;
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
     } else {
         __assert_fail(
@@ -942,14 +942,14 @@ unsafe extern "C" fn spc_handler_tpic_sp(
 unsafe extern "C" fn spc_handler_tpic_ar(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int
+) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut v: [f64; 6] = [0.; 6];
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut pg: libc::c_int = 0;
+    let mut pg: i32 = 0;
     let mut q: *mut i8 = 0 as *mut i8;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
     } else {
         __assert_fail(
@@ -997,14 +997,14 @@ unsafe extern "C" fn spc_handler_tpic_ar(
 unsafe extern "C" fn spc_handler_tpic_ia(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int
+) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut v: [f64; 6] = [0.; 6];
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut pg: libc::c_int = 0;
+    let mut pg: i32 = 0;
     let mut q: *mut i8 = 0 as *mut i8;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
     } else {
         __assert_fail(
@@ -1052,7 +1052,7 @@ unsafe extern "C" fn spc_handler_tpic_ia(
 unsafe extern "C" fn spc_handler_tpic_sh(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int
+) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
@@ -1090,7 +1090,7 @@ unsafe extern "C" fn spc_handler_tpic_sh(
 unsafe extern "C" fn spc_handler_tpic_wh(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int
+) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
@@ -1112,7 +1112,7 @@ unsafe extern "C" fn spc_handler_tpic_wh(
 unsafe extern "C" fn spc_handler_tpic_bk(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int
+) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
@@ -1134,7 +1134,7 @@ unsafe extern "C" fn spc_handler_tpic_bk(
 unsafe extern "C" fn spc_handler_tpic_tx(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int
+) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state; /* NULL terminate */
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
@@ -1158,7 +1158,7 @@ unsafe extern "C" fn spc_handler_tpic_tx(
 unsafe extern "C" fn spc_handler_tpic__init(
     mut spe: *mut spc_env,
     mut dp: *mut libc::c_void,
-) -> libc::c_int {
+) -> i32 {
     let mut tp: *mut spc_tpic_ = dp as *mut spc_tpic_;
     (*tp).pen_size = 1.0f64;
     (*tp).fill_shape = 0i32 != 0;
@@ -1176,7 +1176,7 @@ unsafe extern "C" fn spc_handler_tpic__init(
     }
     return 0i32;
 }
-unsafe extern "C" fn spc_handler_tpic__bophook(mut dp: *mut libc::c_void) -> libc::c_int {
+unsafe extern "C" fn spc_handler_tpic__bophook(mut dp: *mut libc::c_void) -> i32 {
     let mut tp: *mut spc_tpic_ = dp as *mut spc_tpic_;
     if !tp.is_null() {
     } else {
@@ -1196,7 +1196,7 @@ unsafe extern "C" fn spc_handler_tpic__bophook(mut dp: *mut libc::c_void) -> lib
 unsafe extern "C" fn spc_handler_tpic__eophook(
     mut spe: *mut spc_env,
     mut dp: *mut libc::c_void,
-) -> libc::c_int {
+) -> i32 {
     let mut tp: *mut spc_tpic_ = dp as *mut spc_tpic_;
     if !tp.is_null() {
     } else {
@@ -1222,7 +1222,7 @@ unsafe extern "C" fn spc_handler_tpic__eophook(
 unsafe extern "C" fn spc_handler_tpic__clean(
     mut spe: *mut spc_env,
     mut dp: *mut libc::c_void,
-) -> libc::c_int {
+) -> i32 {
     let mut tp: *mut spc_tpic_ = dp as *mut spc_tpic_;
     if !tp.is_null() {
     } else {
@@ -1246,27 +1246,27 @@ unsafe extern "C" fn spc_handler_tpic__clean(
     return 0i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn tpic_set_fill_mode(mut mode: libc::c_int) {
+pub unsafe extern "C" fn tpic_set_fill_mode(mut mode: i32) {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     (*tp).mode.fill = mode;
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_tpic_at_begin_page() -> libc::c_int {
+pub unsafe extern "C" fn spc_tpic_at_begin_page() -> i32 {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     return spc_handler_tpic__bophook(tp as *mut libc::c_void);
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_tpic_at_end_page() -> libc::c_int {
+pub unsafe extern "C" fn spc_tpic_at_end_page() -> i32 {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     return spc_handler_tpic__eophook(0 as *mut spc_env, tp as *mut libc::c_void);
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_tpic_at_begin_document() -> libc::c_int {
+pub unsafe extern "C" fn spc_tpic_at_begin_document() -> i32 {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     return spc_handler_tpic__init(0 as *mut spc_env, tp as *mut libc::c_void);
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_tpic_at_end_document() -> libc::c_int {
+pub unsafe extern "C" fn spc_tpic_at_end_document() -> i32 {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     return spc_handler_tpic__clean(0 as *mut spc_env, tp as *mut libc::c_void);
 }
@@ -1274,7 +1274,7 @@ unsafe extern "C" fn spc_parse_kvpairs(mut ap: *mut spc_arg) -> *mut pdf_obj {
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut kp: *mut i8 = 0 as *mut i8;
     let mut vp: *mut i8 = 0 as *mut i8;
-    let mut error: libc::c_int = 0i32;
+    let mut error: i32 = 0i32;
     dict = pdf_new_dict();
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     while error == 0 && (*ap).curptr < (*ap).endptr {
@@ -1283,7 +1283,7 @@ unsafe extern "C" fn spc_parse_kvpairs(mut ap: *mut spc_arg) -> *mut pdf_obj {
             break;
         }
         skip_blank(&mut (*ap).curptr, (*ap).endptr);
-        if (*ap).curptr < (*ap).endptr && *(*ap).curptr.offset(0) as libc::c_int == '=' as i32 {
+        if (*ap).curptr < (*ap).endptr && *(*ap).curptr.offset(0) as i32 == '=' as i32 {
             (*ap).curptr = (*ap).curptr.offset(1);
             skip_blank(&mut (*ap).curptr, (*ap).endptr);
             if (*ap).curptr == (*ap).endptr {
@@ -1329,11 +1329,11 @@ unsafe extern "C" fn tpic_filter_getopts(
     mut kp: *mut pdf_obj,
     mut vp: *mut pdf_obj,
     mut dp: *mut libc::c_void,
-) -> libc::c_int {
+) -> i32 {
     let mut tp: *mut spc_tpic_ = dp as *mut spc_tpic_;
     let mut k: *mut i8 = 0 as *mut i8;
     let mut v: *mut i8 = 0 as *mut i8;
-    let mut error: libc::c_int = 0i32;
+    let mut error: i32 = 0i32;
     if !kp.is_null() && !vp.is_null() && !tp.is_null() {
     } else {
         __assert_fail(
@@ -1384,10 +1384,10 @@ unsafe extern "C" fn tpic_filter_getopts(
 unsafe extern "C" fn spc_handler_tpic__setopts(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut error: libc::c_int = 0i32;
+    let mut error: i32 = 0i32;
     dict = spc_parse_kvpairs(ap);
     if dict.is_null() {
         return -1i32;
@@ -1400,7 +1400,7 @@ unsafe extern "C" fn spc_handler_tpic__setopts(
                     _: *mut pdf_obj,
                     _: *mut pdf_obj,
                     _: *mut libc::c_void,
-                ) -> libc::c_int,
+                ) -> i32,
         ),
         tp as *mut libc::c_void,
     );
@@ -1424,7 +1424,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
                 key: b"pn\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_tpic_pn
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -1434,7 +1434,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
                 key: b"pa\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_tpic_pa
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -1444,7 +1444,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
                 key: b"fp\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_tpic_fp
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -1454,7 +1454,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
                 key: b"ip\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_tpic_ip
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -1464,7 +1464,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
                 key: b"da\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_tpic_da
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -1474,7 +1474,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
                 key: b"dt\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_tpic_dt
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -1484,7 +1484,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
                 key: b"sp\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_tpic_sp
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -1494,7 +1494,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
                 key: b"ar\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_tpic_ar
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -1504,7 +1504,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
                 key: b"ia\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_tpic_ia
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -1514,7 +1514,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
                 key: b"sh\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_tpic_sh
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -1524,7 +1524,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
                 key: b"wh\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_tpic_wh
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -1534,7 +1534,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
                 key: b"bk\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_tpic_bk
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -1544,7 +1544,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
                 key: b"tx\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_tpic_tx
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -1554,7 +1554,7 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
 #[no_mangle]
 pub unsafe extern "C" fn spc_tpic_check_special(
     mut buf: *const i8,
-    mut len: libc::c_int,
+    mut len: i32,
 ) -> bool {
     let mut istpic: bool = 0i32 != 0;
     let mut hasnsp: bool = 0i32 != 0;
@@ -1579,8 +1579,8 @@ pub unsafe extern "C" fn spc_tpic_check_special(
     if q.is_null() {
         istpic = 0i32 != 0
     } else if !q.is_null()
-        && hasnsp as libc::c_int != 0
-        && streq_ptr(q, b"__setopt__\x00" as *const u8 as *const i8) as libc::c_int != 0
+        && hasnsp as i32 != 0
+        && streq_ptr(q, b"__setopt__\x00" as *const u8 as *const i8) as i32 != 0
     {
         istpic = 1i32 != 0;
         free(q as *mut libc::c_void);
@@ -1627,11 +1627,11 @@ pub unsafe extern "C" fn spc_tpic_setup_handler(
     mut sph: *mut spc_handler,
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut i: libc::c_uint = 0;
-    let mut hasnsp: libc::c_int = 0i32;
-    let mut error: libc::c_int = -1i32;
+    let mut hasnsp: i32 = 0i32;
+    let mut error: i32 = -1i32;
     if !sph.is_null() && !spe.is_null() && !ap.is_null() {
     } else {
         __assert_fail(b"sph && spe && ap\x00" as *const u8 as
@@ -1662,13 +1662,13 @@ pub unsafe extern "C" fn spc_tpic_setup_handler(
         error = -1i32
     } else if !q.is_null()
         && hasnsp != 0
-        && streq_ptr(q, b"__setopt__\x00" as *const u8 as *const i8) as libc::c_int != 0
+        && streq_ptr(q, b"__setopt__\x00" as *const u8 as *const i8) as i32 != 0
     {
         (*ap).command = b"__setopt__\x00" as *const u8 as *const i8;
         (*sph).key = b"tpic:\x00" as *const u8 as *const i8;
         (*sph).exec = Some(
             spc_handler_tpic__setopts
-                as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
         );
         skip_blank(&mut (*ap).curptr, (*ap).endptr);
         error = 0i32;

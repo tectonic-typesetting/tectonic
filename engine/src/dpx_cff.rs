@@ -21,7 +21,7 @@ extern "C" {
     fn ttstub_input_seek(
         handle: rust_input_handle_t,
         offset: ssize_t,
-        whence: libc::c_int,
+        whence: i32,
     ) -> size_t;
     #[no_mangle]
     fn ttstub_input_read(
@@ -34,11 +34,11 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
@@ -47,10 +47,10 @@ extern "C" {
     fn cff_dict_get(
         dict: *mut cff_dict,
         key: *const i8,
-        idx: libc::c_int,
+        idx: i32,
     ) -> f64;
     #[no_mangle]
-    fn cff_dict_known(dict: *mut cff_dict, key: *const i8) -> libc::c_int;
+    fn cff_dict_known(dict: *mut cff_dict, key: *const i8) -> i32;
     /* decode/encode DICT */
     #[no_mangle]
     fn cff_dict_unpack(data: *mut card8, endptr: *mut card8) -> *mut cff_dict;
@@ -163,17 +163,17 @@ pub struct cff_header {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_dict_entry {
-    pub id: libc::c_int,
+    pub id: i32,
     pub key: *const i8,
-    pub count: libc::c_int,
+    pub count: i32,
     pub values: *mut f64,
     /* values                                  */
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_dict {
-    pub max: libc::c_int,
-    pub count: libc::c_int,
+    pub max: i32,
+    pub count: i32,
     pub entries: *mut cff_dict_entry,
 }
 /* Encoding, Charset and FDSelect */
@@ -271,10 +271,10 @@ pub struct cff_font {
     pub num_fds: card8,
     pub _string: *mut cff_index,
     pub handle: rust_input_handle_t,
-    pub filter: libc::c_int,
-    pub index: libc::c_int,
-    pub flag: libc::c_int,
-    pub is_notdef_notzero: libc::c_int,
+    pub filter: i32,
+    pub index: i32,
+    pub flag: i32,
+    pub is_notdef_notzero: i32,
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -685,7 +685,7 @@ static mut cff_stdstr: [*const i8; 391] = [
 ];
 unsafe extern "C" fn get_unsigned(
     mut handle: rust_input_handle_t,
-    mut n: libc::c_int,
+    mut n: i32,
 ) -> libc::c_uint {
     let mut v: libc::c_uint = 0i32 as libc::c_uint;
     loop {
@@ -706,8 +706,8 @@ unsafe extern "C" fn get_unsigned(
 #[no_mangle]
 pub unsafe extern "C" fn cff_open(
     mut handle: rust_input_handle_t,
-    mut offset: libc::c_int,
-    mut n: libc::c_int,
+    mut offset: i32,
+    mut n: i32,
 ) -> *mut cff_font {
     let mut cff: *mut cff_font = 0 as *mut cff_font; /* not used */
     let mut idx: *mut cff_index = 0 as *mut cff_index;
@@ -743,16 +743,16 @@ pub unsafe extern "C" fn cff_open(
     (*cff).header.minor = tt_get_unsigned_byte((*cff).handle);
     (*cff).header.hdr_size = tt_get_unsigned_byte((*cff).handle);
     (*cff).header.offsize = tt_get_unsigned_byte((*cff).handle);
-    if ((*cff).header.offsize as libc::c_int) < 1i32 || (*cff).header.offsize as libc::c_int > 4i32
+    if ((*cff).header.offsize as i32) < 1i32 || (*cff).header.offsize as i32 > 4i32
     {
         _tt_abort(b"invalid offsize data\x00" as *const u8 as *const i8);
     }
-    if (*cff).header.major as libc::c_int > 1i32 || (*cff).header.minor as libc::c_int > 0i32 {
+    if (*cff).header.major as i32 > 1i32 || (*cff).header.minor as i32 > 0i32 {
         dpx_warning(
             b"%s: CFF version %u.%u not supported.\x00" as *const u8 as *const i8,
             b"CFF\x00" as *const u8 as *const i8,
-            (*cff).header.major as libc::c_int,
-            (*cff).header.minor as libc::c_int,
+            (*cff).header.major as i32,
+            (*cff).header.minor as i32,
         );
         cff_close(cff);
         return 0 as *mut cff_font;
@@ -766,7 +766,7 @@ pub unsafe extern "C" fn cff_open(
     );
     /* Name INDEX */
     idx = cff_get_index(cff);
-    if n > (*idx).count as libc::c_int - 1i32 {
+    if n > (*idx).count as i32 - 1i32 {
         dpx_warning(
             b"%s: Invalid CFF fontset index number.\x00" as *const u8 as *const i8,
             b"CFF\x00" as *const u8 as *const i8,
@@ -778,7 +778,7 @@ pub unsafe extern "C" fn cff_open(
     (*cff).fontname = cff_get_name(cff);
     /* Top DICT INDEX */
     idx = cff_get_index(cff);
-    if n > (*idx).count as libc::c_int - 1i32 {
+    if n > (*idx).count as i32 - 1i32 {
         _tt_abort(b"CFF Top DICT not exist...\x00" as *const u8 as *const i8);
     }
     (*cff).topdict = cff_dict_unpack(
@@ -830,7 +830,7 @@ pub unsafe extern "C" fn cff_open(
         (*cff).topdict,
         b"CharStrings\x00" as *const u8 as *const i8,
         0i32,
-    ) as libc::c_int;
+    ) as i32;
     ttstub_input_seek(
         (*cff).handle,
         (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
@@ -857,7 +857,7 @@ pub unsafe extern "C" fn cff_open(
             (*cff).topdict,
             b"Encoding\x00" as *const u8 as *const i8,
             0i32,
-        ) as libc::c_int;
+        ) as i32;
         if offset == 0i32 {
             /* predefined */
             (*cff).flag |= 1i32 << 3i32
@@ -877,7 +877,7 @@ pub unsafe extern "C" fn cff_open(
             (*cff).topdict,
             b"charset\x00" as *const u8 as *const i8,
             0i32,
-        ) as libc::c_int;
+        ) as i32;
         if offset == 0i32 {
             /* predefined */
             (*cff).flag |= 1i32 << 5i32
@@ -929,7 +929,7 @@ pub unsafe extern "C" fn cff_close(mut cff: *mut cff_font) {
         }
         if !(*cff).fdarray.is_null() {
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*cff).num_fds as libc::c_int {
+            while (i as i32) < (*cff).num_fds as i32 {
                 if !(*(*cff).fdarray.offset(i as isize)).is_null() {
                     cff_release_dict(*(*cff).fdarray.offset(i as isize));
                 }
@@ -939,7 +939,7 @@ pub unsafe extern "C" fn cff_close(mut cff: *mut cff_font) {
         }
         if !(*cff).private.is_null() {
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*cff).num_fds as libc::c_int {
+            while (i as i32) < (*cff).num_fds as i32 {
                 if !(*(*cff).private.offset(i as isize)).is_null() {
                     cff_release_dict(*(*cff).private.offset(i as isize));
                 }
@@ -949,7 +949,7 @@ pub unsafe extern "C" fn cff_close(mut cff: *mut cff_font) {
         }
         if !(*cff).subrs.is_null() {
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*cff).num_fds as libc::c_int {
+            while (i as i32) < (*cff).num_fds as i32 {
                 if !(*(*cff).subrs.offset(i as isize)).is_null() {
                     cff_release_index(*(*cff).subrs.offset(i as isize));
                 }
@@ -989,7 +989,7 @@ pub unsafe extern "C" fn cff_get_name(mut cff: *mut cff_font) -> *mut i8 {
 pub unsafe extern "C" fn cff_set_name(
     mut cff: *mut cff_font,
     mut name: *mut i8,
-) -> libc::c_int {
+) -> i32 {
     let mut idx: *mut cff_index = 0 as *mut cff_index;
     if strlen(name) > 127i32 as u64 {
         _tt_abort(b"FontName string length too large...\x00" as *const u8 as *const i8);
@@ -1016,14 +1016,14 @@ pub unsafe extern "C" fn cff_set_name(
         name as *const libc::c_void,
         strlen(name),
     );
-    return (5i32 as u64).wrapping_add(strlen(name)) as libc::c_int;
+    return (5i32 as u64).wrapping_add(strlen(name)) as i32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_put_header(
     mut cff: *mut cff_font,
     mut dest: *mut card8,
-    mut destlen: libc::c_int,
-) -> libc::c_int {
+    mut destlen: i32,
+) -> i32 {
     if destlen < 4i32 {
         _tt_abort(b"Not enough space available...\x00" as *const u8 as *const i8);
     }
@@ -1054,21 +1054,21 @@ pub unsafe extern "C" fn cff_get_index_header(mut cff: *mut cff_font) -> *mut cf
         as u32) as *mut cff_index;
     count = tt_get_unsigned_pair((*cff).handle);
     (*idx).count = count;
-    if count as libc::c_int > 0i32 {
+    if count as i32 > 0i32 {
         (*idx).offsize = tt_get_unsigned_byte((*cff).handle);
-        if ((*idx).offsize as libc::c_int) < 1i32 || (*idx).offsize as libc::c_int > 4i32 {
+        if ((*idx).offsize as i32) < 1i32 || (*idx).offsize as i32 > 4i32 {
             _tt_abort(b"invalid offsize data\x00" as *const u8 as *const i8);
         }
-        (*idx).offset = new(((count as libc::c_int + 1i32) as u32 as u64)
+        (*idx).offset = new(((count as i32 + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<l_offset>() as u64)
             as u32) as *mut l_offset;
         i = 0i32 as card16;
-        while (i as libc::c_int) < count as libc::c_int {
+        while (i as i32) < count as i32 {
             *(*idx).offset.offset(i as isize) =
-                get_unsigned((*cff).handle, (*idx).offsize as libc::c_int);
+                get_unsigned((*cff).handle, (*idx).offsize as i32);
             i = i.wrapping_add(1)
         }
-        if count as libc::c_int == 0xffffi32 {
+        if count as i32 == 0xffffi32 {
             ttstub_input_seek(
                 (*cff).handle,
                 ttstub_input_seek((*cff).handle, 0i32 as ssize_t, 1i32)
@@ -1077,7 +1077,7 @@ pub unsafe extern "C" fn cff_get_index_header(mut cff: *mut cff_font) -> *mut cf
             );
         } else {
             *(*idx).offset.offset(i as isize) =
-                get_unsigned((*cff).handle, (*idx).offsize as libc::c_int)
+                get_unsigned((*cff).handle, (*idx).offsize as i32)
         }
         if *(*idx).offset.offset(0) != 1i32 as libc::c_uint {
             _tt_abort(
@@ -1097,33 +1097,33 @@ pub unsafe extern "C" fn cff_get_index(mut cff: *mut cff_font) -> *mut cff_index
     let mut idx: *mut cff_index = 0 as *mut cff_index;
     let mut i: card16 = 0;
     let mut count: card16 = 0;
-    let mut length: libc::c_int = 0;
-    let mut nb_read: libc::c_int = 0;
-    let mut offset: libc::c_int = 0;
+    let mut length: i32 = 0;
+    let mut nb_read: i32 = 0;
+    let mut offset: i32 = 0;
     idx = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<cff_index>() as u64)
         as u32) as *mut cff_index;
     count = tt_get_unsigned_pair((*cff).handle);
     (*idx).count = count;
-    if count as libc::c_int > 0i32 {
+    if count as i32 > 0i32 {
         (*idx).offsize = tt_get_unsigned_byte((*cff).handle);
-        if ((*idx).offsize as libc::c_int) < 1i32 || (*idx).offsize as libc::c_int > 4i32 {
+        if ((*idx).offsize as i32) < 1i32 || (*idx).offsize as i32 > 4i32 {
             _tt_abort(b"invalid offsize data\x00" as *const u8 as *const i8);
         }
-        (*idx).offset = new(((count as libc::c_int + 1i32) as u32 as u64)
+        (*idx).offset = new(((count as i32 + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<l_offset>() as u64)
             as u32) as *mut l_offset;
         i = 0i32 as card16;
-        while (i as libc::c_int) < count as libc::c_int + 1i32 {
+        while (i as i32) < count as i32 + 1i32 {
             *(*idx).offset.offset(i as isize) =
-                get_unsigned((*cff).handle, (*idx).offsize as libc::c_int);
+                get_unsigned((*cff).handle, (*idx).offsize as i32);
             i = i.wrapping_add(1)
         }
         if *(*idx).offset.offset(0) != 1i32 as libc::c_uint {
             _tt_abort(b"Invalid CFF Index offset data\x00" as *const u8 as *const i8);
         }
         length = (*(*idx).offset.offset(count as isize)).wrapping_sub(*(*idx).offset.offset(0))
-            as libc::c_int;
+            as i32;
         (*idx).data = new((length as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<card8>() as u64)
             as u32) as *mut card8;
@@ -1133,7 +1133,7 @@ pub unsafe extern "C" fn cff_get_index(mut cff: *mut cff_font) -> *mut cff_index
                 (*cff).handle,
                 ((*idx).data as *mut i8).offset(offset as isize),
                 length as size_t,
-            ) as libc::c_int;
+            ) as i32;
             offset += nb_read;
             length -= nb_read
         }
@@ -1148,12 +1148,12 @@ pub unsafe extern "C" fn cff_get_index(mut cff: *mut cff_font) -> *mut cff_index
 pub unsafe extern "C" fn cff_pack_index(
     mut idx: *mut cff_index,
     mut dest: *mut card8,
-    mut destlen: libc::c_int,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0i32;
+    mut destlen: i32,
+) -> i32 {
+    let mut len: i32 = 0i32;
     let mut datalen: size_t = 0;
     let mut i: card16 = 0;
-    if ((*idx).count as libc::c_int) < 1i32 {
+    if ((*idx).count as i32) < 1i32 {
         if destlen < 2i32 {
             _tt_abort(b"Not enough space available...\x00" as *const u8 as *const i8);
         }
@@ -1168,17 +1168,17 @@ pub unsafe extern "C" fn cff_pack_index(
     }
     let fresh5 = dest;
     dest = dest.offset(1);
-    *fresh5 = ((*idx).count as libc::c_int >> 8i32 & 0xffi32) as card8;
+    *fresh5 = ((*idx).count as i32 >> 8i32 & 0xffi32) as card8;
     let fresh6 = dest;
     dest = dest.offset(1);
-    *fresh6 = ((*idx).count as libc::c_int & 0xffi32) as card8;
+    *fresh6 = ((*idx).count as i32 & 0xffi32) as card8;
     if datalen < 0xff {
         (*idx).offsize = 1i32 as c_offsize;
         let fresh7 = dest;
         dest = dest.offset(1);
         *fresh7 = 1i32 as card8;
         i = 0i32 as card16;
-        while i as libc::c_int <= (*idx).count as libc::c_int {
+        while i as i32 <= (*idx).count as i32 {
             let fresh8 = dest;
             dest = dest.offset(1);
             *fresh8 = (*(*idx).offset.offset(i as isize) & 0xffi32 as libc::c_uint) as card8;
@@ -1190,7 +1190,7 @@ pub unsafe extern "C" fn cff_pack_index(
         dest = dest.offset(1);
         *fresh9 = 2i32 as card8;
         i = 0i32 as card16;
-        while i as libc::c_int <= (*idx).count as libc::c_int {
+        while i as i32 <= (*idx).count as i32 {
             let fresh10 = dest;
             dest = dest.offset(1);
             *fresh10 =
@@ -1206,7 +1206,7 @@ pub unsafe extern "C" fn cff_pack_index(
         dest = dest.offset(1);
         *fresh12 = 3i32 as card8;
         i = 0i32 as card16;
-        while i as libc::c_int <= (*idx).count as libc::c_int {
+        while i as i32 <= (*idx).count as i32 {
             let fresh13 = dest;
             dest = dest.offset(1);
             *fresh13 =
@@ -1226,7 +1226,7 @@ pub unsafe extern "C" fn cff_pack_index(
         dest = dest.offset(1);
         *fresh16 = 4i32 as card8;
         i = 0i32 as card16;
-        while i as libc::c_int <= (*idx).count as libc::c_int {
+        while i as i32 <= (*idx).count as i32 {
             let fresh17 = dest;
             dest = dest.offset(1);
             *fresh17 =
@@ -1254,8 +1254,8 @@ pub unsafe extern "C" fn cff_pack_index(
     return len;
 }
 #[no_mangle]
-pub unsafe extern "C" fn cff_index_size(mut idx: *mut cff_index) -> libc::c_int {
-    if (*idx).count as libc::c_int > 0i32 {
+pub unsafe extern "C" fn cff_index_size(mut idx: *mut cff_index) -> i32 {
+    if (*idx).count as i32 > 0i32 {
         let mut datalen: l_offset = 0;
         datalen = (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1i32 as libc::c_uint);
         if (datalen as u64) < 0xff {
@@ -1267,9 +1267,9 @@ pub unsafe extern "C" fn cff_index_size(mut idx: *mut cff_index) -> libc::c_int 
         } else {
             (*idx).offsize = 4i32 as c_offsize
         }
-        return ((3i32 + (*idx).offsize as libc::c_int * ((*idx).count as libc::c_int + 1i32))
+        return ((3i32 + (*idx).offsize as i32 * ((*idx).count as i32 + 1i32))
             as libc::c_uint)
-            .wrapping_add(datalen) as libc::c_int;
+            .wrapping_add(datalen) as i32;
     } else {
         return 2i32;
     };
@@ -1282,8 +1282,8 @@ pub unsafe extern "C" fn cff_new_index(mut count: card16) -> *mut cff_index {
         as u32) as *mut cff_index;
     (*idx).count = count;
     (*idx).offsize = 0i32 as c_offsize;
-    if count as libc::c_int > 0i32 {
-        (*idx).offset = new(((count as libc::c_int + 1i32) as u32 as u64)
+    if count as i32 > 0i32 {
+        (*idx).offset = new(((count as i32 + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<l_offset>() as u64)
             as u32) as *mut l_offset;
         *(*idx).offset.offset(0) = 1i32 as l_offset
@@ -1312,9 +1312,9 @@ pub unsafe extern "C" fn cff_get_string(
     mut id: s_SID,
 ) -> *mut i8 {
     let mut result: *mut i8 = 0 as *mut i8;
-    let mut len: libc::c_int = 0;
-    if (id as libc::c_int) < 391i32 {
-        len = strlen(cff_stdstr[id as usize]) as libc::c_int;
+    let mut len: i32 = 0;
+    if (id as i32) < 391i32 {
+        len = strlen(cff_stdstr[id as usize]) as i32;
         result = new(((len + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32) as *mut i8;
@@ -1326,12 +1326,12 @@ pub unsafe extern "C" fn cff_get_string(
         *result.offset(len as isize) = '\u{0}' as i32 as i8
     } else if !cff.is_null() && !(*cff).string.is_null() {
         let mut strings: *mut cff_index = (*cff).string;
-        id = (id as libc::c_int - 391i32) as s_SID;
-        if (id as libc::c_int) < (*strings).count as libc::c_int {
+        id = (id as i32 - 391i32) as s_SID;
+        if (id as i32) < (*strings).count as i32 {
             len = (*(*strings)
                 .offset
-                .offset((id as libc::c_int + 1i32) as isize))
-            .wrapping_sub(*(*strings).offset.offset(id as isize)) as libc::c_int;
+                .offset((id as i32 + 1i32) as isize))
+            .wrapping_sub(*(*strings).offset.offset(id as isize)) as i32;
             result = new(((len + 1i32) as u32 as u64)
                 .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                 as u32) as *mut i8;
@@ -1352,7 +1352,7 @@ pub unsafe extern "C" fn cff_get_string(
 pub unsafe extern "C" fn cff_get_sid(
     mut cff: *mut cff_font,
     mut str: *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut i: card16 = 0;
     if cff.is_null() || str.is_null() {
         return -1i32;
@@ -1361,9 +1361,9 @@ pub unsafe extern "C" fn cff_get_sid(
     if !cff.is_null() && !(*cff).string.is_null() {
         let mut idx: *mut cff_index = (*cff).string;
         i = 0i32 as card16;
-        while (i as libc::c_int) < (*idx).count as libc::c_int {
+        while (i as i32) < (*idx).count as i32 {
             if strlen(str)
-                == (*(*idx).offset.offset((i as libc::c_int + 1i32) as isize))
+                == (*(*idx).offset.offset((i as i32 + 1i32) as isize))
                     .wrapping_sub(*(*idx).offset.offset(i as isize))
                     as u64
                 && memcmp(
@@ -1375,15 +1375,15 @@ pub unsafe extern "C" fn cff_get_sid(
                     strlen(str),
                 ) == 0
             {
-                return i as libc::c_int + 391i32;
+                return i as i32 + 391i32;
             }
             i = i.wrapping_add(1)
         }
     }
     i = 0i32 as card16;
-    while (i as libc::c_int) < 391i32 {
+    while (i as i32) < 391i32 {
         if streq_ptr(str, cff_stdstr[i as usize]) {
-            return i as libc::c_int;
+            return i as i32;
         }
         i = i.wrapping_add(1)
     }
@@ -1393,15 +1393,15 @@ pub unsafe extern "C" fn cff_get_sid(
 pub unsafe extern "C" fn cff_get_seac_sid(
     mut cff: *mut cff_font,
     mut str: *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut i: card16 = 0;
     if cff.is_null() || str.is_null() {
         return -1i32;
     }
     i = 0i32 as card16;
-    while (i as libc::c_int) < 391i32 {
+    while (i as i32) < 391i32 {
         if streq_ptr(str, cff_stdstr[i as usize]) {
-            return i as libc::c_int;
+            return i as i32;
         }
         i = i.wrapping_add(1)
     }
@@ -1411,26 +1411,26 @@ unsafe extern "C" fn cff_match_string(
     mut cff: *mut cff_font,
     mut str: *const i8,
     mut sid: s_SID,
-) -> libc::c_int {
+) -> i32 {
     let mut i: card16 = 0;
-    if (sid as libc::c_int) < 391i32 {
-        return if streq_ptr(str, cff_stdstr[sid as usize]) as libc::c_int != 0 {
+    if (sid as i32) < 391i32 {
+        return if streq_ptr(str, cff_stdstr[sid as usize]) as i32 != 0 {
             1i32
         } else {
             0i32
         };
     } else {
-        i = (sid as libc::c_int - 391i32) as card16;
+        i = (sid as i32 - 391i32) as card16;
         if cff.is_null()
             || (*cff).string.is_null()
-            || i as libc::c_int >= (*(*cff).string).count as libc::c_int
+            || i as i32 >= (*(*cff).string).count as i32
         {
             _tt_abort(b"Invalid SID\x00" as *const u8 as *const i8);
         }
         if strlen(str)
             == (*(*(*cff).string)
                 .offset
-                .offset((i as libc::c_int + 1i32) as isize))
+                .offset((i as i32 + 1i32) as isize))
             .wrapping_sub(*(*(*cff).string).offset.offset(i as isize))
                 as u64
         {
@@ -1467,7 +1467,7 @@ pub unsafe extern "C" fn cff_update_string(mut cff: *mut cff_font) {
 pub unsafe extern "C" fn cff_add_string(
     mut cff: *mut cff_font,
     mut str: *const i8,
-    mut unique: libc::c_int,
+    mut unique: i32,
 ) -> s_SID
 /* Setting unique == 1 eliminates redundant or predefined strings. */ {
     let mut idx: card16 = 0;
@@ -1485,17 +1485,17 @@ pub unsafe extern "C" fn cff_add_string(
     if unique != 0 {
         /* TODO: do binary search to speed things up */
         idx = 0i32 as card16;
-        while (idx as libc::c_int) < 391i32 {
+        while (idx as i32) < 391i32 {
             if streq_ptr(cff_stdstr[idx as usize], str) {
                 return idx;
             }
             idx = idx.wrapping_add(1)
         }
         idx = 0i32 as card16;
-        while (idx as libc::c_int) < (*strings).count as libc::c_int {
+        while (idx as i32) < (*strings).count as i32 {
             size = (*(*strings)
                 .offset
-                .offset((idx as libc::c_int + 1i32) as isize))
+                .offset((idx as i32 + 1i32) as isize))
             .wrapping_sub(*(*strings).offset.offset(idx as isize));
             offset = *(*strings).offset.offset(idx as isize);
             if size as u64 == len
@@ -1505,26 +1505,26 @@ pub unsafe extern "C" fn cff_add_string(
                     len,
                 ) == 0
             {
-                return (idx as libc::c_int + 391i32) as s_SID;
+                return (idx as i32 + 391i32) as s_SID;
             }
             idx = idx.wrapping_add(1)
         }
     }
-    offset = if (*strings).count as libc::c_int > 0i32 {
+    offset = if (*strings).count as i32 > 0i32 {
         *(*strings).offset.offset((*strings).count as isize)
     } else {
         1i32 as libc::c_uint
     };
     (*strings).offset = renew(
         (*strings).offset as *mut libc::c_void,
-        (((*strings).count as libc::c_int + 2i32) as u32 as u64)
+        (((*strings).count as i32 + 2i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<l_offset>() as u64) as u32,
     ) as *mut l_offset;
-    if (*strings).count as libc::c_int == 0i32 {
+    if (*strings).count as i32 == 0i32 {
         *(*strings).offset.offset(0) = 1i32 as l_offset
     }
     idx = (*strings).count;
-    (*strings).count = ((*strings).count as libc::c_int + 1i32) as card16;
+    (*strings).count = ((*strings).count as i32 + 1i32) as card16;
     *(*strings).offset.offset((*strings).count as isize) =
         (offset as u64).wrapping_add(len) as l_offset;
     (*strings).data = renew(
@@ -1539,7 +1539,7 @@ pub unsafe extern "C" fn cff_add_string(
         str as *const libc::c_void,
         len,
     );
-    return (idx as libc::c_int + 391i32) as s_SID;
+    return (idx as i32 + 391i32) as s_SID;
 }
 /*
  * Encoding and Charset
@@ -1547,10 +1547,10 @@ pub unsafe extern "C" fn cff_add_string(
  *  Encoding and Charset arrays always begin with GID = 1.
  */
 #[no_mangle]
-pub unsafe extern "C" fn cff_read_encoding(mut cff: *mut cff_font) -> libc::c_int {
+pub unsafe extern "C" fn cff_read_encoding(mut cff: *mut cff_font) -> i32 {
     let mut encoding: *mut cff_encoding = 0 as *mut cff_encoding;
-    let mut offset: libc::c_int = 0;
-    let mut length: libc::c_int = 0;
+    let mut offset: i32 = 0;
+    let mut length: i32 = 0;
     let mut i: card8 = 0;
     if (*cff).topdict.is_null() {
         _tt_abort(b"Top DICT data not found\x00" as *const u8 as *const i8);
@@ -1568,7 +1568,7 @@ pub unsafe extern "C" fn cff_read_encoding(mut cff: *mut cff_font) -> libc::c_in
         (*cff).topdict,
         b"Encoding\x00" as *const u8 as *const i8,
         0i32,
-    ) as libc::c_int;
+    ) as i32;
     if offset == 0i32 {
         /* predefined */
         (*cff).flag |= 1i32 << 3i32;
@@ -1592,18 +1592,18 @@ pub unsafe extern "C" fn cff_read_encoding(mut cff: *mut cff_font) -> libc::c_in
     (*cff).encoding = encoding;
     (*encoding).format = tt_get_unsigned_byte((*cff).handle);
     length = 1i32;
-    match (*encoding).format as libc::c_int & !0x80i32 {
+    match (*encoding).format as i32 & !0x80i32 {
         0 => {
             (*encoding).num_entries = tt_get_unsigned_byte((*cff).handle);
             (*encoding).data.codes = new(((*encoding).num_entries as u32 as u64)
                 .wrapping_mul(::std::mem::size_of::<card8>() as u64)
                 as u32) as *mut card8;
             i = 0i32 as card8;
-            while (i as libc::c_int) < (*encoding).num_entries as libc::c_int {
+            while (i as i32) < (*encoding).num_entries as i32 {
                 *(*encoding).data.codes.offset(i as isize) = tt_get_unsigned_byte((*cff).handle);
                 i = i.wrapping_add(1)
             }
-            length += (*encoding).num_entries as libc::c_int + 1i32
+            length += (*encoding).num_entries as i32 + 1i32
         }
         1 => {
             let mut ranges: *mut cff_range1 = 0 as *mut cff_range1;
@@ -1613,12 +1613,12 @@ pub unsafe extern "C" fn cff_read_encoding(mut cff: *mut cff_font) -> libc::c_in
                 as u32) as *mut cff_range1;
             (*encoding).data.range1 = ranges;
             i = 0i32 as card8;
-            while (i as libc::c_int) < (*encoding).num_entries as libc::c_int {
+            while (i as i32) < (*encoding).num_entries as i32 {
                 (*ranges.offset(i as isize)).first = tt_get_unsigned_byte((*cff).handle) as s_SID;
                 (*ranges.offset(i as isize)).n_left = tt_get_unsigned_byte((*cff).handle);
                 i = i.wrapping_add(1)
             }
-            length += (*encoding).num_entries as libc::c_int * 2i32 + 1i32
+            length += (*encoding).num_entries as i32 * 2i32 + 1i32
         }
         _ => {
             free(encoding as *mut libc::c_void);
@@ -1626,7 +1626,7 @@ pub unsafe extern "C" fn cff_read_encoding(mut cff: *mut cff_font) -> libc::c_in
         }
     }
     /* Supplementary data */
-    if (*encoding).format as libc::c_int & 0x80i32 != 0 {
+    if (*encoding).format as i32 & 0x80i32 != 0 {
         let mut map: *mut cff_map = 0 as *mut cff_map;
         (*encoding).num_supps = tt_get_unsigned_byte((*cff).handle);
         map = new(((*encoding).num_supps as u32 as u64)
@@ -1634,13 +1634,13 @@ pub unsafe extern "C" fn cff_read_encoding(mut cff: *mut cff_font) -> libc::c_in
             as u32) as *mut cff_map;
         (*encoding).supp = map;
         i = 0i32 as card8;
-        while (i as libc::c_int) < (*encoding).num_supps as libc::c_int {
+        while (i as i32) < (*encoding).num_supps as i32 {
             (*map.offset(i as isize)).code = tt_get_unsigned_byte((*cff).handle);
             (*map.offset(i as isize)).glyph = tt_get_unsigned_pair((*cff).handle);
             i = i.wrapping_add(1)
             /* SID */
         }
-        length += (*encoding).num_supps as libc::c_int * 3i32 + 1i32
+        length += (*encoding).num_supps as i32 * 3i32 + 1i32
     } else {
         (*encoding).num_supps = 0i32 as card8;
         (*encoding).supp = 0 as *mut cff_map
@@ -1651,9 +1651,9 @@ pub unsafe extern "C" fn cff_read_encoding(mut cff: *mut cff_font) -> libc::c_in
 pub unsafe extern "C" fn cff_pack_encoding(
     mut cff: *mut cff_font,
     mut dest: *mut card8,
-    mut destlen: libc::c_int,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0i32;
+    mut destlen: i32,
+) -> i32 {
+    let mut len: i32 = 0i32;
     let mut encoding: *mut cff_encoding = 0 as *mut cff_encoding;
     let mut i: card16 = 0;
     if (*cff).flag & (1i32 << 3i32 | 1i32 << 4i32) != 0 || (*cff).encoding.is_null() {
@@ -1671,16 +1671,16 @@ pub unsafe extern "C" fn cff_pack_encoding(
     let fresh22 = len;
     len = len + 1;
     *dest.offset(fresh22 as isize) = (*encoding).num_entries;
-    match (*encoding).format as libc::c_int & !0x80i32 {
+    match (*encoding).format as i32 & !0x80i32 {
         0 => {
-            if destlen < len + (*encoding).num_entries as libc::c_int {
+            if destlen < len + (*encoding).num_entries as i32 {
                 _tt_abort(
                     b"in cff_pack_encoding(): Buffer overflow\x00" as *const u8
                         as *const i8,
                 );
             }
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*encoding).num_entries as libc::c_int {
+            while (i as i32) < (*encoding).num_entries as i32 {
                 let fresh23 = len;
                 len = len + 1;
                 *dest.offset(fresh23 as isize) = *(*encoding).data.codes.offset(i as isize);
@@ -1688,18 +1688,18 @@ pub unsafe extern "C" fn cff_pack_encoding(
             }
         }
         1 => {
-            if destlen < len + (*encoding).num_entries as libc::c_int * 2i32 {
+            if destlen < len + (*encoding).num_entries as i32 * 2i32 {
                 _tt_abort(
                     b"in cff_pack_encoding(): Buffer overflow\x00" as *const u8
                         as *const i8,
                 );
             }
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*encoding).num_entries as libc::c_int {
+            while (i as i32) < (*encoding).num_entries as i32 {
                 let fresh24 = len;
                 len = len + 1;
                 *dest.offset(fresh24 as isize) = ((*(*encoding).data.range1.offset(i as isize))
-                    .first as libc::c_int
+                    .first as i32
                     & 0xffi32) as card8;
                 let fresh25 = len;
                 len = len + 1;
@@ -1712,8 +1712,8 @@ pub unsafe extern "C" fn cff_pack_encoding(
             _tt_abort(b"Unknown Encoding format\x00" as *const u8 as *const i8);
         }
     }
-    if (*encoding).format as libc::c_int & 0x80i32 != 0 {
-        if destlen < len + (*encoding).num_supps as libc::c_int * 3i32 + 1i32 {
+    if (*encoding).format as i32 & 0x80i32 != 0 {
+        if destlen < len + (*encoding).num_supps as i32 * 3i32 + 1i32 {
             _tt_abort(
                 b"in cff_pack_encoding(): Buffer overflow\x00" as *const u8 as *const i8,
             );
@@ -1722,19 +1722,19 @@ pub unsafe extern "C" fn cff_pack_encoding(
         len = len + 1;
         *dest.offset(fresh26 as isize) = (*encoding).num_supps;
         i = 0i32 as card16;
-        while (i as libc::c_int) < (*encoding).num_supps as libc::c_int {
+        while (i as i32) < (*encoding).num_supps as i32 {
             let fresh27 = len;
             len = len + 1;
             *dest.offset(fresh27 as isize) = (*(*encoding).supp.offset(i as isize)).code;
             let fresh28 = len;
             len = len + 1;
             *dest.offset(fresh28 as isize) =
-                ((*(*encoding).supp.offset(i as isize)).glyph as libc::c_int >> 8i32 & 0xffi32)
+                ((*(*encoding).supp.offset(i as isize)).glyph as i32 >> 8i32 & 0xffi32)
                     as card8;
             let fresh29 = len;
             len = len + 1;
             *dest.offset(fresh29 as isize) =
-                ((*(*encoding).supp.offset(i as isize)).glyph as libc::c_int & 0xffi32) as card8;
+                ((*(*encoding).supp.offset(i as isize)).glyph as i32 & 0xffi32) as card8;
             i = i.wrapping_add(1)
         }
     }
@@ -1757,13 +1757,13 @@ pub unsafe extern "C" fn cff_encoding_lookup(mut cff: *mut cff_font, mut code: c
     }
     encoding = (*cff).encoding;
     gid = 0i32 as card16;
-    match (*encoding).format as libc::c_int & !0x80i32 {
+    match (*encoding).format as i32 & !0x80i32 {
         0 => {
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*encoding).num_entries as libc::c_int {
-                if code as libc::c_int == *(*encoding).data.codes.offset(i as isize) as libc::c_int
+            while (i as i32) < (*encoding).num_entries as i32 {
+                if code as i32 == *(*encoding).data.codes.offset(i as isize) as i32
                 {
-                    gid = (i as libc::c_int + 1i32) as card16;
+                    gid = (i as i32 + 1i32) as card16;
                     break;
                 } else {
                     i = i.wrapping_add(1)
@@ -1772,26 +1772,26 @@ pub unsafe extern "C" fn cff_encoding_lookup(mut cff: *mut cff_font, mut code: c
         }
         1 => {
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*encoding).num_entries as libc::c_int {
-                if code as libc::c_int
-                    >= (*(*encoding).data.range1.offset(i as isize)).first as libc::c_int
-                    && code as libc::c_int
-                        <= (*(*encoding).data.range1.offset(i as isize)).first as libc::c_int
-                            + (*(*encoding).data.range1.offset(i as isize)).n_left as libc::c_int
+            while (i as i32) < (*encoding).num_entries as i32 {
+                if code as i32
+                    >= (*(*encoding).data.range1.offset(i as isize)).first as i32
+                    && code as i32
+                        <= (*(*encoding).data.range1.offset(i as isize)).first as i32
+                            + (*(*encoding).data.range1.offset(i as isize)).n_left as i32
                 {
-                    gid = (gid as libc::c_int
-                        + (code as libc::c_int
-                            - (*(*encoding).data.range1.offset(i as isize)).first as libc::c_int
+                    gid = (gid as i32
+                        + (code as i32
+                            - (*(*encoding).data.range1.offset(i as isize)).first as i32
                             + 1i32)) as card16;
                     break;
                 } else {
-                    gid = (gid as libc::c_int
-                        + ((*(*encoding).data.range1.offset(i as isize)).n_left as libc::c_int
+                    gid = (gid as i32
+                        + ((*(*encoding).data.range1.offset(i as isize)).n_left as i32
                             + 1i32)) as card16;
                     i = i.wrapping_add(1)
                 }
             }
-            if i as libc::c_int == (*encoding).num_entries as libc::c_int {
+            if i as i32 == (*encoding).num_entries as i32 {
                 gid = 0i32 as card16
             }
         }
@@ -1800,7 +1800,7 @@ pub unsafe extern "C" fn cff_encoding_lookup(mut cff: *mut cff_font, mut code: c
         }
     }
     /* Supplementary data */
-    if gid as libc::c_int == 0i32 && (*encoding).format as libc::c_int & 0x80i32 != 0 {
+    if gid as i32 == 0i32 && (*encoding).format as i32 & 0x80i32 != 0 {
         let mut map: *mut cff_map = 0 as *mut cff_map;
         if (*encoding).supp.is_null() {
             _tt_abort(
@@ -1809,8 +1809,8 @@ pub unsafe extern "C" fn cff_encoding_lookup(mut cff: *mut cff_font, mut code: c
         }
         map = (*encoding).supp;
         i = 0i32 as card16;
-        while (i as libc::c_int) < (*encoding).num_supps as libc::c_int {
-            if code as libc::c_int == (*map.offset(i as isize)).code as libc::c_int {
+        while (i as i32) < (*encoding).num_supps as i32 {
+            if code as i32 == (*map.offset(i as isize)).code as i32 {
                 gid = cff_charsets_lookup(cff, (*map.offset(i as isize)).glyph);
                 break;
             } else {
@@ -1823,7 +1823,7 @@ pub unsafe extern "C" fn cff_encoding_lookup(mut cff: *mut cff_font, mut code: c
 #[no_mangle]
 pub unsafe extern "C" fn cff_release_encoding(mut encoding: *mut cff_encoding) {
     if !encoding.is_null() {
-        match (*encoding).format as libc::c_int & !0x80i32 {
+        match (*encoding).format as i32 & !0x80i32 {
             0 => {
                 free((*encoding).data.codes as *mut libc::c_void);
             }
@@ -1834,17 +1834,17 @@ pub unsafe extern "C" fn cff_release_encoding(mut encoding: *mut cff_encoding) {
                 _tt_abort(b"Unknown Encoding format.\x00" as *const u8 as *const i8);
             }
         }
-        if (*encoding).format as libc::c_int & 0x80i32 != 0 {
+        if (*encoding).format as i32 & 0x80i32 != 0 {
             free((*encoding).supp as *mut libc::c_void);
         }
         free(encoding as *mut libc::c_void);
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn cff_read_charsets(mut cff: *mut cff_font) -> libc::c_int {
+pub unsafe extern "C" fn cff_read_charsets(mut cff: *mut cff_font) -> i32 {
     let mut charset: *mut cff_charsets = 0 as *mut cff_charsets;
-    let mut offset: libc::c_int = 0;
-    let mut length: libc::c_int = 0;
+    let mut offset: i32 = 0;
+    let mut length: i32 = 0;
     let mut count: card16 = 0;
     let mut i: card16 = 0;
     if (*cff).topdict.is_null() {
@@ -1863,7 +1863,7 @@ pub unsafe extern "C" fn cff_read_charsets(mut cff: *mut cff_font) -> libc::c_in
         (*cff).topdict,
         b"charset\x00" as *const u8 as *const i8,
         0i32,
-    ) as libc::c_int;
+    ) as i32;
     if offset == 0i32 {
         /* predefined */
         (*cff).flag |= 1i32 << 5i32;
@@ -1893,18 +1893,18 @@ pub unsafe extern "C" fn cff_read_charsets(mut cff: *mut cff_font) -> libc::c_in
     (*cff).charsets = charset;
     (*charset).format = tt_get_unsigned_byte((*cff).handle);
     (*charset).num_entries = 0i32 as card16;
-    count = ((*cff).num_glyphs as libc::c_int - 1i32) as card16;
+    count = ((*cff).num_glyphs as i32 - 1i32) as card16;
     length = 1i32;
     /* Not sure. Not well documented. */
-    match (*charset).format as libc::c_int {
+    match (*charset).format as i32 {
         0 => {
-            (*charset).num_entries = ((*cff).num_glyphs as libc::c_int - 1i32) as card16; /* no .notdef */
+            (*charset).num_entries = ((*cff).num_glyphs as i32 - 1i32) as card16; /* no .notdef */
             (*charset).data.glyphs = new(((*charset).num_entries as u32 as u64)
                 .wrapping_mul(::std::mem::size_of::<s_SID>() as u64)
                 as u32) as *mut s_SID; /* no-overrap */
-            length += (*charset).num_entries as libc::c_int * 2i32; /* non-overrapping */
+            length += (*charset).num_entries as i32 * 2i32; /* non-overrapping */
             i = 0i32 as card16; /* or CID */
-            while (i as libc::c_int) < (*charset).num_entries as libc::c_int {
+            while (i as i32) < (*charset).num_entries as i32 {
                 *(*charset).data.glyphs.offset(i as isize) = tt_get_unsigned_pair((*cff).handle);
                 i = i.wrapping_add(1)
             }
@@ -1912,12 +1912,12 @@ pub unsafe extern "C" fn cff_read_charsets(mut cff: *mut cff_font) -> libc::c_in
         }
         1 => {
             let mut ranges: *mut cff_range1 = 0 as *mut cff_range1;
-            while count as libc::c_int > 0i32
-                && ((*charset).num_entries as libc::c_int) < (*cff).num_glyphs as libc::c_int
+            while count as i32 > 0i32
+                && ((*charset).num_entries as i32) < (*cff).num_glyphs as i32
             {
                 ranges = renew(
                     ranges as *mut libc::c_void,
-                    (((*charset).num_entries as libc::c_int + 1i32) as u32 as u64)
+                    (((*charset).num_entries as i32 + 1i32) as u32 as u64)
                         .wrapping_mul(::std::mem::size_of::<cff_range1>() as u64)
                         as u32,
                 ) as *mut cff_range1;
@@ -1925,22 +1925,22 @@ pub unsafe extern "C" fn cff_read_charsets(mut cff: *mut cff_font) -> libc::c_in
                     tt_get_unsigned_pair((*cff).handle);
                 (*ranges.offset((*charset).num_entries as isize)).n_left =
                     tt_get_unsigned_byte((*cff).handle);
-                count = (count as libc::c_int
-                    - ((*ranges.offset((*charset).num_entries as isize)).n_left as libc::c_int
+                count = (count as i32
+                    - ((*ranges.offset((*charset).num_entries as isize)).n_left as i32
                         + 1i32)) as card16;
-                (*charset).num_entries = ((*charset).num_entries as libc::c_int + 1i32) as card16;
+                (*charset).num_entries = ((*charset).num_entries as i32 + 1i32) as card16;
                 (*charset).data.range1 = ranges
             }
-            length += (*charset).num_entries as libc::c_int * 3i32
+            length += (*charset).num_entries as i32 * 3i32
         }
         2 => {
             let mut ranges_0: *mut cff_range2 = 0 as *mut cff_range2;
-            while count as libc::c_int > 0i32
-                && ((*charset).num_entries as libc::c_int) < (*cff).num_glyphs as libc::c_int
+            while count as i32 > 0i32
+                && ((*charset).num_entries as i32) < (*cff).num_glyphs as i32
             {
                 ranges_0 = renew(
                     ranges_0 as *mut libc::c_void,
-                    (((*charset).num_entries as libc::c_int + 1i32) as u32 as u64)
+                    (((*charset).num_entries as i32 + 1i32) as u32 as u64)
                         .wrapping_mul(::std::mem::size_of::<cff_range2>() as u64)
                         as u32,
                 ) as *mut cff_range2;
@@ -1948,20 +1948,20 @@ pub unsafe extern "C" fn cff_read_charsets(mut cff: *mut cff_font) -> libc::c_in
                     tt_get_unsigned_pair((*cff).handle);
                 (*ranges_0.offset((*charset).num_entries as isize)).n_left =
                     tt_get_unsigned_pair((*cff).handle);
-                count = (count as libc::c_int
-                    - ((*ranges_0.offset((*charset).num_entries as isize)).n_left as libc::c_int
+                count = (count as i32
+                    - ((*ranges_0.offset((*charset).num_entries as isize)).n_left as i32
                         + 1i32)) as card16;
-                (*charset).num_entries = ((*charset).num_entries as libc::c_int + 1i32) as card16
+                (*charset).num_entries = ((*charset).num_entries as i32 + 1i32) as card16
             }
             (*charset).data.range2 = ranges_0;
-            length += (*charset).num_entries as libc::c_int * 4i32
+            length += (*charset).num_entries as i32 * 4i32
         }
         _ => {
             free(charset as *mut libc::c_void);
             _tt_abort(b"Unknown Charset format\x00" as *const u8 as *const i8);
         }
     }
-    if count as libc::c_int > 0i32 {
+    if count as i32 > 0i32 {
         _tt_abort(b"Charset data possibly broken\x00" as *const u8 as *const i8);
     }
     return length;
@@ -1970,9 +1970,9 @@ pub unsafe extern "C" fn cff_read_charsets(mut cff: *mut cff_font) -> libc::c_in
 pub unsafe extern "C" fn cff_pack_charsets(
     mut cff: *mut cff_font,
     mut dest: *mut card8,
-    mut destlen: libc::c_int,
-) -> libc::c_int {
-    let mut len: libc::c_int = 0i32;
+    mut destlen: i32,
+) -> i32 {
+    let mut len: i32 = 0i32;
     let mut i: card16 = 0;
     let mut charset: *mut cff_charsets = 0 as *mut cff_charsets;
     if (*cff).flag & (1i32 << 5i32 | 1i32 << 6i32 | 1i32 << 7i32) != 0 || (*cff).charsets.is_null()
@@ -1988,44 +1988,44 @@ pub unsafe extern "C" fn cff_pack_charsets(
     let fresh30 = len;
     len = len + 1;
     *dest.offset(fresh30 as isize) = (*charset).format;
-    match (*charset).format as libc::c_int {
+    match (*charset).format as i32 {
         0 => {
-            if destlen < len + (*charset).num_entries as libc::c_int * 2i32 {
+            if destlen < len + (*charset).num_entries as i32 * 2i32 {
                 _tt_abort(
                     b"in cff_pack_charsets(): Buffer overflow\x00" as *const u8
                         as *const i8,
                 );
             }
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*charset).num_entries as libc::c_int {
+            while (i as i32) < (*charset).num_entries as i32 {
                 let mut sid: s_SID = *(*charset).data.glyphs.offset(i as isize);
                 let fresh31 = len;
                 len = len + 1;
-                *dest.offset(fresh31 as isize) = (sid as libc::c_int >> 8i32 & 0xffi32) as card8;
+                *dest.offset(fresh31 as isize) = (sid as i32 >> 8i32 & 0xffi32) as card8;
                 let fresh32 = len;
                 len = len + 1;
-                *dest.offset(fresh32 as isize) = (sid as libc::c_int & 0xffi32) as card8;
+                *dest.offset(fresh32 as isize) = (sid as i32 & 0xffi32) as card8;
                 i = i.wrapping_add(1)
             }
         }
         1 => {
-            if destlen < len + (*charset).num_entries as libc::c_int * 3i32 {
+            if destlen < len + (*charset).num_entries as i32 * 3i32 {
                 _tt_abort(
                     b"in cff_pack_charsets(): Buffer overflow\x00" as *const u8
                         as *const i8,
                 );
             }
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*charset).num_entries as libc::c_int {
+            while (i as i32) < (*charset).num_entries as i32 {
                 let fresh33 = len;
                 len = len + 1;
                 *dest.offset(fresh33 as isize) =
-                    ((*(*charset).data.range1.offset(i as isize)).first as libc::c_int >> 8i32
+                    ((*(*charset).data.range1.offset(i as isize)).first as i32 >> 8i32
                         & 0xffi32) as card8;
                 let fresh34 = len;
                 len = len + 1;
                 *dest.offset(fresh34 as isize) = ((*(*charset).data.range1.offset(i as isize)).first
-                    as libc::c_int
+                    as i32
                     & 0xffi32) as card8;
                 let fresh35 = len;
                 len = len + 1;
@@ -2035,33 +2035,33 @@ pub unsafe extern "C" fn cff_pack_charsets(
             }
         }
         2 => {
-            if destlen < len + (*charset).num_entries as libc::c_int * 4i32 {
+            if destlen < len + (*charset).num_entries as i32 * 4i32 {
                 _tt_abort(
                     b"in cff_pack_charsets(): Buffer overflow\x00" as *const u8
                         as *const i8,
                 );
             }
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*charset).num_entries as libc::c_int {
+            while (i as i32) < (*charset).num_entries as i32 {
                 let fresh36 = len;
                 len = len + 1;
                 *dest.offset(fresh36 as isize) =
-                    ((*(*charset).data.range2.offset(i as isize)).first as libc::c_int >> 8i32
+                    ((*(*charset).data.range2.offset(i as isize)).first as i32 >> 8i32
                         & 0xffi32) as card8;
                 let fresh37 = len;
                 len = len + 1;
                 *dest.offset(fresh37 as isize) = ((*(*charset).data.range2.offset(i as isize)).first
-                    as libc::c_int
+                    as i32
                     & 0xffi32) as card8;
                 let fresh38 = len;
                 len = len + 1;
                 *dest.offset(fresh38 as isize) =
-                    ((*(*charset).data.range2.offset(i as isize)).n_left as libc::c_int >> 8i32
+                    ((*(*charset).data.range2.offset(i as isize)).n_left as i32 >> 8i32
                         & 0xffi32) as card8;
                 let fresh39 = len;
                 len = len + 1;
                 *dest.offset(fresh39 as isize) = ((*(*charset).data.range2.offset(i as isize))
-                    .n_left as libc::c_int
+                    .n_left as i32
                     & 0xffi32) as card8;
                 i = i.wrapping_add(1)
             }
@@ -2101,16 +2101,16 @@ pub unsafe extern "C" fn cff_glyph_lookup(
     }
     /* .notdef always have glyph index 0 */
     if glyph.is_null()
-        || streq_ptr(glyph, b".notdef\x00" as *const u8 as *const i8) as libc::c_int != 0
+        || streq_ptr(glyph, b".notdef\x00" as *const u8 as *const i8) as i32 != 0
     {
         return 0i32 as card16;
     }
     charset = (*cff).charsets;
     gid = 0i32 as card16;
-    match (*charset).format as libc::c_int {
+    match (*charset).format as i32 {
         0 => {
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*charset).num_entries as libc::c_int {
+            while (i as i32) < (*charset).num_entries as i32 {
                 gid = gid.wrapping_add(1);
                 if cff_match_string(cff, glyph, *(*charset).data.glyphs.offset(i as isize)) != 0 {
                     return gid;
@@ -2120,17 +2120,17 @@ pub unsafe extern "C" fn cff_glyph_lookup(
         }
         1 => {
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*charset).num_entries as libc::c_int {
+            while (i as i32) < (*charset).num_entries as i32 {
                 n = 0i32 as card16;
-                while n as libc::c_int
-                    <= (*(*charset).data.range1.offset(i as isize)).n_left as libc::c_int
+                while n as i32
+                    <= (*(*charset).data.range1.offset(i as isize)).n_left as i32
                 {
                     gid = gid.wrapping_add(1);
                     if cff_match_string(
                         cff,
                         glyph,
-                        ((*(*charset).data.range1.offset(i as isize)).first as libc::c_int
-                            + n as libc::c_int) as s_SID,
+                        ((*(*charset).data.range1.offset(i as isize)).first as i32
+                            + n as i32) as s_SID,
                     ) != 0
                     {
                         return gid;
@@ -2142,17 +2142,17 @@ pub unsafe extern "C" fn cff_glyph_lookup(
         }
         2 => {
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*charset).num_entries as libc::c_int {
+            while (i as i32) < (*charset).num_entries as i32 {
                 n = 0i32 as card16;
-                while n as libc::c_int
-                    <= (*(*charset).data.range2.offset(i as isize)).n_left as libc::c_int
+                while n as i32
+                    <= (*(*charset).data.range2.offset(i as isize)).n_left as i32
                 {
                     gid = gid.wrapping_add(1);
                     if cff_match_string(
                         cff,
                         glyph,
-                        ((*(*charset).data.range2.offset(i as isize)).first as libc::c_int
-                            + n as libc::c_int) as s_SID,
+                        ((*(*charset).data.range2.offset(i as isize)).first as i32
+                            + n as i32) as s_SID,
                     ) != 0
                     {
                         return gid;
@@ -2192,16 +2192,16 @@ pub unsafe extern "C" fn cff_charsets_lookup_gid(
 ) -> card16 {
     let mut gid: card16 = 0i32 as card16;
     let mut i: card16 = 0;
-    if cid as libc::c_int == 0i32 {
+    if cid as i32 == 0i32 {
         return 0i32 as card16;
         /* GID 0 (.notdef) */
     }
-    match (*charset).format as libc::c_int {
+    match (*charset).format as i32 {
         0 => {
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*charset).num_entries as libc::c_int {
-                if cid as libc::c_int == *(*charset).data.glyphs.offset(i as isize) as libc::c_int {
-                    gid = (i as libc::c_int + 1i32) as card16;
+            while (i as i32) < (*charset).num_entries as i32 {
+                if cid as i32 == *(*charset).data.glyphs.offset(i as isize) as i32 {
+                    gid = (i as i32 + 1i32) as card16;
                     return gid;
                 }
                 i = i.wrapping_add(1)
@@ -2209,42 +2209,42 @@ pub unsafe extern "C" fn cff_charsets_lookup_gid(
         }
         1 => {
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*charset).num_entries as libc::c_int {
-                if cid as libc::c_int
-                    >= (*(*charset).data.range1.offset(i as isize)).first as libc::c_int
-                    && cid as libc::c_int
-                        <= (*(*charset).data.range1.offset(i as isize)).first as libc::c_int
-                            + (*(*charset).data.range1.offset(i as isize)).n_left as libc::c_int
+            while (i as i32) < (*charset).num_entries as i32 {
+                if cid as i32
+                    >= (*(*charset).data.range1.offset(i as isize)).first as i32
+                    && cid as i32
+                        <= (*(*charset).data.range1.offset(i as isize)).first as i32
+                            + (*(*charset).data.range1.offset(i as isize)).n_left as i32
                 {
-                    gid = (gid as libc::c_int
-                        + (cid as libc::c_int
-                            - (*(*charset).data.range1.offset(i as isize)).first as libc::c_int
+                    gid = (gid as i32
+                        + (cid as i32
+                            - (*(*charset).data.range1.offset(i as isize)).first as i32
                             + 1i32)) as card16;
                     return gid;
                 }
-                gid = (gid as libc::c_int
-                    + ((*(*charset).data.range1.offset(i as isize)).n_left as libc::c_int + 1i32))
+                gid = (gid as i32
+                    + ((*(*charset).data.range1.offset(i as isize)).n_left as i32 + 1i32))
                     as card16;
                 i = i.wrapping_add(1)
             }
         }
         2 => {
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*charset).num_entries as libc::c_int {
-                if cid as libc::c_int
-                    >= (*(*charset).data.range2.offset(i as isize)).first as libc::c_int
-                    && cid as libc::c_int
-                        <= (*(*charset).data.range2.offset(i as isize)).first as libc::c_int
-                            + (*(*charset).data.range2.offset(i as isize)).n_left as libc::c_int
+            while (i as i32) < (*charset).num_entries as i32 {
+                if cid as i32
+                    >= (*(*charset).data.range2.offset(i as isize)).first as i32
+                    && cid as i32
+                        <= (*(*charset).data.range2.offset(i as isize)).first as i32
+                            + (*(*charset).data.range2.offset(i as isize)).n_left as i32
                 {
-                    gid = (gid as libc::c_int
-                        + (cid as libc::c_int
-                            - (*(*charset).data.range2.offset(i as isize)).first as libc::c_int
+                    gid = (gid as i32
+                        + (cid as i32
+                            - (*(*charset).data.range2.offset(i as isize)).first as i32
                             + 1i32)) as card16;
                     return gid;
                 }
-                gid = (gid as libc::c_int
-                    + ((*(*charset).data.range2.offset(i as isize)).n_left as libc::c_int + 1i32))
+                gid = (gid as i32
+                    + ((*(*charset).data.range2.offset(i as isize)).n_left as i32 + 1i32))
                     as card16;
                 i = i.wrapping_add(1)
             }
@@ -2273,7 +2273,7 @@ pub unsafe extern "C" fn cff_charsets_lookup_inverse(
             _tt_abort(b"Charsets data not available\x00" as *const u8 as *const i8);
         }
     }
-    if gid as libc::c_int == 0i32 {
+    if gid as i32 == 0i32 {
         return 0i32 as card16;
         /* .notdef */
     }
@@ -2286,55 +2286,55 @@ pub unsafe extern "C" fn cff_charsets_lookup_cid(
 ) -> card16 {
     let mut sid: card16 = 0i32 as card16;
     let mut i: card16 = 0;
-    match (*charset).format as libc::c_int {
+    match (*charset).format as i32 {
         0 => {
-            if gid as libc::c_int - 1i32 >= (*charset).num_entries as libc::c_int {
+            if gid as i32 - 1i32 >= (*charset).num_entries as i32 {
                 _tt_abort(b"Invalid GID.\x00" as *const u8 as *const i8);
             }
             sid = *(*charset)
                 .data
                 .glyphs
-                .offset((gid as libc::c_int - 1i32) as isize)
+                .offset((gid as i32 - 1i32) as isize)
         }
         1 => {
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*charset).num_entries as libc::c_int {
-                if gid as libc::c_int
-                    <= (*(*charset).data.range1.offset(i as isize)).n_left as libc::c_int + 1i32
+            while (i as i32) < (*charset).num_entries as i32 {
+                if gid as i32
+                    <= (*(*charset).data.range1.offset(i as isize)).n_left as i32 + 1i32
                 {
-                    sid = (gid as libc::c_int
-                        + (*(*charset).data.range1.offset(i as isize)).first as libc::c_int
+                    sid = (gid as i32
+                        + (*(*charset).data.range1.offset(i as isize)).first as i32
                         - 1i32) as card16;
                     break;
                 } else {
-                    gid = (gid as libc::c_int
-                        - ((*(*charset).data.range1.offset(i as isize)).n_left as libc::c_int
+                    gid = (gid as i32
+                        - ((*(*charset).data.range1.offset(i as isize)).n_left as i32
                             + 1i32)) as card16;
                     i = i.wrapping_add(1)
                 }
             }
-            if i as libc::c_int == (*charset).num_entries as libc::c_int {
+            if i as i32 == (*charset).num_entries as i32 {
                 _tt_abort(b"Invalid GID\x00" as *const u8 as *const i8);
             }
         }
         2 => {
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*charset).num_entries as libc::c_int {
-                if gid as libc::c_int
-                    <= (*(*charset).data.range2.offset(i as isize)).n_left as libc::c_int + 1i32
+            while (i as i32) < (*charset).num_entries as i32 {
+                if gid as i32
+                    <= (*(*charset).data.range2.offset(i as isize)).n_left as i32 + 1i32
                 {
-                    sid = (gid as libc::c_int
-                        + (*(*charset).data.range2.offset(i as isize)).first as libc::c_int
+                    sid = (gid as i32
+                        + (*(*charset).data.range2.offset(i as isize)).first as i32
                         - 1i32) as card16;
                     break;
                 } else {
-                    gid = (gid as libc::c_int
-                        - ((*(*charset).data.range2.offset(i as isize)).n_left as libc::c_int
+                    gid = (gid as i32
+                        - ((*(*charset).data.range2.offset(i as isize)).n_left as i32
                             + 1i32)) as card16;
                     i = i.wrapping_add(1)
                 }
             }
-            if i as libc::c_int == (*charset).num_entries as libc::c_int {
+            if i as i32 == (*charset).num_entries as i32 {
                 _tt_abort(b"Invalid GID\x00" as *const u8 as *const i8);
             }
         }
@@ -2347,7 +2347,7 @@ pub unsafe extern "C" fn cff_charsets_lookup_cid(
 #[no_mangle]
 pub unsafe extern "C" fn cff_release_charsets(mut charset: *mut cff_charsets) {
     if !charset.is_null() {
-        match (*charset).format as libc::c_int {
+        match (*charset).format as i32 {
             0 => {
                 free((*charset).data.glyphs as *mut libc::c_void);
             }
@@ -2364,10 +2364,10 @@ pub unsafe extern "C" fn cff_release_charsets(mut charset: *mut cff_charsets) {
 }
 /* CID-Keyed font specific */
 #[no_mangle]
-pub unsafe extern "C" fn cff_read_fdselect(mut cff: *mut cff_font) -> libc::c_int {
+pub unsafe extern "C" fn cff_read_fdselect(mut cff: *mut cff_font) -> i32 {
     let mut fdsel: *mut cff_fdselect = 0 as *mut cff_fdselect;
-    let mut offset: libc::c_int = 0;
-    let mut length: libc::c_int = 0;
+    let mut offset: i32 = 0;
+    let mut length: i32 = 0;
     let mut i: card16 = 0;
     if (*cff).topdict.is_null() {
         _tt_abort(b"Top DICT not available\x00" as *const u8 as *const i8);
@@ -2379,7 +2379,7 @@ pub unsafe extern "C" fn cff_read_fdselect(mut cff: *mut cff_font) -> libc::c_in
         (*cff).topdict,
         b"FDSelect\x00" as *const u8 as *const i8,
         0i32,
-    ) as libc::c_int;
+    ) as i32;
     ttstub_input_seek(
         (*cff).handle,
         (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
@@ -2391,18 +2391,18 @@ pub unsafe extern "C" fn cff_read_fdselect(mut cff: *mut cff_font) -> libc::c_in
     (*cff).fdselect = fdsel;
     (*fdsel).format = tt_get_unsigned_byte((*cff).handle);
     length = 1i32;
-    match (*fdsel).format as libc::c_int {
+    match (*fdsel).format as i32 {
         0 => {
             (*fdsel).num_entries = (*cff).num_glyphs;
             (*fdsel).data.fds = new(((*fdsel).num_entries as u32 as u64)
                 .wrapping_mul(::std::mem::size_of::<card8>() as u64)
                 as u32) as *mut card8;
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*fdsel).num_entries as libc::c_int {
+            while (i as i32) < (*fdsel).num_entries as i32 {
                 *(*fdsel).data.fds.offset(i as isize) = tt_get_unsigned_byte((*cff).handle);
                 i = i.wrapping_add(1)
             }
-            length += (*fdsel).num_entries as libc::c_int
+            length += (*fdsel).num_entries as i32
         }
         3 => {
             let mut ranges: *mut cff_range3 = 0 as *mut cff_range3;
@@ -2412,23 +2412,23 @@ pub unsafe extern "C" fn cff_read_fdselect(mut cff: *mut cff_font) -> libc::c_in
                 as u32) as *mut cff_range3;
             (*fdsel).data.ranges = ranges;
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*fdsel).num_entries as libc::c_int {
+            while (i as i32) < (*fdsel).num_entries as i32 {
                 (*ranges.offset(i as isize)).first = tt_get_unsigned_pair((*cff).handle);
                 (*ranges.offset(i as isize)).fd = tt_get_unsigned_byte((*cff).handle);
                 i = i.wrapping_add(1)
             }
-            if (*ranges.offset(0)).first as libc::c_int != 0i32 {
+            if (*ranges.offset(0)).first as i32 != 0i32 {
                 _tt_abort(b"Range not starting with 0.\x00" as *const u8 as *const i8);
             }
-            if (*cff).num_glyphs as libc::c_int
-                != tt_get_unsigned_pair((*cff).handle) as libc::c_int
+            if (*cff).num_glyphs as i32
+                != tt_get_unsigned_pair((*cff).handle) as i32
             {
                 _tt_abort(
                     b"Sentinel value mismatched with number of glyphs.\x00" as *const u8
                         as *const i8,
                 );
             }
-            length += (*fdsel).num_entries as libc::c_int * 3i32 + 4i32
+            length += (*fdsel).num_entries as i32 * 3i32 + 4i32
         }
         _ => {
             free(fdsel as *mut libc::c_void);
@@ -2441,10 +2441,10 @@ pub unsafe extern "C" fn cff_read_fdselect(mut cff: *mut cff_font) -> libc::c_in
 pub unsafe extern "C" fn cff_pack_fdselect(
     mut cff: *mut cff_font,
     mut dest: *mut card8,
-    mut destlen: libc::c_int,
-) -> libc::c_int {
+    mut destlen: i32,
+) -> i32 {
     let mut fdsel: *mut cff_fdselect = 0 as *mut cff_fdselect;
-    let mut len: libc::c_int = 0i32;
+    let mut len: i32 = 0i32;
     let mut i: card16 = 0;
     if (*cff).fdselect.is_null() {
         return 0i32;
@@ -2458,21 +2458,21 @@ pub unsafe extern "C" fn cff_pack_fdselect(
     let fresh40 = len;
     len = len + 1;
     *dest.offset(fresh40 as isize) = (*fdsel).format;
-    match (*fdsel).format as libc::c_int {
+    match (*fdsel).format as i32 {
         0 => {
-            if (*fdsel).num_entries as libc::c_int != (*cff).num_glyphs as libc::c_int {
+            if (*fdsel).num_entries as i32 != (*cff).num_glyphs as i32 {
                 _tt_abort(
                     b"in cff_pack_fdselect(): Invalid data\x00" as *const u8 as *const i8,
                 );
             }
-            if destlen < len + (*fdsel).num_entries as libc::c_int {
+            if destlen < len + (*fdsel).num_entries as i32 {
                 _tt_abort(
                     b"in cff_pack_fdselect(): Buffer overflow\x00" as *const u8
                         as *const i8,
                 );
             }
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*fdsel).num_entries as libc::c_int {
+            while (i as i32) < (*fdsel).num_entries as i32 {
                 let fresh41 = len;
                 len = len + 1;
                 *dest.offset(fresh41 as isize) = *(*fdsel).data.fds.offset(i as isize);
@@ -2488,7 +2488,7 @@ pub unsafe extern "C" fn cff_pack_fdselect(
             }
             len += 2i32;
             i = 0i32 as card16;
-            while (i as libc::c_int) < (*fdsel).num_entries as libc::c_int {
+            while (i as i32) < (*fdsel).num_entries as i32 {
                 if destlen < len + 3i32 {
                     _tt_abort(
                         b"in cff_pack_fdselect(): Buffer overflow\x00" as *const u8
@@ -2498,12 +2498,12 @@ pub unsafe extern "C" fn cff_pack_fdselect(
                 let fresh42 = len;
                 len = len + 1;
                 *dest.offset(fresh42 as isize) =
-                    ((*(*fdsel).data.ranges.offset(i as isize)).first as libc::c_int >> 8i32
+                    ((*(*fdsel).data.ranges.offset(i as isize)).first as i32 >> 8i32
                         & 0xffi32) as card8;
                 let fresh43 = len;
                 len = len + 1;
                 *dest.offset(fresh43 as isize) = ((*(*fdsel).data.ranges.offset(i as isize)).first
-                    as libc::c_int
+                    as i32
                     & 0xffi32) as card8;
                 let fresh44 = len;
                 len = len + 1;
@@ -2519,10 +2519,10 @@ pub unsafe extern "C" fn cff_pack_fdselect(
             let fresh45 = len;
             len = len + 1;
             *dest.offset(fresh45 as isize) =
-                ((*cff).num_glyphs as libc::c_int >> 8i32 & 0xffi32) as card8;
+                ((*cff).num_glyphs as i32 >> 8i32 & 0xffi32) as card8;
             let fresh46 = len;
             len = len + 1;
-            *dest.offset(fresh46 as isize) = ((*cff).num_glyphs as libc::c_int & 0xffi32) as card8;
+            *dest.offset(fresh46 as isize) = ((*cff).num_glyphs as i32 & 0xffi32) as card8;
             *dest.offset(1) = (len / 3i32 - 1i32 >> 8i32 & 0xffi32) as card8;
             *dest.offset(2) = (len / 3i32 - 1i32 & 0xffi32) as card8
         }
@@ -2535,9 +2535,9 @@ pub unsafe extern "C" fn cff_pack_fdselect(
 #[no_mangle]
 pub unsafe extern "C" fn cff_release_fdselect(mut fdselect: *mut cff_fdselect) {
     if !fdselect.is_null() {
-        if (*fdselect).format as libc::c_int == 0i32 {
+        if (*fdselect).format as i32 == 0i32 {
             free((*fdselect).data.fds as *mut libc::c_void);
-        } else if (*fdselect).format as libc::c_int == 3i32 {
+        } else if (*fdselect).format as i32 == 3i32 {
             free((*fdselect).data.ranges as *mut libc::c_void);
         }
         free(fdselect as *mut libc::c_void);
@@ -2554,23 +2554,23 @@ pub unsafe extern "C" fn cff_fdselect_lookup(mut cff: *mut cff_font, mut gid: ca
         );
     }
     fdsel = (*cff).fdselect;
-    if gid as libc::c_int >= (*cff).num_glyphs as libc::c_int {
+    if gid as i32 >= (*cff).num_glyphs as i32 {
         _tt_abort(
             b"in cff_fdselect_lookup(): Invalid glyph index\x00" as *const u8
                 as *const i8,
         );
     }
-    match (*fdsel).format as libc::c_int {
+    match (*fdsel).format as i32 {
         0 => fd = *(*fdsel).data.fds.offset(gid as isize),
         3 => {
-            if gid as libc::c_int == 0i32 {
+            if gid as i32 == 0i32 {
                 fd = (*(*fdsel).data.ranges.offset(0)).fd
             } else {
                 let mut i: card16 = 0;
                 i = 1i32 as card16;
-                while (i as libc::c_int) < (*fdsel).num_entries as libc::c_int {
-                    if (gid as libc::c_int)
-                        < (*(*fdsel).data.ranges.offset(i as isize)).first as libc::c_int
+                while (i as i32) < (*fdsel).num_entries as i32 {
+                    if (gid as i32)
+                        < (*(*fdsel).data.ranges.offset(i as isize)).first as i32
                     {
                         break;
                     }
@@ -2579,7 +2579,7 @@ pub unsafe extern "C" fn cff_fdselect_lookup(mut cff: *mut cff_font, mut gid: ca
                 fd = (*(*fdsel)
                     .data
                     .ranges
-                    .offset((i as libc::c_int - 1i32) as isize))
+                    .offset((i as i32 - 1i32) as isize))
                 .fd
             }
         }
@@ -2590,7 +2590,7 @@ pub unsafe extern "C" fn cff_fdselect_lookup(mut cff: *mut cff_font, mut gid: ca
             );
         }
     }
-    if fd as libc::c_int >= (*cff).num_fds as libc::c_int {
+    if fd as i32 >= (*cff).num_fds as i32 {
         _tt_abort(
             b"in cff_fdselect_lookup(): Invalid Font DICT index\x00" as *const u8
                 as *const i8,
@@ -2599,10 +2599,10 @@ pub unsafe extern "C" fn cff_fdselect_lookup(mut cff: *mut cff_font, mut gid: ca
     return fd;
 }
 #[no_mangle]
-pub unsafe extern "C" fn cff_read_subrs(mut cff: *mut cff_font) -> libc::c_int {
-    let mut len: libc::c_int = 0i32;
-    let mut offset: libc::c_int = 0;
-    let mut i: libc::c_int = 0;
+pub unsafe extern "C" fn cff_read_subrs(mut cff: *mut cff_font) -> i32 {
+    let mut len: i32 = 0i32;
+    let mut offset: i32 = 0;
+    let mut i: i32 = 0;
     if (*cff).flag & 1i32 << 0i32 != 0 && (*cff).fdarray.is_null() {
         cff_read_fdarray(cff);
     }
@@ -2622,7 +2622,7 @@ pub unsafe extern "C" fn cff_read_subrs(mut cff: *mut cff_font) -> libc::c_int {
         as u32) as *mut *mut cff_index;
     if (*cff).flag & 1i32 << 0i32 != 0 {
         i = 0i32;
-        while i < (*cff).num_fds as libc::c_int {
+        while i < (*cff).num_fds as i32 {
             if (*(*cff).private.offset(i as isize)).is_null()
                 || cff_dict_known(
                     *(*cff).private.offset(i as isize),
@@ -2636,13 +2636,13 @@ pub unsafe extern "C" fn cff_read_subrs(mut cff: *mut cff_font) -> libc::c_int {
                     *(*cff).fdarray.offset(i as isize),
                     b"Private\x00" as *const u8 as *const i8,
                     1i32,
-                ) as libc::c_int;
+                ) as i32;
                 offset = (offset as f64
                     + cff_dict_get(
                         *(*cff).private.offset(i as isize),
                         b"Subrs\x00" as *const u8 as *const i8,
                         0i32,
-                    )) as libc::c_int;
+                    )) as i32;
                 ttstub_input_seek(
                     (*cff).handle,
                     (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
@@ -2667,13 +2667,13 @@ pub unsafe extern "C" fn cff_read_subrs(mut cff: *mut cff_font) -> libc::c_int {
             (*cff).topdict,
             b"Private\x00" as *const u8 as *const i8,
             1i32,
-        ) as libc::c_int;
+        ) as i32;
         offset = (offset as f64
             + cff_dict_get(
                 *(*cff).private.offset(0),
                 b"Subrs\x00" as *const u8 as *const i8,
                 0i32,
-            )) as libc::c_int;
+            )) as i32;
         ttstub_input_seek(
             (*cff).handle,
             (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
@@ -2686,11 +2686,11 @@ pub unsafe extern "C" fn cff_read_subrs(mut cff: *mut cff_font) -> libc::c_int {
     return len;
 }
 #[no_mangle]
-pub unsafe extern "C" fn cff_read_fdarray(mut cff: *mut cff_font) -> libc::c_int {
-    let mut len: libc::c_int = 0i32;
+pub unsafe extern "C" fn cff_read_fdarray(mut cff: *mut cff_font) -> i32 {
+    let mut len: i32 = 0i32;
     let mut idx: *mut cff_index = 0 as *mut cff_index;
-    let mut offset: libc::c_int = 0;
-    let mut size: libc::c_int = 0;
+    let mut offset: i32 = 0;
+    let mut size: i32 = 0;
     let mut i: card16 = 0;
     if (*cff).topdict.is_null() {
         _tt_abort(
@@ -2705,7 +2705,7 @@ pub unsafe extern "C" fn cff_read_fdarray(mut cff: *mut cff_font) -> libc::c_int
         (*cff).topdict,
         b"FDArray\x00" as *const u8 as *const i8,
         0i32,
-    ) as libc::c_int;
+    ) as i32;
     ttstub_input_seek(
         (*cff).handle,
         (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
@@ -2717,13 +2717,13 @@ pub unsafe extern "C" fn cff_read_fdarray(mut cff: *mut cff_font) -> libc::c_int
         .wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as u64)
         as u32) as *mut *mut cff_dict;
     i = 0i32 as card16;
-    while (i as libc::c_int) < (*idx).count as libc::c_int {
+    while (i as i32) < (*idx).count as i32 {
         let mut data: *mut card8 = (*idx)
             .data
             .offset(*(*idx).offset.offset(i as isize) as isize)
             .offset(-1);
-        size = (*(*idx).offset.offset((i as libc::c_int + 1i32) as isize))
-            .wrapping_sub(*(*idx).offset.offset(i as isize)) as libc::c_int;
+        size = (*(*idx).offset.offset((i as i32 + 1i32) as isize))
+            .wrapping_sub(*(*idx).offset.offset(i as isize)) as i32;
         if size > 0i32 {
             let ref mut fresh51 = *(*cff).fdarray.offset(i as isize);
             *fresh51 = cff_dict_unpack(data, data.offset(size as isize))
@@ -2796,13 +2796,13 @@ pub unsafe extern "C" fn cff_read_fdarray(mut cff: *mut cff_font) -> libc::c_int
 /* Font DICT(s) */
 /* Private DICT(s) */
 #[no_mangle]
-pub unsafe extern "C" fn cff_read_private(mut cff: *mut cff_font) -> libc::c_int {
-    let mut len: libc::c_int = 0i32;
+pub unsafe extern "C" fn cff_read_private(mut cff: *mut cff_font) -> i32 {
+    let mut len: i32 = 0i32;
     let mut data: *mut card8 = 0 as *mut card8;
-    let mut offset: libc::c_int = 0;
-    let mut size: libc::c_int = 0;
+    let mut offset: i32 = 0;
+    let mut size: i32 = 0;
     if (*cff).flag & 1i32 << 0i32 != 0 {
-        let mut i: libc::c_int = 0;
+        let mut i: i32 = 0;
         if (*cff).fdarray.is_null() {
             cff_read_fdarray(cff);
         }
@@ -2810,7 +2810,7 @@ pub unsafe extern "C" fn cff_read_private(mut cff: *mut cff_font) -> libc::c_int
             .wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as u64)
             as u32) as *mut *mut cff_dict;
         i = 0i32;
-        while i < (*cff).num_fds as libc::c_int {
+        while i < (*cff).num_fds as i32 {
             if !(*(*cff).fdarray.offset(i as isize)).is_null()
                 && cff_dict_known(
                     *(*cff).fdarray.offset(i as isize),
@@ -2821,7 +2821,7 @@ pub unsafe extern "C" fn cff_read_private(mut cff: *mut cff_font) -> libc::c_int
                         *(*cff).fdarray.offset(i as isize),
                         b"Private\x00" as *const u8 as *const i8,
                         0i32,
-                    ) as libc::c_int;
+                    ) as i32;
                     size > 0i32
                 }
             {
@@ -2829,7 +2829,7 @@ pub unsafe extern "C" fn cff_read_private(mut cff: *mut cff_font) -> libc::c_int
                     *(*cff).fdarray.offset(i as isize),
                     b"Private\x00" as *const u8 as *const i8,
                     1i32,
-                ) as libc::c_int;
+                ) as i32;
                 ttstub_input_seek(
                     (*cff).handle,
                     (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
@@ -2867,7 +2867,7 @@ pub unsafe extern "C" fn cff_read_private(mut cff: *mut cff_font) -> libc::c_int
                     (*cff).topdict,
                     b"Private\x00" as *const u8 as *const i8,
                     0i32,
-                ) as libc::c_int;
+                ) as i32;
                 size > 0i32
             }
         {
@@ -2875,7 +2875,7 @@ pub unsafe extern "C" fn cff_read_private(mut cff: *mut cff_font) -> libc::c_int
                 (*cff).topdict,
                 b"Private\x00" as *const u8 as *const i8,
                 1i32,
-            ) as libc::c_int;
+            ) as i32;
             ttstub_input_seek(
                 (*cff).handle,
                 (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,

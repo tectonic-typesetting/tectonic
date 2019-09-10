@@ -28,7 +28,7 @@ extern "C" {
      * will one day eliminate all of the global state and get rid of all of
      * these. */
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn floor(_: f64) -> f64;
     #[no_mangle]
@@ -44,7 +44,7 @@ extern "C" {
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
         -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
@@ -53,7 +53,7 @@ extern "C" {
     #[no_mangle]
     fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn strstr(_: *const i8, _: *const i8) -> *mut i8;
     #[no_mangle]
@@ -61,7 +61,7 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn dpx_open_truetype_file(filename: *const i8) -> rust_input_handle_t;
     #[no_mangle]
@@ -154,25 +154,25 @@ extern "C" {
      * already removed that.
      */
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn pdf_new_stream(flags: libc::c_int) -> *mut pdf_obj;
+    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_add_stream(
         stream: *mut pdf_obj,
         stream_data_ptr: *const libc::c_void,
-        stream_data_len: libc::c_int,
+        stream_data_len: i32,
     );
     #[no_mangle]
-    fn pdf_stream_length(stream: *mut pdf_obj) -> libc::c_int;
+    fn pdf_stream_length(stream: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn Type0Font_get_usedchars(font: *mut Type0Font) -> *mut i8;
     #[no_mangle]
-    fn Type0Font_cache_get(id: libc::c_int) -> *mut Type0Font;
+    fn Type0Font_cache_get(id: i32) -> *mut Type0Font;
     #[no_mangle]
-    fn CIDFont_get_embedding(font: *mut CIDFont) -> libc::c_int;
+    fn CIDFont_get_embedding(font: *mut CIDFont) -> i32;
     #[no_mangle]
-    fn CIDFont_get_parent_id(font: *mut CIDFont, wmode: libc::c_int) -> libc::c_int;
+    fn CIDFont_get_parent_id(font: *mut CIDFont, wmode: i32) -> i32;
     #[no_mangle]
     fn CIDFont_is_BaseFont(font: *mut CIDFont) -> bool;
     #[no_mangle]
@@ -184,38 +184,38 @@ extern "C" {
         outbytesleft: *mut size_t,
     );
     #[no_mangle]
-    fn CMap_cache_get(id: libc::c_int) -> *mut CMap;
+    fn CMap_cache_get(id: i32) -> *mut CMap;
     #[no_mangle]
-    fn CMap_cache_find(cmap_name: *const i8) -> libc::c_int;
+    fn CMap_cache_find(cmap_name: *const i8) -> i32;
     #[no_mangle]
     fn sfnt_open(handle: rust_input_handle_t) -> *mut sfnt;
     #[no_mangle]
-    fn dfont_open(handle: rust_input_handle_t, index: libc::c_int) -> *mut sfnt;
+    fn dfont_open(handle: rust_input_handle_t, index: i32) -> *mut sfnt;
     #[no_mangle]
     fn sfnt_close(sfont: *mut sfnt);
     /* table directory */
     #[no_mangle]
-    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: SFNT_ULONG) -> libc::c_int;
+    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: SFNT_ULONG) -> i32;
     #[no_mangle]
     fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
     #[no_mangle]
     fn sfnt_require_table(
         sfont: *mut sfnt,
         tag: *const i8,
-        must_exist: libc::c_int,
-    ) -> libc::c_int;
+        must_exist: i32,
+    ) -> i32;
     #[no_mangle]
     fn sfnt_create_FontFile_stream(sfont: *mut sfnt) -> *mut pdf_obj;
     /* TTC (TrueType Collection) */
     #[no_mangle]
-    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: libc::c_int) -> SFNT_ULONG;
+    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> SFNT_ULONG;
     /* FontDescriptor */
     #[no_mangle]
     fn tt_get_fontdesc(
         sfont: *mut sfnt,
-        embed: *mut libc::c_int,
-        stemv: libc::c_int,
-        type_0: libc::c_int,
+        embed: *mut i32,
+        stemv: i32,
+        type_0: i32,
         fontname: *const i8,
     ) -> *mut pdf_obj;
     #[no_mangle]
@@ -233,9 +233,9 @@ extern "C" {
     #[no_mangle]
     fn tt_get_index(g: *mut tt_glyphs, gid: USHORT) -> USHORT;
     #[no_mangle]
-    fn tt_build_tables(sfont: *mut sfnt, g: *mut tt_glyphs) -> libc::c_int;
+    fn tt_build_tables(sfont: *mut sfnt, g: *mut tt_glyphs) -> i32;
     #[no_mangle]
-    fn tt_get_metrics(sfont: *mut sfnt, g: *mut tt_glyphs) -> libc::c_int;
+    fn tt_get_metrics(sfont: *mut sfnt, g: *mut tt_glyphs) -> i32;
     /* LookupType for GSUB */
     #[no_mangle]
     fn otl_gsub_new() -> *mut otl_gsub;
@@ -247,7 +247,7 @@ extern "C" {
         script: *const i8,
         language: *const i8,
         feature: *const i8,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn otl_gsub_add_feat(
         gsub_list: *mut otl_gsub,
@@ -255,9 +255,9 @@ extern "C" {
         language: *const i8,
         feature: *const i8,
         sfont: *mut sfnt,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
-    fn otl_gsub_apply(gsub_list: *mut otl_gsub, gid: *mut USHORT) -> libc::c_int;
+    fn otl_gsub_apply(gsub_list: *mut otl_gsub, gid: *mut USHORT) -> i32;
     /* name table */
     #[no_mangle]
     fn tt_get_ps_fontname(sfont: *mut sfnt, dest: *mut i8, destlen: USHORT) -> USHORT;
@@ -269,7 +269,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 pub struct CIDSysInfo {
     pub registry: *mut i8,
     pub ordering: *mut i8,
-    pub supplement: libc::c_int,
+    pub supplement: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -277,9 +277,9 @@ pub struct CIDFont {
     pub ident: *mut i8,
     pub name: *mut i8,
     pub fontname: *mut i8,
-    pub subtype: libc::c_int,
-    pub flags: libc::c_int,
-    pub parent: [libc::c_int; 2],
+    pub subtype: i32,
+    pub flags: i32,
+    pub parent: [i32; 2],
     pub csi: *mut CIDSysInfo,
     pub options: *mut cid_opt,
     pub indirect: *mut pdf_obj,
@@ -291,10 +291,10 @@ pub struct CIDFont {
 pub struct cid_opt {
     pub name: *mut i8,
     pub csi: *mut CIDSysInfo,
-    pub index: libc::c_int,
-    pub style: libc::c_int,
-    pub embed: libc::c_int,
-    pub stemv: libc::c_int,
+    pub index: i32,
+    pub style: i32,
+    pub embed: i32,
+    pub stemv: i32,
     pub cff_charsets: *mut libc::c_void,
 }
 #[derive(Copy, Clone)]
@@ -312,16 +312,16 @@ pub type USHORT = u16;
 #[repr(C)]
 pub struct CMap {
     pub name: *mut i8,
-    pub type_0: libc::c_int,
-    pub wmode: libc::c_int,
+    pub type_0: i32,
+    pub wmode: i32,
     pub CSI: *mut CIDSysInfo,
     pub useCMap: *mut CMap,
     pub codespace: C2RustUnnamed_0,
     pub mapTbl: *mut mapDef,
     pub mapData: *mut mapData,
-    pub flags: libc::c_int,
+    pub flags: i32,
     pub profile: C2RustUnnamed,
-    pub reverseMap: *mut libc::c_int,
+    pub reverseMap: *mut i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -339,13 +339,13 @@ pub struct C2RustUnnamed {
 pub struct mapData {
     pub data: *mut u8,
     pub prev: *mut mapData,
-    pub pos: libc::c_int,
+    pub pos: i32,
     /* Position of next free data segment */
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mapDef {
-    pub flag: libc::c_int,
+    pub flag: i32,
     pub len: size_t,
     pub code: *mut u8,
     pub next: *mut mapDef,
@@ -367,7 +367,7 @@ pub struct rangeDef {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt {
-    pub type_0: libc::c_int,
+    pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
     pub offset: SFNT_ULONG,
@@ -419,7 +419,7 @@ pub type CID = u16;
 #[repr(C)]
 pub struct C2RustUnnamed_1 {
     pub name: *const i8,
-    pub must_exist: libc::c_int,
+    pub must_exist: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -524,10 +524,10 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 /* pseudo unique tag */
 /* CID font */
 /* TrueType */
-static mut verbose: libc::c_int = 0i32;
-static mut opt_flags: libc::c_int = 0i32;
+static mut verbose: i32 = 0i32;
+static mut opt_flags: i32 = 0i32;
 #[no_mangle]
-pub unsafe extern "C" fn CIDFont_type2_set_verbose(mut level: libc::c_int) {
+pub unsafe extern "C" fn CIDFont_type2_set_verbose(mut level: i32) {
     verbose = level;
 }
 #[no_mangle]
@@ -620,9 +620,9 @@ static mut required_table: [C2RustUnnamed_1; 12] = [
         init
     },
 ];
-unsafe extern "C" fn validate_name(mut fontname: *mut i8, mut len: libc::c_int) {
-    let mut i: libc::c_int = 0;
-    let mut count: libc::c_int = 0;
+unsafe extern "C" fn validate_name(mut fontname: *mut i8, mut len: i32) {
+    let mut i: i32 = 0;
+    let mut count: i32 = 0;
     let mut p: *mut i8 = 0 as *mut i8;
     static mut badstrlist: [*const i8; 5] = [
         b"-WIN-RKSJ-H\x00" as *const u8 as *const i8,
@@ -634,7 +634,7 @@ unsafe extern "C" fn validate_name(mut fontname: *mut i8, mut len: libc::c_int) 
     count = 0i32;
     i = 0i32;
     while i < len {
-        if *fontname.offset(i as isize) as libc::c_int == 0i32 {
+        if *fontname.offset(i as isize) as i32 == 0i32 {
             memmove(
                 fontname.offset(i as isize) as *mut libc::c_void,
                 fontname.offset(i as isize).offset(1) as *const libc::c_void,
@@ -666,7 +666,7 @@ unsafe extern "C" fn validate_name(mut fontname: *mut i8, mut len: libc::c_int) 
                 fontname,
             );
             *p.offset(0) = '\u{0}' as i32 as i8;
-            len = p.wrapping_offset_from(fontname) as i64 as libc::c_int;
+            len = p.wrapping_offset_from(fontname) as i64 as i32;
             break;
         } else {
             i += 1
@@ -837,16 +837,16 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
 unsafe extern "C" fn find_tocode_cmap(
     mut reg: *const i8,
     mut ord: *const i8,
-    mut select: libc::c_int,
+    mut select: i32,
 ) -> *mut CMap {
-    let mut cmap_id: libc::c_int = -1i32;
-    let mut i: libc::c_int = 0;
+    let mut cmap_id: i32 = -1i32;
+    let mut i: i32 = 0;
     let mut cmap_name: *mut i8 = 0 as *mut i8;
     let mut append: *const i8 = 0 as *const i8;
     if reg.is_null() || ord.is_null() || select < 0i32 || select > 9i32 {
         _tt_abort(b"Character set unknown.\x00" as *const u8 as *const i8);
     }
-    if streq_ptr(ord, b"UCS\x00" as *const u8 as *const i8) as libc::c_int != 0
+    if streq_ptr(ord, b"UCS\x00" as *const u8 as *const i8) as i32 != 0
         && select <= 1i32
     {
         return 0 as *mut CMap;
@@ -916,49 +916,49 @@ unsafe extern "C" fn add_TTCIDHMetrics(
     mut cidtogidmap: *mut u8,
     mut last_cid: u16,
 ) {
-    let mut cid: libc::c_int = 0;
-    let mut start: libc::c_int = 0i32;
-    let mut prev: libc::c_int = 0i32;
+    let mut cid: i32 = 0;
+    let mut start: i32 = 0i32;
+    let mut prev: i32 = 0i32;
     let mut w_array: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut an_array: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut dw: f64 = 0.;
-    let mut empty: libc::c_int = 1i32;
+    let mut empty: i32 = 1i32;
     w_array = pdf_new_array();
-    if (*g).dw as libc::c_int != 0i32 && (*g).dw as libc::c_int <= (*g).emsize as libc::c_int {
+    if (*g).dw as i32 != 0i32 && (*g).dw as i32 <= (*g).emsize as i32 {
         dw = floor(
-            1000.0f64 * (*g).dw as libc::c_int as f64
-                / (*g).emsize as libc::c_int as f64
+            1000.0f64 * (*g).dw as i32 as f64
+                / (*g).emsize as i32 as f64
                 / 1i32 as f64
                 + 0.5f64,
         ) * 1i32 as f64
     } else {
         dw = floor(
-            1000.0f64 * (*(*g).gd.offset(0)).advw as libc::c_int as f64
-                / (*g).emsize as libc::c_int as f64
+            1000.0f64 * (*(*g).gd.offset(0)).advw as i32 as f64
+                / (*g).emsize as i32 as f64
                 / 1i32 as f64
                 + 0.5f64,
         ) * 1i32 as f64
     }
     cid = 0i32;
-    while cid <= last_cid as libc::c_int {
+    while cid <= last_cid as i32 {
         let mut idx: USHORT = 0;
         let mut gid: USHORT = 0;
         let mut width: f64 = 0.;
-        if !(*used_chars.offset((cid / 8i32) as isize) as libc::c_int & 1i32 << 7i32 - cid % 8i32
+        if !(*used_chars.offset((cid / 8i32) as isize) as i32 & 1i32 << 7i32 - cid % 8i32
             == 0)
         {
             gid = (if !cidtogidmap.is_null() {
-                (*cidtogidmap.offset((2i32 * cid) as isize) as libc::c_int) << 8i32
-                    | *cidtogidmap.offset((2i32 * cid + 1i32) as isize) as libc::c_int
+                (*cidtogidmap.offset((2i32 * cid) as isize) as i32) << 8i32
+                    | *cidtogidmap.offset((2i32 * cid + 1i32) as isize) as i32
             } else {
                 cid
             }) as USHORT;
             idx = tt_get_index(g, gid);
-            if !(cid != 0i32 && idx as libc::c_int == 0i32) {
+            if !(cid != 0i32 && idx as i32 == 0i32) {
                 width = floor(
                     1000.0f64
-                        * (*(*g).gd.offset(idx as isize)).advw as libc::c_int as f64
-                        / (*g).emsize as libc::c_int as f64
+                        * (*(*g).gd.offset(idx as isize)).advw as i32 as f64
+                        / (*g).emsize as i32 as f64
                         / 1i32 as f64
                         + 0.5f64,
                 ) * 1i32 as f64;
@@ -1016,58 +1016,58 @@ unsafe extern "C" fn add_TTCIDVMetrics(
 ) {
     let mut w2_array: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut an_array: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut cid: libc::c_int = 0;
+    let mut cid: i32 = 0;
     let mut defaultVertOriginY: f64 = 0.;
     let mut defaultAdvanceHeight: f64 = 0.;
-    let mut empty: libc::c_int = 1i32;
+    let mut empty: i32 = 1i32;
     defaultVertOriginY = floor(
         1000.0f64
-            * ((*g).default_advh as libc::c_int - (*g).default_tsb as libc::c_int)
+            * ((*g).default_advh as i32 - (*g).default_tsb as i32)
                 as f64
-            / (*g).emsize as libc::c_int as f64
+            / (*g).emsize as i32 as f64
             / 1i32 as f64
             + 0.5f64,
     ) * 1i32 as f64;
     defaultAdvanceHeight = floor(
-        1000.0f64 * (*g).default_advh as libc::c_int as f64
-            / (*g).emsize as libc::c_int as f64
+        1000.0f64 * (*g).default_advh as i32 as f64
+            / (*g).emsize as i32 as f64
             / 1i32 as f64
             + 0.5f64,
     ) * 1i32 as f64;
     w2_array = pdf_new_array();
     cid = 0i32;
-    while cid <= last_cid as libc::c_int {
+    while cid <= last_cid as i32 {
         let mut idx: USHORT = 0;
         let mut vertOriginX: f64 = 0.;
         let mut vertOriginY: f64 = 0.;
         let mut advanceHeight: f64 = 0.;
-        if !(*used_chars.offset((cid / 8i32) as isize) as libc::c_int & 1i32 << 7i32 - cid % 8i32
+        if !(*used_chars.offset((cid / 8i32) as isize) as i32 & 1i32 << 7i32 - cid % 8i32
             == 0)
         {
             idx = tt_get_index(g, cid as USHORT);
-            if !(cid != 0i32 && idx as libc::c_int == 0i32) {
+            if !(cid != 0i32 && idx as i32 == 0i32) {
                 advanceHeight = floor(
                     1000.0f64
-                        * (*(*g).gd.offset(idx as isize)).advh as libc::c_int as f64
-                        / (*g).emsize as libc::c_int as f64
+                        * (*(*g).gd.offset(idx as isize)).advh as i32 as f64
+                        / (*g).emsize as i32 as f64
                         / 1i32 as f64
                         + 0.5f64,
                 ) * 1i32 as f64;
                 vertOriginX = floor(
                     1000.0f64
                         * (0.5f64
-                            * (*(*g).gd.offset(idx as isize)).advw as libc::c_int
+                            * (*(*g).gd.offset(idx as isize)).advw as i32
                                 as f64)
-                        / (*g).emsize as libc::c_int as f64
+                        / (*g).emsize as i32 as f64
                         / 1i32 as f64
                         + 0.5f64,
                 ) * 1i32 as f64;
                 vertOriginY = floor(
                     1000.0f64
-                        * ((*(*g).gd.offset(idx as isize)).tsb as libc::c_int
-                            + (*(*g).gd.offset(idx as isize)).ury as libc::c_int)
+                        * ((*(*g).gd.offset(idx as isize)).tsb as i32
+                            + (*(*g).gd.offset(idx as isize)).ury as i32)
                             as f64
-                        / (*g).emsize as libc::c_int as f64
+                        / (*g).emsize as i32 as f64
                         / 1i32 as f64
                         + 0.5f64,
                 ) * 1i32 as f64;
@@ -1195,10 +1195,10 @@ unsafe extern "C" fn fix_CJK_symbols(mut code: u16) -> u16 {
         < (::std::mem::size_of::<[C2RustUnnamed_2; 10]>() as u64)
             .wrapping_div(::std::mem::size_of::<C2RustUnnamed_2>() as u64)
     {
-        if CJK_Uni_symbols[i as usize].alt1 as libc::c_int == code as libc::c_int {
+        if CJK_Uni_symbols[i as usize].alt1 as i32 == code as i32 {
             alt_code = CJK_Uni_symbols[i as usize].alt2;
             break;
-        } else if CJK_Uni_symbols[i as usize].alt2 as libc::c_int == code as libc::c_int {
+        } else if CJK_Uni_symbols[i as usize].alt2 as i32 == code as i32 {
             alt_code = CJK_Uni_symbols[i as usize].alt1;
             break;
         } else {
@@ -1207,7 +1207,7 @@ unsafe extern "C" fn fix_CJK_symbols(mut code: u16) -> u16 {
     }
     return alt_code;
 }
-unsafe extern "C" fn cid_to_code(mut cmap: *mut CMap, mut cid: CID) -> libc::c_int {
+unsafe extern "C" fn cid_to_code(mut cmap: *mut CMap, mut cid: CID) -> i32 {
     let mut inbuf: [u8; 2] = [0; 2];
     let mut outbuf: [u8; 32] = [0; 32];
     let mut inbytesleft: size_t = 2i32 as size_t;
@@ -1215,10 +1215,10 @@ unsafe extern "C" fn cid_to_code(mut cmap: *mut CMap, mut cid: CID) -> libc::c_i
     let mut p: *const u8 = 0 as *const u8;
     let mut q: *mut u8 = 0 as *mut u8;
     if cmap.is_null() {
-        return cid as libc::c_int;
+        return cid as i32;
     }
-    inbuf[0] = (cid as libc::c_int >> 8i32 & 0xffi32) as u8;
-    inbuf[1] = (cid as libc::c_int & 0xffi32) as u8;
+    inbuf[0] = (cid as i32 >> 8i32 & 0xffi32) as u8;
+    inbuf[1] = (cid as i32 & 0xffi32) as u8;
     p = inbuf.as_mut_ptr();
     q = outbuf.as_mut_ptr();
     CMap_decode_char(cmap, &mut p, &mut inbytesleft, &mut q, &mut outbytesleft);
@@ -1226,28 +1226,28 @@ unsafe extern "C" fn cid_to_code(mut cmap: *mut CMap, mut cid: CID) -> libc::c_i
         return 0i32;
     } else {
         if outbytesleft == 31i32 as u64 {
-            return outbuf[0] as libc::c_int;
+            return outbuf[0] as i32;
         } else {
             if outbytesleft == 30i32 as u64 {
-                return (outbuf[0] as libc::c_int) << 8i32 | outbuf[1] as libc::c_int;
+                return (outbuf[0] as i32) << 8i32 | outbuf[1] as i32;
             } else {
                 if outbytesleft == 28i32 as u64 {
                     /* We assume the output encoding is UTF-16. */
                     let mut hi: CID = 0;
                     let mut lo: CID = 0;
-                    hi = ((outbuf[0] as libc::c_int) << 8i32 | outbuf[1] as libc::c_int) as CID;
-                    lo = ((outbuf[2] as libc::c_int) << 8i32 | outbuf[3] as libc::c_int) as CID;
-                    if hi as libc::c_int >= 0xd800i32
-                        && hi as libc::c_int <= 0xdbffi32
-                        && lo as libc::c_int >= 0xdc00i32
-                        && lo as libc::c_int <= 0xdfffi32
+                    hi = ((outbuf[0] as i32) << 8i32 | outbuf[1] as i32) as CID;
+                    lo = ((outbuf[2] as i32) << 8i32 | outbuf[3] as i32) as CID;
+                    if hi as i32 >= 0xd800i32
+                        && hi as i32 <= 0xdbffi32
+                        && lo as i32 >= 0xdc00i32
+                        && lo as i32 <= 0xdfffi32
                     {
-                        return (hi as libc::c_int - 0xd800i32) * 0x400i32
+                        return (hi as i32 - 0xd800i32) * 0x400i32
                             + 0x10000i32
-                            + lo as libc::c_int
+                            + lo as i32
                             - 0xdc00i32;
                     } else {
-                        return (hi as libc::c_int) << 16i32 | lo as libc::c_int;
+                        return (hi as i32) << 16i32 | lo as i32;
                     }
                 }
             }
@@ -1271,9 +1271,9 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     let mut last_cid: CID = 0;
     let mut cidtogidmap: *mut u8 = 0 as *mut u8;
     let mut num_glyphs: USHORT = 0;
-    let mut i: libc::c_int = 0;
-    let mut glyph_ordering: libc::c_int = 0i32;
-    let mut unicode_cmap: libc::c_int = 0i32;
+    let mut i: i32 = 0;
+    let mut glyph_ordering: i32 = 0i32;
+    let mut unicode_cmap: i32 = 0i32;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     if (*font).indirect.is_null() {
         return;
@@ -1386,12 +1386,12 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     if streq_ptr(
         (*(*font).csi).registry,
         b"Adobe\x00" as *const u8 as *const i8,
-    ) as libc::c_int
+    ) as i32
         != 0
         && streq_ptr(
             (*(*font).csi).ordering,
             b"Identity\x00" as *const u8 as *const i8,
-        ) as libc::c_int
+        ) as i32
             != 0
     {
         glyph_ordering = 1i32
@@ -1453,8 +1453,8 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     h_used_chars = v_used_chars;
     used_chars = h_used_chars;
     let mut parent: *mut Type0Font = 0 as *mut Type0Font;
-    let mut parent_id: libc::c_int = 0;
-    let mut c: libc::c_int = 0;
+    let mut parent_id: i32 = 0;
+    let mut c: i32 = 0;
     parent_id = CIDFont_get_parent_id(font, 0i32);
     if parent_id >= 0i32 {
         parent = Type0Font_cache_get(parent_id);
@@ -1474,9 +1474,9 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     c = 0i32;
     i = 8191i32;
     while i >= 0i32 {
-        if !h_used_chars.is_null() && *h_used_chars.offset(i as isize) as libc::c_int != 0i32 {
+        if !h_used_chars.is_null() && *h_used_chars.offset(i as isize) as i32 != 0i32 {
             last_cid = (i * 8i32 + 7i32) as CID;
-            c = *h_used_chars.offset(i as isize) as libc::c_int;
+            c = *h_used_chars.offset(i as isize) as i32;
             break;
         } else {
             i -= 1
@@ -1484,12 +1484,12 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     }
     i = 8191i32;
     while i >= 0i32 {
-        if !v_used_chars.is_null() && *v_used_chars.offset(i as isize) as libc::c_int != 0i32 {
-            if i * 8i32 + 7i32 >= last_cid as libc::c_int {
-                c = if i * 8i32 + 7i32 > last_cid as libc::c_int {
-                    *v_used_chars.offset(i as isize) as libc::c_int
+        if !v_used_chars.is_null() && *v_used_chars.offset(i as isize) as i32 != 0i32 {
+            if i * 8i32 + 7i32 >= last_cid as i32 {
+                c = if i * 8i32 + 7i32 > last_cid as i32 {
+                    *v_used_chars.offset(i as isize) as i32
                 } else {
-                    c | *v_used_chars.offset(i as isize) as libc::c_int
+                    c | *v_used_chars.offset(i as isize) as i32
                 };
                 last_cid = (i * 8i32 + 7i32) as CID;
                 break;
@@ -1497,7 +1497,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
         }
         i -= 1
     }
-    if last_cid as libc::c_int > 0i32 {
+    if last_cid as i32 > 0i32 {
         i = 0i32;
         while i < 8i32 {
             if c >> i & 1i32 != 0 {
@@ -1522,25 +1522,25 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     if !h_used_chars.is_null() {
         used_chars = h_used_chars;
         cid = 1i32 as CID;
-        while cid as libc::c_int <= last_cid as libc::c_int {
-            let mut code: libc::c_int = 0;
+        while cid as i32 <= last_cid as i32 {
+            let mut code: i32 = 0;
             let mut gid: u16 = 0;
-            if !(*h_used_chars.offset((cid as libc::c_int / 8i32) as isize) as libc::c_int
-                & 1i32 << 7i32 - cid as libc::c_int % 8i32
+            if !(*h_used_chars.offset((cid as i32 / 8i32) as isize) as i32
+                & 1i32 << 7i32 - cid as i32 % 8i32
                 == 0)
             {
                 if glyph_ordering != 0 {
                     gid = cid;
-                    code = cid as libc::c_int
+                    code = cid as i32
                 } else {
                     code = cid_to_code(cmap, cid);
                     gid = tt_cmap_lookup(ttcmap, code as SFNT_ULONG);
-                    if gid as libc::c_int == 0i32 && unicode_cmap != 0 {
-                        let mut alt_code: libc::c_int = 0;
-                        alt_code = fix_CJK_symbols(code as u16) as libc::c_int;
+                    if gid as i32 == 0i32 && unicode_cmap != 0 {
+                        let mut alt_code: i32 = 0;
+                        alt_code = fix_CJK_symbols(code as u16) as i32;
                         if alt_code != code {
                             gid = tt_cmap_lookup(ttcmap, alt_code as SFNT_ULONG);
-                            if gid as libc::c_int != 0i32 {
+                            if gid as i32 != 0i32 {
                                 dpx_warning(
                                     b"Unicode char U+%04x replaced with U+%04x.\x00" as *const u8
                                         as *const i8,
@@ -1552,11 +1552,11 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                     }
                     /* FIX_CJK_UNIOCDE_SYMBOLS */
                 }
-                if gid as libc::c_int == 0i32 {
+                if gid as i32 == 0i32 {
                     dpx_warning(
                         b"Glyph missing in font. (CID=%u, code=0x%04x)\x00" as *const u8
                             as *const i8,
-                        cid as libc::c_int,
+                        cid as i32,
                         code,
                     );
                 }
@@ -1620,11 +1620,11 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
             }
         }
         cid = 1i32 as CID;
-        while cid as libc::c_int <= last_cid as libc::c_int {
-            let mut code_0: libc::c_int = 0;
+        while cid as i32 <= last_cid as i32 {
+            let mut code_0: i32 = 0;
             let mut gid_0: u16 = 0;
-            if !(*v_used_chars.offset((cid as libc::c_int / 8i32) as isize) as libc::c_int
-                & 1i32 << 7i32 - cid as libc::c_int % 8i32
+            if !(*v_used_chars.offset((cid as i32 / 8i32) as isize) as i32
+                & 1i32 << 7i32 - cid as i32 % 8i32
                 == 0)
             {
                 /* There may be conflict of horizontal and vertical glyphs
@@ -1632,22 +1632,22 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                  * that...
                  */
                 if !(!h_used_chars.is_null()
-                    && *h_used_chars.offset((cid as libc::c_int / 8i32) as isize) as libc::c_int
-                        & 1i32 << 7i32 - cid as libc::c_int % 8i32
+                    && *h_used_chars.offset((cid as i32 / 8i32) as isize) as i32
+                        & 1i32 << 7i32 - cid as i32 % 8i32
                         != 0)
                 {
                     if glyph_ordering != 0 {
                         gid_0 = cid;
-                        code_0 = cid as libc::c_int
+                        code_0 = cid as i32
                     } else {
                         code_0 = cid_to_code(cmap, cid);
                         gid_0 = tt_cmap_lookup(ttcmap, code_0 as SFNT_ULONG);
-                        if gid_0 as libc::c_int == 0i32 && unicode_cmap != 0 {
-                            let mut alt_code_0: libc::c_int = 0;
-                            alt_code_0 = fix_CJK_symbols(code_0 as u16) as libc::c_int;
+                        if gid_0 as i32 == 0i32 && unicode_cmap != 0 {
+                            let mut alt_code_0: i32 = 0;
+                            alt_code_0 = fix_CJK_symbols(code_0 as u16) as i32;
                             if alt_code_0 != code_0 {
                                 gid_0 = tt_cmap_lookup(ttcmap, alt_code_0 as SFNT_ULONG);
-                                if gid_0 as libc::c_int != 0i32 {
+                                if gid_0 as i32 != 0i32 {
                                     dpx_warning(
                                         b"Unicode char U+%04x replaced with U+%04x.\x00"
                                             as *const u8
@@ -1660,11 +1660,11 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                         }
                         /* FIX_CJK_UNIOCDE_SYMBOLS */
                     }
-                    if gid_0 as libc::c_int == 0i32 {
+                    if gid_0 as i32 == 0i32 {
                         dpx_warning(
                             b"Glyph missing in font. (CID=%u, code=0x%04x)\x00" as *const u8
                                 as *const i8,
-                            cid as libc::c_int,
+                            cid as i32,
                             code_0,
                         );
                     } else if !gsub_list.is_null() {
@@ -1675,9 +1675,9 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                     if !used_chars.is_null() {
                         /* merge vertical used_chars to horizontal */
                         let ref mut fresh0 =
-                            *used_chars.offset((cid as libc::c_int / 8i32) as isize);
-                        *fresh0 = (*fresh0 as libc::c_int
-                            | 1i32 << 7i32 - cid as libc::c_int % 8i32)
+                            *used_chars.offset((cid as i32 / 8i32) as isize);
+                        *fresh0 = (*fresh0 as i32
+                            | 1i32 << 7i32 - cid as i32 % 8i32)
                             as i8
                     }
                     num_glyphs = num_glyphs.wrapping_add(1)
@@ -1706,8 +1706,8 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
         if verbose > 1i32 {
             dpx_message(
                 b"[%u glyphs (Max CID: %u)]\x00" as *const u8 as *const i8,
-                (*glyphs).num_glyphs as libc::c_int,
-                last_cid as libc::c_int,
+                (*glyphs).num_glyphs as i32,
+                last_cid as i32,
             );
         }
     } else if tt_get_metrics(sfont, glyphs) < 0i32 {
@@ -1790,7 +1790,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     pdf_add_stream(
         cidset,
         used_chars as *const libc::c_void,
-        last_cid as libc::c_int / 8i32 + 1i32,
+        last_cid as i32 / 8i32 + 1i32,
     );
     pdf_add_dict(
         (*font).descriptor,
@@ -1816,7 +1816,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
         pdf_add_stream(
             c2gmstream,
             cidtogidmap as *const libc::c_void,
-            (last_cid as libc::c_int + 1i32) * 2i32,
+            (last_cid as i32 + 1i32) * 2i32,
         );
         pdf_add_dict(
             (*font).fontdict,
@@ -1852,7 +1852,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
     mut name: *const i8,
     mut cmap_csi: *mut CIDSysInfo,
     mut opt: *mut cid_opt,
-) -> libc::c_int {
+) -> i32 {
     let mut fontname: *mut i8 = 0 as *mut i8;
     let mut sfont: *mut sfnt = 0 as *mut sfnt;
     let mut offset: SFNT_ULONG = 0i32 as SFNT_ULONG;
@@ -1919,12 +1919,12 @@ pub unsafe extern "C" fn CIDFont_type2_open(
         return -1i32;
     }
     let mut shortname: *mut i8 = 0 as *mut i8;
-    let mut namelen: libc::c_int = 0;
+    let mut namelen: i32 = 0;
     /* MAC-ROMAN-EN-POSTSCRIPT or WIN-UNICODE-EN(US)-POSTSCRIPT */
     shortname = new((127i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
         as u32) as *mut i8; /* for SJIS, UTF-16, ... string */
-    namelen = tt_get_ps_fontname(sfont, shortname, 127i32 as USHORT) as libc::c_int;
+    namelen = tt_get_ps_fontname(sfont, shortname, 127i32 as USHORT) as i32;
     if namelen == 0i32 {
         memset(
             shortname as *mut libc::c_void,
@@ -1932,7 +1932,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
             127i32 as u64,
         );
         strncpy(shortname, name, 127i32 as u64);
-        namelen = strlen(shortname) as libc::c_int
+        namelen = strlen(shortname) as i32
     }
     validate_name(shortname, namelen);
     /*

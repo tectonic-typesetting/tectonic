@@ -45,22 +45,22 @@ extern "C" {
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn strncpy(_: *mut i8, _: *const i8, _: u64)
         -> *mut i8;
     #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn ttstub_input_open(
         path: *const i8,
         format: tt_input_format_type,
-        is_gz: libc::c_int,
+        is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
@@ -69,11 +69,11 @@ extern "C" {
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
     fn pdf_dev_put_image(
-        xobj_id: libc::c_int,
+        xobj_id: i32,
         p: *mut transform_info,
         ref_x: f64,
         ref_y: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
     #[no_mangle]
@@ -83,7 +83,7 @@ extern "C" {
      * Only pdf:image special in spc_pdfm.c want optinal dict!
      */
     #[no_mangle]
-    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> libc::c_int;
+    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -113,25 +113,25 @@ extern "C" {
         endptr: *const i8,
         x_user: f64,
         y_user: f64,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
-    fn mps_stack_depth() -> libc::c_int;
+    fn mps_stack_depth() -> i32;
     #[no_mangle]
     fn mps_eop_cleanup();
     #[no_mangle]
-    fn pdf_dev_concat(M: *const pdf_tmatrix) -> libc::c_int;
+    fn pdf_dev_concat(M: *const pdf_tmatrix) -> i32;
     #[no_mangle]
-    fn pdf_dev_gsave() -> libc::c_int;
+    fn pdf_dev_gsave() -> i32;
     #[no_mangle]
-    fn pdf_dev_grestore() -> libc::c_int;
+    fn pdf_dev_grestore() -> i32;
     /* The depth here is the depth of q/Q nesting.
      * We must remember current depth of nesting when starting a page or xform,
      * and must recover until that depth at the end of page/xform.
      */
     #[no_mangle]
-    fn pdf_dev_current_depth() -> libc::c_int;
+    fn pdf_dev_current_depth() -> i32;
     #[no_mangle]
-    fn pdf_dev_grestore_to(depth: libc::c_int);
+    fn pdf_dev_grestore_to(depth: i32);
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
     #[no_mangle]
@@ -139,8 +139,8 @@ extern "C" {
         spe: *mut spc_env,
         dimtrns: *mut transform_info,
         args: *mut spc_arg,
-        syntax: libc::c_int,
-    ) -> libc::c_int;
+        syntax: i32,
+    ) -> i32;
 }
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
@@ -212,7 +212,7 @@ pub struct spc_env {
     pub x_user: f64,
     pub y_user: f64,
     pub mag: f64,
-    pub pg: libc::c_int,
+    pub pg: i32,
     /* current page in PDF */
 }
 #[derive(Copy, Clone)]
@@ -224,7 +224,7 @@ pub struct spc_arg {
     pub command: *const i8,
 }
 pub type spc_handler_fn_ptr =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int>;
+    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
@@ -249,7 +249,7 @@ pub struct transform_info {
     pub depth: f64,
     pub matrix: pdf_tmatrix,
     pub bbox: pdf_rect,
-    pub flags: libc::c_int,
+    pub flags: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -262,8 +262,8 @@ pub struct pdf_rect {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct load_options {
-    pub page_no: libc::c_int,
-    pub bbox_type: libc::c_int,
+    pub page_no: i32,
+    pub bbox_type: i32,
     pub dict: *mut pdf_obj,
 }
 #[inline]
@@ -304,22 +304,22 @@ unsafe extern "C" fn strstartswith(
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-static mut block_pending: libc::c_int = 0i32;
+static mut block_pending: i32 = 0i32;
 static mut pending_x: f64 = 0.0f64;
 static mut pending_y: f64 = 0.0f64;
-static mut position_set: libc::c_int = 0i32;
+static mut position_set: i32 = 0i32;
 static mut ps_headers: *mut *mut i8 =
     0 as *const *mut i8 as *mut *mut i8;
-static mut num_ps_headers: libc::c_int = 0i32;
+static mut num_ps_headers: i32 = 0i32;
 unsafe extern "C" fn spc_handler_ps_header(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let mut pro: *mut i8 = 0 as *mut i8;
     let mut ps_header: *mut rust_input_handle_t = 0 as *mut rust_input_handle_t;
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr.offset(1) >= (*args).endptr
-        || *(*args).curptr.offset(0) as libc::c_int != '=' as i32
+        || *(*args).curptr.offset(0) as i32 != '=' as i32
     {
         spc_warn(
             spe,
@@ -372,11 +372,11 @@ unsafe extern "C" fn parse_filename(
     let mut q: *const i8 = 0 as *const i8;
     let mut p: *const i8 = *pp;
     let mut qchar: i8 = 0;
-    let mut n: libc::c_int = 0;
+    let mut n: i32 = 0;
     if p.is_null() || p >= endptr {
         return 0 as *mut i8;
     } else {
-        if *p as libc::c_int == '\"' as i32 || *p as libc::c_int == '\'' as i32 {
+        if *p as i32 == '\"' as i32 || *p as i32 == '\'' as i32 {
             let fresh2 = p;
             p = p.offset(1);
             qchar = *fresh2
@@ -386,13 +386,13 @@ unsafe extern "C" fn parse_filename(
     }
     n = 0i32;
     q = p;
-    while p < endptr && *p as libc::c_int != qchar as libc::c_int {
+    while p < endptr && *p as i32 != qchar as i32 {
         /* nothing */
         n += 1;
         p = p.offset(1)
     }
-    if qchar as libc::c_int != ' ' as i32 {
-        if *p as libc::c_int != qchar as libc::c_int {
+    if qchar as i32 != ' ' as i32 {
+        if *p as i32 != qchar as i32 {
             return 0 as *mut i8;
         }
         p = p.offset(1)
@@ -416,8 +416,8 @@ unsafe extern "C" fn parse_filename(
 unsafe extern "C" fn spc_handler_ps_file(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
-    let mut form_id: libc::c_int = 0;
+) -> i32 {
+    let mut form_id: i32 = 0;
     let mut filename: *mut i8 = 0 as *mut i8;
     let mut ti: transform_info = transform_info {
         width: 0.,
@@ -461,7 +461,7 @@ unsafe extern "C" fn spc_handler_ps_file(
     }
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr.offset(1) >= (*args).endptr
-        || *(*args).curptr.offset(0) as libc::c_int != '=' as i32
+        || *(*args).curptr.offset(0) as i32 != '=' as i32
     {
         spc_warn(
             spe,
@@ -501,9 +501,9 @@ unsafe extern "C" fn spc_handler_ps_file(
 unsafe extern "C" fn spc_handler_ps_plotfile(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0i32; /* xscale = 1.0, yscale = -1.0 */
-    let mut form_id: libc::c_int = 0;
+) -> i32 {
+    let mut error: i32 = 0i32; /* xscale = 1.0, yscale = -1.0 */
+    let mut form_id: i32 = 0;
     let mut filename: *mut i8 = 0 as *mut i8;
     let mut p: transform_info = transform_info {
         width: 0.,
@@ -583,10 +583,10 @@ unsafe extern "C" fn spc_handler_ps_plotfile(
 unsafe extern "C" fn spc_handler_ps_literal(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
-    let mut st_depth: libc::c_int = 0;
-    let mut gs_depth: libc::c_int = 0;
+) -> i32 {
+    let mut error: i32 = 0i32;
+    let mut st_depth: i32 = 0;
+    let mut gs_depth: i32 = 0;
     let mut x_user: f64 = 0.;
     let mut y_user: f64 = 0.;
     if !spe.is_null() && !args.is_null() && (*args).curptr <= (*args).endptr {
@@ -645,7 +645,7 @@ unsafe extern "C" fn spc_handler_ps_literal(
             .curptr
             .offset(strlen(b":[end]\x00" as *const u8 as *const i8) as isize)
     } else if (*args).curptr < (*args).endptr
-        && *(*args).curptr.offset(0) as libc::c_int == ':' as i32
+        && *(*args).curptr.offset(0) as i32 == ':' as i32
     {
         x_user = if position_set != 0 {
             pending_x
@@ -697,7 +697,7 @@ unsafe extern "C" fn spc_handler_ps_literal(
 unsafe extern "C" fn spc_handler_ps_trickscmd(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     dpx_warning(
         b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const i8,
     );
@@ -707,7 +707,7 @@ unsafe extern "C" fn spc_handler_ps_trickscmd(
 unsafe extern "C" fn spc_handler_ps_tricksobj(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     dpx_warning(
         b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const i8,
     );
@@ -717,10 +717,10 @@ unsafe extern "C" fn spc_handler_ps_tricksobj(
 unsafe extern "C" fn spc_handler_ps_default(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0;
-    let mut st_depth: libc::c_int = 0;
-    let mut gs_depth: libc::c_int = 0;
+) -> i32 {
+    let mut error: i32 = 0;
+    let mut st_depth: i32 = 0;
+    let mut gs_depth: i32 = 0;
     if !spe.is_null() && !args.is_null() {
     } else {
         __assert_fail(
@@ -793,7 +793,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
                 key: b"header\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_header
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -803,7 +803,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
                 key: b"PSfile\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_file
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -813,7 +813,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
                 key: b"psfile\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_file
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -823,7 +823,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
                 key: b"ps: plotfile \x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_plotfile
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -833,7 +833,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
                 key: b"PS: plotfile \x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_plotfile
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -843,7 +843,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
                 key: b"PS:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_literal
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -853,7 +853,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
                 key: b"ps:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_literal
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -863,7 +863,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
                 key: b"PST:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_trickscmd
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -873,7 +873,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
                 key: b"pst:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_tricksobj
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -883,7 +883,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
                 key: b"\" \x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_default
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -891,12 +891,12 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
     ]
 };
 #[no_mangle]
-pub unsafe extern "C" fn spc_dvips_at_begin_document() -> libc::c_int {
+pub unsafe extern "C" fn spc_dvips_at_begin_document() -> i32 {
     /* This function used to start the global_defs temp file. */
     return 0i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_dvips_at_end_document() -> libc::c_int {
+pub unsafe extern "C" fn spc_dvips_at_end_document() -> i32 {
     if !ps_headers.is_null() {
         while num_ps_headers > 0i32 {
             num_ps_headers -= 1;
@@ -907,19 +907,19 @@ pub unsafe extern "C" fn spc_dvips_at_end_document() -> libc::c_int {
     return 0i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_dvips_at_begin_page() -> libc::c_int {
+pub unsafe extern "C" fn spc_dvips_at_begin_page() -> i32 {
     /* This function used do some things related to now-removed PSTricks functionality. */
     return 0i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_dvips_at_end_page() -> libc::c_int {
+pub unsafe extern "C" fn spc_dvips_at_end_page() -> i32 {
     mps_eop_cleanup();
     return 0i32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_dvips_check_special(
     mut buf: *const i8,
-    mut len: libc::c_int,
+    mut len: i32,
 ) -> bool {
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
@@ -930,7 +930,7 @@ pub unsafe extern "C" fn spc_dvips_check_special(
     if p >= endptr {
         return 0i32 != 0;
     }
-    len = endptr.wrapping_offset_from(p) as i64 as libc::c_int;
+    len = endptr.wrapping_offset_from(p) as i64 as i32;
     i = 0i32 as size_t;
     while i
         < (::std::mem::size_of::<[spc_handler; 10]>() as u64)
@@ -975,9 +975,9 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
     mut handle: *mut spc_handler,
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     let mut key: *const i8 = 0 as *const i8;
-    let mut keylen: libc::c_int = 0;
+    let mut keylen: i32 = 0;
     let mut i: size_t = 0;
     if !handle.is_null() && !spe.is_null() && !args.is_null() {
     } else {
@@ -992,15 +992,15 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
     key = (*args).curptr;
     while (*args).curptr < (*args).endptr
         && *(*__ctype_b_loc())
-            .offset(*(*args).curptr.offset(0) as u8 as libc::c_int as isize)
-            as libc::c_int
-            & _ISalpha as libc::c_int as u16 as libc::c_int
+            .offset(*(*args).curptr.offset(0) as u8 as i32 as isize)
+            as i32
+            & _ISalpha as i32 as u16 as i32
             != 0
     {
         (*args).curptr = (*args).curptr.offset(1)
     }
     /* Test for "ps:". The "ps::" special is subsumed under this case.  */
-    if (*args).curptr < (*args).endptr && *(*args).curptr.offset(0) as libc::c_int == ':' as i32 {
+    if (*args).curptr < (*args).endptr && *(*args).curptr.offset(0) as i32 == ':' as i32 {
         (*args).curptr = (*args).curptr.offset(1);
         if (*args)
             .curptr
@@ -1017,12 +1017,12 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
                 .offset(strlen(b" plotfile \x00" as *const u8 as *const i8) as isize)
         }
     } else if (*args).curptr.offset(1) < (*args).endptr
-        && *(*args).curptr.offset(0) as libc::c_int == '\"' as i32
-        && *(*args).curptr.offset(1) as libc::c_int == ' ' as i32
+        && *(*args).curptr.offset(0) as i32 == '\"' as i32
+        && *(*args).curptr.offset(1) as i32 == ' ' as i32
     {
         (*args).curptr = (*args).curptr.offset(2)
     }
-    keylen = (*args).curptr.wrapping_offset_from(key) as i64 as libc::c_int;
+    keylen = (*args).curptr.wrapping_offset_from(key) as i64 as i32;
     if keylen < 1i32 {
         spc_warn(
             spe,

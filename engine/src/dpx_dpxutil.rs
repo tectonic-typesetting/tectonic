@@ -20,7 +20,7 @@ extern "C" {
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -66,7 +66,7 @@ pub const _ISupper: C2RustUnnamed = 256;
 #[repr(C)]
 pub struct ht_entry {
     pub key: *mut i8,
-    pub keylen: libc::c_int,
+    pub keylen: i32,
     pub value: *mut libc::c_void,
     pub next: *mut ht_entry,
 }
@@ -74,14 +74,14 @@ pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> (
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_table {
-    pub count: libc::c_int,
+    pub count: i32,
     pub hval_free_fn: hval_free_func,
     pub table: [*mut ht_entry; 503],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_iter {
-    pub index: libc::c_int,
+    pub index: i32,
     pub curr: *mut libc::c_void,
     pub hash: *mut ht_table,
 }
@@ -116,15 +116,15 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn xtoi(mut c: i8) -> libc::c_int {
-    if c as libc::c_int >= '0' as i32 && c as libc::c_int <= '9' as i32 {
-        return c as libc::c_int - '0' as i32;
+pub unsafe extern "C" fn xtoi(mut c: i8) -> i32 {
+    if c as i32 >= '0' as i32 && c as i32 <= '9' as i32 {
+        return c as i32 - '0' as i32;
     }
-    if c as libc::c_int >= 'A' as i32 && c as libc::c_int <= 'F' as i32 {
-        return c as libc::c_int - 'A' as i32 + 10i32;
+    if c as i32 >= 'A' as i32 && c as i32 <= 'F' as i32 {
+        return c as i32 - 'A' as i32 + 10i32;
     }
-    if c as libc::c_int >= 'a' as i32 && c as libc::c_int <= 'f' as i32 {
-        return c as libc::c_int - 'a' as i32 + 10i32;
+    if c as i32 >= 'a' as i32 && c as i32 <= 'f' as i32 {
+        return c as i32 - 'a' as i32 + 10i32;
     }
     return -1i32;
 }
@@ -172,12 +172,12 @@ pub unsafe extern "C" fn skip_white_spaces(
     mut endptr: *mut u8,
 ) {
     while *s < endptr {
-        if !(**s as libc::c_int == ' ' as i32
-            || **s as libc::c_int == '\t' as i32
-            || **s as libc::c_int == '\u{c}' as i32
-            || **s as libc::c_int == '\r' as i32
-            || **s as libc::c_int == '\n' as i32
-            || **s as libc::c_int == '\u{0}' as i32)
+        if !(**s as i32 == ' ' as i32
+            || **s as i32 == '\t' as i32
+            || **s as i32 == '\u{c}' as i32
+            || **s as i32 == '\r' as i32
+            || **s as i32 == '\n' as i32
+            || **s as i32 == '\u{0}' as i32)
         {
             break;
         }
@@ -186,7 +186,7 @@ pub unsafe extern "C" fn skip_white_spaces(
 }
 #[no_mangle]
 pub unsafe extern "C" fn ht_init_table(mut ht: *mut ht_table, mut hval_free_fn: hval_free_func) {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     if !ht.is_null() {
     } else {
         __assert_fail(
@@ -209,7 +209,7 @@ pub unsafe extern "C" fn ht_init_table(mut ht: *mut ht_table, mut hval_free_fn: 
 }
 #[no_mangle]
 pub unsafe extern "C" fn ht_clear_table(mut ht: *mut ht_table) {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     if !ht.is_null() {
     } else {
         __assert_fail(
@@ -247,7 +247,7 @@ pub unsafe extern "C" fn ht_clear_table(mut ht: *mut ht_table) {
     (*ht).hval_free_fn = None;
 }
 #[no_mangle]
-pub unsafe extern "C" fn ht_table_size(mut ht: *mut ht_table) -> libc::c_int {
+pub unsafe extern "C" fn ht_table_size(mut ht: *mut ht_table) -> i32 {
     if !ht.is_null() {
     } else {
         __assert_fail(
@@ -264,10 +264,10 @@ pub unsafe extern "C" fn ht_table_size(mut ht: *mut ht_table) -> libc::c_int {
 }
 unsafe extern "C" fn get_hash(
     mut key: *const libc::c_void,
-    mut keylen: libc::c_int,
+    mut keylen: i32,
 ) -> libc::c_uint {
     let mut hkey: libc::c_uint = 0i32 as libc::c_uint;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     i = 0i32;
     while i < keylen {
         hkey = (hkey << 5i32)
@@ -281,7 +281,7 @@ unsafe extern "C" fn get_hash(
 pub unsafe extern "C" fn ht_lookup_table(
     mut ht: *mut ht_table,
     mut key: *const libc::c_void,
-    mut keylen: libc::c_int,
+    mut keylen: i32,
 ) -> *mut libc::c_void {
     let mut hent: *mut ht_entry = 0 as *mut ht_entry;
     let mut hkey: libc::c_uint = 0;
@@ -317,8 +317,8 @@ pub unsafe extern "C" fn ht_lookup_table(
 pub unsafe extern "C" fn ht_remove_table(
     mut ht: *mut ht_table,
     mut key: *const libc::c_void,
-    mut keylen: libc::c_int,
-) -> libc::c_int
+    mut keylen: i32,
+) -> i32
 /* returns 1 if the element was found and removed and 0 otherwise */ {
     let mut hent: *mut ht_entry = 0 as *mut ht_entry;
     let mut prev: *mut ht_entry = 0 as *mut ht_entry;
@@ -375,7 +375,7 @@ pub unsafe extern "C" fn ht_remove_table(
 pub unsafe extern "C" fn ht_insert_table(
     mut ht: *mut ht_table,
     mut key: *const libc::c_void,
-    mut keylen: libc::c_int,
+    mut keylen: i32,
     mut value: *mut libc::c_void,
 ) {
     let mut hent: *mut ht_entry = 0 as *mut ht_entry;
@@ -441,7 +441,7 @@ pub unsafe extern "C" fn ht_insert_table(
 pub unsafe extern "C" fn ht_append_table(
     mut ht: *mut ht_table,
     mut key: *const libc::c_void,
-    mut keylen: libc::c_int,
+    mut keylen: i32,
     mut value: *mut libc::c_void,
 ) {
     let mut hent: *mut ht_entry = 0 as *mut ht_entry;
@@ -478,8 +478,8 @@ pub unsafe extern "C" fn ht_append_table(
     (*ht).count += 1;
 }
 #[no_mangle]
-pub unsafe extern "C" fn ht_set_iter(mut ht: *mut ht_table, mut iter: *mut ht_iter) -> libc::c_int {
-    let mut i: libc::c_int = 0;
+pub unsafe extern "C" fn ht_set_iter(mut ht: *mut ht_table, mut iter: *mut ht_iter) -> i32 {
+    let mut i: i32 = 0;
     if !ht.is_null() && !iter.is_null() {
     } else {
         __assert_fail(
@@ -515,7 +515,7 @@ pub unsafe extern "C" fn ht_clear_iter(mut iter: *mut ht_iter) {
 #[no_mangle]
 pub unsafe extern "C" fn ht_iter_getkey(
     mut iter: *mut ht_iter,
-    mut keylen: *mut libc::c_int,
+    mut keylen: *mut i32,
 ) -> *mut i8 {
     let mut hent: *mut ht_entry = 0 as *mut ht_entry;
     hent = (*iter).curr as *mut ht_entry;
@@ -538,7 +538,7 @@ pub unsafe extern "C" fn ht_iter_getval(mut iter: *mut ht_iter) -> *mut libc::c_
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn ht_iter_next(mut iter: *mut ht_iter) -> libc::c_int {
+pub unsafe extern "C" fn ht_iter_next(mut iter: *mut ht_iter) -> i32 {
     let mut hent: *mut ht_entry = 0 as *mut ht_entry;
     let mut ht: *mut ht_table = 0 as *mut ht_table;
     if !iter.is_null() {
@@ -569,11 +569,11 @@ unsafe extern "C" fn read_c_escchar(
     mut r: *mut i8,
     mut pp: *mut *const i8,
     mut endptr: *const i8,
-) -> libc::c_int {
-    let mut c: libc::c_int = 0i32;
-    let mut l: libc::c_int = 1i32;
+) -> i32 {
+    let mut c: i32 = 0i32;
+    let mut l: i32 = 1i32;
     let mut p: *const i8 = *pp;
-    match *p.offset(0) as libc::c_int {
+    match *p.offset(0) as i32 {
         97 => {
             c = '\u{7}' as i32;
             p = p.offset(1)
@@ -603,7 +603,7 @@ unsafe extern "C" fn read_c_escchar(
             p = p.offset(1)
         }
         92 | 63 | 39 | 34 => {
-            c = *p.offset(0) as libc::c_int;
+            c = *p.offset(0) as i32;
             p = p.offset(1)
         }
         10 => {
@@ -612,55 +612,55 @@ unsafe extern "C" fn read_c_escchar(
         }
         13 => {
             p = p.offset(1);
-            if p < endptr && *p.offset(0) as libc::c_int == '\n' as i32 {
+            if p < endptr && *p.offset(0) as i32 == '\n' as i32 {
                 p = p.offset(1)
             }
             l = 0i32
         }
         48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 => {
-            let mut i: libc::c_int = 0;
+            let mut i: i32 = 0;
             c = 0i32;
             i = 0i32;
             while i < 3i32
                 && p < endptr
-                && *p.offset(0) as libc::c_int >= '0' as i32
-                && *p.offset(0) as libc::c_int <= '7' as i32
+                && *p.offset(0) as i32 >= '0' as i32
+                && *p.offset(0) as i32 <= '7' as i32
             {
-                c = (c << 3i32) + (*p.offset(0) as libc::c_int - '0' as i32);
+                c = (c << 3i32) + (*p.offset(0) as i32 - '0' as i32);
                 i += 1;
                 p = p.offset(1)
             }
         }
         120 => {
-            let mut i_0: libc::c_int = 0;
+            let mut i_0: i32 = 0;
             c = 0i32;
             i_0 = 0i32;
             p = p.offset(1);
             while i_0 < 2i32
                 && p < endptr
-                && *(*__ctype_b_loc()).offset(*p.offset(0) as u8 as libc::c_int as isize)
-                    as libc::c_int
-                    & _ISxdigit as libc::c_int as u16 as libc::c_int
+                && *(*__ctype_b_loc()).offset(*p.offset(0) as u8 as i32 as isize)
+                    as i32
+                    & _ISxdigit as i32 as u16 as i32
                     != 0
             {
                 c = (c << 4i32)
                     + (if *(*__ctype_b_loc())
-                        .offset(*p.offset(0) as u8 as libc::c_int as isize)
-                        as libc::c_int
-                        & _ISdigit as libc::c_int as u16 as libc::c_int
+                        .offset(*p.offset(0) as u8 as i32 as isize)
+                        as i32
+                        & _ISdigit as i32 as u16 as i32
                         != 0
                     {
-                        *p.offset(0) as libc::c_int - '0' as i32
+                        *p.offset(0) as i32 - '0' as i32
                     } else {
                         (if *(*__ctype_b_loc())
-                            .offset(*p.offset(0) as u8 as libc::c_int as isize)
-                            as libc::c_int
-                            & _ISlower as libc::c_int as u16 as libc::c_int
+                            .offset(*p.offset(0) as u8 as i32 as isize)
+                            as i32
+                            & _ISlower as i32 as u16 as i32
                             != 0
                         {
-                            *p.offset(0) as libc::c_int - 'a' as i32 + 10i32
+                            *p.offset(0) as i32 - 'a' as i32 + 10i32
                         } else {
-                            *p.offset(0) as libc::c_int - 'A' as i32 + 10i32
+                            *p.offset(0) as i32 - 'A' as i32 + 10i32
                         })
                     });
                 i_0 += 1;
@@ -670,7 +670,7 @@ unsafe extern "C" fn read_c_escchar(
         _ => {
             dpx_warning(
                 b"Unknown escape char sequence: \\%c\x00" as *const u8 as *const i8,
-                *p.offset(0) as libc::c_int,
+                *p.offset(0) as i32,
             );
             l = 0i32;
             p = p.offset(1)
@@ -684,17 +684,17 @@ unsafe extern "C" fn read_c_escchar(
 }
 unsafe extern "C" fn read_c_litstrc(
     mut q: *mut i8,
-    mut len: libc::c_int,
+    mut len: i32,
     mut pp: *mut *const i8,
     mut endptr: *const i8,
-) -> libc::c_int {
+) -> i32 {
     let mut p: *const i8 = 0 as *const i8;
-    let mut l: libc::c_int = 0i32;
-    let mut s: libc::c_int = -1i32;
+    let mut l: i32 = 0i32;
+    let mut s: i32 = -1i32;
     l = 0i32;
     p = *pp;
     while s == -1i32 && p < endptr {
-        match *p.offset(0) as libc::c_int {
+        match *p.offset(0) as i32 {
             34 => {
                 s = 0i32;
                 p = p.offset(1)
@@ -751,8 +751,8 @@ pub unsafe extern "C" fn parse_c_string(
 ) -> *mut i8 {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = *pp;
-    let mut l: libc::c_int = 0i32;
-    if p >= endptr || *p.offset(0) as libc::c_int != '\"' as i32 {
+    let mut l: i32 = 0i32;
+    if p >= endptr || *p.offset(0) as i32 != '\"' as i32 {
         return 0 as *mut i8;
     }
     p = p.offset(1);
@@ -774,20 +774,20 @@ pub unsafe extern "C" fn parse_c_ident(
 ) -> *mut i8 {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = *pp;
-    let mut n: libc::c_int = 0;
+    let mut n: i32 = 0;
     if p >= endptr
-        || !(*p as libc::c_int == '_' as i32
-            || *p as libc::c_int >= 'a' as i32 && *p as libc::c_int <= 'z' as i32
-            || *p as libc::c_int >= 'A' as i32 && *p as libc::c_int <= 'Z' as i32)
+        || !(*p as i32 == '_' as i32
+            || *p as i32 >= 'a' as i32 && *p as i32 <= 'z' as i32
+            || *p as i32 >= 'A' as i32 && *p as i32 <= 'Z' as i32)
     {
         return 0 as *mut i8;
     }
     n = 0i32;
     while p < endptr
-        && (*p as libc::c_int == '_' as i32
-            || *p as libc::c_int >= 'a' as i32 && *p as libc::c_int <= 'z' as i32
-            || *p as libc::c_int >= 'A' as i32 && *p as libc::c_int <= 'Z' as i32
-            || *p as libc::c_int >= '0' as i32 && *p as libc::c_int <= '9' as i32)
+        && (*p as i32 == '_' as i32
+            || *p as i32 >= 'a' as i32 && *p as i32 <= 'z' as i32
+            || *p as i32 >= 'A' as i32 && *p as i32 <= 'Z' as i32
+            || *p as i32 >= '0' as i32 && *p as i32 <= '9' as i32)
     {
         p = p.offset(1);
         n += 1
@@ -832,19 +832,19 @@ pub unsafe extern "C" fn parse_float_decimal(
 ) -> *mut i8 {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = *pp;
-    let mut s: libc::c_int = 0i32;
-    let mut n: libc::c_int = 0i32;
+    let mut s: i32 = 0i32;
+    let mut n: i32 = 0i32;
     if p >= endptr {
         return 0 as *mut i8;
     }
-    if *p.offset(0) as libc::c_int == '+' as i32 || *p.offset(0) as libc::c_int == '-' as i32 {
+    if *p.offset(0) as i32 == '+' as i32 || *p.offset(0) as i32 == '-' as i32 {
         p = p.offset(1)
     }
     /* 1. .01 001 001E-001 */
     s = 0i32;
     n = 0i32;
     while p < endptr && s >= 0i32 {
-        match *p.offset(0) as libc::c_int {
+        match *p.offset(0) as i32 {
             43 | 45 => {
                 if s != 2i32 {
                     s = -1i32
@@ -877,7 +877,7 @@ pub unsafe extern "C" fn parse_float_decimal(
         }
     }
     if n != 0i32 {
-        n = p.wrapping_offset_from(*pp) as i64 as libc::c_int;
+        n = p.wrapping_offset_from(*pp) as i64 as i32;
         q = new(((n + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32) as *mut i8;

@@ -113,14 +113,14 @@ extern "C" {
      * already removed that.
      */
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn pdf_new_stream(flags: libc::c_int) -> *mut pdf_obj;
+    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_add_stream(
         stream: *mut pdf_obj,
         stream_data_ptr: *const libc::c_void,
-        stream_data_len: libc::c_int,
+        stream_data_len: i32,
     );
     #[no_mangle]
     fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
@@ -135,7 +135,7 @@ pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
-    pub _flags: libc::c_int,
+    pub _flags: i32,
     pub _IO_read_ptr: *mut i8,
     pub _IO_read_end: *mut i8,
     pub _IO_read_base: *mut i8,
@@ -149,8 +149,8 @@ pub struct _IO_FILE {
     pub _IO_save_end: *mut i8,
     pub _markers: *mut _IO_marker,
     pub _chain: *mut _IO_FILE,
-    pub _fileno: libc::c_int,
-    pub _flags2: libc::c_int,
+    pub _fileno: i32,
+    pub _flags2: i32,
     pub _old_offset: __off_t,
     pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
@@ -162,7 +162,7 @@ pub struct _IO_FILE {
     pub _freeres_list: *mut _IO_FILE,
     pub _freeres_buf: *mut libc::c_void,
     pub __pad5: size_t,
-    pub _mode: libc::c_int,
+    pub _mode: i32,
     pub _unused2: [i8; 20],
 }
 pub type _IO_lock_t = ();
@@ -170,12 +170,12 @@ pub type FILE = _IO_FILE;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ximage_info {
-    pub flags: libc::c_int,
-    pub width: libc::c_int,
-    pub height: libc::c_int,
-    pub bits_per_component: libc::c_int,
-    pub num_components: libc::c_int,
-    pub min_dpi: libc::c_int,
+    pub flags: i32,
+    pub width: i32,
+    pub height: i32,
+    pub bits_per_component: i32,
+    pub num_components: i32,
+    pub min_dpi: i32,
     pub xdensity: f64,
     pub ydensity: f64,
 }
@@ -207,7 +207,7 @@ unsafe extern "C" fn read_box_hdr(
     }
     return bytesread;
 }
-unsafe extern "C" fn check_jp___box(mut fp: *mut FILE) -> libc::c_int {
+unsafe extern "C" fn check_jp___box(mut fp: *mut FILE) -> i32 {
     if get_unsigned_quad(fp) != 0xci32 as libc::c_uint {
         return 0i32;
     }
@@ -220,8 +220,8 @@ unsafe extern "C" fn check_jp___box(mut fp: *mut FILE) -> libc::c_int {
     }
     return 1i32;
 }
-unsafe extern "C" fn check_ftyp_data(mut fp: *mut FILE, mut size: libc::c_uint) -> libc::c_int {
-    let mut supported: libc::c_int = 0i32;
+unsafe extern "C" fn check_ftyp_data(mut fp: *mut FILE, mut size: libc::c_uint) -> i32 {
+    let mut supported: i32 = 0i32;
     let mut BR: libc::c_uint = 0;
     let mut CLi: libc::c_uint = 0;
     BR = get_unsigned_quad(fp);
@@ -288,11 +288,11 @@ unsafe extern "C" fn scan_res_(
     mut info: *mut ximage_info,
     mut fp: *mut FILE,
     mut size: libc::c_uint,
-) -> libc::c_int {
+) -> i32 {
     let mut len: libc::c_uint = 0;
     let mut lbox: libc::c_uint = 0;
     let mut tbox: libc::c_uint = 0;
-    let mut have_resd: libc::c_int = 0i32;
+    let mut have_resd: i32 = 0i32;
     while size > 0i32 as libc::c_uint {
         len = read_box_hdr(fp, &mut lbox, &mut tbox);
         if lbox == 0i32 as libc::c_uint {
@@ -337,12 +337,12 @@ unsafe extern "C" fn scan_res_(
  */
 unsafe extern "C" fn scan_cdef(
     mut info: *mut ximage_info,
-    mut smask: *mut libc::c_int,
+    mut smask: *mut i32,
     mut fp: *mut FILE,
     mut size: libc::c_uint,
-) -> libc::c_int {
-    let mut opacity_channels: libc::c_int = 0i32; /* Cn */
-    let mut have_type0: libc::c_int = 0i32; /* must be 0 for SMask */
+) -> i32 {
+    let mut opacity_channels: i32 = 0i32; /* Cn */
+    let mut have_type0: i32 = 0i32; /* must be 0 for SMask */
     let mut i: libc::c_uint = 0;
     let mut Cn: libc::c_uint = 0;
     let mut N: libc::c_uint = 0;
@@ -393,12 +393,12 @@ unsafe extern "C" fn scan_cdef(
 }
 unsafe extern "C" fn scan_jp2h(
     mut info: *mut ximage_info,
-    mut smask: *mut libc::c_int,
+    mut smask: *mut i32,
     mut fp: *mut FILE,
     mut size: libc::c_uint,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
-    let mut have_ihdr: libc::c_int = 0i32;
+) -> i32 {
+    let mut error: i32 = 0i32;
+    let mut have_ihdr: i32 = 0i32;
     let mut len: libc::c_uint = 0;
     let mut lbox: libc::c_uint = 0;
     let mut tbox: libc::c_uint = 0;
@@ -414,9 +414,9 @@ unsafe extern "C" fn scan_jp2h(
         } else {
             match tbox {
                 1768449138 => {
-                    (*info).height = get_unsigned_quad(fp) as libc::c_int;
-                    (*info).width = get_unsigned_quad(fp) as libc::c_int;
-                    (*info).num_components = get_unsigned_pair(fp) as libc::c_int;
+                    (*info).height = get_unsigned_quad(fp) as i32;
+                    (*info).width = get_unsigned_quad(fp) as i32;
+                    (*info).num_components = get_unsigned_pair(fp) as i32;
                     /* c = */
                     get_unsigned_byte(fp); /* BPC - 1 */
                     /* c = */
@@ -458,12 +458,12 @@ unsafe extern "C" fn scan_jp2h(
 }
 unsafe extern "C" fn scan_file(
     mut info: *mut ximage_info,
-    mut smask: *mut libc::c_int,
+    mut smask: *mut i32,
     mut fp: *mut FILE,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
-    let mut have_jp2h: libc::c_int = 0i32;
-    let mut size: libc::c_int = 0;
+) -> i32 {
+    let mut error: i32 = 0i32;
+    let mut have_jp2h: i32 = 0i32;
+    let mut size: i32 = 0;
     let mut len: libc::c_uint = 0;
     let mut lbox: libc::c_uint = 0;
     let mut tbox: libc::c_uint = 0;
@@ -482,7 +482,7 @@ unsafe extern "C" fn scan_file(
     if check_ftyp_data(fp, lbox.wrapping_sub(len)) == 0 {
         return -1i32;
     }
-    size = (size as libc::c_uint).wrapping_sub(lbox) as libc::c_int as libc::c_int;
+    size = (size as libc::c_uint).wrapping_sub(lbox) as i32 as i32;
     /* Search for JP2 Header box */
     while size > 0i32 && error == 0 {
         len = read_box_hdr(fp, &mut lbox, &mut tbox);
@@ -508,7 +508,7 @@ unsafe extern "C" fn scan_file(
                 seek_relative(fp, lbox.wrapping_sub(len) as i32);
             }
         }
-        size = (size as libc::c_uint).wrapping_sub(lbox) as libc::c_int as libc::c_int
+        size = (size as libc::c_uint).wrapping_sub(lbox) as i32 as i32
     }
     /* From ISO/IEC 15444-2 M.9.2.7
      * The JP2 Header box shall be found in the file before the first
@@ -525,7 +525,7 @@ unsafe extern "C" fn scan_file(
     return error;
 }
 #[no_mangle]
-pub unsafe extern "C" fn check_for_jp2(mut fp: *mut FILE) -> libc::c_int {
+pub unsafe extern "C" fn check_for_jp2(mut fp: *mut FILE) -> i32 {
     let mut len: libc::c_uint = 0;
     let mut lbox: libc::c_uint = 0;
     let mut tbox: libc::c_uint = 0;
@@ -551,9 +551,9 @@ pub unsafe extern "C" fn check_for_jp2(mut fp: *mut FILE) -> libc::c_int {
 pub unsafe extern "C" fn jp2_include_image(
     mut ximage: *mut pdf_ximage,
     mut fp: *mut FILE,
-) -> libc::c_int {
+) -> i32 {
     let mut pdf_version: libc::c_uint = 0;
-    let mut smask: libc::c_int = 0i32;
+    let mut smask: i32 = 0i32;
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut info: ximage_info = ximage_info {
@@ -600,7 +600,7 @@ pub unsafe extern "C" fn jp2_include_image(
         );
     }
     /* Read whole file */
-    let mut nb_read: libc::c_int = 0;
+    let mut nb_read: i32 = 0;
     rewind(fp);
     loop {
         nb_read = fread(
@@ -608,7 +608,7 @@ pub unsafe extern "C" fn jp2_include_image(
             ::std::mem::size_of::<i8>() as u64,
             1024i32 as u64,
             fp,
-        ) as libc::c_int;
+        ) as i32;
         if !(nb_read > 0i32) {
             break;
         }
@@ -649,13 +649,13 @@ pub unsafe extern "C" fn jp2_include_image(
 #[no_mangle]
 pub unsafe extern "C" fn jp2_get_bbox(
     mut fp: *mut FILE,
-    mut width: *mut libc::c_int,
-    mut height: *mut libc::c_int,
+    mut width: *mut i32,
+    mut height: *mut i32,
     mut xdensity: *mut f64,
     mut ydensity: *mut f64,
-) -> libc::c_int {
-    let mut r: libc::c_int = 0;
-    let mut smask: libc::c_int = 0i32;
+) -> i32 {
+    let mut r: i32 = 0;
+    let mut smask: i32 = 0i32;
     let mut info: ximage_info = ximage_info {
         flags: 0,
         width: 0,
