@@ -16,27 +16,18 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
-        -> *mut libc::c_void;
+    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_input_seek(
-        handle: rust_input_handle_t,
-        offset: ssize_t,
-        whence: libc::c_int,
-    ) -> size_t;
+    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
     #[no_mangle]
-    fn ttstub_input_read(
-        handle: rust_input_handle_t,
-        data: *mut libc::c_char,
-        len: size_t,
-    ) -> ssize_t;
+    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -59,20 +50,20 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_get_version() -> libc::c_uint;
+    fn pdf_get_version() -> u32;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     /* Name does not include the / */
     #[no_mangle]
-    fn pdf_new_name(name: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_array() -> *mut pdf_obj;
     /* pdf_add_dict requires key but pdf_add_array does not.
@@ -92,39 +83,31 @@ extern "C" {
      * already removed that.
      */
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn pdf_new_stream(flags: libc::c_int) -> *mut pdf_obj;
+    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_add_stream(
         stream: *mut pdf_obj,
         stream_data_ptr: *const libc::c_void,
-        stream_data_len: libc::c_int,
+        stream_data_len: i32,
     );
     #[no_mangle]
     fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_stream_set_predictor(
         stream: *mut pdf_obj,
-        predictor: libc::c_int,
-        columns: int32_t,
-        bpc: libc::c_int,
-        colors: libc::c_int,
+        predictor: i32,
+        columns: i32,
+        bpc: i32,
+        colors: i32,
     );
     #[no_mangle]
-    fn iccp_check_colorspace(
-        colortype: libc::c_int,
-        profile: *const libc::c_void,
-        proflen: libc::c_int,
-    ) -> libc::c_int;
+    fn iccp_check_colorspace(colortype: i32, profile: *const libc::c_void, proflen: i32) -> i32;
     #[no_mangle]
-    fn iccp_load_profile(
-        ident: *const libc::c_char,
-        profile: *const libc::c_void,
-        proflen: libc::c_int,
-    ) -> libc::c_int;
+    fn iccp_load_profile(ident: *const i8, profile: *const libc::c_void, proflen: i32) -> i32;
     #[no_mangle]
-    fn pdf_get_colorspace_reference(cspc_id: libc::c_int) -> *mut pdf_obj;
+    fn pdf_get_colorspace_reference(cspc_id: i32) -> *mut pdf_obj;
     /* Called by pngimage, jpegimage, epdf, mpost, etc. */
     #[no_mangle]
     fn pdf_ximage_init_image_info(info: *mut ximage_info);
@@ -139,28 +122,24 @@ extern "C" {
     #[no_mangle]
     fn png_destroy_info_struct(png_ptr: png_const_structrp, info_ptr_ptr: png_infopp);
 }
-pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
-pub type __ssize_t = libc::c_long;
-pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
-pub type size_t = libc::c_ulong;
+pub type __ssize_t = i64;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ximage_info {
-    pub flags: libc::c_int,
-    pub width: libc::c_int,
-    pub height: libc::c_int,
-    pub bits_per_component: libc::c_int,
-    pub num_components: libc::c_int,
-    pub min_dpi: libc::c_int,
-    pub xdensity: libc::c_double,
-    pub ydensity: libc::c_double,
+    pub flags: i32,
+    pub width: i32,
+    pub height: i32,
+    pub bits_per_component: i32,
+    pub num_components: i32,
+    pub min_dpi: i32,
+    pub xdensity: f64,
+    pub ydensity: f64,
 }
 pub type pdf_ximage = pdf_ximage_;
-pub type png_byte = libc::c_uchar;
+pub type png_byte = u8;
 pub type png_infopp = *mut *mut png_info;
 pub type png_const_charp = *const libc::c_char;
 pub type png_structp = *mut png_struct;
@@ -172,15 +151,15 @@ pub type png_structrp = *mut png_struct;
 pub type png_bytep = *mut png_byte;
 pub type png_uint_32 = libc::c_uint;
 #[no_mangle]
-pub unsafe extern "C" fn check_for_png(mut handle: rust_input_handle_t) -> libc::c_int {
-    let mut sigbytes: [libc::c_uchar; 8] = [0; 8];
+pub unsafe extern "C" fn check_for_png(mut handle: rust_input_handle_t) -> i32 {
+    let mut sigbytes: [u8; 8] = [0; 8];
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     if ttstub_input_read(
         handle,
-        sigbytes.as_mut_ptr() as *mut libc::c_char,
-        ::std::mem::size_of::<[libc::c_uchar; 8]>() as libc::c_ulong,
-    ) as libc::c_ulong
-        != ::std::mem::size_of::<[libc::c_uchar; 8]>() as libc::c_ulong
+        sigbytes.as_mut_ptr() as *mut i8,
+        ::std::mem::size_of::<[u8; 8]>() as u64,
+    ) as u64
+        != ::std::mem::size_of::<[u8; 8]>() as u64
         || png_sig_cmp(
             sigbytes.as_mut_ptr(),
             0,
@@ -211,14 +190,14 @@ unsafe extern "C" fn _png_read(mut png_ptr: *mut png_struct, mut outbytes: *mut 
 pub unsafe extern "C" fn png_include_image(
     mut ximage: *mut pdf_ximage,
     mut handle: rust_input_handle_t,
-) -> libc::c_int {
+) -> i32 {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut colorspace: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut mask: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut intent: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut stream_data_ptr: png_bytep = 0 as *mut png_byte;
-    let mut trans_type: libc::c_int = 0;
+    let mut trans_type: i32 = 0;
     let mut info: ximage_info = ximage_info {
         flags: 0,
         width: 0,
@@ -254,8 +233,8 @@ pub unsafe extern "C" fn png_include_image(
         png
     } else {
         dpx_warning(
-            b"%s: Creating Libpng read struct failed.\x00" as *const u8 as *const libc::c_char,
-            b"PNG\x00" as *const u8 as *const libc::c_char,
+            b"%s: Creating Libpng read struct failed.\x00" as *const u8 as *const i8,
+            b"PNG\x00" as *const u8 as *const i8,
         );
         return -1i32;
     };
@@ -264,8 +243,8 @@ pub unsafe extern "C" fn png_include_image(
         png_info
     } else {
         dpx_warning(
-            b"%s: Creating Libpng info struct failed.\x00" as *const u8 as *const libc::c_char,
-            b"PNG\x00" as *const u8 as *const libc::c_char,
+            b"%s: Creating Libpng info struct failed.\x00" as *const u8 as *const i8,
+            b"PNG\x00" as *const u8 as *const i8,
         );
         png_destroy_read_struct(
             &mut (png as *mut _) as *mut *mut _,
@@ -290,13 +269,13 @@ pub unsafe extern "C" fn png_include_image(
         if pdf_get_version() < 5i32 as libc::c_uint {
             /* Ask libpng to convert down to 8-bpc. */
             dpx_warning(
-                b"%s: 16-bpc PNG requires PDF version 1.5.\x00" as *const u8 as *const libc::c_char,
-                b"PNG\x00" as *const u8 as *const libc::c_char,
+                b"%s: 16-bpc PNG requires PDF version 1.5.\x00" as *const u8 as *const i8,
+                b"PNG\x00" as *const u8 as *const i8,
             );
             png_set_strip_16(png);
             bpc = 8i32 as png_byte
         }
-    } else if (bpc as libc::c_int) < 8i32 {
+    } else if (bpc as i32) < 8i32 {
         /* Instruct libpng to scale each pixel color to a full byte while
         reading even though there's only 1/2/4 bits of color associated. */
         if color_type as libc::c_int == 0i32 || color_type as libc::c_int == 4i32 {
@@ -332,8 +311,8 @@ pub unsafe extern "C" fn png_include_image(
     if xppm > 0i32 as libc::c_uint {
         info.xdensity = 72.0f64 / 0.0254f64 / xppm as libc::c_double
     }
-    if yppm > 0i32 as libc::c_uint {
-        info.ydensity = 72.0f64 / 0.0254f64 / yppm as libc::c_double
+    if yppm > 0_u32 {
+        info.ydensity = 72.0f64 / 0.0254f64 / yppm as f64
     }
     stream = pdf_new_stream(1i32 << 0i32);
     stream_dict = pdf_stream_dict(stream);
@@ -346,11 +325,11 @@ pub unsafe extern "C" fn png_include_image(
     if !intent.is_null() {
         pdf_add_dict(
             stream_dict,
-            pdf_new_name(b"Intent\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Intent\x00" as *const u8 as *const i8),
             intent,
         );
     }
-    match color_type as libc::c_int {
+    match color_type as i32 {
         3 => {
             colorspace = create_cspace_Indexed(png, png_info);
             match trans_type {
@@ -375,7 +354,7 @@ pub unsafe extern "C" fn png_include_image(
                 colorspace = create_cspace_CalRGB(png, png_info)
             }
             if colorspace.is_null() {
-                colorspace = pdf_new_name(b"DeviceRGB\x00" as *const u8 as *const libc::c_char)
+                colorspace = pdf_new_name(b"DeviceRGB\x00" as *const u8 as *const i8)
             }
             match trans_type {
                 1 => mask = create_ckey_mask(png, png_info),
@@ -403,7 +382,7 @@ pub unsafe extern "C" fn png_include_image(
                 colorspace = create_cspace_CalGray(png, png_info)
             }
             if colorspace.is_null() {
-                colorspace = pdf_new_name(b"DeviceGray\x00" as *const u8 as *const libc::c_char)
+                colorspace = pdf_new_name(b"DeviceGray\x00" as *const u8 as *const i8)
             }
             match trans_type {
                 1 => mask = create_ckey_mask(png, png_info),
@@ -423,28 +402,28 @@ pub unsafe extern "C" fn png_include_image(
         }
         _ => {
             dpx_warning(
-                b"%s: Unknown PNG colortype %d.\x00" as *const u8 as *const libc::c_char,
-                b"PNG\x00" as *const u8 as *const libc::c_char,
-                color_type as libc::c_int,
+                b"%s: Unknown PNG colortype %d.\x00" as *const u8 as *const i8,
+                b"PNG\x00" as *const u8 as *const i8,
+                color_type as i32,
             );
         }
     }
     pdf_add_dict(
         stream_dict,
-        pdf_new_name(b"ColorSpace\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"ColorSpace\x00" as *const u8 as *const i8),
         colorspace,
     );
     pdf_add_stream(
         stream,
         stream_data_ptr as *const libc::c_void,
-        rowbytes.wrapping_mul(height) as libc::c_int,
+        rowbytes.wrapping_mul(height) as i32,
     );
     free(stream_data_ptr as *mut libc::c_void);
     if !mask.is_null() {
         if trans_type == 1i32 {
             pdf_add_dict(
                 stream_dict,
-                pdf_new_name(b"Mask\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"Mask\x00" as *const u8 as *const i8),
                 mask,
             );
         } else if trans_type == 2i32 {
@@ -453,14 +432,14 @@ pub unsafe extern "C" fn png_include_image(
             }
             pdf_add_dict(
                 stream_dict,
-                pdf_new_name(b"SMask\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"SMask\x00" as *const u8 as *const i8),
                 pdf_ref_obj(mask),
             );
             pdf_release_obj(mask);
         } else {
             dpx_warning(
-                b"%s: Unknown transparency type...???\x00" as *const u8 as *const libc::c_char,
-                b"PNG\x00" as *const u8 as *const libc::c_char,
+                b"%s: Unknown transparency type...???\x00" as *const u8 as *const i8,
+                b"PNG\x00" as *const u8 as *const i8,
             );
             pdf_release_obj(mask);
         }
@@ -485,8 +464,8 @@ pub unsafe extern "C" fn png_include_image(
         while i < num_text {
             if memcmp(
                 (*text_ptr.offset(i as isize)).key as *const libc::c_void,
-                b"XML:com.adobe.xmp\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-                17i32 as libc::c_ulong,
+                b"XML:com.adobe.xmp\x00" as *const u8 as *const i8 as *const libc::c_void,
+                17i32 as u64,
             ) == 0
             {
                 /* XMP found */
@@ -495,14 +474,14 @@ pub unsafe extern "C" fn png_include_image(
                 {
                     dpx_warning(
                         b"%s: Invalid value(s) in iTXt chunk for XMP Metadata.\x00" as *const u8
-                            as *const libc::c_char,
-                        b"PNG\x00" as *const u8 as *const libc::c_char,
+                            as *const i8,
+                        b"PNG\x00" as *const u8 as *const i8,
                     );
                 } else if have_XMP != 0 {
                     dpx_warning(
                         b"%s: Multiple XMP Metadata. Don\'t know how to treat it.\x00" as *const u8
-                            as *const libc::c_char,
-                        b"PNG\x00" as *const u8 as *const libc::c_char,
+                            as *const i8,
+                        b"PNG\x00" as *const u8 as *const i8,
                     );
                 } else {
                     /* We compress XMP metadata for included images here.
@@ -515,22 +494,22 @@ pub unsafe extern "C" fn png_include_image(
                     XMP_stream_dict = pdf_stream_dict(XMP_stream);
                     pdf_add_dict(
                         XMP_stream_dict,
-                        pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-                        pdf_new_name(b"Metadata\x00" as *const u8 as *const libc::c_char),
+                        pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+                        pdf_new_name(b"Metadata\x00" as *const u8 as *const i8),
                     );
                     pdf_add_dict(
                         XMP_stream_dict,
-                        pdf_new_name(b"Subtype\x00" as *const u8 as *const libc::c_char),
-                        pdf_new_name(b"XML\x00" as *const u8 as *const libc::c_char),
+                        pdf_new_name(b"Subtype\x00" as *const u8 as *const i8),
+                        pdf_new_name(b"XML\x00" as *const u8 as *const i8),
                     );
                     pdf_add_stream(
                         XMP_stream,
                         (*text_ptr.offset(i as isize)).text as *const libc::c_void,
-                        (*text_ptr.offset(i as isize)).itxt_length as libc::c_int,
+                        (*text_ptr.offset(i as isize)).itxt_length as i32,
                     );
                     pdf_add_dict(
                         stream_dict,
-                        pdf_new_name(b"Metadata\x00" as *const u8 as *const libc::c_char),
+                        pdf_new_name(b"Metadata\x00" as *const u8 as *const i8),
                         pdf_ref_obj(XMP_stream),
                     );
                     pdf_release_obj(XMP_stream);
@@ -600,18 +579,18 @@ unsafe extern "C" fn check_transparency(
     let mut color_type: png_byte = 0;
     let mut trans_values = 0 as *mut png_color_16;
     let mut trans: png_bytep = 0 as *mut png_byte;
-    let mut num_trans: libc::c_int = 0;
+    let mut num_trans: i32 = 0;
     pdf_version = pdf_get_version();
     color_type = png_get_color_type(png, info);
     /*
      * First we set trans_type to appropriate value for PNG image.
      */
-    if color_type as libc::c_int == 2i32 | 4i32 || color_type as libc::c_int == 4i32 {
+    if color_type as i32 == 2i32 | 4i32 || color_type as i32 == 4i32 {
         trans_type = 2i32
     } else if png_get_valid(png, info, 0x10u32) != 0
         && png_get_tRNS(png, info, &mut trans, &mut num_trans, &mut trans_values) != 0
     {
-        match color_type as libc::c_int {
+        match color_type as i32 {
             3 => {
                 /* no transparency */
                 /* Have valid tRNS chunk. */
@@ -623,8 +602,8 @@ unsafe extern "C" fn check_transparency(
                     if !(fresh0 > 0i32) {
                         break;
                     }
-                    if !(*trans.offset(num_trans as isize) as libc::c_int != 0i32
-                        && *trans.offset(num_trans as isize) as libc::c_int != 0xffi32)
+                    if !(*trans.offset(num_trans as isize) as i32 != 0i32
+                        && *trans.offset(num_trans as isize) as i32 != 0xffi32)
                     {
                         continue;
                     }
@@ -650,9 +629,7 @@ unsafe extern "C" fn check_transparency(
      * We can convert alpha cahnnels to explicit mask via user supplied alpha-
      * threshold value. But I will not do that.
      */
-    if pdf_version < 3i32 as libc::c_uint && trans_type != 0i32
-        || pdf_version < 4i32 as libc::c_uint && trans_type == 2i32
-    {
+    if pdf_version < 3_u32 && trans_type != 0i32 || pdf_version < 4_u32 && trans_type == 2i32 {
         /*
          *   No transparency supported but PNG uses transparency, or Soft-Mask
          * required but no support for it is available in this version of PDF.
@@ -680,21 +657,21 @@ unsafe extern "C" fn check_transparency(
         png_set_background(png, &mut bg as *mut png_color_16, 1i32, 0i32, 1.0f64);
         dpx_warning(
             b"%s: Transparency will be ignored. (no support in PDF ver. < 1.3)\x00" as *const u8
-                as *const libc::c_char,
-            b"PNG\x00" as *const u8 as *const libc::c_char,
+                as *const i8,
+            b"PNG\x00" as *const u8 as *const i8,
         );
-        if pdf_version < 3i32 as libc::c_uint {
+        if pdf_version < 3_u32 {
             dpx_warning(
                 b"%s: Please use -V 3 option to enable binary transparency support.\x00"
-                    as *const u8 as *const libc::c_char,
-                b"PNG\x00" as *const u8 as *const libc::c_char,
+                    as *const u8 as *const i8,
+                b"PNG\x00" as *const u8 as *const i8,
             );
         }
-        if pdf_version < 4i32 as libc::c_uint {
+        if pdf_version < 4_u32 {
             dpx_warning(
                 b"%s: Please use -V 4 option to enable full alpha channel support.\x00" as *const u8
-                    as *const libc::c_char,
-                b"PNG\x00" as *const u8 as *const libc::c_char,
+                    as *const i8,
+                b"PNG\x00" as *const u8 as *const i8,
             );
         }
         trans_type = 0i32
@@ -715,21 +692,14 @@ unsafe extern "C" fn get_rendering_intent(
     let mut srgb_intent: libc::c_int = 0;
     if png_get_valid(png, info, 0x800u32) != 0 && png_get_sRGB(png, info, &mut srgb_intent) != 0 {
         match srgb_intent {
-            2 => intent = pdf_new_name(b"Saturation\x00" as *const u8 as *const libc::c_char),
-            0 => intent = pdf_new_name(b"Perceptual\x00" as *const u8 as *const libc::c_char),
-            3 => {
-                intent =
-                    pdf_new_name(b"AbsoluteColorimetric\x00" as *const u8 as *const libc::c_char)
-            }
-            1 => {
-                intent =
-                    pdf_new_name(b"RelativeColorimetric\x00" as *const u8 as *const libc::c_char)
-            }
+            2 => intent = pdf_new_name(b"Saturation\x00" as *const u8 as *const i8),
+            0 => intent = pdf_new_name(b"Perceptual\x00" as *const u8 as *const i8),
+            3 => intent = pdf_new_name(b"AbsoluteColorimetric\x00" as *const u8 as *const i8),
+            1 => intent = pdf_new_name(b"RelativeColorimetric\x00" as *const u8 as *const i8),
             _ => {
                 dpx_warning(
-                    b"%s: Invalid value in PNG sRGB chunk: %d\x00" as *const u8
-                        as *const libc::c_char,
-                    b"PNG\x00" as *const u8 as *const libc::c_char,
+                    b"%s: Invalid value in PNG sRGB chunk: %d\x00" as *const u8 as *const i8,
+                    b"PNG\x00" as *const u8 as *const i8,
                     srgb_intent,
                 );
                 intent = 0 as *mut pdf_obj
@@ -760,17 +730,17 @@ unsafe extern "C" fn create_cspace_sRGB(mut png: &png_struct, mut info: &png_inf
         return 0 as *mut pdf_obj;
     }
     colorspace = pdf_new_array();
-    match color_type as libc::c_int {
+    match color_type as i32 {
         2 | 6 | 3 => {
             pdf_add_array(
                 colorspace,
-                pdf_new_name(b"CalRGB\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"CalRGB\x00" as *const u8 as *const i8),
             );
         }
         0 | 4 => {
             pdf_add_array(
                 colorspace,
-                pdf_new_name(b"CalGray\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"CalGray\x00" as *const u8 as *const i8),
             );
         }
         _ => {}
@@ -792,8 +762,8 @@ unsafe extern "C" fn create_cspace_ICCBased(
     let mut colorspace: *mut pdf_obj = 0 as *mut pdf_obj; /* Manual page for libpng does not
                                                            * clarify whether profile data is inflated by libpng.
                                                            */
-    let mut csp_id: libc::c_int = 0;
-    let mut colortype: libc::c_int = 0;
+    let mut csp_id: i32 = 0;
+    let mut colortype: i32 = 0;
     let mut color_type: png_byte = 0;
     let mut name = 0 as *mut libc::c_char;
     let mut compression_type: libc::c_int = 0;
@@ -817,18 +787,13 @@ unsafe extern "C" fn create_cspace_ICCBased(
     } else {
         colortype = -1i32
     }
-    if iccp_check_colorspace(
-        colortype,
-        profile as *const libc::c_void,
-        proflen as libc::c_int,
-    ) < 0i32
-    {
+    if iccp_check_colorspace(colortype, profile as *const libc::c_void, proflen as i32) < 0i32 {
         colorspace = 0 as *mut pdf_obj
     } else {
         csp_id = iccp_load_profile(
-            name as *const libc::c_char,
+            name as *const i8,
             profile as *const libc::c_void,
-            proflen as libc::c_int,
+            proflen as i32,
         );
         if csp_id < 0i32 {
             colorspace = 0 as *mut pdf_obj
@@ -878,16 +843,16 @@ unsafe extern "C" fn create_cspace_CalRGB(
         || yb < 0.0f64
     {
         dpx_warning(
-            b"%s: Invalid cHRM chunk parameters found.\x00" as *const u8 as *const libc::c_char,
-            b"PNG\x00" as *const u8 as *const libc::c_char,
+            b"%s: Invalid cHRM chunk parameters found.\x00" as *const u8 as *const i8,
+            b"PNG\x00" as *const u8 as *const i8,
         );
         return 0 as *mut pdf_obj;
     }
     if png_get_valid(png, png_info, 0x1u32) != 0 && png_get_gAMA(png, png_info, &mut G) != 0 {
         if G < 1.0e-2f64 {
             dpx_warning(
-                b"%s: Unusual Gamma value: 1.0 / %g\x00" as *const u8 as *const libc::c_char,
-                b"PNG\x00" as *const u8 as *const libc::c_char,
+                b"%s: Unusual Gamma value: 1.0 / %g\x00" as *const u8 as *const i8,
+                b"PNG\x00" as *const u8 as *const i8,
                 G,
             );
             return 0 as *mut pdf_obj;
@@ -904,7 +869,7 @@ unsafe extern "C" fn create_cspace_CalRGB(
     colorspace = pdf_new_array();
     pdf_add_array(
         colorspace,
-        pdf_new_name(b"CalRGB\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"CalRGB\x00" as *const u8 as *const i8),
     );
     pdf_add_array(colorspace, cal_param);
     return colorspace;
@@ -941,16 +906,16 @@ unsafe extern "C" fn create_cspace_CalGray(
         || yb < 0.0f64
     {
         dpx_warning(
-            b"%s: Invalid cHRM chunk parameters found.\x00" as *const u8 as *const libc::c_char,
-            b"PNG\x00" as *const u8 as *const libc::c_char,
+            b"%s: Invalid cHRM chunk parameters found.\x00" as *const u8 as *const i8,
+            b"PNG\x00" as *const u8 as *const i8,
         );
         return 0 as *mut pdf_obj;
     }
     if png_get_valid(png, info, 0x1u32) != 0 && png_get_gAMA(png, info, &mut G) != 0 {
         if G < 1.0e-2f64 {
             dpx_warning(
-                b"%s: Unusual Gamma value: 1.0 / %g\x00" as *const u8 as *const libc::c_char,
-                b"PNG\x00" as *const u8 as *const libc::c_char,
+                b"%s: Unusual Gamma value: 1.0 / %g\x00" as *const u8 as *const i8,
+                b"PNG\x00" as *const u8 as *const i8,
                 G,
             );
             return 0 as *mut pdf_obj;
@@ -967,39 +932,39 @@ unsafe extern "C" fn create_cspace_CalGray(
     colorspace = pdf_new_array();
     pdf_add_array(
         colorspace,
-        pdf_new_name(b"CalGray\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"CalGray\x00" as *const u8 as *const i8),
     );
     pdf_add_array(colorspace, cal_param);
     return colorspace;
 }
 unsafe extern "C" fn make_param_Cal(
     mut color_type: png_byte,
-    mut G: libc::c_double,
-    mut xw: libc::c_double,
-    mut yw: libc::c_double,
-    mut xr: libc::c_double,
-    mut yr: libc::c_double,
-    mut xg: libc::c_double,
-    mut yg: libc::c_double,
-    mut xb: libc::c_double,
-    mut yb: libc::c_double,
+    mut G: f64,
+    mut xw: f64,
+    mut yw: f64,
+    mut xr: f64,
+    mut yr: f64,
+    mut xg: f64,
+    mut yg: f64,
+    mut xb: f64,
+    mut yb: f64,
 ) -> *mut pdf_obj {
     let mut cal_param: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut white_point: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut matrix: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut dev_gamma: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut Xw: libc::c_double = 0.;
-    let mut Yw: libc::c_double = 0.;
-    let mut Zw: libc::c_double = 0.;
-    let mut Xr: libc::c_double = 0.;
-    let mut Xg: libc::c_double = 0.;
-    let mut Xb: libc::c_double = 0.;
-    let mut Yr: libc::c_double = 0.;
-    let mut Yb: libc::c_double = 0.;
-    let mut Yg: libc::c_double = 0.;
-    let mut Zr: libc::c_double = 0.;
-    let mut Zg: libc::c_double = 0.;
-    let mut Zb: libc::c_double = 0.;
+    let mut Xw: f64 = 0.;
+    let mut Yw: f64 = 0.;
+    let mut Zw: f64 = 0.;
+    let mut Xr: f64 = 0.;
+    let mut Xg: f64 = 0.;
+    let mut Xb: f64 = 0.;
+    let mut Yr: f64 = 0.;
+    let mut Yb: f64 = 0.;
+    let mut Yg: f64 = 0.;
+    let mut Zr: f64 = 0.;
+    let mut Zg: f64 = 0.;
+    let mut Zb: f64 = 0.;
     /*
      * TODO: Check validity
      *
@@ -1011,33 +976,28 @@ unsafe extern "C" fn make_param_Cal(
      *  http://www.sixlegs.com/software/png/
      *
      */
-    let mut zw: libc::c_double = 0.;
-    let mut zr: libc::c_double = 0.;
-    let mut zg: libc::c_double = 0.;
-    let mut zb: libc::c_double = 0.;
-    let mut fr: libc::c_double = 0.;
-    let mut fg: libc::c_double = 0.;
-    let mut fb: libc::c_double = 0.;
-    let mut det: libc::c_double = 0.;
+    let mut zw: f64 = 0.;
+    let mut zr: f64 = 0.;
+    let mut zg: f64 = 0.;
+    let mut zb: f64 = 0.;
+    let mut fr: f64 = 0.;
+    let mut fg: f64 = 0.;
+    let mut fb: f64 = 0.;
+    let mut det: f64 = 0.;
     /* WhitePoint */
-    zw = 1i32 as libc::c_double - (xw + yw);
-    zr = 1i32 as libc::c_double - (xr + yr);
-    zg = 1i32 as libc::c_double - (xg + yg);
-    zb = 1i32 as libc::c_double - (xb + yb);
+    zw = 1i32 as f64 - (xw + yw);
+    zr = 1i32 as f64 - (xr + yr);
+    zg = 1i32 as f64 - (xg + yg);
+    zb = 1i32 as f64 - (xb + yb);
     Xw = xw / yw;
     Yw = 1.0f64;
     Zw = zw / yw;
     /* Matrix */
     det = xr * (yg * zb - zg * yb) - xg * (yr * zb - zr * yb) + xb * (yr * zg - zr * yg);
-    if (if det < 0i32 as libc::c_double {
-        -det
-    } else {
-        det
-    }) < 1.0e-10f64
-    {
+    if (if det < 0i32 as f64 { -det } else { det }) < 1.0e-10f64 {
         dpx_warning(
             b"Non invertible matrix: Maybe invalid value(s) specified in cHRM chunk.\x00"
-                as *const u8 as *const libc::c_char,
+                as *const u8 as *const i8,
         );
         return 0 as *mut pdf_obj;
     }
@@ -1055,7 +1015,7 @@ unsafe extern "C" fn make_param_Cal(
     Zb = fb * zb;
     if G < 1.0e-2f64 {
         dpx_warning(
-            b"Unusual Gamma specified: 1.0 / %g\x00" as *const u8 as *const libc::c_char,
+            b"Unusual Gamma specified: 1.0 / %g\x00" as *const u8 as *const i8,
             G,
         );
         return 0 as *mut pdf_obj;
@@ -1077,11 +1037,11 @@ unsafe extern "C" fn make_param_Cal(
     );
     pdf_add_dict(
         cal_param,
-        pdf_new_name(b"WhitePoint\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"WhitePoint\x00" as *const u8 as *const i8),
         white_point,
     );
     /* Matrix - default: Identity */
-    if color_type as libc::c_int & 2i32 != 0 {
+    if color_type as i32 & 2i32 != 0 {
         if G != 1.0f64 {
             dev_gamma = pdf_new_array(); /* Gray */
             pdf_add_array(
@@ -1098,7 +1058,7 @@ unsafe extern "C" fn make_param_Cal(
             );
             pdf_add_dict(
                 cal_param,
-                pdf_new_name(b"Gamma\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"Gamma\x00" as *const u8 as *const i8),
                 dev_gamma,
             );
         }
@@ -1141,7 +1101,7 @@ unsafe extern "C" fn make_param_Cal(
         );
         pdf_add_dict(
             cal_param,
-            pdf_new_name(b"Matrix\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Matrix\x00" as *const u8 as *const i8),
             matrix,
         );
     } else if G != 1.0f64 {
@@ -1177,8 +1137,8 @@ unsafe extern "C" fn create_cspace_Indexed(
         || png_get_PLTE(png, info, &mut plte, &mut num_plte) == 0
     {
         dpx_warning(
-            b"%s: PNG does not have valid PLTE chunk.\x00" as *const u8 as *const libc::c_char,
-            b"PNG\x00" as *const u8 as *const libc::c_char,
+            b"%s: PNG does not have valid PLTE chunk.\x00" as *const u8 as *const i8,
+            b"PNG\x00" as *const u8 as *const i8,
         );
         return 0 as *mut pdf_obj;
     }
@@ -1186,7 +1146,7 @@ unsafe extern "C" fn create_cspace_Indexed(
     colorspace = pdf_new_array();
     pdf_add_array(
         colorspace,
-        pdf_new_name(b"Indexed\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Indexed\x00" as *const u8 as *const i8),
     );
     if png_get_valid(png, info, 0x1000u32) != 0 {
         base = create_cspace_ICCBased(png, info)
@@ -1196,16 +1156,13 @@ unsafe extern "C" fn create_cspace_Indexed(
         base = create_cspace_CalRGB(png, info)
     }
     if base.is_null() {
-        base = pdf_new_name(b"DeviceRGB\x00" as *const u8 as *const libc::c_char)
+        base = pdf_new_name(b"DeviceRGB\x00" as *const u8 as *const i8)
     }
     pdf_add_array(colorspace, base);
-    pdf_add_array(
-        colorspace,
-        pdf_new_number((num_plte - 1i32) as libc::c_double),
-    );
-    data_ptr = new(((num_plte * 3i32) as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
-        as uint32_t) as *mut png_byte;
+    pdf_add_array(colorspace, pdf_new_number((num_plte - 1i32) as f64));
+    data_ptr = new(((num_plte * 3i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64) as u32)
+        as *mut png_byte;
     i = 0i32;
     while i < num_plte {
         *data_ptr.offset((3i32 * i) as isize) = (*plte.offset(i as isize)).red;
@@ -1239,8 +1196,8 @@ unsafe extern "C" fn create_ckey_mask(
         || png_get_tRNS(png, png_info, &mut trans, &mut num_trans, &mut colors) == 0
     {
         dpx_warning(
-            b"%s: PNG does not have valid tRNS chunk!\x00" as *const u8 as *const libc::c_char,
-            b"PNG\x00" as *const u8 as *const libc::c_char,
+            b"%s: PNG does not have valid tRNS chunk!\x00" as *const u8 as *const i8,
+            b"PNG\x00" as *const u8 as *const i8,
         );
         return 0 as *mut pdf_obj;
     }
@@ -1250,35 +1207,34 @@ unsafe extern "C" fn create_ckey_mask(
         3 => {
             i = 0i32;
             while i < num_trans {
-                if *trans.offset(i as isize) as libc::c_int == 0i32 {
-                    pdf_add_array(colorkeys, pdf_new_number(i as libc::c_double));
-                    pdf_add_array(colorkeys, pdf_new_number(i as libc::c_double));
-                } else if *trans.offset(i as isize) as libc::c_int != 0xffi32 {
+                if *trans.offset(i as isize) as i32 == 0i32 {
+                    pdf_add_array(colorkeys, pdf_new_number(i as f64));
+                    pdf_add_array(colorkeys, pdf_new_number(i as f64));
+                } else if *trans.offset(i as isize) as i32 != 0xffi32 {
                     dpx_warning(
-                        b"%s: You found a bug in pngimage.c.\x00" as *const u8
-                            as *const libc::c_char,
-                        b"PNG\x00" as *const u8 as *const libc::c_char,
+                        b"%s: You found a bug in pngimage.c.\x00" as *const u8 as *const i8,
+                        b"PNG\x00" as *const u8 as *const i8,
                     );
                 }
                 i += 1
             }
         }
         2 => {
-            pdf_add_array(colorkeys, pdf_new_number((*colors).red as libc::c_double));
-            pdf_add_array(colorkeys, pdf_new_number((*colors).red as libc::c_double));
-            pdf_add_array(colorkeys, pdf_new_number((*colors).green as libc::c_double));
-            pdf_add_array(colorkeys, pdf_new_number((*colors).green as libc::c_double));
-            pdf_add_array(colorkeys, pdf_new_number((*colors).blue as libc::c_double));
-            pdf_add_array(colorkeys, pdf_new_number((*colors).blue as libc::c_double));
+            pdf_add_array(colorkeys, pdf_new_number((*colors).red as f64));
+            pdf_add_array(colorkeys, pdf_new_number((*colors).red as f64));
+            pdf_add_array(colorkeys, pdf_new_number((*colors).green as f64));
+            pdf_add_array(colorkeys, pdf_new_number((*colors).green as f64));
+            pdf_add_array(colorkeys, pdf_new_number((*colors).blue as f64));
+            pdf_add_array(colorkeys, pdf_new_number((*colors).blue as f64));
         }
         0 => {
-            pdf_add_array(colorkeys, pdf_new_number((*colors).gray as libc::c_double));
-            pdf_add_array(colorkeys, pdf_new_number((*colors).gray as libc::c_double));
+            pdf_add_array(colorkeys, pdf_new_number((*colors).gray as f64));
+            pdf_add_array(colorkeys, pdf_new_number((*colors).gray as f64));
         }
         _ => {
             dpx_warning(
-                b"%s: You found a bug in pngimage.c.\x00" as *const u8 as *const libc::c_char,
-                b"PNG\x00" as *const u8 as *const libc::c_char,
+                b"%s: You found a bug in pngimage.c.\x00" as *const u8 as *const i8,
+                b"PNG\x00" as *const u8 as *const i8,
             );
             pdf_release_obj(colorkeys);
             colorkeys = 0 as *mut pdf_obj
@@ -1317,7 +1273,7 @@ unsafe extern "C" fn create_soft_mask(
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut smask_data_ptr: png_bytep = 0 as *mut png_byte;
     let mut trans: png_bytep = 0 as *mut png_byte;
-    let mut num_trans: libc::c_int = 0;
+    let mut num_trans: i32 = 0;
     let mut i: png_uint_32 = 0;
     if png_get_valid(png, info, 0x10u32) == 0
         || png_get_tRNS(
@@ -1330,51 +1286,51 @@ unsafe extern "C" fn create_soft_mask(
     {
         dpx_warning(
             b"%s: PNG does not have valid tRNS chunk but tRNS is requested.\x00" as *const u8
-                as *const libc::c_char,
-            b"PNG\x00" as *const u8 as *const libc::c_char,
+                as *const i8,
+            b"PNG\x00" as *const u8 as *const i8,
         );
         return 0 as *mut pdf_obj;
     }
     smask = pdf_new_stream(1i32 << 0i32);
     dict = pdf_stream_dict(smask);
-    smask_data_ptr = new((width.wrapping_mul(height) as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
-        as uint32_t) as *mut png_byte;
+    smask_data_ptr = new((width.wrapping_mul(height) as u64)
+        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64) as u32)
+        as *mut png_byte;
     pdf_add_dict(
         dict,
-        pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"XObject\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+        pdf_new_name(b"XObject\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         dict,
-        pdf_new_name(b"Subtype\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"Image\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Subtype\x00" as *const u8 as *const i8),
+        pdf_new_name(b"Image\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         dict,
-        pdf_new_name(b"Width\x00" as *const u8 as *const libc::c_char),
-        pdf_new_number(width as libc::c_double),
+        pdf_new_name(b"Width\x00" as *const u8 as *const i8),
+        pdf_new_number(width as f64),
     );
     pdf_add_dict(
         dict,
-        pdf_new_name(b"Height\x00" as *const u8 as *const libc::c_char),
-        pdf_new_number(height as libc::c_double),
+        pdf_new_name(b"Height\x00" as *const u8 as *const i8),
+        pdf_new_number(height as f64),
     );
     pdf_add_dict(
         dict,
-        pdf_new_name(b"ColorSpace\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"DeviceGray\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"ColorSpace\x00" as *const u8 as *const i8),
+        pdf_new_name(b"DeviceGray\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         dict,
-        pdf_new_name(b"BitsPerComponent\x00" as *const u8 as *const libc::c_char),
-        pdf_new_number(8i32 as libc::c_double),
+        pdf_new_name(b"BitsPerComponent\x00" as *const u8 as *const i8),
+        pdf_new_number(8i32 as f64),
     );
     i = 0i32 as png_uint_32;
     while i < width.wrapping_mul(height) {
         let mut idx: png_byte = *image_data_ptr.offset(i as isize);
-        *smask_data_ptr.offset(i as isize) = (if (idx as libc::c_int) < num_trans {
-            *trans.offset(idx as isize) as libc::c_int
+        *smask_data_ptr.offset(i as isize) = (if (idx as i32) < num_trans {
+            *trans.offset(idx as isize) as i32
         } else {
             0xffi32
         }) as png_byte;
@@ -1382,8 +1338,8 @@ unsafe extern "C" fn create_soft_mask(
     }
     pdf_add_stream(
         smask,
-        smask_data_ptr as *mut libc::c_char as *const libc::c_void,
-        width.wrapping_mul(height) as libc::c_int,
+        smask_data_ptr as *mut i8 as *const libc::c_void,
+        width.wrapping_mul(height) as i32,
     );
     free(smask_data_ptr as *mut libc::c_void);
     return smask;
@@ -1417,25 +1373,21 @@ unsafe extern "C" fn strip_soft_mask(
         {
             /* Something wrong */
             dpx_warning(
-                b"%s: Inconsistent rowbytes value.\x00" as *const u8 as *const libc::c_char,
-                b"PNG\x00" as *const u8 as *const libc::c_char,
+                b"%s: Inconsistent rowbytes value.\x00" as *const u8 as *const i8,
+                b"PNG\x00" as *const u8 as *const i8,
             );
             return 0 as *mut pdf_obj;
         }
     } else {
-        let mut bps_0: libc::c_int = if bpc as libc::c_int == 8i32 {
-            2i32
-        } else {
-            4i32
-        };
-        if *rowbytes_ptr as libc::c_ulong
-            != ((bps_0 as libc::c_uint).wrapping_mul(width) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+        let mut bps_0: i32 = if bpc as i32 == 8i32 { 2i32 } else { 4i32 };
+        if *rowbytes_ptr as u64
+            != ((bps_0 as u32).wrapping_mul(width) as u64)
+                .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
         {
             /* Something wrong */
             dpx_warning(
-                b"%s: Inconsistent rowbytes value.\x00" as *const u8 as *const libc::c_char,
-                b"PNG\x00" as *const u8 as *const libc::c_char,
+                b"%s: Inconsistent rowbytes value.\x00" as *const u8 as *const i8,
+                b"PNG\x00" as *const u8 as *const i8,
             );
             return 0 as *mut pdf_obj;
         }
@@ -1444,149 +1396,115 @@ unsafe extern "C" fn strip_soft_mask(
     dict = pdf_stream_dict(smask);
     pdf_add_dict(
         dict,
-        pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"XObject\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+        pdf_new_name(b"XObject\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         dict,
-        pdf_new_name(b"Subtype\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"Image\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Subtype\x00" as *const u8 as *const i8),
+        pdf_new_name(b"Image\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         dict,
-        pdf_new_name(b"Width\x00" as *const u8 as *const libc::c_char),
-        pdf_new_number(width as libc::c_double),
+        pdf_new_name(b"Width\x00" as *const u8 as *const i8),
+        pdf_new_number(width as f64),
     );
     pdf_add_dict(
         dict,
-        pdf_new_name(b"Height\x00" as *const u8 as *const libc::c_char),
-        pdf_new_number(height as libc::c_double),
+        pdf_new_name(b"Height\x00" as *const u8 as *const i8),
+        pdf_new_number(height as f64),
     );
     pdf_add_dict(
         dict,
-        pdf_new_name(b"ColorSpace\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"DeviceGray\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"ColorSpace\x00" as *const u8 as *const i8),
+        pdf_new_name(b"DeviceGray\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         dict,
-        pdf_new_name(b"BitsPerComponent\x00" as *const u8 as *const libc::c_char),
-        pdf_new_number(bpc as libc::c_double),
+        pdf_new_name(b"BitsPerComponent\x00" as *const u8 as *const i8),
+        pdf_new_number(bpc as f64),
     );
-    smask_data_ptr = new((((bpc as libc::c_int / 8i32) as libc::c_uint)
+    smask_data_ptr = new((((bpc as i32 / 8i32) as u32)
         .wrapping_mul(width)
-        .wrapping_mul(height) as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
-        as uint32_t) as *mut png_byte;
-    match color_type as libc::c_int {
+        .wrapping_mul(height) as u64)
+        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64) as u32)
+        as *mut png_byte;
+    match color_type as i32 {
         6 => {
-            if bpc as libc::c_int == 8i32 {
+            if bpc as i32 == 8i32 {
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
                     memmove(
-                        image_data_ptr.offset((3i32 as libc::c_uint).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((3_u32).wrapping_mul(i) as isize)
                             as *mut libc::c_void,
-                        image_data_ptr.offset((4i32 as libc::c_uint).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((4_u32).wrapping_mul(i) as isize)
                             as *const libc::c_void,
-                        3i32 as libc::c_ulong,
+                        3i32 as u64,
                     );
-                    *smask_data_ptr.offset(i as isize) = *image_data_ptr.offset(
-                        (4i32 as libc::c_uint)
-                            .wrapping_mul(i)
-                            .wrapping_add(3i32 as libc::c_uint) as isize,
-                    );
+                    *smask_data_ptr.offset(i as isize) = *image_data_ptr
+                        .offset((4_u32).wrapping_mul(i).wrapping_add(3_u32) as isize);
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((3i32 as libc::c_uint).wrapping_mul(width) as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+                *rowbytes_ptr = ((3_u32).wrapping_mul(width) as u64)
+                    .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             } else {
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
                     memmove(
-                        image_data_ptr.offset((6i32 as libc::c_uint).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((6_u32).wrapping_mul(i) as isize)
                             as *mut libc::c_void,
-                        image_data_ptr.offset((8i32 as libc::c_uint).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((8_u32).wrapping_mul(i) as isize)
                             as *const libc::c_void,
-                        6i32 as libc::c_ulong,
+                        6i32 as u64,
                     );
-                    *smask_data_ptr.offset((2i32 as libc::c_uint).wrapping_mul(i) as isize) =
-                        *image_data_ptr.offset(
-                            (8i32 as libc::c_uint)
-                                .wrapping_mul(i)
-                                .wrapping_add(6i32 as libc::c_uint)
-                                as isize,
-                        );
-                    *smask_data_ptr.offset(
-                        (2i32 as libc::c_uint)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as libc::c_uint) as isize,
-                    ) = *image_data_ptr.offset(
-                        (8i32 as libc::c_uint)
-                            .wrapping_mul(i)
-                            .wrapping_add(7i32 as libc::c_uint) as isize,
-                    );
+                    *smask_data_ptr.offset((2_u32).wrapping_mul(i) as isize) = *image_data_ptr
+                        .offset((8_u32).wrapping_mul(i).wrapping_add(6_u32) as isize);
+                    *smask_data_ptr.offset((2_u32).wrapping_mul(i).wrapping_add(1_u32) as isize) =
+                        *image_data_ptr
+                            .offset((8_u32).wrapping_mul(i).wrapping_add(7_u32) as isize);
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((6i32 as libc::c_uint).wrapping_mul(width) as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+                *rowbytes_ptr = ((6_u32).wrapping_mul(width) as u64)
+                    .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             }
         }
         4 => {
-            if bpc as libc::c_int == 8i32 {
+            if bpc as i32 == 8i32 {
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
                     *image_data_ptr.offset(i as isize) =
-                        *image_data_ptr.offset((2i32 as libc::c_uint).wrapping_mul(i) as isize);
-                    *smask_data_ptr.offset(i as isize) = *image_data_ptr.offset(
-                        (2i32 as libc::c_uint)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as libc::c_uint) as isize,
-                    );
+                        *image_data_ptr.offset((2_u32).wrapping_mul(i) as isize);
+                    *smask_data_ptr.offset(i as isize) = *image_data_ptr
+                        .offset((2_u32).wrapping_mul(i).wrapping_add(1_u32) as isize);
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = (width as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+                *rowbytes_ptr = (width as u64)
+                    .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             } else {
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
-                    *image_data_ptr.offset((2i32 as libc::c_uint).wrapping_mul(i) as isize) =
-                        *image_data_ptr.offset((4i32 as libc::c_uint).wrapping_mul(i) as isize);
-                    *image_data_ptr.offset(
-                        (2i32 as libc::c_uint)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as libc::c_uint) as isize,
-                    ) = *image_data_ptr.offset(
-                        (4i32 as libc::c_uint)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as libc::c_uint) as isize,
-                    );
-                    *smask_data_ptr.offset((2i32 as libc::c_uint).wrapping_mul(i) as isize) =
-                        *image_data_ptr.offset(
-                            (4i32 as libc::c_uint)
-                                .wrapping_mul(i)
-                                .wrapping_add(2i32 as libc::c_uint)
-                                as isize,
-                        );
-                    *smask_data_ptr.offset(
-                        (2i32 as libc::c_uint)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as libc::c_uint) as isize,
-                    ) = *image_data_ptr.offset(
-                        (4i32 as libc::c_uint)
-                            .wrapping_mul(i)
-                            .wrapping_add(3i32 as libc::c_uint) as isize,
-                    );
+                    *image_data_ptr.offset((2_u32).wrapping_mul(i) as isize) =
+                        *image_data_ptr.offset((4_u32).wrapping_mul(i) as isize);
+                    *image_data_ptr.offset((2_u32).wrapping_mul(i).wrapping_add(1_u32) as isize) =
+                        *image_data_ptr
+                            .offset((4_u32).wrapping_mul(i).wrapping_add(1_u32) as isize);
+                    *smask_data_ptr.offset((2_u32).wrapping_mul(i) as isize) = *image_data_ptr
+                        .offset((4_u32).wrapping_mul(i).wrapping_add(2_u32) as isize);
+                    *smask_data_ptr.offset((2_u32).wrapping_mul(i).wrapping_add(1_u32) as isize) =
+                        *image_data_ptr
+                            .offset((4_u32).wrapping_mul(i).wrapping_add(3_u32) as isize);
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((2i32 as libc::c_uint).wrapping_mul(width) as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+                *rowbytes_ptr = ((2_u32).wrapping_mul(width) as u64)
+                    .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             }
         }
         _ => {
-            dpx_warning(b"You found a bug in pngimage.c!\x00" as *const u8 as *const libc::c_char);
+            dpx_warning(b"You found a bug in pngimage.c!\x00" as *const u8 as *const i8);
             pdf_release_obj(smask);
             free(smask_data_ptr as *mut libc::c_void);
             return 0 as *mut pdf_obj;
@@ -1595,9 +1513,9 @@ unsafe extern "C" fn strip_soft_mask(
     pdf_add_stream(
         smask,
         smask_data_ptr as *const libc::c_void,
-        ((bpc as libc::c_int / 8i32) as libc::c_uint)
+        ((bpc as i32 / 8i32) as u32)
             .wrapping_mul(width)
-            .wrapping_mul(height) as libc::c_int,
+            .wrapping_mul(height) as i32,
     );
     free(smask_data_ptr as *mut libc::c_void);
     return smask;
@@ -1666,8 +1584,8 @@ pub unsafe extern "C" fn png_get_bbox(
         png_info.is_none()
     } {
         dpx_warning(
-            b"%s: Creating Libpng read/info struct failed.\x00" as *const u8 as *const libc::c_char,
-            b"PNG\x00" as *const u8 as *const libc::c_char,
+            b"%s: Creating Libpng read/info struct failed.\x00" as *const u8 as *const i8,
+            b"PNG\x00" as *const u8 as *const i8,
         );
         if let Some(png) = png {
             png_destroy_read_struct(
@@ -1692,12 +1610,12 @@ pub unsafe extern "C" fn png_get_bbox(
     let mut xppm: png_uint_32 = png_get_x_pixels_per_meter(png, png_info);
     let mut yppm: png_uint_32 = png_get_y_pixels_per_meter(png, png_info);
     *xdensity = if xppm != 0 {
-        72.0f64 / 0.0254f64 / xppm as libc::c_double
+        72.0f64 / 0.0254f64 / xppm as f64
     } else {
         1.0f64
     };
     *ydensity = if yppm != 0 {
-        72.0f64 / 0.0254f64 / yppm as libc::c_double
+        72.0f64 / 0.0254f64 / yppm as f64
     } else {
         1.0f64
     };

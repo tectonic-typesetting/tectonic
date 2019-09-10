@@ -37,7 +37,7 @@ extern "C" {
     pub type pdf_obj;
     pub type pdf_ximage_;
     #[no_mangle]
-    fn pow(_: libc::c_double, _: libc::c_double) -> libc::c_double;
+    fn pow(_: f64, _: f64) -> f64;
     #[no_mangle]
     fn pdf_ximage_set_image(
         ximage: *mut pdf_ximage,
@@ -46,14 +46,9 @@ extern "C" {
     );
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn fread(
-        _: *mut libc::c_void,
-        _: libc::c_ulong,
-        _: libc::c_ulong,
-        _: *mut FILE,
-    ) -> libc::c_ulong;
+    fn fread(_: *mut libc::c_void, _: u64, _: u64, _: *mut FILE) -> u64;
     #[no_mangle]
     fn rewind(__stream: *mut FILE);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -81,30 +76,30 @@ extern "C" {
        interpreted as either signed or unsigned.
 
        Four bytes from DVI, PK, TFM, or VF files always yield a signed
-       32-bit integer (int32_t), but some of them must not be negative.
+       32-bit integer (i32), but some of them must not be negative.
 
        Four byte numbers from JPEG2000, OpenType, or TrueType files are
-       mostly unsigned (uint32_t) and occasionally signed (int32_t).
+       mostly unsigned (u32) and occasionally signed (i32).
     */
     #[no_mangle]
-    fn get_unsigned_byte(_: *mut FILE) -> libc::c_uchar;
+    fn get_unsigned_byte(_: *mut FILE) -> u8;
     #[no_mangle]
-    fn get_unsigned_pair(_: *mut FILE) -> libc::c_ushort;
+    fn get_unsigned_pair(_: *mut FILE) -> u16;
     #[no_mangle]
-    fn get_unsigned_quad(_: *mut FILE) -> uint32_t;
+    fn get_unsigned_quad(_: *mut FILE) -> u32;
     #[no_mangle]
-    fn seek_relative(file: *mut FILE, pos: int32_t);
+    fn seek_relative(file: *mut FILE, pos: i32);
     #[no_mangle]
-    fn file_size(file: *mut FILE) -> int32_t;
+    fn file_size(file: *mut FILE) -> i32;
     #[no_mangle]
-    static mut work_buffer: [libc::c_char; 0];
+    static mut work_buffer: [i8; 0];
     #[no_mangle]
-    fn pdf_get_version() -> libc::c_uint;
+    fn pdf_get_version() -> u32;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     /* Name does not include the / */
     #[no_mangle]
-    fn pdf_new_name(name: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     /* pdf_add_dict() want pdf_obj as key, however, key must always be name
      * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
      * key. This strange difference seems come from pdfdoc that first allocate
@@ -113,52 +108,48 @@ extern "C" {
      * already removed that.
      */
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn pdf_new_stream(flags: libc::c_int) -> *mut pdf_obj;
+    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_add_stream(
         stream: *mut pdf_obj,
         stream_data_ptr: *const libc::c_void,
-        stream_data_len: libc::c_int,
+        stream_data_len: i32,
     );
     #[no_mangle]
     fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_ximage_init_image_info(info: *mut ximage_info);
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
 }
-pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
-pub type __off_t = libc::c_long;
-pub type __off64_t = libc::c_long;
-pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
-pub type size_t = libc::c_ulong;
+pub type __off_t = i64;
+pub type __off64_t = i64;
+pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
-    pub _flags: libc::c_int,
-    pub _IO_read_ptr: *mut libc::c_char,
-    pub _IO_read_end: *mut libc::c_char,
-    pub _IO_read_base: *mut libc::c_char,
-    pub _IO_write_base: *mut libc::c_char,
-    pub _IO_write_ptr: *mut libc::c_char,
-    pub _IO_write_end: *mut libc::c_char,
-    pub _IO_buf_base: *mut libc::c_char,
-    pub _IO_buf_end: *mut libc::c_char,
-    pub _IO_save_base: *mut libc::c_char,
-    pub _IO_backup_base: *mut libc::c_char,
-    pub _IO_save_end: *mut libc::c_char,
+    pub _flags: i32,
+    pub _IO_read_ptr: *mut i8,
+    pub _IO_read_end: *mut i8,
+    pub _IO_read_base: *mut i8,
+    pub _IO_write_base: *mut i8,
+    pub _IO_write_ptr: *mut i8,
+    pub _IO_write_end: *mut i8,
+    pub _IO_buf_base: *mut i8,
+    pub _IO_buf_end: *mut i8,
+    pub _IO_save_base: *mut i8,
+    pub _IO_backup_base: *mut i8,
+    pub _IO_save_end: *mut i8,
     pub _markers: *mut _IO_marker,
     pub _chain: *mut _IO_FILE,
-    pub _fileno: libc::c_int,
-    pub _flags2: libc::c_int,
+    pub _fileno: i32,
+    pub _flags2: i32,
     pub _old_offset: __off_t,
-    pub _cur_column: libc::c_ushort,
-    pub _vtable_offset: libc::c_schar,
-    pub _shortbuf: [libc::c_char; 1],
+    pub _cur_column: u16,
+    pub _vtable_offset: i8,
+    pub _shortbuf: [i8; 1],
     pub _lock: *mut libc::c_void,
     pub _offset: __off64_t,
     pub _codecvt: *mut _IO_codecvt,
@@ -166,143 +157,135 @@ pub struct _IO_FILE {
     pub _freeres_list: *mut _IO_FILE,
     pub _freeres_buf: *mut libc::c_void,
     pub __pad5: size_t,
-    pub _mode: libc::c_int,
-    pub _unused2: [libc::c_char; 20],
+    pub _mode: i32,
+    pub _unused2: [i8; 20],
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ximage_info {
-    pub flags: libc::c_int,
-    pub width: libc::c_int,
-    pub height: libc::c_int,
-    pub bits_per_component: libc::c_int,
-    pub num_components: libc::c_int,
-    pub min_dpi: libc::c_int,
-    pub xdensity: libc::c_double,
-    pub ydensity: libc::c_double,
+    pub flags: i32,
+    pub width: i32,
+    pub height: i32,
+    pub bits_per_component: i32,
+    pub num_components: i32,
+    pub min_dpi: i32,
+    pub xdensity: f64,
+    pub ydensity: f64,
 }
 pub type pdf_ximage = pdf_ximage_;
 /* Label */
 unsafe extern "C" fn read_box_hdr(
     mut fp: *mut FILE,
-    mut lbox: *mut libc::c_uint,
-    mut tbox: *mut libc::c_uint,
-) -> libc::c_uint {
-    let mut bytesread: libc::c_uint = 0i32 as libc::c_uint;
+    mut lbox: *mut u32,
+    mut tbox: *mut u32,
+) -> u32 {
+    let mut bytesread: u32 = 0_u32;
     *lbox = get_unsigned_quad(fp);
     *tbox = get_unsigned_quad(fp);
-    bytesread = bytesread.wrapping_add(8i32 as libc::c_uint);
-    if *lbox == 1i32 as libc::c_uint {
-        if get_unsigned_quad(fp) != 0i32 as libc::c_uint {
+    bytesread = bytesread.wrapping_add(8_u32);
+    if *lbox == 1_u32 {
+        if get_unsigned_quad(fp) != 0_u32 {
             _tt_abort(
                 b"JPEG2000: LBox value in JP2 file >32 bits.\nI can\'t handle this!\x00"
-                    as *const u8 as *const libc::c_char,
+                    as *const u8 as *const i8,
             );
         }
         *lbox = get_unsigned_quad(fp);
-        bytesread = bytesread.wrapping_add(8i32 as libc::c_uint)
-    } else if *lbox > 1i32 as libc::c_uint && *lbox < 8i32 as libc::c_uint {
+        bytesread = bytesread.wrapping_add(8_u32)
+    } else if *lbox > 1_u32 && *lbox < 8_u32 {
         dpx_warning(
-            b"JPEG2000: Unknown LBox value %u in JP2 file!\x00" as *const u8 as *const libc::c_char,
+            b"JPEG2000: Unknown LBox value %u in JP2 file!\x00" as *const u8 as *const i8,
             *lbox,
         );
     }
     return bytesread;
 }
-unsafe extern "C" fn check_jp___box(mut fp: *mut FILE) -> libc::c_int {
-    if get_unsigned_quad(fp) != 0xci32 as libc::c_uint {
+unsafe extern "C" fn check_jp___box(mut fp: *mut FILE) -> i32 {
+    if get_unsigned_quad(fp) != 0xc_u32 {
         return 0i32;
     }
-    if get_unsigned_quad(fp) != 0x6a502020i32 as libc::c_uint {
+    if get_unsigned_quad(fp) != 0x6a502020_u32 {
         return 0i32;
     }
     /* Next 4 bytes shall be 0D 0A 87 0A */
-    if get_unsigned_quad(fp) != 0xd0a870ai32 as libc::c_uint {
+    if get_unsigned_quad(fp) != 0xd0a870a_u32 {
         return 0i32;
     }
     return 1i32;
 }
-unsafe extern "C" fn check_ftyp_data(mut fp: *mut FILE, mut size: libc::c_uint) -> libc::c_int {
-    let mut supported: libc::c_int = 0i32;
-    let mut BR: libc::c_uint = 0;
-    let mut CLi: libc::c_uint = 0;
+unsafe extern "C" fn check_ftyp_data(mut fp: *mut FILE, mut size: u32) -> i32 {
+    let mut supported: i32 = 0i32;
+    let mut BR: u32 = 0;
+    let mut CLi: u32 = 0;
     BR = get_unsigned_quad(fp);
-    size = size.wrapping_sub(4i32 as libc::c_uint);
+    size = size.wrapping_sub(4_u32);
     /* MinV = */
     get_unsigned_quad(fp);
-    size = size.wrapping_sub(4i32 as libc::c_uint);
+    size = size.wrapping_sub(4_u32);
     match BR {
         1785737760 => {
             /* "jp2 " ... supported */
-            seek_relative(fp, size as int32_t);
-            size = 0i32 as libc::c_uint;
+            seek_relative(fp, size as i32);
+            size = 0_u32;
             supported = 1i32
         }
         1785755680 => {
             /* "jpx " ... baseline subset supported */
-            while size > 0i32 as libc::c_uint {
+            while size > 0_u32 {
                 CLi = get_unsigned_quad(fp);
-                if CLi == 0x6a707862i32 as libc::c_uint {
+                if CLi == 0x6a707862_u32 {
                     supported = 1i32
                 }
-                size = size.wrapping_sub(4i32 as libc::c_uint)
+                size = size.wrapping_sub(4_u32)
             }
         }
         _ => {
             dpx_warning(
                 b"JPEG2000: Unknown JPEG 2000 File Type box Brand field value.\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
-            seek_relative(fp, size as int32_t);
-            size = 0i32 as libc::c_uint;
+            seek_relative(fp, size as i32);
+            size = 0_u32;
             supported = 0i32
         }
     }
     return supported;
 }
-unsafe extern "C" fn read_res__data(
-    mut info: *mut ximage_info,
-    mut fp: *mut FILE,
-    mut size: libc::c_uint,
-) {
-    let mut VR_N: libc::c_uint = 0;
-    let mut VR_D: libc::c_uint = 0;
-    let mut HR_N: libc::c_uint = 0;
-    let mut HR_D: libc::c_uint = 0;
-    let mut VR_E: libc::c_uchar = 0;
-    let mut HR_E: libc::c_uchar = 0;
-    VR_N = get_unsigned_pair(fp) as libc::c_uint;
-    VR_D = get_unsigned_pair(fp) as libc::c_uint;
-    HR_N = get_unsigned_pair(fp) as libc::c_uint;
-    HR_D = get_unsigned_pair(fp) as libc::c_uint;
+unsafe extern "C" fn read_res__data(mut info: *mut ximage_info, mut fp: *mut FILE, mut size: u32) {
+    let mut VR_N: u32 = 0;
+    let mut VR_D: u32 = 0;
+    let mut HR_N: u32 = 0;
+    let mut HR_D: u32 = 0;
+    let mut VR_E: u8 = 0;
+    let mut HR_E: u8 = 0;
+    VR_N = get_unsigned_pair(fp) as u32;
+    VR_D = get_unsigned_pair(fp) as u32;
+    HR_N = get_unsigned_pair(fp) as u32;
+    HR_D = get_unsigned_pair(fp) as u32;
     VR_E = get_unsigned_byte(fp);
     HR_E = get_unsigned_byte(fp);
-    (*info).xdensity = 72.0f64
-        / (HR_N as libc::c_double / HR_D as libc::c_double
-            * pow(10.0f64, HR_E as libc::c_double)
-            * 0.0254f64);
-    (*info).ydensity = 72.0f64
-        / (VR_N as libc::c_double / VR_D as libc::c_double
-            * pow(10.0f64, VR_E as libc::c_double)
-            * 0.0254f64);
+    (*info).xdensity =
+        72.0f64 / (HR_N as f64 / HR_D as f64 * pow(10.0f64, HR_E as f64) * 0.0254f64);
+    (*info).ydensity =
+        72.0f64 / (VR_N as f64 / VR_D as f64 * pow(10.0f64, VR_E as f64) * 0.0254f64);
 }
 unsafe extern "C" fn scan_res_(
     mut info: *mut ximage_info,
     mut fp: *mut FILE,
-    mut size: libc::c_uint,
-) -> libc::c_int {
-    let mut len: libc::c_uint = 0;
-    let mut lbox: libc::c_uint = 0;
-    let mut tbox: libc::c_uint = 0;
-    let mut have_resd: libc::c_int = 0i32;
-    while size > 0i32 as libc::c_uint {
+    mut size: u32,
+) -> i32 {
+    let mut len: u32 = 0;
+    let mut lbox: u32 = 0;
+    let mut tbox: u32 = 0;
+    let mut have_resd: i32 = 0i32;
+    while size > 0_u32 {
         len = read_box_hdr(fp, &mut lbox, &mut tbox);
-        if lbox == 0i32 as libc::c_uint {
+        if lbox == 0_u32 {
             dpx_warning(
                 b"JPEG2000: Unexpected lbox value 0 in JP2 Resolution box.\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
             break;
         } else {
@@ -311,7 +294,7 @@ unsafe extern "C" fn scan_res_(
                     if have_resd == 0 {
                         read_res__data(info, fp, lbox.wrapping_sub(len));
                     } else {
-                        seek_relative(fp, lbox.wrapping_sub(len) as int32_t);
+                        seek_relative(fp, lbox.wrapping_sub(len) as i32);
                     }
                 }
                 1919251300 => {
@@ -321,19 +304,15 @@ unsafe extern "C" fn scan_res_(
                 _ => {
                     dpx_warning(
                         b"JPEG2000: Unknown JPEG 2000 box type in Resolution box.\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                     );
-                    seek_relative(fp, lbox.wrapping_sub(len) as int32_t);
+                    seek_relative(fp, lbox.wrapping_sub(len) as i32);
                 }
             }
             size = size.wrapping_sub(lbox)
         }
     }
-    return if size == 0i32 as libc::c_uint {
-        0i32
-    } else {
-        -1i32
-    };
+    return if size == 0_u32 { 0i32 } else { -1i32 };
 }
 /* Acrobat seems require Channel Definition box to be defined when image data
  * contains opacity channel. However, OpenJPEG (and maybe most of JPEG 2000 coders?)
@@ -341,46 +320,43 @@ unsafe extern "C" fn scan_res_(
  */
 unsafe extern "C" fn scan_cdef(
     mut info: *mut ximage_info,
-    mut smask: *mut libc::c_int,
+    mut smask: *mut i32,
     mut fp: *mut FILE,
-    mut size: libc::c_uint,
-) -> libc::c_int {
-    let mut opacity_channels: libc::c_int = 0i32; /* Cn */
-    let mut have_type0: libc::c_int = 0i32; /* must be 0 for SMask */
-    let mut i: libc::c_uint = 0;
-    let mut Cn: libc::c_uint = 0;
-    let mut N: libc::c_uint = 0;
-    let mut Typ: libc::c_uint = 0;
-    let mut Asoc: libc::c_uint = 0;
+    mut size: u32,
+) -> i32 {
+    let mut opacity_channels: i32 = 0i32; /* Cn */
+    let mut have_type0: i32 = 0i32; /* must be 0 for SMask */
+    let mut i: u32 = 0;
+    let mut Cn: u32 = 0;
+    let mut N: u32 = 0;
+    let mut Typ: u32 = 0;
+    let mut Asoc: u32 = 0;
     *smask = 0i32;
-    N = get_unsigned_pair(fp) as libc::c_uint;
-    if size
-        < N.wrapping_mul(6i32 as libc::c_uint)
-            .wrapping_add(2i32 as libc::c_uint)
-    {
+    N = get_unsigned_pair(fp) as u32;
+    if size < N.wrapping_mul(6_u32).wrapping_add(2_u32) {
         dpx_warning(
             b"JPEG2000: Inconsistent N value in Channel Definition box.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
         return -1i32;
     }
-    i = 0i32 as libc::c_uint;
+    i = 0_u32;
     while i < N {
-        Cn = get_unsigned_pair(fp) as libc::c_uint;
-        Typ = get_unsigned_pair(fp) as libc::c_uint;
-        Asoc = get_unsigned_pair(fp) as libc::c_uint;
+        Cn = get_unsigned_pair(fp) as u32;
+        Typ = get_unsigned_pair(fp) as u32;
+        Asoc = get_unsigned_pair(fp) as u32;
         if Cn > N {
             dpx_warning(
                 b"JPEG2000: Invalid Cn value in Channel Definition box.\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
         }
-        if Typ == 1i32 as libc::c_uint {
-            if Asoc == 0i32 as libc::c_uint {
+        if Typ == 1_u32 {
+            if Asoc == 0_u32 {
                 have_type0 = 1i32
             }
             opacity_channels += 1
-        } else if Typ == 2i32 as libc::c_uint {
+        } else if Typ == 2_u32 {
             opacity_channels += 1
         }
         i = i.wrapping_add(1)
@@ -389,38 +365,37 @@ unsafe extern "C" fn scan_cdef(
         *smask = if have_type0 != 0 { 1i32 } else { 0i32 }
     } else if opacity_channels > 1i32 {
         dpx_warning(
-            b"JPEG2000: Unsupported transparency type. (ignored)\x00" as *const u8
-                as *const libc::c_char,
+            b"JPEG2000: Unsupported transparency type. (ignored)\x00" as *const u8 as *const i8,
         );
     }
     return 0i32;
 }
 unsafe extern "C" fn scan_jp2h(
     mut info: *mut ximage_info,
-    mut smask: *mut libc::c_int,
+    mut smask: *mut i32,
     mut fp: *mut FILE,
-    mut size: libc::c_uint,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
-    let mut have_ihdr: libc::c_int = 0i32;
-    let mut len: libc::c_uint = 0;
-    let mut lbox: libc::c_uint = 0;
-    let mut tbox: libc::c_uint = 0;
-    while size > 0i32 as libc::c_uint && error == 0 {
+    mut size: u32,
+) -> i32 {
+    let mut error: i32 = 0i32;
+    let mut have_ihdr: i32 = 0i32;
+    let mut len: u32 = 0;
+    let mut lbox: u32 = 0;
+    let mut tbox: u32 = 0;
+    while size > 0_u32 && error == 0 {
         len = read_box_hdr(fp, &mut lbox, &mut tbox);
-        if lbox == 0i32 as libc::c_uint {
+        if lbox == 0_u32 {
             dpx_warning(
                 b"JPEG2000: Unexpected lbox value 0 in JP2 Header box...\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
             error = -1i32;
             break;
         } else {
             match tbox {
                 1768449138 => {
-                    (*info).height = get_unsigned_quad(fp) as libc::c_int;
-                    (*info).width = get_unsigned_quad(fp) as libc::c_int;
-                    (*info).num_components = get_unsigned_pair(fp) as libc::c_int;
+                    (*info).height = get_unsigned_quad(fp) as i32;
+                    (*info).width = get_unsigned_quad(fp) as i32;
+                    (*info).num_components = get_unsigned_pair(fp) as i32;
                     /* c = */
                     get_unsigned_byte(fp); /* BPC - 1 */
                     /* c = */
@@ -434,14 +409,14 @@ unsafe extern "C" fn scan_jp2h(
                 1919251232 => error = scan_res_(info, fp, lbox.wrapping_sub(len)),
                 1667523942 => error = scan_cdef(info, smask, fp, lbox.wrapping_sub(len)),
                 1651532643 | 1668246642 | 1885564018 | 1668112752 | 1818389536 => {
-                    seek_relative(fp, lbox.wrapping_sub(len) as int32_t);
+                    seek_relative(fp, lbox.wrapping_sub(len) as i32);
                 }
                 _ => {
                     dpx_warning(
                         b"JPEG2000: Unknown JPEG 2000 box in JP2 Header box.\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                     );
-                    seek_relative(fp, lbox.wrapping_sub(len) as int32_t);
+                    seek_relative(fp, lbox.wrapping_sub(len) as i32);
                     error = -1i32
                 }
             }
@@ -451,10 +426,10 @@ unsafe extern "C" fn scan_jp2h(
     if have_ihdr == 0 {
         dpx_warning(
             b"JPEG2000: Expecting JPEG 2000 Image Header box but could not find.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
     }
-    return if error == 0 && have_ihdr != 0 && size == 0i32 as libc::c_uint {
+    return if error == 0 && have_ihdr != 0 && size == 0_u32 {
         0i32
     } else {
         -1i32
@@ -462,15 +437,15 @@ unsafe extern "C" fn scan_jp2h(
 }
 unsafe extern "C" fn scan_file(
     mut info: *mut ximage_info,
-    mut smask: *mut libc::c_int,
+    mut smask: *mut i32,
     mut fp: *mut FILE,
-) -> libc::c_int {
-    let mut error: libc::c_int = 0i32;
-    let mut have_jp2h: libc::c_int = 0i32;
-    let mut size: libc::c_int = 0;
-    let mut len: libc::c_uint = 0;
-    let mut lbox: libc::c_uint = 0;
-    let mut tbox: libc::c_uint = 0;
+) -> i32 {
+    let mut error: i32 = 0i32;
+    let mut have_jp2h: i32 = 0i32;
+    let mut size: i32 = 0;
+    let mut len: u32 = 0;
+    let mut lbox: u32 = 0;
+    let mut tbox: u32 = 0;
     size = file_size(fp);
     /* Should have already been checked before. */
     /* JPEG 2000 Singature box */
@@ -480,18 +455,18 @@ unsafe extern "C" fn scan_file(
     size -= 12i32;
     /* File Type box shall immediately follow */
     len = read_box_hdr(fp, &mut lbox, &mut tbox);
-    if tbox != 0x66747970i32 as libc::c_uint {
+    if tbox != 0x66747970_u32 {
         return -1i32;
     }
     if check_ftyp_data(fp, lbox.wrapping_sub(len)) == 0 {
         return -1i32;
     }
-    size = (size as libc::c_uint).wrapping_sub(lbox) as libc::c_int as libc::c_int;
+    size = (size as u32).wrapping_sub(lbox) as i32 as i32;
     /* Search for JP2 Header box */
     while size > 0i32 && error == 0 {
         len = read_box_hdr(fp, &mut lbox, &mut tbox);
-        if lbox == 0i32 as libc::c_uint {
-            lbox = size as libc::c_uint
+        if lbox == 0_u32 {
+            lbox = size as u32
         }
         match tbox {
             1785737832 => {
@@ -503,16 +478,16 @@ unsafe extern "C" fn scan_file(
                 if have_jp2h == 0 {
                     dpx_warning(
                         b"JPEG2000: JPEG 2000 Codestream box found before JP2 Header box.\x00"
-                            as *const u8 as *const libc::c_char,
+                            as *const u8 as *const i8,
                     );
                 }
-                seek_relative(fp, lbox.wrapping_sub(len) as int32_t);
+                seek_relative(fp, lbox.wrapping_sub(len) as i32);
             }
             _ => {
-                seek_relative(fp, lbox.wrapping_sub(len) as int32_t);
+                seek_relative(fp, lbox.wrapping_sub(len) as i32);
             }
         }
-        size = (size as libc::c_uint).wrapping_sub(lbox) as libc::c_int as libc::c_int
+        size = (size as u32).wrapping_sub(lbox) as i32 as i32
     }
     /* From ISO/IEC 15444-2 M.9.2.7
      * The JP2 Header box shall be found in the file before the first
@@ -522,17 +497,17 @@ unsafe extern "C" fn scan_file(
     if have_jp2h == 0 && error == 0 {
         dpx_warning(
             b"JPEG2000: No JP2 Header box found. Not a JP2/JPX baseline file?\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
         error = -1i32
     }
     return error;
 }
 #[no_mangle]
-pub unsafe extern "C" fn check_for_jp2(mut fp: *mut FILE) -> libc::c_int {
-    let mut len: libc::c_uint = 0;
-    let mut lbox: libc::c_uint = 0;
-    let mut tbox: libc::c_uint = 0;
+pub unsafe extern "C" fn check_for_jp2(mut fp: *mut FILE) -> i32 {
+    let mut len: u32 = 0;
+    let mut lbox: u32 = 0;
+    let mut tbox: u32 = 0;
     if fp.is_null() {
         return 0i32;
     }
@@ -543,7 +518,7 @@ pub unsafe extern "C" fn check_for_jp2(mut fp: *mut FILE) -> libc::c_int {
     }
     /* File Type box shall immediately follow */
     len = read_box_hdr(fp, &mut lbox, &mut tbox);
-    if tbox != 0x66747970i32 as libc::c_uint {
+    if tbox != 0x66747970_u32 {
         return 0i32;
     }
     if check_ftyp_data(fp, lbox.wrapping_sub(len)) == 0 {
@@ -552,12 +527,9 @@ pub unsafe extern "C" fn check_for_jp2(mut fp: *mut FILE) -> libc::c_int {
     return 1i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn jp2_include_image(
-    mut ximage: *mut pdf_ximage,
-    mut fp: *mut FILE,
-) -> libc::c_int {
-    let mut pdf_version: libc::c_uint = 0;
-    let mut smask: libc::c_int = 0i32;
+pub unsafe extern "C" fn jp2_include_image(mut ximage: *mut pdf_ximage, mut fp: *mut FILE) -> i32 {
+    let mut pdf_version: u32 = 0;
+    let mut smask: i32 = 0i32;
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut info: ximage_info = ximage_info {
@@ -571,10 +543,10 @@ pub unsafe extern "C" fn jp2_include_image(
         ydensity: 0.,
     };
     pdf_version = pdf_get_version();
-    if pdf_version < 5i32 as libc::c_uint {
+    if pdf_version < 5_u32 {
         dpx_warning(
             b"JPEG 2000 support requires PDF version >= 1.5 (Current setting 1.%d)\n\x00"
-                as *const u8 as *const libc::c_char,
+                as *const u8 as *const i8,
             pdf_version,
         );
         return -1i32;
@@ -584,35 +556,33 @@ pub unsafe extern "C" fn jp2_include_image(
     stream = stream_dict;
     rewind(fp);
     if scan_file(&mut info, &mut smask, fp) < 0i32 {
-        dpx_warning(
-            b"JPEG2000: Reading JPEG 2000 file failed.\x00" as *const u8 as *const libc::c_char,
-        );
+        dpx_warning(b"JPEG2000: Reading JPEG 2000 file failed.\x00" as *const u8 as *const i8);
         return -1i32;
     }
     stream = pdf_new_stream(0i32);
     stream_dict = pdf_stream_dict(stream);
     pdf_add_dict(
         stream_dict,
-        pdf_new_name(b"Filter\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"JPXDecode\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Filter\x00" as *const u8 as *const i8),
+        pdf_new_name(b"JPXDecode\x00" as *const u8 as *const i8),
     );
     if smask != 0 {
         pdf_add_dict(
             stream_dict,
-            pdf_new_name(b"SMaskInData\x00" as *const u8 as *const libc::c_char),
-            pdf_new_number(1i32 as libc::c_double),
+            pdf_new_name(b"SMaskInData\x00" as *const u8 as *const i8),
+            pdf_new_number(1i32 as f64),
         );
     }
     /* Read whole file */
-    let mut nb_read: libc::c_int = 0;
+    let mut nb_read: i32 = 0;
     rewind(fp);
     loop {
         nb_read = fread(
             work_buffer.as_mut_ptr() as *mut libc::c_void,
-            ::std::mem::size_of::<libc::c_char>() as libc::c_ulong,
-            1024i32 as libc::c_ulong,
+            ::std::mem::size_of::<i8>() as u64,
+            1024i32 as u64,
             fp,
-        ) as libc::c_int;
+        ) as i32;
         if !(nb_read > 0i32) {
             break;
         }
@@ -653,13 +623,13 @@ pub unsafe extern "C" fn jp2_include_image(
 #[no_mangle]
 pub unsafe extern "C" fn jp2_get_bbox(
     mut fp: *mut FILE,
-    mut width: *mut libc::c_int,
-    mut height: *mut libc::c_int,
-    mut xdensity: *mut libc::c_double,
-    mut ydensity: *mut libc::c_double,
-) -> libc::c_int {
-    let mut r: libc::c_int = 0;
-    let mut smask: libc::c_int = 0i32;
+    mut width: *mut i32,
+    mut height: *mut i32,
+    mut xdensity: *mut f64,
+    mut ydensity: *mut f64,
+) -> i32 {
+    let mut r: i32 = 0;
+    let mut smask: i32 = 0i32;
     let mut info: ximage_info = ximage_info {
         flags: 0,
         width: 0,

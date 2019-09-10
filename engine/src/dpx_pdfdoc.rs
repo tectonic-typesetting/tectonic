@@ -55,46 +55,38 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn pdf_color_set_verbose(level: libc::c_int);
+    fn pdf_color_set_verbose(level: i32);
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
-    #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
-        __line: libc::c_uint,
-        __function: *const libc::c_char,
-    ) -> !;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn abs(_: libc::c_int) -> libc::c_int;
+    fn abs(_: i32) -> i32;
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: libc::c_ulong)
-        -> *mut libc::c_char;
+    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn ttstub_input_open(
-        path: *const libc::c_char,
+        path: *const i8,
         format: tt_input_format_type,
-        is_gz: libc::c_int,
+        is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn time(__timer: *mut time_t) -> time_t;
     #[no_mangle]
@@ -108,36 +100,32 @@ extern "C" {
     #[no_mangle]
     fn localtime_r(__timer: *const time_t, __tp: *mut tm) -> *mut tm;
     #[no_mangle]
-    fn pdf_out_init(
-        filename: *const libc::c_char,
-        enable_encrypt: bool,
-        enable_object_stream: bool,
-    );
+    fn pdf_out_init(filename: *const i8, enable_encrypt: bool, enable_object_stream: bool);
     #[no_mangle]
     fn pdf_out_flush();
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> libc::c_int;
+    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> libc::c_double;
+    fn pdf_number_value(number: *mut pdf_obj) -> f64;
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_string_length(object: *mut pdf_obj) -> libc::c_uint;
+    fn pdf_string_length(object: *mut pdf_obj) -> u32;
     /* Name does not include the / */
     #[no_mangle]
-    fn pdf_new_name(name: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_name_value(object: *mut pdf_obj) -> *mut libc::c_char;
+    fn pdf_name_value(object: *mut pdf_obj) -> *mut i8;
     #[no_mangle]
     fn pdf_new_array() -> *mut pdf_obj;
     /* pdf_add_dict requires key but pdf_add_array does not.
@@ -148,17 +136,17 @@ extern "C" {
     #[no_mangle]
     fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_get_array(array: *mut pdf_obj, idx: libc::c_int) -> *mut pdf_obj;
+    fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_array_length(array: *mut pdf_obj) -> libc::c_uint;
+    fn pdf_array_length(array: *mut pdf_obj) -> u32;
     #[no_mangle]
     fn pdf_new_dict() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_remove_dict(dict: *mut pdf_obj, key: *const libc::c_char);
+    fn pdf_remove_dict(dict: *mut pdf_obj, key: *const i8);
     #[no_mangle]
     fn pdf_merge_dict(dict1: *mut pdf_obj, dict2: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
     /* pdf_add_dict() want pdf_obj as key, however, key must always be name
      * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
      * key. This strange difference seems come from pdfdoc that first allocate
@@ -167,23 +155,23 @@ extern "C" {
      * already removed that.
      */
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn pdf_new_stream(flags: libc::c_int) -> *mut pdf_obj;
+    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_add_stream(
         stream: *mut pdf_obj,
         stream_data_ptr: *const libc::c_void,
-        stream_data_len: libc::c_int,
+        stream_data_len: i32,
     );
     #[no_mangle]
     fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_stream_length(stream: *mut pdf_obj) -> libc::c_int;
+    fn pdf_stream_length(stream: *mut pdf_obj) -> i32;
     /* Compare label of two indirect reference object.
      */
     #[no_mangle]
-    fn pdf_compare_reference(ref1: *mut pdf_obj, ref2: *mut pdf_obj) -> libc::c_int;
+    fn pdf_compare_reference(ref1: *mut pdf_obj, ref2: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_set_info(obj: *mut pdf_obj);
     #[no_mangle]
@@ -201,7 +189,7 @@ extern "C" {
     /* Accessor to various device parameters.
      */
     #[no_mangle]
-    fn pdf_dev_get_param(param_type: libc::c_int) -> libc::c_int;
+    fn pdf_dev_get_param(param_type: i32) -> i32;
     /* Text composition mode is ignored (always same as font's
      * writing mode) and glyph rotation is not enabled if
      * auto_rotate is unset.
@@ -213,9 +201,9 @@ extern "C" {
      * XFrom (content grabbing) and Metapost support want them.
      */
     #[no_mangle]
-    fn pdf_dev_reset_fonts(newpage: libc::c_int);
+    fn pdf_dev_reset_fonts(newpage: i32);
     #[no_mangle]
-    fn pdf_dev_reset_color(force: libc::c_int);
+    fn pdf_dev_reset_color(force: i32);
     /* Initialization of transformation matrix with M and others.
      * They are called within pdf_doc_begin_page() and pdf_doc_end_page().
      */
@@ -224,9 +212,9 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_eop();
     #[no_mangle]
-    fn pdf_dev_get_coord(xpos: *mut libc::c_double, ypos: *mut libc::c_double);
+    fn pdf_dev_get_coord(xpos: *mut f64, ypos: *mut f64);
     #[no_mangle]
-    fn pdf_color_graycolor(color: *mut pdf_color, g: libc::c_double) -> libc::c_int;
+    fn pdf_color_graycolor(color: *mut pdf_color, g: f64) -> i32;
     #[no_mangle]
     fn pdf_color_copycolor(color1: *mut pdf_color, color2: *const pdf_color);
     #[no_mangle]
@@ -240,28 +228,28 @@ extern "C" {
     #[no_mangle]
     fn ht_clear_table(ht: *mut ht_table);
     #[no_mangle]
-    fn ht_table_size(ht: *mut ht_table) -> libc::c_int;
+    fn ht_table_size(ht: *mut ht_table) -> i32;
     #[no_mangle]
     fn ht_lookup_table(
         ht: *mut ht_table,
         key: *const libc::c_void,
-        keylen: libc::c_int,
+        keylen: i32,
     ) -> *mut libc::c_void;
     #[no_mangle]
     fn ht_append_table(
         ht: *mut ht_table,
         key: *const libc::c_void,
-        keylen: libc::c_int,
+        keylen: i32,
         value: *mut libc::c_void,
     );
     #[no_mangle]
-    fn ht_set_iter(ht: *mut ht_table, iter: *mut ht_iter) -> libc::c_int;
+    fn ht_set_iter(ht: *mut ht_table, iter: *mut ht_iter) -> i32;
     #[no_mangle]
     fn ht_clear_iter(iter: *mut ht_iter);
     #[no_mangle]
-    fn ht_iter_getkey(iter: *mut ht_iter, keylen: *mut libc::c_int) -> *mut libc::c_char;
+    fn ht_iter_getkey(iter: *mut ht_iter, keylen: *mut i32) -> *mut i8;
     #[no_mangle]
-    fn ht_iter_next(iter: *mut ht_iter) -> libc::c_int;
+    fn ht_iter_next(iter: *mut ht_iter) -> i32;
     /*  DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
@@ -286,7 +274,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    static mut is_xdv: libc::c_int;
+    static mut is_xdv: i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -309,34 +297,34 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dpx_message(fmt: *const libc::c_char, _: ...);
+    fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn pdf_ximage_set_verbose(level: libc::c_int);
+    fn pdf_ximage_set_verbose(level: i32);
     #[no_mangle]
     fn pdf_init_images();
     #[no_mangle]
     fn pdf_close_images();
     #[no_mangle]
-    fn pdf_ximage_get_reference(xobj_id: libc::c_int) -> *mut pdf_obj;
+    fn pdf_ximage_get_reference(xobj_id: i32) -> *mut pdf_obj;
     /* Please use different interface than findresource...
      * This is not intended to be used for specifying page number and others.
      * Only pdf:image special in spc_pdfm.c want optinal dict!
      */
     #[no_mangle]
-    fn pdf_ximage_findresource(ident: *const libc::c_char, options: load_options) -> libc::c_int;
+    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> i32;
     #[no_mangle]
     fn pdf_ximage_defineresource(
-        ident: *const libc::c_char,
-        subtype: libc::c_int,
+        ident: *const i8,
+        subtype: i32,
         cdata: *mut libc::c_void,
         resource: *mut pdf_obj,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn pdf_ximage_init_form_info(info: *mut xform_info);
     #[no_mangle]
-    fn check_for_jpeg(handle: rust_input_handle_t) -> libc::c_int;
+    fn check_for_jpeg(handle: rust_input_handle_t) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -359,36 +347,31 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_dev_rectfill(
-        x: libc::c_double,
-        y: libc::c_double,
-        w: libc::c_double,
-        h: libc::c_double,
-    ) -> libc::c_int;
+    fn pdf_dev_rectfill(x: f64, y: f64, w: f64, h: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_gsave() -> libc::c_int;
+    fn pdf_dev_gsave() -> i32;
     #[no_mangle]
-    fn pdf_dev_grestore() -> libc::c_int;
+    fn pdf_dev_grestore() -> i32;
     /* Requires from mpost.c because new MetaPost graphics must initialize
      * the current gstate. */
     #[no_mangle]
-    fn pdf_dev_push_gstate() -> libc::c_int;
+    fn pdf_dev_push_gstate() -> i32;
     #[no_mangle]
-    fn pdf_dev_pop_gstate() -> libc::c_int;
+    fn pdf_dev_pop_gstate() -> i32;
     /* The depth here is the depth of q/Q nesting.
      * We must remember current depth of nesting when starting a page or xform,
      * and must recover until that depth at the end of page/xform.
      */
     #[no_mangle]
-    fn pdf_dev_current_depth() -> libc::c_int;
+    fn pdf_dev_current_depth() -> i32;
     #[no_mangle]
-    fn pdf_dev_grestore_to(depth: libc::c_int);
+    fn pdf_dev_grestore_to(depth: i32);
     #[no_mangle]
-    fn pdf_dev_set_color(color: *const pdf_color, mask: libc::c_char, force: libc::c_int);
+    fn pdf_dev_set_color(color: *const pdf_color, mask: i8, force: i32);
     #[no_mangle]
     fn pdf_enc_id_array() -> *mut pdf_obj;
     #[no_mangle]
@@ -398,7 +381,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_close_fonts();
     #[no_mangle]
-    fn pdf_font_set_verbose(level: libc::c_int);
+    fn pdf_font_set_verbose(level: i32);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -430,14 +413,14 @@ extern "C" {
     fn pdf_names_add_object(
         names: *mut ht_table,
         key: *const libc::c_void,
-        keylen: libc::c_int,
+        keylen: i32,
         object: *mut pdf_obj,
-    ) -> libc::c_int;
+    ) -> i32;
     /* Really create name tree... */
     #[no_mangle]
     fn pdf_names_create_tree(
         names: *mut ht_table,
-        count: *mut libc::c_int,
+        count: *mut i32,
         filter: *mut ht_table,
     ) -> *mut pdf_obj;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -466,20 +449,16 @@ extern "C" {
     #[no_mangle]
     fn pdf_close_resources();
     #[no_mangle]
-    fn check_for_png(handle: rust_input_handle_t) -> libc::c_int;
+    fn check_for_png(handle: rust_input_handle_t) -> i32;
 }
-pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
-pub type __time_t = libc::c_long;
-pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
-pub type size_t = libc::c_ulong;
+pub type __time_t = i64;
+pub type size_t = u64;
 pub type time_t = __time_t;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -506,54 +485,54 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tm {
-    pub tm_sec: libc::c_int,
-    pub tm_min: libc::c_int,
-    pub tm_hour: libc::c_int,
-    pub tm_mday: libc::c_int,
-    pub tm_mon: libc::c_int,
-    pub tm_year: libc::c_int,
-    pub tm_wday: libc::c_int,
-    pub tm_yday: libc::c_int,
-    pub tm_isdst: libc::c_int,
-    pub tm_gmtoff: libc::c_long,
-    pub tm_zone: *const libc::c_char,
+    pub tm_sec: i32,
+    pub tm_min: i32,
+    pub tm_hour: i32,
+    pub tm_mday: i32,
+    pub tm_mon: i32,
+    pub tm_year: i32,
+    pub tm_wday: i32,
+    pub tm_yday: i32,
+    pub tm_isdst: i32,
+    pub tm_gmtoff: i64,
+    pub tm_zone: *const i8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
-    pub num_components: libc::c_int,
-    pub spot_color_name: *mut libc::c_char,
-    pub values: [libc::c_double; 4],
+    pub num_components: i32,
+    pub spot_color_name: *mut i8,
+    pub values: [f64; 4],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct form_list_node {
-    pub q_depth: libc::c_int,
+    pub q_depth: i32,
     pub form: pdf_form,
     pub prev: *mut form_list_node,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_form {
-    pub ident: *mut libc::c_char,
+    pub ident: *mut i8,
     pub matrix: pdf_tmatrix,
     pub cropbox: pdf_rect,
     pub resources: *mut pdf_obj,
@@ -562,15 +541,15 @@ pub struct pdf_form {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_table {
-    pub count: libc::c_int,
+    pub count: i32,
     pub hval_free_fn: hval_free_func,
     pub table: [*mut ht_entry; 503],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_entry {
-    pub key: *mut libc::c_char,
-    pub keylen: libc::c_int,
+    pub key: *mut i8,
+    pub keylen: i32,
     pub value: *mut libc::c_void,
     pub next: *mut ht_entry,
 }
@@ -578,24 +557,24 @@ pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> (
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_article {
-    pub id: *mut libc::c_char,
+    pub id: *mut i8,
     pub info: *mut pdf_obj,
-    pub num_beads: libc::c_uint,
-    pub max_beads: libc::c_uint,
+    pub num_beads: u32,
+    pub max_beads: u32,
     pub beads: *mut pdf_bead,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_bead {
-    pub id: *mut libc::c_char,
-    pub page_no: libc::c_int,
+    pub id: *mut i8,
+    pub page_no: i32,
     pub rect: pdf_rect,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_olitem {
     pub dict: *mut pdf_obj,
-    pub is_open: libc::c_int,
+    pub is_open: i32,
     pub first: *mut pdf_olitem,
     pub parent: *mut pdf_olitem,
     pub next: *mut pdf_olitem,
@@ -605,9 +584,9 @@ pub struct pdf_olitem {
 pub struct pdf_page {
     pub page_obj: *mut pdf_obj,
     pub page_ref: *mut pdf_obj,
-    pub flags: libc::c_int,
-    pub ref_x: libc::c_double,
-    pub ref_y: libc::c_double,
+    pub flags: i32,
+    pub ref_x: f64,
+    pub ref_y: f64,
     pub cropbox: pdf_rect,
     pub resources: *mut pdf_obj,
     pub background: *mut pdf_obj,
@@ -625,7 +604,7 @@ pub struct pdf_doc {
     pub outlines: C2RustUnnamed_1,
     pub articles: C2RustUnnamed_0,
     pub names: *mut name_dict,
-    pub check_gotos: libc::c_int,
+    pub check_gotos: i32,
     pub gotos: ht_table,
     pub opt: C2RustUnnamed,
     pub pending_forms: *mut form_list_node,
@@ -633,20 +612,20 @@ pub struct pdf_doc {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
-    pub outline_open_depth: libc::c_int,
-    pub annot_grow: libc::c_double,
+    pub outline_open_depth: i32,
+    pub annot_grow: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct name_dict {
-    pub category: *const libc::c_char,
+    pub category: *const i8,
     pub data: *mut ht_table,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
-    pub num_entries: libc::c_uint,
-    pub max_entries: libc::c_uint,
+    pub num_entries: u32,
+    pub max_entries: u32,
     pub entries: *mut pdf_article,
 }
 #[derive(Copy, Clone)]
@@ -654,7 +633,7 @@ pub struct C2RustUnnamed_0 {
 pub struct C2RustUnnamed_1 {
     pub first: *mut pdf_olitem,
     pub current: *mut pdf_olitem,
-    pub current_depth: libc::c_int,
+    pub current_depth: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -662,8 +641,8 @@ pub struct C2RustUnnamed_2 {
     pub mediabox: pdf_rect,
     pub bop: *mut pdf_obj,
     pub eop: *mut pdf_obj,
-    pub num_entries: libc::c_uint,
-    pub max_entries: libc::c_uint,
+    pub num_entries: u32,
+    pub max_entries: u32,
     pub entries: *mut pdf_page,
 }
 #[derive(Copy, Clone)]
@@ -679,29 +658,29 @@ pub struct C2RustUnnamed_3 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_iter {
-    pub index: libc::c_int,
+    pub index: i32,
     pub curr: *mut libc::c_void,
     pub hash: *mut ht_table,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct load_options {
-    pub page_no: libc::c_int,
-    pub bbox_type: libc::c_int,
+    pub page_no: i32,
+    pub bbox_type: i32,
     pub dict: *mut pdf_obj,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct xform_info {
-    pub flags: libc::c_int,
+    pub flags: i32,
     pub bbox: pdf_rect,
     pub matrix: pdf_tmatrix,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_4 {
-    pub dirty: libc::c_int,
-    pub broken: libc::c_int,
+    pub dirty: i32,
+    pub broken: i32,
     pub annot_dict: *mut pdf_obj,
     pub rect: pdf_rect,
 }
@@ -719,24 +698,24 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
     return 0i32 != 0;
 }
-static mut verbose: libc::c_int = 0i32;
-static mut manual_thumb_enabled: libc::c_char = 0i32 as libc::c_char;
-static mut thumb_basename: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
+static mut verbose: i32 = 0i32;
+static mut manual_thumb_enabled: i8 = 0_i8;
+static mut thumb_basename: *mut i8 = 0 as *const i8 as *mut i8;
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_enable_manual_thumbnails() {
-    manual_thumb_enabled = 1i32 as libc::c_char;
+    manual_thumb_enabled = 1_i8;
     // without HAVE_LIBPNG:
     // dpx_warning("Manual thumbnail is not supported without the libpng library.");
 }
-unsafe extern "C" fn read_thumbnail(mut thumb_filename: *const libc::c_char) -> *mut pdf_obj {
+unsafe extern "C" fn read_thumbnail(mut thumb_filename: *const i8) -> *mut pdf_obj {
     let mut image_ref: *mut pdf_obj = 0 as *mut pdf_obj; /* Maybe reference */
-    let mut xobj_id: libc::c_int = 0;
+    let mut xobj_id: i32 = 0;
     let mut handle: *mut rust_input_handle_t = 0 as *mut rust_input_handle_t;
     let mut options: load_options = {
         let mut init = load_options {
@@ -749,7 +728,7 @@ unsafe extern "C" fn read_thumbnail(mut thumb_filename: *const libc::c_char) -> 
     handle = ttstub_input_open(thumb_filename, TTIF_PICT, 0i32) as *mut rust_input_handle_t;
     if handle.is_null() {
         dpx_warning(
-            b"Could not open thumbnail file \"%s\"\x00" as *const u8 as *const libc::c_char,
+            b"Could not open thumbnail file \"%s\"\x00" as *const u8 as *const i8,
             thumb_filename,
         );
         return 0 as *mut pdf_obj;
@@ -758,7 +737,7 @@ unsafe extern "C" fn read_thumbnail(mut thumb_filename: *const libc::c_char) -> 
         && check_for_jpeg(handle as rust_input_handle_t) == 0
     {
         dpx_warning(
-            b"Thumbnail \"%s\" not a png/jpeg file!\x00" as *const u8 as *const libc::c_char,
+            b"Thumbnail \"%s\" not a png/jpeg file!\x00" as *const u8 as *const i8,
             thumb_filename,
         );
         ttstub_input_close(handle as rust_input_handle_t);
@@ -768,7 +747,7 @@ unsafe extern "C" fn read_thumbnail(mut thumb_filename: *const libc::c_char) -> 
     xobj_id = pdf_ximage_findresource(thumb_filename, options);
     if xobj_id < 0i32 {
         dpx_warning(
-            b"Could not read thumbnail file \"%s\".\x00" as *const u8 as *const libc::c_char,
+            b"Could not read thumbnail file \"%s\".\x00" as *const u8 as *const i8,
             thumb_filename,
         );
         image_ref = 0 as *mut pdf_obj
@@ -778,7 +757,7 @@ unsafe extern "C" fn read_thumbnail(mut thumb_filename: *const libc::c_char) -> 
     return image_ref;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_set_verbose(mut level: libc::c_int) {
+pub unsafe extern "C" fn pdf_doc_set_verbose(mut level: i32) {
     verbose = level;
     pdf_font_set_verbose(level);
     pdf_color_set_verbose(level);
@@ -844,59 +823,55 @@ unsafe extern "C" fn pdf_doc_close_catalog(mut p: *mut pdf_doc) {
     if !(*p).root.viewerpref.is_null() {
         tmp = pdf_lookup_dict(
             (*p).root.dict,
-            b"ViewerPreferences\x00" as *const u8 as *const libc::c_char,
+            b"ViewerPreferences\x00" as *const u8 as *const i8,
         );
         if tmp.is_null() {
             pdf_add_dict(
                 (*p).root.dict,
-                pdf_new_name(b"ViewerPreferences\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"ViewerPreferences\x00" as *const u8 as *const i8),
                 pdf_ref_obj((*p).root.viewerpref),
             );
         } else if !tmp.is_null() && pdf_obj_typeof(tmp) == 6i32 {
             pdf_merge_dict((*p).root.viewerpref, tmp);
             pdf_add_dict(
                 (*p).root.dict,
-                pdf_new_name(b"ViewerPreferences\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"ViewerPreferences\x00" as *const u8 as *const i8),
                 pdf_ref_obj((*p).root.viewerpref),
             );
         } else {
             /* What should I do? */
-            dpx_warning(
-                b"Could not modify ViewerPreferences.\x00" as *const u8 as *const libc::c_char,
-            ); /* Maybe reference */
+            dpx_warning(b"Could not modify ViewerPreferences.\x00" as *const u8 as *const i8);
+            /* Maybe reference */
         }
         pdf_release_obj((*p).root.viewerpref);
         (*p).root.viewerpref = 0 as *mut pdf_obj
     }
     if !(*p).root.pagelabels.is_null() {
-        tmp = pdf_lookup_dict(
-            (*p).root.dict,
-            b"PageLabels\x00" as *const u8 as *const libc::c_char,
-        );
+        tmp = pdf_lookup_dict((*p).root.dict, b"PageLabels\x00" as *const u8 as *const i8);
         if tmp.is_null() {
             tmp = pdf_new_dict();
             pdf_add_dict(
                 tmp,
-                pdf_new_name(b"Nums\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"Nums\x00" as *const u8 as *const i8),
                 pdf_link_obj((*p).root.pagelabels),
             );
             pdf_add_dict(
                 (*p).root.dict,
-                pdf_new_name(b"PageLabels\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"PageLabels\x00" as *const u8 as *const i8),
                 pdf_ref_obj(tmp),
             );
             pdf_release_obj(tmp);
         } else {
             /* What should I do? */
-            dpx_warning(b"Could not modify PageLabels.\x00" as *const u8 as *const libc::c_char);
+            dpx_warning(b"Could not modify PageLabels.\x00" as *const u8 as *const i8);
         }
         pdf_release_obj((*p).root.pagelabels);
         (*p).root.pagelabels = 0 as *mut pdf_obj
     }
     pdf_add_dict(
         (*p).root.dict,
-        pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"Catalog\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+        pdf_new_name(b"Catalog\x00" as *const u8 as *const i8),
     );
     pdf_release_obj((*p).root.dict);
     (*p).root.dict = 0 as *mut pdf_obj;
@@ -905,13 +880,12 @@ unsafe extern "C" fn pdf_doc_close_catalog(mut p: *mut pdf_doc) {
  * Pages are starting at 1.
  * The page count does not increase until the page is finished.
  */
-unsafe extern "C" fn doc_resize_page_entries(mut p: *mut pdf_doc, mut size: libc::c_uint) {
+unsafe extern "C" fn doc_resize_page_entries(mut p: *mut pdf_doc, mut size: u32) {
     if size > (*p).pages.max_entries {
-        let mut i: libc::c_uint = 0; /* global bop */
+        let mut i: u32 = 0; /* global bop */
         (*p).pages.entries = renew(
             (*p).pages.entries as *mut libc::c_void,
-            (size as libc::c_ulong).wrapping_mul(::std::mem::size_of::<pdf_page>() as libc::c_ulong)
-                as uint32_t,
+            (size as u64).wrapping_mul(::std::mem::size_of::<pdf_page>() as u64) as u32,
         ) as *mut pdf_page; /* background */
         i = (*p).pages.max_entries; /* page body  */
         while i < size {
@@ -943,20 +917,17 @@ unsafe extern "C" fn doc_resize_page_entries(mut p: *mut pdf_doc, mut size: libc
         (*p).pages.max_entries = size
     };
 }
-unsafe extern "C" fn doc_get_page_entry(
-    mut p: *mut pdf_doc,
-    mut page_no: libc::c_uint,
-) -> *mut pdf_page {
+unsafe extern "C" fn doc_get_page_entry(mut p: *mut pdf_doc, mut page_no: u32) -> *mut pdf_page {
     let mut page: *mut pdf_page = 0 as *mut pdf_page;
-    if page_no as libc::c_ulong > 65535 {
+    if page_no as u64 > 65535 {
         _tt_abort(
-            b"Page number %ul too large!\x00" as *const u8 as *const libc::c_char,
+            b"Page number %ul too large!\x00" as *const u8 as *const i8,
             page_no,
         );
     } else {
-        if page_no == 0i32 as libc::c_uint {
+        if page_no == 0_u32 {
             _tt_abort(
-                b"Invalid Page number %ul.\x00" as *const u8 as *const libc::c_char,
+                b"Invalid Page number %ul.\x00" as *const u8 as *const i8,
                 page_no,
             );
         }
@@ -967,58 +938,41 @@ unsafe extern "C" fn doc_get_page_entry(
     page = &mut *(*p)
         .pages
         .entries
-        .offset(page_no.wrapping_sub(1i32 as libc::c_uint) as isize) as *mut pdf_page;
+        .offset(page_no.wrapping_sub(1_u32) as isize) as *mut pdf_page;
     return page;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_set_bop_content(
-    mut content: *const libc::c_char,
-    mut length: libc::c_uint,
-) {
+pub unsafe extern "C" fn pdf_doc_set_bop_content(mut content: *const i8, mut length: u32) {
     let mut p: *mut pdf_doc = &mut pdoc;
-    if !p.is_null() {
-    } else {
-        __assert_fail(
-            b"p\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdoc.c\x00" as *const u8 as *const libc::c_char,
-            392i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 57], &[libc::c_char; 57]>(
-                b"void pdf_doc_set_bop_content(const char *, unsigned int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!p.is_null());
     if !(*p).pages.bop.is_null() {
         pdf_release_obj((*p).pages.bop);
         (*p).pages.bop = 0 as *mut pdf_obj
     }
-    if length > 0i32 as libc::c_uint {
+    if length > 0_u32 {
         (*p).pages.bop = pdf_new_stream(1i32 << 0i32);
         pdf_add_stream(
             (*p).pages.bop,
             content as *const libc::c_void,
-            length as libc::c_int,
+            length as i32,
         );
     } else {
         (*p).pages.bop = 0 as *mut pdf_obj
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_set_eop_content(
-    mut content: *const libc::c_char,
-    mut length: libc::c_uint,
-) {
+pub unsafe extern "C" fn pdf_doc_set_eop_content(mut content: *const i8, mut length: u32) {
     let mut p: *mut pdf_doc = &mut pdoc;
     if !(*p).pages.eop.is_null() {
         pdf_release_obj((*p).pages.eop);
         (*p).pages.eop = 0 as *mut pdf_obj
     }
-    if length > 0i32 as libc::c_uint {
+    if length > 0_u32 {
         (*p).pages.eop = pdf_new_stream(1i32 << 0i32);
         pdf_add_stream(
             (*p).pages.eop,
             content as *const libc::c_void,
-            length as libc::c_int,
+            length as i32,
         );
     } else {
         (*p).pages.eop = 0 as *mut pdf_obj
@@ -1027,7 +981,7 @@ pub unsafe extern "C" fn pdf_doc_set_eop_content(
 /* auxiliary function to compute timezone offset on
 systems that do not support the tm_gmtoff in struct tm,
 or have a timezone variable.  Such as i386-solaris.  */
-unsafe extern "C" fn compute_timezone_offset() -> int32_t {
+unsafe extern "C" fn compute_timezone_offset() -> i32 {
     let mut now: time_t = 0;
     let mut tm: tm = tm {
         tm_sec: 0,
@@ -1040,7 +994,7 @@ unsafe extern "C" fn compute_timezone_offset() -> int32_t {
         tm_yday: 0,
         tm_isdst: 0,
         tm_gmtoff: 0,
-        tm_zone: 0 as *const libc::c_char,
+        tm_zone: 0 as *const i8,
     };
     let mut local: tm = tm {
         tm_sec: 0,
@@ -1053,14 +1007,14 @@ unsafe extern "C" fn compute_timezone_offset() -> int32_t {
         tm_yday: 0,
         tm_isdst: 0,
         tm_gmtoff: 0,
-        tm_zone: 0 as *const libc::c_char,
+        tm_zone: 0 as *const i8,
     };
     now = get_unique_time_if_given();
     if now == -1i32 as time_t {
         now = time(0 as *mut time_t);
         localtime_r(&mut now, &mut local);
         gmtime_r(&mut now, &mut tm);
-        return (mktime(&mut local) - mktime(&mut tm)) as int32_t;
+        return (mktime(&mut local) - mktime(&mut tm)) as i32;
     } else {
         return 0i32;
     };
@@ -1070,8 +1024,8 @@ unsafe extern "C" fn compute_timezone_offset() -> int32_t {
 /*
  * Docinfo
  */
-unsafe extern "C" fn asn_date(mut date_string: *mut libc::c_char) -> libc::c_int {
-    let mut tz_offset: int32_t = 0;
+unsafe extern "C" fn asn_date(mut date_string: *mut i8) -> i32 {
+    let mut tz_offset: i32 = 0;
     let mut current_time: time_t = 0;
     let mut bd_time: *mut tm = 0 as *mut tm;
     current_time = get_unique_time_if_given();
@@ -1087,7 +1041,7 @@ unsafe extern "C" fn asn_date(mut date_string: *mut libc::c_char) -> libc::c_int
     }
     sprintf(
         date_string,
-        b"D:%04d%02d%02d%02d%02d%02d%c%02d\'%02d\'\x00" as *const u8 as *const libc::c_char,
+        b"D:%04d%02d%02d%02d%02d%02d%c%02d\'%02d\'\x00" as *const u8 as *const i8,
         (*bd_time).tm_year + 1900i32,
         (*bd_time).tm_mon + 1i32,
         (*bd_time).tm_mday,
@@ -1102,7 +1056,7 @@ unsafe extern "C" fn asn_date(mut date_string: *mut libc::c_char) -> libc::c_int
         abs(tz_offset) / 3600i32,
         abs(tz_offset) / 60i32 % 60i32,
     );
-    return strlen(date_string) as libc::c_int;
+    return strlen(date_string) as i32;
 }
 unsafe extern "C" fn pdf_doc_init_docinfo(mut p: *mut pdf_doc) {
     (*p).info = pdf_new_dict();
@@ -1123,64 +1077,58 @@ unsafe extern "C" fn pdf_doc_close_docinfo(mut p: *mut pdf_doc) {
      * structural information there; such information should be stored in the
      * document catalog instead (see Section 3.6.1,  Document Catalog ).
      */
-    let mut keys: [*const libc::c_char; 9] = [
-        b"Title\x00" as *const u8 as *const libc::c_char,
-        b"Author\x00" as *const u8 as *const libc::c_char,
-        b"Subject\x00" as *const u8 as *const libc::c_char,
-        b"Keywords\x00" as *const u8 as *const libc::c_char,
-        b"Creator\x00" as *const u8 as *const libc::c_char,
-        b"Producer\x00" as *const u8 as *const libc::c_char,
-        b"CreationDate\x00" as *const u8 as *const libc::c_char,
-        b"ModDate\x00" as *const u8 as *const libc::c_char,
-        0 as *const libc::c_char,
+    let mut keys: [*const i8; 9] = [
+        b"Title\x00" as *const u8 as *const i8,
+        b"Author\x00" as *const u8 as *const i8,
+        b"Subject\x00" as *const u8 as *const i8,
+        b"Keywords\x00" as *const u8 as *const i8,
+        b"Creator\x00" as *const u8 as *const i8,
+        b"Producer\x00" as *const u8 as *const i8,
+        b"CreationDate\x00" as *const u8 as *const i8,
+        b"ModDate\x00" as *const u8 as *const i8,
+        0 as *const i8,
     ];
     let mut value: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut i: libc::c_uint = 0;
-    i = 0i32 as libc::c_uint;
+    let mut i: u32 = 0;
+    i = 0_u32;
     while !keys[i as usize].is_null() {
         value = pdf_lookup_dict(docinfo, keys[i as usize]);
         if !value.is_null() {
             if !(!value.is_null() && pdf_obj_typeof(value) == 3i32) {
                 dpx_warning(
-                    b"\"%s\" in DocInfo dictionary not string type.\x00" as *const u8
-                        as *const libc::c_char,
+                    b"\"%s\" in DocInfo dictionary not string type.\x00" as *const u8 as *const i8,
                     keys[i as usize],
                 );
                 pdf_remove_dict(docinfo, keys[i as usize]);
                 dpx_warning(
-                    b"\"%s\" removed from DocInfo.\x00" as *const u8 as *const libc::c_char,
+                    b"\"%s\" removed from DocInfo.\x00" as *const u8 as *const i8,
                     keys[i as usize],
                 );
-            } else if pdf_string_length(value) == 0i32 as libc::c_uint {
+            } else if pdf_string_length(value) == 0_u32 {
                 /* The hyperref package often uses emtpy strings. */
                 pdf_remove_dict(docinfo, keys[i as usize]);
             }
         }
         i = i.wrapping_add(1)
     }
-    if pdf_lookup_dict(docinfo, b"Producer\x00" as *const u8 as *const libc::c_char).is_null() {
-        let mut banner: [libc::c_char; 16] =
-            *::std::mem::transmute::<&[u8; 16], &mut [libc::c_char; 16]>(b"xdvipdfmx (0.1)\x00");
+    if pdf_lookup_dict(docinfo, b"Producer\x00" as *const u8 as *const i8).is_null() {
+        let mut banner: [i8; 16] =
+            *::std::mem::transmute::<&[u8; 16], &mut [i8; 16]>(b"xdvipdfmx (0.1)\x00");
         pdf_add_dict(
             docinfo,
-            pdf_new_name(b"Producer\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Producer\x00" as *const u8 as *const i8),
             pdf_new_string(
                 banner.as_mut_ptr() as *const libc::c_void,
                 strlen(banner.as_mut_ptr()),
             ),
         );
     }
-    if pdf_lookup_dict(
-        docinfo,
-        b"CreationDate\x00" as *const u8 as *const libc::c_char,
-    )
-    .is_null()
-    {
-        let mut now: [libc::c_char; 80] = [0; 80];
+    if pdf_lookup_dict(docinfo, b"CreationDate\x00" as *const u8 as *const i8).is_null() {
+        let mut now: [i8; 80] = [0; 80];
         asn_date(now.as_mut_ptr());
         pdf_add_dict(
             docinfo,
-            pdf_new_name(b"CreationDate\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"CreationDate\x00" as *const u8 as *const i8),
             pdf_new_string(
                 now.as_mut_ptr() as *const libc::c_void,
                 strlen(now.as_mut_ptr()),
@@ -1192,7 +1140,7 @@ unsafe extern "C" fn pdf_doc_close_docinfo(mut p: *mut pdf_doc) {
 }
 unsafe extern "C" fn pdf_doc_get_page_resources(
     mut p: *mut pdf_doc,
-    mut category: *const libc::c_char,
+    mut category: *const i8,
 ) -> *mut pdf_obj {
     let mut resources: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut currentpage: *mut pdf_page = 0 as *mut pdf_page;
@@ -1226,15 +1174,15 @@ unsafe extern "C" fn pdf_doc_get_page_resources(
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_add_page_resource(
-    mut category: *const libc::c_char,
-    mut resource_name: *const libc::c_char,
+    mut category: *const i8,
+    mut resource_name: *const i8,
     mut resource_ref: *mut pdf_obj,
 ) {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut resources: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut duplicate: *mut pdf_obj = 0 as *mut pdf_obj;
     if !(!resource_ref.is_null() && pdf_obj_typeof(resource_ref) == 9i32) {
-        dpx_warning(b"Passed non indirect reference...\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Passed non indirect reference...\x00" as *const u8 as *const i8);
         resource_ref = pdf_ref_obj(resource_ref)
         /* leak */
     }
@@ -1243,12 +1191,12 @@ pub unsafe extern "C" fn pdf_doc_add_page_resource(
     if !duplicate.is_null() && pdf_compare_reference(duplicate, resource_ref) != 0 {
         dpx_warning(
             b"Conflicting page resource found (page: %d, category: %s, name: %s).\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
             pdf_doc_current_page_number(),
             category,
             resource_name,
         );
-        dpx_warning(b"Ignoring...\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Ignoring...\x00" as *const u8 as *const i8);
         pdf_release_obj(resource_ref);
     } else {
         pdf_add_dict(resources, pdf_new_name(resource_name), resource_ref);
@@ -1260,15 +1208,15 @@ unsafe extern "C" fn doc_flush_page(
     mut parent_ref: *mut pdf_obj,
 ) {
     let mut contents_array: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut count: libc::c_uint = 0;
+    let mut count: u32 = 0;
     pdf_add_dict(
         (*page).page_obj,
-        pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"Page\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+        pdf_new_name(b"Page\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         (*page).page_obj,
-        pdf_new_name(b"Parent\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Parent\x00" as *const u8 as *const i8),
         parent_ref,
     );
     /*
@@ -1298,11 +1246,11 @@ unsafe extern "C" fn doc_flush_page(
         );
         pdf_add_dict(
             (*page).page_obj,
-            pdf_new_name(b"MediaBox\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"MediaBox\x00" as *const u8 as *const i8),
             mediabox,
         );
     }
-    count = 0i32 as libc::c_uint;
+    count = 0_u32;
     contents_array = pdf_new_array();
     if !(*page).content_refs[0].is_null() {
         /* global bop */
@@ -1330,8 +1278,8 @@ unsafe extern "C" fn doc_flush_page(
         pdf_add_array(contents_array, pdf_ref_obj((*p).pages.eop));
         count = count.wrapping_add(1)
     }
-    if count == 0i32 as libc::c_uint {
-        dpx_warning(b"Page with empty content found!!!\x00" as *const u8 as *const libc::c_char);
+    if count == 0_u32 {
+        dpx_warning(b"Page with empty content found!!!\x00" as *const u8 as *const i8);
     }
     (*page).content_refs[0] = 0 as *mut pdf_obj;
     (*page).content_refs[1] = 0 as *mut pdf_obj;
@@ -1339,13 +1287,13 @@ unsafe extern "C" fn doc_flush_page(
     (*page).content_refs[3] = 0 as *mut pdf_obj;
     pdf_add_dict(
         (*page).page_obj,
-        pdf_new_name(b"Contents\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Contents\x00" as *const u8 as *const i8),
         contents_array,
     );
     if !(*page).annots.is_null() {
         pdf_add_dict(
             (*page).page_obj,
-            pdf_new_name(b"Annots\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Annots\x00" as *const u8 as *const i8),
             pdf_ref_obj((*page).annots),
         );
         pdf_release_obj((*page).annots);
@@ -1353,7 +1301,7 @@ unsafe extern "C" fn doc_flush_page(
     if !(*page).beads.is_null() {
         pdf_add_dict(
             (*page).page_obj,
-            pdf_new_name(b"B\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"B\x00" as *const u8 as *const i8),
             pdf_ref_obj((*page).beads),
         );
         pdf_release_obj((*page).beads);
@@ -1368,13 +1316,13 @@ unsafe extern "C" fn doc_flush_page(
 unsafe extern "C" fn build_page_tree(
     mut p: *mut pdf_doc,
     mut firstpage: *mut pdf_page,
-    mut num_pages: libc::c_int,
+    mut num_pages: i32,
     mut parent_ref: *mut pdf_obj,
 ) -> *mut pdf_obj {
     let mut self_0: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut self_ref: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut kids: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     self_0 = pdf_new_dict();
     /*
      * This is a slight kludge which allow the subtree dictionary
@@ -1389,18 +1337,18 @@ unsafe extern "C" fn build_page_tree(
     };
     pdf_add_dict(
         self_0,
-        pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"Pages\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+        pdf_new_name(b"Pages\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         self_0,
-        pdf_new_name(b"Count\x00" as *const u8 as *const libc::c_char),
-        pdf_new_number(num_pages as libc::c_double),
+        pdf_new_name(b"Count\x00" as *const u8 as *const i8),
+        pdf_new_number(num_pages as f64),
     );
     if !parent_ref.is_null() {
         pdf_add_dict(
             self_0,
-            pdf_new_name(b"Parent\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Parent\x00" as *const u8 as *const i8),
             parent_ref,
         );
     }
@@ -1420,8 +1368,8 @@ unsafe extern "C" fn build_page_tree(
     } else if num_pages > 0i32 {
         i = 0i32;
         while i < 4i32 {
-            let mut start: libc::c_int = 0;
-            let mut end: libc::c_int = 0;
+            let mut start: i32 = 0;
+            let mut end: i32 = 0;
             start = i * num_pages / 4i32;
             end = (i + 1i32) * num_pages / 4i32;
             if end - start > 1i32 {
@@ -1448,7 +1396,7 @@ unsafe extern "C" fn build_page_tree(
     }
     pdf_add_dict(
         self_0,
-        pdf_new_name(b"Kids\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Kids\x00" as *const u8 as *const i8),
         kids,
     );
     pdf_release_obj(self_ref);
@@ -1456,8 +1404,8 @@ unsafe extern "C" fn build_page_tree(
 }
 unsafe extern "C" fn pdf_doc_init_page_tree(
     mut p: *mut pdf_doc,
-    mut media_width: libc::c_double,
-    mut media_height: libc::c_double,
+    mut media_width: f64,
+    mut media_height: f64,
 ) {
     /*
      * Create empty page tree.
@@ -1465,8 +1413,8 @@ unsafe extern "C" fn pdf_doc_init_page_tree(
      * This allows the user to write to pages if he so choses.
      */
     (*p).root.pages = pdf_new_dict();
-    (*p).pages.num_entries = 0i32 as libc::c_uint;
-    (*p).pages.max_entries = 0i32 as libc::c_uint;
+    (*p).pages.num_entries = 0_u32;
+    (*p).pages.max_entries = 0_u32;
     (*p).pages.entries = 0 as *mut pdf_page;
     (*p).pages.bop = 0 as *mut pdf_obj;
     (*p).pages.eop = 0 as *mut pdf_obj;
@@ -1478,17 +1426,17 @@ unsafe extern "C" fn pdf_doc_init_page_tree(
 unsafe extern "C" fn pdf_doc_close_page_tree(mut p: *mut pdf_doc) {
     let mut page_tree_root: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut mediabox: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut page_no: libc::c_uint = 0;
+    let mut page_no: u32 = 0;
     /*
      * Do consistency check on forward references to pages.
      */
-    page_no = (*p).pages.num_entries.wrapping_add(1i32 as libc::c_uint);
+    page_no = (*p).pages.num_entries.wrapping_add(1_u32);
     while page_no <= (*p).pages.max_entries {
         let mut page: *mut pdf_page = 0 as *mut pdf_page;
         page = doc_get_page_entry(p, page_no);
         if !(*page).page_obj.is_null() {
             dpx_warning(
-                b"Nonexistent page #%u refered.\x00" as *const u8 as *const libc::c_char,
+                b"Nonexistent page #%u refered.\x00" as *const u8 as *const i8,
                 page_no,
             );
             pdf_release_obj((*page).page_ref);
@@ -1496,8 +1444,7 @@ unsafe extern "C" fn pdf_doc_close_page_tree(mut p: *mut pdf_doc) {
         }
         if !(*page).page_obj.is_null() {
             dpx_warning(
-                b"Entry for a nonexistent page #%u created.\x00" as *const u8
-                    as *const libc::c_char,
+                b"Entry for a nonexistent page #%u created.\x00" as *const u8 as *const i8,
                 page_no,
             );
             pdf_release_obj((*page).page_obj);
@@ -1505,8 +1452,7 @@ unsafe extern "C" fn pdf_doc_close_page_tree(mut p: *mut pdf_doc) {
         }
         if !(*page).annots.is_null() {
             dpx_warning(
-                b"Annotation attached to a nonexistent page #%u.\x00" as *const u8
-                    as *const libc::c_char,
+                b"Annotation attached to a nonexistent page #%u.\x00" as *const u8 as *const i8,
                 page_no,
             );
             pdf_release_obj((*page).annots);
@@ -1514,8 +1460,7 @@ unsafe extern "C" fn pdf_doc_close_page_tree(mut p: *mut pdf_doc) {
         }
         if !(*page).beads.is_null() {
             dpx_warning(
-                b"Article beads attached to a nonexistent page #%u.\x00" as *const u8
-                    as *const libc::c_char,
+                b"Article beads attached to a nonexistent page #%u.\x00" as *const u8 as *const i8,
                 page_no,
             );
             pdf_release_obj((*page).beads);
@@ -1533,7 +1478,7 @@ unsafe extern "C" fn pdf_doc_close_page_tree(mut p: *mut pdf_doc) {
     page_tree_root = build_page_tree(
         p,
         &mut *(*p).pages.entries.offset(0),
-        (*p).pages.num_entries as libc::c_int,
+        (*p).pages.num_entries as i32,
         0 as *mut pdf_obj,
     );
     pdf_merge_dict((*p).root.pages, page_tree_root);
@@ -1542,7 +1487,7 @@ unsafe extern "C" fn pdf_doc_close_page_tree(mut p: *mut pdf_doc) {
     if !(*p).pages.bop.is_null() {
         pdf_add_stream(
             (*p).pages.bop,
-            b"\n\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
+            b"\n\x00" as *const u8 as *const i8 as *const libc::c_void,
             1i32,
         );
         pdf_release_obj((*p).pages.bop);
@@ -1551,7 +1496,7 @@ unsafe extern "C" fn pdf_doc_close_page_tree(mut p: *mut pdf_doc) {
     if !(*p).pages.eop.is_null() {
         pdf_add_stream(
             (*p).pages.eop,
-            b"\n\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
+            b"\n\x00" as *const u8 as *const i8 as *const libc::c_void,
             1i32,
         );
         pdf_release_obj((*p).pages.eop);
@@ -1577,42 +1522,42 @@ unsafe extern "C" fn pdf_doc_close_page_tree(mut p: *mut pdf_doc) {
     );
     pdf_add_dict(
         (*p).root.pages,
-        pdf_new_name(b"MediaBox\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"MediaBox\x00" as *const u8 as *const i8),
         mediabox,
     );
     pdf_add_dict(
         (*p).root.dict,
-        pdf_new_name(b"Pages\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Pages\x00" as *const u8 as *const i8),
         pdf_ref_obj((*p).root.pages),
     );
     pdf_release_obj((*p).root.pages);
     (*p).root.pages = 0 as *mut pdf_obj;
     (*p).pages.entries = mfree((*p).pages.entries as *mut libc::c_void) as *mut pdf_page;
-    (*p).pages.num_entries = 0i32 as libc::c_uint;
-    (*p).pages.max_entries = 0i32 as libc::c_uint;
+    (*p).pages.num_entries = 0_u32;
+    (*p).pages.max_entries = 0_u32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_get_page_count(mut pf: *mut pdf_file) -> libc::c_int {
-    let mut count: libc::c_int = 0i32;
+pub unsafe extern "C" fn pdf_doc_get_page_count(mut pf: *mut pdf_file) -> i32 {
+    let mut count: i32 = 0i32;
     let mut page_tree: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut catalog: *mut pdf_obj = 0 as *mut pdf_obj;
     catalog = pdf_file_get_catalog(pf);
     page_tree = pdf_deref_obj(pdf_lookup_dict(
         catalog,
-        b"Pages\x00" as *const u8 as *const libc::c_char,
+        b"Pages\x00" as *const u8 as *const i8,
     ));
     if !(!page_tree.is_null() && pdf_obj_typeof(page_tree) == 6i32) {
         return 0i32;
     }
     let mut tmp: *mut pdf_obj = pdf_deref_obj(pdf_lookup_dict(
         page_tree,
-        b"Count\x00" as *const u8 as *const libc::c_char,
+        b"Count\x00" as *const u8 as *const i8,
     ));
     if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
         pdf_release_obj(tmp);
         return 0i32;
     }
-    count = pdf_number_value(tmp) as libc::c_int;
+    count = pdf_number_value(tmp) as i32;
     pdf_release_obj(tmp);
     return count;
 }
@@ -1673,8 +1618,8 @@ pub unsafe extern "C" fn pdf_doc_get_page_count(mut pf: *mut pdf_file) -> libc::
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_get_page(
     mut pf: *mut pdf_file,
-    mut page_no: libc::c_int,
-    mut options: libc::c_int,
+    mut page_no: i32,
+    mut options: i32,
     mut bbox: *mut pdf_rect,
     mut matrix: *mut pdf_tmatrix,
     mut resources_p: *mut *mut pdf_obj,
@@ -1690,25 +1635,25 @@ pub unsafe extern "C" fn pdf_doc_get_page(
     catalog = pdf_file_get_catalog(pf);
     page_tree = pdf_deref_obj(pdf_lookup_dict(
         catalog,
-        b"Pages\x00" as *const u8 as *const libc::c_char,
+        b"Pages\x00" as *const u8 as *const i8,
     ));
     if !(!page_tree.is_null() && pdf_obj_typeof(page_tree) == 6i32) {
         current_block = 7715203803291643663;
     } else {
-        let mut count: libc::c_int = 0;
+        let mut count: i32 = 0;
         let mut tmp: *mut pdf_obj = pdf_deref_obj(pdf_lookup_dict(
             page_tree,
-            b"Count\x00" as *const u8 as *const libc::c_char,
+            b"Count\x00" as *const u8 as *const i8,
         ));
         if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
             pdf_release_obj(tmp);
             current_block = 7715203803291643663;
         } else {
-            count = pdf_number_value(tmp) as libc::c_int;
+            count = pdf_number_value(tmp) as i32;
             pdf_release_obj(tmp);
             if page_no <= 0i32 || page_no > count {
                 dpx_warning(
-                    b"Page %d does not exist.\x00" as *const u8 as *const libc::c_char,
+                    b"Page %d does not exist.\x00" as *const u8 as *const i8,
                     page_no,
                 );
                 current_block = 5059794928954228255;
@@ -1724,10 +1669,10 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                 let mut crop_box: *mut pdf_obj = 0 as *mut pdf_obj;
                 let mut kids: *mut pdf_obj = 0 as *mut pdf_obj;
                 let mut tmp_0: *mut pdf_obj = 0 as *mut pdf_obj;
-                let mut depth: libc::c_int = 30i32;
-                let mut page_idx: libc::c_int = page_no - 1i32;
-                let mut kids_length: libc::c_int = 1i32;
-                let mut i: libc::c_int = 0i32;
+                let mut depth: i32 = 30i32;
+                let mut page_idx: i32 = page_no - 1i32;
+                let mut kids_length: i32 = 1i32;
+                let mut i: i32 = 0i32;
                 's_83: loop {
                     depth -= 1;
                     if !(depth != 0 && i != kids_length) {
@@ -1736,7 +1681,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                     }
                     tmp_0 = pdf_deref_obj(pdf_lookup_dict(
                         page_tree,
-                        b"MediaBox\x00" as *const u8 as *const libc::c_char,
+                        b"MediaBox\x00" as *const u8 as *const i8,
                     ));
                     if !tmp_0.is_null() {
                         pdf_release_obj(media_box);
@@ -1744,7 +1689,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                     }
                     tmp_0 = pdf_deref_obj(pdf_lookup_dict(
                         page_tree,
-                        b"CropBox\x00" as *const u8 as *const libc::c_char,
+                        b"CropBox\x00" as *const u8 as *const i8,
                     ));
                     if !tmp_0.is_null() {
                         pdf_release_obj(crop_box);
@@ -1752,7 +1697,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                     }
                     tmp_0 = pdf_deref_obj(pdf_lookup_dict(
                         page_tree,
-                        b"ArtBox\x00" as *const u8 as *const libc::c_char,
+                        b"ArtBox\x00" as *const u8 as *const i8,
                     ));
                     if !tmp_0.is_null() {
                         pdf_release_obj(art_box);
@@ -1760,7 +1705,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                     }
                     tmp_0 = pdf_deref_obj(pdf_lookup_dict(
                         page_tree,
-                        b"TrimBox\x00" as *const u8 as *const libc::c_char,
+                        b"TrimBox\x00" as *const u8 as *const i8,
                     ));
                     if !tmp_0.is_null() {
                         pdf_release_obj(trim_box);
@@ -1768,7 +1713,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                     }
                     tmp_0 = pdf_deref_obj(pdf_lookup_dict(
                         page_tree,
-                        b"BleedBox\x00" as *const u8 as *const libc::c_char,
+                        b"BleedBox\x00" as *const u8 as *const i8,
                     ));
                     if !tmp_0.is_null() {
                         pdf_release_obj(bleed_box);
@@ -1776,7 +1721,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                     }
                     tmp_0 = pdf_deref_obj(pdf_lookup_dict(
                         page_tree,
-                        b"Rotate\x00" as *const u8 as *const libc::c_char,
+                        b"Rotate\x00" as *const u8 as *const i8,
                     ));
                     if !tmp_0.is_null() {
                         pdf_release_obj(rotate);
@@ -1784,7 +1729,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                     }
                     tmp_0 = pdf_deref_obj(pdf_lookup_dict(
                         page_tree,
-                        b"Resources\x00" as *const u8 as *const libc::c_char,
+                        b"Resources\x00" as *const u8 as *const i8,
                     ));
                     if !tmp_0.is_null() {
                         pdf_release_obj(resources);
@@ -1792,7 +1737,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                     }
                     kids = pdf_deref_obj(pdf_lookup_dict(
                         page_tree,
-                        b"Kids\x00" as *const u8 as *const libc::c_char,
+                        b"Kids\x00" as *const u8 as *const i8,
                     ));
                     if kids.is_null() {
                         current_block = 13707613154239713890;
@@ -1803,10 +1748,10 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                         current_block = 7715203803291643663;
                         break;
                     } else {
-                        kids_length = pdf_array_length(kids) as libc::c_int;
+                        kids_length = pdf_array_length(kids) as i32;
                         i = 0i32;
                         while i < kids_length {
-                            let mut count_0: libc::c_int = 0;
+                            let mut count_0: i32 = 0;
                             pdf_release_obj(page_tree);
                             page_tree = pdf_deref_obj(pdf_get_array(kids, i));
                             if !(!page_tree.is_null() && pdf_obj_typeof(page_tree) == 6i32) {
@@ -1815,11 +1760,11 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                             }
                             tmp_0 = pdf_deref_obj(pdf_lookup_dict(
                                 page_tree,
-                                b"Count\x00" as *const u8 as *const libc::c_char,
+                                b"Count\x00" as *const u8 as *const i8,
                             ));
                             if !tmp_0.is_null() && pdf_obj_typeof(tmp_0) == 2i32 {
                                 /* Pages object */
-                                count_0 = pdf_number_value(tmp_0) as libc::c_int;
+                                count_0 = pdf_number_value(tmp_0) as i32;
                                 pdf_release_obj(tmp_0);
                             } else if tmp_0.is_null() {
                                 /* Page object */
@@ -1944,10 +1889,10 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                             }
                             medbox = media_box;
                             if !(!(!box_0.is_null() && pdf_obj_typeof(box_0) == 5i32)
-                                || pdf_array_length(box_0) != 4i32 as libc::c_uint
+                                || pdf_array_length(box_0) != 4_u32
                                 || !(!resources.is_null() && pdf_obj_typeof(resources) == 6i32))
                             {
-                                let mut i_0: libc::c_int = 0;
+                                let mut i_0: i32 = 0;
                                 i_0 = 4i32;
                                 loop {
                                     let fresh11 = i_0;
@@ -1956,7 +1901,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                         current_block = 13014351284863956202;
                                         break;
                                     }
-                                    let mut x: libc::c_double = 0.;
+                                    let mut x: f64 = 0.;
                                     let mut tmp_1: *mut pdf_obj =
                                         pdf_deref_obj(pdf_get_array(box_0, i_0));
                                     if !(!tmp_1.is_null() && pdf_obj_typeof(tmp_1) == 2i32) {
@@ -1989,7 +1934,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                                     current_block = 10570719081292997246;
                                                     break;
                                                 }
-                                                let mut x_0: libc::c_double = 0.;
+                                                let mut x_0: f64 = 0.;
                                                 let mut tmp_2: *mut pdf_obj =
                                                     pdf_deref_obj(pdf_get_array(medbox, i_0));
                                                 if !(!tmp_2.is_null()
@@ -2042,27 +1987,22 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                                 if !rotate.is_null()
                                                     && pdf_obj_typeof(rotate) == 2i32
                                                 {
-                                                    let mut deg: libc::c_double =
-                                                        pdf_number_value(rotate);
-                                                    if deg - deg as libc::c_int as libc::c_double
-                                                        != 0.0f64
-                                                    {
+                                                    let mut deg: f64 = pdf_number_value(rotate);
+                                                    if deg - deg as i32 as f64 != 0.0f64 {
                                                         dpx_warning(b"Invalid value specified for /Rotate: %f\x00"
                                                                         as
                                                                         *const u8
                                                                         as
-                                                                        *const libc::c_char,
+                                                                        *const i8,
                                                                     deg);
                                                     } else if deg != 0.0f64 {
-                                                        let mut rot: libc::c_int =
-                                                            deg as libc::c_int;
-                                                        if (rot % 90i32) as libc::c_double != 0.0f64
-                                                        {
+                                                        let mut rot: i32 = deg as i32;
+                                                        if (rot % 90i32) as f64 != 0.0f64 {
                                                             dpx_warning(b"Invalid value specified for /Rotate: %f\x00"
                                                                             as
                                                                             *const u8
                                                                             as
-                                                                            *const libc::c_char,
+                                                                            *const i8,
                                                                         deg);
                                                         } else {
                                                             rot = rot % 360i32;
@@ -2071,24 +2011,19 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                                             }
                                                             match rot {
                                                                 90 => {
-                                                                    (*matrix).d =
-                                                                        0i32 as libc::c_double;
+                                                                    (*matrix).d = 0i32 as f64;
                                                                     (*matrix).a = (*matrix).d;
-                                                                    (*matrix).b =
-                                                                        -1i32 as libc::c_double;
-                                                                    (*matrix).c =
-                                                                        1i32 as libc::c_double;
+                                                                    (*matrix).b = -1i32 as f64;
+                                                                    (*matrix).c = 1i32 as f64;
                                                                     (*matrix).e =
                                                                         (*bbox).llx - (*bbox).lly;
                                                                     (*matrix).f =
                                                                         (*bbox).lly + (*bbox).urx
                                                                 }
                                                                 180 => {
-                                                                    (*matrix).d =
-                                                                        -1i32 as libc::c_double;
+                                                                    (*matrix).d = -1i32 as f64;
                                                                     (*matrix).a = (*matrix).d;
-                                                                    (*matrix).c =
-                                                                        0i32 as libc::c_double;
+                                                                    (*matrix).c = 0i32 as f64;
                                                                     (*matrix).b = (*matrix).c;
                                                                     (*matrix).e =
                                                                         (*bbox).llx + (*bbox).urx;
@@ -2096,13 +2031,10 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                                                         (*bbox).lly + (*bbox).ury
                                                                 }
                                                                 270 => {
-                                                                    (*matrix).d =
-                                                                        0i32 as libc::c_double;
+                                                                    (*matrix).d = 0i32 as f64;
                                                                     (*matrix).a = (*matrix).d;
-                                                                    (*matrix).b =
-                                                                        1i32 as libc::c_double;
-                                                                    (*matrix).c =
-                                                                        -1i32 as libc::c_double;
+                                                                    (*matrix).b = 1i32 as f64;
+                                                                    (*matrix).c = -1i32 as f64;
                                                                     (*matrix).e =
                                                                         (*bbox).llx + (*bbox).ury;
                                                                     (*matrix).f =
@@ -2145,9 +2077,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
     }
     match current_block {
         7715203803291643663 => {
-            dpx_warning(
-                b"Cannot parse document. Broken PDF file?\x00" as *const u8 as *const libc::c_char,
-            );
+            dpx_warning(b"Cannot parse document. Broken PDF file?\x00" as *const u8 as *const i8);
         }
         _ => {}
     }
@@ -2157,17 +2087,16 @@ pub unsafe extern "C" fn pdf_doc_get_page(
     pdf_release_obj(page_tree);
     return 0 as *mut pdf_obj;
 }
-unsafe extern "C" fn pdf_doc_init_bookmarks(mut p: *mut pdf_doc, mut bm_open_depth: libc::c_int) {
+unsafe extern "C" fn pdf_doc_init_bookmarks(mut p: *mut pdf_doc, mut bm_open_depth: i32) {
     let mut item: *mut pdf_olitem = 0 as *mut pdf_olitem;
     (*p).opt.outline_open_depth = (if bm_open_depth >= 0i32 {
-        bm_open_depth as libc::c_uint
+        bm_open_depth as u32
     } else {
-        256u32.wrapping_sub(bm_open_depth as libc::c_uint)
-    }) as libc::c_int;
+        256u32.wrapping_sub(bm_open_depth as u32)
+    }) as i32;
     (*p).outlines.current_depth = 1i32;
-    item = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_olitem>() as libc::c_ulong)
-        as uint32_t) as *mut pdf_olitem;
+    item = new((1_u64).wrapping_mul(::std::mem::size_of::<pdf_olitem>() as u64) as u32)
+        as *mut pdf_olitem;
     (*item).dict = 0 as *mut pdf_obj;
     (*item).next = 0 as *mut pdf_olitem;
     (*item).first = 0 as *mut pdf_olitem;
@@ -2176,7 +2105,7 @@ unsafe extern "C" fn pdf_doc_init_bookmarks(mut p: *mut pdf_doc, mut bm_open_dep
     (*p).outlines.current = item;
     (*p).outlines.first = item;
 }
-unsafe extern "C" fn clean_bookmarks(mut item: *mut pdf_olitem) -> libc::c_int {
+unsafe extern "C" fn clean_bookmarks(mut item: *mut pdf_olitem) -> i32 {
     let mut next: *mut pdf_olitem = 0 as *mut pdf_olitem;
     while !item.is_null() {
         next = (*item).next;
@@ -2193,29 +2122,18 @@ unsafe extern "C" fn flush_bookmarks(
     mut node: *mut pdf_olitem,
     mut parent_ref: *mut pdf_obj,
     mut parent_dict: *mut pdf_obj,
-) -> libc::c_int {
-    let mut retval: libc::c_int = 0;
-    let mut count: libc::c_int = 0;
+) -> i32 {
+    let mut retval: i32 = 0;
+    let mut count: i32 = 0;
     let mut item: *mut pdf_olitem = 0 as *mut pdf_olitem;
     let mut this_ref: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut prev_ref: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut next_ref: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !(*node).dict.is_null() {
-    } else {
-        __assert_fail(
-            b"node->dict\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdoc.c\x00" as *const u8 as *const libc::c_char,
-            1321i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 56], &[libc::c_char; 56]>(
-                b"int flush_bookmarks(pdf_olitem *, pdf_obj *, pdf_obj *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!(*node).dict.is_null());
     this_ref = pdf_ref_obj((*node).dict);
     pdf_add_dict(
         parent_dict,
-        pdf_new_name(b"First\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"First\x00" as *const u8 as *const i8),
         pdf_link_obj(this_ref),
     );
     retval = 0i32;
@@ -2227,27 +2145,27 @@ unsafe extern "C" fn flush_bookmarks(
             if (*item).is_open != 0 {
                 pdf_add_dict(
                     (*item).dict,
-                    pdf_new_name(b"Count\x00" as *const u8 as *const libc::c_char),
-                    pdf_new_number(count as libc::c_double),
+                    pdf_new_name(b"Count\x00" as *const u8 as *const i8),
+                    pdf_new_number(count as f64),
                 );
                 retval += count
             } else {
                 pdf_add_dict(
                     (*item).dict,
-                    pdf_new_name(b"Count\x00" as *const u8 as *const libc::c_char),
-                    pdf_new_number(-count as libc::c_double),
+                    pdf_new_name(b"Count\x00" as *const u8 as *const i8),
+                    pdf_new_number(-count as f64),
                 );
             }
         }
         pdf_add_dict(
             (*item).dict,
-            pdf_new_name(b"Parent\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Parent\x00" as *const u8 as *const i8),
             pdf_link_obj(parent_ref),
         );
         if !prev_ref.is_null() {
             pdf_add_dict(
                 (*item).dict,
-                pdf_new_name(b"Prev\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"Prev\x00" as *const u8 as *const i8),
                 prev_ref,
             );
         }
@@ -2255,7 +2173,7 @@ unsafe extern "C" fn flush_bookmarks(
             next_ref = pdf_ref_obj((*(*item).next).dict);
             pdf_add_dict(
                 (*item).dict,
-                pdf_new_name(b"Next\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"Next\x00" as *const u8 as *const i8),
                 pdf_link_obj(next_ref),
             );
         } else {
@@ -2270,7 +2188,7 @@ unsafe extern "C" fn flush_bookmarks(
     }
     pdf_add_dict(
         parent_dict,
-        pdf_new_name(b"Last\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Last\x00" as *const u8 as *const i8),
         pdf_link_obj(prev_ref),
     );
     pdf_release_obj(prev_ref);
@@ -2279,23 +2197,20 @@ unsafe extern "C" fn flush_bookmarks(
     return retval;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_bookmarks_up() -> libc::c_int {
+pub unsafe extern "C" fn pdf_doc_bookmarks_up() -> i32 {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut parent: *mut pdf_olitem = 0 as *mut pdf_olitem;
     let mut item: *mut pdf_olitem = 0 as *mut pdf_olitem;
     item = (*p).outlines.current;
     if item.is_null() || (*item).parent.is_null() {
-        dpx_warning(
-            b"Can\'t go up above the bookmark root node!\x00" as *const u8 as *const libc::c_char,
-        );
+        dpx_warning(b"Can\'t go up above the bookmark root node!\x00" as *const u8 as *const i8);
         return -1i32;
     }
     parent = (*item).parent;
     item = (*parent).next;
     if (*parent).next.is_null() {
-        item = new((1i32 as uint32_t as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<pdf_olitem>() as libc::c_ulong)
-            as uint32_t) as *mut pdf_olitem;
+        item = new((1_u64).wrapping_mul(::std::mem::size_of::<pdf_olitem>() as u64) as u32)
+            as *mut pdf_olitem;
         (*parent).next = item;
         (*item).dict = 0 as *mut pdf_obj;
         (*item).first = 0 as *mut pdf_olitem;
@@ -2308,7 +2223,7 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_up() -> libc::c_int {
     return 0i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_bookmarks_down() -> libc::c_int {
+pub unsafe extern "C" fn pdf_doc_bookmarks_down() -> i32 {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut item: *mut pdf_olitem = 0 as *mut pdf_olitem;
     let mut first: *mut pdf_olitem = 0 as *mut pdf_olitem;
@@ -2316,17 +2231,15 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_down() -> libc::c_int {
     if (*item).dict.is_null() {
         let mut tcolor: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut action: *mut pdf_obj = 0 as *mut pdf_obj;
-        dpx_warning(b"Empty bookmark node!\x00" as *const u8 as *const libc::c_char);
-        dpx_warning(
-            b"You have tried to jump more than 1 level.\x00" as *const u8 as *const libc::c_char,
-        );
+        dpx_warning(b"Empty bookmark node!\x00" as *const u8 as *const i8);
+        dpx_warning(b"You have tried to jump more than 1 level.\x00" as *const u8 as *const i8);
         (*item).dict = pdf_new_dict();
         pdf_add_dict(
             (*item).dict,
-            pdf_new_name(b"Title\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Title\x00" as *const u8 as *const i8),
             pdf_new_string(
-                b"<No Title>\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-                strlen(b"<No Title>\x00" as *const u8 as *const libc::c_char),
+                b"<No Title>\x00" as *const u8 as *const i8 as *const libc::c_void,
+                strlen(b"<No Title>\x00" as *const u8 as *const i8),
             ),
         );
         tcolor = pdf_new_array();
@@ -2335,40 +2248,39 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_down() -> libc::c_int {
         pdf_add_array(tcolor, pdf_new_number(0.0f64));
         pdf_add_dict(
             (*item).dict,
-            pdf_new_name(b"C\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"C\x00" as *const u8 as *const i8),
             pdf_link_obj(tcolor),
         );
         pdf_release_obj(tcolor);
         pdf_add_dict(
             (*item).dict,
-            pdf_new_name(b"F\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"F\x00" as *const u8 as *const i8),
             pdf_new_number(1.0f64),
         );
         action = pdf_new_dict();
         pdf_add_dict(
             action,
-            pdf_new_name(b"S\x00" as *const u8 as *const libc::c_char),
-            pdf_new_name(b"JavaScript\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"S\x00" as *const u8 as *const i8),
+            pdf_new_name(b"JavaScript\x00" as *const u8 as *const i8),
         );
         pdf_add_dict(action,
                      pdf_new_name(b"JS\x00" as *const u8 as
-                                      *const libc::c_char),
+                                      *const i8),
                      pdf_new_string(b"app.alert(\"The author of this document made this bookmark item empty!\", 3, 0)\x00"
-                                        as *const u8 as *const libc::c_char as
+                                        as *const u8 as *const i8 as
                                         *const libc::c_void,
                                     strlen(b"app.alert(\"The author of this document made this bookmark item empty!\", 3, 0)\x00"
                                                as *const u8 as
-                                               *const libc::c_char)));
+                                               *const i8)));
         pdf_add_dict(
             (*item).dict,
-            pdf_new_name(b"A\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"A\x00" as *const u8 as *const i8),
             pdf_link_obj(action),
         );
         pdf_release_obj(action);
     }
-    first = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_olitem>() as libc::c_ulong)
-        as uint32_t) as *mut pdf_olitem;
+    first = new((1_u64).wrapping_mul(::std::mem::size_of::<pdf_olitem>() as u64) as u32)
+        as *mut pdf_olitem;
     (*item).first = first;
     (*first).dict = 0 as *mut pdf_obj;
     (*first).is_open = 0i32;
@@ -2380,32 +2292,20 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_down() -> libc::c_int {
     return 0i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_bookmarks_depth() -> libc::c_int {
+pub unsafe extern "C" fn pdf_doc_bookmarks_depth() -> i32 {
     let mut p: *mut pdf_doc = &mut pdoc;
     return (*p).outlines.current_depth;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_bookmarks_add(mut dict: *mut pdf_obj, mut is_open: libc::c_int) {
+pub unsafe extern "C" fn pdf_doc_bookmarks_add(mut dict: *mut pdf_obj, mut is_open: i32) {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut item: *mut pdf_olitem = 0 as *mut pdf_olitem;
     let mut next: *mut pdf_olitem = 0 as *mut pdf_olitem;
-    if !p.is_null() && !dict.is_null() {
-    } else {
-        __assert_fail(
-            b"p && dict\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdoc.c\x00" as *const u8 as *const libc::c_char,
-            1475i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 43], &[libc::c_char; 43]>(
-                b"void pdf_doc_bookmarks_add(pdf_obj *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!p.is_null() && !dict.is_null());
     item = (*p).outlines.current;
     if item.is_null() {
-        item = new((1i32 as uint32_t as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<pdf_olitem>() as libc::c_ulong)
-            as uint32_t) as *mut pdf_olitem;
+        item = new((1_u64).wrapping_mul(::std::mem::size_of::<pdf_olitem>() as u64) as u32)
+            as *mut pdf_olitem;
         (*item).parent = 0 as *mut pdf_olitem;
         (*p).outlines.first = item
     } else if !(*item).dict.is_null() {
@@ -2423,9 +2323,8 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_add(mut dict: *mut pdf_obj, mut is_op
     } else {
         is_open
     };
-    next = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_olitem>() as libc::c_ulong)
-        as uint32_t) as *mut pdf_olitem;
+    next = new((1_u64).wrapping_mul(::std::mem::size_of::<pdf_olitem>() as u64) as u32)
+        as *mut pdf_olitem;
     (*item).next = next;
     (*next).dict = 0 as *mut pdf_obj;
     (*next).parent = (*item).parent;
@@ -2438,7 +2337,7 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_add(mut dict: *mut pdf_obj, mut is_op
 unsafe extern "C" fn pdf_doc_close_bookmarks(mut p: *mut pdf_doc) {
     let mut catalog: *mut pdf_obj = (*p).root.dict;
     let mut item: *mut pdf_olitem = 0 as *mut pdf_olitem;
-    let mut count: libc::c_int = 0;
+    let mut count: i32 = 0;
     let mut bm_root: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut bm_root_ref: *mut pdf_obj = 0 as *mut pdf_obj;
     item = (*p).outlines.first;
@@ -2448,12 +2347,12 @@ unsafe extern "C" fn pdf_doc_close_bookmarks(mut p: *mut pdf_doc) {
         count = flush_bookmarks(item, bm_root_ref, bm_root);
         pdf_add_dict(
             bm_root,
-            pdf_new_name(b"Count\x00" as *const u8 as *const libc::c_char),
-            pdf_new_number(count as libc::c_double),
+            pdf_new_name(b"Count\x00" as *const u8 as *const i8),
+            pdf_new_number(count as f64),
         );
         pdf_add_dict(
             catalog,
-            pdf_new_name(b"Outlines\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Outlines\x00" as *const u8 as *const i8),
             bm_root_ref,
         );
         pdf_release_obj(bm_root);
@@ -2463,38 +2362,37 @@ unsafe extern "C" fn pdf_doc_close_bookmarks(mut p: *mut pdf_doc) {
     (*p).outlines.current = 0 as *mut pdf_olitem;
     (*p).outlines.current_depth = 0i32;
 }
-static mut name_dict_categories: [*const libc::c_char; 10] = [
-    b"Dests\x00" as *const u8 as *const libc::c_char,
-    b"AP\x00" as *const u8 as *const libc::c_char,
-    b"JavaScript\x00" as *const u8 as *const libc::c_char,
-    b"Pages\x00" as *const u8 as *const libc::c_char,
-    b"Templates\x00" as *const u8 as *const libc::c_char,
-    b"IDS\x00" as *const u8 as *const libc::c_char,
-    b"URLS\x00" as *const u8 as *const libc::c_char,
-    b"EmbeddedFiles\x00" as *const u8 as *const libc::c_char,
-    b"AlternatePresentations\x00" as *const u8 as *const libc::c_char,
-    b"Renditions\x00" as *const u8 as *const libc::c_char,
+static mut name_dict_categories: [*const i8; 10] = [
+    b"Dests\x00" as *const u8 as *const i8,
+    b"AP\x00" as *const u8 as *const i8,
+    b"JavaScript\x00" as *const u8 as *const i8,
+    b"Pages\x00" as *const u8 as *const i8,
+    b"Templates\x00" as *const u8 as *const i8,
+    b"IDS\x00" as *const u8 as *const i8,
+    b"URLS\x00" as *const u8 as *const i8,
+    b"EmbeddedFiles\x00" as *const u8 as *const i8,
+    b"AlternatePresentations\x00" as *const u8 as *const i8,
+    b"Renditions\x00" as *const u8 as *const i8,
 ];
-unsafe extern "C" fn pdf_doc_init_names(mut p: *mut pdf_doc, mut check_gotos: libc::c_int) {
-    let mut i: libc::c_uint = 0;
+unsafe extern "C" fn pdf_doc_init_names(mut p: *mut pdf_doc, mut check_gotos: i32) {
+    let mut i: u32 = 0;
     (*p).root.names = 0 as *mut pdf_obj;
-    (*p).names = new(
-        ((::std::mem::size_of::<[*const libc::c_char; 10]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<*const libc::c_char>() as libc::c_ulong)
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<name_dict>() as libc::c_ulong) as uint32_t,
-    ) as *mut name_dict;
-    i = 0i32 as libc::c_uint;
-    while (i as libc::c_ulong)
-        < (::std::mem::size_of::<[*const libc::c_char; 10]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<*const libc::c_char>() as libc::c_ulong)
+    (*p).names = new(((::std::mem::size_of::<[*const i8; 10]>() as u64)
+        .wrapping_div(::std::mem::size_of::<*const i8>() as u64)
+        .wrapping_add(1i32 as u64) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<name_dict>() as u64) as u32)
+        as *mut name_dict;
+    i = 0_u32;
+    while (i as u64)
+        < (::std::mem::size_of::<[*const i8; 10]>() as u64)
+            .wrapping_div(::std::mem::size_of::<*const i8>() as u64)
     {
         let ref mut fresh13 = (*(*p).names.offset(i as isize)).category;
         *fresh13 = name_dict_categories[i as usize];
         let ref mut fresh14 = (*(*p).names.offset(i as isize)).data;
         *fresh14 = if strcmp(
             name_dict_categories[i as usize],
-            b"Dests\x00" as *const u8 as *const libc::c_char,
+            b"Dests\x00" as *const u8 as *const i8,
         ) != 0
         {
             0 as *mut ht_table
@@ -2508,16 +2406,14 @@ unsafe extern "C" fn pdf_doc_init_names(mut p: *mut pdf_doc, mut check_gotos: li
          */
     }
     let ref mut fresh15 = (*(*p).names.offset(
-        (::std::mem::size_of::<[*const libc::c_char; 10]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<*const libc::c_char>() as libc::c_ulong)
-            as isize,
+        (::std::mem::size_of::<[*const i8; 10]>() as u64)
+            .wrapping_div(::std::mem::size_of::<*const i8>() as u64) as isize,
     ))
     .category;
-    *fresh15 = 0 as *const libc::c_char;
+    *fresh15 = 0 as *const i8;
     let ref mut fresh16 = (*(*p).names.offset(
-        (::std::mem::size_of::<[*const libc::c_char; 10]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<*const libc::c_char>() as libc::c_ulong)
-            as isize,
+        (::std::mem::size_of::<[*const i8; 10]>() as u64)
+            .wrapping_div(::std::mem::size_of::<*const i8>() as u64) as isize,
     ))
     .data;
     *fresh16 = 0 as *mut ht_table;
@@ -2534,14 +2430,14 @@ unsafe extern "C" fn pdf_doc_init_names(mut p: *mut pdf_doc, mut check_gotos: li
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_add_names(
-    mut category: *const libc::c_char,
+    mut category: *const i8,
     mut key: *const libc::c_void,
-    mut keylen: libc::c_int,
+    mut keylen: i32,
     mut value: *mut pdf_obj,
-) -> libc::c_int {
+) -> i32 {
     let mut p: *mut pdf_doc = &mut pdoc;
-    let mut i: libc::c_uint = 0;
-    i = 0i32 as libc::c_uint;
+    let mut i: u32 = 0;
+    i = 0_u32;
     while !(*(*p).names.offset(i as isize)).category.is_null() {
         if streq_ptr((*(*p).names.offset(i as isize)).category, category) {
             break;
@@ -2550,7 +2446,7 @@ pub unsafe extern "C" fn pdf_doc_add_names(
     }
     if (*(*p).names.offset(i as isize)).category.is_null() {
         dpx_warning(
-            b"Unknown name dictionary category \"%s\".\x00" as *const u8 as *const libc::c_char,
+            b"Unknown name dictionary category \"%s\".\x00" as *const u8 as *const i8,
             category,
         );
         return -1i32;
@@ -2569,9 +2465,9 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
     let mut D: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut D_new: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut dest: *const libc::c_char = 0 as *const libc::c_char;
-    let mut key: *const libc::c_char = 0 as *const libc::c_char;
-    let mut destlen: libc::c_int = 0i32;
+    let mut dest: *const i8 = 0 as *const i8;
+    let mut key: *const i8 = 0 as *const i8;
+    let mut destlen: i32 = 0i32;
     if pdoc.check_gotos == 0 {
         return;
     }
@@ -2582,7 +2478,7 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
      */
     subtype = pdf_deref_obj(pdf_lookup_dict(
         annot_dict,
-        b"Subtype\x00" as *const u8 as *const libc::c_char,
+        b"Subtype\x00" as *const u8 as *const i8,
     ));
     if !subtype.is_null() {
         if !subtype.is_null() && pdf_obj_typeof(subtype) == 10i32 {
@@ -2591,7 +2487,7 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
             current_block = 10743935136377679094;
         } else if strcmp(
             pdf_name_value(subtype),
-            b"Link\x00" as *const u8 as *const libc::c_char,
+            b"Link\x00" as *const u8 as *const i8,
         ) != 0
         {
             current_block = 6401626691277551363;
@@ -2604,14 +2500,14 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
     match current_block {
         3276175668257526147 => {
             dict = annot_dict;
-            key = b"Dest\x00" as *const u8 as *const libc::c_char;
+            key = b"Dest\x00" as *const u8 as *const i8;
             D = pdf_deref_obj(pdf_lookup_dict(annot_dict, key));
             if !D.is_null() && pdf_obj_typeof(D) == 10i32 {
                 current_block = 14825911176647684745;
             } else {
                 A = pdf_deref_obj(pdf_lookup_dict(
                     annot_dict,
-                    b"A\x00" as *const u8 as *const libc::c_char,
+                    b"A\x00" as *const u8 as *const i8,
                 ));
                 if !A.is_null() {
                     if !A.is_null() && pdf_obj_typeof(A) == 10i32 {
@@ -2619,23 +2515,18 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
                     } else if !D.is_null() || !(!A.is_null() && pdf_obj_typeof(A) == 6i32) {
                         current_block = 10743935136377679094;
                     } else {
-                        S = pdf_deref_obj(pdf_lookup_dict(
-                            A,
-                            b"S\x00" as *const u8 as *const libc::c_char,
-                        ));
+                        S = pdf_deref_obj(pdf_lookup_dict(A, b"S\x00" as *const u8 as *const i8));
                         if !S.is_null() && pdf_obj_typeof(S) == 10i32 {
                             current_block = 14825911176647684745;
                         } else if !(!S.is_null() && pdf_obj_typeof(S) == 4i32) {
                             current_block = 10743935136377679094;
-                        } else if strcmp(
-                            pdf_name_value(S),
-                            b"GoTo\x00" as *const u8 as *const libc::c_char,
-                        ) != 0
+                        } else if strcmp(pdf_name_value(S), b"GoTo\x00" as *const u8 as *const i8)
+                            != 0
                         {
                             current_block = 6401626691277551363;
                         } else {
                             dict = A;
-                            key = b"D\x00" as *const u8 as *const libc::c_char;
+                            key = b"D\x00" as *const u8 as *const i8;
                             D = pdf_deref_obj(pdf_lookup_dict(A, key));
                             current_block = 9828876828309294594;
                         }
@@ -2649,21 +2540,21 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
                     6401626691277551363 => {}
                     _ => {
                         if !D.is_null() && pdf_obj_typeof(D) == 3i32 {
-                            dest = pdf_string_value(D) as *mut libc::c_char;
-                            destlen = pdf_string_length(D) as libc::c_int;
+                            dest = pdf_string_value(D) as *mut i8;
+                            destlen = pdf_string_length(D) as i32;
                             D_new = ht_lookup_table(
                                 &mut pdoc.gotos,
                                 dest as *const libc::c_void,
                                 destlen,
                             ) as *mut pdf_obj;
                             if D_new.is_null() {
-                                let mut buf: [libc::c_char; 10] = [0; 10];
+                                let mut buf: [i8; 10] = [0; 10];
                                 /* We use hexadecimal notation for our numeric destinations.
                                  * Other bases (e.g., 10+26 or 10+2*26) would be more efficient.
                                  */
                                 sprintf(
                                     buf.as_mut_ptr(),
-                                    b"%x\x00" as *const u8 as *const libc::c_char,
+                                    b"%x\x00" as *const u8 as *const i8,
                                     ht_table_size(&mut pdoc.gotos),
                                 ); /* Maybe reference */
                                 D_new = pdf_new_string(
@@ -2698,12 +2589,12 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
     match current_block {
         14825911176647684745 => {
             dpx_warning(b"Cannot optimize PDF annotations. Output file may be broken. Please restart with option \"-C 0x10\"\n\x00"
-                            as *const u8 as *const libc::c_char);
+                            as *const u8 as *const i8);
         }
         10743935136377679094 => {
             dpx_warning(
                 b"Unknown PDF annotation format. Output file may be broken.\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
         }
         _ => {}
@@ -2723,20 +2614,20 @@ unsafe extern "C" fn warn_undef_dests(mut dests: *mut ht_table, mut gotos: *mut 
         return;
     }
     loop {
-        let mut keylen: libc::c_int = 0;
-        let mut key: *mut libc::c_char = ht_iter_getkey(&mut iter, &mut keylen);
+        let mut keylen: i32 = 0;
+        let mut key: *mut i8 = ht_iter_getkey(&mut iter, &mut keylen);
         if ht_lookup_table(dests, key as *const libc::c_void, keylen).is_null() {
-            let mut dest: *mut libc::c_char = new(((keylen + 1i32) as uint32_t as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+            let mut dest: *mut i8 = new(((keylen + 1i32) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32) as *mut i8;
             memcpy(
                 dest as *mut libc::c_void,
                 key as *const libc::c_void,
-                keylen as libc::c_ulong,
+                keylen as u64,
             );
-            *dest.offset(keylen as isize) = 0i32 as libc::c_char;
+            *dest.offset(keylen as isize) = 0_i8;
             dpx_warning(
-                b"PDF destination \"%s\" not defined.\x00" as *const u8 as *const libc::c_char,
+                b"PDF destination \"%s\" not defined.\x00" as *const u8 as *const i8,
                 dest,
             );
             free(dest as *mut libc::c_void);
@@ -2749,17 +2640,17 @@ unsafe extern "C" fn warn_undef_dests(mut dests: *mut ht_table, mut gotos: *mut 
 }
 unsafe extern "C" fn pdf_doc_close_names(mut p: *mut pdf_doc) {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut i: libc::c_uint = 0;
-    i = 0i32 as libc::c_uint;
+    let mut i: u32 = 0;
+    i = 0_u32;
     while !(*(*p).names.offset(i as isize)).category.is_null() {
         if !(*(*p).names.offset(i as isize)).data.is_null() {
             let mut data: *mut ht_table = (*(*p).names.offset(i as isize)).data;
             let mut name_tree: *mut pdf_obj = 0 as *mut pdf_obj;
-            let mut count: libc::c_int = 0;
+            let mut count: i32 = 0;
             if pdoc.check_gotos == 0
                 || strcmp(
                     (*(*p).names.offset(i as isize)).category,
-                    b"Dests\x00" as *const u8 as *const libc::c_char,
+                    b"Dests\x00" as *const u8 as *const i8,
                 ) != 0
             {
                 name_tree = pdf_names_create_tree(data, &mut count, 0 as *mut ht_table)
@@ -2767,8 +2658,7 @@ unsafe extern "C" fn pdf_doc_close_names(mut p: *mut pdf_doc) {
                 name_tree = pdf_names_create_tree(data, &mut count, &mut pdoc.gotos);
                 if verbose != 0 && count < (*data).count {
                     dpx_message(
-                        b"\nRemoved %d unused PDF destinations\n\x00" as *const u8
-                            as *const libc::c_char,
+                        b"\nRemoved %d unused PDF destinations\n\x00" as *const u8 as *const i8,
                         (*data).count - count,
                     );
                 }
@@ -2792,28 +2682,23 @@ unsafe extern "C" fn pdf_doc_close_names(mut p: *mut pdf_doc) {
         i = i.wrapping_add(1)
     }
     if !(*p).root.names.is_null() {
-        tmp = pdf_lookup_dict(
-            (*p).root.dict,
-            b"Names\x00" as *const u8 as *const libc::c_char,
-        );
+        tmp = pdf_lookup_dict((*p).root.dict, b"Names\x00" as *const u8 as *const i8);
         if tmp.is_null() {
             pdf_add_dict(
                 (*p).root.dict,
-                pdf_new_name(b"Names\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"Names\x00" as *const u8 as *const i8),
                 pdf_ref_obj((*p).root.names),
             );
         } else if !tmp.is_null() && pdf_obj_typeof(tmp) == 6i32 {
             pdf_merge_dict((*p).root.names, tmp);
             pdf_add_dict(
                 (*p).root.dict,
-                pdf_new_name(b"Names\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"Names\x00" as *const u8 as *const i8),
                 pdf_ref_obj((*p).root.names),
             );
         } else {
             /* What should I do? */
-            dpx_warning(
-                b"Could not modify Names dictionary.\x00" as *const u8 as *const libc::c_char,
-            );
+            dpx_warning(b"Could not modify Names dictionary.\x00" as *const u8 as *const i8);
         }
         pdf_release_obj((*p).root.names);
         (*p).root.names = 0 as *mut pdf_obj
@@ -2823,17 +2708,17 @@ unsafe extern "C" fn pdf_doc_close_names(mut p: *mut pdf_doc) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_add_annot(
-    mut page_no: libc::c_uint,
+    mut page_no: u32,
     mut rect: *const pdf_rect,
     mut annot_dict: *mut pdf_obj,
-    mut new_annot: libc::c_int,
+    mut new_annot: i32,
 ) {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut page: *mut pdf_page = 0 as *mut pdf_page;
     let mut rect_array: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut annot_grow: libc::c_double = (*p).opt.annot_grow;
-    let mut xpos: libc::c_double = 0.;
-    let mut ypos: libc::c_double = 0.;
+    let mut annot_grow: f64 = (*p).opt.annot_grow;
+    let mut xpos: f64 = 0.;
+    let mut ypos: f64 = 0.;
     let mut annbox: pdf_rect = pdf_rect {
         llx: 0.,
         lly: 0.,
@@ -2861,29 +2746,26 @@ pub unsafe extern "C" fn pdf_doc_add_annot(
         || annbox.lly < mediabox.lly
         || annbox.ury > mediabox.ury
     {
-        dpx_warning(b"Annotation out of page boundary.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Annotation out of page boundary.\x00" as *const u8 as *const i8);
         dpx_warning(
-            b"Current page\'s MediaBox: [%g %g %g %g]\x00" as *const u8 as *const libc::c_char,
+            b"Current page\'s MediaBox: [%g %g %g %g]\x00" as *const u8 as *const i8,
             mediabox.llx,
             mediabox.lly,
             mediabox.urx,
             mediabox.ury,
         );
         dpx_warning(
-            b"Annotation: [%g %g %g %g]\x00" as *const u8 as *const libc::c_char,
+            b"Annotation: [%g %g %g %g]\x00" as *const u8 as *const i8,
             annbox.llx,
             annbox.lly,
             annbox.urx,
             annbox.ury,
         );
-        dpx_warning(
-            b"Maybe incorrect paper size specified.\x00" as *const u8 as *const libc::c_char,
-        );
+        dpx_warning(b"Maybe incorrect paper size specified.\x00" as *const u8 as *const i8);
     }
     if annbox.llx > annbox.urx || annbox.lly > annbox.ury {
         dpx_warning(
-            b"Rectangle with negative width/height: [%g %g %g %g]\x00" as *const u8
-                as *const libc::c_char,
+            b"Rectangle with negative width/height: [%g %g %g %g]\x00" as *const u8 as *const i8,
             annbox.llx,
             annbox.lly,
             annbox.urx,
@@ -2909,7 +2791,7 @@ pub unsafe extern "C" fn pdf_doc_add_annot(
     );
     pdf_add_dict(
         annot_dict,
-        pdf_new_name(b"Rect\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Rect\x00" as *const u8 as *const i8),
         rect_array,
     );
     pdf_add_array((*page).annots, pdf_ref_obj(annot_dict));
@@ -2922,58 +2804,49 @@ pub unsafe extern "C" fn pdf_doc_add_annot(
  */
 unsafe extern "C" fn pdf_doc_init_articles(mut p: *mut pdf_doc) {
     (*p).root.threads = 0 as *mut pdf_obj;
-    (*p).articles.num_entries = 0i32 as libc::c_uint;
-    (*p).articles.max_entries = 0i32 as libc::c_uint;
+    (*p).articles.num_entries = 0_u32;
+    (*p).articles.max_entries = 0_u32;
     (*p).articles.entries = 0 as *mut pdf_article;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_begin_article(
-    mut article_id: *const libc::c_char,
+    mut article_id: *const i8,
     mut article_info: *mut pdf_obj,
 ) {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut article: *mut pdf_article = 0 as *mut pdf_article;
-    if article_id.is_null() || strlen(article_id) == 0i32 as libc::c_ulong {
-        _tt_abort(
-            b"Article thread without internal identifier.\x00" as *const u8 as *const libc::c_char,
-        );
+    if article_id.is_null() || strlen(article_id) == 0i32 as u64 {
+        _tt_abort(b"Article thread without internal identifier.\x00" as *const u8 as *const i8);
     }
     if (*p).articles.num_entries >= (*p).articles.max_entries {
-        (*p).articles.max_entries = (*p)
-            .articles
-            .max_entries
-            .wrapping_add(16i32 as libc::c_uint);
+        (*p).articles.max_entries = (*p).articles.max_entries.wrapping_add(16_u32);
         (*p).articles.entries = renew(
             (*p).articles.entries as *mut libc::c_void,
-            ((*p).articles.max_entries as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<pdf_article>() as libc::c_ulong)
-                as uint32_t,
+            ((*p).articles.max_entries as u64)
+                .wrapping_mul(::std::mem::size_of::<pdf_article>() as u64) as u32,
         ) as *mut pdf_article
     }
     article = &mut *(*p)
         .articles
         .entries
         .offset((*p).articles.num_entries as isize) as *mut pdf_article;
-    (*article).id = new(
-        (strlen(article_id).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
-    ) as *mut libc::c_char;
+    (*article).id = new((strlen(article_id).wrapping_add(1i32 as u64) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy((*article).id, article_id);
     (*article).info = article_info;
-    (*article).num_beads = 0i32 as libc::c_uint;
-    (*article).max_beads = 0i32 as libc::c_uint;
+    (*article).num_beads = 0_u32;
+    (*article).max_beads = 0_u32;
     (*article).beads = 0 as *mut pdf_bead;
     (*p).articles.num_entries = (*p).articles.num_entries.wrapping_add(1);
 }
 unsafe extern "C" fn find_bead(
     mut article: *mut pdf_article,
-    mut bead_id: *const libc::c_char,
+    mut bead_id: *const i8,
 ) -> *mut pdf_bead {
     let mut bead: *mut pdf_bead = 0 as *mut pdf_bead;
-    let mut i: libc::c_uint = 0;
+    let mut i: u32 = 0;
     bead = 0 as *mut pdf_bead;
-    i = 0i32 as libc::c_uint;
+    i = 0_u32;
     while i < (*article).num_beads {
         if streq_ptr((*(*article).beads.offset(i as isize)).id, bead_id) {
             bead = &mut *(*article).beads.offset(i as isize) as *mut pdf_bead;
@@ -2986,20 +2859,20 @@ unsafe extern "C" fn find_bead(
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_add_bead(
-    mut article_id: *const libc::c_char,
-    mut bead_id: *const libc::c_char,
-    mut page_no: libc::c_int,
+    mut article_id: *const i8,
+    mut bead_id: *const i8,
+    mut page_no: i32,
     mut rect: *const pdf_rect,
 ) {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut article: *mut pdf_article = 0 as *mut pdf_article;
     let mut bead: *mut pdf_bead = 0 as *mut pdf_bead;
-    let mut i: libc::c_uint = 0;
+    let mut i: u32 = 0;
     if article_id.is_null() {
-        _tt_abort(b"No article identifier specified.\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"No article identifier specified.\x00" as *const u8 as *const i8);
     }
     article = 0 as *mut pdf_article;
-    i = 0i32 as libc::c_uint;
+    i = 0_u32;
     while i < (*p).articles.num_entries {
         if streq_ptr((*(*p).articles.entries.offset(i as isize)).id, article_id) {
             article = &mut *(*p).articles.entries.offset(i as isize) as *mut pdf_article;
@@ -3009,10 +2882,7 @@ pub unsafe extern "C" fn pdf_doc_add_bead(
         }
     }
     if article.is_null() {
-        _tt_abort(
-            b"Specified article thread that doesn\'t exist.\x00" as *const u8
-                as *const libc::c_char,
-        );
+        _tt_abort(b"Specified article thread that doesn\'t exist.\x00" as *const u8 as *const i8);
     }
     bead = if !bead_id.is_null() {
         find_bead(article, bead_id)
@@ -3021,31 +2891,28 @@ pub unsafe extern "C" fn pdf_doc_add_bead(
     };
     if bead.is_null() {
         if (*article).num_beads >= (*article).max_beads {
-            (*article).max_beads = (*article).max_beads.wrapping_add(16i32 as libc::c_uint);
+            (*article).max_beads = (*article).max_beads.wrapping_add(16_u32);
             (*article).beads = renew(
                 (*article).beads as *mut libc::c_void,
-                ((*article).max_beads as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<pdf_bead>() as libc::c_ulong)
-                    as uint32_t,
+                ((*article).max_beads as u64).wrapping_mul(::std::mem::size_of::<pdf_bead>() as u64)
+                    as u32,
             ) as *mut pdf_bead;
             i = (*article).num_beads;
             while i < (*article).max_beads {
                 let ref mut fresh18 = (*(*article).beads.offset(i as isize)).id;
-                *fresh18 = 0 as *mut libc::c_char;
+                *fresh18 = 0 as *mut i8;
                 (*(*article).beads.offset(i as isize)).page_no = -1i32;
                 i = i.wrapping_add(1)
             }
         }
         bead = &mut *(*article).beads.offset((*article).num_beads as isize) as *mut pdf_bead;
         if !bead_id.is_null() {
-            (*bead).id = new(
-                (strlen(bead_id).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t,
-            ) as *mut libc::c_char;
+            (*bead).id = new((strlen(bead_id).wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32) as *mut i8;
             strcpy((*bead).id, bead_id);
         } else {
-            (*bead).id = 0 as *mut libc::c_char
+            (*bead).id = 0 as *mut i8
         }
         (*article).num_beads = (*article).num_beads.wrapping_add(1)
     }
@@ -3058,16 +2925,16 @@ pub unsafe extern "C" fn pdf_doc_add_bead(
 unsafe extern "C" fn make_article(
     mut p: *mut pdf_doc,
     mut article: *mut pdf_article,
-    mut bead_ids: *mut *const libc::c_char,
-    mut num_beads: libc::c_uint,
+    mut bead_ids: *mut *const i8,
+    mut num_beads: u32,
     mut article_info: *mut pdf_obj,
 ) -> *mut pdf_obj {
     let mut art_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut first: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut prev: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut last: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut i: libc::c_int = 0;
-    let mut n: libc::c_int = 0;
+    let mut i: i32 = 0;
+    let mut n: i32 = 0;
     if article.is_null() {
         return 0 as *mut pdf_obj;
     }
@@ -3084,7 +2951,7 @@ unsafe extern "C" fn make_article(
         num_beads
     } else {
         (*article).num_beads
-    }) as libc::c_int;
+    }) as i32;
     i = 0i32;
     while i < n {
         let mut bead: *mut pdf_bead = 0 as *mut pdf_bead;
@@ -3099,18 +2966,18 @@ unsafe extern "C" fn make_article(
                 first = last;
                 pdf_add_dict(
                     first,
-                    pdf_new_name(b"T\x00" as *const u8 as *const libc::c_char),
+                    pdf_new_name(b"T\x00" as *const u8 as *const i8),
                     pdf_ref_obj(art_dict),
                 );
             } else {
                 pdf_add_dict(
                     prev,
-                    pdf_new_name(b"N\x00" as *const u8 as *const libc::c_char),
+                    pdf_new_name(b"N\x00" as *const u8 as *const i8),
                     pdf_ref_obj(last),
                 );
                 pdf_add_dict(
                     last,
-                    pdf_new_name(b"V\x00" as *const u8 as *const libc::c_char),
+                    pdf_new_name(b"V\x00" as *const u8 as *const i8),
                     pdf_ref_obj(prev),
                 );
                 /* We must link first to last. */
@@ -3121,13 +2988,13 @@ unsafe extern "C" fn make_article(
             /* Realize bead now. */
             let mut page: *mut pdf_page = 0 as *mut pdf_page;
             let mut rect: *mut pdf_obj = 0 as *mut pdf_obj;
-            page = doc_get_page_entry(p, (*bead).page_no as libc::c_uint);
+            page = doc_get_page_entry(p, (*bead).page_no as u32);
             if (*page).beads.is_null() {
                 (*page).beads = pdf_new_array()
             }
             pdf_add_dict(
                 last,
-                pdf_new_name(b"P\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"P\x00" as *const u8 as *const i8),
                 pdf_link_obj((*page).page_ref),
             );
             rect = pdf_new_array();
@@ -3147,11 +3014,7 @@ unsafe extern "C" fn make_article(
                 rect,
                 pdf_new_number(floor((*bead).rect.ury / 0.01f64 + 0.5f64) * 0.01f64),
             );
-            pdf_add_dict(
-                last,
-                pdf_new_name(b"R\x00" as *const u8 as *const libc::c_char),
-                rect,
-            );
+            pdf_add_dict(last, pdf_new_name(b"R\x00" as *const u8 as *const i8), rect);
             pdf_add_array((*page).beads, pdf_ref_obj(last));
             prev = last
         }
@@ -3160,12 +3023,12 @@ unsafe extern "C" fn make_article(
     if !first.is_null() && !last.is_null() {
         pdf_add_dict(
             last,
-            pdf_new_name(b"N\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"N\x00" as *const u8 as *const i8),
             pdf_ref_obj(first),
         );
         pdf_add_dict(
             first,
-            pdf_new_name(b"V\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"V\x00" as *const u8 as *const i8),
             pdf_ref_obj(last),
         );
         if first != last {
@@ -3173,20 +3036,20 @@ unsafe extern "C" fn make_article(
         }
         pdf_add_dict(
             art_dict,
-            pdf_new_name(b"F\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"F\x00" as *const u8 as *const i8),
             pdf_ref_obj(first),
         );
         /* If article_info is supplied, we override article->info. */
         if !article_info.is_null() {
             pdf_add_dict(
                 art_dict,
-                pdf_new_name(b"I\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"I\x00" as *const u8 as *const i8),
                 article_info,
             );
         } else if !(*article).info.is_null() {
             pdf_add_dict(
                 art_dict,
-                pdf_new_name(b"I\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"I\x00" as *const u8 as *const i8),
                 pdf_ref_obj((*article).info),
             );
             pdf_release_obj((*article).info);
@@ -3205,33 +3068,27 @@ unsafe extern "C" fn clean_article(mut article: *mut pdf_article) {
         return;
     }
     if !(*article).beads.is_null() {
-        let mut i: libc::c_uint = 0;
-        i = 0i32 as libc::c_uint;
+        let mut i: u32 = 0;
+        i = 0_u32;
         while i < (*article).num_beads {
             free((*(*article).beads.offset(i as isize)).id as *mut libc::c_void);
             i = i.wrapping_add(1)
         }
         (*article).beads = mfree((*article).beads as *mut libc::c_void) as *mut pdf_bead
     }
-    (*article).id = mfree((*article).id as *mut libc::c_void) as *mut libc::c_char;
-    (*article).num_beads = 0i32 as libc::c_uint;
-    (*article).max_beads = 0i32 as libc::c_uint;
+    (*article).id = mfree((*article).id as *mut libc::c_void) as *mut i8;
+    (*article).num_beads = 0_u32;
+    (*article).max_beads = 0_u32;
 }
 unsafe extern "C" fn pdf_doc_close_articles(mut p: *mut pdf_doc) {
-    let mut i: libc::c_uint = 0;
-    i = 0i32 as libc::c_uint;
+    let mut i: u32 = 0;
+    i = 0_u32;
     while i < (*p).articles.num_entries {
         let mut article: *mut pdf_article = 0 as *mut pdf_article;
         article = &mut *(*p).articles.entries.offset(i as isize) as *mut pdf_article;
         if !(*article).beads.is_null() {
             let mut art_dict: *mut pdf_obj = 0 as *mut pdf_obj;
-            art_dict = make_article(
-                p,
-                article,
-                0 as *mut *const libc::c_char,
-                0i32 as libc::c_uint,
-                0 as *mut pdf_obj,
-            );
+            art_dict = make_article(p, article, 0 as *mut *const i8, 0_u32, 0 as *mut pdf_obj);
             if (*p).root.threads.is_null() {
                 (*p).root.threads = pdf_new_array()
             }
@@ -3242,12 +3099,12 @@ unsafe extern "C" fn pdf_doc_close_articles(mut p: *mut pdf_doc) {
         i = i.wrapping_add(1)
     }
     (*p).articles.entries = mfree((*p).articles.entries as *mut libc::c_void) as *mut pdf_article;
-    (*p).articles.num_entries = 0i32 as libc::c_uint;
-    (*p).articles.max_entries = 0i32 as libc::c_uint;
+    (*p).articles.num_entries = 0_u32;
+    (*p).articles.max_entries = 0_u32;
     if !(*p).root.threads.is_null() {
         pdf_add_dict(
             (*p).root.dict,
-            pdf_new_name(b"Threads\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Threads\x00" as *const u8 as *const i8),
             pdf_ref_obj((*p).root.threads),
         );
         pdf_release_obj((*p).root.threads);
@@ -3256,13 +3113,10 @@ unsafe extern "C" fn pdf_doc_close_articles(mut p: *mut pdf_doc) {
 }
 /* page_no = 0 for root page tree node. */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_set_mediabox(
-    mut page_no: libc::c_uint,
-    mut mediabox: *const pdf_rect,
-) {
+pub unsafe extern "C" fn pdf_doc_set_mediabox(mut page_no: u32, mut mediabox: *const pdf_rect) {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut page: *mut pdf_page = 0 as *mut pdf_page;
-    if page_no == 0i32 as libc::c_uint {
+    if page_no == 0_u32 {
         (*p).pages.mediabox.llx = (*mediabox).llx;
         (*p).pages.mediabox.lly = (*mediabox).lly;
         (*p).pages.mediabox.urx = (*mediabox).urx;
@@ -3276,10 +3130,10 @@ pub unsafe extern "C" fn pdf_doc_set_mediabox(
         (*page).flags |= 1i32 << 0i32
     };
 }
-unsafe extern "C" fn pdf_doc_get_mediabox(mut page_no: libc::c_uint, mut mediabox: *mut pdf_rect) {
+unsafe extern "C" fn pdf_doc_get_mediabox(mut page_no: u32, mut mediabox: *mut pdf_rect) {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut page: *mut pdf_page = 0 as *mut pdf_page;
-    if page_no == 0i32 as libc::c_uint {
+    if page_no == 0_u32 {
         (*mediabox).llx = (*p).pages.mediabox.llx;
         (*mediabox).lly = (*p).pages.mediabox.lly;
         (*mediabox).urx = (*p).pages.mediabox.urx;
@@ -3324,45 +3178,31 @@ pub unsafe extern "C" fn pdf_doc_current_page_resources() -> *mut pdf_obj {
     return resources;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_get_dictionary(mut category: *const libc::c_char) -> *mut pdf_obj {
+pub unsafe extern "C" fn pdf_doc_get_dictionary(mut category: *const i8) -> *mut pdf_obj {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !category.is_null() {
-    } else {
-        __assert_fail(
-            b"category\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdoc.c\x00" as *const u8 as *const libc::c_char,
-            2183i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 46], &[libc::c_char; 46]>(
-                b"pdf_obj *pdf_doc_get_dictionary(const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
-    if streq_ptr(category, b"Names\x00" as *const u8 as *const libc::c_char) {
+    assert!(!category.is_null());
+    if streq_ptr(category, b"Names\x00" as *const u8 as *const i8) {
         if (*p).root.names.is_null() {
             (*p).root.names = pdf_new_dict()
         }
         dict = (*p).root.names
-    } else if streq_ptr(category, b"Pages\x00" as *const u8 as *const libc::c_char) {
+    } else if streq_ptr(category, b"Pages\x00" as *const u8 as *const i8) {
         if (*p).root.pages.is_null() {
             (*p).root.pages = pdf_new_dict()
         }
         dict = (*p).root.pages
-    } else if streq_ptr(category, b"Catalog\x00" as *const u8 as *const libc::c_char) {
+    } else if streq_ptr(category, b"Catalog\x00" as *const u8 as *const i8) {
         if (*p).root.dict.is_null() {
             (*p).root.dict = pdf_new_dict()
         }
         dict = (*p).root.dict
-    } else if streq_ptr(category, b"Info\x00" as *const u8 as *const libc::c_char) {
+    } else if streq_ptr(category, b"Info\x00" as *const u8 as *const i8) {
         if (*p).info.is_null() {
             (*p).info = pdf_new_dict()
         }
         dict = (*p).info
-    } else if streq_ptr(
-        category,
-        b"@THISPAGE\x00" as *const u8 as *const libc::c_char,
-    ) {
+    } else if streq_ptr(category, b"@THISPAGE\x00" as *const u8 as *const i8) {
         /* Sorry for this... */
         let mut currentpage: *mut pdf_page = 0 as *mut pdf_page;
         currentpage =
@@ -3371,19 +3211,19 @@ pub unsafe extern "C" fn pdf_doc_get_dictionary(mut category: *const libc::c_cha
     }
     if dict.is_null() {
         _tt_abort(
-            b"Document dict. \"%s\" not exist. \x00" as *const u8 as *const libc::c_char,
+            b"Document dict. \"%s\" not exist. \x00" as *const u8 as *const i8,
             category,
         );
     }
     return dict;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_current_page_number() -> libc::c_int {
+pub unsafe extern "C" fn pdf_doc_current_page_number() -> i32 {
     let mut p: *mut pdf_doc = &mut pdoc;
-    return (*p).pages.num_entries.wrapping_add(1i32 as libc::c_uint) as libc::c_int;
+    return (*p).pages.num_entries.wrapping_add(1_u32) as i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_ref_page(mut page_no: libc::c_uint) -> *mut pdf_obj {
+pub unsafe extern "C" fn pdf_doc_ref_page(mut page_no: u32) -> *mut pdf_obj {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut page: *mut pdf_page = 0 as *mut pdf_page;
     page = doc_get_page_entry(p, page_no);
@@ -3394,47 +3234,27 @@ pub unsafe extern "C" fn pdf_doc_ref_page(mut page_no: libc::c_uint) -> *mut pdf
     return pdf_link_obj((*page).page_ref);
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_get_reference(mut category: *const libc::c_char) -> *mut pdf_obj {
+pub unsafe extern "C" fn pdf_doc_get_reference(mut category: *const i8) -> *mut pdf_obj {
     let mut ref_0: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut page_no: libc::c_int = 0;
-    if !category.is_null() {
-    } else {
-        __assert_fail(
-            b"category\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdoc.c\x00" as *const u8 as *const libc::c_char,
-            2245i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 45], &[libc::c_char; 45]>(
-                b"pdf_obj *pdf_doc_get_reference(const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    let mut page_no: i32 = 0;
+    assert!(!category.is_null());
     page_no = pdf_doc_current_page_number();
-    if streq_ptr(
-        category,
-        b"@THISPAGE\x00" as *const u8 as *const libc::c_char,
-    ) {
-        ref_0 = pdf_doc_ref_page(page_no as libc::c_uint)
-    } else if streq_ptr(
-        category,
-        b"@PREVPAGE\x00" as *const u8 as *const libc::c_char,
-    ) {
+    if streq_ptr(category, b"@THISPAGE\x00" as *const u8 as *const i8) {
+        ref_0 = pdf_doc_ref_page(page_no as u32)
+    } else if streq_ptr(category, b"@PREVPAGE\x00" as *const u8 as *const i8) {
         if page_no <= 1i32 {
             _tt_abort(
                 b"Reference to previous page, but no pages have been completed yet.\x00"
-                    as *const u8 as *const libc::c_char,
+                    as *const u8 as *const i8,
             );
         }
-        ref_0 = pdf_doc_ref_page((page_no - 1i32) as libc::c_uint)
-    } else if streq_ptr(
-        category,
-        b"@NEXTPAGE\x00" as *const u8 as *const libc::c_char,
-    ) {
-        ref_0 = pdf_doc_ref_page((page_no + 1i32) as libc::c_uint)
+        ref_0 = pdf_doc_ref_page((page_no - 1i32) as u32)
+    } else if streq_ptr(category, b"@NEXTPAGE\x00" as *const u8 as *const i8) {
+        ref_0 = pdf_doc_ref_page((page_no + 1i32) as u32)
     }
     if ref_0.is_null() {
         _tt_abort(
-            b"Reference to \"%s\" not exist. \x00" as *const u8 as *const libc::c_char,
+            b"Reference to \"%s\" not exist. \x00" as *const u8 as *const i8,
             category,
         );
     }
@@ -3464,9 +3284,7 @@ unsafe extern "C" fn pdf_doc_new_page(mut p: *mut pdf_doc) {
 unsafe extern "C" fn pdf_doc_finish_page(mut p: *mut pdf_doc) {
     let mut currentpage: *mut pdf_page = 0 as *mut pdf_page;
     if !(*p).pending_forms.is_null() {
-        _tt_abort(
-            b"A pending form XObject at the end of page.\x00" as *const u8 as *const libc::c_char,
-        );
+        _tt_abort(b"A pending form XObject at the end of page.\x00" as *const u8 as *const i8);
     }
     currentpage = &mut *(*p).pages.entries.offset((*p).pages.num_entries as isize) as *mut pdf_page;
     if (*currentpage).page_obj.is_null() {
@@ -3495,7 +3313,7 @@ unsafe extern "C" fn pdf_doc_finish_page(mut p: *mut pdf_doc) {
             (*currentpage).content_refs[1] = pdf_ref_obj((*currentpage).background);
             pdf_add_stream(
                 (*currentpage).background,
-                b"\n\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
+                b"\n\x00" as *const u8 as *const i8 as *const libc::c_void,
                 1i32,
             );
         }
@@ -3508,7 +3326,7 @@ unsafe extern "C" fn pdf_doc_finish_page(mut p: *mut pdf_doc) {
     (*currentpage).content_refs[2] = pdf_ref_obj((*currentpage).contents);
     pdf_add_stream(
         (*currentpage).contents,
-        b"\n\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
+        b"\n\x00" as *const u8 as *const i8 as *const libc::c_void,
         1i32,
     );
     pdf_release_obj((*currentpage).contents);
@@ -3530,63 +3348,52 @@ unsafe extern "C" fn pdf_doc_finish_page(mut p: *mut pdf_doc) {
          * ProcSet is obsolete in PDF-1.4 but recommended for compatibility.
          */
         procset = pdf_new_array();
+        pdf_add_array(procset, pdf_new_name(b"PDF\x00" as *const u8 as *const i8));
+        pdf_add_array(procset, pdf_new_name(b"Text\x00" as *const u8 as *const i8));
         pdf_add_array(
             procset,
-            pdf_new_name(b"PDF\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"ImageC\x00" as *const u8 as *const i8),
         );
         pdf_add_array(
             procset,
-            pdf_new_name(b"Text\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"ImageB\x00" as *const u8 as *const i8),
         );
         pdf_add_array(
             procset,
-            pdf_new_name(b"ImageC\x00" as *const u8 as *const libc::c_char),
-        );
-        pdf_add_array(
-            procset,
-            pdf_new_name(b"ImageB\x00" as *const u8 as *const libc::c_char),
-        );
-        pdf_add_array(
-            procset,
-            pdf_new_name(b"ImageI\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"ImageI\x00" as *const u8 as *const i8),
         );
         pdf_add_dict(
             (*currentpage).resources,
-            pdf_new_name(b"ProcSet\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"ProcSet\x00" as *const u8 as *const i8),
             procset,
         );
         pdf_add_dict(
             (*currentpage).page_obj,
-            pdf_new_name(b"Resources\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Resources\x00" as *const u8 as *const i8),
             pdf_ref_obj((*currentpage).resources),
         );
         pdf_release_obj((*currentpage).resources);
         (*currentpage).resources = 0 as *mut pdf_obj
     }
     if manual_thumb_enabled != 0 {
-        let mut thumb_filename: *mut libc::c_char = 0 as *mut libc::c_char;
+        let mut thumb_filename: *mut i8 = 0 as *mut i8;
         let mut thumb_ref: *mut pdf_obj = 0 as *mut pdf_obj;
         thumb_filename = new(
-            (strlen(thumb_basename).wrapping_add(7i32 as libc::c_ulong) as uint32_t
-                as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t,
-        ) as *mut libc::c_char;
+            (strlen(thumb_basename).wrapping_add(7i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
+        ) as *mut i8;
         sprintf(
             thumb_filename,
-            b"%s.%ld\x00" as *const u8 as *const libc::c_char,
+            b"%s.%ld\x00" as *const u8 as *const i8,
             thumb_basename,
-            (*p).pages
-                .num_entries
-                .wrapping_rem(99999i32 as libc::c_uint) as libc::c_long
-                + 1,
+            (*p).pages.num_entries.wrapping_rem(99999_u32) as i64 + 1,
         );
         thumb_ref = read_thumbnail(thumb_filename);
         free(thumb_filename as *mut libc::c_void);
         if !thumb_ref.is_null() {
             pdf_add_dict(
                 (*currentpage).page_obj,
-                pdf_new_name(b"Thumb\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"Thumb\x00" as *const u8 as *const i8),
                 thumb_ref,
             );
         }
@@ -3596,7 +3403,7 @@ unsafe extern "C" fn pdf_doc_finish_page(mut p: *mut pdf_doc) {
 static mut bgcolor: pdf_color = {
     let mut init = pdf_color {
         num_components: 1i32,
-        spot_color_name: 0 as *const libc::c_char as *mut libc::c_char,
+        spot_color_name: 0 as *const i8 as *mut i8,
         values: [1.0f64, 0., 0., 0.],
     };
     init
@@ -3620,43 +3427,28 @@ unsafe extern "C" fn doc_fill_page_background(mut p: *mut pdf_doc) {
         urx: 0.,
         ury: 0.,
     };
-    let mut cm: libc::c_int = 0;
+    let mut cm: i32 = 0;
     let mut saved_content: *mut pdf_obj = 0 as *mut pdf_obj;
     cm = pdf_dev_get_param(2i32);
-    if cm == 0 || pdf_color_is_white(&mut bgcolor) as libc::c_int != 0 {
+    if cm == 0 || pdf_color_is_white(&mut bgcolor) as i32 != 0 {
         return;
     }
-    pdf_doc_get_mediabox(pdf_doc_current_page_number() as libc::c_uint, &mut r);
+    pdf_doc_get_mediabox(pdf_doc_current_page_number() as u32, &mut r);
     currentpage = &mut *(*p).pages.entries.offset((*p).pages.num_entries as isize) as *mut pdf_page;
-    if !currentpage.is_null() {
-    } else {
-        __assert_fail(
-            b"currentpage\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdoc.c\x00" as *const u8 as *const libc::c_char,
-            2426i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
-                b"void doc_fill_page_background(pdf_doc *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!currentpage.is_null());
     if (*currentpage).background.is_null() {
         (*currentpage).background = pdf_new_stream(1i32 << 0i32)
     }
     saved_content = (*currentpage).contents;
     (*currentpage).contents = (*currentpage).background;
     pdf_dev_gsave();
-    pdf_dev_set_color(&mut bgcolor, 0x20i32 as libc::c_char, 0i32);
+    pdf_dev_set_color(&mut bgcolor, 0x20_i8, 0i32);
     pdf_dev_rectfill(r.llx, r.lly, r.urx - r.llx, r.ury - r.lly);
     pdf_dev_grestore();
     (*currentpage).contents = saved_content;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_begin_page(
-    mut scale: libc::c_double,
-    mut x_origin: libc::c_double,
-    mut y_origin: libc::c_double,
-) {
+pub unsafe extern "C" fn pdf_doc_begin_page(mut scale: f64, mut x_origin: f64, mut y_origin: f64) {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut M: pdf_tmatrix = pdf_tmatrix {
         a: 0.,
@@ -3684,17 +3476,14 @@ pub unsafe extern "C" fn pdf_doc_end_page() {
     pdf_doc_finish_page(p);
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_add_page_content(
-    mut buffer: *const libc::c_char,
-    mut length: libc::c_uint,
-) {
+pub unsafe extern "C" fn pdf_doc_add_page_content(mut buffer: *const i8, mut length: u32) {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut currentpage: *mut pdf_page = 0 as *mut pdf_page;
     if !(*p).pending_forms.is_null() {
         pdf_add_stream(
             (*(*p).pending_forms).form.contents,
             buffer as *const libc::c_void,
-            length as libc::c_int,
+            length as i32,
         );
     } else {
         currentpage =
@@ -3702,22 +3491,22 @@ pub unsafe extern "C" fn pdf_doc_add_page_content(
         pdf_add_stream(
             (*currentpage).contents,
             buffer as *const libc::c_void,
-            length as libc::c_int,
+            length as i32,
         );
     };
 }
-static mut doccreator: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
+static mut doccreator: *mut i8 = 0 as *const i8 as *mut i8;
 /* Ugh */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_open_document(
-    mut filename: *const libc::c_char,
+    mut filename: *const i8,
     mut enable_encrypt: bool,
     mut enable_object_stream: bool,
-    mut media_width: libc::c_double,
-    mut media_height: libc::c_double,
-    mut annot_grow_amount: libc::c_double,
-    mut bookmark_open_depth: libc::c_int,
-    mut check_gotos: libc::c_int,
+    mut media_width: f64,
+    mut media_height: f64,
+    mut annot_grow_amount: f64,
+    mut bookmark_open_depth: i32,
+    mut check_gotos: i32,
 ) {
     let mut p: *mut pdf_doc = &mut pdoc;
     pdf_out_init(filename, enable_encrypt, enable_object_stream);
@@ -3733,10 +3522,10 @@ pub unsafe extern "C" fn pdf_open_document(
     if !doccreator.is_null() {
         pdf_add_dict(
             (*p).info,
-            pdf_new_name(b"Creator\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Creator\x00" as *const u8 as *const i8),
             pdf_new_string(doccreator as *const libc::c_void, strlen(doccreator)),
         );
-        doccreator = mfree(doccreator as *mut libc::c_void) as *mut libc::c_char
+        doccreator = mfree(doccreator as *mut libc::c_void) as *mut i8
     }
     pdf_doc_init_bookmarks(p, bookmark_open_depth);
     pdf_doc_init_articles(p);
@@ -3752,46 +3541,35 @@ pub unsafe extern "C" fn pdf_open_document(
     /* Create a default name for thumbnail image files */
     if manual_thumb_enabled != 0 {
         let mut fn_len: size_t = strlen(filename);
-        if fn_len > 4i32 as libc::c_ulong
+        if fn_len > 4i32 as u64
             && strncmp(
-                b".pdf\x00" as *const u8 as *const libc::c_char,
+                b".pdf\x00" as *const u8 as *const i8,
                 filename.offset(fn_len as isize).offset(-4),
-                4i32 as libc::c_ulong,
+                4i32 as u64,
             ) == 0
         {
-            thumb_basename = new((fn_len
-                .wrapping_sub(4i32 as libc::c_ulong)
-                .wrapping_add(1i32 as libc::c_ulong) as uint32_t
-                as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
-            strncpy(
-                thumb_basename,
-                filename,
-                fn_len.wrapping_sub(4i32 as libc::c_ulong),
-            );
-            *thumb_basename.offset(fn_len.wrapping_sub(4i32 as libc::c_ulong) as isize) =
-                0i32 as libc::c_char
+            thumb_basename = new(
+                (fn_len.wrapping_sub(4i32 as u64).wrapping_add(1i32 as u64) as u32 as u64)
+                    .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
+            ) as *mut i8;
+            strncpy(thumb_basename, filename, fn_len.wrapping_sub(4i32 as u64));
+            *thumb_basename.offset(fn_len.wrapping_sub(4i32 as u64) as isize) = 0_i8
         } else {
-            thumb_basename = new((fn_len.wrapping_add(1i32 as libc::c_ulong) as uint32_t
-                as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+            thumb_basename = new((fn_len.wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32) as *mut i8;
             strcpy(thumb_basename, filename);
         }
     }
     (*p).pending_forms = 0 as *mut form_list_node;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_set_creator(mut creator: *const libc::c_char) {
-    if creator.is_null() || *creator.offset(0) as libc::c_int == '\u{0}' as i32 {
+pub unsafe extern "C" fn pdf_doc_set_creator(mut creator: *const i8) {
+    if creator.is_null() || *creator.offset(0) as i32 == '\u{0}' as i32 {
         return;
     }
-    doccreator = new(
-        (strlen(creator).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
-    ) as *mut libc::c_char;
+    doccreator = new((strlen(creator).wrapping_add(1i32 as u64) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy(doccreator, creator);
     /* Ugh */
 }
@@ -3830,21 +3608,21 @@ unsafe extern "C" fn pdf_doc_make_xform(
     xform_dict = pdf_stream_dict(xform);
     pdf_add_dict(
         xform_dict,
-        pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"XObject\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+        pdf_new_name(b"XObject\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         xform_dict,
-        pdf_new_name(b"Subtype\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"Form\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Subtype\x00" as *const u8 as *const i8),
+        pdf_new_name(b"Form\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         xform_dict,
-        pdf_new_name(b"FormType\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"FormType\x00" as *const u8 as *const i8),
         pdf_new_number(1.0f64),
     );
     if bbox.is_null() {
-        _tt_abort(b"No BoundingBox supplied.\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"No BoundingBox supplied.\x00" as *const u8 as *const i8);
     }
     tmp = pdf_new_array();
     pdf_add_array(
@@ -3865,7 +3643,7 @@ unsafe extern "C" fn pdf_doc_make_xform(
     );
     pdf_add_dict(
         xform_dict,
-        pdf_new_name(b"BBox\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"BBox\x00" as *const u8 as *const i8),
         tmp,
     );
     if !matrix.is_null() {
@@ -3896,7 +3674,7 @@ unsafe extern "C" fn pdf_doc_make_xform(
         );
         pdf_add_dict(
             xform_dict,
-            pdf_new_name(b"Matrix\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Matrix\x00" as *const u8 as *const i8),
             tmp,
         );
     }
@@ -3905,7 +3683,7 @@ unsafe extern "C" fn pdf_doc_make_xform(
     }
     pdf_add_dict(
         xform_dict,
-        pdf_new_name(b"Resources\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Resources\x00" as *const u8 as *const i8),
         resources,
     );
 }
@@ -3916,12 +3694,12 @@ unsafe extern "C" fn pdf_doc_make_xform(
  */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_begin_grabbing(
-    mut ident: *const libc::c_char,
-    mut ref_x: libc::c_double,
-    mut ref_y: libc::c_double,
+    mut ident: *const i8,
+    mut ref_x: f64,
+    mut ref_y: f64,
     mut cropbox: *const pdf_rect,
-) -> libc::c_int {
-    let mut xobj_id: libc::c_int = -1i32;
+) -> i32 {
+    let mut xobj_id: i32 = -1i32;
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut form: *mut pdf_form = 0 as *mut pdf_form;
     let mut fnode: *mut form_list_node = 0 as *mut form_list_node;
@@ -3943,9 +3721,8 @@ pub unsafe extern "C" fn pdf_doc_begin_grabbing(
         },
     };
     pdf_dev_push_gstate();
-    fnode = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<form_list_node>() as libc::c_ulong)
-        as uint32_t) as *mut form_list_node;
+    fnode = new((1_u64).wrapping_mul(::std::mem::size_of::<form_list_node>() as u64) as u32)
+        as *mut form_list_node;
     (*fnode).prev = (*p).pending_forms;
     (*fnode).q_depth = pdf_dev_current_depth();
     form = &mut (*fnode).form;
@@ -4001,9 +3778,7 @@ pub unsafe extern "C" fn pdf_doc_end_grabbing(mut attrib: *mut pdf_obj) {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut fnode: *mut form_list_node = 0 as *mut form_list_node;
     if (*p).pending_forms.is_null() {
-        dpx_warning(
-            b"Tried to close a nonexistent form XOject.\x00" as *const u8 as *const libc::c_char,
-        );
+        dpx_warning(b"Tried to close a nonexistent form XOject.\x00" as *const u8 as *const i8);
         return;
     }
     fnode = (*p).pending_forms;
@@ -4013,29 +3788,23 @@ pub unsafe extern "C" fn pdf_doc_end_grabbing(mut attrib: *mut pdf_obj) {
      * ProcSet is obsolete in PDF-1.4 but recommended for compatibility.
      */
     procset = pdf_new_array();
+    pdf_add_array(procset, pdf_new_name(b"PDF\x00" as *const u8 as *const i8));
+    pdf_add_array(procset, pdf_new_name(b"Text\x00" as *const u8 as *const i8));
     pdf_add_array(
         procset,
-        pdf_new_name(b"PDF\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"ImageC\x00" as *const u8 as *const i8),
     );
     pdf_add_array(
         procset,
-        pdf_new_name(b"Text\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"ImageB\x00" as *const u8 as *const i8),
     );
     pdf_add_array(
         procset,
-        pdf_new_name(b"ImageC\x00" as *const u8 as *const libc::c_char),
-    );
-    pdf_add_array(
-        procset,
-        pdf_new_name(b"ImageB\x00" as *const u8 as *const libc::c_char),
-    );
-    pdf_add_array(
-        procset,
-        pdf_new_name(b"ImageI\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"ImageI\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         (*form).resources,
-        pdf_new_name(b"ProcSet\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"ProcSet\x00" as *const u8 as *const i8),
         procset,
     );
     pdf_doc_make_xform(
@@ -4097,10 +3866,10 @@ pub unsafe extern "C" fn pdf_doc_break_annot() {
         annot_dict = pdf_new_dict();
         pdf_merge_dict(annot_dict, breaking_state.annot_dict);
         pdf_doc_add_annot(
-            pdf_doc_current_page_number() as libc::c_uint,
+            pdf_doc_current_page_number() as u32,
             &mut breaking_state.rect,
             annot_dict,
-            (breaking_state.broken == 0) as libc::c_int,
+            (breaking_state.broken == 0) as i32,
         );
         pdf_release_obj(annot_dict);
         breaking_state.broken = 1i32

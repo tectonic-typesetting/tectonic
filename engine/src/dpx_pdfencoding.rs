@@ -11,29 +11,29 @@ extern "C" {
     pub type pdf_obj;
     pub type pdf_file;
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_new_dict() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_get_array(array: *mut pdf_obj, idx: libc::c_int) -> *mut pdf_obj;
+    fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
     #[no_mangle]
     fn pdf_new_array() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_name_value(object: *mut pdf_obj) -> *mut libc::c_char;
+    fn pdf_name_value(object: *mut pdf_obj) -> *mut i8;
     #[no_mangle]
-    fn pdf_new_name(name: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_get_version() -> libc::c_uint;
+    fn pdf_get_version() -> u32;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.
@@ -52,45 +52,34 @@ extern "C" {
      * will one day eliminate all of the global state and get rid of all of
      * these. */
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    fn ttstub_input_read(
-        handle: rust_input_handle_t,
-        data: *mut libc::c_char,
-        len: size_t,
-    ) -> ssize_t;
+    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
     fn ttstub_input_get_size(handle: rust_input_handle_t) -> size_t;
     #[no_mangle]
     fn ttstub_input_open(
-        path: *const libc::c_char,
+        path: *const i8,
         format: tt_input_format_type,
-        is_gz: libc::c_int,
+        is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
-    #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
-        __line: libc::c_uint,
-        __function: *const libc::c_char,
-    ) -> !;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     /* Tectonic-enabled I/O alternatives */
     #[no_mangle]
     fn dpx_tt_open(
-        filename: *const libc::c_char,
-        suffix: *const libc::c_char,
+        filename: *const i8,
+        suffix: *const i8,
         format: tt_input_format_type,
     ) -> rust_input_handle_t;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -115,9 +104,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_message(fmt: *const libc::c_char, _: ...);
+    fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -140,30 +129,26 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdfparse_skip_line(start: *mut *const libc::c_char, end: *const libc::c_char);
+    fn pdfparse_skip_line(start: *mut *const i8, end: *const i8);
     #[no_mangle]
-    fn skip_white(start: *mut *const libc::c_char, end: *const libc::c_char);
+    fn skip_white(start: *mut *const i8, end: *const i8);
     #[no_mangle]
-    fn parse_pdf_name(pp: *mut *const libc::c_char, endptr: *const libc::c_char) -> *mut pdf_obj;
+    fn parse_pdf_name(pp: *mut *const i8, endptr: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn parse_pdf_array(
-        pp: *mut *const libc::c_char,
-        endptr: *const libc::c_char,
-        pf: *mut pdf_file,
-    ) -> *mut pdf_obj;
+    fn parse_pdf_array(pp: *mut *const i8, endptr: *const i8, pf: *mut pdf_file) -> *mut pdf_obj;
     #[no_mangle]
     fn agl_sput_UTF16BE(
-        name: *const libc::c_char,
-        dstpp: *mut *mut libc::c_uchar,
-        limptr: *mut libc::c_uchar,
-        num_fails: *mut libc::c_int,
-    ) -> int32_t;
+        name: *const i8,
+        dstpp: *mut *mut u8,
+        limptr: *mut u8,
+        num_fails: *mut i32,
+    ) -> i32;
     #[no_mangle]
-    fn agl_lookup_list(glyphname: *const libc::c_char) -> *mut agl_name;
+    fn agl_lookup_list(glyphname: *const i8) -> *mut agl_name;
     #[no_mangle]
     static mut CSI_UNICODE: CIDSysInfo;
     #[no_mangle]
@@ -171,29 +156,29 @@ extern "C" {
     #[no_mangle]
     fn CMap_release(cmap: *mut CMap);
     #[no_mangle]
-    fn CMap_set_name(cmap: *mut CMap, name: *const libc::c_char);
+    fn CMap_set_name(cmap: *mut CMap, name: *const i8);
     #[no_mangle]
-    fn CMap_set_type(cmap: *mut CMap, type_0: libc::c_int);
+    fn CMap_set_type(cmap: *mut CMap, type_0: i32);
     #[no_mangle]
-    fn CMap_set_wmode(cmap: *mut CMap, wmode: libc::c_int);
+    fn CMap_set_wmode(cmap: *mut CMap, wmode: i32);
     #[no_mangle]
     fn CMap_set_CIDSysInfo(cmap: *mut CMap, csi: *const CIDSysInfo);
     /* charName not supported */
     #[no_mangle]
     fn CMap_add_bfchar(
         cmap: *mut CMap,
-        src: *const libc::c_uchar,
+        src: *const u8,
         srcdim: size_t,
-        dest: *const libc::c_uchar,
+        dest: *const u8,
         destdim: size_t,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn CMap_add_codespacerange(
         cmap: *mut CMap,
-        codelo: *const libc::c_uchar,
-        codehi: *const libc::c_uchar,
+        codelo: *const u8,
+        codehi: *const u8,
         dim: size_t,
-    ) -> libc::c_int;
+    ) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -216,9 +201,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn CMap_parse_check_sig(handle: rust_input_handle_t) -> libc::c_int;
+    fn CMap_parse_check_sig(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    fn CMap_parse(cmap: *mut CMap, handle: rust_input_handle_t) -> libc::c_int;
+    fn CMap_parse(cmap: *mut CMap, handle: rust_input_handle_t) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -243,14 +228,10 @@ extern "C" {
     #[no_mangle]
     fn CMap_create_stream(cmap: *mut CMap) -> *mut pdf_obj;
 }
-pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
-pub type __ssize_t = libc::c_long;
-pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
-pub type size_t = libc::c_ulong;
+pub type __ssize_t = i64;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -277,11 +258,11 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_encoding {
-    pub ident: *mut libc::c_char,
-    pub enc_name: *mut libc::c_char,
-    pub flags: libc::c_int,
-    pub glyphs: [*mut libc::c_char; 256],
-    pub is_used: [libc::c_char; 256],
+    pub ident: *mut i8,
+    pub enc_name: *mut i8,
+    pub flags: i32,
+    pub glyphs: [*mut i8; 256],
+    pub is_used: [i8; 256],
     pub baseenc: *mut pdf_encoding,
     pub tounicode: *mut pdf_obj,
     pub resource: *mut pdf_obj,
@@ -289,24 +270,24 @@ pub struct pdf_encoding {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
-    pub count: libc::c_int,
-    pub capacity: libc::c_int,
+    pub count: i32,
+    pub capacity: i32,
     pub encodings: *mut pdf_encoding,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CMap {
-    pub name: *mut libc::c_char,
-    pub type_0: libc::c_int,
-    pub wmode: libc::c_int,
+    pub name: *mut i8,
+    pub type_0: i32,
+    pub wmode: i32,
     pub CSI: *mut CIDSysInfo,
     pub useCMap: *mut CMap,
     pub codespace: C2RustUnnamed_1,
     pub mapTbl: *mut mapDef,
     pub mapData: *mut mapData,
-    pub flags: libc::c_int,
+    pub flags: i32,
     pub profile: C2RustUnnamed_0,
-    pub reverseMap: *mut libc::c_int,
+    pub reverseMap: *mut i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -319,38 +300,38 @@ pub struct C2RustUnnamed_0 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mapData {
-    pub data: *mut libc::c_uchar,
+    pub data: *mut u8,
     pub prev: *mut mapData,
-    pub pos: libc::c_int,
+    pub pos: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mapDef {
-    pub flag: libc::c_int,
+    pub flag: i32,
     pub len: size_t,
-    pub code: *mut libc::c_uchar,
+    pub code: *mut u8,
     pub next: *mut mapDef,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_1 {
-    pub num: libc::c_uint,
-    pub max: libc::c_uint,
+    pub num: u32,
+    pub max: u32,
     pub ranges: *mut rangeDef,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct rangeDef {
     pub dim: size_t,
-    pub codeLo: *mut libc::c_uchar,
-    pub codeHi: *mut libc::c_uchar,
+    pub codeLo: *mut u8,
+    pub codeHi: *mut u8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CIDSysInfo {
-    pub registry: *mut libc::c_char,
-    pub ordering: *mut libc::c_char,
-    pub supplement: libc::c_int,
+    pub registry: *mut i8,
+    pub ordering: *mut i8,
+    pub supplement: i32,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -376,15 +357,15 @@ pub struct CIDSysInfo {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct agl_name {
-    pub name: *mut libc::c_char,
-    pub suffix: *mut libc::c_char,
-    pub n_components: libc::c_int,
-    pub unicodes: [int32_t; 16],
+    pub name: *mut i8,
+    pub suffix: *mut i8,
+    pub n_components: i32,
+    pub unicodes: [i32; 16],
     pub alternate: *mut agl_name,
-    pub is_predef: libc::c_int,
+    pub is_predef: i32,
 }
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
@@ -399,36 +380,24 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
     return 0 as *mut libc::c_void;
 }
-static mut verbose: libc::c_uchar = 0i32 as libc::c_uchar;
+static mut verbose: u8 = 0_u8;
 #[no_mangle]
-pub unsafe extern "C" fn pdf_encoding_set_verbose(mut level: libc::c_int) {
-    verbose = level as libc::c_uchar;
+pub unsafe extern "C" fn pdf_encoding_set_verbose(mut level: i32) {
+    verbose = level as u8;
 }
 unsafe extern "C" fn pdf_init_encoding_struct(mut encoding: *mut pdf_encoding) {
-    if !encoding.is_null() {
-    } else {
-        __assert_fail(
-            b"encoding\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const libc::c_char,
-            93i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 46], &[libc::c_char; 46]>(
-                b"void pdf_init_encoding_struct(pdf_encoding *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
-    (*encoding).ident = 0 as *mut libc::c_char;
-    (*encoding).enc_name = 0 as *mut libc::c_char;
+    assert!(!encoding.is_null());
+    (*encoding).ident = 0 as *mut i8;
+    (*encoding).enc_name = 0 as *mut i8;
     memset(
         (*encoding).glyphs.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        (256i32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as libc::c_ulong),
+        (256i32 as u64).wrapping_mul(::std::mem::size_of::<*mut i8>() as u64),
     );
     memset(
         (*encoding).is_used.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        256i32 as libc::c_ulong,
+        256i32 as u64,
     );
     (*encoding).tounicode = 0 as *mut pdf_obj;
     (*encoding).baseenc = 0 as *mut pdf_encoding;
@@ -443,36 +412,14 @@ unsafe extern "C" fn create_encoding_resource(
     mut baseenc: *mut pdf_encoding,
 ) -> *mut pdf_obj {
     let mut differences: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !encoding.is_null() {
-    } else {
-        __assert_fail(
-            b"encoding\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const libc::c_char,
-            119i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 66], &[libc::c_char; 66]>(
-                b"pdf_obj *create_encoding_resource(pdf_encoding *, pdf_encoding *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
-    if (*encoding).resource.is_null() {
-    } else {
-        __assert_fail(
-            b"!encoding->resource\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const libc::c_char,
-            120i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 66], &[libc::c_char; 66]>(
-                b"pdf_obj *create_encoding_resource(pdf_encoding *, pdf_encoding *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!encoding.is_null());
+    assert!((*encoding).resource.is_null());
     differences = make_encoding_differences(
         (*encoding).glyphs.as_mut_ptr(),
         if !baseenc.is_null() {
             (*baseenc).glyphs.as_mut_ptr()
         } else {
-            0 as *mut *mut libc::c_char
+            0 as *mut *mut i8
         },
         (*encoding).is_used.as_mut_ptr(),
     );
@@ -481,13 +428,13 @@ unsafe extern "C" fn create_encoding_resource(
         if !baseenc.is_null() {
             pdf_add_dict(
                 resource,
-                pdf_new_name(b"BaseEncoding\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"BaseEncoding\x00" as *const u8 as *const i8),
                 pdf_link_obj((*baseenc).resource),
             );
         }
         pdf_add_dict(
             resource,
-            pdf_new_name(b"Differences\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Differences\x00" as *const u8 as *const i8),
             differences,
         );
         return resource;
@@ -511,18 +458,7 @@ unsafe extern "C" fn create_encoding_resource(
     };
 }
 unsafe extern "C" fn pdf_flush_encoding(mut encoding: *mut pdf_encoding) {
-    if !encoding.is_null() {
-    } else {
-        __assert_fail(
-            b"encoding\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const libc::c_char,
-            152i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 40], &[libc::c_char; 40]>(
-                b"void pdf_flush_encoding(pdf_encoding *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!encoding.is_null());
     if !(*encoding).resource.is_null() {
         pdf_release_obj((*encoding).resource);
         (*encoding).resource = 0 as *mut pdf_obj
@@ -533,35 +469,24 @@ unsafe extern "C" fn pdf_flush_encoding(mut encoding: *mut pdf_encoding) {
     };
 }
 unsafe extern "C" fn pdf_clean_encoding_struct(mut encoding: *mut pdf_encoding) {
-    let mut code: libc::c_int = 0;
-    if !encoding.is_null() {
-    } else {
-        __assert_fail(
-            b"encoding\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const libc::c_char,
-            171i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 47], &[libc::c_char; 47]>(
-                b"void pdf_clean_encoding_struct(pdf_encoding *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    let mut code: i32 = 0;
+    assert!(!encoding.is_null());
     if !(*encoding).resource.is_null() {
-        _tt_abort(b"Object not flushed.\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"Object not flushed.\x00" as *const u8 as *const i8);
     }
     pdf_release_obj((*encoding).tounicode);
     free((*encoding).ident as *mut libc::c_void);
     free((*encoding).enc_name as *mut libc::c_void);
-    (*encoding).ident = 0 as *mut libc::c_char;
-    (*encoding).enc_name = 0 as *mut libc::c_char;
+    (*encoding).ident = 0 as *mut i8;
+    (*encoding).enc_name = 0 as *mut i8;
     code = 0i32;
     while code < 256i32 {
         (*encoding).glyphs[code as usize] =
-            mfree((*encoding).glyphs[code as usize] as *mut libc::c_void) as *mut libc::c_char;
+            mfree((*encoding).glyphs[code as usize] as *mut libc::c_void) as *mut i8;
         code += 1
     }
-    (*encoding).ident = 0 as *mut libc::c_char;
-    (*encoding).enc_name = 0 as *mut libc::c_char;
+    (*encoding).ident = 0 as *mut i8;
+    (*encoding).enc_name = 0 as *mut i8;
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -585,11 +510,11 @@ unsafe extern "C" fn pdf_clean_encoding_struct(mut encoding: *mut pdf_encoding) 
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 unsafe extern "C" fn is_similar_charset(
-    mut enc_vec: *mut *mut libc::c_char,
-    mut enc_vec2: *mut *const libc::c_char,
+    mut enc_vec: *mut *mut i8,
+    mut enc_vec2: *mut *const i8,
 ) -> bool {
-    let mut code: libc::c_int = 0;
-    let mut same: libc::c_int = 0i32;
+    let mut code: i32 = 0;
+    let mut same: i32 = 0i32;
     code = 0i32;
     while code < 256i32 {
         if !(!(*enc_vec.offset(code as isize)).is_null()
@@ -614,26 +539,15 @@ unsafe extern "C" fn is_similar_charset(
  * are actually used in the document are considered.
  */
 unsafe extern "C" fn make_encoding_differences(
-    mut enc_vec: *mut *mut libc::c_char,
-    mut baseenc: *mut *mut libc::c_char,
-    mut is_used: *const libc::c_char,
+    mut enc_vec: *mut *mut i8,
+    mut baseenc: *mut *mut i8,
+    mut is_used: *const i8,
 ) -> *mut pdf_obj {
     let mut differences: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut code: libc::c_int = 0;
-    let mut count: libc::c_int = 0i32;
-    let mut skipping: libc::c_int = 1i32;
-    if !enc_vec.is_null() {
-    } else {
-        __assert_fail(
-            b"enc_vec\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const libc::c_char,
-            217i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 67], &[libc::c_char; 67]>(
-                b"pdf_obj *make_encoding_differences(char **, char **, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    let mut code: i32 = 0;
+    let mut count: i32 = 0i32;
+    let mut skipping: i32 = 1i32;
+    assert!(!enc_vec.is_null());
     /*
      *  Write all entries (except .notdef) if baseenc is unknown.
      *  If is_used is given, write only used entries.
@@ -659,7 +573,7 @@ unsafe extern "C" fn make_encoding_differences(
              * Difference found.
              */
             if skipping != 0 {
-                pdf_add_array(differences, pdf_new_number(code as libc::c_double));
+                pdf_add_array(differences, pdf_new_number(code as f64));
             }
             pdf_add_array(differences, pdf_new_name(*enc_vec.offset(code as isize)));
             skipping = 0i32;
@@ -679,44 +593,34 @@ unsafe extern "C" fn make_encoding_differences(
     }
     return differences;
 }
-unsafe extern "C" fn load_encoding_file(mut filename: *const libc::c_char) -> libc::c_int {
+unsafe extern "C" fn load_encoding_file(mut filename: *const i8) -> i32 {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut enc_name: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut encoding_array: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut wbuf_0: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
-    let mut endptr: *const libc::c_char = 0 as *const libc::c_char;
-    let mut enc_vec: [*const libc::c_char; 256] = [0 as *const libc::c_char; 256];
-    let mut code: libc::c_int = 0;
-    let mut fsize: libc::c_int = 0;
-    let mut enc_id: libc::c_int = 0;
+    let mut wbuf_0: *mut i8 = 0 as *mut i8;
+    let mut p: *const i8 = 0 as *const i8;
+    let mut endptr: *const i8 = 0 as *const i8;
+    let mut enc_vec: [*const i8; 256] = [0 as *const i8; 256];
+    let mut code: i32 = 0;
+    let mut fsize: i32 = 0;
+    let mut enc_id: i32 = 0;
     if filename.is_null() {
         return -1i32;
     }
     if verbose != 0 {
-        dpx_message(
-            b"(Encoding:%s\x00" as *const u8 as *const libc::c_char,
-            filename,
-        );
+        dpx_message(b"(Encoding:%s\x00" as *const u8 as *const i8, filename);
     }
-    handle = dpx_tt_open(
-        filename,
-        b".enc\x00" as *const u8 as *const libc::c_char,
-        TTIF_ENC,
-    );
+    handle = dpx_tt_open(filename, b".enc\x00" as *const u8 as *const i8, TTIF_ENC);
     if handle.is_null() {
         return -1i32;
     }
-    fsize = ttstub_input_get_size(handle) as libc::c_int;
-    wbuf_0 = new(((fsize + 1i32) as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
-    *wbuf_0.offset(fsize as isize) = '\u{0}' as i32 as libc::c_char;
-    if ttstub_input_read(handle, wbuf_0, fsize as size_t) != fsize as libc::c_long {
-        _tt_abort(
-            b"error reading %s\x00" as *const u8 as *const libc::c_char,
-            filename,
-        );
+    fsize = ttstub_input_get_size(handle) as i32;
+    wbuf_0 =
+        new(((fsize + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+            as *mut i8;
+    *wbuf_0.offset(fsize as isize) = '\u{0}' as i32 as i8;
+    if ttstub_input_read(handle, wbuf_0, fsize as size_t) != fsize as i64 {
+        _tt_abort(b"error reading %s\x00" as *const u8 as *const i8, filename);
     }
     ttstub_input_close(handle);
     p = wbuf_0;
@@ -725,11 +629,11 @@ unsafe extern "C" fn load_encoding_file(mut filename: *const libc::c_char) -> li
     /*
      * Skip comment lines.
      */
-    while p < endptr && *p.offset(0) as libc::c_int == '%' as i32 {
+    while p < endptr && *p.offset(0) as i32 == '%' as i32 {
         pdfparse_skip_line(&mut p, endptr);
         skip_white(&mut p, endptr);
     }
-    if *p.offset(0) as libc::c_int == '/' as i32 {
+    if *p.offset(0) as i32 == '/' as i32 {
         enc_name = parse_pdf_name(&mut p, endptr)
     }
     skip_white(&mut p, endptr);
@@ -748,17 +652,17 @@ unsafe extern "C" fn load_encoding_file(mut filename: *const libc::c_char) -> li
         if !enc_name.is_null() {
             pdf_name_value(enc_name)
         } else {
-            0 as *mut libc::c_char
+            0 as *mut i8
         },
         filename,
         enc_vec.as_mut_ptr(),
-        0 as *const libc::c_char,
+        0 as *const i8,
         0i32,
     );
     if !enc_name.is_null() {
-        if verbose as libc::c_int > 1i32 {
+        if verbose as i32 > 1i32 {
             dpx_message(
-                b"[%s]\x00" as *const u8 as *const libc::c_char,
+                b"[%s]\x00" as *const u8 as *const i8,
                 pdf_name_value(enc_name),
             );
         }
@@ -766,7 +670,7 @@ unsafe extern "C" fn load_encoding_file(mut filename: *const libc::c_char) -> li
     }
     pdf_release_obj(encoding_array);
     if verbose != 0 {
-        dpx_message(b")\x00" as *const u8 as *const libc::c_char);
+        dpx_message(b")\x00" as *const u8 as *const i8);
     }
     return enc_id;
 }
@@ -782,31 +686,31 @@ static mut enc_cache: C2RustUnnamed = {
 pub unsafe extern "C" fn pdf_init_encodings() {
     enc_cache.count = 0i32;
     enc_cache.capacity = 3i32;
-    enc_cache.encodings = new((enc_cache.capacity as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_encoding>() as libc::c_ulong)
-        as uint32_t) as *mut pdf_encoding;
+    enc_cache.encodings = new((enc_cache.capacity as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pdf_encoding>() as u64)
+        as u32) as *mut pdf_encoding;
     /*
      * PDF Predefined Encodings
      */
     pdf_encoding_new_encoding(
-        b"WinAnsiEncoding\x00" as *const u8 as *const libc::c_char,
-        b"WinAnsiEncoding\x00" as *const u8 as *const libc::c_char,
+        b"WinAnsiEncoding\x00" as *const u8 as *const i8,
+        b"WinAnsiEncoding\x00" as *const u8 as *const i8,
         WinAnsiEncoding.as_mut_ptr(),
-        0 as *const libc::c_char,
+        0 as *const i8,
         1i32 << 0i32,
     );
     pdf_encoding_new_encoding(
-        b"MacRomanEncoding\x00" as *const u8 as *const libc::c_char,
-        b"MacRomanEncoding\x00" as *const u8 as *const libc::c_char,
+        b"MacRomanEncoding\x00" as *const u8 as *const i8,
+        b"MacRomanEncoding\x00" as *const u8 as *const i8,
         MacRomanEncoding.as_mut_ptr(),
-        0 as *const libc::c_char,
+        0 as *const i8,
         1i32 << 0i32,
     );
     pdf_encoding_new_encoding(
-        b"MacExpertEncoding\x00" as *const u8 as *const libc::c_char,
-        b"MacExpertEncoding\x00" as *const u8 as *const libc::c_char,
+        b"MacExpertEncoding\x00" as *const u8 as *const i8,
+        b"MacExpertEncoding\x00" as *const u8 as *const i8,
         MacExpertEncoding.as_mut_ptr(),
-        0 as *const libc::c_char,
+        0 as *const i8,
         1i32 << 0i32,
     );
 }
@@ -823,14 +727,14 @@ pub unsafe extern "C" fn pdf_init_encodings() {
  * when the font is Symbol font or TrueType font.
  */
 unsafe extern "C" fn pdf_encoding_new_encoding(
-    mut enc_name: *const libc::c_char,
-    mut ident: *const libc::c_char,
-    mut encoding_vec: *mut *const libc::c_char,
-    mut baseenc_name: *const libc::c_char,
-    mut flags: libc::c_int,
-) -> libc::c_int {
-    let mut enc_id: libc::c_int = 0;
-    let mut code: libc::c_int = 0;
+    mut enc_name: *const i8,
+    mut ident: *const i8,
+    mut encoding_vec: *mut *const i8,
+    mut baseenc_name: *const i8,
+    mut flags: i32,
+) -> i32 {
+    let mut enc_id: i32 = 0;
+    let mut code: i32 = 0;
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     enc_id = enc_cache.count;
     let fresh0 = enc_cache.count;
@@ -839,24 +743,19 @@ unsafe extern "C" fn pdf_encoding_new_encoding(
         enc_cache.capacity += 16i32;
         enc_cache.encodings = renew(
             enc_cache.encodings as *mut libc::c_void,
-            (enc_cache.capacity as uint32_t as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<pdf_encoding>() as libc::c_ulong)
-                as uint32_t,
+            (enc_cache.capacity as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<pdf_encoding>() as u64) as u32,
         ) as *mut pdf_encoding
     }
     encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
     pdf_init_encoding_struct(encoding);
-    (*encoding).ident = new(
-        (strlen(ident).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
-    ) as *mut libc::c_char;
+    (*encoding).ident = new((strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+        as *mut i8;
     strcpy((*encoding).ident, ident);
-    (*encoding).enc_name = new(
-        (strlen(enc_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
-    ) as *mut libc::c_char;
+    (*encoding).enc_name = new((strlen(enc_name).wrapping_add(1i32 as u64) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+        as *mut i8;
     strcpy((*encoding).enc_name, enc_name);
     (*encoding).flags = flags;
     code = 0i32;
@@ -864,14 +763,14 @@ unsafe extern "C" fn pdf_encoding_new_encoding(
         if !(*encoding_vec.offset(code as isize)).is_null()
             && strcmp(
                 *encoding_vec.offset(code as isize),
-                b".notdef\x00" as *const u8 as *const libc::c_char,
+                b".notdef\x00" as *const u8 as *const i8,
             ) != 0
         {
             (*encoding).glyphs[code as usize] = new((strlen(*encoding_vec.offset(code as isize))
-                .wrapping_add(1i32 as libc::c_ulong)
-                as uint32_t as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                .wrapping_add(1i32 as u64)
+                as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32) as *mut i8;
             strcpy(
                 (*encoding).glyphs[code as usize],
                 *encoding_vec.offset(code as isize),
@@ -884,19 +783,18 @@ unsafe extern "C" fn pdf_encoding_new_encoding(
         && is_similar_charset(
             (*encoding).glyphs.as_mut_ptr(),
             WinAnsiEncoding.as_mut_ptr(),
-        ) as libc::c_int
+        ) as i32
             != 0
     {
         /* Dvipdfmx default setting. */
-        baseenc_name = b"WinAnsiEncoding\x00" as *const u8 as *const libc::c_char
+        baseenc_name = b"WinAnsiEncoding\x00" as *const u8 as *const i8
     }
     /* TODO: make base encoding configurable */
     if !baseenc_name.is_null() {
-        let mut baseenc_id: libc::c_int = pdf_encoding_findresource(baseenc_name);
+        let mut baseenc_id: i32 = pdf_encoding_findresource(baseenc_name);
         if baseenc_id < 0i32 || pdf_encoding_is_predefined(baseenc_id) == 0 {
             _tt_abort(
-                b"Illegal base encoding %s for encoding %s\n\x00" as *const u8
-                    as *const libc::c_char,
+                b"Illegal base encoding %s for encoding %s\n\x00" as *const u8 as *const i8,
                 baseenc_name,
                 (*encoding).enc_name,
             );
@@ -914,7 +812,7 @@ unsafe extern "C" fn pdf_encoding_new_encoding(
  */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_encoding_complete() {
-    let mut enc_id: libc::c_int = 0;
+    let mut enc_id: i32 = 0;
     enc_id = 0i32;
     while enc_id < enc_cache.count {
         if pdf_encoding_is_predefined(enc_id) == 0 {
@@ -926,21 +824,9 @@ pub unsafe extern "C" fn pdf_encoding_complete() {
              * an incorrect implementation in Acrobat 4 and earlier. Hence,
              * we do use a base encodings for PDF versions >= 1.3.
              */
-            let mut with_base: libc::c_int = ((*encoding).flags & 1i32 << 1i32 == 0
-                || pdf_get_version() >= 4i32 as libc::c_uint)
-                as libc::c_int;
-            if (*encoding).resource.is_null() {
-            } else {
-                __assert_fail(
-                    b"!encoding->resource\x00" as *const u8 as *const libc::c_char,
-                    b"dpx-pdfencoding.c\x00" as *const u8 as *const libc::c_char,
-                    451i32 as libc::c_uint,
-                    (*::std::mem::transmute::<&[u8; 33], &[libc::c_char; 33]>(
-                        b"void pdf_encoding_complete(void)\x00",
-                    ))
-                    .as_ptr(),
-                );
-            }
+            let mut with_base: i32 =
+                ((*encoding).flags & 1i32 << 1i32 == 0 || pdf_get_version() >= 4_u32) as i32;
+            assert!((*encoding).resource.is_null());
             (*encoding).resource = create_encoding_resource(
                 encoding,
                 if with_base != 0 {
@@ -949,18 +835,7 @@ pub unsafe extern "C" fn pdf_encoding_complete() {
                     0 as *mut pdf_encoding
                 },
             );
-            if (*encoding).tounicode.is_null() {
-            } else {
-                __assert_fail(
-                    b"!encoding->tounicode\x00" as *const u8 as *const libc::c_char,
-                    b"dpx-pdfencoding.c\x00" as *const u8 as *const libc::c_char,
-                    454i32 as libc::c_uint,
-                    (*::std::mem::transmute::<&[u8; 33], &[libc::c_char; 33]>(
-                        b"void pdf_encoding_complete(void)\x00",
-                    ))
-                    .as_ptr(),
-                );
-            }
+            assert!((*encoding).tounicode.is_null());
             (*encoding).tounicode = pdf_create_ToUnicode_CMap(
                 (*encoding).enc_name,
                 (*encoding).glyphs.as_mut_ptr(),
@@ -972,7 +847,7 @@ pub unsafe extern "C" fn pdf_encoding_complete() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_close_encodings() {
-    let mut enc_id: libc::c_int = 0;
+    let mut enc_id: i32 = 0;
     if !enc_cache.encodings.is_null() {
         enc_id = 0i32;
         while enc_id < enc_cache.count {
@@ -991,33 +866,18 @@ pub unsafe extern "C" fn pdf_close_encodings() {
     enc_cache.capacity = 0i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_encoding_findresource(
-    mut enc_name: *const libc::c_char,
-) -> libc::c_int {
-    let mut enc_id: libc::c_int = 0;
+pub unsafe extern "C" fn pdf_encoding_findresource(mut enc_name: *const i8) -> i32 {
+    let mut enc_id: i32 = 0;
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
-    if !enc_name.is_null() {
-    } else {
-        __assert_fail(
-            b"enc_name\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const libc::c_char,
-            490i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 44], &[libc::c_char; 44]>(
-                b"int pdf_encoding_findresource(const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!enc_name.is_null());
     enc_id = 0i32;
     while enc_id < enc_cache.count {
         encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
-        if !(*encoding).ident.is_null()
-            && streq_ptr(enc_name, (*encoding).ident) as libc::c_int != 0
-        {
+        if !(*encoding).ident.is_null() && streq_ptr(enc_name, (*encoding).ident) as i32 != 0 {
             return enc_id;
         } else {
             if !(*encoding).enc_name.is_null()
-                && streq_ptr(enc_name, (*encoding).enc_name) as libc::c_int != 0
+                && streq_ptr(enc_name, (*encoding).enc_name) as i32 != 0
             {
                 return enc_id;
             }
@@ -1030,13 +890,11 @@ pub unsafe extern "C" fn pdf_encoding_findresource(
  * Pointer will change if other encoding is loaded...
  */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_encoding_get_encoding(
-    mut enc_id: libc::c_int,
-) -> *mut *mut libc::c_char {
+pub unsafe extern "C" fn pdf_encoding_get_encoding(mut enc_id: i32) -> *mut *mut i8 {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
         _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const libc::c_char,
+            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
             enc_id,
         );
     }
@@ -1044,11 +902,11 @@ pub unsafe extern "C" fn pdf_encoding_get_encoding(
     return (*encoding).glyphs.as_mut_ptr();
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_get_encoding_obj(mut enc_id: libc::c_int) -> *mut pdf_obj {
+pub unsafe extern "C" fn pdf_get_encoding_obj(mut enc_id: i32) -> *mut pdf_obj {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
         _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const libc::c_char,
+            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
             enc_id,
         );
     }
@@ -1056,11 +914,11 @@ pub unsafe extern "C" fn pdf_get_encoding_obj(mut enc_id: libc::c_int) -> *mut p
     return (*encoding).resource;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_encoding_is_predefined(mut enc_id: libc::c_int) -> libc::c_int {
+pub unsafe extern "C" fn pdf_encoding_is_predefined(mut enc_id: i32) -> i32 {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
         _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const libc::c_char,
+            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
             enc_id,
         );
     }
@@ -1072,11 +930,11 @@ pub unsafe extern "C" fn pdf_encoding_is_predefined(mut enc_id: libc::c_int) -> 
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_encoding_used_by_type3(mut enc_id: libc::c_int) {
+pub unsafe extern "C" fn pdf_encoding_used_by_type3(mut enc_id: i32) {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
         _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const libc::c_char,
+            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
             enc_id,
         );
     }
@@ -1084,30 +942,27 @@ pub unsafe extern "C" fn pdf_encoding_used_by_type3(mut enc_id: libc::c_int) {
     (*encoding).flags |= 1i32 << 1i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_encoding_get_name(mut enc_id: libc::c_int) -> *mut libc::c_char {
+pub unsafe extern "C" fn pdf_encoding_get_name(mut enc_id: i32) -> *mut i8 {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
         _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const libc::c_char,
+            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
             enc_id,
         );
     }
     encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
     return (*encoding).enc_name;
 }
-static mut wbuf: [libc::c_uchar; 1024] = [0; 1024];
-static mut range_min: [libc::c_uchar; 1] = [0u32 as libc::c_uchar];
-static mut range_max: [libc::c_uchar; 1] = [0xffu32 as libc::c_uchar];
+static mut wbuf: [u8; 1024] = [0; 1024];
+static mut range_min: [u8; 1] = [0u32 as u8];
+static mut range_max: [u8; 1] = [0xffu32 as u8];
 #[no_mangle]
-pub unsafe extern "C" fn pdf_encoding_add_usedchars(
-    mut encoding_id: libc::c_int,
-    mut is_used: *const libc::c_char,
-) {
+pub unsafe extern "C" fn pdf_encoding_add_usedchars(mut encoding_id: i32, mut is_used: *const i8) {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
-    let mut code: libc::c_int = 0;
+    let mut code: i32 = 0;
     if encoding_id < 0i32 || encoding_id >= enc_cache.count {
         _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const libc::c_char,
+            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
             encoding_id,
         );
     }
@@ -1117,17 +972,17 @@ pub unsafe extern "C" fn pdf_encoding_add_usedchars(
     encoding = &mut *enc_cache.encodings.offset(encoding_id as isize) as *mut pdf_encoding;
     code = 0i32;
     while code <= 0xffi32 {
-        (*encoding).is_used[code as usize] = ((*encoding).is_used[code as usize] as libc::c_int
-            | *is_used.offset(code as isize) as libc::c_int)
-            as libc::c_char;
+        (*encoding).is_used[code as usize] = ((*encoding).is_used[code as usize] as i32
+            | *is_used.offset(code as isize) as i32)
+            as i8;
         code += 1
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_encoding_get_tounicode(mut encoding_id: libc::c_int) -> *mut pdf_obj {
+pub unsafe extern "C" fn pdf_encoding_get_tounicode(mut encoding_id: i32) -> *mut pdf_obj {
     if encoding_id < 0i32 || encoding_id >= enc_cache.count {
         _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const libc::c_char,
+            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
             encoding_id,
         );
     }
@@ -1145,37 +1000,25 @@ pub unsafe extern "C" fn pdf_encoding_get_tounicode(mut encoding_id: libc::c_int
  */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
-    mut enc_name: *const libc::c_char,
-    mut enc_vec: *mut *mut libc::c_char,
-    mut is_used: *const libc::c_char,
+    mut enc_name: *const i8,
+    mut enc_vec: *mut *mut i8,
+    mut is_used: *const i8,
 ) -> *mut pdf_obj {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut cmap: *mut CMap = 0 as *mut CMap;
-    let mut code: libc::c_int = 0;
-    let mut all_predef: libc::c_int = 0;
-    let mut cmap_name: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut endptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    if !enc_name.is_null() && !enc_vec.is_null() {
-    } else {
-        __assert_fail(
-            b"enc_name && enc_vec\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const libc::c_char,
-            629i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 72], &[libc::c_char; 72]>(
-                b"pdf_obj *pdf_create_ToUnicode_CMap(const char *, char **, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    let mut code: i32 = 0;
+    let mut all_predef: i32 = 0;
+    let mut cmap_name: *mut i8 = 0 as *mut i8;
+    let mut p: *mut u8 = 0 as *mut u8;
+    let mut endptr: *mut u8 = 0 as *mut u8;
+    assert!(!enc_name.is_null() && !enc_vec.is_null());
     cmap_name = new((strlen(enc_name)
-        .wrapping_add(strlen(b"-UTF16\x00" as *const u8 as *const libc::c_char))
-        .wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        .wrapping_add(strlen(b"-UTF16\x00" as *const u8 as *const i8))
+        .wrapping_add(1i32 as u64) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     sprintf(
         cmap_name,
-        b"%s-UTF16\x00" as *const u8 as *const libc::c_char,
+        b"%s-UTF16\x00" as *const u8 as *const i8,
         enc_name,
     );
     cmap = CMap_new();
@@ -1194,17 +1037,14 @@ pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
     while code <= 0xffi32 {
         if !(!is_used.is_null() && *is_used.offset(code as isize) == 0) {
             if !(*enc_vec.offset(code as isize)).is_null() {
-                let mut len: int32_t = 0;
-                let mut fail_count: libc::c_int = 0i32;
+                let mut len: i32 = 0;
+                let mut fail_count: i32 = 0i32;
                 let mut agln: *mut agl_name = agl_lookup_list(*enc_vec.offset(code as isize));
                 /* Adobe glyph naming conventions are not used by viewers,
                  * hence even ligatures (e.g, "f_i") must be explicitly defined
                  */
-                if pdf_get_version() < 5i32 as libc::c_uint
-                    || agln.is_null()
-                    || (*agln).is_predef == 0
-                {
-                    wbuf[0] = (code & 0xffi32) as libc::c_uchar;
+                if pdf_get_version() < 5_u32 || agln.is_null() || (*agln).is_predef == 0 {
+                    wbuf[0] = (code & 0xffi32) as u8;
                     p = wbuf.as_mut_ptr().offset(1);
                     endptr = wbuf.as_mut_ptr().offset(1024);
                     len = agl_sput_UTF16BE(
@@ -1221,7 +1061,7 @@ pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
                             wbuf.as_mut_ptr().offset(1),
                             len as size_t,
                         );
-                        all_predef &= (!agln.is_null() && (*agln).is_predef != 0) as libc::c_int
+                        all_predef &= (!agln.is_null() && (*agln).is_predef != 0) as i32
                     }
                 }
             }
@@ -1281,7 +1121,7 @@ pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
  * PDF stream object (not reference) returned.
  */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_load_ToUnicode_stream(mut ident: *const libc::c_char) -> *mut pdf_obj {
+pub unsafe extern "C" fn pdf_load_ToUnicode_stream(mut ident: *const i8) -> *mut pdf_obj {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut cmap: *mut CMap = 0 as *mut CMap;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
@@ -1299,18 +1139,17 @@ pub unsafe extern "C" fn pdf_load_ToUnicode_stream(mut ident: *const libc::c_cha
     cmap = CMap_new();
     if CMap_parse(cmap, handle) < 0i32 {
         dpx_warning(
-            b"Reading CMap file \"%s\" failed.\x00" as *const u8 as *const libc::c_char,
+            b"Reading CMap file \"%s\" failed.\x00" as *const u8 as *const i8,
             ident,
         );
     } else {
         if verbose != 0 {
-            dpx_message(b"(CMap:%s)\x00" as *const u8 as *const libc::c_char, ident);
+            dpx_message(b"(CMap:%s)\x00" as *const u8 as *const i8, ident);
         }
         stream = CMap_create_stream(cmap);
         if stream.is_null() {
             dpx_warning(
-                b"Failed to creat ToUnicode CMap stream for \"%s\".\x00" as *const u8
-                    as *const libc::c_char,
+                b"Failed to creat ToUnicode CMap stream for \"%s\".\x00" as *const u8 as *const i8,
                 ident,
             );
         }
@@ -1319,777 +1158,777 @@ pub unsafe extern "C" fn pdf_load_ToUnicode_stream(mut ident: *const libc::c_cha
     ttstub_input_close(handle);
     return stream;
 }
-static mut MacRomanEncoding: [*const libc::c_char; 256] = [
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"space\x00" as *const u8 as *const libc::c_char,
-    b"exclam\x00" as *const u8 as *const libc::c_char,
-    b"quotedbl\x00" as *const u8 as *const libc::c_char,
-    b"numbersign\x00" as *const u8 as *const libc::c_char,
-    b"dollar\x00" as *const u8 as *const libc::c_char,
-    b"percent\x00" as *const u8 as *const libc::c_char,
-    b"ampersand\x00" as *const u8 as *const libc::c_char,
-    b"quotesingle\x00" as *const u8 as *const libc::c_char,
-    b"parenleft\x00" as *const u8 as *const libc::c_char,
-    b"parenright\x00" as *const u8 as *const libc::c_char,
-    b"asterisk\x00" as *const u8 as *const libc::c_char,
-    b"plus\x00" as *const u8 as *const libc::c_char,
-    b"comma\x00" as *const u8 as *const libc::c_char,
-    b"hyphen\x00" as *const u8 as *const libc::c_char,
-    b"period\x00" as *const u8 as *const libc::c_char,
-    b"slash\x00" as *const u8 as *const libc::c_char,
-    b"zero\x00" as *const u8 as *const libc::c_char,
-    b"one\x00" as *const u8 as *const libc::c_char,
-    b"two\x00" as *const u8 as *const libc::c_char,
-    b"three\x00" as *const u8 as *const libc::c_char,
-    b"four\x00" as *const u8 as *const libc::c_char,
-    b"five\x00" as *const u8 as *const libc::c_char,
-    b"six\x00" as *const u8 as *const libc::c_char,
-    b"seven\x00" as *const u8 as *const libc::c_char,
-    b"eight\x00" as *const u8 as *const libc::c_char,
-    b"nine\x00" as *const u8 as *const libc::c_char,
-    b"colon\x00" as *const u8 as *const libc::c_char,
-    b"semicolon\x00" as *const u8 as *const libc::c_char,
-    b"less\x00" as *const u8 as *const libc::c_char,
-    b"equal\x00" as *const u8 as *const libc::c_char,
-    b"greater\x00" as *const u8 as *const libc::c_char,
-    b"question\x00" as *const u8 as *const libc::c_char,
-    b"at\x00" as *const u8 as *const libc::c_char,
-    b"A\x00" as *const u8 as *const libc::c_char,
-    b"B\x00" as *const u8 as *const libc::c_char,
-    b"C\x00" as *const u8 as *const libc::c_char,
-    b"D\x00" as *const u8 as *const libc::c_char,
-    b"E\x00" as *const u8 as *const libc::c_char,
-    b"F\x00" as *const u8 as *const libc::c_char,
-    b"G\x00" as *const u8 as *const libc::c_char,
-    b"H\x00" as *const u8 as *const libc::c_char,
-    b"I\x00" as *const u8 as *const libc::c_char,
-    b"J\x00" as *const u8 as *const libc::c_char,
-    b"K\x00" as *const u8 as *const libc::c_char,
-    b"L\x00" as *const u8 as *const libc::c_char,
-    b"M\x00" as *const u8 as *const libc::c_char,
-    b"N\x00" as *const u8 as *const libc::c_char,
-    b"O\x00" as *const u8 as *const libc::c_char,
-    b"P\x00" as *const u8 as *const libc::c_char,
-    b"Q\x00" as *const u8 as *const libc::c_char,
-    b"R\x00" as *const u8 as *const libc::c_char,
-    b"S\x00" as *const u8 as *const libc::c_char,
-    b"T\x00" as *const u8 as *const libc::c_char,
-    b"U\x00" as *const u8 as *const libc::c_char,
-    b"V\x00" as *const u8 as *const libc::c_char,
-    b"W\x00" as *const u8 as *const libc::c_char,
-    b"X\x00" as *const u8 as *const libc::c_char,
-    b"Y\x00" as *const u8 as *const libc::c_char,
-    b"Z\x00" as *const u8 as *const libc::c_char,
-    b"bracketleft\x00" as *const u8 as *const libc::c_char,
-    b"backslash\x00" as *const u8 as *const libc::c_char,
-    b"bracketright\x00" as *const u8 as *const libc::c_char,
-    b"asciicircum\x00" as *const u8 as *const libc::c_char,
-    b"underscore\x00" as *const u8 as *const libc::c_char,
-    b"grave\x00" as *const u8 as *const libc::c_char,
-    b"a\x00" as *const u8 as *const libc::c_char,
-    b"b\x00" as *const u8 as *const libc::c_char,
-    b"c\x00" as *const u8 as *const libc::c_char,
-    b"d\x00" as *const u8 as *const libc::c_char,
-    b"e\x00" as *const u8 as *const libc::c_char,
-    b"f\x00" as *const u8 as *const libc::c_char,
-    b"g\x00" as *const u8 as *const libc::c_char,
-    b"h\x00" as *const u8 as *const libc::c_char,
-    b"i\x00" as *const u8 as *const libc::c_char,
-    b"j\x00" as *const u8 as *const libc::c_char,
-    b"k\x00" as *const u8 as *const libc::c_char,
-    b"l\x00" as *const u8 as *const libc::c_char,
-    b"m\x00" as *const u8 as *const libc::c_char,
-    b"n\x00" as *const u8 as *const libc::c_char,
-    b"o\x00" as *const u8 as *const libc::c_char,
-    b"p\x00" as *const u8 as *const libc::c_char,
-    b"q\x00" as *const u8 as *const libc::c_char,
-    b"r\x00" as *const u8 as *const libc::c_char,
-    b"s\x00" as *const u8 as *const libc::c_char,
-    b"t\x00" as *const u8 as *const libc::c_char,
-    b"u\x00" as *const u8 as *const libc::c_char,
-    b"v\x00" as *const u8 as *const libc::c_char,
-    b"w\x00" as *const u8 as *const libc::c_char,
-    b"x\x00" as *const u8 as *const libc::c_char,
-    b"y\x00" as *const u8 as *const libc::c_char,
-    b"z\x00" as *const u8 as *const libc::c_char,
-    b"braceleft\x00" as *const u8 as *const libc::c_char,
-    b"bar\x00" as *const u8 as *const libc::c_char,
-    b"braceright\x00" as *const u8 as *const libc::c_char,
-    b"asciitilde\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"Adieresis\x00" as *const u8 as *const libc::c_char,
-    b"Aring\x00" as *const u8 as *const libc::c_char,
-    b"Ccedilla\x00" as *const u8 as *const libc::c_char,
-    b"Eacute\x00" as *const u8 as *const libc::c_char,
-    b"Ntilde\x00" as *const u8 as *const libc::c_char,
-    b"Odieresis\x00" as *const u8 as *const libc::c_char,
-    b"Udieresis\x00" as *const u8 as *const libc::c_char,
-    b"aacute\x00" as *const u8 as *const libc::c_char,
-    b"agrave\x00" as *const u8 as *const libc::c_char,
-    b"acircumflex\x00" as *const u8 as *const libc::c_char,
-    b"adieresis\x00" as *const u8 as *const libc::c_char,
-    b"atilde\x00" as *const u8 as *const libc::c_char,
-    b"aring\x00" as *const u8 as *const libc::c_char,
-    b"ccedilla\x00" as *const u8 as *const libc::c_char,
-    b"eacute\x00" as *const u8 as *const libc::c_char,
-    b"egrave\x00" as *const u8 as *const libc::c_char,
-    b"ecircumflex\x00" as *const u8 as *const libc::c_char,
-    b"edieresis\x00" as *const u8 as *const libc::c_char,
-    b"iacute\x00" as *const u8 as *const libc::c_char,
-    b"igrave\x00" as *const u8 as *const libc::c_char,
-    b"icircumflex\x00" as *const u8 as *const libc::c_char,
-    b"idieresis\x00" as *const u8 as *const libc::c_char,
-    b"ntilde\x00" as *const u8 as *const libc::c_char,
-    b"oacute\x00" as *const u8 as *const libc::c_char,
-    b"ograve\x00" as *const u8 as *const libc::c_char,
-    b"ocircumflex\x00" as *const u8 as *const libc::c_char,
-    b"odieresis\x00" as *const u8 as *const libc::c_char,
-    b"otilde\x00" as *const u8 as *const libc::c_char,
-    b"uacute\x00" as *const u8 as *const libc::c_char,
-    b"ugrave\x00" as *const u8 as *const libc::c_char,
-    b"ucircumflex\x00" as *const u8 as *const libc::c_char,
-    b"udieresis\x00" as *const u8 as *const libc::c_char,
-    b"dagger\x00" as *const u8 as *const libc::c_char,
-    b"degree\x00" as *const u8 as *const libc::c_char,
-    b"cent\x00" as *const u8 as *const libc::c_char,
-    b"sterling\x00" as *const u8 as *const libc::c_char,
-    b"section\x00" as *const u8 as *const libc::c_char,
-    b"bullet\x00" as *const u8 as *const libc::c_char,
-    b"paragraph\x00" as *const u8 as *const libc::c_char,
-    b"germandbls\x00" as *const u8 as *const libc::c_char,
-    b"registered\x00" as *const u8 as *const libc::c_char,
-    b"copyright\x00" as *const u8 as *const libc::c_char,
-    b"trademark\x00" as *const u8 as *const libc::c_char,
-    b"acute\x00" as *const u8 as *const libc::c_char,
-    b"dieresis\x00" as *const u8 as *const libc::c_char,
-    b"notequal\x00" as *const u8 as *const libc::c_char,
-    b"AE\x00" as *const u8 as *const libc::c_char,
-    b"Oslash\x00" as *const u8 as *const libc::c_char,
-    b"infinity\x00" as *const u8 as *const libc::c_char,
-    b"plusminus\x00" as *const u8 as *const libc::c_char,
-    b"lessequal\x00" as *const u8 as *const libc::c_char,
-    b"greaterequal\x00" as *const u8 as *const libc::c_char,
-    b"yen\x00" as *const u8 as *const libc::c_char,
-    b"mu\x00" as *const u8 as *const libc::c_char,
-    b"partialdiff\x00" as *const u8 as *const libc::c_char,
-    b"summation\x00" as *const u8 as *const libc::c_char,
-    b"product\x00" as *const u8 as *const libc::c_char,
-    b"pi\x00" as *const u8 as *const libc::c_char,
-    b"integral\x00" as *const u8 as *const libc::c_char,
-    b"ordfeminine\x00" as *const u8 as *const libc::c_char,
-    b"ordmasculine\x00" as *const u8 as *const libc::c_char,
-    b"Omega\x00" as *const u8 as *const libc::c_char,
-    b"ae\x00" as *const u8 as *const libc::c_char,
-    b"oslash\x00" as *const u8 as *const libc::c_char,
-    b"questiondown\x00" as *const u8 as *const libc::c_char,
-    b"exclamdown\x00" as *const u8 as *const libc::c_char,
-    b"logicalnot\x00" as *const u8 as *const libc::c_char,
-    b"radical\x00" as *const u8 as *const libc::c_char,
-    b"florin\x00" as *const u8 as *const libc::c_char,
-    b"approxequal\x00" as *const u8 as *const libc::c_char,
-    b"Delta\x00" as *const u8 as *const libc::c_char,
-    b"guillemotleft\x00" as *const u8 as *const libc::c_char,
-    b"guillemotright\x00" as *const u8 as *const libc::c_char,
-    b"ellipsis\x00" as *const u8 as *const libc::c_char,
-    b"space\x00" as *const u8 as *const libc::c_char,
-    b"Agrave\x00" as *const u8 as *const libc::c_char,
-    b"Atilde\x00" as *const u8 as *const libc::c_char,
-    b"Otilde\x00" as *const u8 as *const libc::c_char,
-    b"OE\x00" as *const u8 as *const libc::c_char,
-    b"oe\x00" as *const u8 as *const libc::c_char,
-    b"endash\x00" as *const u8 as *const libc::c_char,
-    b"emdash\x00" as *const u8 as *const libc::c_char,
-    b"quotedblleft\x00" as *const u8 as *const libc::c_char,
-    b"quotedblright\x00" as *const u8 as *const libc::c_char,
-    b"quoteleft\x00" as *const u8 as *const libc::c_char,
-    b"quoteright\x00" as *const u8 as *const libc::c_char,
-    b"divide\x00" as *const u8 as *const libc::c_char,
-    b"lozenge\x00" as *const u8 as *const libc::c_char,
-    b"ydieresis\x00" as *const u8 as *const libc::c_char,
-    b"Ydieresis\x00" as *const u8 as *const libc::c_char,
-    b"fraction\x00" as *const u8 as *const libc::c_char,
-    b"currency\x00" as *const u8 as *const libc::c_char,
-    b"guilsinglleft\x00" as *const u8 as *const libc::c_char,
-    b"guilsinglright\x00" as *const u8 as *const libc::c_char,
-    b"fi\x00" as *const u8 as *const libc::c_char,
-    b"fl\x00" as *const u8 as *const libc::c_char,
-    b"daggerdbl\x00" as *const u8 as *const libc::c_char,
-    b"periodcentered\x00" as *const u8 as *const libc::c_char,
-    b"quotesinglbase\x00" as *const u8 as *const libc::c_char,
-    b"quotedblbase\x00" as *const u8 as *const libc::c_char,
-    b"perthousand\x00" as *const u8 as *const libc::c_char,
-    b"Acircumflex\x00" as *const u8 as *const libc::c_char,
-    b"Ecircumflex\x00" as *const u8 as *const libc::c_char,
-    b"Aacute\x00" as *const u8 as *const libc::c_char,
-    b"Edieresis\x00" as *const u8 as *const libc::c_char,
-    b"Egrave\x00" as *const u8 as *const libc::c_char,
-    b"Iacute\x00" as *const u8 as *const libc::c_char,
-    b"Icircumflex\x00" as *const u8 as *const libc::c_char,
-    b"Idieresis\x00" as *const u8 as *const libc::c_char,
-    b"Igrave\x00" as *const u8 as *const libc::c_char,
-    b"Oacute\x00" as *const u8 as *const libc::c_char,
-    b"Ocircumflex\x00" as *const u8 as *const libc::c_char,
-    b"apple\x00" as *const u8 as *const libc::c_char,
-    b"Ograve\x00" as *const u8 as *const libc::c_char,
-    b"Uacute\x00" as *const u8 as *const libc::c_char,
-    b"Ucircumflex\x00" as *const u8 as *const libc::c_char,
-    b"Ugrave\x00" as *const u8 as *const libc::c_char,
-    b"dotlessi\x00" as *const u8 as *const libc::c_char,
-    b"circumflex\x00" as *const u8 as *const libc::c_char,
-    b"tilde\x00" as *const u8 as *const libc::c_char,
-    b"macron\x00" as *const u8 as *const libc::c_char,
-    b"breve\x00" as *const u8 as *const libc::c_char,
-    b"dotaccent\x00" as *const u8 as *const libc::c_char,
-    b"ring\x00" as *const u8 as *const libc::c_char,
-    b"cedilla\x00" as *const u8 as *const libc::c_char,
-    b"hungarumlaut\x00" as *const u8 as *const libc::c_char,
-    b"ogonek\x00" as *const u8 as *const libc::c_char,
-    b"caron\x00" as *const u8 as *const libc::c_char,
+static mut MacRomanEncoding: [*const i8; 256] = [
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"space\x00" as *const u8 as *const i8,
+    b"exclam\x00" as *const u8 as *const i8,
+    b"quotedbl\x00" as *const u8 as *const i8,
+    b"numbersign\x00" as *const u8 as *const i8,
+    b"dollar\x00" as *const u8 as *const i8,
+    b"percent\x00" as *const u8 as *const i8,
+    b"ampersand\x00" as *const u8 as *const i8,
+    b"quotesingle\x00" as *const u8 as *const i8,
+    b"parenleft\x00" as *const u8 as *const i8,
+    b"parenright\x00" as *const u8 as *const i8,
+    b"asterisk\x00" as *const u8 as *const i8,
+    b"plus\x00" as *const u8 as *const i8,
+    b"comma\x00" as *const u8 as *const i8,
+    b"hyphen\x00" as *const u8 as *const i8,
+    b"period\x00" as *const u8 as *const i8,
+    b"slash\x00" as *const u8 as *const i8,
+    b"zero\x00" as *const u8 as *const i8,
+    b"one\x00" as *const u8 as *const i8,
+    b"two\x00" as *const u8 as *const i8,
+    b"three\x00" as *const u8 as *const i8,
+    b"four\x00" as *const u8 as *const i8,
+    b"five\x00" as *const u8 as *const i8,
+    b"six\x00" as *const u8 as *const i8,
+    b"seven\x00" as *const u8 as *const i8,
+    b"eight\x00" as *const u8 as *const i8,
+    b"nine\x00" as *const u8 as *const i8,
+    b"colon\x00" as *const u8 as *const i8,
+    b"semicolon\x00" as *const u8 as *const i8,
+    b"less\x00" as *const u8 as *const i8,
+    b"equal\x00" as *const u8 as *const i8,
+    b"greater\x00" as *const u8 as *const i8,
+    b"question\x00" as *const u8 as *const i8,
+    b"at\x00" as *const u8 as *const i8,
+    b"A\x00" as *const u8 as *const i8,
+    b"B\x00" as *const u8 as *const i8,
+    b"C\x00" as *const u8 as *const i8,
+    b"D\x00" as *const u8 as *const i8,
+    b"E\x00" as *const u8 as *const i8,
+    b"F\x00" as *const u8 as *const i8,
+    b"G\x00" as *const u8 as *const i8,
+    b"H\x00" as *const u8 as *const i8,
+    b"I\x00" as *const u8 as *const i8,
+    b"J\x00" as *const u8 as *const i8,
+    b"K\x00" as *const u8 as *const i8,
+    b"L\x00" as *const u8 as *const i8,
+    b"M\x00" as *const u8 as *const i8,
+    b"N\x00" as *const u8 as *const i8,
+    b"O\x00" as *const u8 as *const i8,
+    b"P\x00" as *const u8 as *const i8,
+    b"Q\x00" as *const u8 as *const i8,
+    b"R\x00" as *const u8 as *const i8,
+    b"S\x00" as *const u8 as *const i8,
+    b"T\x00" as *const u8 as *const i8,
+    b"U\x00" as *const u8 as *const i8,
+    b"V\x00" as *const u8 as *const i8,
+    b"W\x00" as *const u8 as *const i8,
+    b"X\x00" as *const u8 as *const i8,
+    b"Y\x00" as *const u8 as *const i8,
+    b"Z\x00" as *const u8 as *const i8,
+    b"bracketleft\x00" as *const u8 as *const i8,
+    b"backslash\x00" as *const u8 as *const i8,
+    b"bracketright\x00" as *const u8 as *const i8,
+    b"asciicircum\x00" as *const u8 as *const i8,
+    b"underscore\x00" as *const u8 as *const i8,
+    b"grave\x00" as *const u8 as *const i8,
+    b"a\x00" as *const u8 as *const i8,
+    b"b\x00" as *const u8 as *const i8,
+    b"c\x00" as *const u8 as *const i8,
+    b"d\x00" as *const u8 as *const i8,
+    b"e\x00" as *const u8 as *const i8,
+    b"f\x00" as *const u8 as *const i8,
+    b"g\x00" as *const u8 as *const i8,
+    b"h\x00" as *const u8 as *const i8,
+    b"i\x00" as *const u8 as *const i8,
+    b"j\x00" as *const u8 as *const i8,
+    b"k\x00" as *const u8 as *const i8,
+    b"l\x00" as *const u8 as *const i8,
+    b"m\x00" as *const u8 as *const i8,
+    b"n\x00" as *const u8 as *const i8,
+    b"o\x00" as *const u8 as *const i8,
+    b"p\x00" as *const u8 as *const i8,
+    b"q\x00" as *const u8 as *const i8,
+    b"r\x00" as *const u8 as *const i8,
+    b"s\x00" as *const u8 as *const i8,
+    b"t\x00" as *const u8 as *const i8,
+    b"u\x00" as *const u8 as *const i8,
+    b"v\x00" as *const u8 as *const i8,
+    b"w\x00" as *const u8 as *const i8,
+    b"x\x00" as *const u8 as *const i8,
+    b"y\x00" as *const u8 as *const i8,
+    b"z\x00" as *const u8 as *const i8,
+    b"braceleft\x00" as *const u8 as *const i8,
+    b"bar\x00" as *const u8 as *const i8,
+    b"braceright\x00" as *const u8 as *const i8,
+    b"asciitilde\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"Adieresis\x00" as *const u8 as *const i8,
+    b"Aring\x00" as *const u8 as *const i8,
+    b"Ccedilla\x00" as *const u8 as *const i8,
+    b"Eacute\x00" as *const u8 as *const i8,
+    b"Ntilde\x00" as *const u8 as *const i8,
+    b"Odieresis\x00" as *const u8 as *const i8,
+    b"Udieresis\x00" as *const u8 as *const i8,
+    b"aacute\x00" as *const u8 as *const i8,
+    b"agrave\x00" as *const u8 as *const i8,
+    b"acircumflex\x00" as *const u8 as *const i8,
+    b"adieresis\x00" as *const u8 as *const i8,
+    b"atilde\x00" as *const u8 as *const i8,
+    b"aring\x00" as *const u8 as *const i8,
+    b"ccedilla\x00" as *const u8 as *const i8,
+    b"eacute\x00" as *const u8 as *const i8,
+    b"egrave\x00" as *const u8 as *const i8,
+    b"ecircumflex\x00" as *const u8 as *const i8,
+    b"edieresis\x00" as *const u8 as *const i8,
+    b"iacute\x00" as *const u8 as *const i8,
+    b"igrave\x00" as *const u8 as *const i8,
+    b"icircumflex\x00" as *const u8 as *const i8,
+    b"idieresis\x00" as *const u8 as *const i8,
+    b"ntilde\x00" as *const u8 as *const i8,
+    b"oacute\x00" as *const u8 as *const i8,
+    b"ograve\x00" as *const u8 as *const i8,
+    b"ocircumflex\x00" as *const u8 as *const i8,
+    b"odieresis\x00" as *const u8 as *const i8,
+    b"otilde\x00" as *const u8 as *const i8,
+    b"uacute\x00" as *const u8 as *const i8,
+    b"ugrave\x00" as *const u8 as *const i8,
+    b"ucircumflex\x00" as *const u8 as *const i8,
+    b"udieresis\x00" as *const u8 as *const i8,
+    b"dagger\x00" as *const u8 as *const i8,
+    b"degree\x00" as *const u8 as *const i8,
+    b"cent\x00" as *const u8 as *const i8,
+    b"sterling\x00" as *const u8 as *const i8,
+    b"section\x00" as *const u8 as *const i8,
+    b"bullet\x00" as *const u8 as *const i8,
+    b"paragraph\x00" as *const u8 as *const i8,
+    b"germandbls\x00" as *const u8 as *const i8,
+    b"registered\x00" as *const u8 as *const i8,
+    b"copyright\x00" as *const u8 as *const i8,
+    b"trademark\x00" as *const u8 as *const i8,
+    b"acute\x00" as *const u8 as *const i8,
+    b"dieresis\x00" as *const u8 as *const i8,
+    b"notequal\x00" as *const u8 as *const i8,
+    b"AE\x00" as *const u8 as *const i8,
+    b"Oslash\x00" as *const u8 as *const i8,
+    b"infinity\x00" as *const u8 as *const i8,
+    b"plusminus\x00" as *const u8 as *const i8,
+    b"lessequal\x00" as *const u8 as *const i8,
+    b"greaterequal\x00" as *const u8 as *const i8,
+    b"yen\x00" as *const u8 as *const i8,
+    b"mu\x00" as *const u8 as *const i8,
+    b"partialdiff\x00" as *const u8 as *const i8,
+    b"summation\x00" as *const u8 as *const i8,
+    b"product\x00" as *const u8 as *const i8,
+    b"pi\x00" as *const u8 as *const i8,
+    b"integral\x00" as *const u8 as *const i8,
+    b"ordfeminine\x00" as *const u8 as *const i8,
+    b"ordmasculine\x00" as *const u8 as *const i8,
+    b"Omega\x00" as *const u8 as *const i8,
+    b"ae\x00" as *const u8 as *const i8,
+    b"oslash\x00" as *const u8 as *const i8,
+    b"questiondown\x00" as *const u8 as *const i8,
+    b"exclamdown\x00" as *const u8 as *const i8,
+    b"logicalnot\x00" as *const u8 as *const i8,
+    b"radical\x00" as *const u8 as *const i8,
+    b"florin\x00" as *const u8 as *const i8,
+    b"approxequal\x00" as *const u8 as *const i8,
+    b"Delta\x00" as *const u8 as *const i8,
+    b"guillemotleft\x00" as *const u8 as *const i8,
+    b"guillemotright\x00" as *const u8 as *const i8,
+    b"ellipsis\x00" as *const u8 as *const i8,
+    b"space\x00" as *const u8 as *const i8,
+    b"Agrave\x00" as *const u8 as *const i8,
+    b"Atilde\x00" as *const u8 as *const i8,
+    b"Otilde\x00" as *const u8 as *const i8,
+    b"OE\x00" as *const u8 as *const i8,
+    b"oe\x00" as *const u8 as *const i8,
+    b"endash\x00" as *const u8 as *const i8,
+    b"emdash\x00" as *const u8 as *const i8,
+    b"quotedblleft\x00" as *const u8 as *const i8,
+    b"quotedblright\x00" as *const u8 as *const i8,
+    b"quoteleft\x00" as *const u8 as *const i8,
+    b"quoteright\x00" as *const u8 as *const i8,
+    b"divide\x00" as *const u8 as *const i8,
+    b"lozenge\x00" as *const u8 as *const i8,
+    b"ydieresis\x00" as *const u8 as *const i8,
+    b"Ydieresis\x00" as *const u8 as *const i8,
+    b"fraction\x00" as *const u8 as *const i8,
+    b"currency\x00" as *const u8 as *const i8,
+    b"guilsinglleft\x00" as *const u8 as *const i8,
+    b"guilsinglright\x00" as *const u8 as *const i8,
+    b"fi\x00" as *const u8 as *const i8,
+    b"fl\x00" as *const u8 as *const i8,
+    b"daggerdbl\x00" as *const u8 as *const i8,
+    b"periodcentered\x00" as *const u8 as *const i8,
+    b"quotesinglbase\x00" as *const u8 as *const i8,
+    b"quotedblbase\x00" as *const u8 as *const i8,
+    b"perthousand\x00" as *const u8 as *const i8,
+    b"Acircumflex\x00" as *const u8 as *const i8,
+    b"Ecircumflex\x00" as *const u8 as *const i8,
+    b"Aacute\x00" as *const u8 as *const i8,
+    b"Edieresis\x00" as *const u8 as *const i8,
+    b"Egrave\x00" as *const u8 as *const i8,
+    b"Iacute\x00" as *const u8 as *const i8,
+    b"Icircumflex\x00" as *const u8 as *const i8,
+    b"Idieresis\x00" as *const u8 as *const i8,
+    b"Igrave\x00" as *const u8 as *const i8,
+    b"Oacute\x00" as *const u8 as *const i8,
+    b"Ocircumflex\x00" as *const u8 as *const i8,
+    b"apple\x00" as *const u8 as *const i8,
+    b"Ograve\x00" as *const u8 as *const i8,
+    b"Uacute\x00" as *const u8 as *const i8,
+    b"Ucircumflex\x00" as *const u8 as *const i8,
+    b"Ugrave\x00" as *const u8 as *const i8,
+    b"dotlessi\x00" as *const u8 as *const i8,
+    b"circumflex\x00" as *const u8 as *const i8,
+    b"tilde\x00" as *const u8 as *const i8,
+    b"macron\x00" as *const u8 as *const i8,
+    b"breve\x00" as *const u8 as *const i8,
+    b"dotaccent\x00" as *const u8 as *const i8,
+    b"ring\x00" as *const u8 as *const i8,
+    b"cedilla\x00" as *const u8 as *const i8,
+    b"hungarumlaut\x00" as *const u8 as *const i8,
+    b"ogonek\x00" as *const u8 as *const i8,
+    b"caron\x00" as *const u8 as *const i8,
 ];
-static mut MacExpertEncoding: [*const libc::c_char; 256] = [
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"space\x00" as *const u8 as *const libc::c_char,
-    b"exclamsmall\x00" as *const u8 as *const libc::c_char,
-    b"Hungarumlautsmall\x00" as *const u8 as *const libc::c_char,
-    b"centoldstyle\x00" as *const u8 as *const libc::c_char,
-    b"dollaroldstyle\x00" as *const u8 as *const libc::c_char,
-    b"dollarsuperior\x00" as *const u8 as *const libc::c_char,
-    b"ampersandsmall\x00" as *const u8 as *const libc::c_char,
-    b"Acutesmall\x00" as *const u8 as *const libc::c_char,
-    b"parenleftsuperior\x00" as *const u8 as *const libc::c_char,
-    b"parenrightsuperior\x00" as *const u8 as *const libc::c_char,
-    b"twodotenleader\x00" as *const u8 as *const libc::c_char,
-    b"onedotenleader\x00" as *const u8 as *const libc::c_char,
-    b"comma\x00" as *const u8 as *const libc::c_char,
-    b"hyphen\x00" as *const u8 as *const libc::c_char,
-    b"period\x00" as *const u8 as *const libc::c_char,
-    b"fraction\x00" as *const u8 as *const libc::c_char,
-    b"zerooldstyle\x00" as *const u8 as *const libc::c_char,
-    b"oneoldstyle\x00" as *const u8 as *const libc::c_char,
-    b"twooldstyle\x00" as *const u8 as *const libc::c_char,
-    b"threeoldstyle\x00" as *const u8 as *const libc::c_char,
-    b"fouroldstyle\x00" as *const u8 as *const libc::c_char,
-    b"fiveoldstyle\x00" as *const u8 as *const libc::c_char,
-    b"sixoldstyle\x00" as *const u8 as *const libc::c_char,
-    b"sevenoldstyle\x00" as *const u8 as *const libc::c_char,
-    b"eightoldstyle\x00" as *const u8 as *const libc::c_char,
-    b"nineoldstyle\x00" as *const u8 as *const libc::c_char,
-    b"colon\x00" as *const u8 as *const libc::c_char,
-    b"semicolon\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"threequartersemdash\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"questionsmall\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"Ethsmall\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"onequarter\x00" as *const u8 as *const libc::c_char,
-    b"onehalf\x00" as *const u8 as *const libc::c_char,
-    b"threequarters\x00" as *const u8 as *const libc::c_char,
-    b"oneeighth\x00" as *const u8 as *const libc::c_char,
-    b"threeeighths\x00" as *const u8 as *const libc::c_char,
-    b"fiveeighths\x00" as *const u8 as *const libc::c_char,
-    b"seveneighths\x00" as *const u8 as *const libc::c_char,
-    b"onethird\x00" as *const u8 as *const libc::c_char,
-    b"twothirds\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"ff\x00" as *const u8 as *const libc::c_char,
-    b"fi\x00" as *const u8 as *const libc::c_char,
-    b"fl\x00" as *const u8 as *const libc::c_char,
-    b"ffi\x00" as *const u8 as *const libc::c_char,
-    b"ffl\x00" as *const u8 as *const libc::c_char,
-    b"parenleftinferior\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"parenrightinferior\x00" as *const u8 as *const libc::c_char,
-    b"Circumflexsmall\x00" as *const u8 as *const libc::c_char,
-    b"hypheninferior\x00" as *const u8 as *const libc::c_char,
-    b"Gravesmall\x00" as *const u8 as *const libc::c_char,
-    b"Asmall\x00" as *const u8 as *const libc::c_char,
-    b"Bsmall\x00" as *const u8 as *const libc::c_char,
-    b"Csmall\x00" as *const u8 as *const libc::c_char,
-    b"Dsmall\x00" as *const u8 as *const libc::c_char,
-    b"Esmall\x00" as *const u8 as *const libc::c_char,
-    b"Fsmall\x00" as *const u8 as *const libc::c_char,
-    b"Gsmall\x00" as *const u8 as *const libc::c_char,
-    b"Hsmall\x00" as *const u8 as *const libc::c_char,
-    b"Ismall\x00" as *const u8 as *const libc::c_char,
-    b"Jsmall\x00" as *const u8 as *const libc::c_char,
-    b"Ksmall\x00" as *const u8 as *const libc::c_char,
-    b"Lsmall\x00" as *const u8 as *const libc::c_char,
-    b"Msmall\x00" as *const u8 as *const libc::c_char,
-    b"Nsmall\x00" as *const u8 as *const libc::c_char,
-    b"Osmall\x00" as *const u8 as *const libc::c_char,
-    b"Psmall\x00" as *const u8 as *const libc::c_char,
-    b"Qsmall\x00" as *const u8 as *const libc::c_char,
-    b"Rsmall\x00" as *const u8 as *const libc::c_char,
-    b"Ssmall\x00" as *const u8 as *const libc::c_char,
-    b"Tsmall\x00" as *const u8 as *const libc::c_char,
-    b"Usmall\x00" as *const u8 as *const libc::c_char,
-    b"Vsmall\x00" as *const u8 as *const libc::c_char,
-    b"Wsmall\x00" as *const u8 as *const libc::c_char,
-    b"Xsmall\x00" as *const u8 as *const libc::c_char,
-    b"Ysmall\x00" as *const u8 as *const libc::c_char,
-    b"Zsmall\x00" as *const u8 as *const libc::c_char,
-    b"colonmonetary\x00" as *const u8 as *const libc::c_char,
-    b"onefitted\x00" as *const u8 as *const libc::c_char,
-    b"rupiah\x00" as *const u8 as *const libc::c_char,
-    b"Tildesmall\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"asuperior\x00" as *const u8 as *const libc::c_char,
-    b"centsuperior\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"Aacutesmall\x00" as *const u8 as *const libc::c_char,
-    b"Agravesmall\x00" as *const u8 as *const libc::c_char,
-    b"Acircumflexsmall\x00" as *const u8 as *const libc::c_char,
-    b"Adieresissmall\x00" as *const u8 as *const libc::c_char,
-    b"Atildesmall\x00" as *const u8 as *const libc::c_char,
-    b"Aringsmall\x00" as *const u8 as *const libc::c_char,
-    b"Ccedillasmall\x00" as *const u8 as *const libc::c_char,
-    b"Eacutesmall\x00" as *const u8 as *const libc::c_char,
-    b"Egravesmall\x00" as *const u8 as *const libc::c_char,
-    b"Ecircumflexsmall\x00" as *const u8 as *const libc::c_char,
-    b"Edieresissmall\x00" as *const u8 as *const libc::c_char,
-    b"Iacutesmall\x00" as *const u8 as *const libc::c_char,
-    b"Igravesmall\x00" as *const u8 as *const libc::c_char,
-    b"Icircumflexsmall\x00" as *const u8 as *const libc::c_char,
-    b"Idieresissmall\x00" as *const u8 as *const libc::c_char,
-    b"Ntildesmall\x00" as *const u8 as *const libc::c_char,
-    b"Oacutesmall\x00" as *const u8 as *const libc::c_char,
-    b"Ogravesmall\x00" as *const u8 as *const libc::c_char,
-    b"Ocircumflexsmall\x00" as *const u8 as *const libc::c_char,
-    b"Odieresissmall\x00" as *const u8 as *const libc::c_char,
-    b"Otildesmall\x00" as *const u8 as *const libc::c_char,
-    b"Uacutesmall\x00" as *const u8 as *const libc::c_char,
-    b"Ugravesmall\x00" as *const u8 as *const libc::c_char,
-    b"Ucircumflexsmall\x00" as *const u8 as *const libc::c_char,
-    b"Udieresissmall\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"eightsuperior\x00" as *const u8 as *const libc::c_char,
-    b"fourinferior\x00" as *const u8 as *const libc::c_char,
-    b"threeinferior\x00" as *const u8 as *const libc::c_char,
-    b"sixinferior\x00" as *const u8 as *const libc::c_char,
-    b"eightinferior\x00" as *const u8 as *const libc::c_char,
-    b"seveninferior\x00" as *const u8 as *const libc::c_char,
-    b"Scaronsmall\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"centinferior\x00" as *const u8 as *const libc::c_char,
-    b"twoinferior\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"Dieresissmall\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"Caronsmall\x00" as *const u8 as *const libc::c_char,
-    b"osuperior\x00" as *const u8 as *const libc::c_char,
-    b"fiveinferior\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"commainferior\x00" as *const u8 as *const libc::c_char,
-    b"periodinferior\x00" as *const u8 as *const libc::c_char,
-    b"Yacutesmall\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"dollarinferior\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"Thornsmall\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"nineinferior\x00" as *const u8 as *const libc::c_char,
-    b"zeroinferior\x00" as *const u8 as *const libc::c_char,
-    b"Zcaronsmall\x00" as *const u8 as *const libc::c_char,
-    b"AEsmall\x00" as *const u8 as *const libc::c_char,
-    b"Oslashsmall\x00" as *const u8 as *const libc::c_char,
-    b"questiondownsmall\x00" as *const u8 as *const libc::c_char,
-    b"oneinferior\x00" as *const u8 as *const libc::c_char,
-    b"Lslashsmall\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"Cedillasmall\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"OEsmall\x00" as *const u8 as *const libc::c_char,
-    b"figuredash\x00" as *const u8 as *const libc::c_char,
-    b"hyphensuperior\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"exclamdownsmall\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"Ydieresissmall\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"onesuperior\x00" as *const u8 as *const libc::c_char,
-    b"twosuperior\x00" as *const u8 as *const libc::c_char,
-    b"threesuperior\x00" as *const u8 as *const libc::c_char,
-    b"foursuperior\x00" as *const u8 as *const libc::c_char,
-    b"fivesuperior\x00" as *const u8 as *const libc::c_char,
-    b"sixsuperior\x00" as *const u8 as *const libc::c_char,
-    b"sevensuperior\x00" as *const u8 as *const libc::c_char,
-    b"ninesuperior\x00" as *const u8 as *const libc::c_char,
-    b"zerosuperior\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"esuperior\x00" as *const u8 as *const libc::c_char,
-    b"rsuperior\x00" as *const u8 as *const libc::c_char,
-    b"tsuperior\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"isuperior\x00" as *const u8 as *const libc::c_char,
-    b"ssuperior\x00" as *const u8 as *const libc::c_char,
-    b"dsuperior\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"lsuperior\x00" as *const u8 as *const libc::c_char,
-    b"Ogoneksmall\x00" as *const u8 as *const libc::c_char,
-    b"Brevesmall\x00" as *const u8 as *const libc::c_char,
-    b"Macronsmall\x00" as *const u8 as *const libc::c_char,
-    b"bsuperior\x00" as *const u8 as *const libc::c_char,
-    b"nsuperior\x00" as *const u8 as *const libc::c_char,
-    b"msuperior\x00" as *const u8 as *const libc::c_char,
-    b"commasuperior\x00" as *const u8 as *const libc::c_char,
-    b"periodsuperior\x00" as *const u8 as *const libc::c_char,
-    b"Dotaccentsmall\x00" as *const u8 as *const libc::c_char,
-    b"Ringsmall\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
+static mut MacExpertEncoding: [*const i8; 256] = [
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"space\x00" as *const u8 as *const i8,
+    b"exclamsmall\x00" as *const u8 as *const i8,
+    b"Hungarumlautsmall\x00" as *const u8 as *const i8,
+    b"centoldstyle\x00" as *const u8 as *const i8,
+    b"dollaroldstyle\x00" as *const u8 as *const i8,
+    b"dollarsuperior\x00" as *const u8 as *const i8,
+    b"ampersandsmall\x00" as *const u8 as *const i8,
+    b"Acutesmall\x00" as *const u8 as *const i8,
+    b"parenleftsuperior\x00" as *const u8 as *const i8,
+    b"parenrightsuperior\x00" as *const u8 as *const i8,
+    b"twodotenleader\x00" as *const u8 as *const i8,
+    b"onedotenleader\x00" as *const u8 as *const i8,
+    b"comma\x00" as *const u8 as *const i8,
+    b"hyphen\x00" as *const u8 as *const i8,
+    b"period\x00" as *const u8 as *const i8,
+    b"fraction\x00" as *const u8 as *const i8,
+    b"zerooldstyle\x00" as *const u8 as *const i8,
+    b"oneoldstyle\x00" as *const u8 as *const i8,
+    b"twooldstyle\x00" as *const u8 as *const i8,
+    b"threeoldstyle\x00" as *const u8 as *const i8,
+    b"fouroldstyle\x00" as *const u8 as *const i8,
+    b"fiveoldstyle\x00" as *const u8 as *const i8,
+    b"sixoldstyle\x00" as *const u8 as *const i8,
+    b"sevenoldstyle\x00" as *const u8 as *const i8,
+    b"eightoldstyle\x00" as *const u8 as *const i8,
+    b"nineoldstyle\x00" as *const u8 as *const i8,
+    b"colon\x00" as *const u8 as *const i8,
+    b"semicolon\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"threequartersemdash\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"questionsmall\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"Ethsmall\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"onequarter\x00" as *const u8 as *const i8,
+    b"onehalf\x00" as *const u8 as *const i8,
+    b"threequarters\x00" as *const u8 as *const i8,
+    b"oneeighth\x00" as *const u8 as *const i8,
+    b"threeeighths\x00" as *const u8 as *const i8,
+    b"fiveeighths\x00" as *const u8 as *const i8,
+    b"seveneighths\x00" as *const u8 as *const i8,
+    b"onethird\x00" as *const u8 as *const i8,
+    b"twothirds\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"ff\x00" as *const u8 as *const i8,
+    b"fi\x00" as *const u8 as *const i8,
+    b"fl\x00" as *const u8 as *const i8,
+    b"ffi\x00" as *const u8 as *const i8,
+    b"ffl\x00" as *const u8 as *const i8,
+    b"parenleftinferior\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"parenrightinferior\x00" as *const u8 as *const i8,
+    b"Circumflexsmall\x00" as *const u8 as *const i8,
+    b"hypheninferior\x00" as *const u8 as *const i8,
+    b"Gravesmall\x00" as *const u8 as *const i8,
+    b"Asmall\x00" as *const u8 as *const i8,
+    b"Bsmall\x00" as *const u8 as *const i8,
+    b"Csmall\x00" as *const u8 as *const i8,
+    b"Dsmall\x00" as *const u8 as *const i8,
+    b"Esmall\x00" as *const u8 as *const i8,
+    b"Fsmall\x00" as *const u8 as *const i8,
+    b"Gsmall\x00" as *const u8 as *const i8,
+    b"Hsmall\x00" as *const u8 as *const i8,
+    b"Ismall\x00" as *const u8 as *const i8,
+    b"Jsmall\x00" as *const u8 as *const i8,
+    b"Ksmall\x00" as *const u8 as *const i8,
+    b"Lsmall\x00" as *const u8 as *const i8,
+    b"Msmall\x00" as *const u8 as *const i8,
+    b"Nsmall\x00" as *const u8 as *const i8,
+    b"Osmall\x00" as *const u8 as *const i8,
+    b"Psmall\x00" as *const u8 as *const i8,
+    b"Qsmall\x00" as *const u8 as *const i8,
+    b"Rsmall\x00" as *const u8 as *const i8,
+    b"Ssmall\x00" as *const u8 as *const i8,
+    b"Tsmall\x00" as *const u8 as *const i8,
+    b"Usmall\x00" as *const u8 as *const i8,
+    b"Vsmall\x00" as *const u8 as *const i8,
+    b"Wsmall\x00" as *const u8 as *const i8,
+    b"Xsmall\x00" as *const u8 as *const i8,
+    b"Ysmall\x00" as *const u8 as *const i8,
+    b"Zsmall\x00" as *const u8 as *const i8,
+    b"colonmonetary\x00" as *const u8 as *const i8,
+    b"onefitted\x00" as *const u8 as *const i8,
+    b"rupiah\x00" as *const u8 as *const i8,
+    b"Tildesmall\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"asuperior\x00" as *const u8 as *const i8,
+    b"centsuperior\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"Aacutesmall\x00" as *const u8 as *const i8,
+    b"Agravesmall\x00" as *const u8 as *const i8,
+    b"Acircumflexsmall\x00" as *const u8 as *const i8,
+    b"Adieresissmall\x00" as *const u8 as *const i8,
+    b"Atildesmall\x00" as *const u8 as *const i8,
+    b"Aringsmall\x00" as *const u8 as *const i8,
+    b"Ccedillasmall\x00" as *const u8 as *const i8,
+    b"Eacutesmall\x00" as *const u8 as *const i8,
+    b"Egravesmall\x00" as *const u8 as *const i8,
+    b"Ecircumflexsmall\x00" as *const u8 as *const i8,
+    b"Edieresissmall\x00" as *const u8 as *const i8,
+    b"Iacutesmall\x00" as *const u8 as *const i8,
+    b"Igravesmall\x00" as *const u8 as *const i8,
+    b"Icircumflexsmall\x00" as *const u8 as *const i8,
+    b"Idieresissmall\x00" as *const u8 as *const i8,
+    b"Ntildesmall\x00" as *const u8 as *const i8,
+    b"Oacutesmall\x00" as *const u8 as *const i8,
+    b"Ogravesmall\x00" as *const u8 as *const i8,
+    b"Ocircumflexsmall\x00" as *const u8 as *const i8,
+    b"Odieresissmall\x00" as *const u8 as *const i8,
+    b"Otildesmall\x00" as *const u8 as *const i8,
+    b"Uacutesmall\x00" as *const u8 as *const i8,
+    b"Ugravesmall\x00" as *const u8 as *const i8,
+    b"Ucircumflexsmall\x00" as *const u8 as *const i8,
+    b"Udieresissmall\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"eightsuperior\x00" as *const u8 as *const i8,
+    b"fourinferior\x00" as *const u8 as *const i8,
+    b"threeinferior\x00" as *const u8 as *const i8,
+    b"sixinferior\x00" as *const u8 as *const i8,
+    b"eightinferior\x00" as *const u8 as *const i8,
+    b"seveninferior\x00" as *const u8 as *const i8,
+    b"Scaronsmall\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"centinferior\x00" as *const u8 as *const i8,
+    b"twoinferior\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"Dieresissmall\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"Caronsmall\x00" as *const u8 as *const i8,
+    b"osuperior\x00" as *const u8 as *const i8,
+    b"fiveinferior\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"commainferior\x00" as *const u8 as *const i8,
+    b"periodinferior\x00" as *const u8 as *const i8,
+    b"Yacutesmall\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"dollarinferior\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"Thornsmall\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"nineinferior\x00" as *const u8 as *const i8,
+    b"zeroinferior\x00" as *const u8 as *const i8,
+    b"Zcaronsmall\x00" as *const u8 as *const i8,
+    b"AEsmall\x00" as *const u8 as *const i8,
+    b"Oslashsmall\x00" as *const u8 as *const i8,
+    b"questiondownsmall\x00" as *const u8 as *const i8,
+    b"oneinferior\x00" as *const u8 as *const i8,
+    b"Lslashsmall\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"Cedillasmall\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"OEsmall\x00" as *const u8 as *const i8,
+    b"figuredash\x00" as *const u8 as *const i8,
+    b"hyphensuperior\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"exclamdownsmall\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"Ydieresissmall\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"onesuperior\x00" as *const u8 as *const i8,
+    b"twosuperior\x00" as *const u8 as *const i8,
+    b"threesuperior\x00" as *const u8 as *const i8,
+    b"foursuperior\x00" as *const u8 as *const i8,
+    b"fivesuperior\x00" as *const u8 as *const i8,
+    b"sixsuperior\x00" as *const u8 as *const i8,
+    b"sevensuperior\x00" as *const u8 as *const i8,
+    b"ninesuperior\x00" as *const u8 as *const i8,
+    b"zerosuperior\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"esuperior\x00" as *const u8 as *const i8,
+    b"rsuperior\x00" as *const u8 as *const i8,
+    b"tsuperior\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"isuperior\x00" as *const u8 as *const i8,
+    b"ssuperior\x00" as *const u8 as *const i8,
+    b"dsuperior\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"lsuperior\x00" as *const u8 as *const i8,
+    b"Ogoneksmall\x00" as *const u8 as *const i8,
+    b"Brevesmall\x00" as *const u8 as *const i8,
+    b"Macronsmall\x00" as *const u8 as *const i8,
+    b"bsuperior\x00" as *const u8 as *const i8,
+    b"nsuperior\x00" as *const u8 as *const i8,
+    b"msuperior\x00" as *const u8 as *const i8,
+    b"commasuperior\x00" as *const u8 as *const i8,
+    b"periodsuperior\x00" as *const u8 as *const i8,
+    b"Dotaccentsmall\x00" as *const u8 as *const i8,
+    b"Ringsmall\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
 ];
-static mut WinAnsiEncoding: [*const libc::c_char; 256] = [
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b".notdef\x00" as *const u8 as *const libc::c_char,
-    b"space\x00" as *const u8 as *const libc::c_char,
-    b"exclam\x00" as *const u8 as *const libc::c_char,
-    b"quotedbl\x00" as *const u8 as *const libc::c_char,
-    b"numbersign\x00" as *const u8 as *const libc::c_char,
-    b"dollar\x00" as *const u8 as *const libc::c_char,
-    b"percent\x00" as *const u8 as *const libc::c_char,
-    b"ampersand\x00" as *const u8 as *const libc::c_char,
-    b"quotesingle\x00" as *const u8 as *const libc::c_char,
-    b"parenleft\x00" as *const u8 as *const libc::c_char,
-    b"parenright\x00" as *const u8 as *const libc::c_char,
-    b"asterisk\x00" as *const u8 as *const libc::c_char,
-    b"plus\x00" as *const u8 as *const libc::c_char,
-    b"comma\x00" as *const u8 as *const libc::c_char,
-    b"hyphen\x00" as *const u8 as *const libc::c_char,
-    b"period\x00" as *const u8 as *const libc::c_char,
-    b"slash\x00" as *const u8 as *const libc::c_char,
-    b"zero\x00" as *const u8 as *const libc::c_char,
-    b"one\x00" as *const u8 as *const libc::c_char,
-    b"two\x00" as *const u8 as *const libc::c_char,
-    b"three\x00" as *const u8 as *const libc::c_char,
-    b"four\x00" as *const u8 as *const libc::c_char,
-    b"five\x00" as *const u8 as *const libc::c_char,
-    b"six\x00" as *const u8 as *const libc::c_char,
-    b"seven\x00" as *const u8 as *const libc::c_char,
-    b"eight\x00" as *const u8 as *const libc::c_char,
-    b"nine\x00" as *const u8 as *const libc::c_char,
-    b"colon\x00" as *const u8 as *const libc::c_char,
-    b"semicolon\x00" as *const u8 as *const libc::c_char,
-    b"less\x00" as *const u8 as *const libc::c_char,
-    b"equal\x00" as *const u8 as *const libc::c_char,
-    b"greater\x00" as *const u8 as *const libc::c_char,
-    b"question\x00" as *const u8 as *const libc::c_char,
-    b"at\x00" as *const u8 as *const libc::c_char,
-    b"A\x00" as *const u8 as *const libc::c_char,
-    b"B\x00" as *const u8 as *const libc::c_char,
-    b"C\x00" as *const u8 as *const libc::c_char,
-    b"D\x00" as *const u8 as *const libc::c_char,
-    b"E\x00" as *const u8 as *const libc::c_char,
-    b"F\x00" as *const u8 as *const libc::c_char,
-    b"G\x00" as *const u8 as *const libc::c_char,
-    b"H\x00" as *const u8 as *const libc::c_char,
-    b"I\x00" as *const u8 as *const libc::c_char,
-    b"J\x00" as *const u8 as *const libc::c_char,
-    b"K\x00" as *const u8 as *const libc::c_char,
-    b"L\x00" as *const u8 as *const libc::c_char,
-    b"M\x00" as *const u8 as *const libc::c_char,
-    b"N\x00" as *const u8 as *const libc::c_char,
-    b"O\x00" as *const u8 as *const libc::c_char,
-    b"P\x00" as *const u8 as *const libc::c_char,
-    b"Q\x00" as *const u8 as *const libc::c_char,
-    b"R\x00" as *const u8 as *const libc::c_char,
-    b"S\x00" as *const u8 as *const libc::c_char,
-    b"T\x00" as *const u8 as *const libc::c_char,
-    b"U\x00" as *const u8 as *const libc::c_char,
-    b"V\x00" as *const u8 as *const libc::c_char,
-    b"W\x00" as *const u8 as *const libc::c_char,
-    b"X\x00" as *const u8 as *const libc::c_char,
-    b"Y\x00" as *const u8 as *const libc::c_char,
-    b"Z\x00" as *const u8 as *const libc::c_char,
-    b"bracketleft\x00" as *const u8 as *const libc::c_char,
-    b"backslash\x00" as *const u8 as *const libc::c_char,
-    b"bracketright\x00" as *const u8 as *const libc::c_char,
-    b"asciicircum\x00" as *const u8 as *const libc::c_char,
-    b"underscore\x00" as *const u8 as *const libc::c_char,
-    b"grave\x00" as *const u8 as *const libc::c_char,
-    b"a\x00" as *const u8 as *const libc::c_char,
-    b"b\x00" as *const u8 as *const libc::c_char,
-    b"c\x00" as *const u8 as *const libc::c_char,
-    b"d\x00" as *const u8 as *const libc::c_char,
-    b"e\x00" as *const u8 as *const libc::c_char,
-    b"f\x00" as *const u8 as *const libc::c_char,
-    b"g\x00" as *const u8 as *const libc::c_char,
-    b"h\x00" as *const u8 as *const libc::c_char,
-    b"i\x00" as *const u8 as *const libc::c_char,
-    b"j\x00" as *const u8 as *const libc::c_char,
-    b"k\x00" as *const u8 as *const libc::c_char,
-    b"l\x00" as *const u8 as *const libc::c_char,
-    b"m\x00" as *const u8 as *const libc::c_char,
-    b"n\x00" as *const u8 as *const libc::c_char,
-    b"o\x00" as *const u8 as *const libc::c_char,
-    b"p\x00" as *const u8 as *const libc::c_char,
-    b"q\x00" as *const u8 as *const libc::c_char,
-    b"r\x00" as *const u8 as *const libc::c_char,
-    b"s\x00" as *const u8 as *const libc::c_char,
-    b"t\x00" as *const u8 as *const libc::c_char,
-    b"u\x00" as *const u8 as *const libc::c_char,
-    b"v\x00" as *const u8 as *const libc::c_char,
-    b"w\x00" as *const u8 as *const libc::c_char,
-    b"x\x00" as *const u8 as *const libc::c_char,
-    b"y\x00" as *const u8 as *const libc::c_char,
-    b"z\x00" as *const u8 as *const libc::c_char,
-    b"braceleft\x00" as *const u8 as *const libc::c_char,
-    b"bar\x00" as *const u8 as *const libc::c_char,
-    b"braceright\x00" as *const u8 as *const libc::c_char,
-    b"asciitilde\x00" as *const u8 as *const libc::c_char,
-    b"bullet\x00" as *const u8 as *const libc::c_char,
-    b"Euro\x00" as *const u8 as *const libc::c_char,
-    b"bullet\x00" as *const u8 as *const libc::c_char,
-    b"quotesinglbase\x00" as *const u8 as *const libc::c_char,
-    b"florin\x00" as *const u8 as *const libc::c_char,
-    b"quotedblbase\x00" as *const u8 as *const libc::c_char,
-    b"ellipsis\x00" as *const u8 as *const libc::c_char,
-    b"dagger\x00" as *const u8 as *const libc::c_char,
-    b"daggerdbl\x00" as *const u8 as *const libc::c_char,
-    b"circumflex\x00" as *const u8 as *const libc::c_char,
-    b"perthousand\x00" as *const u8 as *const libc::c_char,
-    b"Scaron\x00" as *const u8 as *const libc::c_char,
-    b"guilsinglleft\x00" as *const u8 as *const libc::c_char,
-    b"OE\x00" as *const u8 as *const libc::c_char,
-    b"bullet\x00" as *const u8 as *const libc::c_char,
-    b"Zcaron\x00" as *const u8 as *const libc::c_char,
-    b"bullet\x00" as *const u8 as *const libc::c_char,
-    b"bullet\x00" as *const u8 as *const libc::c_char,
-    b"quoteleft\x00" as *const u8 as *const libc::c_char,
-    b"quoteright\x00" as *const u8 as *const libc::c_char,
-    b"quotedblleft\x00" as *const u8 as *const libc::c_char,
-    b"quotedblright\x00" as *const u8 as *const libc::c_char,
-    b"bullet\x00" as *const u8 as *const libc::c_char,
-    b"endash\x00" as *const u8 as *const libc::c_char,
-    b"emdash\x00" as *const u8 as *const libc::c_char,
-    b"tilde\x00" as *const u8 as *const libc::c_char,
-    b"trademark\x00" as *const u8 as *const libc::c_char,
-    b"scaron\x00" as *const u8 as *const libc::c_char,
-    b"guilsinglright\x00" as *const u8 as *const libc::c_char,
-    b"oe\x00" as *const u8 as *const libc::c_char,
-    b"bullet\x00" as *const u8 as *const libc::c_char,
-    b"zcaron\x00" as *const u8 as *const libc::c_char,
-    b"Ydieresis\x00" as *const u8 as *const libc::c_char,
-    b"space\x00" as *const u8 as *const libc::c_char,
-    b"exclamdown\x00" as *const u8 as *const libc::c_char,
-    b"cent\x00" as *const u8 as *const libc::c_char,
-    b"sterling\x00" as *const u8 as *const libc::c_char,
-    b"currency\x00" as *const u8 as *const libc::c_char,
-    b"yen\x00" as *const u8 as *const libc::c_char,
-    b"brokenbar\x00" as *const u8 as *const libc::c_char,
-    b"section\x00" as *const u8 as *const libc::c_char,
-    b"dieresis\x00" as *const u8 as *const libc::c_char,
-    b"copyright\x00" as *const u8 as *const libc::c_char,
-    b"ordfeminine\x00" as *const u8 as *const libc::c_char,
-    b"guillemotleft\x00" as *const u8 as *const libc::c_char,
-    b"logicalnot\x00" as *const u8 as *const libc::c_char,
-    b"hyphen\x00" as *const u8 as *const libc::c_char,
-    b"registered\x00" as *const u8 as *const libc::c_char,
-    b"macron\x00" as *const u8 as *const libc::c_char,
-    b"degree\x00" as *const u8 as *const libc::c_char,
-    b"plusminus\x00" as *const u8 as *const libc::c_char,
-    b"twosuperior\x00" as *const u8 as *const libc::c_char,
-    b"threesuperior\x00" as *const u8 as *const libc::c_char,
-    b"acute\x00" as *const u8 as *const libc::c_char,
-    b"mu\x00" as *const u8 as *const libc::c_char,
-    b"paragraph\x00" as *const u8 as *const libc::c_char,
-    b"periodcentered\x00" as *const u8 as *const libc::c_char,
-    b"cedilla\x00" as *const u8 as *const libc::c_char,
-    b"onesuperior\x00" as *const u8 as *const libc::c_char,
-    b"ordmasculine\x00" as *const u8 as *const libc::c_char,
-    b"guillemotright\x00" as *const u8 as *const libc::c_char,
-    b"onequarter\x00" as *const u8 as *const libc::c_char,
-    b"onehalf\x00" as *const u8 as *const libc::c_char,
-    b"threequarters\x00" as *const u8 as *const libc::c_char,
-    b"questiondown\x00" as *const u8 as *const libc::c_char,
-    b"Agrave\x00" as *const u8 as *const libc::c_char,
-    b"Aacute\x00" as *const u8 as *const libc::c_char,
-    b"Acircumflex\x00" as *const u8 as *const libc::c_char,
-    b"Atilde\x00" as *const u8 as *const libc::c_char,
-    b"Adieresis\x00" as *const u8 as *const libc::c_char,
-    b"Aring\x00" as *const u8 as *const libc::c_char,
-    b"AE\x00" as *const u8 as *const libc::c_char,
-    b"Ccedilla\x00" as *const u8 as *const libc::c_char,
-    b"Egrave\x00" as *const u8 as *const libc::c_char,
-    b"Eacute\x00" as *const u8 as *const libc::c_char,
-    b"Ecircumflex\x00" as *const u8 as *const libc::c_char,
-    b"Edieresis\x00" as *const u8 as *const libc::c_char,
-    b"Igrave\x00" as *const u8 as *const libc::c_char,
-    b"Iacute\x00" as *const u8 as *const libc::c_char,
-    b"Icircumflex\x00" as *const u8 as *const libc::c_char,
-    b"Idieresis\x00" as *const u8 as *const libc::c_char,
-    b"Eth\x00" as *const u8 as *const libc::c_char,
-    b"Ntilde\x00" as *const u8 as *const libc::c_char,
-    b"Ograve\x00" as *const u8 as *const libc::c_char,
-    b"Oacute\x00" as *const u8 as *const libc::c_char,
-    b"Ocircumflex\x00" as *const u8 as *const libc::c_char,
-    b"Otilde\x00" as *const u8 as *const libc::c_char,
-    b"Odieresis\x00" as *const u8 as *const libc::c_char,
-    b"multiply\x00" as *const u8 as *const libc::c_char,
-    b"Oslash\x00" as *const u8 as *const libc::c_char,
-    b"Ugrave\x00" as *const u8 as *const libc::c_char,
-    b"Uacute\x00" as *const u8 as *const libc::c_char,
-    b"Ucircumflex\x00" as *const u8 as *const libc::c_char,
-    b"Udieresis\x00" as *const u8 as *const libc::c_char,
-    b"Yacute\x00" as *const u8 as *const libc::c_char,
-    b"Thorn\x00" as *const u8 as *const libc::c_char,
-    b"germandbls\x00" as *const u8 as *const libc::c_char,
-    b"agrave\x00" as *const u8 as *const libc::c_char,
-    b"aacute\x00" as *const u8 as *const libc::c_char,
-    b"acircumflex\x00" as *const u8 as *const libc::c_char,
-    b"atilde\x00" as *const u8 as *const libc::c_char,
-    b"adieresis\x00" as *const u8 as *const libc::c_char,
-    b"aring\x00" as *const u8 as *const libc::c_char,
-    b"ae\x00" as *const u8 as *const libc::c_char,
-    b"ccedilla\x00" as *const u8 as *const libc::c_char,
-    b"egrave\x00" as *const u8 as *const libc::c_char,
-    b"eacute\x00" as *const u8 as *const libc::c_char,
-    b"ecircumflex\x00" as *const u8 as *const libc::c_char,
-    b"edieresis\x00" as *const u8 as *const libc::c_char,
-    b"igrave\x00" as *const u8 as *const libc::c_char,
-    b"iacute\x00" as *const u8 as *const libc::c_char,
-    b"icircumflex\x00" as *const u8 as *const libc::c_char,
-    b"idieresis\x00" as *const u8 as *const libc::c_char,
-    b"eth\x00" as *const u8 as *const libc::c_char,
-    b"ntilde\x00" as *const u8 as *const libc::c_char,
-    b"ograve\x00" as *const u8 as *const libc::c_char,
-    b"oacute\x00" as *const u8 as *const libc::c_char,
-    b"ocircumflex\x00" as *const u8 as *const libc::c_char,
-    b"otilde\x00" as *const u8 as *const libc::c_char,
-    b"odieresis\x00" as *const u8 as *const libc::c_char,
-    b"divide\x00" as *const u8 as *const libc::c_char,
-    b"oslash\x00" as *const u8 as *const libc::c_char,
-    b"ugrave\x00" as *const u8 as *const libc::c_char,
-    b"uacute\x00" as *const u8 as *const libc::c_char,
-    b"ucircumflex\x00" as *const u8 as *const libc::c_char,
-    b"udieresis\x00" as *const u8 as *const libc::c_char,
-    b"yacute\x00" as *const u8 as *const libc::c_char,
-    b"thorn\x00" as *const u8 as *const libc::c_char,
-    b"ydieresis\x00" as *const u8 as *const libc::c_char,
+static mut WinAnsiEncoding: [*const i8; 256] = [
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b".notdef\x00" as *const u8 as *const i8,
+    b"space\x00" as *const u8 as *const i8,
+    b"exclam\x00" as *const u8 as *const i8,
+    b"quotedbl\x00" as *const u8 as *const i8,
+    b"numbersign\x00" as *const u8 as *const i8,
+    b"dollar\x00" as *const u8 as *const i8,
+    b"percent\x00" as *const u8 as *const i8,
+    b"ampersand\x00" as *const u8 as *const i8,
+    b"quotesingle\x00" as *const u8 as *const i8,
+    b"parenleft\x00" as *const u8 as *const i8,
+    b"parenright\x00" as *const u8 as *const i8,
+    b"asterisk\x00" as *const u8 as *const i8,
+    b"plus\x00" as *const u8 as *const i8,
+    b"comma\x00" as *const u8 as *const i8,
+    b"hyphen\x00" as *const u8 as *const i8,
+    b"period\x00" as *const u8 as *const i8,
+    b"slash\x00" as *const u8 as *const i8,
+    b"zero\x00" as *const u8 as *const i8,
+    b"one\x00" as *const u8 as *const i8,
+    b"two\x00" as *const u8 as *const i8,
+    b"three\x00" as *const u8 as *const i8,
+    b"four\x00" as *const u8 as *const i8,
+    b"five\x00" as *const u8 as *const i8,
+    b"six\x00" as *const u8 as *const i8,
+    b"seven\x00" as *const u8 as *const i8,
+    b"eight\x00" as *const u8 as *const i8,
+    b"nine\x00" as *const u8 as *const i8,
+    b"colon\x00" as *const u8 as *const i8,
+    b"semicolon\x00" as *const u8 as *const i8,
+    b"less\x00" as *const u8 as *const i8,
+    b"equal\x00" as *const u8 as *const i8,
+    b"greater\x00" as *const u8 as *const i8,
+    b"question\x00" as *const u8 as *const i8,
+    b"at\x00" as *const u8 as *const i8,
+    b"A\x00" as *const u8 as *const i8,
+    b"B\x00" as *const u8 as *const i8,
+    b"C\x00" as *const u8 as *const i8,
+    b"D\x00" as *const u8 as *const i8,
+    b"E\x00" as *const u8 as *const i8,
+    b"F\x00" as *const u8 as *const i8,
+    b"G\x00" as *const u8 as *const i8,
+    b"H\x00" as *const u8 as *const i8,
+    b"I\x00" as *const u8 as *const i8,
+    b"J\x00" as *const u8 as *const i8,
+    b"K\x00" as *const u8 as *const i8,
+    b"L\x00" as *const u8 as *const i8,
+    b"M\x00" as *const u8 as *const i8,
+    b"N\x00" as *const u8 as *const i8,
+    b"O\x00" as *const u8 as *const i8,
+    b"P\x00" as *const u8 as *const i8,
+    b"Q\x00" as *const u8 as *const i8,
+    b"R\x00" as *const u8 as *const i8,
+    b"S\x00" as *const u8 as *const i8,
+    b"T\x00" as *const u8 as *const i8,
+    b"U\x00" as *const u8 as *const i8,
+    b"V\x00" as *const u8 as *const i8,
+    b"W\x00" as *const u8 as *const i8,
+    b"X\x00" as *const u8 as *const i8,
+    b"Y\x00" as *const u8 as *const i8,
+    b"Z\x00" as *const u8 as *const i8,
+    b"bracketleft\x00" as *const u8 as *const i8,
+    b"backslash\x00" as *const u8 as *const i8,
+    b"bracketright\x00" as *const u8 as *const i8,
+    b"asciicircum\x00" as *const u8 as *const i8,
+    b"underscore\x00" as *const u8 as *const i8,
+    b"grave\x00" as *const u8 as *const i8,
+    b"a\x00" as *const u8 as *const i8,
+    b"b\x00" as *const u8 as *const i8,
+    b"c\x00" as *const u8 as *const i8,
+    b"d\x00" as *const u8 as *const i8,
+    b"e\x00" as *const u8 as *const i8,
+    b"f\x00" as *const u8 as *const i8,
+    b"g\x00" as *const u8 as *const i8,
+    b"h\x00" as *const u8 as *const i8,
+    b"i\x00" as *const u8 as *const i8,
+    b"j\x00" as *const u8 as *const i8,
+    b"k\x00" as *const u8 as *const i8,
+    b"l\x00" as *const u8 as *const i8,
+    b"m\x00" as *const u8 as *const i8,
+    b"n\x00" as *const u8 as *const i8,
+    b"o\x00" as *const u8 as *const i8,
+    b"p\x00" as *const u8 as *const i8,
+    b"q\x00" as *const u8 as *const i8,
+    b"r\x00" as *const u8 as *const i8,
+    b"s\x00" as *const u8 as *const i8,
+    b"t\x00" as *const u8 as *const i8,
+    b"u\x00" as *const u8 as *const i8,
+    b"v\x00" as *const u8 as *const i8,
+    b"w\x00" as *const u8 as *const i8,
+    b"x\x00" as *const u8 as *const i8,
+    b"y\x00" as *const u8 as *const i8,
+    b"z\x00" as *const u8 as *const i8,
+    b"braceleft\x00" as *const u8 as *const i8,
+    b"bar\x00" as *const u8 as *const i8,
+    b"braceright\x00" as *const u8 as *const i8,
+    b"asciitilde\x00" as *const u8 as *const i8,
+    b"bullet\x00" as *const u8 as *const i8,
+    b"Euro\x00" as *const u8 as *const i8,
+    b"bullet\x00" as *const u8 as *const i8,
+    b"quotesinglbase\x00" as *const u8 as *const i8,
+    b"florin\x00" as *const u8 as *const i8,
+    b"quotedblbase\x00" as *const u8 as *const i8,
+    b"ellipsis\x00" as *const u8 as *const i8,
+    b"dagger\x00" as *const u8 as *const i8,
+    b"daggerdbl\x00" as *const u8 as *const i8,
+    b"circumflex\x00" as *const u8 as *const i8,
+    b"perthousand\x00" as *const u8 as *const i8,
+    b"Scaron\x00" as *const u8 as *const i8,
+    b"guilsinglleft\x00" as *const u8 as *const i8,
+    b"OE\x00" as *const u8 as *const i8,
+    b"bullet\x00" as *const u8 as *const i8,
+    b"Zcaron\x00" as *const u8 as *const i8,
+    b"bullet\x00" as *const u8 as *const i8,
+    b"bullet\x00" as *const u8 as *const i8,
+    b"quoteleft\x00" as *const u8 as *const i8,
+    b"quoteright\x00" as *const u8 as *const i8,
+    b"quotedblleft\x00" as *const u8 as *const i8,
+    b"quotedblright\x00" as *const u8 as *const i8,
+    b"bullet\x00" as *const u8 as *const i8,
+    b"endash\x00" as *const u8 as *const i8,
+    b"emdash\x00" as *const u8 as *const i8,
+    b"tilde\x00" as *const u8 as *const i8,
+    b"trademark\x00" as *const u8 as *const i8,
+    b"scaron\x00" as *const u8 as *const i8,
+    b"guilsinglright\x00" as *const u8 as *const i8,
+    b"oe\x00" as *const u8 as *const i8,
+    b"bullet\x00" as *const u8 as *const i8,
+    b"zcaron\x00" as *const u8 as *const i8,
+    b"Ydieresis\x00" as *const u8 as *const i8,
+    b"space\x00" as *const u8 as *const i8,
+    b"exclamdown\x00" as *const u8 as *const i8,
+    b"cent\x00" as *const u8 as *const i8,
+    b"sterling\x00" as *const u8 as *const i8,
+    b"currency\x00" as *const u8 as *const i8,
+    b"yen\x00" as *const u8 as *const i8,
+    b"brokenbar\x00" as *const u8 as *const i8,
+    b"section\x00" as *const u8 as *const i8,
+    b"dieresis\x00" as *const u8 as *const i8,
+    b"copyright\x00" as *const u8 as *const i8,
+    b"ordfeminine\x00" as *const u8 as *const i8,
+    b"guillemotleft\x00" as *const u8 as *const i8,
+    b"logicalnot\x00" as *const u8 as *const i8,
+    b"hyphen\x00" as *const u8 as *const i8,
+    b"registered\x00" as *const u8 as *const i8,
+    b"macron\x00" as *const u8 as *const i8,
+    b"degree\x00" as *const u8 as *const i8,
+    b"plusminus\x00" as *const u8 as *const i8,
+    b"twosuperior\x00" as *const u8 as *const i8,
+    b"threesuperior\x00" as *const u8 as *const i8,
+    b"acute\x00" as *const u8 as *const i8,
+    b"mu\x00" as *const u8 as *const i8,
+    b"paragraph\x00" as *const u8 as *const i8,
+    b"periodcentered\x00" as *const u8 as *const i8,
+    b"cedilla\x00" as *const u8 as *const i8,
+    b"onesuperior\x00" as *const u8 as *const i8,
+    b"ordmasculine\x00" as *const u8 as *const i8,
+    b"guillemotright\x00" as *const u8 as *const i8,
+    b"onequarter\x00" as *const u8 as *const i8,
+    b"onehalf\x00" as *const u8 as *const i8,
+    b"threequarters\x00" as *const u8 as *const i8,
+    b"questiondown\x00" as *const u8 as *const i8,
+    b"Agrave\x00" as *const u8 as *const i8,
+    b"Aacute\x00" as *const u8 as *const i8,
+    b"Acircumflex\x00" as *const u8 as *const i8,
+    b"Atilde\x00" as *const u8 as *const i8,
+    b"Adieresis\x00" as *const u8 as *const i8,
+    b"Aring\x00" as *const u8 as *const i8,
+    b"AE\x00" as *const u8 as *const i8,
+    b"Ccedilla\x00" as *const u8 as *const i8,
+    b"Egrave\x00" as *const u8 as *const i8,
+    b"Eacute\x00" as *const u8 as *const i8,
+    b"Ecircumflex\x00" as *const u8 as *const i8,
+    b"Edieresis\x00" as *const u8 as *const i8,
+    b"Igrave\x00" as *const u8 as *const i8,
+    b"Iacute\x00" as *const u8 as *const i8,
+    b"Icircumflex\x00" as *const u8 as *const i8,
+    b"Idieresis\x00" as *const u8 as *const i8,
+    b"Eth\x00" as *const u8 as *const i8,
+    b"Ntilde\x00" as *const u8 as *const i8,
+    b"Ograve\x00" as *const u8 as *const i8,
+    b"Oacute\x00" as *const u8 as *const i8,
+    b"Ocircumflex\x00" as *const u8 as *const i8,
+    b"Otilde\x00" as *const u8 as *const i8,
+    b"Odieresis\x00" as *const u8 as *const i8,
+    b"multiply\x00" as *const u8 as *const i8,
+    b"Oslash\x00" as *const u8 as *const i8,
+    b"Ugrave\x00" as *const u8 as *const i8,
+    b"Uacute\x00" as *const u8 as *const i8,
+    b"Ucircumflex\x00" as *const u8 as *const i8,
+    b"Udieresis\x00" as *const u8 as *const i8,
+    b"Yacute\x00" as *const u8 as *const i8,
+    b"Thorn\x00" as *const u8 as *const i8,
+    b"germandbls\x00" as *const u8 as *const i8,
+    b"agrave\x00" as *const u8 as *const i8,
+    b"aacute\x00" as *const u8 as *const i8,
+    b"acircumflex\x00" as *const u8 as *const i8,
+    b"atilde\x00" as *const u8 as *const i8,
+    b"adieresis\x00" as *const u8 as *const i8,
+    b"aring\x00" as *const u8 as *const i8,
+    b"ae\x00" as *const u8 as *const i8,
+    b"ccedilla\x00" as *const u8 as *const i8,
+    b"egrave\x00" as *const u8 as *const i8,
+    b"eacute\x00" as *const u8 as *const i8,
+    b"ecircumflex\x00" as *const u8 as *const i8,
+    b"edieresis\x00" as *const u8 as *const i8,
+    b"igrave\x00" as *const u8 as *const i8,
+    b"iacute\x00" as *const u8 as *const i8,
+    b"icircumflex\x00" as *const u8 as *const i8,
+    b"idieresis\x00" as *const u8 as *const i8,
+    b"eth\x00" as *const u8 as *const i8,
+    b"ntilde\x00" as *const u8 as *const i8,
+    b"ograve\x00" as *const u8 as *const i8,
+    b"oacute\x00" as *const u8 as *const i8,
+    b"ocircumflex\x00" as *const u8 as *const i8,
+    b"otilde\x00" as *const u8 as *const i8,
+    b"odieresis\x00" as *const u8 as *const i8,
+    b"divide\x00" as *const u8 as *const i8,
+    b"oslash\x00" as *const u8 as *const i8,
+    b"ugrave\x00" as *const u8 as *const i8,
+    b"uacute\x00" as *const u8 as *const i8,
+    b"ucircumflex\x00" as *const u8 as *const i8,
+    b"udieresis\x00" as *const u8 as *const i8,
+    b"yacute\x00" as *const u8 as *const i8,
+    b"thorn\x00" as *const u8 as *const i8,
+    b"ydieresis\x00" as *const u8 as *const i8,
 ];

@@ -10,21 +10,14 @@ extern crate libc;
 extern "C" {
     pub type pst_obj;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
-        __line: libc::c_uint,
-        __function: *const libc::c_char,
-    ) -> !;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn skip_white_spaces(s: *mut *mut libc::c_uchar, endptr: *mut libc::c_uchar);
+    fn skip_white_spaces(s: *mut *mut u8, endptr: *mut u8);
     #[no_mangle]
     fn pst_new_obj(type_0: pst_type, data: *mut libc::c_void) -> *mut pst_obj;
     #[no_mangle]
@@ -51,7 +44,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -74,29 +67,17 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn pst_parse_null(inbuf: *mut *mut libc::c_uchar, inbufend: *mut libc::c_uchar)
-        -> *mut pst_obj;
+    fn pst_parse_null(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
     #[no_mangle]
-    fn pst_parse_boolean(
-        inbuf: *mut *mut libc::c_uchar,
-        inbufend: *mut libc::c_uchar,
-    ) -> *mut pst_obj;
+    fn pst_parse_boolean(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
     #[no_mangle]
-    fn pst_parse_name(inbuf: *mut *mut libc::c_uchar, inbufend: *mut libc::c_uchar)
-        -> *mut pst_obj;
+    fn pst_parse_name(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
     #[no_mangle]
-    fn pst_parse_number(
-        inbuf: *mut *mut libc::c_uchar,
-        inbufend: *mut libc::c_uchar,
-    ) -> *mut pst_obj;
+    fn pst_parse_number(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
     #[no_mangle]
-    fn pst_parse_string(
-        inbuf: *mut *mut libc::c_uchar,
-        inbufend: *mut libc::c_uchar,
-    ) -> *mut pst_obj;
+    fn pst_parse_string(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
 }
-pub type __uint32_t = libc::c_uint;
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -109,8 +90,7 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type uint32_t = __uint32_t;
-pub type pst_type = libc::c_int;
+pub type pst_type = i32;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -132,69 +112,57 @@ pub type pst_type = libc::c_int;
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-unsafe extern "C" fn pst_parse_any(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
-) -> *mut pst_obj {
-    let mut data: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut cur: *mut libc::c_uchar = *inbuf;
-    let mut len: libc::c_uint = 0;
+unsafe extern "C" fn pst_parse_any(mut inbuf: *mut *mut u8, mut inbufend: *mut u8) -> *mut pst_obj {
+    let mut data: *mut u8 = 0 as *mut u8;
+    let mut cur: *mut u8 = *inbuf;
+    let mut len: u32 = 0;
     while cur < inbufend
         && !(cur == inbufend
-            || (*cur as libc::c_int == '(' as i32
-                || *cur as libc::c_int == ')' as i32
-                || *cur as libc::c_int == '/' as i32
-                || *cur as libc::c_int == '<' as i32
-                || *cur as libc::c_int == '>' as i32
-                || *cur as libc::c_int == '[' as i32
-                || *cur as libc::c_int == ']' as i32
-                || *cur as libc::c_int == '{' as i32
-                || *cur as libc::c_int == '}' as i32
-                || *cur as libc::c_int == '%' as i32)
-            || (*cur as libc::c_int == ' ' as i32
-                || *cur as libc::c_int == '\t' as i32
-                || *cur as libc::c_int == '\u{c}' as i32
-                || *cur as libc::c_int == '\r' as i32
-                || *cur as libc::c_int == '\n' as i32
-                || *cur as libc::c_int == '\u{0}' as i32))
+            || (*cur as i32 == '(' as i32
+                || *cur as i32 == ')' as i32
+                || *cur as i32 == '/' as i32
+                || *cur as i32 == '<' as i32
+                || *cur as i32 == '>' as i32
+                || *cur as i32 == '[' as i32
+                || *cur as i32 == ']' as i32
+                || *cur as i32 == '{' as i32
+                || *cur as i32 == '}' as i32
+                || *cur as i32 == '%' as i32)
+            || (*cur as i32 == ' ' as i32
+                || *cur as i32 == '\t' as i32
+                || *cur as i32 == '\u{c}' as i32
+                || *cur as i32 == '\r' as i32
+                || *cur as i32 == '\n' as i32
+                || *cur as i32 == '\u{0}' as i32))
     {
         cur = cur.offset(1)
     }
-    len = cur.wrapping_offset_from(*inbuf) as libc::c_long as libc::c_uint;
-    data = new((len.wrapping_add(1i32 as libc::c_uint) as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_uchar;
+    len = cur.wrapping_offset_from(*inbuf) as i64 as u32;
+    data = new(
+        (len.wrapping_add(1_u32) as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32,
+    ) as *mut u8;
     memcpy(
         data as *mut libc::c_void,
         *inbuf as *const libc::c_void,
-        len as libc::c_ulong,
+        len as u64,
     );
-    *data.offset(len as isize) = '\u{0}' as i32 as libc::c_uchar;
+    *data.offset(len as isize) = '\u{0}' as i32 as u8;
     *inbuf = cur;
     return pst_new_obj(-1i32, data as *mut libc::c_void);
 }
-unsafe extern "C" fn skip_line(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
-) {
-    while *inbuf < inbufend
-        && **inbuf as libc::c_int != '\n' as i32
-        && **inbuf as libc::c_int != '\r' as i32
-    {
+unsafe extern "C" fn skip_line(mut inbuf: *mut *mut u8, mut inbufend: *mut u8) {
+    while *inbuf < inbufend && **inbuf as i32 != '\n' as i32 && **inbuf as i32 != '\r' as i32 {
         *inbuf = (*inbuf).offset(1)
     }
-    if *inbuf < inbufend && **inbuf as libc::c_int == '\r' as i32 {
+    if *inbuf < inbufend && **inbuf as i32 == '\r' as i32 {
         *inbuf = (*inbuf).offset(1)
     }
-    if *inbuf < inbufend && **inbuf as libc::c_int == '\n' as i32 {
+    if *inbuf < inbufend && **inbuf as i32 == '\n' as i32 {
         *inbuf = (*inbuf).offset(1)
     };
 }
-unsafe extern "C" fn skip_comments(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
-) {
-    while *inbuf < inbufend && **inbuf as libc::c_int == '%' as i32 {
+unsafe extern "C" fn skip_comments(mut inbuf: *mut *mut u8, mut inbufend: *mut u8) {
+    while *inbuf < inbufend && **inbuf as i32 == '%' as i32 {
         skip_line(inbuf, inbufend);
         skip_white_spaces(inbuf, inbufend);
     }
@@ -223,30 +191,19 @@ unsafe extern "C" fn skip_comments(
 /* NOTE: the input buffer must be null-terminated, i.e., *inbufend == 0 */
 #[no_mangle]
 pub unsafe extern "C" fn pst_get_token(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
 ) -> *mut pst_obj {
     let mut obj: *mut pst_obj = 0 as *mut pst_obj;
-    let mut c: libc::c_uchar = 0;
-    if *inbuf <= inbufend && *inbufend == 0 {
-    } else {
-        __assert_fail(
-            b"*inbuf <= inbufend && !*inbufend\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pst.c\x00" as *const u8 as *const libc::c_char,
-            87i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 58], &[libc::c_char; 58]>(
-                b"pst_obj *pst_get_token(unsigned char **, unsigned char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    let mut c: u8 = 0;
+    assert!(*inbuf <= inbufend && *inbufend == 0);
     skip_white_spaces(inbuf, inbufend);
     skip_comments(inbuf, inbufend);
     if *inbuf >= inbufend {
         return 0 as *mut pst_obj;
     }
     c = **inbuf;
-    match c as libc::c_int {
+    match c as i32 {
         47 => obj = pst_parse_name(inbuf, inbufend),
         91 | 123 => {
             /* This is wrong */
@@ -258,59 +215,56 @@ pub unsafe extern "C" fn pst_get_token(
                 return 0 as *mut pst_obj;
             }
             c = *(*inbuf).offset(1);
-            if c as libc::c_int == '<' as i32 {
+            if c as i32 == '<' as i32 {
                 obj = pst_new_mark();
                 *inbuf = (*inbuf).offset(2)
-            } else if *(*__ctype_b_loc()).offset(c as libc::c_int as isize) as libc::c_int
-                & _ISxdigit as libc::c_int as libc::c_ushort as libc::c_int
+            } else if *(*__ctype_b_loc()).offset(c as i32 as isize) as i32
+                & _ISxdigit as i32 as u16 as i32
                 != 0
             {
                 obj = pst_parse_string(inbuf, inbufend)
-            } else if c as libc::c_int == '~' as i32 {
+            } else if c as i32 == '~' as i32 {
                 /* ASCII85 */
                 obj = pst_parse_string(inbuf, inbufend)
             }
         }
         40 => obj = pst_parse_string(inbuf, inbufend),
         62 => {
-            if (*inbuf).offset(1) >= inbufend || *(*inbuf).offset(1) as libc::c_int != '>' as i32 {
+            if (*inbuf).offset(1) >= inbufend || *(*inbuf).offset(1) as i32 != '>' as i32 {
                 _tt_abort(
-                    b"Unexpected end of ASCII hex string marker.\x00" as *const u8
-                        as *const libc::c_char,
+                    b"Unexpected end of ASCII hex string marker.\x00" as *const u8 as *const i8,
                 );
             } else {
-                let mut mark: *mut libc::c_char = 0 as *mut libc::c_char;
-                mark = new((3i32 as uint32_t as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t) as *mut libc::c_char;
-                *mark.offset(0) = '>' as i32 as libc::c_char;
-                *mark.offset(1) = '>' as i32 as libc::c_char;
-                *mark.offset(2) = '\u{0}' as i32 as libc::c_char;
+                let mut mark: *mut i8 = 0 as *mut i8;
+                mark =
+                    new((3_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+                *mark.offset(0) = '>' as i32 as i8;
+                *mark.offset(1) = '>' as i32 as i8;
+                *mark.offset(2) = '\u{0}' as i32 as i8;
                 obj = pst_new_obj(-1i32, mark as *mut libc::c_void);
                 *inbuf = (*inbuf).offset(2)
             }
         }
         93 | 125 => {
-            let mut mark_0: *mut libc::c_char = 0 as *mut libc::c_char;
-            mark_0 = new((2i32 as uint32_t as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
-            *mark_0.offset(0) = c as libc::c_char;
-            *mark_0.offset(1) = '\u{0}' as i32 as libc::c_char;
+            let mut mark_0: *mut i8 = 0 as *mut i8;
+            mark_0 =
+                new((2_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+            *mark_0.offset(0) = c as i8;
+            *mark_0.offset(1) = '\u{0}' as i32 as i8;
             obj = pst_new_obj(-1i32, mark_0 as *mut libc::c_void);
             *inbuf = (*inbuf).offset(1)
         }
         _ => {
-            if c as libc::c_int == 't' as i32 || c as libc::c_int == 'f' as i32 {
+            if c as i32 == 't' as i32 || c as i32 == 'f' as i32 {
                 obj = pst_parse_boolean(inbuf, inbufend)
-            } else if c as libc::c_int == 'n' as i32 {
+            } else if c as i32 == 'n' as i32 {
                 obj = pst_parse_null(inbuf, inbufend)
-            } else if c as libc::c_int == '+' as i32
-                || c as libc::c_int == '-' as i32
-                || *(*__ctype_b_loc()).offset(c as libc::c_int as isize) as libc::c_int
-                    & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            } else if c as i32 == '+' as i32
+                || c as i32 == '-' as i32
+                || *(*__ctype_b_loc()).offset(c as i32 as isize) as i32
+                    & _ISdigit as i32 as u16 as i32
                     != 0
-                || c as libc::c_int == '.' as i32
+                || c as i32 == '.' as i32
             {
                 obj = pst_parse_number(inbuf, inbufend)
             }

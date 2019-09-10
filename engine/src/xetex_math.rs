@@ -10,45 +10,45 @@ extern crate libc;
 extern "C" {
     pub type XeTeXLayoutEngine_rec;
     #[no_mangle]
-    fn abs(_: libc::c_int) -> libc::c_int;
+    fn abs(_: i32) -> i32;
     #[no_mangle]
     static mut eqtb: *mut memory_word;
     #[no_mangle]
-    static mut file_line_error_style_p: libc::c_int;
+    static mut file_line_error_style_p: i32;
     #[no_mangle]
     static mut insert_src_special_every_math: bool;
     #[no_mangle]
-    static mut help_line: [*const libc::c_char; 6];
+    static mut help_line: [*const i8; 6];
     #[no_mangle]
-    static mut help_ptr: libc::c_uchar;
+    static mut help_ptr: u8;
     #[no_mangle]
     static mut tex_remainder: scaled_t;
     #[no_mangle]
-    static mut temp_ptr: int32_t;
+    static mut temp_ptr: i32;
     #[no_mangle]
     static mut mem: *mut memory_word;
     #[no_mangle]
-    static mut hi_mem_min: int32_t;
+    static mut hi_mem_min: i32;
     #[no_mangle]
-    static mut avail: int32_t;
+    static mut avail: i32;
     #[no_mangle]
-    static mut nest_ptr: int32_t;
+    static mut nest_ptr: i32;
     #[no_mangle]
     static mut cur_list: list_state_record;
     #[no_mangle]
     static mut save_stack: *mut memory_word;
     #[no_mangle]
-    static mut save_ptr: int32_t;
+    static mut save_ptr: i32;
     #[no_mangle]
     static mut cur_group: group_code;
     #[no_mangle]
     static mut cur_cmd: eight_bits;
     #[no_mangle]
-    static mut cur_chr: int32_t;
+    static mut cur_chr: i32;
     #[no_mangle]
-    static mut cur_val: int32_t;
+    static mut cur_val: i32;
     #[no_mangle]
-    static mut cur_val1: int32_t;
+    static mut cur_val1: i32;
     #[no_mangle]
     static mut font_info: *mut memory_word;
     #[no_mangle]
@@ -60,41 +60,41 @@ extern "C" {
     #[no_mangle]
     static mut font_ec: *mut UTF16_code;
     #[no_mangle]
-    static mut skew_char: *mut int32_t;
+    static mut skew_char: *mut i32;
     #[no_mangle]
     static mut font_layout_engine: *mut *mut libc::c_void;
     #[no_mangle]
-    static mut char_base: *mut int32_t;
+    static mut char_base: *mut i32;
     #[no_mangle]
-    static mut width_base: *mut int32_t;
+    static mut width_base: *mut i32;
     #[no_mangle]
-    static mut height_base: *mut int32_t;
+    static mut height_base: *mut i32;
     #[no_mangle]
-    static mut depth_base: *mut int32_t;
+    static mut depth_base: *mut i32;
     #[no_mangle]
-    static mut italic_base: *mut int32_t;
+    static mut italic_base: *mut i32;
     #[no_mangle]
-    static mut lig_kern_base: *mut int32_t;
+    static mut lig_kern_base: *mut i32;
     #[no_mangle]
-    static mut kern_base: *mut int32_t;
+    static mut kern_base: *mut i32;
     #[no_mangle]
-    static mut exten_base: *mut int32_t;
+    static mut exten_base: *mut i32;
     #[no_mangle]
-    static mut param_base: *mut int32_t;
+    static mut param_base: *mut i32;
     #[no_mangle]
     static mut null_character: b16x4;
     #[no_mangle]
     static mut total_shrink: [scaled_t; 4];
     #[no_mangle]
-    static mut adjust_tail: int32_t;
+    static mut adjust_tail: i32;
     #[no_mangle]
-    static mut pre_adjust_tail: int32_t;
+    static mut pre_adjust_tail: i32;
     #[no_mangle]
     static mut empty: b32x2;
     #[no_mangle]
     static mut cur_f: internal_font_number;
     #[no_mangle]
-    static mut cur_c: int32_t;
+    static mut cur_c: i32;
     #[no_mangle]
     static mut cur_i: b16x4;
     #[no_mangle]
@@ -102,73 +102,50 @@ extern "C" {
     #[no_mangle]
     fn isOpenTypeMathFont(engine: XeTeXLayoutEngine) -> bool;
     #[no_mangle]
-    fn measure_native_glyph(node: *mut libc::c_void, use_glyph_metrics: libc::c_int);
+    fn measure_native_glyph(node: *mut libc::c_void, use_glyph_metrics: i32);
     #[no_mangle]
-    fn map_char_to_glyph(font: int32_t, ch: int32_t) -> int32_t;
+    fn map_char_to_glyph(font: i32, ch: i32) -> i32;
     #[no_mangle]
-    fn real_get_native_glyph(pNode: *mut libc::c_void, index: libc::c_uint) -> uint16_t;
+    fn real_get_native_glyph(pNode: *mut libc::c_void, index: u32) -> u16;
     #[no_mangle]
-    fn get_native_mathsy_param(f: libc::c_int, n: libc::c_int) -> libc::c_int;
+    fn get_native_mathsy_param(f: i32, n: i32) -> i32;
     #[no_mangle]
-    fn get_native_mathex_param(f: libc::c_int, n: libc::c_int) -> libc::c_int;
+    fn get_native_mathex_param(f: i32, n: i32) -> i32;
     #[no_mangle]
-    fn get_ot_math_constant(f: libc::c_int, n: libc::c_int) -> libc::c_int;
+    fn get_ot_math_constant(f: i32, n: i32) -> i32;
     #[no_mangle]
-    fn get_ot_math_variant(
-        f: libc::c_int,
-        g: libc::c_int,
-        v: libc::c_int,
-        adv: *mut int32_t,
-        horiz: libc::c_int,
-    ) -> libc::c_int;
+    fn get_ot_math_variant(f: i32, g: i32, v: i32, adv: *mut i32, horiz: i32) -> i32;
     #[no_mangle]
-    fn get_ot_assembly_ptr(f: libc::c_int, g: libc::c_int, horiz: libc::c_int)
-        -> *mut libc::c_void;
+    fn get_ot_assembly_ptr(f: i32, g: i32, horiz: i32) -> *mut libc::c_void;
     #[no_mangle]
     fn free_ot_assembly(a: *mut GlyphAssembly);
     #[no_mangle]
-    fn get_ot_math_ital_corr(f: libc::c_int, g: libc::c_int) -> libc::c_int;
+    fn get_ot_math_ital_corr(f: i32, g: i32) -> i32;
     #[no_mangle]
-    fn get_ot_math_accent_pos(f: libc::c_int, g: libc::c_int) -> libc::c_int;
+    fn get_ot_math_accent_pos(f: i32, g: i32) -> i32;
     #[no_mangle]
-    fn get_ot_math_kern(
-        f: libc::c_int,
-        g: libc::c_int,
-        sf: libc::c_int,
-        sg: libc::c_int,
-        cmd: libc::c_int,
-        shift: libc::c_int,
-    ) -> libc::c_int;
+    fn get_ot_math_kern(f: i32, g: i32, sf: i32, sg: i32, cmd: i32, shift: i32) -> i32;
     #[no_mangle]
-    fn ot_part_count(a: *const GlyphAssembly) -> libc::c_int;
+    fn ot_part_count(a: *const GlyphAssembly) -> i32;
     #[no_mangle]
-    fn ot_part_glyph(a: *const GlyphAssembly, i: libc::c_int) -> libc::c_int;
+    fn ot_part_glyph(a: *const GlyphAssembly, i: i32) -> i32;
     #[no_mangle]
-    fn ot_part_is_extender(a: *const GlyphAssembly, i: libc::c_int) -> bool;
+    fn ot_part_is_extender(a: *const GlyphAssembly, i: i32) -> bool;
     #[no_mangle]
-    fn ot_part_start_connector(
-        f: libc::c_int,
-        a: *const GlyphAssembly,
-        i: libc::c_int,
-    ) -> libc::c_int;
+    fn ot_part_start_connector(f: i32, a: *const GlyphAssembly, i: i32) -> i32;
     #[no_mangle]
-    fn ot_part_end_connector(
-        f: libc::c_int,
-        a: *const GlyphAssembly,
-        i: libc::c_int,
-    ) -> libc::c_int;
+    fn ot_part_end_connector(f: i32, a: *const GlyphAssembly, i: i32) -> i32;
     #[no_mangle]
-    fn ot_part_full_advance(f: libc::c_int, a: *const GlyphAssembly, i: libc::c_int)
-        -> libc::c_int;
+    fn ot_part_full_advance(f: i32, a: *const GlyphAssembly, i: i32) -> i32;
     #[no_mangle]
-    fn ot_min_connector_overlap(f: libc::c_int) -> libc::c_int;
+    fn ot_min_connector_overlap(f: i32) -> i32;
     /*:1683*/
     /* It looks like these arrays are set up so that they can be safely indexed
      * with negative indices. The underlying arrays used to be named "zzzaa" and
      * "zzzbb". */
     /* the former xetexcoerce.h: */
     #[no_mangle]
-    fn just_reverse(p: int32_t);
+    fn just_reverse(p: i32);
     #[no_mangle]
     fn get_token();
     #[no_mangle]
@@ -176,7 +153,7 @@ extern "C" {
     #[no_mangle]
     fn scan_left_brace();
     #[no_mangle]
-    fn scan_keyword(s: *const libc::c_char) -> bool;
+    fn scan_keyword(s: *const i8) -> bool;
     #[no_mangle]
     fn scan_usv_num();
     #[no_mangle]
@@ -188,140 +165,134 @@ extern "C" {
     #[no_mangle]
     fn scan_delimiter_int();
     #[no_mangle]
-    fn effective_char(err_p: bool, f: internal_font_number, c: uint16_t) -> int32_t;
+    fn effective_char(err_p: bool, f: internal_font_number, c: u16) -> i32;
     #[no_mangle]
     fn scan_dimen(mu: bool, inf: bool, shortcut: bool);
     #[no_mangle]
-    fn char_warning(f: internal_font_number, c: int32_t);
+    fn char_warning(f: internal_font_number, c: i32);
     #[no_mangle]
-    fn new_native_character(f: internal_font_number, c: UnicodeScalar) -> int32_t;
+    fn new_native_character(f: internal_font_number, c: UnicodeScalar) -> i32;
     #[no_mangle]
-    fn new_character(f: internal_font_number, c: UTF16_code) -> int32_t;
+    fn new_character(f: internal_font_number, c: UTF16_code) -> i32;
     #[no_mangle]
-    fn hpack(p: int32_t, w: scaled_t, m: small_number) -> int32_t;
+    fn hpack(p: i32, w: scaled_t, m: small_number) -> i32;
     #[no_mangle]
-    fn vpackage(p: int32_t, h: scaled_t, m: small_number, l: scaled_t) -> int32_t;
+    fn vpackage(p: i32, h: scaled_t, m: small_number, l: scaled_t) -> i32;
     #[no_mangle]
-    fn append_to_vlist(b: int32_t);
+    fn append_to_vlist(b: i32);
     #[no_mangle]
-    fn new_noad() -> int32_t;
+    fn new_noad() -> i32;
     #[no_mangle]
-    fn new_choice() -> int32_t;
+    fn new_choice() -> i32;
     #[no_mangle]
     fn line_break(d: bool);
     #[no_mangle]
     fn off_save();
     #[no_mangle]
-    fn norm_min(h: int32_t) -> small_number;
+    fn norm_min(h: i32) -> small_number;
     #[no_mangle]
     fn push_math(c: group_code);
     #[no_mangle]
-    fn just_copy(p: int32_t, h: int32_t, t: int32_t);
+    fn just_copy(p: i32, h: i32, t: i32);
     #[no_mangle]
     fn back_error();
     #[no_mangle]
     fn back_input();
     #[no_mangle]
-    fn begin_token_list(p: int32_t, t: uint16_t);
+    fn begin_token_list(p: i32, t: u16);
     #[no_mangle]
     fn unsave();
     #[no_mangle]
-    fn eq_word_define(p: int32_t, w: int32_t);
+    fn eq_word_define(p: i32, w: i32);
     #[no_mangle]
-    static mut just_box: int32_t;
+    static mut just_box: i32;
     #[no_mangle]
-    static mut cur_lang: libc::c_uchar;
+    static mut cur_lang: u8;
     #[no_mangle]
     fn pop_nest();
     #[no_mangle]
     fn push_nest();
     #[no_mangle]
-    fn copy_node_list(p: int32_t) -> int32_t;
+    fn copy_node_list(p: i32) -> i32;
     #[no_mangle]
-    fn flush_node_list(p: int32_t);
+    fn flush_node_list(p: i32);
     #[no_mangle]
-    fn delete_glue_ref(p: int32_t);
+    fn delete_glue_ref(p: i32);
     #[no_mangle]
-    fn new_penalty(m: int32_t) -> int32_t;
+    fn new_penalty(m: i32) -> i32;
     #[no_mangle]
-    fn new_kern(w: scaled_t) -> int32_t;
+    fn new_kern(w: scaled_t) -> i32;
     #[no_mangle]
-    fn new_skip_param(n: small_number) -> int32_t;
+    fn new_skip_param(n: small_number) -> i32;
     #[no_mangle]
-    fn new_glue(q: int32_t) -> int32_t;
+    fn new_glue(q: i32) -> i32;
     #[no_mangle]
-    fn new_param_glue(n: small_number) -> int32_t;
+    fn new_param_glue(n: small_number) -> i32;
     #[no_mangle]
-    fn new_spec(p: int32_t) -> int32_t;
+    fn new_spec(p: i32) -> i32;
     #[no_mangle]
-    fn new_math(w: scaled_t, s: small_number) -> int32_t;
+    fn new_math(w: scaled_t, s: small_number) -> i32;
     #[no_mangle]
-    fn new_rule() -> int32_t;
+    fn new_rule() -> i32;
     #[no_mangle]
-    fn new_null_box() -> int32_t;
+    fn new_null_box() -> i32;
     #[no_mangle]
-    fn free_node(p: int32_t, s: int32_t);
+    fn free_node(p: i32, s: i32);
     #[no_mangle]
-    fn get_node(s: int32_t) -> int32_t;
+    fn get_node(s: i32) -> i32;
     #[no_mangle]
-    fn get_avail() -> int32_t;
+    fn get_avail() -> i32;
     #[no_mangle]
     static mut xtx_ligature_present: bool;
     #[no_mangle]
     static mut cur_dir: small_number;
     #[no_mangle]
-    static mut LR_problems: int32_t;
+    static mut LR_problems: i32;
     #[no_mangle]
-    static mut LR_ptr: int32_t;
+    static mut LR_ptr: i32;
     /* xetex-errors */
     #[no_mangle]
-    fn confusion(s: *const libc::c_char) -> !;
+    fn confusion(s: *const i8) -> !;
     #[no_mangle]
-    fn scan_math(p: int32_t);
+    fn scan_math(p: i32);
     #[no_mangle]
     fn insert_src_special();
     #[no_mangle]
     fn error();
     #[no_mangle]
-    fn print_esc_cstr(s: *const libc::c_char);
+    fn print_esc_cstr(s: *const i8);
     #[no_mangle]
-    fn print_size(s: int32_t);
+    fn print_size(s: i32);
     #[no_mangle]
-    fn print_int(n: int32_t);
+    fn print_int(n: i32);
     #[no_mangle]
-    fn print_cstr(s: *const libc::c_char);
+    fn print_cstr(s: *const i8);
     #[no_mangle]
-    fn print(s: int32_t);
+    fn print(s: i32);
     #[no_mangle]
-    fn print_char(s: int32_t);
+    fn print_char(s: i32);
     #[no_mangle]
-    fn print_nl_cstr(s: *const libc::c_char);
+    fn print_nl_cstr(s: *const i8);
     /* xetex-pagebuilder */
     /* xetex-scaledmath */
     #[no_mangle]
-    fn x_over_n(x: scaled_t, n: int32_t) -> scaled_t;
+    fn x_over_n(x: scaled_t, n: i32) -> scaled_t;
     #[no_mangle]
-    fn mult_and_add(n: int32_t, x: scaled_t, y: scaled_t, max_answer: scaled_t) -> scaled_t;
+    fn mult_and_add(n: i32, x: scaled_t, y: scaled_t, max_answer: scaled_t) -> scaled_t;
     #[no_mangle]
     fn print_file_line();
     #[no_mangle]
-    fn half(x: int32_t) -> int32_t;
+    fn half(x: i32) -> i32;
     #[no_mangle]
-    fn tex_round(_: libc::c_double) -> int32_t;
+    fn tex_round(_: f64) -> i32;
     #[no_mangle]
     fn build_page();
     #[no_mangle]
-    fn xn_over_d(x: scaled_t, n: int32_t, d: int32_t) -> scaled_t;
+    fn xn_over_d(x: scaled_t, n: i32, d: i32) -> scaled_t;
 }
-pub type __uint16_t = libc::c_ushort;
-pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
-pub type int32_t = __int32_t;
-pub type uint16_t = __uint16_t;
-pub type uint32_t = __uint32_t;
-pub type hb_codepoint_t = uint32_t;
-pub type hb_position_t = int32_t;
-pub type hb_ot_math_glyph_part_flags_t = libc::c_uint;
+pub type hb_codepoint_t = u32;
+pub type hb_position_t = i32;
+pub type hb_ot_math_glyph_part_flags_t = u32;
 pub const HB_OT_MATH_GLYPH_PART_FLAG_EXTENDER: hb_ot_math_glyph_part_flags_t = 1;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -332,7 +303,7 @@ pub struct hb_ot_math_glyph_part_t {
     pub full_advance: hb_position_t,
     pub flags: hb_ot_math_glyph_part_flags_t,
 }
-pub type scaled_t = int32_t;
+pub type scaled_t = i32;
 pub type XeTeXLayoutEngine = *mut XeTeXLayoutEngine_rec;
 /* ***************************************************************************\
  Part of the XeTeX typesetting system
@@ -368,28 +339,28 @@ authorization from the copyright holders.
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct GlyphAssembly {
-    pub count: libc::c_uint,
+    pub count: u32,
     pub parts: *mut hb_ot_math_glyph_part_t,
 }
-pub type UTF16_code = libc::c_ushort;
-pub type UnicodeScalar = int32_t;
-pub type eight_bits = libc::c_uchar;
-pub type str_number = int32_t;
-pub type small_number = libc::c_short;
+pub type UTF16_code = u16;
+pub type UnicodeScalar = i32;
+pub type eight_bits = u8;
+pub type str_number = i32;
+pub type small_number = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
-    pub s0: int32_t,
-    pub s1: int32_t,
+    pub s0: i32,
+    pub s1: i32,
 }
 pub type b32x2 = b32x2_le_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b16x4_le_t {
-    pub s0: uint16_t,
-    pub s1: uint16_t,
-    pub s2: uint16_t,
-    pub s3: uint16_t,
+    pub s0: u16,
+    pub s1: u16,
+    pub s2: u16,
+    pub s3: u16,
 }
 pub type b16x4 = b16x4_le_t;
 #[derive(Copy, Clone)]
@@ -397,26 +368,26 @@ pub type b16x4 = b16x4_le_t;
 pub union memory_word {
     pub b32: b32x2,
     pub b16: b16x4,
-    pub gr: libc::c_double,
+    pub gr: f64,
     pub ptr: *mut libc::c_void,
 }
-pub type group_code = libc::c_uchar;
-pub type internal_font_number = int32_t;
-pub type font_index = int32_t;
+pub type group_code = u8;
+pub type internal_font_number = i32;
+pub type font_index = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
-    pub mode: libc::c_short,
-    pub head: int32_t,
-    pub tail: int32_t,
-    pub eTeX_aux: int32_t,
-    pub prev_graf: int32_t,
-    pub mode_line: int32_t,
+    pub mode: i16,
+    pub head: i32,
+    pub tail: i32,
+    pub eTeX_aux: i32,
+    pub prev_graf: i32,
+    pub mode_line: i32,
     pub aux: memory_word,
 }
 /* Inlines */
 #[inline]
-unsafe extern "C" fn is_char_node(p: int32_t) -> bool {
+unsafe extern "C" fn is_char_node(p: i32) -> bool {
     return p >= hi_mem_min;
 }
 static mut null_delimiter: b16x4 = b16x4 {
@@ -425,34 +396,34 @@ static mut null_delimiter: b16x4 = b16x4 {
     s2: 0,
     s3: 0,
 };
-static mut cur_mlist: int32_t = 0;
+static mut cur_mlist: i32 = 0;
 static mut cur_style: small_number = 0;
-static mut cur_size: int32_t = 0;
+static mut cur_size: i32 = 0;
 static mut cur_mu: scaled_t = 0;
 static mut mlist_penalties: bool = false;
 #[no_mangle]
 pub unsafe extern "C" fn initialize_math_variables() {
-    null_delimiter.s3 = 0i32 as uint16_t;
-    null_delimiter.s2 = 0i32 as uint16_t;
-    null_delimiter.s1 = 0i32 as uint16_t;
-    null_delimiter.s0 = 0i32 as uint16_t;
+    null_delimiter.s3 = 0_u16;
+    null_delimiter.s2 = 0_u16;
+    null_delimiter.s1 = 0_u16;
+    null_delimiter.s0 = 0_u16;
 }
 #[no_mangle]
 pub unsafe extern "C" fn init_math() {
     let mut current_block: u64;
     let mut w: scaled_t = 0;
-    let mut j: int32_t = 0;
-    let mut x: int32_t = 0;
+    let mut j: i32 = 0;
+    let mut x: i32 = 0;
     let mut l: scaled_t = 0;
     let mut s: scaled_t = 0;
-    let mut p: int32_t = 0;
-    let mut q: int32_t = 0;
+    let mut p: i32 = 0;
+    let mut q: i32 = 0;
     let mut f: internal_font_number = 0;
-    let mut n: int32_t = 0;
+    let mut n: i32 = 0;
     let mut v: scaled_t = 0;
     let mut d: scaled_t = 0;
     get_token();
-    if cur_cmd as libc::c_int == 3i32 && cur_list.mode as libc::c_int > 0i32 {
+    if cur_cmd as i32 == 3i32 && cur_list.mode as i32 > 0i32 {
         /*1180: */
         j = -0xfffffffi32;
         w = -0x3fffffffi32;
@@ -621,14 +592,14 @@ pub unsafe extern "C" fn init_math() {
                                         )) as isize,
                                 ))
                                 .b16
-                                .s3 as libc::c_int) as isize,
+                                .s3 as i32) as isize,
                         ))
                         .b32
                         .s1;
                         current_block = 9427725525305667067;
                         break;
                     } else {
-                        match (*mem.offset(p as isize)).b16.s1 as libc::c_int {
+                        match (*mem.offset(p as isize)).b16.s1 as i32 {
                             0 | 1 | 2 => {
                                 d = (*mem.offset((p + 1i32) as isize)).b32.s1;
                                 current_block = 9427725525305667067;
@@ -700,29 +671,24 @@ pub unsafe extern "C" fn init_math() {
                             10 => {
                                 q = (*mem.offset((p + 1i32) as isize)).b32.s0;
                                 d = (*mem.offset((q + 1i32) as isize)).b32.s1;
-                                if (*mem.offset((just_box + 5i32) as isize)).b16.s1 as libc::c_int
-                                    == 1i32
-                                {
-                                    if (*mem.offset((just_box + 5i32) as isize)).b16.s0
-                                        as libc::c_int
-                                        == (*mem.offset(q as isize)).b16.s1 as libc::c_int
+                                if (*mem.offset((just_box + 5i32) as isize)).b16.s1 as i32 == 1i32 {
+                                    if (*mem.offset((just_box + 5i32) as isize)).b16.s0 as i32
+                                        == (*mem.offset(q as isize)).b16.s1 as i32
                                         && (*mem.offset((q + 2i32) as isize)).b32.s1 != 0i32
                                     {
                                         v = 0x3fffffffi32
                                     }
-                                } else if (*mem.offset((just_box + 5i32) as isize)).b16.s1
-                                    as libc::c_int
+                                } else if (*mem.offset((just_box + 5i32) as isize)).b16.s1 as i32
                                     == 2i32
                                 {
-                                    if (*mem.offset((just_box + 5i32) as isize)).b16.s0
-                                        as libc::c_int
-                                        == (*mem.offset(q as isize)).b16.s0 as libc::c_int
+                                    if (*mem.offset((just_box + 5i32) as isize)).b16.s0 as i32
+                                        == (*mem.offset(q as isize)).b16.s0 as i32
                                         && (*mem.offset((q + 3i32) as isize)).b32.s1 != 0i32
                                     {
                                         v = 0x3fffffffi32
                                     }
                                 }
-                                if (*mem.offset(p as isize)).b16.s0 as libc::c_int >= 100i32 {
+                                if (*mem.offset(p as isize)).b16.s0 as i32 >= 100i32 {
                                     current_block = 9427725525305667067;
                                     break;
                                 } else {
@@ -731,11 +697,11 @@ pub unsafe extern "C" fn init_math() {
                                 }
                             }
                             8 => {
-                                if (*mem.offset(p as isize)).b16.s0 as libc::c_int == 40i32
-                                    || (*mem.offset(p as isize)).b16.s0 as libc::c_int == 41i32
-                                    || (*mem.offset(p as isize)).b16.s0 as libc::c_int == 42i32
-                                    || (*mem.offset(p as isize)).b16.s0 as libc::c_int == 43i32
-                                    || (*mem.offset(p as isize)).b16.s0 as libc::c_int == 44i32
+                                if (*mem.offset(p as isize)).b16.s0 as i32 == 40i32
+                                    || (*mem.offset(p as isize)).b16.s0 as i32 == 41i32
+                                    || (*mem.offset(p as isize)).b16.s0 as i32 == 42i32
+                                    || (*mem.offset(p as isize)).b16.s0 as i32 == 43i32
+                                    || (*mem.offset(p as isize)).b16.s0 as i32 == 44i32
                                 {
                                     current_block = 11064061988481400464;
                                     break;
@@ -754,7 +720,7 @@ pub unsafe extern "C" fn init_math() {
                 }
                 match current_block {
                     2631791190359682872 => {
-                        if (*mem.offset(p as isize)).b16.s0 as libc::c_int >= 4i32 {
+                        if (*mem.offset(p as isize)).b16.s0 as i32 >= 4i32 {
                             w = 0x3fffffffi32;
                             break;
                         } else {
@@ -764,29 +730,25 @@ pub unsafe extern "C" fn init_math() {
                     13660591889533726445 =>
                     /*1525: */
                     {
-                        if (*mem.offset(p as isize)).b16.s0 as libc::c_int & 1i32 != 0 {
+                        if (*mem.offset(p as isize)).b16.s0 as i32 & 1i32 != 0 {
                             if (*mem.offset(LR_ptr as isize)).b32.s0
-                                == 4i32 * ((*mem.offset(p as isize)).b16.s0 as libc::c_int / 4i32)
-                                    + 3i32
+                                == 4i32 * ((*mem.offset(p as isize)).b16.s0 as i32 / 4i32) + 3i32
                             {
                                 temp_ptr = LR_ptr;
                                 LR_ptr = (*mem.offset(temp_ptr as isize)).b32.s1;
                                 (*mem.offset(temp_ptr as isize)).b32.s1 = avail;
                                 avail = temp_ptr
-                            } else if (*mem.offset(p as isize)).b16.s0 as libc::c_int > 4i32 {
+                            } else if (*mem.offset(p as isize)).b16.s0 as i32 > 4i32 {
                                 w = 0x3fffffffi32;
                                 break;
                             }
                         } else {
                             temp_ptr = get_avail();
-                            (*mem.offset(temp_ptr as isize)).b32.s0 = 4i32
-                                * ((*mem.offset(p as isize)).b16.s0 as libc::c_int / 4i32)
-                                + 3i32;
+                            (*mem.offset(temp_ptr as isize)).b32.s0 =
+                                4i32 * ((*mem.offset(p as isize)).b16.s0 as i32 / 4i32) + 3i32;
                             (*mem.offset(temp_ptr as isize)).b32.s1 = LR_ptr;
                             LR_ptr = temp_ptr;
-                            if (*mem.offset(p as isize)).b16.s0 as libc::c_int / 8i32
-                                != cur_dir as libc::c_int
-                            {
+                            if (*mem.offset(p as isize)).b16.s0 as i32 / 8i32 != cur_dir as i32 {
                                 just_reverse(p);
                                 p = 4999999i32 - 3i32
                             }
@@ -1234,7 +1196,7 @@ pub unsafe extern "C" fn init_math() {
             l = (*mem.offset(p as isize)).b32.s1
         }
         push_math(15i32 as group_code);
-        cur_list.mode = 207i32 as libc::c_short;
+        cur_list.mode = 207_i16;
         eq_word_define(
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -1416,7 +1378,7 @@ pub unsafe extern "C" fn init_math() {
                 ))
                 .b32
                 .s1,
-                10i32 as uint16_t,
+                10_u16,
             );
         }
         if nest_ptr == 1i32 {
@@ -1491,7 +1453,7 @@ pub unsafe extern "C" fn init_math() {
                 ))
                 .b32
                 .s1,
-                9i32 as uint16_t,
+                9_u16,
             );
         }
     };
@@ -1567,32 +1529,30 @@ pub unsafe extern "C" fn start_eq_no() {
             ))
             .b32
             .s1,
-            9i32 as uint16_t,
+            9_u16,
         );
     };
 }
 #[no_mangle]
 pub unsafe extern "C" fn math_limit_switch() {
     if cur_list.head != cur_list.tail {
-        if (*mem.offset(cur_list.tail as isize)).b16.s1 as libc::c_int == 17i32 {
-            (*mem.offset(cur_list.tail as isize)).b16.s0 = cur_chr as uint16_t;
+        if (*mem.offset(cur_list.tail as isize)).b16.s1 as i32 == 17i32 {
+            (*mem.offset(cur_list.tail as isize)).b16.s0 = cur_chr as u16;
             return;
         }
     }
     if file_line_error_style_p != 0 {
         print_file_line();
     } else {
-        print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+        print_nl_cstr(b"! \x00" as *const u8 as *const i8);
     }
-    print_cstr(
-        b"Limit controls must follow a math operator\x00" as *const u8 as *const libc::c_char,
-    );
-    help_ptr = 1i32 as libc::c_uchar;
+    print_cstr(b"Limit controls must follow a math operator\x00" as *const u8 as *const i8);
+    help_ptr = 1_u8;
     help_line[0] = b"I\'m ignoring this misplaced \\limits or \\nolimits command.\x00" as *const u8
-        as *const libc::c_char;
+        as *const i8;
     error();
 }
-unsafe extern "C" fn scan_delimiter(mut p: int32_t, mut r: bool) {
+unsafe extern "C" fn scan_delimiter(mut p: i32, mut r: bool) {
     if r {
         if cur_chr == 1i32 {
             cur_val1 = 0x40000000i32;
@@ -1606,11 +1566,11 @@ unsafe extern "C" fn scan_delimiter(mut p: int32_t, mut r: bool) {
     } else {
         loop {
             get_x_token();
-            if !(cur_cmd as libc::c_int == 10i32 || cur_cmd as libc::c_int == 0i32) {
+            if !(cur_cmd as i32 == 10i32 || cur_cmd as i32 == 0i32) {
                 break;
             }
         }
-        match cur_cmd as libc::c_int {
+        match cur_cmd as i32 {
             11 | 12 => {
                 cur_val = (*eqtb.offset(
                     (1i32
@@ -1663,45 +1623,44 @@ unsafe extern "C" fn scan_delimiter(mut p: int32_t, mut r: bool) {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
-        print_cstr(b"Missing delimiter (. inserted)\x00" as *const u8 as *const libc::c_char);
-        help_ptr = 6i32 as libc::c_uchar;
+        print_cstr(b"Missing delimiter (. inserted)\x00" as *const u8 as *const i8);
+        help_ptr = 6_u8;
         help_line[5] = b"I was expecting to see something like `(\' or `\\{\' or\x00" as *const u8
-            as *const libc::c_char;
+            as *const i8;
         help_line[4] = b"`\\}\' here. If you typed, e.g., `{\' instead of `\\{\', you\x00"
-            as *const u8 as *const libc::c_char;
+            as *const u8 as *const i8;
         help_line[3] = b"should probably delete the `{\' by typing `1\' now, so that\x00"
-            as *const u8 as *const libc::c_char;
-        help_line[2] = b"braces don\'t get unbalanced. Otherwise just proceed.\x00" as *const u8
-            as *const libc::c_char;
+            as *const u8 as *const i8;
+        help_line[2] =
+            b"braces don\'t get unbalanced. Otherwise just proceed.\x00" as *const u8 as *const i8;
         help_line[1] = b"Acceptable delimiters are characters whose \\delcode is\x00" as *const u8
-            as *const libc::c_char;
+            as *const i8;
         help_line[0] = b"nonnegative, or you can use `\\delimiter <delimiter code>\'.\x00"
-            as *const u8 as *const libc::c_char;
+            as *const u8 as *const i8;
         back_error();
         cur_val = 0i32
     }
     if cur_val >= 0x40000000i32 {
         (*mem.offset(p as isize)).b16.s3 = (cur_val % 0x200000i32 / 0x10000i32 * 0x100i32
-            + cur_val / 0x200000i32 % 0x100i32)
-            as uint16_t;
-        (*mem.offset(p as isize)).b16.s2 = (cur_val % 0x10000i32) as uint16_t;
-        (*mem.offset(p as isize)).b16.s1 = 0i32 as uint16_t;
-        (*mem.offset(p as isize)).b16.s0 = 0i32 as uint16_t
+            + cur_val / 0x200000i32 % 0x100i32) as u16;
+        (*mem.offset(p as isize)).b16.s2 = (cur_val % 0x10000i32) as u16;
+        (*mem.offset(p as isize)).b16.s1 = 0_u16;
+        (*mem.offset(p as isize)).b16.s0 = 0_u16
     } else {
-        (*mem.offset(p as isize)).b16.s3 = (cur_val / 0x100000i32 % 16i32) as uint16_t;
-        (*mem.offset(p as isize)).b16.s2 = (cur_val / 0x1000i32 % 0x100i32) as uint16_t;
-        (*mem.offset(p as isize)).b16.s1 = (cur_val / 0x100i32 % 16i32) as uint16_t;
-        (*mem.offset(p as isize)).b16.s0 = (cur_val % 0x100i32) as uint16_t
+        (*mem.offset(p as isize)).b16.s3 = (cur_val / 0x100000i32 % 16i32) as u16;
+        (*mem.offset(p as isize)).b16.s2 = (cur_val / 0x1000i32 % 0x100i32) as u16;
+        (*mem.offset(p as isize)).b16.s1 = (cur_val / 0x100i32 % 16i32) as u16;
+        (*mem.offset(p as isize)).b16.s0 = (cur_val % 0x100i32) as u16
     };
 }
 #[no_mangle]
 pub unsafe extern "C" fn math_radical() {
     (*mem.offset(cur_list.tail as isize)).b32.s1 = get_node(5i32);
     cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-    (*mem.offset(cur_list.tail as isize)).b16.s1 = 24i32 as uint16_t;
-    (*mem.offset(cur_list.tail as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(cur_list.tail as isize)).b16.s1 = 24_u16;
+    (*mem.offset(cur_list.tail as isize)).b16.s0 = 0_u16;
     (*mem.offset((cur_list.tail + 1i32) as isize)).b32 = empty;
     (*mem.offset((cur_list.tail + 3i32) as isize)).b32 = empty;
     (*mem.offset((cur_list.tail + 2i32) as isize)).b32 = empty;
@@ -1710,61 +1669,56 @@ pub unsafe extern "C" fn math_radical() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn math_ac() {
-    let mut c: int32_t = 0;
-    if cur_cmd as libc::c_int == 45i32 {
+    let mut c: i32 = 0;
+    if cur_cmd as i32 == 45i32 {
         /*1201: */
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
-        print_cstr(b"Please use \x00" as *const u8 as *const libc::c_char);
-        print_esc_cstr(b"mathaccent\x00" as *const u8 as *const libc::c_char);
-        print_cstr(b" for accents in math mode\x00" as *const u8 as *const libc::c_char);
-        help_ptr = 2i32 as libc::c_uchar;
+        print_cstr(b"Please use \x00" as *const u8 as *const i8);
+        print_esc_cstr(b"mathaccent\x00" as *const u8 as *const i8);
+        print_cstr(b" for accents in math mode\x00" as *const u8 as *const i8);
+        help_ptr = 2_u8;
         help_line[1] = b"I\'m changing \\accent to \\mathaccent here; wish me luck.\x00"
-            as *const u8 as *const libc::c_char;
+            as *const u8 as *const i8;
         help_line[0] = b"(Accents are not the same in formulas as they are in text.)\x00"
-            as *const u8 as *const libc::c_char;
+            as *const u8 as *const i8;
         error();
     }
     (*mem.offset(cur_list.tail as isize)).b32.s1 = get_node(5i32);
     cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-    (*mem.offset(cur_list.tail as isize)).b16.s1 = 28i32 as uint16_t;
-    (*mem.offset(cur_list.tail as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(cur_list.tail as isize)).b16.s1 = 28_u16;
+    (*mem.offset(cur_list.tail as isize)).b16.s0 = 0_u16;
     (*mem.offset((cur_list.tail + 1i32) as isize)).b32 = empty;
     (*mem.offset((cur_list.tail + 3i32) as isize)).b32 = empty;
     (*mem.offset((cur_list.tail + 2i32) as isize)).b32 = empty;
     (*mem.offset((cur_list.tail + 4i32) as isize)).b32.s1 = 1i32;
     if cur_chr == 1i32 {
-        if scan_keyword(b"fixed\x00" as *const u8 as *const libc::c_char) {
-            (*mem.offset(cur_list.tail as isize)).b16.s0 = 1i32 as uint16_t
-        } else if scan_keyword(b"bottom\x00" as *const u8 as *const libc::c_char) {
-            if scan_keyword(b"fixed\x00" as *const u8 as *const libc::c_char) {
-                (*mem.offset(cur_list.tail as isize)).b16.s0 = (2i32 + 1i32) as uint16_t
+        if scan_keyword(b"fixed\x00" as *const u8 as *const i8) {
+            (*mem.offset(cur_list.tail as isize)).b16.s0 = 1_u16
+        } else if scan_keyword(b"bottom\x00" as *const u8 as *const i8) {
+            if scan_keyword(b"fixed\x00" as *const u8 as *const i8) {
+                (*mem.offset(cur_list.tail as isize)).b16.s0 = (2i32 + 1i32) as u16
             } else {
-                (*mem.offset(cur_list.tail as isize)).b16.s0 = 2i32 as uint16_t
+                (*mem.offset(cur_list.tail as isize)).b16.s0 = 2_u16
             }
         }
         scan_math_class_int();
-        c = ((cur_val as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32) as int32_t;
+        c = ((cur_val as u32 & 0x7_u32) << 21i32) as i32;
         scan_math_fam_int();
-        c = (c as libc::c_uint)
-            .wrapping_add((cur_val as libc::c_uint & 0xffi32 as libc::c_uint) << 24i32)
-            as int32_t;
+        c = (c as u32).wrapping_add((cur_val as u32 & 0xff_u32) << 24i32) as i32;
         scan_usv_num();
         cur_val = cur_val + c
     } else {
         scan_fifteen_bit_int();
-        cur_val = (((cur_val / 4096i32) as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
-            .wrapping_add(
-                ((cur_val % 4096i32 / 256i32) as libc::c_uint & 0xffi32 as libc::c_uint) << 24i32,
-            )
-            .wrapping_add((cur_val % 256i32) as libc::c_uint) as int32_t
+        cur_val = (((cur_val / 4096i32) as u32 & 0x7_u32) << 21i32)
+            .wrapping_add(((cur_val % 4096i32 / 256i32) as u32 & 0xff_u32) << 24i32)
+            .wrapping_add((cur_val % 256i32) as u32) as i32
     }
-    (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s0 =
-        (cur_val as libc::c_long % 65536) as uint16_t;
-    if cur_val as libc::c_uint >> 21i32 & 0x7i32 as libc::c_uint == 7i32 as libc::c_uint
+    (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s0 = (cur_val as i64 % 65536) as u16;
+    if cur_val as u32 >> 21i32 & 0x7_u32 == 7_u32
         && ((*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -1852,15 +1806,14 @@ pub unsafe extern "C" fn math_ac() {
                 + 44i32) as isize,
         ))
         .b32
-        .s1 as uint16_t
+        .s1 as u16
     } else {
         (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 =
-            (cur_val as libc::c_uint >> 24i32 & 0xffi32 as libc::c_uint) as uint16_t
+            (cur_val as u32 >> 24i32 & 0xff_u32) as u16
     }
     (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 =
-        ((*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 as libc::c_long
-            + (cur_val as libc::c_uint & 0x1fffffi32 as libc::c_uint) as libc::c_long / 65536
-                * 256i32 as libc::c_long) as uint16_t;
+        ((*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 as i64
+            + (cur_val as u32 & 0x1fffff_u32) as i64 / 65536 * 256i32 as i64) as u16;
     scan_math(cur_list.tail + 1i32);
 }
 #[no_mangle]
@@ -1873,8 +1826,8 @@ pub unsafe extern "C" fn append_choices() {
     scan_left_brace();
 }
 #[no_mangle]
-pub unsafe extern "C" fn fin_mlist(mut p: int32_t) -> int32_t {
-    let mut q: int32_t = 0;
+pub unsafe extern "C" fn fin_mlist(mut p: i32) -> i32 {
+    let mut q: i32 = 0;
     if cur_list.aux.b32.s1 != -0xfffffffi32 {
         /*1220: */
         (*mem.offset((cur_list.aux.b32.s1 + 3i32) as isize)).b32.s1 = 3i32;
@@ -1884,10 +1837,10 @@ pub unsafe extern "C" fn fin_mlist(mut p: int32_t) -> int32_t {
             q = cur_list.aux.b32.s1
         } else {
             q = (*mem.offset((cur_list.aux.b32.s1 + 2i32) as isize)).b32.s0;
-            if (*mem.offset(q as isize)).b16.s1 as libc::c_int != 30i32
+            if (*mem.offset(q as isize)).b16.s1 as i32 != 30i32
                 || cur_list.eTeX_aux == -0xfffffffi32
             {
-                confusion(b"right\x00" as *const u8 as *const libc::c_char);
+                confusion(b"right\x00" as *const u8 as *const i8);
             }
             (*mem.offset((cur_list.aux.b32.s1 + 2i32) as isize)).b32.s0 =
                 (*mem.offset(cur_list.eTeX_aux as isize)).b32.s1;
@@ -1903,7 +1856,7 @@ pub unsafe extern "C" fn fin_mlist(mut p: int32_t) -> int32_t {
 }
 #[no_mangle]
 pub unsafe extern "C" fn build_choices() {
-    let mut p: int32_t = 0;
+    let mut p: i32 = 0;
     unsave();
     p = fin_mlist(-0xfffffffi32);
     match (*save_stack.offset((save_ptr - 1i32) as isize)).b32.s1 {
@@ -1925,43 +1878,43 @@ pub unsafe extern "C" fn build_choices() {
 #[no_mangle]
 pub unsafe extern "C" fn sub_sup() {
     let mut t: small_number = 0;
-    let mut p: int32_t = 0;
+    let mut p: i32 = 0;
     t = 0i32 as small_number;
     p = -0xfffffffi32;
     if cur_list.tail != cur_list.head {
-        if (*mem.offset(cur_list.tail as isize)).b16.s1 as libc::c_int >= 16i32
-            && ((*mem.offset(cur_list.tail as isize)).b16.s1 as libc::c_int) < 30i32
+        if (*mem.offset(cur_list.tail as isize)).b16.s1 as i32 >= 16i32
+            && ((*mem.offset(cur_list.tail as isize)).b16.s1 as i32) < 30i32
         {
-            p = cur_list.tail + 2i32 + cur_cmd as libc::c_int - 7i32;
+            p = cur_list.tail + 2i32 + cur_cmd as i32 - 7i32;
             t = (*mem.offset(p as isize)).b32.s1 as small_number
         }
     }
-    if p == -0xfffffffi32 || t as libc::c_int != 0i32 {
+    if p == -0xfffffffi32 || t as i32 != 0i32 {
         /*1212: */
         (*mem.offset(cur_list.tail as isize)).b32.s1 = new_noad();
         cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-        p = cur_list.tail + 2i32 + cur_cmd as libc::c_int - 7i32;
-        if t as libc::c_int != 0i32 {
-            if cur_cmd as libc::c_int == 7i32 {
+        p = cur_list.tail + 2i32 + cur_cmd as i32 - 7i32;
+        if t as i32 != 0i32 {
+            if cur_cmd as i32 == 7i32 {
                 if file_line_error_style_p != 0 {
                     print_file_line();
                 } else {
-                    print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                    print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
-                print_cstr(b"Double superscript\x00" as *const u8 as *const libc::c_char);
-                help_ptr = 1i32 as libc::c_uchar;
-                help_line[0] = b"I treat `x^1^2\' essentially like `x^1{}^2\'.\x00" as *const u8
-                    as *const libc::c_char
+                print_cstr(b"Double superscript\x00" as *const u8 as *const i8);
+                help_ptr = 1_u8;
+                help_line[0] =
+                    b"I treat `x^1^2\' essentially like `x^1{}^2\'.\x00" as *const u8 as *const i8
             } else {
                 if file_line_error_style_p != 0 {
                     print_file_line();
                 } else {
-                    print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                    print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
-                print_cstr(b"Double subscript\x00" as *const u8 as *const libc::c_char);
-                help_ptr = 1i32 as libc::c_uchar;
-                help_line[0] = b"I treat `x_1_2\' essentially like `x_1{}_2\'.\x00" as *const u8
-                    as *const libc::c_char
+                print_cstr(b"Double subscript\x00" as *const u8 as *const i8);
+                help_ptr = 1_u8;
+                help_line[0] =
+                    b"I treat `x_1_2\' essentially like `x_1{}_2\'.\x00" as *const u8 as *const i8
             }
             error();
         }
@@ -1974,31 +1927,31 @@ pub unsafe extern "C" fn math_fraction() {
     c = cur_chr as small_number;
     if cur_list.aux.b32.s1 != -0xfffffffi32 {
         /*1218:*/
-        if c as libc::c_int >= 3i32 {
+        if c as i32 >= 3i32 {
             scan_delimiter(4999999i32 - 12i32, 0i32 != 0);
             scan_delimiter(4999999i32 - 12i32, 0i32 != 0);
         }
-        if c as libc::c_int % 3i32 == 0i32 {
+        if c as i32 % 3i32 == 0i32 {
             scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
         }
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
-        print_cstr(b"Ambiguous; you need another { and }\x00" as *const u8 as *const libc::c_char);
-        help_ptr = 3i32 as libc::c_uchar;
+        print_cstr(b"Ambiguous; you need another { and }\x00" as *const u8 as *const i8);
+        help_ptr = 3_u8;
         help_line[2] = b"I\'m ignoring this fraction specification, since I don\'t\x00" as *const u8
-            as *const libc::c_char;
+            as *const i8;
         help_line[1] = b"know whether a construction like `x \\over y \\over z\'\x00" as *const u8
-            as *const libc::c_char;
+            as *const i8;
         help_line[0] = b"means `{x \\over y} \\over z\' or `x \\over {y \\over z}\'.\x00"
-            as *const u8 as *const libc::c_char;
+            as *const u8 as *const i8;
         error();
     } else {
         cur_list.aux.b32.s1 = get_node(6i32);
-        (*mem.offset(cur_list.aux.b32.s1 as isize)).b16.s1 = 25i32 as uint16_t;
-        (*mem.offset(cur_list.aux.b32.s1 as isize)).b16.s0 = 0i32 as uint16_t;
+        (*mem.offset(cur_list.aux.b32.s1 as isize)).b16.s1 = 25_u16;
+        (*mem.offset(cur_list.aux.b32.s1 as isize)).b16.s0 = 0_u16;
         (*mem.offset((cur_list.aux.b32.s1 + 2i32) as isize)).b32.s1 = 3i32;
         (*mem.offset((cur_list.aux.b32.s1 + 2i32) as isize)).b32.s0 =
             (*mem.offset(cur_list.head as isize)).b32.s1;
@@ -2007,11 +1960,11 @@ pub unsafe extern "C" fn math_fraction() {
         (*mem.offset((cur_list.aux.b32.s1 + 5i32) as isize)).b16 = null_delimiter;
         (*mem.offset(cur_list.head as isize)).b32.s1 = -0xfffffffi32;
         cur_list.tail = cur_list.head;
-        if c as libc::c_int >= 3i32 {
+        if c as i32 >= 3i32 {
             scan_delimiter(cur_list.aux.b32.s1 + 4i32, 0i32 != 0);
             scan_delimiter(cur_list.aux.b32.s1 + 5i32, 0i32 != 0);
         }
-        match c as libc::c_int % 3i32 {
+        match c as i32 % 3i32 {
             0 => {
                 scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
                 (*mem.offset((cur_list.aux.b32.s1 + 1i32) as isize)).b32.s1 = cur_val
@@ -2025,29 +1978,29 @@ pub unsafe extern "C" fn math_fraction() {
 #[no_mangle]
 pub unsafe extern "C" fn math_left_right() {
     let mut t: small_number = 0;
-    let mut p: int32_t = 0;
-    let mut q: int32_t = 0;
+    let mut p: i32 = 0;
+    let mut q: i32 = 0;
     t = cur_chr as small_number;
-    if t as libc::c_int != 30i32 && cur_group as libc::c_int != 16i32 {
+    if t as i32 != 30i32 && cur_group as i32 != 16i32 {
         /*1227: */
-        if cur_group as libc::c_int == 15i32 {
+        if cur_group as i32 == 15i32 {
             scan_delimiter(4999999i32 - 12i32, 0i32 != 0); /*:1530 */
             if file_line_error_style_p != 0 {
                 print_file_line(); /*:1530 */
             } else {
-                print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                print_nl_cstr(b"! \x00" as *const u8 as *const i8);
             }
-            print_cstr(b"Extra \x00" as *const u8 as *const libc::c_char);
-            if t as libc::c_int == 1i32 {
-                print_esc_cstr(b"middle\x00" as *const u8 as *const libc::c_char);
-                help_ptr = 1i32 as libc::c_uchar;
+            print_cstr(b"Extra \x00" as *const u8 as *const i8);
+            if t as i32 == 1i32 {
+                print_esc_cstr(b"middle\x00" as *const u8 as *const i8);
+                help_ptr = 1_u8;
                 help_line[0] = b"I\'m ignoring a \\middle that had no matching \\left.\x00"
-                    as *const u8 as *const libc::c_char
+                    as *const u8 as *const i8
             } else {
-                print_esc_cstr(b"right\x00" as *const u8 as *const libc::c_char);
-                help_ptr = 1i32 as libc::c_uchar;
+                print_esc_cstr(b"right\x00" as *const u8 as *const i8);
+                help_ptr = 1_u8;
                 help_line[0] = b"I\'m ignoring a \\right that had no matching \\left.\x00"
-                    as *const u8 as *const libc::c_char
+                    as *const u8 as *const i8
             }
             error();
         } else {
@@ -2055,19 +2008,19 @@ pub unsafe extern "C" fn math_left_right() {
         }
     } else {
         p = new_noad();
-        (*mem.offset(p as isize)).b16.s1 = t as uint16_t;
+        (*mem.offset(p as isize)).b16.s1 = t as u16;
         scan_delimiter(p + 1i32, 0i32 != 0);
-        if t as libc::c_int == 1i32 {
-            (*mem.offset(p as isize)).b16.s1 = 31i32 as uint16_t;
-            (*mem.offset(p as isize)).b16.s0 = 1i32 as uint16_t
+        if t as i32 == 1i32 {
+            (*mem.offset(p as isize)).b16.s1 = 31_u16;
+            (*mem.offset(p as isize)).b16.s0 = 1_u16
         }
-        if t as libc::c_int == 30i32 {
+        if t as i32 == 30i32 {
             q = p
         } else {
             q = fin_mlist(p);
             unsave();
         }
-        if t as libc::c_int != 31i32 {
+        if t as i32 != 31i32 {
             push_math(16i32 as group_code);
             (*mem.offset(cur_list.head as isize)).b32.s1 = q;
             cur_list.tail = p;
@@ -2075,22 +2028,22 @@ pub unsafe extern "C" fn math_left_right() {
         } else {
             (*mem.offset(cur_list.tail as isize)).b32.s1 = new_noad();
             cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-            (*mem.offset(cur_list.tail as isize)).b16.s1 = 23i32 as uint16_t;
+            (*mem.offset(cur_list.tail as isize)).b16.s1 = 23_u16;
             (*mem.offset((cur_list.tail + 1i32) as isize)).b32.s1 = 3i32;
             (*mem.offset((cur_list.tail + 1i32) as isize)).b32.s0 = q
         }
     };
 }
-unsafe extern "C" fn app_display(mut j: int32_t, mut b: int32_t, mut d: scaled_t) {
+unsafe extern "C" fn app_display(mut j: i32, mut b: i32, mut d: scaled_t) {
     let mut z: scaled_t = 0;
     let mut s: scaled_t = 0;
     let mut e: scaled_t = 0;
-    let mut x: int32_t = 0;
-    let mut p: int32_t = 0;
-    let mut q: int32_t = 0;
-    let mut r: int32_t = 0;
-    let mut t: int32_t = 0;
-    let mut u: int32_t = 0;
+    let mut x: i32 = 0;
+    let mut p: i32 = 0;
+    let mut q: i32 = 0;
+    let mut r: i32 = 0;
+    let mut t: i32 = 0;
+    let mut u: i32 = 0;
     s = (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -2202,13 +2155,13 @@ unsafe extern "C" fn app_display(mut j: int32_t, mut b: int32_t, mut d: scaled_t
             d = d + s;
             e = e + (*mem.offset((b + 1i32) as isize)).b32.s1 - z - s
         }
-        if (*mem.offset(p as isize)).b16.s0 as libc::c_int == 2i32 {
+        if (*mem.offset(p as isize)).b16.s0 as i32 == 2i32 {
             q = p
         } else {
             r = (*mem.offset((p + 5i32) as isize)).b32.s1;
             free_node(p, 8i32);
             if r == -0xfffffffi32 {
-                confusion(b"LR4\x00" as *const u8 as *const libc::c_char);
+                confusion(b"LR4\x00" as *const u8 as *const i8);
             }
             if x > 0i32 {
                 p = r;
@@ -2241,7 +2194,7 @@ unsafe extern "C" fn app_display(mut j: int32_t, mut b: int32_t, mut d: scaled_t
             t = (*mem.offset(r as isize)).b32.s1
         }
         u = new_math(0i32, 3i32 as small_number);
-        if (*mem.offset(t as isize)).b16.s1 as libc::c_int == 10i32 {
+        if (*mem.offset(t as isize)).b16.s1 as i32 == 10i32 {
             j = new_skip_param(8i32 as small_number);
             (*mem.offset(q as isize)).b32.s1 = j;
             (*mem.offset(j as isize)).b32.s1 = u;
@@ -2261,7 +2214,7 @@ unsafe extern "C" fn app_display(mut j: int32_t, mut b: int32_t, mut d: scaled_t
             (*mem.offset(q as isize)).b32.s1 = t
         }
         u = new_math(0i32, 2i32 as small_number);
-        if (*mem.offset(r as isize)).b16.s1 as libc::c_int == 10i32 {
+        if (*mem.offset(r as isize)).b16.s1 as i32 == 10i32 {
             j = new_skip_param(7i32 as small_number);
             (*mem.offset(u as isize)).b32.s1 = j;
             (*mem.offset(j as isize)).b32.s1 = p;
@@ -2293,10 +2246,10 @@ unsafe extern "C" fn app_display(mut j: int32_t, mut b: int32_t, mut d: scaled_t
 pub unsafe extern "C" fn after_math() {
     let mut l: bool = false;
     let mut danger: bool = false;
-    let mut m: int32_t = 0;
-    let mut p: int32_t = 0;
-    let mut a: int32_t = 0;
-    let mut b: int32_t = 0;
+    let mut m: i32 = 0;
+    let mut p: i32 = 0;
+    let mut a: i32 = 0;
+    let mut b: i32 = 0;
     let mut w: scaled_t = 0;
     let mut z: scaled_t = 0;
     let mut e: scaled_t = 0;
@@ -2305,12 +2258,12 @@ pub unsafe extern "C" fn after_math() {
     let mut s: scaled_t = 0;
     let mut g1: small_number = 0;
     let mut g2: small_number = 0;
-    let mut r: int32_t = 0;
-    let mut t: int32_t = 0;
-    let mut pre_t: int32_t = 0;
-    let mut j: int32_t = -0xfffffffi32;
+    let mut r: i32 = 0;
+    let mut t: i32 = 0;
+    let mut pre_t: i32 = 0;
+    let mut j: i32 = -0xfffffffi32;
     danger = 0i32 != 0;
-    if cur_list.mode as libc::c_int == 207i32 {
+    if cur_list.mode as i32 == 207i32 {
         j = cur_list.eTeX_aux
     }
     if *font_params.offset(
@@ -2360,7 +2313,7 @@ pub unsafe extern "C" fn after_math() {
             ))
             .b32
             .s1 as isize,
-        ) as libc::c_uint
+        ) as u32
             == 0xfffeu32
             && isOpenTypeMathFont(
                 *font_layout_engine.offset(
@@ -2387,7 +2340,7 @@ pub unsafe extern "C" fn after_math() {
                     .b32
                     .s1 as isize,
                 ) as XeTeXLayoutEngine,
-            ) as libc::c_int
+            ) as i32
                 != 0)
         || *font_params.offset(
             (*eqtb.offset(
@@ -2436,7 +2389,7 @@ pub unsafe extern "C" fn after_math() {
                 ))
                 .b32
                 .s1 as isize,
-            ) as libc::c_uint
+            ) as u32
                 == 0xfffeu32
                 && isOpenTypeMathFont(
                     *font_layout_engine.offset(
@@ -2463,7 +2416,7 @@ pub unsafe extern "C" fn after_math() {
                         .b32
                         .s1 as isize,
                     ) as XeTeXLayoutEngine,
-                ) as libc::c_int
+                ) as i32
                     != 0)
         || *font_params.offset(
             (*eqtb.offset(
@@ -2512,7 +2465,7 @@ pub unsafe extern "C" fn after_math() {
                 ))
                 .b32
                 .s1 as isize,
-            ) as libc::c_uint
+            ) as u32
                 == 0xfffeu32
                 && isOpenTypeMathFont(
                     *font_layout_engine.offset(
@@ -2539,25 +2492,24 @@ pub unsafe extern "C" fn after_math() {
                         .b32
                         .s1 as isize,
                     ) as XeTeXLayoutEngine,
-                ) as libc::c_int
+                ) as i32
                     != 0)
     {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
         print_cstr(
-            b"Math formula deleted: Insufficient symbol fonts\x00" as *const u8
-                as *const libc::c_char,
+            b"Math formula deleted: Insufficient symbol fonts\x00" as *const u8 as *const i8,
         );
-        help_ptr = 3i32 as libc::c_uchar;
-        help_line[2] = b"Sorry, but I can\'t typeset math unless \\textfont 2\x00" as *const u8
-            as *const libc::c_char;
-        help_line[1] = b"and \\scriptfont 2 and \\scriptscriptfont 2 have all\x00" as *const u8
-            as *const libc::c_char;
-        help_line[0] = b"the \\fontdimen values needed in math symbol fonts.\x00" as *const u8
-            as *const libc::c_char;
+        help_ptr = 3_u8;
+        help_line[2] =
+            b"Sorry, but I can\'t typeset math unless \\textfont 2\x00" as *const u8 as *const i8;
+        help_line[1] =
+            b"and \\scriptfont 2 and \\scriptscriptfont 2 have all\x00" as *const u8 as *const i8;
+        help_line[0] =
+            b"the \\fontdimen values needed in math symbol fonts.\x00" as *const u8 as *const i8;
         error();
         flush_math();
         danger = 1i32 != 0
@@ -2608,7 +2560,7 @@ pub unsafe extern "C" fn after_math() {
             ))
             .b32
             .s1 as isize,
-        ) as libc::c_uint
+        ) as u32
             == 0xfffeu32
             && isOpenTypeMathFont(
                 *font_layout_engine.offset(
@@ -2635,7 +2587,7 @@ pub unsafe extern "C" fn after_math() {
                     .b32
                     .s1 as isize,
                 ) as XeTeXLayoutEngine,
-            ) as libc::c_int
+            ) as i32
                 != 0)
         || *font_params.offset(
             (*eqtb.offset(
@@ -2684,7 +2636,7 @@ pub unsafe extern "C" fn after_math() {
                 ))
                 .b32
                 .s1 as isize,
-            ) as libc::c_uint
+            ) as u32
                 == 0xfffeu32
                 && isOpenTypeMathFont(
                     *font_layout_engine.offset(
@@ -2711,7 +2663,7 @@ pub unsafe extern "C" fn after_math() {
                         .b32
                         .s1 as isize,
                     ) as XeTeXLayoutEngine,
-                ) as libc::c_int
+                ) as i32
                     != 0)
         || *font_params.offset(
             (*eqtb.offset(
@@ -2760,7 +2712,7 @@ pub unsafe extern "C" fn after_math() {
                 ))
                 .b32
                 .s1 as isize,
-            ) as libc::c_uint
+            ) as u32
                 == 0xfffeu32
                 && isOpenTypeMathFont(
                     *font_layout_engine.offset(
@@ -2787,46 +2739,45 @@ pub unsafe extern "C" fn after_math() {
                         .b32
                         .s1 as isize,
                     ) as XeTeXLayoutEngine,
-                ) as libc::c_int
+                ) as i32
                     != 0)
     {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
         print_cstr(
-            b"Math formula deleted: Insufficient extension fonts\x00" as *const u8
-                as *const libc::c_char,
+            b"Math formula deleted: Insufficient extension fonts\x00" as *const u8 as *const i8,
         );
-        help_ptr = 3i32 as libc::c_uchar;
-        help_line[2] = b"Sorry, but I can\'t typeset math unless \\textfont 3\x00" as *const u8
-            as *const libc::c_char;
-        help_line[1] = b"and \\scriptfont 3 and \\scriptscriptfont 3 have all\x00" as *const u8
-            as *const libc::c_char;
-        help_line[0] = b"the \\fontdimen values needed in math extension fonts.\x00" as *const u8
-            as *const libc::c_char;
+        help_ptr = 3_u8;
+        help_line[2] =
+            b"Sorry, but I can\'t typeset math unless \\textfont 3\x00" as *const u8 as *const i8;
+        help_line[1] =
+            b"and \\scriptfont 3 and \\scriptscriptfont 3 have all\x00" as *const u8 as *const i8;
+        help_line[0] =
+            b"the \\fontdimen values needed in math extension fonts.\x00" as *const u8 as *const i8;
         error();
         flush_math();
         danger = 1i32 != 0
     }
-    m = cur_list.mode as int32_t;
+    m = cur_list.mode as i32;
     l = 0i32 != 0;
     p = fin_mlist(-0xfffffffi32);
-    if cur_list.mode as libc::c_int == -m {
+    if cur_list.mode as i32 == -m {
         get_x_token();
-        if cur_cmd as libc::c_int != 3i32 {
+        if cur_cmd as i32 != 3i32 {
             if file_line_error_style_p != 0 {
                 print_file_line();
             } else {
-                print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                print_nl_cstr(b"! \x00" as *const u8 as *const i8);
             }
-            print_cstr(b"Display math should end with $$\x00" as *const u8 as *const libc::c_char);
-            help_ptr = 2i32 as libc::c_uchar;
+            print_cstr(b"Display math should end with $$\x00" as *const u8 as *const i8);
+            help_ptr = 2_u8;
             help_line[1] = b"The `$\' that I just saw supposedly matches a previous `$$\'.\x00"
-                as *const u8 as *const libc::c_char;
-            help_line[0] = b"So I shall assume that you typed `$$\' both times.\x00" as *const u8
-                as *const libc::c_char;
+                as *const u8 as *const i8;
+            help_line[0] =
+                b"So I shall assume that you typed `$$\' both times.\x00" as *const u8 as *const i8;
             back_error();
         }
         cur_mlist = p;
@@ -2838,14 +2789,14 @@ pub unsafe extern "C" fn after_math() {
             0i32,
             1i32 as small_number,
         );
-        (*mem.offset(a as isize)).b16.s0 = 2i32 as uint16_t;
+        (*mem.offset(a as isize)).b16.s0 = 2_u16;
         unsave();
         save_ptr -= 1;
         if (*save_stack.offset((save_ptr + 0i32) as isize)).b32.s1 == 1i32 {
             l = 1i32 != 0
         }
         danger = 0i32 != 0;
-        if cur_list.mode as libc::c_int == 207i32 {
+        if cur_list.mode as i32 == 207i32 {
             j = cur_list.eTeX_aux
         }
         if *font_params.offset(
@@ -2895,7 +2846,7 @@ pub unsafe extern "C" fn after_math() {
                 ))
                 .b32
                 .s1 as isize,
-            ) as libc::c_uint
+            ) as u32
                 == 0xfffeu32
                 && isOpenTypeMathFont(
                     *font_layout_engine.offset(
@@ -2922,7 +2873,7 @@ pub unsafe extern "C" fn after_math() {
                         .b32
                         .s1 as isize,
                     ) as XeTeXLayoutEngine,
-                ) as libc::c_int
+                ) as i32
                     != 0)
             || *font_params.offset(
                 (*eqtb.offset(
@@ -2971,7 +2922,7 @@ pub unsafe extern "C" fn after_math() {
                     ))
                     .b32
                     .s1 as isize,
-                ) as libc::c_uint
+                ) as u32
                     == 0xfffeu32
                     && isOpenTypeMathFont(
                         *font_layout_engine.offset(
@@ -2998,7 +2949,7 @@ pub unsafe extern "C" fn after_math() {
                             .b32
                             .s1 as isize,
                         ) as XeTeXLayoutEngine,
-                    ) as libc::c_int
+                    ) as i32
                         != 0)
             || *font_params.offset(
                 (*eqtb.offset(
@@ -3047,7 +2998,7 @@ pub unsafe extern "C" fn after_math() {
                     ))
                     .b32
                     .s1 as isize,
-                ) as libc::c_uint
+                ) as u32
                     == 0xfffeu32
                     && isOpenTypeMathFont(
                         *font_layout_engine.offset(
@@ -3075,25 +3026,24 @@ pub unsafe extern "C" fn after_math() {
                             .b32
                             .s1 as isize,
                         ) as XeTeXLayoutEngine,
-                    ) as libc::c_int
+                    ) as i32
                         != 0)
         {
             if file_line_error_style_p != 0 {
                 print_file_line();
             } else {
-                print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                print_nl_cstr(b"! \x00" as *const u8 as *const i8);
             }
             print_cstr(
-                b"Math formula deleted: Insufficient symbol fonts\x00" as *const u8
-                    as *const libc::c_char,
+                b"Math formula deleted: Insufficient symbol fonts\x00" as *const u8 as *const i8,
             );
-            help_ptr = 3i32 as libc::c_uchar;
+            help_ptr = 3_u8;
             help_line[2] = b"Sorry, but I can\'t typeset math unless \\textfont 2\x00" as *const u8
-                as *const libc::c_char;
+                as *const i8;
             help_line[1] = b"and \\scriptfont 2 and \\scriptscriptfont 2 have all\x00" as *const u8
-                as *const libc::c_char;
+                as *const i8;
             help_line[0] = b"the \\fontdimen values needed in math symbol fonts.\x00" as *const u8
-                as *const libc::c_char;
+                as *const i8;
             error();
             flush_math();
             danger = 1i32 != 0
@@ -3144,7 +3094,7 @@ pub unsafe extern "C" fn after_math() {
                 ))
                 .b32
                 .s1 as isize,
-            ) as libc::c_uint
+            ) as u32
                 == 0xfffeu32
                 && isOpenTypeMathFont(
                     *font_layout_engine.offset(
@@ -3171,7 +3121,7 @@ pub unsafe extern "C" fn after_math() {
                         .b32
                         .s1 as isize,
                     ) as XeTeXLayoutEngine,
-                ) as libc::c_int
+                ) as i32
                     != 0)
             || *font_params.offset(
                 (*eqtb.offset(
@@ -3220,7 +3170,7 @@ pub unsafe extern "C" fn after_math() {
                     ))
                     .b32
                     .s1 as isize,
-                ) as libc::c_uint
+                ) as u32
                     == 0xfffeu32
                     && isOpenTypeMathFont(
                         *font_layout_engine.offset(
@@ -3247,7 +3197,7 @@ pub unsafe extern "C" fn after_math() {
                             .b32
                             .s1 as isize,
                         ) as XeTeXLayoutEngine,
-                    ) as libc::c_int
+                    ) as i32
                         != 0)
             || *font_params.offset(
                 (*eqtb.offset(
@@ -3296,7 +3246,7 @@ pub unsafe extern "C" fn after_math() {
                     ))
                     .b32
                     .s1 as isize,
-                ) as libc::c_uint
+                ) as u32
                     == 0xfffeu32
                     && isOpenTypeMathFont(
                         *font_layout_engine.offset(
@@ -3324,30 +3274,29 @@ pub unsafe extern "C" fn after_math() {
                             .b32
                             .s1 as isize,
                         ) as XeTeXLayoutEngine,
-                    ) as libc::c_int
+                    ) as i32
                         != 0)
         {
             if file_line_error_style_p != 0 {
                 print_file_line();
             } else {
-                print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                print_nl_cstr(b"! \x00" as *const u8 as *const i8);
             }
             print_cstr(
-                b"Math formula deleted: Insufficient extension fonts\x00" as *const u8
-                    as *const libc::c_char,
+                b"Math formula deleted: Insufficient extension fonts\x00" as *const u8 as *const i8,
             );
-            help_ptr = 3i32 as libc::c_uchar;
+            help_ptr = 3_u8;
             help_line[2] = b"Sorry, but I can\'t typeset math unless \\textfont 3\x00" as *const u8
-                as *const libc::c_char;
+                as *const i8;
             help_line[1] = b"and \\scriptfont 3 and \\scriptscriptfont 3 have all\x00" as *const u8
-                as *const libc::c_char;
+                as *const i8;
             help_line[0] = b"the \\fontdimen values needed in math extension fonts.\x00"
-                as *const u8 as *const libc::c_char;
+                as *const u8 as *const i8;
             error();
             flush_math();
             danger = 1i32 != 0
         }
-        m = cur_list.mode as int32_t;
+        m = cur_list.mode as i32;
         p = fin_mlist(-0xfffffffi32)
     } else {
         a = -0xfffffffi32
@@ -3392,7 +3341,7 @@ pub unsafe extern "C" fn after_math() {
         cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
         cur_mlist = p;
         cur_style = 2i32 as small_number;
-        mlist_penalties = cur_list.mode as libc::c_int > 0i32;
+        mlist_penalties = cur_list.mode as i32 > 0i32;
         mlist_to_hlist();
         (*mem.offset(cur_list.tail as isize)).b32.s1 =
             (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1;
@@ -3441,20 +3390,18 @@ pub unsafe extern "C" fn after_math() {
         if a == -0xfffffffi32 {
             /*1232: */
             get_x_token();
-            if cur_cmd as libc::c_int != 3i32 {
+            if cur_cmd as i32 != 3i32 {
                 if file_line_error_style_p != 0 {
                     print_file_line();
                 } else {
-                    print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                    print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
-                print_cstr(
-                    b"Display math should end with $$\x00" as *const u8 as *const libc::c_char,
-                );
-                help_ptr = 2i32 as libc::c_uchar;
+                print_cstr(b"Display math should end with $$\x00" as *const u8 as *const i8);
+                help_ptr = 2_u8;
                 help_line[1] = b"The `$\' that I just saw supposedly matches a previous `$$\'.\x00"
-                    as *const u8 as *const libc::c_char;
+                    as *const u8 as *const i8;
                 help_line[0] = b"So I shall assume that you typed `$$\' both times.\x00"
-                    as *const u8 as *const libc::c_char;
+                    as *const u8 as *const i8;
                 back_error();
             }
         }
@@ -3568,7 +3515,7 @@ pub unsafe extern "C" fn after_math() {
         {
             s = -s - z
         }
-        if a == -0xfffffffi32 || danger as libc::c_int != 0 {
+        if a == -0xfffffffi32 || danger as i32 != 0 {
             e = 0i32;
             q = 0i32
         } else {
@@ -3594,13 +3541,13 @@ pub unsafe extern "C" fn after_math() {
             }
             w = (*mem.offset((b + 1i32) as isize)).b32.s1
         }
-        (*mem.offset(b as isize)).b16.s0 = 2i32 as uint16_t;
+        (*mem.offset(b as isize)).b16.s0 = 2_u16;
         d = half(z - w);
         if e > 0i32 && d < 2i32 * e {
             d = half(z - w - e);
             if p != -0xfffffffi32 {
                 if !is_char_node(p) {
-                    if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 10i32 {
+                    if (*mem.offset(p as isize)).b16.s1 as i32 == 10i32 {
                         d = 0i32
                     }
                 }
@@ -3671,7 +3618,7 @@ pub unsafe extern "C" fn after_math() {
             ))
             .b32
             .s1
-            || l as libc::c_int != 0
+            || l as i32 != 0
         {
             g1 = 3i32 as small_number;
             g2 = 4i32 as small_number
@@ -3679,7 +3626,7 @@ pub unsafe extern "C" fn after_math() {
             g1 = 5i32 as small_number;
             g2 = 6i32 as small_number
         }
-        if l as libc::c_int != 0 && e == 0i32 {
+        if l as i32 != 0 && e == 0i32 {
             app_display(j, a, 0i32);
             (*mem.offset(cur_list.tail as isize)).b32.s1 = new_penalty(10000i32);
             cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1
@@ -3749,7 +3696,7 @@ pub unsafe extern "C" fn after_math() {
             .s1,
         );
         cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-        if g2 as libc::c_int > 0i32 {
+        if g2 as i32 > 0i32 {
             (*mem.offset(cur_list.tail as isize)).b32.s1 = new_param_glue(g2);
             cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1
         }
@@ -3759,13 +3706,13 @@ pub unsafe extern "C" fn after_math() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn resume_after_display() {
-    if cur_group as libc::c_int != 15i32 {
-        confusion(b"display\x00" as *const u8 as *const libc::c_char);
+    if cur_group as i32 != 15i32 {
+        confusion(b"display\x00" as *const u8 as *const i8);
     }
     unsave();
     cur_list.prev_graf = cur_list.prev_graf + 3i32;
     push_nest();
-    cur_list.mode = 104i32 as libc::c_short;
+    cur_list.mode = 104_i16;
     cur_list.aux.b32.s0 = 1000i32;
     if (*eqtb.offset(
         (1i32
@@ -3797,7 +3744,7 @@ pub unsafe extern "C" fn resume_after_display() {
     .b32
     .s1 <= 0i32
     {
-        cur_lang = 0i32 as libc::c_uchar
+        cur_lang = 0_u8
     } else if (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -3828,7 +3775,7 @@ pub unsafe extern "C" fn resume_after_display() {
     .b32
     .s1 > 255i32
     {
-        cur_lang = 0i32 as libc::c_uchar
+        cur_lang = 0_u8
     } else {
         cur_lang = (*eqtb.offset(
             (1i32
@@ -3858,9 +3805,9 @@ pub unsafe extern "C" fn resume_after_display() {
                 + 50i32) as isize,
         ))
         .b32
-        .s1 as libc::c_uchar
+        .s1 as u8
     }
-    cur_list.aux.b32.s1 = cur_lang as int32_t;
+    cur_list.aux.b32.s1 = cur_lang as i32;
     cur_list.prev_graf = ((norm_min(
         (*eqtb.offset(
             (1i32
@@ -3891,7 +3838,7 @@ pub unsafe extern "C" fn resume_after_display() {
         ))
         .b32
         .s1,
-    ) as libc::c_int
+    ) as i32
         * 64i32
         + norm_min(
             (*eqtb.offset(
@@ -3923,11 +3870,11 @@ pub unsafe extern "C" fn resume_after_display() {
             ))
             .b32
             .s1,
-        ) as libc::c_int) as libc::c_long
+        ) as i32) as i64
         * 65536
-        + cur_lang as libc::c_long) as int32_t;
+        + cur_lang as i64) as i32;
     get_x_token();
-    if cur_cmd as libc::c_int != 10i32 {
+    if cur_cmd as i32 != 10i32 {
         back_input();
     }
     if nest_ptr == 1i32 {
@@ -3937,8 +3884,8 @@ pub unsafe extern "C" fn resume_after_display() {
 /* Copyright 2016-2018 The Tectonic Project
  * Licensed under the MIT License.
  */
-unsafe extern "C" fn math_x_height(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn math_x_height(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -3962,9 +3909,8 @@ unsafe extern "C" fn math_x_height(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 5i32)
@@ -3975,8 +3921,8 @@ unsafe extern "C" fn math_x_height(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn math_quad(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn math_quad(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4000,9 +3946,8 @@ unsafe extern "C" fn math_quad(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 6i32)
@@ -4013,8 +3958,8 @@ unsafe extern "C" fn math_quad(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn num1(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn num1(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4038,9 +3983,8 @@ unsafe extern "C" fn num1(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 8i32)
@@ -4051,8 +3995,8 @@ unsafe extern "C" fn num1(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn num2(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn num2(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4076,9 +4020,8 @@ unsafe extern "C" fn num2(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 9i32)
@@ -4089,8 +4032,8 @@ unsafe extern "C" fn num2(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn num3(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn num3(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4114,9 +4057,8 @@ unsafe extern "C" fn num3(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 10i32)
@@ -4127,8 +4069,8 @@ unsafe extern "C" fn num3(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn denom1(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn denom1(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4152,9 +4094,8 @@ unsafe extern "C" fn denom1(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 11i32)
@@ -4165,8 +4106,8 @@ unsafe extern "C" fn denom1(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn denom2(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn denom2(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4190,9 +4131,8 @@ unsafe extern "C" fn denom2(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 12i32)
@@ -4203,8 +4143,8 @@ unsafe extern "C" fn denom2(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn sup1(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn sup1(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4228,9 +4168,8 @@ unsafe extern "C" fn sup1(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 13i32)
@@ -4241,8 +4180,8 @@ unsafe extern "C" fn sup1(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn sup2(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn sup2(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4266,9 +4205,8 @@ unsafe extern "C" fn sup2(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 14i32)
@@ -4279,8 +4217,8 @@ unsafe extern "C" fn sup2(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn sup3(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn sup3(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4304,9 +4242,8 @@ unsafe extern "C" fn sup3(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 15i32)
@@ -4317,8 +4254,8 @@ unsafe extern "C" fn sup3(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn sub1(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn sub1(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4342,9 +4279,8 @@ unsafe extern "C" fn sub1(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 16i32)
@@ -4355,8 +4291,8 @@ unsafe extern "C" fn sub1(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn sub2(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn sub2(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4380,9 +4316,8 @@ unsafe extern "C" fn sub2(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 17i32)
@@ -4393,8 +4328,8 @@ unsafe extern "C" fn sub2(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn sup_drop(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn sup_drop(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4418,9 +4353,8 @@ unsafe extern "C" fn sup_drop(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 18i32)
@@ -4431,8 +4365,8 @@ unsafe extern "C" fn sup_drop(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn sub_drop(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn sub_drop(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4456,9 +4390,8 @@ unsafe extern "C" fn sub_drop(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 19i32)
@@ -4469,8 +4402,8 @@ unsafe extern "C" fn sub_drop(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn delim1(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn delim1(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4494,9 +4427,8 @@ unsafe extern "C" fn delim1(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 20i32)
@@ -4507,8 +4439,8 @@ unsafe extern "C" fn delim1(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn delim2(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn delim2(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4532,9 +4464,8 @@ unsafe extern "C" fn delim2(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 21i32)
@@ -4545,8 +4476,8 @@ unsafe extern "C" fn delim2(mut size_code: int32_t) -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn axis_height(mut size_code: int32_t) -> scaled_t {
-    let mut f: int32_t = 0;
+unsafe extern "C" fn axis_height(mut size_code: i32) -> scaled_t {
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4570,9 +4501,8 @@ unsafe extern "C" fn axis_height(mut size_code: int32_t) -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathsy_param(f, 22i32)
@@ -4584,7 +4514,7 @@ unsafe extern "C" fn axis_height(mut size_code: int32_t) -> scaled_t {
     return rval;
 }
 unsafe extern "C" fn default_rule_thickness() -> scaled_t {
-    let mut f: int32_t = 0;
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4608,9 +4538,8 @@ unsafe extern "C" fn default_rule_thickness() -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathex_param(f, 8i32)
@@ -4622,7 +4551,7 @@ unsafe extern "C" fn default_rule_thickness() -> scaled_t {
     return rval;
 }
 unsafe extern "C" fn big_op_spacing1() -> scaled_t {
-    let mut f: int32_t = 0;
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4646,9 +4575,8 @@ unsafe extern "C" fn big_op_spacing1() -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathex_param(f, 9i32)
@@ -4660,7 +4588,7 @@ unsafe extern "C" fn big_op_spacing1() -> scaled_t {
     return rval;
 }
 unsafe extern "C" fn big_op_spacing2() -> scaled_t {
-    let mut f: int32_t = 0;
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4684,9 +4612,8 @@ unsafe extern "C" fn big_op_spacing2() -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathex_param(f, 10i32)
@@ -4698,7 +4625,7 @@ unsafe extern "C" fn big_op_spacing2() -> scaled_t {
     return rval;
 }
 unsafe extern "C" fn big_op_spacing3() -> scaled_t {
-    let mut f: int32_t = 0;
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4722,9 +4649,8 @@ unsafe extern "C" fn big_op_spacing3() -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathex_param(f, 11i32)
@@ -4736,7 +4662,7 @@ unsafe extern "C" fn big_op_spacing3() -> scaled_t {
     return rval;
 }
 unsafe extern "C" fn big_op_spacing4() -> scaled_t {
-    let mut f: int32_t = 0;
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4760,9 +4686,8 @@ unsafe extern "C" fn big_op_spacing4() -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathex_param(f, 12i32)
@@ -4774,7 +4699,7 @@ unsafe extern "C" fn big_op_spacing4() -> scaled_t {
     return rval;
 }
 unsafe extern "C" fn big_op_spacing5() -> scaled_t {
-    let mut f: int32_t = 0;
+    let mut f: i32 = 0;
     let mut rval: scaled_t = 0;
     f = (*eqtb.offset(
         (1i32
@@ -4798,9 +4723,8 @@ unsafe extern "C" fn big_op_spacing5() -> scaled_t {
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rval = get_native_mathex_param(f, 13i32)
@@ -4811,16 +4735,16 @@ unsafe extern "C" fn big_op_spacing5() -> scaled_t {
     }
     return rval;
 }
-unsafe extern "C" fn fraction_rule(mut t: scaled_t) -> int32_t {
-    let mut p: int32_t = 0;
+unsafe extern "C" fn fraction_rule(mut t: scaled_t) -> i32 {
+    let mut p: i32 = 0;
     p = new_rule();
     (*mem.offset((p + 3i32) as isize)).b32.s1 = t;
     (*mem.offset((p + 2i32) as isize)).b32.s1 = 0i32;
     return p;
 }
-unsafe extern "C" fn overbar(mut b: int32_t, mut k: scaled_t, mut t: scaled_t) -> int32_t {
-    let mut p: int32_t = 0;
-    let mut q: int32_t = 0;
+unsafe extern "C" fn overbar(mut b: i32, mut k: scaled_t, mut t: scaled_t) -> i32 {
+    let mut p: i32 = 0;
+    let mut q: i32 = 0;
     p = new_kern(k);
     (*mem.offset(p as isize)).b32.s1 = b;
     q = fraction_rule(t);
@@ -4829,52 +4753,40 @@ unsafe extern "C" fn overbar(mut b: int32_t, mut k: scaled_t, mut t: scaled_t) -
     (*mem.offset(p as isize)).b32.s1 = q;
     return vpackage(p, 0i32, 1i32 as small_number, 0x3fffffffi32);
 }
-unsafe extern "C" fn math_glue(mut g: int32_t, mut m: scaled_t) -> int32_t {
-    let mut p: int32_t = 0;
-    let mut n: int32_t = 0;
+unsafe extern "C" fn math_glue(mut g: i32, mut m: scaled_t) -> i32 {
+    let mut p: i32 = 0;
+    let mut n: i32 = 0;
     let mut f: scaled_t = 0;
-    n = x_over_n(m, 65536 as int32_t);
+    n = x_over_n(m, 65536 as i32);
     f = tex_remainder;
     if f < 0i32 {
         n -= 1;
-        f = (f as libc::c_long + 65536) as scaled_t
+        f = (f as i64 + 65536) as scaled_t
     }
     p = get_node(4i32);
     (*mem.offset((p + 1i32) as isize)).b32.s1 = mult_and_add(
         n,
         (*mem.offset((g + 1i32) as isize)).b32.s1,
-        xn_over_d(
-            (*mem.offset((g + 1i32) as isize)).b32.s1,
-            f,
-            65536 as int32_t,
-        ),
+        xn_over_d((*mem.offset((g + 1i32) as isize)).b32.s1, f, 65536 as i32),
         0x3fffffffi32,
     );
     (*mem.offset(p as isize)).b16.s1 = (*mem.offset(g as isize)).b16.s1;
-    if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 0i32 {
+    if (*mem.offset(p as isize)).b16.s1 as i32 == 0i32 {
         (*mem.offset((p + 2i32) as isize)).b32.s1 = mult_and_add(
             n,
             (*mem.offset((g + 2i32) as isize)).b32.s1,
-            xn_over_d(
-                (*mem.offset((g + 2i32) as isize)).b32.s1,
-                f,
-                65536 as int32_t,
-            ),
+            xn_over_d((*mem.offset((g + 2i32) as isize)).b32.s1, f, 65536 as i32),
             0x3fffffffi32,
         )
     } else {
         (*mem.offset((p + 2i32) as isize)).b32.s1 = (*mem.offset((g + 2i32) as isize)).b32.s1
     }
     (*mem.offset(p as isize)).b16.s0 = (*mem.offset(g as isize)).b16.s0;
-    if (*mem.offset(p as isize)).b16.s0 as libc::c_int == 0i32 {
+    if (*mem.offset(p as isize)).b16.s0 as i32 == 0i32 {
         (*mem.offset((p + 3i32) as isize)).b32.s1 = mult_and_add(
             n,
             (*mem.offset((g + 3i32) as isize)).b32.s1,
-            xn_over_d(
-                (*mem.offset((g + 3i32) as isize)).b32.s1,
-                f,
-                65536 as int32_t,
-            ),
+            xn_over_d((*mem.offset((g + 3i32) as isize)).b32.s1, f, 65536 as i32),
             0x3fffffffi32,
         )
     } else {
@@ -4882,27 +4794,23 @@ unsafe extern "C" fn math_glue(mut g: int32_t, mut m: scaled_t) -> int32_t {
     }
     return p;
 }
-unsafe extern "C" fn math_kern(mut p: int32_t, mut m: scaled_t) {
-    let mut n: int32_t = 0;
+unsafe extern "C" fn math_kern(mut p: i32, mut m: scaled_t) {
+    let mut n: i32 = 0;
     let mut f: scaled_t = 0;
-    if (*mem.offset(p as isize)).b16.s0 as libc::c_int == 99i32 {
-        n = x_over_n(m, 65536 as int32_t);
+    if (*mem.offset(p as isize)).b16.s0 as i32 == 99i32 {
+        n = x_over_n(m, 65536 as i32);
         f = tex_remainder;
         if f < 0i32 {
             n -= 1;
-            f = (f as libc::c_long + 65536) as scaled_t
+            f = (f as i64 + 65536) as scaled_t
         }
         (*mem.offset((p + 1i32) as isize)).b32.s1 = mult_and_add(
             n,
             (*mem.offset((p + 1i32) as isize)).b32.s1,
-            xn_over_d(
-                (*mem.offset((p + 1i32) as isize)).b32.s1,
-                f,
-                65536 as int32_t,
-            ),
+            xn_over_d((*mem.offset((p + 1i32) as isize)).b32.s1, f, 65536 as i32),
             0x3fffffffi32,
         );
-        (*mem.offset(p as isize)).b16.s0 = 1i32 as uint16_t
+        (*mem.offset(p as isize)).b16.s0 = 1_u16
     };
 }
 #[no_mangle]
@@ -4913,12 +4821,12 @@ pub unsafe extern "C" fn flush_math() {
     cur_list.tail = cur_list.head;
     cur_list.aux.b32.s1 = -0xfffffffi32;
 }
-unsafe extern "C" fn clean_box(mut p: int32_t, mut s: small_number) -> int32_t {
+unsafe extern "C" fn clean_box(mut p: i32, mut s: small_number) -> i32 {
     let mut current_block: u64;
-    let mut q: int32_t = 0;
+    let mut q: i32 = 0;
     let mut save_style: small_number = 0;
-    let mut x: int32_t = 0;
-    let mut r: int32_t = 0;
+    let mut x: i32 = 0;
+    let mut r: i32 = 0;
     match (*mem.offset(p as isize)).b32.s1 {
         1 => {
             cur_mlist = new_noad();
@@ -4946,19 +4854,19 @@ unsafe extern "C" fn clean_box(mut p: int32_t, mut s: small_number) -> int32_t {
             mlist_to_hlist();
             q = (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1;
             cur_style = save_style;
-            if (cur_style as libc::c_int) < 4i32 {
+            if (cur_style as i32) < 4i32 {
                 cur_size = 0i32
             } else {
-                cur_size = 256i32 * ((cur_style as libc::c_int - 2i32) / 2i32)
+                cur_size = 256i32 * ((cur_style as i32 - 2i32) / 2i32)
             }
             cur_mu = x_over_n(math_quad(cur_size), 18i32)
         }
         _ => {}
     }
-    if is_char_node(q) as libc::c_int != 0 || q == -0xfffffffi32 {
+    if is_char_node(q) as i32 != 0 || q == -0xfffffffi32 {
         x = hpack(q, 0i32, 1i32 as small_number)
     } else if (*mem.offset(q as isize)).b32.s1 == -0xfffffffi32
-        && (*mem.offset(q as isize)).b16.s1 as libc::c_int <= 1i32
+        && (*mem.offset(q as isize)).b16.s1 as i32 <= 1i32
         && (*mem.offset((q + 4i32) as isize)).b32.s1 == 0i32
     {
         x = q
@@ -4971,7 +4879,7 @@ unsafe extern "C" fn clean_box(mut p: int32_t, mut s: small_number) -> int32_t {
         if r != -0xfffffffi32 {
             if (*mem.offset(r as isize)).b32.s1 == -0xfffffffi32 {
                 if !is_char_node(r) {
-                    if (*mem.offset(r as isize)).b16.s1 as libc::c_int == 11i32 {
+                    if (*mem.offset(r as isize)).b16.s1 as i32 == 11i32 {
                         free_node(r, 3i32);
                         (*mem.offset(q as isize)).b32.s1 = -0xfffffffi32
                     }
@@ -4981,8 +4889,8 @@ unsafe extern "C" fn clean_box(mut p: int32_t, mut s: small_number) -> int32_t {
     }
     return x;
 }
-unsafe extern "C" fn fetch(mut a: int32_t) {
-    cur_c = (*mem.offset(a as isize)).b16.s0 as int32_t;
+unsafe extern "C" fn fetch(mut a: i32) {
+    cur_c = (*mem.offset(a as isize)).b16.s0 as i32;
     cur_f = (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -5001,73 +4909,71 @@ unsafe extern "C" fn fetch(mut a: int32_t) {
             + 4i32
             + 256i32
             + 1i32
-            + ((*mem.offset(a as isize)).b16.s1 as libc::c_int % 256i32 + cur_size))
-            as isize,
+            + ((*mem.offset(a as isize)).b16.s1 as i32 % 256i32 + cur_size)) as isize,
     ))
     .b32
     .s1;
-    cur_c = (cur_c as libc::c_long
-        + ((*mem.offset(a as isize)).b16.s1 as libc::c_int / 256i32) as libc::c_long * 65536)
-        as int32_t;
+    cur_c =
+        (cur_c as i64 + ((*mem.offset(a as isize)).b16.s1 as i32 / 256i32) as i64 * 65536) as i32;
     if cur_f == 0i32 {
         /*749: */
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
-        print_cstr(b"\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b"\x00" as *const u8 as *const i8);
         print_size(cur_size);
         print_char(' ' as i32);
-        print_int((*mem.offset(a as isize)).b16.s1 as libc::c_int % 256i32);
-        print_cstr(b" is undefined (character \x00" as *const u8 as *const libc::c_char);
+        print_int((*mem.offset(a as isize)).b16.s1 as i32 % 256i32);
+        print_cstr(b" is undefined (character \x00" as *const u8 as *const i8);
         print(cur_c);
         print_char(')' as i32);
-        help_ptr = 4i32 as libc::c_uchar;
-        help_line[3] = b"Somewhere in the math formula just ended, you used the\x00" as *const u8
-            as *const libc::c_char;
+        help_ptr = 4_u8;
+        help_line[3] =
+            b"Somewhere in the math formula just ended, you used the\x00" as *const u8 as *const i8;
         help_line[2] = b"stated character from an undefined font family. For example,\x00"
-            as *const u8 as *const libc::c_char;
+            as *const u8 as *const i8;
         help_line[1] = b"plain TeX doesn\'t allow \\it or \\sl in subscripts. Proceed,\x00"
-            as *const u8 as *const libc::c_char;
-        help_line[0] = b"and I\'ll try to forget that I needed that character.\x00" as *const u8
-            as *const libc::c_char;
+            as *const u8 as *const i8;
+        help_line[0] =
+            b"and I\'ll try to forget that I needed that character.\x00" as *const u8 as *const i8;
         error();
         cur_i = null_character;
         (*mem.offset(a as isize)).b32.s1 = 0i32
-    } else if *font_area.offset(cur_f as isize) as libc::c_uint == 0xffffu32
-        || *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+    } else if *font_area.offset(cur_f as isize) as u32 == 0xffffu32
+        || *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
     {
         cur_i = null_character
     } else {
-        if cur_c >= *font_bc.offset(cur_f as isize) as libc::c_int
-            && cur_c <= *font_ec.offset(cur_f as isize) as libc::c_int
+        if cur_c >= *font_bc.offset(cur_f as isize) as i32
+            && cur_c <= *font_ec.offset(cur_f as isize) as i32
         {
             cur_i = (*font_info.offset((*char_base.offset(cur_f as isize) + cur_c) as isize)).b16
         } else {
             cur_i = null_character
         }
-        if !(cur_i.s3 as libc::c_int > 0i32) {
+        if !(cur_i.s3 as i32 > 0i32) {
             char_warning(cur_f, cur_c);
             (*mem.offset(a as isize)).b32.s1 = 0i32
         }
     };
 }
-unsafe extern "C" fn make_over(mut q: int32_t) {
+unsafe extern "C" fn make_over(mut q: i32) {
     (*mem.offset((q + 1i32) as isize)).b32.s0 = overbar(
         clean_box(
             q + 1i32,
-            (2i32 * (cur_style as libc::c_int / 2i32) + 1i32) as small_number,
+            (2i32 * (cur_style as i32 / 2i32) + 1i32) as small_number,
         ),
         3i32 * default_rule_thickness(),
         default_rule_thickness(),
     );
     (*mem.offset((q + 1i32) as isize)).b32.s1 = 2i32;
 }
-unsafe extern "C" fn make_under(mut q: int32_t) {
-    let mut p: int32_t = 0;
-    let mut x: int32_t = 0;
-    let mut y: int32_t = 0;
+unsafe extern "C" fn make_under(mut q: i32) {
+    let mut p: i32 = 0;
+    let mut x: i32 = 0;
+    let mut y: i32 = 0;
     let mut delta: scaled_t = 0;
     x = clean_box(q + 1i32, cur_style);
     p = new_kern(3i32 * default_rule_thickness());
@@ -5082,20 +4988,20 @@ unsafe extern "C" fn make_under(mut q: int32_t) {
     (*mem.offset((q + 1i32) as isize)).b32.s0 = y;
     (*mem.offset((q + 1i32) as isize)).b32.s1 = 2i32;
 }
-unsafe extern "C" fn make_vcenter(mut q: int32_t) {
-    let mut v: int32_t = 0;
+unsafe extern "C" fn make_vcenter(mut q: i32) {
+    let mut v: i32 = 0;
     let mut delta: scaled_t = 0;
     v = (*mem.offset((q + 1i32) as isize)).b32.s0;
-    if (*mem.offset(v as isize)).b16.s1 as libc::c_int != 1i32 {
-        confusion(b"vcenter\x00" as *const u8 as *const libc::c_char);
+    if (*mem.offset(v as isize)).b16.s1 as i32 != 1i32 {
+        confusion(b"vcenter\x00" as *const u8 as *const i8);
     }
     delta = (*mem.offset((v + 3i32) as isize)).b32.s1 + (*mem.offset((v + 2i32) as isize)).b32.s1;
     (*mem.offset((v + 3i32) as isize)).b32.s1 = axis_height(cur_size) + half(delta);
     (*mem.offset((v + 2i32) as isize)).b32.s1 = delta - (*mem.offset((v + 3i32) as isize)).b32.s1;
 }
-unsafe extern "C" fn make_radical(mut q: int32_t) {
-    let mut x: int32_t = 0;
-    let mut y: int32_t = 0;
+unsafe extern "C" fn make_radical(mut q: i32) {
+    let mut x: i32 = 0;
+    let mut y: i32 = 0;
     let mut f: internal_font_number = 0;
     let mut rule_thickness: scaled_t = 0;
     let mut delta: scaled_t = 0;
@@ -5118,14 +5024,13 @@ unsafe extern "C" fn make_radical(mut q: int32_t) {
             + 4i32
             + 256i32
             + 1i32
-            + ((*mem.offset((q + 4i32) as isize)).b16.s3 as libc::c_int % 256i32 + cur_size))
+            + ((*mem.offset((q + 4i32) as isize)).b16.s3 as i32 % 256i32 + cur_size))
             as isize,
     ))
     .b32
     .s1;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         rule_thickness = get_ot_math_constant(f, 51i32)
@@ -5134,19 +5039,18 @@ unsafe extern "C" fn make_radical(mut q: int32_t) {
     }
     x = clean_box(
         q + 1i32,
-        (2i32 * (cur_style as libc::c_int / 2i32) + 1i32) as small_number,
+        (2i32 * (cur_style as i32 / 2i32) + 1i32) as small_number,
     );
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
-        if (cur_style as libc::c_int) < 2i32 {
+        if (cur_style as i32) < 2i32 {
             clr = get_ot_math_constant(f, 50i32)
         } else {
             clr = get_ot_math_constant(f, 49i32)
         }
-    } else if (cur_style as libc::c_int) < 2i32 {
+    } else if (cur_style as i32) < 2i32 {
         clr = rule_thickness + abs(math_x_height(cur_size)) / 4i32
     } else {
         clr = rule_thickness;
@@ -5160,9 +5064,8 @@ unsafe extern "C" fn make_radical(mut q: int32_t) {
             + clr
             + rule_thickness,
     );
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-            as libc::c_int
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
+        && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
             != 0
     {
         (*mem.offset((y + 2i32) as isize)).b32.s1 = (*mem.offset((y + 3i32) as isize)).b32.s1
@@ -5182,9 +5085,9 @@ unsafe extern "C" fn make_radical(mut q: int32_t) {
     (*mem.offset((q + 1i32) as isize)).b32.s0 = hpack(y, 0i32, 1i32 as small_number);
     (*mem.offset((q + 1i32) as isize)).b32.s1 = 2i32;
 }
-unsafe extern "C" fn compute_ot_math_accent_pos(mut p: int32_t) -> scaled_t {
-    let mut q: int32_t = 0;
-    let mut r: int32_t = 0;
+unsafe extern "C" fn compute_ot_math_accent_pos(mut p: i32) -> scaled_t {
+    let mut q: i32 = 0;
+    let mut r: i32 = 0;
     let mut s: scaled_t = 0;
     let mut g: scaled_t = 0;
     if (*mem.offset((p + 1i32) as isize)).b32.s1 == 1i32 {
@@ -5192,12 +5095,12 @@ unsafe extern "C" fn compute_ot_math_accent_pos(mut p: int32_t) -> scaled_t {
         q = new_native_character(cur_f, cur_c);
         g = real_get_native_glyph(
             &mut *mem.offset(q as isize) as *mut memory_word as *mut libc::c_void,
-            0i32 as libc::c_uint,
+            0_u32,
         ) as scaled_t;
         s = get_ot_math_accent_pos(cur_f, g)
     } else if (*mem.offset((p + 1i32) as isize)).b32.s1 == 3i32 {
         r = (*mem.offset((p + 1i32) as isize)).b32.s0;
-        if r != -0xfffffffi32 && (*mem.offset(r as isize)).b16.s1 as libc::c_int == 28i32 {
+        if r != -0xfffffffi32 && (*mem.offset(r as isize)).b16.s1 as i32 == 28i32 {
             s = compute_ot_math_accent_pos(r)
         } else {
             s = 0x7fffffffi32
@@ -5207,13 +5110,13 @@ unsafe extern "C" fn compute_ot_math_accent_pos(mut p: int32_t) -> scaled_t {
     }
     return s;
 }
-unsafe extern "C" fn make_math_accent(mut q: int32_t) {
-    let mut p: int32_t = 0;
-    let mut x: int32_t = 0;
-    let mut y: int32_t = 0;
-    let mut a: int32_t = 0;
-    let mut c: int32_t = 0;
-    let mut g: int32_t = 0;
+unsafe extern "C" fn make_math_accent(mut q: i32) {
+    let mut p: i32 = 0;
+    let mut x: i32 = 0;
+    let mut y: i32 = 0;
+    let mut a: i32 = 0;
+    let mut c: i32 = 0;
+    let mut g: i32 = 0;
     let mut f: internal_font_number = 0;
     let mut i: b16x4 = b16x4 {
         s0: 0,
@@ -5231,13 +5134,13 @@ unsafe extern "C" fn make_math_accent(mut q: int32_t) {
     fetch(q + 4i32);
     x = -0xfffffffi32;
     ot_assembly_ptr = 0 as *mut libc::c_void;
-    if *font_area.offset(cur_f as isize) as libc::c_uint == 0xffffu32
-        || *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+    if *font_area.offset(cur_f as isize) as u32 == 0xffffu32
+        || *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
     {
         c = cur_c;
         f = cur_f;
-        if !((*mem.offset(q as isize)).b16.s0 as libc::c_int == 2i32
-            || (*mem.offset(q as isize)).b16.s0 as libc::c_int == 2i32 + 1i32)
+        if !((*mem.offset(q as isize)).b16.s0 as i32 == 2i32
+            || (*mem.offset(q as isize)).b16.s0 as i32 == 2i32 + 1i32)
         {
             s = compute_ot_math_accent_pos(q)
         } else {
@@ -5245,36 +5148,36 @@ unsafe extern "C" fn make_math_accent(mut q: int32_t) {
         }
         x = clean_box(
             q + 1i32,
-            (2i32 * (cur_style as libc::c_int / 2i32) + 1i32) as small_number,
+            (2i32 * (cur_style as i32 / 2i32) + 1i32) as small_number,
         );
         w = (*mem.offset((x + 1i32) as isize)).b32.s1;
         h = (*mem.offset((x + 3i32) as isize)).b32.s1
-    } else if cur_i.s3 as libc::c_int > 0i32 {
+    } else if cur_i.s3 as i32 > 0i32 {
         i = cur_i;
         c = cur_c;
         f = cur_f;
         s = 0i32;
         if (*mem.offset((q + 1i32) as isize)).b32.s1 == 1i32 {
             fetch(q + 1i32);
-            if cur_i.s1 as libc::c_int % 4i32 == 1i32 {
-                a = *lig_kern_base.offset(cur_f as isize) + cur_i.s0 as libc::c_int;
+            if cur_i.s1 as i32 % 4i32 == 1i32 {
+                a = *lig_kern_base.offset(cur_f as isize) + cur_i.s0 as i32;
                 cur_i = (*font_info.offset(a as isize)).b16;
-                if cur_i.s3 as libc::c_int > 128i32 {
+                if cur_i.s3 as i32 > 128i32 {
                     a = ((*lig_kern_base.offset(cur_f as isize)
-                        + 256i32 * cur_i.s1 as libc::c_int
-                        + cur_i.s0 as libc::c_int) as libc::c_long
+                        + 256i32 * cur_i.s1 as i32
+                        + cur_i.s0 as i32) as i64
                         + 32768
-                        - (256i32 * 128i32) as libc::c_long) as int32_t;
+                        - (256i32 * 128i32) as i64) as i32;
                     cur_i = (*font_info.offset(a as isize)).b16
                 }
                 loop {
-                    if cur_i.s2 as libc::c_int == *skew_char.offset(cur_f as isize) {
-                        if cur_i.s1 as libc::c_int >= 128i32 {
-                            if cur_i.s3 as libc::c_int <= 128i32 {
+                    if cur_i.s2 as i32 == *skew_char.offset(cur_f as isize) {
+                        if cur_i.s1 as i32 >= 128i32 {
+                            if cur_i.s3 as i32 <= 128i32 {
                                 s = (*font_info.offset(
                                     (*kern_base.offset(cur_f as isize)
-                                        + 256i32 * cur_i.s1 as libc::c_int
-                                        + cur_i.s0 as libc::c_int)
+                                        + 256i32 * cur_i.s1 as i32
+                                        + cur_i.s0 as i32)
                                         as isize,
                                 ))
                                 .b32
@@ -5283,10 +5186,10 @@ unsafe extern "C" fn make_math_accent(mut q: int32_t) {
                         }
                         break;
                     } else {
-                        if cur_i.s3 as libc::c_int >= 128i32 {
+                        if cur_i.s3 as i32 >= 128i32 {
                             break;
                         }
-                        a = a + cur_i.s3 as libc::c_int + 1i32;
+                        a = a + cur_i.s3 as i32 + 1i32;
                         cur_i = (*font_info.offset(a as isize)).b16
                     }
                 }
@@ -5294,17 +5197,17 @@ unsafe extern "C" fn make_math_accent(mut q: int32_t) {
         }
         x = clean_box(
             q + 1i32,
-            (2i32 * (cur_style as libc::c_int / 2i32) + 1i32) as small_number,
+            (2i32 * (cur_style as i32 / 2i32) + 1i32) as small_number,
         );
         w = (*mem.offset((x + 1i32) as isize)).b32.s1;
         h = (*mem.offset((x + 3i32) as isize)).b32.s1;
-        while !(i.s1 as libc::c_int % 4i32 != 2i32) {
-            y = i.s0 as int32_t;
+        while !(i.s1 as i32 % 4i32 != 2i32) {
+            y = i.s0 as i32;
             i = (*font_info.offset((*char_base.offset(f as isize) + y) as isize)).b16;
-            if !(i.s3 as libc::c_int > 0i32) {
+            if !(i.s3 as i32 > 0i32) {
                 break;
             }
-            if (*font_info.offset((*width_base.offset(f as isize) + i.s3 as libc::c_int) as isize))
+            if (*font_info.offset((*width_base.offset(f as isize) + i.s3 as i32) as isize))
                 .b32
                 .s1
                 > w
@@ -5316,13 +5219,13 @@ unsafe extern "C" fn make_math_accent(mut q: int32_t) {
     }
     /*:767*/
     if x != -0xfffffffi32 {
-        if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
+        if *font_area.offset(f as isize) as u32 == 0xfffeu32
             && isOpenTypeMathFont(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-                as libc::c_int
+                as i32
                 != 0
         {
-            if (*mem.offset(q as isize)).b16.s0 as libc::c_int == 2i32
-                || (*mem.offset(q as isize)).b16.s0 as libc::c_int == 2i32 + 1i32
+            if (*mem.offset(q as isize)).b16.s0 as i32 == 2i32
+                || (*mem.offset(q as isize)).b16.s0 as i32 == 2i32 + 1i32
             {
                 delta = 0i32
             } else if h < get_ot_math_constant(f, 6i32) {
@@ -5361,17 +5264,17 @@ unsafe extern "C" fn make_math_accent(mut q: int32_t) {
             }
         }
         y = char_box(f, c);
-        if *font_area.offset(f as isize) as libc::c_uint == 0xffffu32
-            || *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
+        if *font_area.offset(f as isize) as u32 == 0xffffu32
+            || *font_area.offset(f as isize) as u32 == 0xfffeu32
         {
             p = get_node(5i32);
-            (*mem.offset(p as isize)).b16.s1 = 8i32 as uint16_t;
-            (*mem.offset(p as isize)).b16.s0 = 42i32 as uint16_t;
-            (*mem.offset((p + 4i32) as isize)).b16.s2 = f as uint16_t;
+            (*mem.offset(p as isize)).b16.s1 = 8_u16;
+            (*mem.offset(p as isize)).b16.s0 = 42_u16;
+            (*mem.offset((p + 4i32) as isize)).b16.s2 = f as u16;
             (*mem.offset((p + 4i32) as isize)).b16.s1 = real_get_native_glyph(
                 &mut *mem.offset((*mem.offset((y + 5i32) as isize)).b32.s1 as isize)
                     as *mut memory_word as *mut libc::c_void,
-                0i32 as libc::c_uint,
+                0_u32,
             );
             measure_native_glyph(
                 &mut *mem.offset(p as isize) as *mut memory_word as *mut libc::c_void,
@@ -5381,21 +5284,21 @@ unsafe extern "C" fn make_math_accent(mut q: int32_t) {
                 (*mem.offset((y + 5i32) as isize)).b32.s1,
                 (*mem.offset(((*mem.offset((y + 5i32) as isize)).b32.s1 + 4i32) as isize))
                     .b16
-                    .s3 as int32_t,
+                    .s3 as i32,
             );
             (*mem.offset((y + 5i32) as isize)).b32.s1 = p;
-            if (*mem.offset(q as isize)).b16.s0 as libc::c_int & 1i32 != 0 {
+            if (*mem.offset(q as isize)).b16.s0 as i32 & 1i32 != 0 {
                 measure_native_glyph(
                     &mut *mem.offset(p as isize) as *mut memory_word as *mut libc::c_void,
                     1i32,
                 );
             } else {
-                c = (*mem.offset((p + 4i32) as isize)).b16.s1 as int32_t;
+                c = (*mem.offset((p + 4i32) as isize)).b16.s1 as i32;
                 a = 0i32;
                 loop {
                     g = get_ot_math_variant(f, c, a, &mut w2, 1i32);
                     if w2 > 0i32 && w2 <= w {
-                        (*mem.offset((p + 4i32) as isize)).b16.s1 = g as uint16_t;
+                        (*mem.offset((p + 4i32) as isize)).b16.s1 = g as u16;
                         measure_native_glyph(
                             &mut *mem.offset(p as isize) as *mut memory_word as *mut libc::c_void,
                             1i32,
@@ -5423,8 +5326,8 @@ unsafe extern "C" fn make_math_accent(mut q: int32_t) {
             (*mem.offset((y + 1i32) as isize)).b32.s1 = (*mem.offset((p + 1i32) as isize)).b32.s1;
             (*mem.offset((y + 3i32) as isize)).b32.s1 = (*mem.offset((p + 3i32) as isize)).b32.s1;
             (*mem.offset((y + 2i32) as isize)).b32.s1 = (*mem.offset((p + 2i32) as isize)).b32.s1;
-            if (*mem.offset(q as isize)).b16.s0 as libc::c_int == 2i32
-                || (*mem.offset(q as isize)).b16.s0 as libc::c_int == 2i32 + 1i32
+            if (*mem.offset(q as isize)).b16.s0 as i32 == 2i32
+                || (*mem.offset(q as isize)).b16.s0 as i32 == 2i32 + 1i32
             {
                 if (*mem.offset((y + 3i32) as isize)).b32.s1 < 0i32 {
                     (*mem.offset((y + 3i32) as isize)).b32.s1 = 0i32
@@ -5434,21 +5337,18 @@ unsafe extern "C" fn make_math_accent(mut q: int32_t) {
             }
             if p != -0xfffffffi32
                 && !is_char_node(p)
-                && (*mem.offset(p as isize)).b16.s1 as libc::c_int == 8i32
-                && (*mem.offset(p as isize)).b16.s0 as libc::c_int == 42i32
+                && (*mem.offset(p as isize)).b16.s1 as i32 == 8i32
+                && (*mem.offset(p as isize)).b16.s0 as i32 == 42i32
             {
-                sa = get_ot_math_accent_pos(
-                    f,
-                    (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int,
-                );
+                sa = get_ot_math_accent_pos(f, (*mem.offset((p + 4i32) as isize)).b16.s1 as i32);
                 if sa == 0x7fffffffi32 {
                     sa = half((*mem.offset((y + 1i32) as isize)).b32.s1)
                 }
             } else {
                 sa = half((*mem.offset((y + 1i32) as isize)).b32.s1)
             }
-            if (*mem.offset(q as isize)).b16.s0 as libc::c_int == 2i32
-                || (*mem.offset(q as isize)).b16.s0 as libc::c_int == 2i32 + 1i32
+            if (*mem.offset(q as isize)).b16.s0 as i32 == 2i32
+                || (*mem.offset(q as isize)).b16.s0 as i32 == 2i32 + 1i32
                 || s == 0x7fffffffi32
             {
                 s = half(w)
@@ -5459,8 +5359,8 @@ unsafe extern "C" fn make_math_accent(mut q: int32_t) {
                 s + half(w - (*mem.offset((y + 1i32) as isize)).b32.s1)
         }
         (*mem.offset((y + 1i32) as isize)).b32.s1 = 0i32;
-        if (*mem.offset(q as isize)).b16.s0 as libc::c_int == 2i32
-            || (*mem.offset(q as isize)).b16.s0 as libc::c_int == 2i32 + 1i32
+        if (*mem.offset(q as isize)).b16.s0 as i32 == 2i32
+            || (*mem.offset(q as isize)).b16.s0 as i32 == 2i32 + 1i32
         {
             (*mem.offset(x as isize)).b32.s1 = y;
             y = vpackage(x, 0i32, 1i32 as small_number, 0x3fffffffi32);
@@ -5485,12 +5385,12 @@ unsafe extern "C" fn make_math_accent(mut q: int32_t) {
     }
     free_ot_assembly(ot_assembly_ptr as *mut GlyphAssembly);
 }
-unsafe extern "C" fn make_fraction(mut q: int32_t) {
-    let mut p: int32_t = 0;
-    let mut v: int32_t = 0;
-    let mut x: int32_t = 0;
-    let mut y: int32_t = 0;
-    let mut z: int32_t = 0;
+unsafe extern "C" fn make_fraction(mut q: i32) {
+    let mut p: i32 = 0;
+    let mut v: i32 = 0;
+    let mut x: i32 = 0;
+    let mut y: i32 = 0;
+    let mut z: i32 = 0;
     let mut delta: scaled_t = 0;
     let mut delta1: scaled_t = 0;
     let mut delta2: scaled_t = 0;
@@ -5502,12 +5402,11 @@ unsafe extern "C" fn make_fraction(mut q: int32_t) {
     }
     x = clean_box(
         q + 2i32,
-        (cur_style as libc::c_int + 2i32 - 2i32 * (cur_style as libc::c_int / 6i32))
-            as small_number,
+        (cur_style as i32 + 2i32 - 2i32 * (cur_style as i32 / 6i32)) as small_number,
     );
     z = clean_box(
         q + 3i32,
-        (2i32 * (cur_style as libc::c_int / 2i32) + 3i32 - 2i32 * (cur_style as libc::c_int / 6i32))
+        (2i32 * (cur_style as i32 / 2i32) + 3i32 - 2i32 * (cur_style as i32 / 6i32))
             as small_number,
     );
     if (*mem.offset((x + 1i32) as isize)).b32.s1 < (*mem.offset((z + 1i32) as isize)).b32.s1 {
@@ -5515,7 +5414,7 @@ unsafe extern "C" fn make_fraction(mut q: int32_t) {
     } else {
         z = rebox(z, (*mem.offset((x + 1i32) as isize)).b32.s1)
     }
-    if (cur_style as libc::c_int) < 2i32 {
+    if (cur_style as i32) < 2i32 {
         shift_up = num1(cur_size);
         shift_down = denom1(cur_size)
     } else {
@@ -5528,17 +5427,17 @@ unsafe extern "C" fn make_fraction(mut q: int32_t) {
     }
     if (*mem.offset((q + 1i32) as isize)).b32.s1 == 0i32 {
         /*772:*/
-        if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+        if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
             && isOpenTypeMathFont(*font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine)
-                as libc::c_int
+                as i32
                 != 0
         {
-            if (cur_style as libc::c_int) < 2i32 {
+            if (cur_style as i32) < 2i32 {
                 clr = get_ot_math_constant(cur_f, 27i32)
             } else {
                 clr = get_ot_math_constant(cur_f, 26i32)
             }
-        } else if (cur_style as libc::c_int) < 2i32 {
+        } else if (cur_style as i32) < 2i32 {
             clr = 7i32 * default_rule_thickness()
         } else {
             clr = 3i32 * default_rule_thickness()
@@ -5553,13 +5452,13 @@ unsafe extern "C" fn make_fraction(mut q: int32_t) {
             shift_down = shift_down + delta
         }
     } else {
-        if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+        if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
             && isOpenTypeMathFont(*font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine)
-                as libc::c_int
+                as i32
                 != 0
         {
             delta = half((*mem.offset((q + 1i32) as isize)).b32.s1);
-            if (cur_style as libc::c_int) < 2i32 {
+            if (cur_style as i32) < 2i32 {
                 clr = get_ot_math_constant(cur_f, 37i32)
             } else {
                 clr = get_ot_math_constant(cur_f, 36i32)
@@ -5568,7 +5467,7 @@ unsafe extern "C" fn make_fraction(mut q: int32_t) {
                 - (shift_up
                     - (*mem.offset((x + 2i32) as isize)).b32.s1
                     - (axis_height(cur_size) + delta));
-            if (cur_style as libc::c_int) < 2i32 {
+            if (cur_style as i32) < 2i32 {
                 clr = get_ot_math_constant(cur_f, 40i32)
             } else {
                 clr = get_ot_math_constant(cur_f, 39i32)
@@ -5578,7 +5477,7 @@ unsafe extern "C" fn make_fraction(mut q: int32_t) {
                     - delta
                     - ((*mem.offset((z + 3i32) as isize)).b32.s1 - shift_down))
         } else {
-            if (cur_style as libc::c_int) < 2i32 {
+            if (cur_style as i32) < 2i32 {
                 clr = 3i32 * (*mem.offset((q + 1i32) as isize)).b32.s1
             } else {
                 clr = (*mem.offset((q + 1i32) as isize)).b32.s1
@@ -5601,7 +5500,7 @@ unsafe extern "C" fn make_fraction(mut q: int32_t) {
         }
     }
     v = new_null_box();
-    (*mem.offset(v as isize)).b16.s1 = 1i32 as uint16_t;
+    (*mem.offset(v as isize)).b16.s1 = 1_u16;
     (*mem.offset((v + 3i32) as isize)).b32.s1 =
         shift_up + (*mem.offset((x + 3i32) as isize)).b32.s1;
     (*mem.offset((v + 2i32) as isize)).b32.s1 =
@@ -5630,7 +5529,7 @@ unsafe extern "C" fn make_fraction(mut q: int32_t) {
     }
     (*mem.offset(x as isize)).b32.s1 = p;
     (*mem.offset((v + 5i32) as isize)).b32.s1 = x;
-    if (cur_style as libc::c_int) < 2i32 {
+    if (cur_style as i32) < 2i32 {
         delta = delim1(cur_size)
     } else {
         delta = delim2(cur_size)
@@ -5642,14 +5541,14 @@ unsafe extern "C" fn make_fraction(mut q: int32_t) {
     (*mem.offset((q + 1i32) as isize)).b32.s1 = hpack(x, 0i32, 1i32 as small_number);
     /*:775*/
 }
-unsafe extern "C" fn make_op(mut q: int32_t) -> scaled_t {
+unsafe extern "C" fn make_op(mut q: i32) -> scaled_t {
     let mut delta: scaled_t = 0;
-    let mut p: int32_t = 0;
-    let mut v: int32_t = 0;
-    let mut x: int32_t = 0;
-    let mut y: int32_t = 0;
-    let mut z: int32_t = 0;
-    let mut c: uint16_t = 0;
+    let mut p: i32 = 0;
+    let mut v: i32 = 0;
+    let mut x: i32 = 0;
+    let mut y: i32 = 0;
+    let mut z: i32 = 0;
+    let mut c: u16 = 0;
     let mut i: b16x4 = b16x4 {
         s0: 0,
         s1: 0,
@@ -5660,72 +5559,69 @@ unsafe extern "C" fn make_op(mut q: int32_t) -> scaled_t {
     let mut shift_down: scaled_t = 0;
     let mut h1: scaled_t = 0;
     let mut h2: scaled_t = 0;
-    let mut n: int32_t = 0;
-    let mut g: int32_t = 0;
+    let mut n: i32 = 0;
+    let mut g: i32 = 0;
     let mut ot_assembly_ptr: *mut libc::c_void = 0 as *mut libc::c_void;
     let mut save_f: internal_font_number = 0;
-    if (*mem.offset(q as isize)).b16.s0 as libc::c_int == 0i32 && (cur_style as libc::c_int) < 2i32
-    {
-        (*mem.offset(q as isize)).b16.s0 = 1i32 as uint16_t
+    if (*mem.offset(q as isize)).b16.s0 as i32 == 0i32 && (cur_style as i32) < 2i32 {
+        (*mem.offset(q as isize)).b16.s0 = 1_u16
     }
     delta = 0i32;
     ot_assembly_ptr = 0 as *mut libc::c_void;
     if (*mem.offset((q + 1i32) as isize)).b32.s1 == 1i32 {
         fetch(q + 1i32);
-        if !(*font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+        if !(*font_area.offset(cur_f as isize) as u32 == 0xfffeu32
             && usingOpenType(*font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine)
-                as libc::c_int
+                as i32
                 != 0)
         {
-            if (cur_style as libc::c_int) < 2i32 && cur_i.s1 as libc::c_int % 4i32 == 2i32 {
+            if (cur_style as i32) < 2i32 && cur_i.s1 as i32 % 4i32 == 2i32 {
                 c = cur_i.s0;
-                i = (*font_info
-                    .offset((*char_base.offset(cur_f as isize) + c as libc::c_int) as isize))
-                .b16;
-                if i.s3 as libc::c_int > 0i32 {
-                    cur_c = c as int32_t;
+                i = (*font_info.offset((*char_base.offset(cur_f as isize) + c as i32) as isize))
+                    .b16;
+                if i.s3 as i32 > 0i32 {
+                    cur_c = c as i32;
                     cur_i = i;
                     (*mem.offset((q + 1i32) as isize)).b16.s0 = c
                 }
             }
-            delta = (*font_info.offset(
-                (*italic_base.offset(cur_f as isize) + cur_i.s1 as libc::c_int / 4i32) as isize,
-            ))
+            delta = (*font_info
+                .offset((*italic_base.offset(cur_f as isize) + cur_i.s1 as i32 / 4i32) as isize))
             .b32
             .s1
         }
         x = clean_box(q + 1i32, cur_style);
-        if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+        if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
             && isOpenTypeMathFont(*font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine)
-                as libc::c_int
+                as i32
                 != 0
         {
             p = (*mem.offset((x + 5i32) as isize)).b32.s1;
             if p != -0xfffffffi32
                 && !is_char_node(p)
-                && (*mem.offset(p as isize)).b16.s1 as libc::c_int == 8i32
-                && (*mem.offset(p as isize)).b16.s0 as libc::c_int == 42i32
+                && (*mem.offset(p as isize)).b16.s1 as i32 == 8i32
+                && (*mem.offset(p as isize)).b16.s0 as i32 == 42i32
             {
                 let mut current_block_41: u64;
-                if (cur_style as libc::c_int) < 2i32 {
+                if (cur_style as i32) < 2i32 {
                     h1 = get_ot_math_constant(cur_f, 3i32);
-                    if (h1 as libc::c_double)
+                    if (h1 as f64)
                         < (((*mem.offset((p + 3i32) as isize)).b32.s1
                             + (*mem.offset((p + 2i32) as isize)).b32.s1)
-                            * 5i32) as libc::c_double
-                            / 4i32 as libc::c_double
+                            * 5i32) as f64
+                            / 4i32 as f64
                     {
                         h1 = ((((*mem.offset((p + 3i32) as isize)).b32.s1
                             + (*mem.offset((p + 2i32) as isize)).b32.s1)
-                            * 5i32) as libc::c_double
-                            / 4i32 as libc::c_double) as scaled_t
+                            * 5i32) as f64
+                            / 4i32 as f64) as scaled_t
                     }
                     c = (*mem.offset((p + 4i32) as isize)).b16.s1;
                     n = 0i32;
                     loop {
-                        g = get_ot_math_variant(cur_f, c as libc::c_int, n, &mut h2, 0i32);
+                        g = get_ot_math_variant(cur_f, c as i32, n, &mut h2, 0i32);
                         if h2 > 0i32 {
-                            (*mem.offset((p + 4i32) as isize)).b16.s1 = g as uint16_t;
+                            (*mem.offset((p + 4i32) as isize)).b16.s1 = g as u16;
                             measure_native_glyph(
                                 &mut *mem.offset(p as isize) as *mut memory_word
                                     as *mut libc::c_void,
@@ -5738,7 +5634,7 @@ unsafe extern "C" fn make_op(mut q: int32_t) -> scaled_t {
                         }
                     }
                     if h2 < 0i32 {
-                        ot_assembly_ptr = get_ot_assembly_ptr(cur_f, c as libc::c_int, 0i32);
+                        ot_assembly_ptr = get_ot_assembly_ptr(cur_f, c as i32, 0i32);
                         if !ot_assembly_ptr.is_null() {
                             free_node(p, 5i32);
                             p = build_opentype_assembly(cur_f, ot_assembly_ptr, h1, 0i32 != 0);
@@ -5762,7 +5658,7 @@ unsafe extern "C" fn make_op(mut q: int32_t) -> scaled_t {
                     6717214610478484138 => {
                         delta = get_ot_math_ital_corr(
                             cur_f,
-                            (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int,
+                            (*mem.offset((p + 4i32) as isize)).b16.s1 as i32,
                         )
                     }
                     _ => {}
@@ -5776,7 +5672,7 @@ unsafe extern "C" fn make_op(mut q: int32_t) -> scaled_t {
             }
         }
         if (*mem.offset((q + 3i32) as isize)).b32.s1 != 0i32
-            && (*mem.offset(q as isize)).b16.s0 as libc::c_int != 1i32
+            && (*mem.offset(q as isize)).b16.s0 as i32 != 1i32
         {
             (*mem.offset((x + 1i32) as isize)).b32.s1 =
                 (*mem.offset((x + 1i32) as isize)).b32.s1 - delta
@@ -5788,20 +5684,19 @@ unsafe extern "C" fn make_op(mut q: int32_t) -> scaled_t {
         (*mem.offset((q + 1i32) as isize)).b32.s0 = x
     }
     save_f = cur_f;
-    if (*mem.offset(q as isize)).b16.s0 as libc::c_int == 1i32 {
+    if (*mem.offset(q as isize)).b16.s0 as i32 == 1i32 {
         /*777: */
         x = clean_box(
             q + 2i32,
-            (2i32 * (cur_style as libc::c_int / 4i32) + 4i32 + cur_style as libc::c_int % 2i32)
-                as small_number,
+            (2i32 * (cur_style as i32 / 4i32) + 4i32 + cur_style as i32 % 2i32) as small_number,
         );
         y = clean_box(q + 1i32, cur_style);
         z = clean_box(
             q + 3i32,
-            (2i32 * (cur_style as libc::c_int / 4i32) + 5i32) as small_number,
+            (2i32 * (cur_style as i32 / 4i32) + 5i32) as small_number,
         );
         v = new_null_box();
-        (*mem.offset(v as isize)).b16.s1 = 1i32 as uint16_t;
+        (*mem.offset(v as isize)).b16.s1 = 1_u16;
         (*mem.offset((v + 1i32) as isize)).b32.s1 = (*mem.offset((y + 1i32) as isize)).b32.s1;
         if (*mem.offset((x + 1i32) as isize)).b32.s1 > (*mem.offset((v + 1i32) as isize)).b32.s1 {
             (*mem.offset((v + 1i32) as isize)).b32.s1 = (*mem.offset((x + 1i32) as isize)).b32.s1
@@ -5860,10 +5755,10 @@ unsafe extern "C" fn make_op(mut q: int32_t) -> scaled_t {
     free_ot_assembly(ot_assembly_ptr as *mut GlyphAssembly);
     return delta;
 }
-unsafe extern "C" fn make_ord(mut q: int32_t) {
-    let mut a: int32_t = 0;
-    let mut p: int32_t = 0;
-    let mut r: int32_t = 0;
+unsafe extern "C" fn make_ord(mut q: i32) {
+    let mut a: i32 = 0;
+    let mut p: i32 = 0;
+    let mut r: i32 = 0;
     while (*mem.offset((q + 3i32) as isize)).b32.s1 == 0i32 {
         if !((*mem.offset((q + 2i32) as isize)).b32.s1 == 0i32) {
             break;
@@ -5875,45 +5770,44 @@ unsafe extern "C" fn make_ord(mut q: int32_t) {
         if !(p != -0xfffffffi32) {
             break;
         }
-        if !((*mem.offset(p as isize)).b16.s1 as libc::c_int >= 16i32
-            && (*mem.offset(p as isize)).b16.s1 as libc::c_int <= 22i32)
+        if !((*mem.offset(p as isize)).b16.s1 as i32 >= 16i32
+            && (*mem.offset(p as isize)).b16.s1 as i32 <= 22i32)
         {
             break;
         }
         if !((*mem.offset((p + 1i32) as isize)).b32.s1 == 1i32) {
             break;
         }
-        if !((*mem.offset((p + 1i32) as isize)).b16.s1 as libc::c_int % 256i32
-            == (*mem.offset((q + 1i32) as isize)).b16.s1 as libc::c_int % 256i32)
+        if !((*mem.offset((p + 1i32) as isize)).b16.s1 as i32 % 256i32
+            == (*mem.offset((q + 1i32) as isize)).b16.s1 as i32 % 256i32)
         {
             break;
         }
         (*mem.offset((q + 1i32) as isize)).b32.s1 = 4i32;
         fetch(q + 1i32);
-        if !(cur_i.s1 as libc::c_int % 4i32 == 1i32) {
+        if !(cur_i.s1 as i32 % 4i32 == 1i32) {
             break;
         }
-        a = *lig_kern_base.offset(cur_f as isize) + cur_i.s0 as libc::c_int;
-        cur_c = (*mem.offset((p + 1i32) as isize)).b16.s0 as int32_t;
+        a = *lig_kern_base.offset(cur_f as isize) + cur_i.s0 as i32;
+        cur_c = (*mem.offset((p + 1i32) as isize)).b16.s0 as i32;
         cur_i = (*font_info.offset(a as isize)).b16;
-        if cur_i.s3 as libc::c_int > 128i32 {
+        if cur_i.s3 as i32 > 128i32 {
             a = ((*lig_kern_base.offset(cur_f as isize)
-                + 256i32 * cur_i.s1 as libc::c_int
-                + cur_i.s0 as libc::c_int) as libc::c_long
+                + 256i32 * cur_i.s1 as i32
+                + cur_i.s0 as i32) as i64
                 + 32768
-                - (256i32 * 128i32) as libc::c_long) as int32_t;
+                - (256i32 * 128i32) as i64) as i32;
             cur_i = (*font_info.offset(a as isize)).b16
         }
         loop {
-            if cur_i.s2 as libc::c_int == cur_c {
-                if cur_i.s3 as libc::c_int <= 128i32 {
-                    if cur_i.s1 as libc::c_int >= 128i32 {
+            if cur_i.s2 as i32 == cur_c {
+                if cur_i.s3 as i32 <= 128i32 {
+                    if cur_i.s1 as i32 >= 128i32 {
                         p = new_kern(
                             (*font_info.offset(
                                 (*kern_base.offset(cur_f as isize)
-                                    + 256i32 * cur_i.s1 as libc::c_int
-                                    + cur_i.s0 as libc::c_int)
-                                    as isize,
+                                    + 256i32 * cur_i.s1 as i32
+                                    + cur_i.s0 as i32) as isize,
                             ))
                             .b32
                             .s1,
@@ -5922,18 +5816,18 @@ unsafe extern "C" fn make_ord(mut q: int32_t) {
                         (*mem.offset(q as isize)).b32.s1 = p;
                         return;
                     } else {
-                        match cur_i.s1 as libc::c_int {
+                        match cur_i.s1 as i32 {
                             1 | 5 => (*mem.offset((q + 1i32) as isize)).b16.s0 = cur_i.s0,
                             2 | 6 => (*mem.offset((p + 1i32) as isize)).b16.s0 = cur_i.s0,
                             3 | 7 | 11 => {
                                 r = new_noad();
                                 (*mem.offset((r + 1i32) as isize)).b16.s0 = cur_i.s0;
                                 (*mem.offset((r + 1i32) as isize)).b16.s1 =
-                                    ((*mem.offset((q + 1i32) as isize)).b16.s1 as libc::c_int
-                                        % 256i32) as uint16_t;
+                                    ((*mem.offset((q + 1i32) as isize)).b16.s1 as i32 % 256i32)
+                                        as u16;
                                 (*mem.offset(q as isize)).b32.s1 = r;
                                 (*mem.offset(r as isize)).b32.s1 = p;
-                                if (cur_i.s1 as libc::c_int) < 11i32 {
+                                if (cur_i.s1 as i32) < 11i32 {
                                     (*mem.offset((r + 1i32) as isize)).b32.s1 = 1i32
                                 } else {
                                     (*mem.offset((r + 1i32) as isize)).b32.s1 = 4i32
@@ -5947,7 +5841,7 @@ unsafe extern "C" fn make_ord(mut q: int32_t) {
                                 free_node(p, 4i32);
                             }
                         }
-                        if cur_i.s1 as libc::c_int > 3i32 {
+                        if cur_i.s1 as i32 > 3i32 {
                             return;
                         }
                         (*mem.offset((q + 1i32) as isize)).b32.s1 = 1i32;
@@ -5955,17 +5849,17 @@ unsafe extern "C" fn make_ord(mut q: int32_t) {
                     }
                 }
             }
-            if cur_i.s3 as libc::c_int >= 128i32 {
+            if cur_i.s3 as i32 >= 128i32 {
                 return;
             }
-            a = a + cur_i.s3 as libc::c_int + 1i32;
+            a = a + cur_i.s3 as i32 + 1i32;
             cur_i = (*font_info.offset(a as isize)).b16
         }
     }
 }
-unsafe extern "C" fn attach_hkern_to_new_hlist(mut q: int32_t, mut delta: scaled_t) -> int32_t {
-    let mut y: int32_t = 0;
-    let mut z: int32_t = 0;
+unsafe extern "C" fn attach_hkern_to_new_hlist(mut q: i32, mut delta: scaled_t) -> i32 {
+    let mut y: i32 = 0;
+    let mut z: i32 = 0;
     z = new_kern(delta);
     if (*mem.offset((q + 1i32) as isize)).b32.s1 == -0xfffffffi32 {
         (*mem.offset((q + 1i32) as isize)).b32.s1 = z
@@ -5978,38 +5872,38 @@ unsafe extern "C" fn attach_hkern_to_new_hlist(mut q: int32_t, mut delta: scaled
     }
     return (*mem.offset((q + 1i32) as isize)).b32.s1;
 }
-unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
-    let mut p: int32_t = 0;
-    let mut x: int32_t = 0;
-    let mut y: int32_t = 0;
-    let mut z: int32_t = 0;
+unsafe extern "C" fn make_scripts(mut q: i32, mut delta: scaled_t) {
+    let mut p: i32 = 0;
+    let mut x: i32 = 0;
+    let mut y: i32 = 0;
+    let mut z: i32 = 0;
     let mut shift_up: scaled_t = 0;
     let mut shift_down: scaled_t = 0;
     let mut clr: scaled_t = 0;
     let mut sub_kern: scaled_t = 0;
     let mut sup_kern: scaled_t = 0;
-    let mut script_c: int32_t = 0;
-    let mut script_g: uint16_t = 0;
+    let mut script_c: i32 = 0;
+    let mut script_g: u16 = 0;
     let mut script_f: internal_font_number = 0;
-    let mut t: int32_t = 0;
+    let mut t: i32 = 0;
     let mut save_f: internal_font_number = 0;
     p = (*mem.offset((q + 1i32) as isize)).b32.s1;
     script_c = -0xfffffffi32;
-    script_g = 0i32 as uint16_t;
+    script_g = 0_u16;
     script_f = 0i32;
     sup_kern = 0i32;
     sub_kern = 0i32;
-    if is_char_node(p) as libc::c_int != 0
+    if is_char_node(p) as i32 != 0
         || p != -0xfffffffi32
             && !is_char_node(p)
-            && (*mem.offset(p as isize)).b16.s1 as libc::c_int == 8i32
-            && (*mem.offset(p as isize)).b16.s0 as libc::c_int == 42i32
+            && (*mem.offset(p as isize)).b16.s1 as i32 == 8i32
+            && (*mem.offset(p as isize)).b16.s0 as i32 == 42i32
     {
         shift_up = 0i32;
         shift_down = 0i32
     } else {
         z = hpack(p, 0i32, 1i32 as small_number);
-        if (cur_style as libc::c_int) < 4i32 {
+        if (cur_style as i32) < 4i32 {
             t = 256i32
         } else {
             t = 2i32 * 256i32
@@ -6023,7 +5917,7 @@ unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
         save_f = cur_f;
         x = clean_box(
             q + 3i32,
-            (2i32 * (cur_style as libc::c_int / 4i32) + 5i32) as small_number,
+            (2i32 * (cur_style as i32 / 4i32) + 5i32) as small_number,
         );
         cur_f = save_f;
         (*mem.offset((x + 1i32) as isize)).b32.s1 = (*mem.offset((x + 1i32) as isize)).b32.s1
@@ -6062,9 +5956,9 @@ unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
         if shift_down < sub1(cur_size) {
             shift_down = sub1(cur_size)
         }
-        if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+        if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
             && isOpenTypeMathFont(*font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine)
-                as libc::c_int
+                as i32
                 != 0
         {
             clr = (*mem.offset((x + 3i32) as isize)).b32.s1 - get_ot_math_constant(cur_f, 9i32)
@@ -6076,44 +5970,44 @@ unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
             shift_down = clr
         }
         (*mem.offset((x + 4i32) as isize)).b32.s1 = shift_down;
-        if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+        if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
             && isOpenTypeMathFont(*font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine)
-                as libc::c_int
+                as i32
                 != 0
         {
             /*787: */
             if (*mem.offset((q + 3i32) as isize)).b32.s1 == 1i32 {
                 save_f = cur_f;
                 fetch(q + 3i32);
-                if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+                if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
                     && isOpenTypeMathFont(
                         *font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine
-                    ) as libc::c_int
+                    ) as i32
                         != 0
                 {
                     script_c = new_native_character(cur_f, cur_c);
                     script_g = real_get_native_glyph(
                         &mut *mem.offset(script_c as isize) as *mut memory_word
                             as *mut libc::c_void,
-                        0i32 as libc::c_uint,
+                        0_u32,
                     );
                     script_f = cur_f
                 } else {
-                    script_g = 0i32 as uint16_t;
+                    script_g = 0_u16;
                     script_f = 0i32
                 }
                 cur_f = save_f
             }
             if p != -0xfffffffi32
                 && !is_char_node(p)
-                && (*mem.offset(p as isize)).b16.s1 as libc::c_int == 8i32
-                && (*mem.offset(p as isize)).b16.s0 as libc::c_int == 42i32
+                && (*mem.offset(p as isize)).b16.s1 as i32 == 8i32
+                && (*mem.offset(p as isize)).b16.s0 as i32 == 42i32
             {
                 sub_kern = get_ot_math_kern(
-                    (*mem.offset((p + 4i32) as isize)).b16.s2 as libc::c_int,
-                    (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int,
+                    (*mem.offset((p + 4i32) as isize)).b16.s2 as i32,
+                    (*mem.offset((p + 4i32) as isize)).b16.s1 as i32,
                     script_f,
-                    script_g as libc::c_int,
+                    script_g as i32,
                     1i32,
                     shift_down,
                 )
@@ -6126,8 +6020,7 @@ unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
         save_f = cur_f;
         x = clean_box(
             q + 2i32,
-            (2i32 * (cur_style as libc::c_int / 4i32) + 4i32 + cur_style as libc::c_int % 2i32)
-                as small_number,
+            (2i32 * (cur_style as i32 / 4i32) + 4i32 + cur_style as i32 % 2i32) as small_number,
         );
         cur_f = save_f;
         (*mem.offset((x + 1i32) as isize)).b32.s1 = (*mem.offset((x + 1i32) as isize)).b32.s1
@@ -6163,9 +6056,9 @@ unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
             ))
             .b32
             .s1;
-        if cur_style as libc::c_int & 1i32 != 0 {
+        if cur_style as i32 & 1i32 != 0 {
             clr = sup3(cur_size)
-        } else if (cur_style as libc::c_int) < 2i32 {
+        } else if (cur_style as i32) < 2i32 {
             clr = sup1(cur_size)
         } else {
             clr = sup2(cur_size)
@@ -6173,9 +6066,9 @@ unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
         if shift_up < clr {
             shift_up = clr
         }
-        if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+        if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
             && isOpenTypeMathFont(*font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine)
-                as libc::c_int
+                as i32
                 != 0
         {
             clr = (*mem.offset((x + 2i32) as isize)).b32.s1 + get_ot_math_constant(cur_f, 13i32)
@@ -6185,44 +6078,44 @@ unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
         if shift_up < clr {
             shift_up = clr
         }
-        if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+        if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
             && isOpenTypeMathFont(*font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine)
-                as libc::c_int
+                as i32
                 != 0
         {
             /*788: */
             if (*mem.offset((q + 2i32) as isize)).b32.s1 == 1i32 {
                 save_f = cur_f;
                 fetch(q + 2i32);
-                if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+                if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
                     && isOpenTypeMathFont(
                         *font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine
-                    ) as libc::c_int
+                    ) as i32
                         != 0
                 {
                     script_c = new_native_character(cur_f, cur_c);
                     script_g = real_get_native_glyph(
                         &mut *mem.offset(script_c as isize) as *mut memory_word
                             as *mut libc::c_void,
-                        0i32 as libc::c_uint,
+                        0_u32,
                     );
                     script_f = cur_f
                 } else {
-                    script_g = 0i32 as uint16_t;
+                    script_g = 0_u16;
                     script_f = 0i32
                 }
                 cur_f = save_f
             }
             if p != -0xfffffffi32
                 && !is_char_node(p)
-                && (*mem.offset(p as isize)).b16.s1 as libc::c_int == 8i32
-                && (*mem.offset(p as isize)).b16.s0 as libc::c_int == 42i32
+                && (*mem.offset(p as isize)).b16.s1 as i32 == 8i32
+                && (*mem.offset(p as isize)).b16.s0 as i32 == 42i32
             {
                 sup_kern = get_ot_math_kern(
-                    (*mem.offset((p + 4i32) as isize)).b16.s2 as libc::c_int,
-                    (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int,
+                    (*mem.offset((p + 4i32) as isize)).b16.s2 as i32,
+                    (*mem.offset((p + 4i32) as isize)).b16.s1 as i32,
                     script_f,
-                    script_g as libc::c_int,
+                    script_g as i32,
                     0i32,
                     shift_up,
                 )
@@ -6238,7 +6131,7 @@ unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
             save_f = cur_f;
             y = clean_box(
                 q + 3i32,
-                (2i32 * (cur_style as libc::c_int / 4i32) + 5i32) as small_number,
+                (2i32 * (cur_style as i32 / 4i32) + 5i32) as small_number,
             );
             cur_f = save_f;
             (*mem.offset((y + 1i32) as isize)).b32.s1 = (*mem.offset((y + 1i32) as isize)).b32.s1
@@ -6277,10 +6170,10 @@ unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
             if shift_down < sub2(cur_size) {
                 shift_down = sub2(cur_size)
             }
-            if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+            if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
                 && isOpenTypeMathFont(
                     *font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine
-                ) as libc::c_int
+                ) as i32
                     != 0
             {
                 clr = get_ot_math_constant(cur_f, 15i32)
@@ -6295,10 +6188,10 @@ unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
             }
             if clr > 0i32 {
                 shift_down = shift_down + clr;
-                if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+                if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
                     && isOpenTypeMathFont(
                         *font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine
-                    ) as libc::c_int
+                    ) as i32
                         != 0
                 {
                     clr = get_ot_math_constant(cur_f, 16i32)
@@ -6312,44 +6205,44 @@ unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
                     shift_down = shift_down - clr
                 }
             }
-            if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+            if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
                 && isOpenTypeMathFont(
                     *font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine
-                ) as libc::c_int
+                ) as i32
                     != 0
             {
                 if (*mem.offset((q + 3i32) as isize)).b32.s1 == 1i32 {
                     save_f = cur_f;
                     fetch(q + 3i32);
-                    if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+                    if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
                         && isOpenTypeMathFont(
                             *font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine
-                        ) as libc::c_int
+                        ) as i32
                             != 0
                     {
                         script_c = new_native_character(cur_f, cur_c);
                         script_g = real_get_native_glyph(
                             &mut *mem.offset(script_c as isize) as *mut memory_word
                                 as *mut libc::c_void,
-                            0i32 as libc::c_uint,
+                            0_u32,
                         );
                         script_f = cur_f
                     } else {
-                        script_g = 0i32 as uint16_t;
+                        script_g = 0_u16;
                         script_f = 0i32
                     }
                     cur_f = save_f
                 }
                 if p != -0xfffffffi32
                     && !is_char_node(p)
-                    && (*mem.offset(p as isize)).b16.s1 as libc::c_int == 8i32
-                    && (*mem.offset(p as isize)).b16.s0 as libc::c_int == 42i32
+                    && (*mem.offset(p as isize)).b16.s1 as i32 == 8i32
+                    && (*mem.offset(p as isize)).b16.s0 as i32 == 42i32
                 {
                     sub_kern = get_ot_math_kern(
-                        (*mem.offset((p + 4i32) as isize)).b16.s2 as libc::c_int,
-                        (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int,
+                        (*mem.offset((p + 4i32) as isize)).b16.s2 as i32,
+                        (*mem.offset((p + 4i32) as isize)).b16.s1 as i32,
                         script_f,
-                        script_g as libc::c_int,
+                        script_g as i32,
                         1i32,
                         shift_down,
                     )
@@ -6360,35 +6253,35 @@ unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
                 if (*mem.offset((q + 2i32) as isize)).b32.s1 == 1i32 {
                     save_f = cur_f;
                     fetch(q + 2i32);
-                    if *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+                    if *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
                         && isOpenTypeMathFont(
                             *font_layout_engine.offset(cur_f as isize) as XeTeXLayoutEngine
-                        ) as libc::c_int
+                        ) as i32
                             != 0
                     {
                         script_c = new_native_character(cur_f, cur_c);
                         script_g = real_get_native_glyph(
                             &mut *mem.offset(script_c as isize) as *mut memory_word
                                 as *mut libc::c_void,
-                            0i32 as libc::c_uint,
+                            0_u32,
                         );
                         script_f = cur_f
                     } else {
-                        script_g = 0i32 as uint16_t;
+                        script_g = 0_u16;
                         script_f = 0i32
                     }
                     cur_f = save_f
                 }
                 if p != -0xfffffffi32
                     && !is_char_node(p)
-                    && (*mem.offset(p as isize)).b16.s1 as libc::c_int == 8i32
-                    && (*mem.offset(p as isize)).b16.s0 as libc::c_int == 42i32
+                    && (*mem.offset(p as isize)).b16.s1 as i32 == 8i32
+                    && (*mem.offset(p as isize)).b16.s0 as i32 == 42i32
                 {
                     sup_kern = get_ot_math_kern(
-                        (*mem.offset((p + 4i32) as isize)).b16.s2 as libc::c_int,
-                        (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int,
+                        (*mem.offset((p + 4i32) as isize)).b16.s2 as i32,
+                        (*mem.offset((p + 4i32) as isize)).b16.s1 as i32,
                         script_f,
-                        script_g as libc::c_int,
+                        script_g as i32,
                         0i32,
                         shift_up,
                     )
@@ -6420,7 +6313,7 @@ unsafe extern "C" fn make_scripts(mut q: int32_t, mut delta: scaled_t) {
     };
 }
 unsafe extern "C" fn make_left_right(
-    mut q: int32_t,
+    mut q: i32,
     mut style: small_number,
     mut max_d: scaled_t,
     mut max_h: scaled_t,
@@ -6429,10 +6322,10 @@ unsafe extern "C" fn make_left_right(
     let mut delta1: scaled_t = 0;
     let mut delta2: scaled_t = 0;
     cur_style = style;
-    if (cur_style as libc::c_int) < 4i32 {
+    if (cur_style as i32) < 4i32 {
         cur_size = 0i32
     } else {
-        cur_size = 256i32 * ((cur_style as libc::c_int - 2i32) / 2i32)
+        cur_size = 256i32 * ((cur_style as i32 - 2i32) / 2i32)
     }
     cur_mu = x_over_n(math_quad(cur_size), 18i32);
     delta2 = max_d + axis_height(cur_size);
@@ -6507,23 +6400,23 @@ unsafe extern "C" fn make_left_right(
         delta = delta2
     }
     (*mem.offset((q + 1i32) as isize)).b32.s1 = var_delimiter(q + 1i32, cur_size, delta);
-    return ((*mem.offset(q as isize)).b16.s1 as libc::c_int - (30i32 - 20i32)) as small_number;
+    return ((*mem.offset(q as isize)).b16.s1 as i32 - (30i32 - 20i32)) as small_number;
 }
 unsafe extern "C" fn mlist_to_hlist() {
     let mut current_block: u64;
-    let mut mlist: int32_t = 0;
+    let mut mlist: i32 = 0;
     let mut penalties: bool = false;
     let mut style: small_number = 0;
     let mut save_style: small_number = 0;
-    let mut q: int32_t = 0;
-    let mut r: int32_t = 0;
+    let mut q: i32 = 0;
+    let mut r: i32 = 0;
     let mut r_type: small_number = 0;
     let mut t: small_number = 0;
-    let mut p: int32_t = -0xfffffffi32;
-    let mut x: int32_t = 0;
-    let mut y: int32_t = 0;
-    let mut z: int32_t = 0;
-    let mut pen: int32_t = 0;
+    let mut p: i32 = -0xfffffffi32;
+    let mut x: i32 = 0;
+    let mut y: i32 = 0;
+    let mut z: i32 = 0;
+    let mut pen: i32 = 0;
     let mut s: small_number = 0;
     let mut max_h: scaled_t = 0;
     let mut max_d: scaled_t = 0;
@@ -6536,10 +6429,10 @@ unsafe extern "C" fn mlist_to_hlist() {
     r_type = 17i32 as small_number;
     max_h = 0i32;
     max_d = 0i32;
-    if (cur_style as libc::c_int) < 4i32 {
+    if (cur_style as i32) < 4i32 {
         cur_size = 0i32
     } else {
-        cur_size = 256i32 * ((cur_style as libc::c_int - 2i32) / 2i32)
+        cur_size = 256i32 * ((cur_style as i32 - 2i32) / 2i32)
     }
     cur_mu = x_over_n(math_quad(cur_size), 18i32);
     while q != -0xfffffffi32 {
@@ -6547,22 +6440,22 @@ unsafe extern "C" fn mlist_to_hlist() {
         /*753: */
         {
             delta = 0i32; /*:755 */
-            match (*mem.offset(q as isize)).b16.s1 as libc::c_int {
+            match (*mem.offset(q as isize)).b16.s1 as i32 {
                 18 => {
-                    match r_type as libc::c_int {
+                    match r_type as i32 {
                         18 | 17 | 19 | 20 | 22 | 30 => {}
                         _ => {
                             current_block = 1677945370889843322;
                             break;
                         }
                     }
-                    (*mem.offset(q as isize)).b16.s1 = 16i32 as uint16_t
+                    (*mem.offset(q as isize)).b16.s1 = 16_u16
                 }
                 19 | 21 | 22 | 31 => {
-                    if r_type as libc::c_int == 18i32 {
-                        (*mem.offset(r as isize)).b16.s1 = 16i32 as uint16_t
+                    if r_type as i32 == 18i32 {
+                        (*mem.offset(r as isize)).b16.s1 = 16_u16
                     }
-                    if (*mem.offset(q as isize)).b16.s1 as libc::c_int == 31i32 {
+                    if (*mem.offset(q as isize)).b16.s1 as i32 == 31i32 {
                         current_block = 2476306051584715158;
                         break;
                     } else {
@@ -6581,7 +6474,7 @@ unsafe extern "C" fn mlist_to_hlist() {
                 }
                 17 => {
                     delta = make_op(q);
-                    if (*mem.offset(q as isize)).b16.s0 as libc::c_int == 1i32 {
+                    if (*mem.offset(q as isize)).b16.s0 as i32 == 1i32 {
                         current_block = 454865348394072936;
                         break;
                     } else {
@@ -6625,17 +6518,17 @@ unsafe extern "C" fn mlist_to_hlist() {
                 }
                 14 => {
                     cur_style = (*mem.offset(q as isize)).b16.s0 as small_number;
-                    if (cur_style as libc::c_int) < 4i32 {
+                    if (cur_style as i32) < 4i32 {
                         cur_size = 0i32
                     } else {
-                        cur_size = 256i32 * ((cur_style as libc::c_int - 2i32) / 2i32)
+                        cur_size = 256i32 * ((cur_style as i32 - 2i32) / 2i32)
                     }
                     cur_mu = x_over_n(math_quad(cur_size), 18i32);
                     current_block = 12027452349022962373;
                     break;
                 }
                 15 => {
-                    match cur_style as libc::c_int / 2i32 {
+                    match cur_style as i32 / 2i32 {
                         0 => {
                             p = (*mem.offset((q + 1i32) as isize)).b32.s0;
                             (*mem.offset((q + 1i32) as isize)).b32.s0 = -0xfffffffi32
@@ -6658,8 +6551,8 @@ unsafe extern "C" fn mlist_to_hlist() {
                     flush_node_list((*mem.offset((q + 1i32) as isize)).b32.s1);
                     flush_node_list((*mem.offset((q + 2i32) as isize)).b32.s0);
                     flush_node_list((*mem.offset((q + 2i32) as isize)).b32.s1);
-                    (*mem.offset(q as isize)).b16.s1 = 14i32 as uint16_t;
-                    (*mem.offset(q as isize)).b16.s0 = cur_style as uint16_t;
+                    (*mem.offset(q as isize)).b16.s1 = 14_u16;
+                    (*mem.offset(q as isize)).b16.s0 = cur_style as u16;
                     (*mem.offset((q + 1i32) as isize)).b32.s1 = 0i32;
                     (*mem.offset((q + 2i32) as isize)).b32.s1 = 0i32;
                     if p != -0xfffffffi32 {
@@ -6688,19 +6581,17 @@ unsafe extern "C" fn mlist_to_hlist() {
                     break;
                 }
                 10 => {
-                    if (*mem.offset(q as isize)).b16.s0 as libc::c_int == 99i32 {
+                    if (*mem.offset(q as isize)).b16.s0 as i32 == 99i32 {
                         x = (*mem.offset((q + 1i32) as isize)).b32.s0;
                         y = math_glue(x, cur_mu);
                         delete_glue_ref(x);
                         (*mem.offset((q + 1i32) as isize)).b32.s0 = y;
-                        (*mem.offset(q as isize)).b16.s0 = 0i32 as uint16_t
-                    } else if cur_size != 0i32
-                        && (*mem.offset(q as isize)).b16.s0 as libc::c_int == 98i32
-                    {
+                        (*mem.offset(q as isize)).b16.s0 = 0_u16
+                    } else if cur_size != 0i32 && (*mem.offset(q as isize)).b16.s0 as i32 == 98i32 {
                         p = (*mem.offset(q as isize)).b32.s1;
                         if p != -0xfffffffi32 {
-                            if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 10i32
-                                || (*mem.offset(p as isize)).b16.s1 as libc::c_int == 11i32
+                            if (*mem.offset(p as isize)).b16.s1 as i32 == 10i32
+                                || (*mem.offset(p as isize)).b16.s1 as i32 == 11i32
                             {
                                 (*mem.offset(q as isize)).b32.s1 = (*mem.offset(p as isize)).b32.s1;
                                 (*mem.offset(p as isize)).b32.s1 = -0xfffffffi32;
@@ -6717,7 +6608,7 @@ unsafe extern "C" fn mlist_to_hlist() {
                     break;
                 }
                 _ => {
-                    confusion(b"mlist1\x00" as *const u8 as *const libc::c_char);
+                    confusion(b"mlist1\x00" as *const u8 as *const i8);
                 }
             }
         }
@@ -6726,36 +6617,36 @@ unsafe extern "C" fn mlist_to_hlist() {
                 match (*mem.offset((q + 1i32) as isize)).b32.s1 {
                     1 | 4 => {
                         fetch(q + 1i32);
-                        if *font_area.offset(cur_f as isize) as libc::c_uint == 0xffffu32
-                            || *font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+                        if *font_area.offset(cur_f as isize) as u32 == 0xffffu32
+                            || *font_area.offset(cur_f as isize) as u32 == 0xfffeu32
                         {
                             z = new_native_character(cur_f, cur_c);
                             p = get_node(5i32);
-                            (*mem.offset(p as isize)).b16.s1 = 8i32 as uint16_t;
-                            (*mem.offset(p as isize)).b16.s0 = 42i32 as uint16_t;
-                            (*mem.offset((p + 4i32) as isize)).b16.s2 = cur_f as uint16_t;
+                            (*mem.offset(p as isize)).b16.s1 = 8_u16;
+                            (*mem.offset(p as isize)).b16.s0 = 42_u16;
+                            (*mem.offset((p + 4i32) as isize)).b16.s2 = cur_f as u16;
                             (*mem.offset((p + 4i32) as isize)).b16.s1 = real_get_native_glyph(
                                 &mut *mem.offset(z as isize) as *mut memory_word
                                     as *mut libc::c_void,
-                                0i32 as libc::c_uint,
+                                0_u32,
                             );
                             measure_native_glyph(
                                 &mut *mem.offset(p as isize) as *mut memory_word
                                     as *mut libc::c_void,
                                 1i32,
                             );
-                            free_node(z, (*mem.offset((z + 4i32) as isize)).b16.s3 as int32_t);
+                            free_node(z, (*mem.offset((z + 4i32) as isize)).b16.s3 as i32);
                             delta = get_ot_math_ital_corr(
                                 cur_f,
-                                (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int,
+                                (*mem.offset((p + 4i32) as isize)).b16.s1 as i32,
                             );
                             if (*mem.offset((q + 1i32) as isize)).b32.s1 == 4i32
-                                && !(*font_area.offset(cur_f as isize) as libc::c_uint == 0xfffeu32
+                                && !(*font_area.offset(cur_f as isize) as u32 == 0xfffeu32
                                     && isOpenTypeMathFont(
                                         *font_layout_engine.offset(cur_f as isize)
                                             as XeTeXLayoutEngine,
-                                    ) as libc::c_int
-                                        != 0) as libc::c_int
+                                    ) as i32
+                                        != 0) as i32
                                     != 0i32
                             {
                                 delta = 0i32
@@ -6764,10 +6655,9 @@ unsafe extern "C" fn mlist_to_hlist() {
                                 (*mem.offset(p as isize)).b32.s1 = new_kern(delta);
                                 delta = 0i32
                             }
-                        } else if cur_i.s3 as libc::c_int > 0i32 {
+                        } else if cur_i.s3 as i32 > 0i32 {
                             delta = (*font_info.offset(
-                                (*italic_base.offset(cur_f as isize)
-                                    + cur_i.s1 as libc::c_int / 4i32)
+                                (*italic_base.offset(cur_f as isize) + cur_i.s1 as i32 / 4i32)
                                     as isize,
                             ))
                             .b32
@@ -6797,10 +6687,10 @@ unsafe extern "C" fn mlist_to_hlist() {
                         mlist_penalties = 0i32 != 0;
                         mlist_to_hlist();
                         cur_style = save_style;
-                        if (cur_style as libc::c_int) < 4i32 {
+                        if (cur_style as i32) < 4i32 {
                             cur_size = 0i32
                         } else {
-                            cur_size = 256i32 * ((cur_style as libc::c_int - 2i32) / 2i32)
+                            cur_size = 256i32 * ((cur_style as i32 - 2i32) / 2i32)
                         }
                         cur_mu = x_over_n(math_quad(cur_size), 18i32);
                         p = hpack(
@@ -6810,7 +6700,7 @@ unsafe extern "C" fn mlist_to_hlist() {
                         )
                     }
                     _ => {
-                        confusion(b"mlist2\x00" as *const u8 as *const libc::c_char);
+                        confusion(b"mlist2\x00" as *const u8 as *const i8);
                     }
                 }
                 (*mem.offset((q + 1i32) as isize)).b32.s1 = p;
@@ -6849,13 +6739,13 @@ unsafe extern "C" fn mlist_to_hlist() {
                 /*done_with_noad */
                 r = q;
                 r_type = (*mem.offset(r as isize)).b16.s1 as small_number;
-                if r_type as libc::c_int == 31i32 {
+                if r_type as i32 == 31i32 {
                     r_type = 30i32 as small_number;
                     cur_style = style;
-                    if (cur_style as libc::c_int) < 4i32 {
+                    if (cur_style as i32) < 4i32 {
                         cur_size = 0i32
                     } else {
-                        cur_size = 256i32 * ((cur_style as libc::c_int - 2i32) / 2i32)
+                        cur_size = 256i32 * ((cur_style as i32 - 2i32) / 2i32)
                     }
                     cur_mu = x_over_n(math_quad(cur_size), 18i32)
                 }
@@ -6865,18 +6755,18 @@ unsafe extern "C" fn mlist_to_hlist() {
         /*done_with_node */
         q = (*mem.offset(q as isize)).b32.s1
     } /*ord_noad *//*:755 */
-    if r_type as libc::c_int == 18i32 {
-        (*mem.offset(r as isize)).b16.s1 = 16i32 as uint16_t
+    if r_type as i32 == 18i32 {
+        (*mem.offset(r as isize)).b16.s1 = 16_u16
     }
     p = 4999999i32 - 3i32;
     (*mem.offset(p as isize)).b32.s1 = -0xfffffffi32;
     q = mlist;
     r_type = 0i32 as small_number;
     cur_style = style;
-    if (cur_style as libc::c_int) < 4i32 {
+    if (cur_style as i32) < 4i32 {
         cur_size = 0i32
     } else {
-        cur_size = 256i32 * ((cur_style as libc::c_int - 2i32) / 2i32)
+        cur_size = 256i32 * ((cur_style as i32 - 2i32) / 2i32)
     }
     cur_mu = x_over_n(math_quad(cur_size), 18i32);
     while q != -0xfffffffi32 {
@@ -6884,7 +6774,7 @@ unsafe extern "C" fn mlist_to_hlist() {
         t = 16i32 as small_number;
         s = 4i32 as small_number;
         pen = 10000i32;
-        match (*mem.offset(q as isize)).b16.s1 as libc::c_int {
+        match (*mem.offset(q as isize)).b16.s1 as i32 {
             17 | 20 | 21 | 22 | 23 => {
                 t = (*mem.offset(q as isize)).b16.s1 as small_number;
                 current_block_236 = 15067367080042895309;
@@ -6978,10 +6868,10 @@ unsafe extern "C" fn mlist_to_hlist() {
             14 => {
                 cur_style = (*mem.offset(q as isize)).b16.s0 as small_number;
                 s = 3i32 as small_number;
-                if (cur_style as libc::c_int) < 4i32 {
+                if (cur_style as i32) < 4i32 {
                     cur_size = 0i32
                 } else {
-                    cur_size = 256i32 * ((cur_style as libc::c_int - 2i32) / 2i32)
+                    cur_size = 256i32 * ((cur_style as i32 - 2i32) / 2i32)
                 }
                 cur_mu = x_over_n(math_quad(cur_size), 18i32);
                 current_block_236 = 11920828421623439930;
@@ -6994,28 +6884,27 @@ unsafe extern "C" fn mlist_to_hlist() {
                 current_block_236 = 7344615536999694015;
             }
             _ => {
-                confusion(b"mlist3\x00" as *const u8 as *const libc::c_char);
+                confusion(b"mlist3\x00" as *const u8 as *const i8);
             }
         }
         match current_block_236 {
             15067367080042895309 => {
-                if r_type as libc::c_int > 0i32 {
-                    let mut offset_table: [*const libc::c_char; 8] = [
-                        b"02340001\x00" as *const u8 as *const libc::c_char,
-                        b"22*40001\x00" as *const u8 as *const libc::c_char,
-                        b"33**3**3\x00" as *const u8 as *const libc::c_char,
-                        b"44*04004\x00" as *const u8 as *const libc::c_char,
-                        b"00*00000\x00" as *const u8 as *const libc::c_char,
-                        b"02340001\x00" as *const u8 as *const libc::c_char,
-                        b"11*11111\x00" as *const u8 as *const libc::c_char,
-                        b"12341011\x00" as *const u8 as *const libc::c_char,
+                if r_type as i32 > 0i32 {
+                    let mut offset_table: [*const i8; 8] = [
+                        b"02340001\x00" as *const u8 as *const i8,
+                        b"22*40001\x00" as *const u8 as *const i8,
+                        b"33**3**3\x00" as *const u8 as *const i8,
+                        b"44*04004\x00" as *const u8 as *const i8,
+                        b"00*00000\x00" as *const u8 as *const i8,
+                        b"02340001\x00" as *const u8 as *const i8,
+                        b"11*11111\x00" as *const u8 as *const i8,
+                        b"12341011\x00" as *const u8 as *const i8,
                     ];
                     // The inter-element spacing in math formulas depends on a 8x8 table.
                     // The table indices range from ORD_NOAD to INNER_NOAD.
                     // The chars of this table have the following significance:
-                    match *offset_table[(r_type as libc::c_int - 16i32) as usize]
-                        .offset((t as libc::c_int - 16i32) as isize)
-                        as libc::c_int
+                    match *offset_table[(r_type as i32 - 16i32) as usize]
+                        .offset((t as i32 - 16i32) as isize) as i32
                     {
                         48 => {
                             // no space
@@ -7023,7 +6912,7 @@ unsafe extern "C" fn mlist_to_hlist() {
                         }
                         49 => {
                             // a conditional thin space
-                            if (cur_style as libc::c_int) < 4i32 {
+                            if (cur_style as i32) < 4i32 {
                                 x = 16i32
                             } else {
                                 x = 0i32
@@ -7035,7 +6924,7 @@ unsafe extern "C" fn mlist_to_hlist() {
                         }
                         51 => {
                             // a conditional medium space
-                            if (cur_style as libc::c_int) < 4i32 {
+                            if (cur_style as i32) < 4i32 {
                                 x = 17i32
                             } else {
                                 x = 0i32
@@ -7043,7 +6932,7 @@ unsafe extern "C" fn mlist_to_hlist() {
                         }
                         52 => {
                             // a conditional thick space
-                            if (cur_style as libc::c_int) < 4i32 {
+                            if (cur_style as i32) < 4i32 {
                                 x = 18i32
                             } else {
                                 x = 0i32
@@ -7051,7 +6940,7 @@ unsafe extern "C" fn mlist_to_hlist() {
                         }
                         _ => {
                             // impossible
-                            confusion(b"mlist4\x00" as *const u8 as *const libc::c_char);
+                            confusion(b"mlist4\x00" as *const u8 as *const i8);
                         }
                     }
                     if x != 0i32 {
@@ -7076,7 +6965,7 @@ unsafe extern "C" fn mlist_to_hlist() {
                         (*mem.offset(y as isize)).b32.s1 = -0xfffffffi32;
                         (*mem.offset(p as isize)).b32.s1 = z;
                         p = z;
-                        (*mem.offset(z as isize)).b16.s0 = (x + 1i32) as uint16_t
+                        (*mem.offset(z as isize)).b16.s0 = (x + 1i32) as u16
                     }
                 }
                 if (*mem.offset((q + 1i32) as isize)).b32.s1 != -0xfffffffi32 {
@@ -7094,8 +6983,8 @@ unsafe extern "C" fn mlist_to_hlist() {
                             r_type = (*mem.offset((*mem.offset(q as isize)).b32.s1 as isize))
                                 .b16
                                 .s1 as small_number;
-                            if r_type as libc::c_int != 12i32 {
-                                if r_type as libc::c_int != 19i32 {
+                            if r_type as i32 != 12i32 {
+                                if r_type as i32 != 19i32 {
                                     z = new_penalty(pen);
                                     (*mem.offset(p as isize)).b32.s1 = z;
                                     p = z
@@ -7104,7 +6993,7 @@ unsafe extern "C" fn mlist_to_hlist() {
                         }
                     }
                 }
-                if (*mem.offset(q as isize)).b16.s1 as libc::c_int == 31i32 {
+                if (*mem.offset(q as isize)).b16.s1 as i32 == 31i32 {
                     t = 20i32 as small_number
                 }
                 r_type = t;
@@ -7117,30 +7006,30 @@ unsafe extern "C" fn mlist_to_hlist() {
                 /*delete_q */
                 r = q;
                 q = (*mem.offset(q as isize)).b32.s1;
-                free_node(r, s as int32_t);
+                free_node(r, s as i32);
             }
             _ => {}
         }
     }
 }
-unsafe extern "C" fn var_delimiter(mut d: int32_t, mut s: int32_t, mut v: scaled_t) -> int32_t {
-    let mut b: int32_t = 0;
+unsafe extern "C" fn var_delimiter(mut d: i32, mut s: i32, mut v: scaled_t) -> i32 {
+    let mut b: i32 = 0;
     let mut ot_assembly_ptr: *mut libc::c_void = 0 as *mut libc::c_void;
     let mut f: internal_font_number = 0;
     let mut g: internal_font_number = 0;
-    let mut c: uint16_t = 0;
-    let mut x: uint16_t = 0;
-    let mut y: uint16_t = 0;
-    let mut m: int32_t = 0;
-    let mut n: int32_t = 0;
+    let mut c: u16 = 0;
+    let mut x: u16 = 0;
+    let mut y: u16 = 0;
+    let mut m: i32 = 0;
+    let mut n: i32 = 0;
     let mut u: scaled_t = 0;
     let mut w: scaled_t = 0;
     let mut q: b16x4 = {
         let mut init = b16x4_le_t {
-            s0: 0i32 as uint16_t,
-            s1: 0i32 as uint16_t,
-            s2: 0i32 as uint16_t,
-            s3: 0i32 as uint16_t,
+            s0: 0_u16,
+            s1: 0_u16,
+            s2: 0_u16,
+            s3: 0_u16,
         };
         init
     };
@@ -7150,18 +7039,17 @@ unsafe extern "C" fn var_delimiter(mut d: int32_t, mut s: int32_t, mut v: scaled
         s2: 0,
         s3: 0,
     };
-    let mut z: int32_t = 0;
+    let mut z: i32 = 0;
     let mut large_attempt: bool = false;
     f = 0i32;
     w = 0i32;
     large_attempt = 0i32 != 0;
-    z = (*mem.offset(d as isize)).b16.s3 as libc::c_int % 256i32;
-    x = ((*mem.offset(d as isize)).b16.s2 as libc::c_long
-        + ((*mem.offset(d as isize)).b16.s3 as libc::c_int / 256i32) as libc::c_long * 65536)
-        as uint16_t;
+    z = (*mem.offset(d as isize)).b16.s3 as i32 % 256i32;
+    x = ((*mem.offset(d as isize)).b16.s2 as i64
+        + ((*mem.offset(d as isize)).b16.s3 as i32 / 256i32) as i64 * 65536) as u16;
     ot_assembly_ptr = 0 as *mut libc::c_void;
     's_62: loop {
-        if z != 0i32 || x as libc::c_int != 0i32 {
+        if z != 0i32 || x as i32 != 0i32 {
             z = z + s + 256i32;
             loop {
                 z = z - 256i32;
@@ -7189,19 +7077,18 @@ unsafe extern "C" fn var_delimiter(mut d: int32_t, mut s: int32_t, mut v: scaled
                 .s1;
                 if g != 0i32 {
                     /*734: */
-                    if *font_area.offset(g as isize) as libc::c_uint == 0xfffeu32
+                    if *font_area.offset(g as isize) as u32 == 0xfffeu32
                         && usingOpenType(*font_layout_engine.offset(g as isize) as XeTeXLayoutEngine)
-                            as libc::c_int
+                            as i32
                             != 0
                     {
-                        x = map_char_to_glyph(g, x as int32_t) as uint16_t;
+                        x = map_char_to_glyph(g, x as i32) as u16;
                         f = g;
                         c = x;
                         w = 0i32;
                         n = 0i32;
                         loop {
-                            y = get_ot_math_variant(g, x as libc::c_int, n, &mut u, 0i32)
-                                as uint16_t;
+                            y = get_ot_math_variant(g, x as i32, n, &mut u, 0i32) as u16;
                             if u > w {
                                 c = y;
                                 w = u;
@@ -7214,37 +7101,34 @@ unsafe extern "C" fn var_delimiter(mut d: int32_t, mut s: int32_t, mut v: scaled
                                 break;
                             }
                         }
-                        ot_assembly_ptr = get_ot_assembly_ptr(g, x as libc::c_int, 0i32);
+                        ot_assembly_ptr = get_ot_assembly_ptr(g, x as i32, 0i32);
                         if !ot_assembly_ptr.is_null() {
                             break 's_62;
                         }
                     } else {
                         y = x;
-                        if y as libc::c_int >= *font_bc.offset(g as isize) as libc::c_int
-                            && y as libc::c_int <= *font_ec.offset(g as isize) as libc::c_int
+                        if y as i32 >= *font_bc.offset(g as isize) as i32
+                            && y as i32 <= *font_ec.offset(g as isize) as i32
                         {
                             loop {
-                                q = (*font_info.offset(
-                                    (*char_base.offset(g as isize) + y as libc::c_int) as isize,
-                                ))
+                                q = (*font_info
+                                    .offset((*char_base.offset(g as isize) + y as i32) as isize))
                                 .b16;
-                                if !(q.s3 as libc::c_int > 0i32) {
+                                if !(q.s3 as i32 > 0i32) {
                                     break;
                                 }
-                                if q.s1 as libc::c_int % 4i32 == 3i32 {
+                                if q.s1 as i32 % 4i32 == 3i32 {
                                     f = g;
                                     c = y;
                                     break 's_62;
                                 } else {
                                     u = (*font_info.offset(
-                                        (*height_base.offset(g as isize)
-                                            + q.s2 as libc::c_int / 16i32)
+                                        (*height_base.offset(g as isize) + q.s2 as i32 / 16i32)
                                             as isize,
                                     ))
                                     .b32
                                     .s1 + (*font_info.offset(
-                                        (*depth_base.offset(g as isize)
-                                            + q.s2 as libc::c_int % 16i32)
+                                        (*depth_base.offset(g as isize) + q.s2 as i32 % 16i32)
                                             as isize,
                                     ))
                                     .b32
@@ -7257,7 +7141,7 @@ unsafe extern "C" fn var_delimiter(mut d: int32_t, mut s: int32_t, mut v: scaled
                                             break 's_62;
                                         }
                                     }
-                                    if !(q.s1 as libc::c_int % 4i32 == 2i32) {
+                                    if !(q.s1 as i32 % 4i32 == 2i32) {
                                         break;
                                     }
                                     y = q.s0
@@ -7275,25 +7159,22 @@ unsafe extern "C" fn var_delimiter(mut d: int32_t, mut s: int32_t, mut v: scaled
             break;
         }
         large_attempt = 1i32 != 0;
-        z = (*mem.offset(d as isize)).b16.s1 as libc::c_int % 256i32;
-        x = ((*mem.offset(d as isize)).b16.s0 as libc::c_long
-            + ((*mem.offset(d as isize)).b16.s1 as libc::c_int / 256i32) as libc::c_long * 65536)
-            as uint16_t
+        z = (*mem.offset(d as isize)).b16.s1 as i32 % 256i32;
+        x = ((*mem.offset(d as isize)).b16.s0 as i64
+            + ((*mem.offset(d as isize)).b16.s1 as i32 / 256i32) as i64 * 65536) as u16
     }
     if f != 0i32 {
-        if !(*font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
-            && usingOpenType(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine)
-                as libc::c_int
+        if !(*font_area.offset(f as isize) as u32 == 0xfffeu32
+            && usingOpenType(*font_layout_engine.offset(f as isize) as XeTeXLayoutEngine) as i32
                 != 0)
         {
             /*736: */
-            if q.s1 as libc::c_int % 4i32 == 3i32 {
+            if q.s1 as i32 % 4i32 == 3i32 {
                 /*739: */
                 b = new_null_box();
-                (*mem.offset(b as isize)).b16.s1 = 1i32 as uint16_t;
-                r = (*font_info
-                    .offset((*exten_base.offset(f as isize) + q.s0 as libc::c_int) as isize))
-                .b16;
+                (*mem.offset(b as isize)).b16.s1 = 1_u16;
+                r = (*font_info.offset((*exten_base.offset(f as isize) + q.s0 as i32) as isize))
+                    .b16;
                 c = r.s0;
                 u = height_plus_depth(f, c);
                 w = 0i32;
@@ -7302,23 +7183,22 @@ unsafe extern "C" fn var_delimiter(mut d: int32_t, mut s: int32_t, mut v: scaled
                 ))
                 .b16;
                 (*mem.offset((b + 1i32) as isize)).b32.s1 = (*font_info
-                    .offset((*width_base.offset(f as isize) + q.s3 as libc::c_int) as isize))
+                    .offset((*width_base.offset(f as isize) + q.s3 as i32) as isize))
                 .b32
-                .s1 + (*font_info.offset(
-                    (*italic_base.offset(f as isize) + q.s1 as libc::c_int / 4i32) as isize,
-                ))
+                .s1 + (*font_info
+                    .offset((*italic_base.offset(f as isize) + q.s1 as i32 / 4i32) as isize))
                 .b32
                 .s1;
                 c = r.s1;
-                if c as libc::c_int != 0i32 {
+                if c as i32 != 0i32 {
                     w = w + height_plus_depth(f, c)
                 }
                 c = r.s2;
-                if c as libc::c_int != 0i32 {
+                if c as i32 != 0i32 {
                     w = w + height_plus_depth(f, c)
                 }
                 c = r.s3;
-                if c as libc::c_int != 0i32 {
+                if c as i32 != 0i32 {
                     w = w + height_plus_depth(f, c)
                 }
                 n = 0i32;
@@ -7326,17 +7206,17 @@ unsafe extern "C" fn var_delimiter(mut d: int32_t, mut s: int32_t, mut v: scaled
                     while w < v {
                         w = w + u;
                         n += 1;
-                        if r.s2 as libc::c_int != 0i32 {
+                        if r.s2 as i32 != 0i32 {
                             w = w + u
                         }
                     }
                 }
                 c = r.s1;
-                if c as libc::c_int != 0i32 {
+                if c as i32 != 0i32 {
                     stack_into_box(b, f, c);
                 }
                 c = r.s0;
-                let mut for_end: int32_t = 0;
+                let mut for_end: i32 = 0;
                 m = 1i32;
                 for_end = n;
                 if m <= for_end {
@@ -7350,10 +7230,10 @@ unsafe extern "C" fn var_delimiter(mut d: int32_t, mut s: int32_t, mut v: scaled
                     }
                 }
                 c = r.s2;
-                if c as libc::c_int != 0i32 {
+                if c as i32 != 0i32 {
                     stack_into_box(b, f, c);
                     c = r.s0;
-                    let mut for_end_0: int32_t = 0;
+                    let mut for_end_0: i32 = 0;
                     m = 1i32;
                     for_end_0 = n;
                     if m <= for_end_0 {
@@ -7368,30 +7248,30 @@ unsafe extern "C" fn var_delimiter(mut d: int32_t, mut s: int32_t, mut v: scaled
                     }
                 }
                 c = r.s3;
-                if c as libc::c_int != 0i32 {
+                if c as i32 != 0i32 {
                     stack_into_box(b, f, c);
                 }
                 (*mem.offset((b + 2i32) as isize)).b32.s1 =
                     w - (*mem.offset((b + 3i32) as isize)).b32.s1
             } else {
-                b = char_box(f, c as int32_t)
+                b = char_box(f, c as i32)
             }
         /*:736 */
         } else if !ot_assembly_ptr.is_null() {
             b = build_opentype_assembly(f, ot_assembly_ptr, v, 0i32 != 0)
         } else {
             b = new_null_box();
-            (*mem.offset(b as isize)).b16.s1 = 1i32 as uint16_t;
+            (*mem.offset(b as isize)).b16.s1 = 1_u16;
             (*mem.offset((b + 5i32) as isize)).b32.s1 = get_node(5i32);
             (*mem.offset((*mem.offset((b + 5i32) as isize)).b32.s1 as isize))
                 .b16
-                .s1 = 8i32 as uint16_t;
+                .s1 = 8_u16;
             (*mem.offset((*mem.offset((b + 5i32) as isize)).b32.s1 as isize))
                 .b16
-                .s0 = 42i32 as uint16_t;
+                .s0 = 42_u16;
             (*mem.offset(((*mem.offset((b + 5i32) as isize)).b32.s1 + 4i32) as isize))
                 .b16
-                .s2 = f as uint16_t;
+                .s2 = f as u16;
             (*mem.offset(((*mem.offset((b + 5i32) as isize)).b32.s1 + 4i32) as isize))
                 .b16
                 .s1 = c;
@@ -7454,17 +7334,17 @@ unsafe extern "C" fn var_delimiter(mut d: int32_t, mut s: int32_t, mut v: scaled
     free_ot_assembly(ot_assembly_ptr as *mut GlyphAssembly);
     return b;
 }
-unsafe extern "C" fn char_box(mut f: internal_font_number, mut c: int32_t) -> int32_t {
+unsafe extern "C" fn char_box(mut f: internal_font_number, mut c: i32) -> i32 {
     let mut q: b16x4 = b16x4 {
         s0: 0,
         s1: 0,
         s2: 0,
         s3: 0,
     };
-    let mut b: int32_t = 0;
-    let mut p: int32_t = 0;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xffffu32
-        || *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
+    let mut b: i32 = 0;
+    let mut p: i32 = 0;
+    if *font_area.offset(f as isize) as u32 == 0xffffu32
+        || *font_area.offset(f as isize) as u32 == 0xfffeu32
     {
         b = new_null_box();
         p = new_native_character(f, c);
@@ -7478,68 +7358,63 @@ unsafe extern "C" fn char_box(mut f: internal_font_number, mut c: int32_t) -> in
         }
     } else {
         q = (*font_info.offset(
-            (*char_base.offset(f as isize) + effective_char(1i32 != 0, f, c as uint16_t)) as isize,
+            (*char_base.offset(f as isize) + effective_char(1i32 != 0, f, c as u16)) as isize,
         ))
         .b16;
         b = new_null_box();
         (*mem.offset((b + 1i32) as isize)).b32.s1 = (*font_info
-            .offset((*width_base.offset(f as isize) + q.s3 as libc::c_int) as isize))
+            .offset((*width_base.offset(f as isize) + q.s3 as i32) as isize))
         .b32
         .s1 + (*font_info
-            .offset((*italic_base.offset(f as isize) + q.s1 as libc::c_int / 4i32) as isize))
+            .offset((*italic_base.offset(f as isize) + q.s1 as i32 / 4i32) as isize))
         .b32
         .s1;
         (*mem.offset((b + 3i32) as isize)).b32.s1 = (*font_info
-            .offset((*height_base.offset(f as isize) + q.s2 as libc::c_int / 16i32) as isize))
+            .offset((*height_base.offset(f as isize) + q.s2 as i32 / 16i32) as isize))
         .b32
         .s1;
         (*mem.offset((b + 2i32) as isize)).b32.s1 = (*font_info
-            .offset((*depth_base.offset(f as isize) + q.s2 as libc::c_int % 16i32) as isize))
+            .offset((*depth_base.offset(f as isize) + q.s2 as i32 % 16i32) as isize))
         .b32
         .s1;
         p = get_avail();
-        (*mem.offset(p as isize)).b16.s0 = c as uint16_t;
-        (*mem.offset(p as isize)).b16.s1 = f as uint16_t
+        (*mem.offset(p as isize)).b16.s0 = c as u16;
+        (*mem.offset(p as isize)).b16.s1 = f as u16
     }
     (*mem.offset((b + 5i32) as isize)).b32.s1 = p;
     return b;
 }
-unsafe extern "C" fn stack_into_box(mut b: int32_t, mut f: internal_font_number, mut c: uint16_t) {
-    let mut p: int32_t = 0;
-    p = char_box(f, c as int32_t);
+unsafe extern "C" fn stack_into_box(mut b: i32, mut f: internal_font_number, mut c: u16) {
+    let mut p: i32 = 0;
+    p = char_box(f, c as i32);
     (*mem.offset(p as isize)).b32.s1 = (*mem.offset((b + 5i32) as isize)).b32.s1;
     (*mem.offset((b + 5i32) as isize)).b32.s1 = p;
     (*mem.offset((b + 3i32) as isize)).b32.s1 = (*mem.offset((p + 3i32) as isize)).b32.s1;
 }
-unsafe extern "C" fn height_plus_depth(mut f: internal_font_number, mut c: uint16_t) -> scaled_t {
+unsafe extern "C" fn height_plus_depth(mut f: internal_font_number, mut c: u16) -> scaled_t {
     let mut q: b16x4 = (*font_info
         .offset((*char_base.offset(f as isize) + effective_char(1i32 != 0, f, c)) as isize))
     .b16;
-    return (*font_info
-        .offset((*height_base.offset(f as isize) + q.s2 as libc::c_int / 16i32) as isize))
-    .b32
-    .s1 + (*font_info
-        .offset((*depth_base.offset(f as isize) + q.s2 as libc::c_int % 16i32) as isize))
-    .b32
-    .s1;
+    return (*font_info.offset((*height_base.offset(f as isize) + q.s2 as i32 / 16i32) as isize))
+        .b32
+        .s1
+        + (*font_info.offset((*depth_base.offset(f as isize) + q.s2 as i32 % 16i32) as isize))
+            .b32
+            .s1;
 }
-unsafe extern "C" fn stack_glyph_into_box(
-    mut b: int32_t,
-    mut f: internal_font_number,
-    mut g: int32_t,
-) {
-    let mut p: int32_t = 0;
-    let mut q: int32_t = 0;
+unsafe extern "C" fn stack_glyph_into_box(mut b: i32, mut f: internal_font_number, mut g: i32) {
+    let mut p: i32 = 0;
+    let mut q: i32 = 0;
     p = get_node(5i32);
-    (*mem.offset(p as isize)).b16.s1 = 8i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = 42i32 as uint16_t;
-    (*mem.offset((p + 4i32) as isize)).b16.s2 = f as uint16_t;
-    (*mem.offset((p + 4i32) as isize)).b16.s1 = g as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 8_u16;
+    (*mem.offset(p as isize)).b16.s0 = 42_u16;
+    (*mem.offset((p + 4i32) as isize)).b16.s2 = f as u16;
+    (*mem.offset((p + 4i32) as isize)).b16.s1 = g as u16;
     measure_native_glyph(
         &mut *mem.offset(p as isize) as *mut memory_word as *mut libc::c_void,
         1i32,
     );
-    if (*mem.offset(b as isize)).b16.s1 as libc::c_int == 0i32 {
+    if (*mem.offset(b as isize)).b16.s1 as i32 == 0i32 {
         q = (*mem.offset((b + 5i32) as isize)).b32.s1;
         if q == -0xfffffffi32 {
             (*mem.offset((b + 5i32) as isize)).b32.s1 = p
@@ -7568,14 +7443,14 @@ unsafe extern "C" fn stack_glyph_into_box(
         }
     };
 }
-unsafe extern "C" fn stack_glue_into_box(mut b: int32_t, mut min: scaled_t, mut max: scaled_t) {
-    let mut p: int32_t = 0;
-    let mut q: int32_t = 0;
+unsafe extern "C" fn stack_glue_into_box(mut b: i32, mut min: scaled_t, mut max: scaled_t) {
+    let mut p: i32 = 0;
+    let mut q: i32 = 0;
     q = new_spec(0i32);
     (*mem.offset((q + 1i32) as isize)).b32.s1 = min;
     (*mem.offset((q + 2i32) as isize)).b32.s1 = max - min;
     p = new_glue(q);
-    if (*mem.offset(b as isize)).b16.s1 as libc::c_int == 0i32 {
+    if (*mem.offset(b as isize)).b16.s1 as i32 == 0i32 {
         q = (*mem.offset((b + 5i32) as isize)).b32.s1;
         if q == -0xfffffffi32 {
             (*mem.offset((b + 5i32) as isize)).b32.s1 = p
@@ -7597,13 +7472,13 @@ unsafe extern "C" fn build_opentype_assembly(
     mut a: *mut libc::c_void,
     mut s: scaled_t,
     mut horiz: bool,
-) -> int32_t {
-    let mut b: int32_t = 0;
-    let mut n: int32_t = 0;
-    let mut i: int32_t = 0;
-    let mut j: int32_t = 0;
-    let mut g: int32_t = 0;
-    let mut p: int32_t = 0;
+) -> i32 {
+    let mut b: i32 = 0;
+    let mut n: i32 = 0;
+    let mut i: i32 = 0;
+    let mut j: i32 = 0;
+    let mut g: i32 = 0;
+    let mut p: i32 = 0;
     let mut s_max: scaled_t = 0;
     let mut o: scaled_t = 0;
     let mut oo: scaled_t = 0;
@@ -7614,9 +7489,9 @@ unsafe extern "C" fn build_opentype_assembly(
     let mut str: scaled_t = 0;
     b = new_null_box();
     if horiz {
-        (*mem.offset(b as isize)).b16.s1 = 0i32 as uint16_t
+        (*mem.offset(b as isize)).b16.s1 = 0_u16
     } else {
-        (*mem.offset(b as isize)).b16.s1 = 1i32 as uint16_t
+        (*mem.offset(b as isize)).b16.s1 = 1_u16
     }
     n = -1i32;
     no_extenders = 1i32 != 0;
@@ -7625,14 +7500,14 @@ unsafe extern "C" fn build_opentype_assembly(
         n = n + 1i32;
         s_max = 0i32;
         prev_o = 0i32;
-        let mut for_end: int32_t = 0;
+        let mut for_end: i32 = 0;
         i = 0i32;
         for_end = ot_part_count(a as *const GlyphAssembly) - 1i32;
         if i <= for_end {
             loop {
                 if ot_part_is_extender(a as *const GlyphAssembly, i) {
                     no_extenders = 0i32 != 0;
-                    let mut for_end_0: int32_t = 0;
+                    let mut for_end_0: i32 = 0;
                     j = 1i32;
                     for_end_0 = n;
                     if j <= for_end_0 {
@@ -7672,18 +7547,18 @@ unsafe extern "C" fn build_opentype_assembly(
                 }
             }
         }
-        if s_max >= s || no_extenders as libc::c_int != 0 {
+        if s_max >= s || no_extenders as i32 != 0 {
             break;
         }
     }
     prev_o = 0i32;
-    let mut for_end_1: int32_t = 0;
+    let mut for_end_1: i32 = 0;
     i = 0i32;
     for_end_1 = ot_part_count(a as *const GlyphAssembly) - 1i32;
     if i <= for_end_1 {
         loop {
             if ot_part_is_extender(a as *const GlyphAssembly, i) {
-                let mut for_end_2: int32_t = 0;
+                let mut for_end_2: i32 = 0;
                 j = 1i32;
                 for_end_2 = n;
                 if j <= for_end_2 {
@@ -7736,7 +7611,7 @@ unsafe extern "C" fn build_opentype_assembly(
     nat = 0i32;
     str = 0i32;
     while p != -0xfffffffi32 {
-        if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 8i32 {
+        if (*mem.offset(p as isize)).b16.s1 as i32 == 8i32 {
             if horiz {
                 nat = nat + (*mem.offset((p + 1i32) as isize)).b32.s1
             } else {
@@ -7744,7 +7619,7 @@ unsafe extern "C" fn build_opentype_assembly(
                     + (*mem.offset((p + 3i32) as isize)).b32.s1
                     + (*mem.offset((p + 2i32) as isize)).b32.s1
             }
-        } else if (*mem.offset(p as isize)).b16.s1 as libc::c_int == 10i32 {
+        } else if (*mem.offset(p as isize)).b16.s1 as i32 == 10i32 {
             nat = nat
                 + (*mem.offset(((*mem.offset((p + 1i32) as isize)).b32.s0 + 1i32) as isize))
                     .b32
@@ -7762,15 +7637,15 @@ unsafe extern "C" fn build_opentype_assembly(
         if o > str {
             o = str
         }
-        (*mem.offset((b + 5i32) as isize)).b16.s0 = 0i32 as uint16_t;
-        (*mem.offset((b + 5i32) as isize)).b16.s1 = 1i32 as uint16_t;
-        (*mem.offset((b + 6i32) as isize)).gr = o as libc::c_double / str as libc::c_double;
+        (*mem.offset((b + 5i32) as isize)).b16.s0 = 0_u16;
+        (*mem.offset((b + 5i32) as isize)).b16.s1 = 1_u16;
+        (*mem.offset((b + 6i32) as isize)).gr = o as f64 / str as f64;
         if horiz {
             (*mem.offset((b + 1i32) as isize)).b32.s1 =
-                nat + tex_round(str as libc::c_double * (*mem.offset((b + 6i32) as isize)).gr)
+                nat + tex_round(str as f64 * (*mem.offset((b + 6i32) as isize)).gr)
         } else {
             (*mem.offset((b + 3i32) as isize)).b32.s1 =
-                nat + tex_round(str as libc::c_double * (*mem.offset((b + 6i32) as isize)).gr)
+                nat + tex_round(str as f64 * (*mem.offset((b + 6i32) as isize)).gr)
         }
     } else if horiz {
         (*mem.offset((b + 1i32) as isize)).b32.s1 = nat
@@ -7779,19 +7654,18 @@ unsafe extern "C" fn build_opentype_assembly(
     }
     return b;
 }
-unsafe extern "C" fn rebox(mut b: int32_t, mut w: scaled_t) -> int32_t {
-    let mut p: int32_t = 0;
+unsafe extern "C" fn rebox(mut b: i32, mut w: scaled_t) -> i32 {
+    let mut p: i32 = 0;
     let mut f: internal_font_number = 0;
     let mut v: scaled_t = 0;
     if (*mem.offset((b + 1i32) as isize)).b32.s1 != w
         && (*mem.offset((b + 5i32) as isize)).b32.s1 != -0xfffffffi32
     {
-        if (*mem.offset(b as isize)).b16.s1 as libc::c_int == 1i32 {
+        if (*mem.offset(b as isize)).b16.s1 as i32 == 1i32 {
             b = hpack(b, 0i32, 1i32 as small_number)
         }
         p = (*mem.offset((b + 5i32) as isize)).b32.s1;
-        if is_char_node(p) as libc::c_int != 0 && (*mem.offset(p as isize)).b32.s1 == -0xfffffffi32
-        {
+        if is_char_node(p) as i32 != 0 && (*mem.offset(p as isize)).b32.s1 == -0xfffffffi32 {
             f = (*mem.offset(p as isize)).b16.s1 as internal_font_number;
             v = (*font_info.offset(
                 (*width_base.offset(f as isize)
@@ -7801,7 +7675,7 @@ unsafe extern "C" fn rebox(mut b: int32_t, mut w: scaled_t) -> int32_t {
                             as isize,
                     ))
                     .b16
-                    .s3 as libc::c_int) as isize,
+                    .s3 as i32) as isize,
             ))
             .b32
             .s1;
