@@ -297,12 +297,12 @@ pub unsafe extern "C" fn synctex_init_command() {
     synctex_ctxt.total_length = 0i32;
     synctex_ctxt.lastv = -1i32;
     synctex_ctxt.form_depth = 0i32;
-    synctex_ctxt.synctex_tag_counter = 0i32 as u32;
-    synctex_ctxt.flags.set_content_ready(0i32 as u32);
-    synctex_ctxt.flags.set_off(0i32 as u32);
-    synctex_ctxt.flags.set_not_void(0i32 as u32);
-    synctex_ctxt.flags.set_warn(0i32 as u32);
-    synctex_ctxt.flags.set_output_p(0i32 as u32);
+    synctex_ctxt.synctex_tag_counter = 0_u32;
+    synctex_ctxt.flags.set_content_ready(0_u32);
+    synctex_ctxt.flags.set_off(0_u32);
+    synctex_ctxt.flags.set_not_void(0_u32);
+    synctex_ctxt.flags.set_warn(0_u32);
+    synctex_ctxt.flags.set_output_p(0_u32);
     if synctex_enabled != 0 {
         (*eqtb.offset(
             (1i32
@@ -375,7 +375,7 @@ unsafe extern "C" fn synctexabort() {
         synctex_ctxt.file = 0 as *mut libc::c_void
     }
     synctex_ctxt.root_name = mfree(synctex_ctxt.root_name as *mut libc::c_void) as *mut i8;
-    synctex_ctxt.flags.set_off(1i32 as u32);
+    synctex_ctxt.flags.set_off(1_u32);
     /* disable synctex */
 }
 static mut synctex_suffix: *const i8 = b".synctex\x00" as *const u8 as *const i8;
@@ -475,7 +475,7 @@ unsafe extern "C" fn synctex_prepare_content() -> *mut libc::c_void {
         && 0i32 == synctex_record_settings()
         && 0i32 == synctex_record_content()
     {
-        synctex_ctxt.flags.set_content_ready(1i32 as u32);
+        synctex_ctxt.flags.set_content_ready(1_u32);
         return synctex_ctxt.file;
     }
     synctexabort();
@@ -508,20 +508,20 @@ pub unsafe extern "C" fn synctex_start_input() {
     /*  synctex_tag_counter is a counter uniquely identifying the file actually
      *  open.  Each time tex opens a new file, synctexstartinput will increment this
      *  counter  */
-    if !synctex_ctxt.synctex_tag_counter > 0i32 as u32 {
+    if !synctex_ctxt.synctex_tag_counter > 0_u32 {
         synctex_ctxt.synctex_tag_counter = synctex_ctxt.synctex_tag_counter.wrapping_add(1)
     } else {
         /*  we have reached the limit, subsequent files will be softly ignored
          *  this makes a lot of files... even in 32 bits
          *  Maybe we will limit this to 16bits and
          *  use the 16 other bits to store the column number */
-        synctex_ctxt.synctex_tag_counter = 0i32 as u32;
+        synctex_ctxt.synctex_tag_counter = 0_u32;
         /* was this, but this looks like a bug */
         /* cur_input.synctex_tag = 0; */
         return;
     } /*  -> *TeX.web  */
     cur_input.synctex_tag = synctex_ctxt.synctex_tag_counter as i32;
-    if synctex_ctxt.synctex_tag_counter == 1i32 as u32 {
+    if synctex_ctxt.synctex_tag_counter == 1_u32 {
         /*  this is the first file TeX ever opens, in general \jobname.tex we
          *  do not know yet if synchronization will ever be enabled so we have
          *  to store the file name, because we will need it later.
@@ -609,7 +609,7 @@ pub unsafe extern "C" fn synctex_sheet(mut mag: i32) {
         .s1 != 0
             && synctex_ctxt.flags.warn() == 0
         {
-            synctex_ctxt.flags.set_warn(1i32 as u32);
+            synctex_ctxt.flags.set_warn(1_u32);
             ttstub_issue_warning(
                 b"SyncTeX was disabled -- changing the value of \\synctex has no effect\x00"
                     as *const u8 as *const i8,
@@ -1455,7 +1455,7 @@ pub unsafe extern "C" fn synctex_pdfxform(mut p: i32) {
         .s1 != 0
             && synctex_ctxt.flags.warn() == 0
         {
-            synctex_ctxt.flags.set_warn(1i32 as u32);
+            synctex_ctxt.flags.set_warn(1_u32);
             ttstub_issue_warning(
                 b"SyncTeX was disabled - changing the value of \\synctex has no effect\x00"
                     as *const u8 as *const i8,
@@ -1635,7 +1635,7 @@ unsafe extern "C" fn synctex_record_node_void_vlist(mut p: i32) {
 #[inline]
 unsafe extern "C" fn synctex_record_node_vlist(mut p: i32) {
     let mut len: i32 = 0;
-    synctex_ctxt.flags.set_not_void(1i32 as u32);
+    synctex_ctxt.flags.set_not_void(1_u32);
     len = ttstub_fprintf(
         synctex_ctxt.file,
         b"[%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const i8,
@@ -1689,7 +1689,7 @@ unsafe extern "C" fn synctex_record_node_void_hlist(mut p: i32) {
 #[inline]
 unsafe extern "C" fn synctex_record_node_hlist(mut p: i32) {
     let mut len: i32 = 0;
-    synctex_ctxt.flags.set_not_void(1i32 as u32);
+    synctex_ctxt.flags.set_not_void(1_u32);
     len = ttstub_fprintf(
         synctex_ctxt.file,
         b"(%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const i8,
@@ -1849,17 +1849,17 @@ unsafe extern "C" fn run_static_initializers() {
             total_length: 0i32,
             lastv: -1i32,
             form_depth: 0i32,
-            synctex_tag_counter: 0i32 as u32,
+            synctex_tag_counter: 0_u32,
             flags: {
                 let mut init = _flags {
                     content_ready_off_not_void_warn_output_p: [0; 1],
                     c2rust_padding: [0; 3],
                 };
-                init.set_content_ready(0i32 as u32);
-                init.set_off(0i32 as u32);
-                init.set_not_void(0i32 as u32);
-                init.set_warn(0i32 as u32);
-                init.set_output_p(0i32 as u32);
+                init.set_content_ready(0_u32);
+                init.set_off(0_u32);
+                init.set_not_void(0_u32);
+                init.set_warn(0_u32);
+                init.set_output_p(0_u32);
                 init
             },
         };

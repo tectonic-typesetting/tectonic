@@ -451,7 +451,7 @@ pub unsafe extern "C" fn png_include_image(
         png_info_ptr as *const png_info,
     );
     if bpc as i32 > 8i32 {
-        if pdf_get_version() < 5i32 as u32 {
+        if pdf_get_version() < 5_u32 {
             /* Ask libpng to convert down to 8-bpc. */
             dpx_warning(
                 b"%s: 16-bpc PNG requires PDF version 1.5.\x00" as *const u8 as *const i8,
@@ -522,10 +522,10 @@ pub unsafe extern "C" fn png_include_image(
         png_ptr as *const png_struct,
         png_info_ptr as *const png_info,
     );
-    if xppm > 0i32 as u32 {
+    if xppm > 0_u32 {
         info.xdensity = 72.0f64 / 0.0254f64 / xppm as f64
     }
-    if yppm > 0i32 as u32 {
+    if yppm > 0_u32 {
         info.ydensity = 72.0f64 / 0.0254f64 / yppm as f64
     }
     stream = pdf_new_stream(1i32 << 0i32);
@@ -676,7 +676,7 @@ pub unsafe extern "C" fn png_include_image(
      * of libpng had a bug that incorrectly treat the compression
      * flag of iTxt chunks.
      */
-    if pdf_get_version() >= 4i32 as u32 {
+    if pdf_get_version() >= 4_u32 {
         let mut text_ptr: png_textp = 0 as *mut png_text;
         let mut XMP_stream: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut XMP_stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -862,9 +862,7 @@ unsafe extern "C" fn check_transparency(mut png_ptr: png_structp, mut info_ptr: 
      * We can convert alpha cahnnels to explicit mask via user supplied alpha-
      * threshold value. But I will not do that.
      */
-    if pdf_version < 3i32 as u32 && trans_type != 0i32
-        || pdf_version < 4i32 as u32 && trans_type == 2i32
-    {
+    if pdf_version < 3_u32 && trans_type != 0i32 || pdf_version < 4_u32 && trans_type == 2i32 {
         /*
          *   No transparency supported but PNG uses transparency, or Soft-Mask
          * required but no support for it is available in this version of PDF.
@@ -901,14 +899,14 @@ unsafe extern "C" fn check_transparency(mut png_ptr: png_structp, mut info_ptr: 
                 as *const i8,
             b"PNG\x00" as *const u8 as *const i8,
         );
-        if pdf_version < 3i32 as u32 {
+        if pdf_version < 3_u32 {
             dpx_warning(
                 b"%s: Please use -V 3 option to enable binary transparency support.\x00"
                     as *const u8 as *const i8,
                 b"PNG\x00" as *const u8 as *const i8,
             );
         }
-        if pdf_version < 4i32 as u32 {
+        if pdf_version < 4_u32 {
             dpx_warning(
                 b"%s: Please use -V 4 option to enable full alpha channel support.\x00" as *const u8
                     as *const i8,
@@ -1768,45 +1766,37 @@ unsafe extern "C" fn strip_soft_mask(
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
                     memmove(
-                        image_data_ptr.offset((3i32 as u32).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((3_u32).wrapping_mul(i) as isize)
                             as *mut libc::c_void,
-                        image_data_ptr.offset((4i32 as u32).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((4_u32).wrapping_mul(i) as isize)
                             as *const libc::c_void,
                         3i32 as u64,
                     );
                     *smask_data_ptr.offset(i as isize) = *image_data_ptr
-                        .offset((4i32 as u32).wrapping_mul(i).wrapping_add(3i32 as u32) as isize);
+                        .offset((4_u32).wrapping_mul(i).wrapping_add(3_u32) as isize);
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((3i32 as u32).wrapping_mul(width) as u64)
+                *rowbytes_ptr = ((3_u32).wrapping_mul(width) as u64)
                     .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             } else {
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
                     memmove(
-                        image_data_ptr.offset((6i32 as u32).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((6_u32).wrapping_mul(i) as isize)
                             as *mut libc::c_void,
-                        image_data_ptr.offset((8i32 as u32).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((8_u32).wrapping_mul(i) as isize)
                             as *const libc::c_void,
                         6i32 as u64,
                     );
-                    *smask_data_ptr.offset((2i32 as u32).wrapping_mul(i) as isize) =
-                        *image_data_ptr.offset(
-                            (8i32 as u32).wrapping_mul(i).wrapping_add(6i32 as u32) as isize,
-                        );
-                    *smask_data_ptr.offset(
-                        (2i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as u32) as isize,
-                    ) = *image_data_ptr.offset(
-                        (8i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(7i32 as u32) as isize,
-                    );
+                    *smask_data_ptr.offset((2_u32).wrapping_mul(i) as isize) = *image_data_ptr
+                        .offset((8_u32).wrapping_mul(i).wrapping_add(6_u32) as isize);
+                    *smask_data_ptr.offset((2_u32).wrapping_mul(i).wrapping_add(1_u32) as isize) =
+                        *image_data_ptr
+                            .offset((8_u32).wrapping_mul(i).wrapping_add(7_u32) as isize);
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((6i32 as u32).wrapping_mul(width) as u64)
+                *rowbytes_ptr = ((6_u32).wrapping_mul(width) as u64)
                     .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             }
@@ -1816,9 +1806,9 @@ unsafe extern "C" fn strip_soft_mask(
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
                     *image_data_ptr.offset(i as isize) =
-                        *image_data_ptr.offset((2i32 as u32).wrapping_mul(i) as isize);
+                        *image_data_ptr.offset((2_u32).wrapping_mul(i) as isize);
                     *smask_data_ptr.offset(i as isize) = *image_data_ptr
-                        .offset((2i32 as u32).wrapping_mul(i).wrapping_add(1i32 as u32) as isize);
+                        .offset((2_u32).wrapping_mul(i).wrapping_add(1_u32) as isize);
                     i = i.wrapping_add(1)
                 }
                 *rowbytes_ptr = (width as u64)
@@ -1827,33 +1817,19 @@ unsafe extern "C" fn strip_soft_mask(
             } else {
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
-                    *image_data_ptr.offset((2i32 as u32).wrapping_mul(i) as isize) =
-                        *image_data_ptr.offset((4i32 as u32).wrapping_mul(i) as isize);
-                    *image_data_ptr.offset(
-                        (2i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as u32) as isize,
-                    ) = *image_data_ptr.offset(
-                        (4i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as u32) as isize,
-                    );
-                    *smask_data_ptr.offset((2i32 as u32).wrapping_mul(i) as isize) =
-                        *image_data_ptr.offset(
-                            (4i32 as u32).wrapping_mul(i).wrapping_add(2i32 as u32) as isize,
-                        );
-                    *smask_data_ptr.offset(
-                        (2i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(1i32 as u32) as isize,
-                    ) = *image_data_ptr.offset(
-                        (4i32 as u32)
-                            .wrapping_mul(i)
-                            .wrapping_add(3i32 as u32) as isize,
-                    );
+                    *image_data_ptr.offset((2_u32).wrapping_mul(i) as isize) =
+                        *image_data_ptr.offset((4_u32).wrapping_mul(i) as isize);
+                    *image_data_ptr.offset((2_u32).wrapping_mul(i).wrapping_add(1_u32) as isize) =
+                        *image_data_ptr
+                            .offset((4_u32).wrapping_mul(i).wrapping_add(1_u32) as isize);
+                    *smask_data_ptr.offset((2_u32).wrapping_mul(i) as isize) = *image_data_ptr
+                        .offset((4_u32).wrapping_mul(i).wrapping_add(2_u32) as isize);
+                    *smask_data_ptr.offset((2_u32).wrapping_mul(i).wrapping_add(1_u32) as isize) =
+                        *image_data_ptr
+                            .offset((4_u32).wrapping_mul(i).wrapping_add(3_u32) as isize);
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((2i32 as u32).wrapping_mul(width) as u64)
+                *rowbytes_ptr = ((2_u32).wrapping_mul(width) as u64)
                     .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             }

@@ -230,7 +230,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     C = (C as u32).wrapping_add(
         (B ^ D & (A ^ B))
             .wrapping_add(*fresh2)
-            .wrapping_add(0x242070dbi32 as u32),
+            .wrapping_add(0x242070db_u32),
     ) as u32;
     C = C << 17i32 | C >> 32i32 - 17i32;
     C = (C as u32).wrapping_add(D) as u32;
@@ -257,7 +257,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     D = (D as u32).wrapping_add(
         (C ^ A & (B ^ C))
             .wrapping_add(*fresh5)
-            .wrapping_add(0x4787c62ai32 as u32),
+            .wrapping_add(0x4787c62a_u32),
     ) as u32;
     D = D << 12i32 | D >> 32i32 - 12i32;
     D = (D as u32).wrapping_add(A) as u32;
@@ -284,7 +284,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     A = (A as u32).wrapping_add(
         (D ^ B & (C ^ D))
             .wrapping_add(*fresh8)
-            .wrapping_add(0x698098d8i32 as u32),
+            .wrapping_add(0x698098d8_u32),
     ) as u32;
     A = A << 7i32 | A >> 32i32 - 7i32;
     A = (A as u32).wrapping_add(B) as u32;
@@ -320,7 +320,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     A = (A as u32).wrapping_add(
         (D ^ B & (C ^ D))
             .wrapping_add(*fresh12)
-            .wrapping_add(0x6b901122i32 as u32),
+            .wrapping_add(0x6b901122_u32),
     ) as u32;
     A = A << 7i32 | A >> 32i32 - 7i32;
     A = (A as u32).wrapping_add(B) as u32;
@@ -347,7 +347,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     B = (B as u32).wrapping_add(
         (A ^ C & (D ^ A))
             .wrapping_add(*fresh15)
-            .wrapping_add(0x49b40821i32 as u32),
+            .wrapping_add(0x49b40821_u32),
     ) as u32;
     B = B << 22i32 | B >> 32i32 - 22i32;
     B = (B as u32).wrapping_add(C) as u32;
@@ -369,7 +369,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     C = (C as u32).wrapping_add(
         (A ^ B & (D ^ A))
             .wrapping_add(correct_words[11])
-            .wrapping_add(0x265e5a51i32 as u32),
+            .wrapping_add(0x265e5a51_u32),
     ) as u32;
     C = C << 14i32 | C >> 32i32 - 14i32;
     C = (C as u32).wrapping_add(D) as u32;
@@ -390,7 +390,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     D = (D as u32).wrapping_add(
         (B ^ C & (A ^ B))
             .wrapping_add(correct_words[10])
-            .wrapping_add(0x2441453i32 as u32),
+            .wrapping_add(0x2441453_u32),
     ) as u32;
     D = D << 9i32 | D >> 32i32 - 9i32;
     D = (D as u32).wrapping_add(A) as u32;
@@ -411,7 +411,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     A = (A as u32).wrapping_add(
         (C ^ D & (B ^ C))
             .wrapping_add(correct_words[9])
-            .wrapping_add(0x21e1cde6i32 as u32),
+            .wrapping_add(0x21e1cde6_u32),
     ) as u32;
     A = A << 5i32 | A >> 32i32 - 5i32;
     A = (A as u32).wrapping_add(B) as u32;
@@ -432,7 +432,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     B = (B as u32).wrapping_add(
         (D ^ A & (C ^ D))
             .wrapping_add(correct_words[8])
-            .wrapping_add(0x455a14edi32 as u32),
+            .wrapping_add(0x455a14ed_u32),
     ) as u32;
     B = B << 20i32 | B >> 32i32 - 20i32;
     B = (B as u32).wrapping_add(C) as u32;
@@ -453,7 +453,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     C = (C as u32).wrapping_add(
         (A ^ B & (D ^ A))
             .wrapping_add(correct_words[7])
-            .wrapping_add(0x676f02d9i32 as u32),
+            .wrapping_add(0x676f02d9_u32),
     ) as u32;
     C = C << 14i32 | C >> 32i32 - 14i32;
     C = (C as u32).wrapping_add(D) as u32;
@@ -482,7 +482,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     C = (C as u32).wrapping_add(
         (D ^ A ^ B)
             .wrapping_add(correct_words[11])
-            .wrapping_add(0x6d9d6122i32 as u32),
+            .wrapping_add(0x6d9d6122_u32),
     ) as u32;
     C = C << 16i32 | C >> 32i32 - 16i32;
     C = (C as u32).wrapping_add(D) as u32;
@@ -503,7 +503,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     D = (D as u32).wrapping_add(
         (A ^ B ^ C)
             .wrapping_add(correct_words[4])
-            .wrapping_add(0x4bdecfa9i32 as u32),
+            .wrapping_add(0x4bdecfa9_u32),
     ) as u32;
     D = D << 11i32 | D >> 32i32 - 11i32;
     D = (D as u32).wrapping_add(A) as u32;
@@ -524,7 +524,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     A = (A as u32).wrapping_add(
         (B ^ C ^ D)
             .wrapping_add(correct_words[13])
-            .wrapping_add(0x289b7ec6i32 as u32),
+            .wrapping_add(0x289b7ec6_u32),
     ) as u32;
     A = A << 4i32 | A >> 32i32 - 4i32;
     A = (A as u32).wrapping_add(B) as u32;
@@ -545,7 +545,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     B = (B as u32).wrapping_add(
         (C ^ D ^ A)
             .wrapping_add(correct_words[6])
-            .wrapping_add(0x4881d05i32 as u32),
+            .wrapping_add(0x4881d05_u32),
     ) as u32;
     B = B << 23i32 | B >> 32i32 - 23i32;
     B = (B as u32).wrapping_add(C) as u32;
@@ -566,7 +566,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     C = (C as u32).wrapping_add(
         (D ^ A ^ B)
             .wrapping_add(correct_words[15])
-            .wrapping_add(0x1fa27cf8i32 as u32),
+            .wrapping_add(0x1fa27cf8_u32),
     ) as u32;
     C = C << 16i32 | C >> 32i32 - 16i32;
     C = (C as u32).wrapping_add(D) as u32;
@@ -588,7 +588,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     D = (D as u32).wrapping_add(
         (B ^ (A | !C))
             .wrapping_add(correct_words[7])
-            .wrapping_add(0x432aff97i32 as u32),
+            .wrapping_add(0x432aff97_u32),
     ) as u32;
     D = D << 10i32 | D >> 32i32 - 10i32;
     D = (D as u32).wrapping_add(A) as u32;
@@ -609,7 +609,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     A = (A as u32).wrapping_add(
         (C ^ (B | !D))
             .wrapping_add(correct_words[12])
-            .wrapping_add(0x655b59c3i32 as u32),
+            .wrapping_add(0x655b59c3_u32),
     ) as u32;
     A = A << 6i32 | A >> 32i32 - 6i32;
     A = (A as u32).wrapping_add(B) as u32;
@@ -637,7 +637,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     A = (A as u32).wrapping_add(
         (C ^ (B | !D))
             .wrapping_add(correct_words[8])
-            .wrapping_add(0x6fa87e4fi32 as u32),
+            .wrapping_add(0x6fa87e4f_u32),
     ) as u32;
     A = A << 6i32 | A >> 32i32 - 6i32;
     A = (A as u32).wrapping_add(B) as u32;
@@ -658,7 +658,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     B = (B as u32).wrapping_add(
         (D ^ (C | !A))
             .wrapping_add(correct_words[13])
-            .wrapping_add(0x4e0811a1i32 as u32),
+            .wrapping_add(0x4e0811a1_u32),
     ) as u32;
     B = B << 21i32 | B >> 32i32 - 21i32;
     B = (B as u32).wrapping_add(C) as u32;
@@ -679,7 +679,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     C = (C as u32).wrapping_add(
         (A ^ (D | !B))
             .wrapping_add(correct_words[2])
-            .wrapping_add(0x2ad7d2bbi32 as u32),
+            .wrapping_add(0x2ad7d2bb_u32),
     ) as u32;
     C = C << 15i32 | C >> 32i32 - 15i32;
     C = (C as u32).wrapping_add(D) as u32;
@@ -722,7 +722,7 @@ pub unsafe extern "C" fn MD5_write(mut hd: *mut MD5_CONTEXT, mut inbuf: *const u
             (*hd).buf[fresh17 as usize] = *fresh16;
             inlen = inlen.wrapping_sub(1)
         }
-        MD5_write(hd, 0 as *const u8, 0i32 as u32);
+        MD5_write(hd, 0 as *const u8, 0_u32);
         if inlen == 0 {
             return;
         }
@@ -732,11 +732,11 @@ pub unsafe extern "C" fn MD5_write(mut hd: *mut MD5_CONTEXT, mut inbuf: *const u
             (6i32 as u64).wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
         ) as i32,
     );
-    while inlen >= 64i32 as u32 {
+    while inlen >= 64_u32 {
         transform(hd, inbuf);
         (*hd).count = 0i32;
         (*hd).nblocks = (*hd).nblocks.wrapping_add(1);
-        inlen = inlen.wrapping_sub(64i32 as u32);
+        inlen = inlen.wrapping_sub(64_u32);
         inbuf = inbuf.offset(64)
     }
     while inlen != 0 && (*hd).count < 64i32 {
@@ -758,7 +758,7 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut u8, mut hd: *mut MD5_CONTEXT
     let mut msb: u32 = 0;
     let mut lsb: u32 = 0;
     let mut p: *mut u8 = 0 as *mut u8;
-    MD5_write(hd, 0 as *const u8, 0i32 as u32);
+    MD5_write(hd, 0 as *const u8, 0_u32);
     t = (*hd).nblocks as u32;
     /* multiply by 64 to make a byte count */
     lsb = t << 6i32;
@@ -795,7 +795,7 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut u8, mut hd: *mut MD5_CONTEXT
             (*hd).buf[fresh23 as usize] = 0i32 as u8
         }
         /* fill next block with zeroes */
-        MD5_write(hd, 0 as *const u8, 0i32 as u32); /* flush */
+        MD5_write(hd, 0 as *const u8, 0_u32); /* flush */
         memset(
             (*hd).buf.as_mut_ptr() as *mut libc::c_void,
             0i32,
@@ -803,14 +803,14 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut u8, mut hd: *mut MD5_CONTEXT
         );
     }
     /* append the 64 bit count */
-    (*hd).buf[56] = (lsb & 0xffi32 as u32) as u8; /* p = hd->buf; */
-    (*hd).buf[57] = (lsb >> 8i32 & 0xffi32 as u32) as u8;
-    (*hd).buf[58] = (lsb >> 16i32 & 0xffi32 as u32) as u8;
-    (*hd).buf[59] = (lsb >> 24i32 & 0xffi32 as u32) as u8;
-    (*hd).buf[60] = (msb & 0xffi32 as u32) as u8;
-    (*hd).buf[61] = (msb >> 8i32 & 0xffi32 as u32) as u8;
-    (*hd).buf[62] = (msb >> 16i32 & 0xffi32 as u32) as u8;
-    (*hd).buf[63] = (msb >> 24i32 & 0xffi32 as u32) as u8;
+    (*hd).buf[56] = (lsb & 0xff_u32) as u8; /* p = hd->buf; */
+    (*hd).buf[57] = (lsb >> 8i32 & 0xff_u32) as u8;
+    (*hd).buf[58] = (lsb >> 16i32 & 0xff_u32) as u8;
+    (*hd).buf[59] = (lsb >> 24i32 & 0xff_u32) as u8;
+    (*hd).buf[60] = (msb & 0xff_u32) as u8;
+    (*hd).buf[61] = (msb >> 8i32 & 0xff_u32) as u8;
+    (*hd).buf[62] = (msb >> 16i32 & 0xff_u32) as u8;
+    (*hd).buf[63] = (msb >> 24i32 & 0xff_u32) as u8;
     transform(hd, (*hd).buf.as_mut_ptr());
     _gcry_burn_stack(
         (80i32 as u64).wrapping_add(
@@ -897,14 +897,14 @@ unsafe extern "C" fn buf_put_be64(mut _buf: *mut libc::c_void, mut val: u64) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn SHA256_init(mut hd: *mut SHA256_CONTEXT) {
-    (*hd).h0 = 0x6a09e667i32 as u32;
+    (*hd).h0 = 0x6a09e667_u32;
     (*hd).h1 = 0xbb67ae85u32;
-    (*hd).h2 = 0x3c6ef372i32 as u32;
+    (*hd).h2 = 0x3c6ef372_u32;
     (*hd).h3 = 0xa54ff53au32;
-    (*hd).h4 = 0x510e527fi32 as u32;
+    (*hd).h4 = 0x510e527f_u32;
     (*hd).h5 = 0x9b05688cu32;
-    (*hd).h6 = 0x1f83d9abi32 as u32;
-    (*hd).h7 = 0x5be0cd19i32 as u32;
+    (*hd).h6 = 0x1f83d9ab_u32;
+    (*hd).h7 = 0x5be0cd19_u32;
     (*hd).nblocks = 0i32 as size_t;
     (*hd).count = 0i32;
 }
@@ -915,70 +915,16 @@ Transform the message X which consists of 16 32-bit-words. See FIPS
 /* (4.7) */
 unsafe extern "C" fn _SHA256_transform(mut hd: *mut SHA256_CONTEXT, mut data: *const u8) -> u32 {
     static mut K: [u32; 64] = [
-        0x428a2f98i32 as u32,
-        0x71374491i32 as u32,
-        0xb5c0fbcfu32,
-        0xe9b5dba5u32,
-        0x3956c25bi32 as u32,
-        0x59f111f1i32 as u32,
-        0x923f82a4u32,
-        0xab1c5ed5u32,
-        0xd807aa98u32,
-        0x12835b01i32 as u32,
-        0x243185bei32 as u32,
-        0x550c7dc3i32 as u32,
-        0x72be5d74i32 as u32,
-        0x80deb1feu32,
-        0x9bdc06a7u32,
-        0xc19bf174u32,
-        0xe49b69c1u32,
-        0xefbe4786u32,
-        0xfc19dc6i32 as u32,
-        0x240ca1cci32 as u32,
-        0x2de92c6fi32 as u32,
-        0x4a7484aai32 as u32,
-        0x5cb0a9dci32 as u32,
-        0x76f988dai32 as u32,
-        0x983e5152u32,
-        0xa831c66du32,
-        0xb00327c8u32,
-        0xbf597fc7u32,
-        0xc6e00bf3u32,
-        0xd5a79147u32,
-        0x6ca6351i32 as u32,
-        0x14292967i32 as u32,
-        0x27b70a85i32 as u32,
-        0x2e1b2138i32 as u32,
-        0x4d2c6dfci32 as u32,
-        0x53380d13i32 as u32,
-        0x650a7354i32 as u32,
-        0x766a0abbi32 as u32,
-        0x81c2c92eu32,
-        0x92722c85u32,
-        0xa2bfe8a1u32,
-        0xa81a664bu32,
-        0xc24b8b70u32,
-        0xc76c51a3u32,
-        0xd192e819u32,
-        0xd6990624u32,
-        0xf40e3585u32,
-        0x106aa070i32 as u32,
-        0x19a4c116i32 as u32,
-        0x1e376c08i32 as u32,
-        0x2748774ci32 as u32,
-        0x34b0bcb5i32 as u32,
-        0x391c0cb3i32 as u32,
-        0x4ed8aa4ai32 as u32,
-        0x5b9cca4fi32 as u32,
-        0x682e6ff3i32 as u32,
-        0x748f82eei32 as u32,
-        0x78a5636fi32 as u32,
-        0x84c87814u32,
-        0x8cc70208u32,
-        0x90befffau32,
-        0xa4506cebu32,
-        0xbef9a3f7u32,
-        0xc67178f2u32,
+        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4,
+        0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe,
+        0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0xfc19dc6, 0x240ca1cc, 0x2de92c6f,
+        0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
+        0xc6e00bf3, 0xd5a79147, 0x6ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc,
+        0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b,
+        0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116,
+        0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+        0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7,
+        0xc67178f2,
     ];
     let mut a: u32 = 0;
     let mut b: u32 = 0;
@@ -1162,7 +1108,7 @@ pub unsafe extern "C" fn SHA256_write(
     mut inbuf: *const u8,
     mut inlen: u32,
 ) {
-    let mut stack_burn: u32 = 0i32 as u32;
+    let mut stack_burn: u32 = 0_u32;
     if (*hd).count == 64i32 {
         /* flush the buffer */
         stack_burn = _SHA256_transform(hd, (*hd).buf.as_mut_ptr());
@@ -1182,17 +1128,17 @@ pub unsafe extern "C" fn SHA256_write(
             (*hd).buf[fresh25 as usize] = *fresh24;
             inlen = inlen.wrapping_sub(1)
         }
-        SHA256_write(hd, 0 as *const u8, 0i32 as u32);
+        SHA256_write(hd, 0 as *const u8, 0_u32);
         if inlen == 0 {
             return;
         }
     }
     _gcry_burn_stack(stack_burn as i32);
-    while inlen >= 64i32 as u32 {
+    while inlen >= 64_u32 {
         stack_burn = _SHA256_transform(hd, inbuf);
         (*hd).count = 0i32;
         (*hd).nblocks = (*hd).nblocks.wrapping_add(1);
-        inlen = inlen.wrapping_sub(64i32 as u32);
+        inlen = inlen.wrapping_sub(64_u32);
         inbuf = inbuf.offset(64)
     }
     while inlen != 0 && (*hd).count < 64i32 {
@@ -1216,7 +1162,7 @@ pub unsafe extern "C" fn SHA256_final(mut outbuf: *mut u8, mut hd: *mut SHA256_C
     let mut lsb: u32 = 0;
     let mut p: *mut u8 = 0 as *mut u8;
     let mut burn: u32 = 0;
-    SHA256_write(hd, 0 as *const u8, 0i32 as u32);
+    SHA256_write(hd, 0 as *const u8, 0_u32);
     /* flush */
     t = (*hd).nblocks as u32;
     /* multiply by 64 to make a byte count */
@@ -1254,7 +1200,7 @@ pub unsafe extern "C" fn SHA256_final(mut outbuf: *mut u8, mut hd: *mut SHA256_C
             (*hd).count = (*hd).count + 1;
             (*hd).buf[fresh31 as usize] = 0i32 as u8
         }
-        SHA256_write(hd, 0 as *const u8, 0i32 as u32);
+        SHA256_write(hd, 0 as *const u8, 0_u32);
         /* fill next block with zeroes */
         memset(
             (*hd).buf.as_mut_ptr() as *mut libc::c_void,
@@ -2156,7 +2102,7 @@ pub unsafe extern "C" fn SHA512_write(
     mut inbuf: *const u8,
     mut inlen: u32,
 ) {
-    let mut stack_burn: u32 = 0i32 as u32;
+    let mut stack_burn: u32 = 0_u32;
     if (*hd).count == 128i32 {
         /* flush the buffer */
         stack_burn = _SHA512_transform(hd, (*hd).buf.as_mut_ptr());
@@ -2176,17 +2122,17 @@ pub unsafe extern "C" fn SHA512_write(
             (*hd).buf[fresh33 as usize] = *fresh32;
             inlen = inlen.wrapping_sub(1)
         }
-        SHA512_write(hd, 0 as *const u8, 0i32 as u32);
+        SHA512_write(hd, 0 as *const u8, 0_u32);
         if inlen == 0 {
             return;
         }
     }
     _gcry_burn_stack(stack_burn as i32);
-    while inlen >= 128i32 as u32 {
+    while inlen >= 128_u32 {
         stack_burn = _SHA512_transform(hd, inbuf);
         (*hd).count = 0i32;
         (*hd).nblocks = (*hd).nblocks.wrapping_add(1);
-        inlen = inlen.wrapping_sub(128i32 as u32);
+        inlen = inlen.wrapping_sub(128_u32);
         inbuf = inbuf.offset(128)
     }
     while inlen != 0 && (*hd).count < 128i32 {
@@ -2205,7 +2151,7 @@ pub unsafe extern "C" fn SHA512_final(mut outbuf: *mut u8, mut hd: *mut SHA512_C
     let mut msb: u64 = 0;
     let mut lsb: u64 = 0;
     let mut p: *mut u8 = 0 as *mut u8;
-    SHA512_write(hd, 0 as *const u8, 0i32 as u32);
+    SHA512_write(hd, 0 as *const u8, 0_u32);
     /* flush */
     t = (*hd).nblocks;
     /* multiply by 128 to make a byte count */
@@ -2243,7 +2189,7 @@ pub unsafe extern "C" fn SHA512_final(mut outbuf: *mut u8, mut hd: *mut SHA512_C
             (*hd).count = (*hd).count + 1;
             (*hd).buf[fresh39 as usize] = 0i32 as u8
         }
-        SHA512_write(hd, 0 as *const u8, 0i32 as u32);
+        SHA512_write(hd, 0 as *const u8, 0_u32);
         /* fill next block with zeroes */
         memset(
             (*hd).buf.as_mut_ptr() as *mut libc::c_void,
@@ -3864,16 +3810,16 @@ static mut Te4: [u32; 256] = [
     0x16161616u32,
 ];
 static mut rcon: [u32; 10] = [
-    0x1000000i32 as u32,
-    0x2000000i32 as u32,
-    0x4000000i32 as u32,
-    0x8000000i32 as u32,
-    0x10000000i32 as u32,
-    0x20000000i32 as u32,
-    0x40000000i32 as u32,
+    0x1000000_u32,
+    0x2000000_u32,
+    0x4000000_u32,
+    0x8000000_u32,
+    0x10000000_u32,
+    0x20000000_u32,
+    0x40000000_u32,
     0x80000000u32,
-    0x1b000000i32 as u32,
-    0x36000000i32 as u32,
+    0x1b000000_u32,
+    0x36000000_u32,
 ];
 /* AES Support */
 /* *
@@ -3886,7 +3832,7 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
     mut key: *const u8,
     mut keybits: i32,
 ) -> i32 {
-    let mut i: u32 = 0i32 as u32;
+    let mut i: u32 = 0_u32;
     let mut temp: u32 = 0;
     *rk.offset(0) = (*key.offset(0) as u32) << 24i32
         ^ (*key.offset(1) as u32) << 16i32
@@ -3908,16 +3854,16 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
         loop {
             temp = *rk.offset(3);
             *rk.offset(4) = *rk.offset(0)
-                ^ Te4[(temp >> 16i32 & 0xffi32 as u32) as usize] & 0xff000000u32
-                ^ Te4[(temp >> 8i32 & 0xffi32 as u32) as usize] & 0xff0000i32 as u32
-                ^ Te4[(temp & 0xffi32 as u32) as usize] & 0xff00i32 as u32
-                ^ Te4[(temp >> 24i32) as usize] & 0xffi32 as u32
+                ^ Te4[(temp >> 16i32 & 0xff_u32) as usize] & 0xff000000u32
+                ^ Te4[(temp >> 8i32 & 0xff_u32) as usize] & 0xff0000_u32
+                ^ Te4[(temp & 0xff_u32) as usize] & 0xff00_u32
+                ^ Te4[(temp >> 24i32) as usize] & 0xff_u32
                 ^ rcon[i as usize];
             *rk.offset(5) = *rk.offset(1) ^ *rk.offset(4);
             *rk.offset(6) = *rk.offset(2) ^ *rk.offset(5);
             *rk.offset(7) = *rk.offset(3) ^ *rk.offset(6);
             i = i.wrapping_add(1);
-            if i == 10i32 as u32 {
+            if i == 10_u32 {
                 return 10i32;
             }
             rk = rk.offset(4)
@@ -3935,16 +3881,16 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
         loop {
             temp = *rk.offset(5);
             *rk.offset(6) = *rk.offset(0)
-                ^ Te4[(temp >> 16i32 & 0xffi32 as u32) as usize] & 0xff000000u32
-                ^ Te4[(temp >> 8i32 & 0xffi32 as u32) as usize] & 0xff0000i32 as u32
-                ^ Te4[(temp & 0xffi32 as u32) as usize] & 0xff00i32 as u32
-                ^ Te4[(temp >> 24i32) as usize] & 0xffi32 as u32
+                ^ Te4[(temp >> 16i32 & 0xff_u32) as usize] & 0xff000000u32
+                ^ Te4[(temp >> 8i32 & 0xff_u32) as usize] & 0xff0000_u32
+                ^ Te4[(temp & 0xff_u32) as usize] & 0xff00_u32
+                ^ Te4[(temp >> 24i32) as usize] & 0xff_u32
                 ^ rcon[i as usize];
             *rk.offset(7) = *rk.offset(1) ^ *rk.offset(6);
             *rk.offset(8) = *rk.offset(2) ^ *rk.offset(7);
             *rk.offset(9) = *rk.offset(3) ^ *rk.offset(8);
             i = i.wrapping_add(1);
-            if i == 8i32 as u32 {
+            if i == 8_u32 {
                 return 12i32;
             }
             *rk.offset(10) = *rk.offset(4) ^ *rk.offset(9);
@@ -3964,24 +3910,24 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
         loop {
             temp = *rk.offset(7);
             *rk.offset(8) = *rk.offset(0)
-                ^ Te4[(temp >> 16i32 & 0xffi32 as u32) as usize] & 0xff000000u32
-                ^ Te4[(temp >> 8i32 & 0xffi32 as u32) as usize] & 0xff0000i32 as u32
-                ^ Te4[(temp & 0xffi32 as u32) as usize] & 0xff00i32 as u32
-                ^ Te4[(temp >> 24i32) as usize] & 0xffi32 as u32
+                ^ Te4[(temp >> 16i32 & 0xff_u32) as usize] & 0xff000000u32
+                ^ Te4[(temp >> 8i32 & 0xff_u32) as usize] & 0xff0000_u32
+                ^ Te4[(temp & 0xff_u32) as usize] & 0xff00_u32
+                ^ Te4[(temp >> 24i32) as usize] & 0xff_u32
                 ^ rcon[i as usize];
             *rk.offset(9) = *rk.offset(1) ^ *rk.offset(8);
             *rk.offset(10) = *rk.offset(2) ^ *rk.offset(9);
             *rk.offset(11) = *rk.offset(3) ^ *rk.offset(10);
             i = i.wrapping_add(1);
-            if i == 7i32 as u32 {
+            if i == 7_u32 {
                 return 14i32;
             }
             temp = *rk.offset(11);
             *rk.offset(12) = *rk.offset(4)
                 ^ Te4[(temp >> 24i32) as usize] & 0xff000000u32
-                ^ Te4[(temp >> 16i32 & 0xffi32 as u32) as usize] & 0xff0000i32 as u32
-                ^ Te4[(temp >> 8i32 & 0xffi32 as u32) as usize] & 0xff00i32 as u32
-                ^ Te4[(temp & 0xffi32 as u32) as usize] & 0xffi32 as u32;
+                ^ Te4[(temp >> 16i32 & 0xff_u32) as usize] & 0xff0000_u32
+                ^ Te4[(temp >> 8i32 & 0xff_u32) as usize] & 0xff00_u32
+                ^ Te4[(temp & 0xff_u32) as usize] & 0xff_u32;
             *rk.offset(13) = *rk.offset(5) ^ *rk.offset(12);
             *rk.offset(14) = *rk.offset(6) ^ *rk.offset(13);
             *rk.offset(15) = *rk.offset(7) ^ *rk.offset(14);
@@ -4031,278 +3977,278 @@ unsafe extern "C" fn rijndaelEncrypt(
         ^ *rk.offset(3);
     /* round 1: */
     t0 = Te0[(s0 >> 24i32) as usize]
-        ^ Te1[(s1 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s2 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s3 & 0xffi32 as u32) as usize]
+        ^ Te1[(s1 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s2 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s3 & 0xff_u32) as usize]
         ^ *rk.offset(4);
     t1 = Te0[(s1 >> 24i32) as usize]
-        ^ Te1[(s2 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s3 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s0 & 0xffi32 as u32) as usize]
+        ^ Te1[(s2 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s3 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s0 & 0xff_u32) as usize]
         ^ *rk.offset(5);
     t2 = Te0[(s2 >> 24i32) as usize]
-        ^ Te1[(s3 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s0 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s1 & 0xffi32 as u32) as usize]
+        ^ Te1[(s3 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s0 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s1 & 0xff_u32) as usize]
         ^ *rk.offset(6);
     t3 = Te0[(s3 >> 24i32) as usize]
-        ^ Te1[(s0 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s1 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s2 & 0xffi32 as u32) as usize]
+        ^ Te1[(s0 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s1 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s2 & 0xff_u32) as usize]
         ^ *rk.offset(7);
     /* round 2: */
     s0 = Te0[(t0 >> 24i32) as usize]
-        ^ Te1[(t1 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t2 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t3 & 0xffi32 as u32) as usize]
+        ^ Te1[(t1 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t2 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t3 & 0xff_u32) as usize]
         ^ *rk.offset(8);
     s1 = Te0[(t1 >> 24i32) as usize]
-        ^ Te1[(t2 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t3 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t0 & 0xffi32 as u32) as usize]
+        ^ Te1[(t2 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t3 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t0 & 0xff_u32) as usize]
         ^ *rk.offset(9);
     s2 = Te0[(t2 >> 24i32) as usize]
-        ^ Te1[(t3 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t0 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t1 & 0xffi32 as u32) as usize]
+        ^ Te1[(t3 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t0 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t1 & 0xff_u32) as usize]
         ^ *rk.offset(10);
     s3 = Te0[(t3 >> 24i32) as usize]
-        ^ Te1[(t0 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t1 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t2 & 0xffi32 as u32) as usize]
+        ^ Te1[(t0 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t1 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t2 & 0xff_u32) as usize]
         ^ *rk.offset(11);
     /* round 3: */
     t0 = Te0[(s0 >> 24i32) as usize]
-        ^ Te1[(s1 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s2 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s3 & 0xffi32 as u32) as usize]
+        ^ Te1[(s1 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s2 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s3 & 0xff_u32) as usize]
         ^ *rk.offset(12);
     t1 = Te0[(s1 >> 24i32) as usize]
-        ^ Te1[(s2 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s3 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s0 & 0xffi32 as u32) as usize]
+        ^ Te1[(s2 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s3 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s0 & 0xff_u32) as usize]
         ^ *rk.offset(13);
     t2 = Te0[(s2 >> 24i32) as usize]
-        ^ Te1[(s3 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s0 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s1 & 0xffi32 as u32) as usize]
+        ^ Te1[(s3 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s0 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s1 & 0xff_u32) as usize]
         ^ *rk.offset(14);
     t3 = Te0[(s3 >> 24i32) as usize]
-        ^ Te1[(s0 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s1 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s2 & 0xffi32 as u32) as usize]
+        ^ Te1[(s0 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s1 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s2 & 0xff_u32) as usize]
         ^ *rk.offset(15);
     /* round 4: */
     s0 = Te0[(t0 >> 24i32) as usize]
-        ^ Te1[(t1 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t2 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t3 & 0xffi32 as u32) as usize]
+        ^ Te1[(t1 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t2 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t3 & 0xff_u32) as usize]
         ^ *rk.offset(16);
     s1 = Te0[(t1 >> 24i32) as usize]
-        ^ Te1[(t2 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t3 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t0 & 0xffi32 as u32) as usize]
+        ^ Te1[(t2 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t3 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t0 & 0xff_u32) as usize]
         ^ *rk.offset(17);
     s2 = Te0[(t2 >> 24i32) as usize]
-        ^ Te1[(t3 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t0 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t1 & 0xffi32 as u32) as usize]
+        ^ Te1[(t3 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t0 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t1 & 0xff_u32) as usize]
         ^ *rk.offset(18);
     s3 = Te0[(t3 >> 24i32) as usize]
-        ^ Te1[(t0 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t1 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t2 & 0xffi32 as u32) as usize]
+        ^ Te1[(t0 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t1 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t2 & 0xff_u32) as usize]
         ^ *rk.offset(19);
     /* round 5: */
     t0 = Te0[(s0 >> 24i32) as usize]
-        ^ Te1[(s1 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s2 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s3 & 0xffi32 as u32) as usize]
+        ^ Te1[(s1 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s2 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s3 & 0xff_u32) as usize]
         ^ *rk.offset(20);
     t1 = Te0[(s1 >> 24i32) as usize]
-        ^ Te1[(s2 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s3 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s0 & 0xffi32 as u32) as usize]
+        ^ Te1[(s2 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s3 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s0 & 0xff_u32) as usize]
         ^ *rk.offset(21);
     t2 = Te0[(s2 >> 24i32) as usize]
-        ^ Te1[(s3 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s0 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s1 & 0xffi32 as u32) as usize]
+        ^ Te1[(s3 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s0 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s1 & 0xff_u32) as usize]
         ^ *rk.offset(22);
     t3 = Te0[(s3 >> 24i32) as usize]
-        ^ Te1[(s0 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s1 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s2 & 0xffi32 as u32) as usize]
+        ^ Te1[(s0 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s1 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s2 & 0xff_u32) as usize]
         ^ *rk.offset(23);
     /* round 6: */
     s0 = Te0[(t0 >> 24i32) as usize]
-        ^ Te1[(t1 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t2 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t3 & 0xffi32 as u32) as usize]
+        ^ Te1[(t1 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t2 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t3 & 0xff_u32) as usize]
         ^ *rk.offset(24);
     s1 = Te0[(t1 >> 24i32) as usize]
-        ^ Te1[(t2 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t3 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t0 & 0xffi32 as u32) as usize]
+        ^ Te1[(t2 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t3 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t0 & 0xff_u32) as usize]
         ^ *rk.offset(25);
     s2 = Te0[(t2 >> 24i32) as usize]
-        ^ Te1[(t3 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t0 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t1 & 0xffi32 as u32) as usize]
+        ^ Te1[(t3 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t0 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t1 & 0xff_u32) as usize]
         ^ *rk.offset(26);
     s3 = Te0[(t3 >> 24i32) as usize]
-        ^ Te1[(t0 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t1 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t2 & 0xffi32 as u32) as usize]
+        ^ Te1[(t0 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t1 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t2 & 0xff_u32) as usize]
         ^ *rk.offset(27);
     /* round 7: */
     t0 = Te0[(s0 >> 24i32) as usize]
-        ^ Te1[(s1 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s2 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s3 & 0xffi32 as u32) as usize]
+        ^ Te1[(s1 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s2 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s3 & 0xff_u32) as usize]
         ^ *rk.offset(28);
     t1 = Te0[(s1 >> 24i32) as usize]
-        ^ Te1[(s2 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s3 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s0 & 0xffi32 as u32) as usize]
+        ^ Te1[(s2 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s3 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s0 & 0xff_u32) as usize]
         ^ *rk.offset(29);
     t2 = Te0[(s2 >> 24i32) as usize]
-        ^ Te1[(s3 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s0 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s1 & 0xffi32 as u32) as usize]
+        ^ Te1[(s3 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s0 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s1 & 0xff_u32) as usize]
         ^ *rk.offset(30);
     t3 = Te0[(s3 >> 24i32) as usize]
-        ^ Te1[(s0 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s1 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s2 & 0xffi32 as u32) as usize]
+        ^ Te1[(s0 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s1 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s2 & 0xff_u32) as usize]
         ^ *rk.offset(31);
     /* round 8: */
     s0 = Te0[(t0 >> 24i32) as usize]
-        ^ Te1[(t1 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t2 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t3 & 0xffi32 as u32) as usize]
+        ^ Te1[(t1 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t2 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t3 & 0xff_u32) as usize]
         ^ *rk.offset(32);
     s1 = Te0[(t1 >> 24i32) as usize]
-        ^ Te1[(t2 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t3 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t0 & 0xffi32 as u32) as usize]
+        ^ Te1[(t2 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t3 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t0 & 0xff_u32) as usize]
         ^ *rk.offset(33);
     s2 = Te0[(t2 >> 24i32) as usize]
-        ^ Te1[(t3 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t0 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t1 & 0xffi32 as u32) as usize]
+        ^ Te1[(t3 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t0 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t1 & 0xff_u32) as usize]
         ^ *rk.offset(34);
     s3 = Te0[(t3 >> 24i32) as usize]
-        ^ Te1[(t0 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(t1 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(t2 & 0xffi32 as u32) as usize]
+        ^ Te1[(t0 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(t1 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(t2 & 0xff_u32) as usize]
         ^ *rk.offset(35);
     /* round 9: */
     t0 = Te0[(s0 >> 24i32) as usize]
-        ^ Te1[(s1 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s2 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s3 & 0xffi32 as u32) as usize]
+        ^ Te1[(s1 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s2 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s3 & 0xff_u32) as usize]
         ^ *rk.offset(36);
     t1 = Te0[(s1 >> 24i32) as usize]
-        ^ Te1[(s2 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s3 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s0 & 0xffi32 as u32) as usize]
+        ^ Te1[(s2 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s3 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s0 & 0xff_u32) as usize]
         ^ *rk.offset(37);
     t2 = Te0[(s2 >> 24i32) as usize]
-        ^ Te1[(s3 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s0 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s1 & 0xffi32 as u32) as usize]
+        ^ Te1[(s3 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s0 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s1 & 0xff_u32) as usize]
         ^ *rk.offset(38);
     t3 = Te0[(s3 >> 24i32) as usize]
-        ^ Te1[(s0 >> 16i32 & 0xffi32 as u32) as usize]
-        ^ Te2[(s1 >> 8i32 & 0xffi32 as u32) as usize]
-        ^ Te3[(s2 & 0xffi32 as u32) as usize]
+        ^ Te1[(s0 >> 16i32 & 0xff_u32) as usize]
+        ^ Te2[(s1 >> 8i32 & 0xff_u32) as usize]
+        ^ Te3[(s2 & 0xff_u32) as usize]
         ^ *rk.offset(39);
     if nrounds > 10i32 {
         /* round 10: */
         s0 = Te0[(t0 >> 24i32) as usize]
-            ^ Te1[(t1 >> 16i32 & 0xffi32 as u32) as usize]
-            ^ Te2[(t2 >> 8i32 & 0xffi32 as u32) as usize]
-            ^ Te3[(t3 & 0xffi32 as u32) as usize]
+            ^ Te1[(t1 >> 16i32 & 0xff_u32) as usize]
+            ^ Te2[(t2 >> 8i32 & 0xff_u32) as usize]
+            ^ Te3[(t3 & 0xff_u32) as usize]
             ^ *rk.offset(40);
         s1 = Te0[(t1 >> 24i32) as usize]
-            ^ Te1[(t2 >> 16i32 & 0xffi32 as u32) as usize]
-            ^ Te2[(t3 >> 8i32 & 0xffi32 as u32) as usize]
-            ^ Te3[(t0 & 0xffi32 as u32) as usize]
+            ^ Te1[(t2 >> 16i32 & 0xff_u32) as usize]
+            ^ Te2[(t3 >> 8i32 & 0xff_u32) as usize]
+            ^ Te3[(t0 & 0xff_u32) as usize]
             ^ *rk.offset(41);
         s2 = Te0[(t2 >> 24i32) as usize]
-            ^ Te1[(t3 >> 16i32 & 0xffi32 as u32) as usize]
-            ^ Te2[(t0 >> 8i32 & 0xffi32 as u32) as usize]
-            ^ Te3[(t1 & 0xffi32 as u32) as usize]
+            ^ Te1[(t3 >> 16i32 & 0xff_u32) as usize]
+            ^ Te2[(t0 >> 8i32 & 0xff_u32) as usize]
+            ^ Te3[(t1 & 0xff_u32) as usize]
             ^ *rk.offset(42);
         s3 = Te0[(t3 >> 24i32) as usize]
-            ^ Te1[(t0 >> 16i32 & 0xffi32 as u32) as usize]
-            ^ Te2[(t1 >> 8i32 & 0xffi32 as u32) as usize]
-            ^ Te3[(t2 & 0xffi32 as u32) as usize]
+            ^ Te1[(t0 >> 16i32 & 0xff_u32) as usize]
+            ^ Te2[(t1 >> 8i32 & 0xff_u32) as usize]
+            ^ Te3[(t2 & 0xff_u32) as usize]
             ^ *rk.offset(43);
         /* round 11: */
         t0 = Te0[(s0 >> 24i32) as usize]
-            ^ Te1[(s1 >> 16i32 & 0xffi32 as u32) as usize]
-            ^ Te2[(s2 >> 8i32 & 0xffi32 as u32) as usize]
-            ^ Te3[(s3 & 0xffi32 as u32) as usize]
+            ^ Te1[(s1 >> 16i32 & 0xff_u32) as usize]
+            ^ Te2[(s2 >> 8i32 & 0xff_u32) as usize]
+            ^ Te3[(s3 & 0xff_u32) as usize]
             ^ *rk.offset(44);
         t1 = Te0[(s1 >> 24i32) as usize]
-            ^ Te1[(s2 >> 16i32 & 0xffi32 as u32) as usize]
-            ^ Te2[(s3 >> 8i32 & 0xffi32 as u32) as usize]
-            ^ Te3[(s0 & 0xffi32 as u32) as usize]
+            ^ Te1[(s2 >> 16i32 & 0xff_u32) as usize]
+            ^ Te2[(s3 >> 8i32 & 0xff_u32) as usize]
+            ^ Te3[(s0 & 0xff_u32) as usize]
             ^ *rk.offset(45);
         t2 = Te0[(s2 >> 24i32) as usize]
-            ^ Te1[(s3 >> 16i32 & 0xffi32 as u32) as usize]
-            ^ Te2[(s0 >> 8i32 & 0xffi32 as u32) as usize]
-            ^ Te3[(s1 & 0xffi32 as u32) as usize]
+            ^ Te1[(s3 >> 16i32 & 0xff_u32) as usize]
+            ^ Te2[(s0 >> 8i32 & 0xff_u32) as usize]
+            ^ Te3[(s1 & 0xff_u32) as usize]
             ^ *rk.offset(46);
         t3 = Te0[(s3 >> 24i32) as usize]
-            ^ Te1[(s0 >> 16i32 & 0xffi32 as u32) as usize]
-            ^ Te2[(s1 >> 8i32 & 0xffi32 as u32) as usize]
-            ^ Te3[(s2 & 0xffi32 as u32) as usize]
+            ^ Te1[(s0 >> 16i32 & 0xff_u32) as usize]
+            ^ Te2[(s1 >> 8i32 & 0xff_u32) as usize]
+            ^ Te3[(s2 & 0xff_u32) as usize]
             ^ *rk.offset(47);
         if nrounds > 12i32 {
             /* round 12: */
             s0 = Te0[(t0 >> 24i32) as usize]
-                ^ Te1[(t1 >> 16i32 & 0xffi32 as u32) as usize]
-                ^ Te2[(t2 >> 8i32 & 0xffi32 as u32) as usize]
-                ^ Te3[(t3 & 0xffi32 as u32) as usize]
+                ^ Te1[(t1 >> 16i32 & 0xff_u32) as usize]
+                ^ Te2[(t2 >> 8i32 & 0xff_u32) as usize]
+                ^ Te3[(t3 & 0xff_u32) as usize]
                 ^ *rk.offset(48);
             s1 = Te0[(t1 >> 24i32) as usize]
-                ^ Te1[(t2 >> 16i32 & 0xffi32 as u32) as usize]
-                ^ Te2[(t3 >> 8i32 & 0xffi32 as u32) as usize]
-                ^ Te3[(t0 & 0xffi32 as u32) as usize]
+                ^ Te1[(t2 >> 16i32 & 0xff_u32) as usize]
+                ^ Te2[(t3 >> 8i32 & 0xff_u32) as usize]
+                ^ Te3[(t0 & 0xff_u32) as usize]
                 ^ *rk.offset(49);
             s2 = Te0[(t2 >> 24i32) as usize]
-                ^ Te1[(t3 >> 16i32 & 0xffi32 as u32) as usize]
-                ^ Te2[(t0 >> 8i32 & 0xffi32 as u32) as usize]
-                ^ Te3[(t1 & 0xffi32 as u32) as usize]
+                ^ Te1[(t3 >> 16i32 & 0xff_u32) as usize]
+                ^ Te2[(t0 >> 8i32 & 0xff_u32) as usize]
+                ^ Te3[(t1 & 0xff_u32) as usize]
                 ^ *rk.offset(50);
             s3 = Te0[(t3 >> 24i32) as usize]
-                ^ Te1[(t0 >> 16i32 & 0xffi32 as u32) as usize]
-                ^ Te2[(t1 >> 8i32 & 0xffi32 as u32) as usize]
-                ^ Te3[(t2 & 0xffi32 as u32) as usize]
+                ^ Te1[(t0 >> 16i32 & 0xff_u32) as usize]
+                ^ Te2[(t1 >> 8i32 & 0xff_u32) as usize]
+                ^ Te3[(t2 & 0xff_u32) as usize]
                 ^ *rk.offset(51);
             /* round 13: */
             t0 = Te0[(s0 >> 24i32) as usize]
-                ^ Te1[(s1 >> 16i32 & 0xffi32 as u32) as usize]
-                ^ Te2[(s2 >> 8i32 & 0xffi32 as u32) as usize]
-                ^ Te3[(s3 & 0xffi32 as u32) as usize]
+                ^ Te1[(s1 >> 16i32 & 0xff_u32) as usize]
+                ^ Te2[(s2 >> 8i32 & 0xff_u32) as usize]
+                ^ Te3[(s3 & 0xff_u32) as usize]
                 ^ *rk.offset(52);
             t1 = Te0[(s1 >> 24i32) as usize]
-                ^ Te1[(s2 >> 16i32 & 0xffi32 as u32) as usize]
-                ^ Te2[(s3 >> 8i32 & 0xffi32 as u32) as usize]
-                ^ Te3[(s0 & 0xffi32 as u32) as usize]
+                ^ Te1[(s2 >> 16i32 & 0xff_u32) as usize]
+                ^ Te2[(s3 >> 8i32 & 0xff_u32) as usize]
+                ^ Te3[(s0 & 0xff_u32) as usize]
                 ^ *rk.offset(53);
             t2 = Te0[(s2 >> 24i32) as usize]
-                ^ Te1[(s3 >> 16i32 & 0xffi32 as u32) as usize]
-                ^ Te2[(s0 >> 8i32 & 0xffi32 as u32) as usize]
-                ^ Te3[(s1 & 0xffi32 as u32) as usize]
+                ^ Te1[(s3 >> 16i32 & 0xff_u32) as usize]
+                ^ Te2[(s0 >> 8i32 & 0xff_u32) as usize]
+                ^ Te3[(s1 & 0xff_u32) as usize]
                 ^ *rk.offset(54);
             t3 = Te0[(s3 >> 24i32) as usize]
-                ^ Te1[(s0 >> 16i32 & 0xffi32 as u32) as usize]
-                ^ Te2[(s1 >> 8i32 & 0xffi32 as u32) as usize]
-                ^ Te3[(s2 & 0xffi32 as u32) as usize]
+                ^ Te1[(s0 >> 16i32 & 0xff_u32) as usize]
+                ^ Te2[(s1 >> 8i32 & 0xff_u32) as usize]
+                ^ Te3[(s2 & 0xff_u32) as usize]
                 ^ *rk.offset(55)
         }
     }
@@ -4314,36 +4260,36 @@ unsafe extern "C" fn rijndaelEncrypt(
      * map cipher state to byte array block:
      */
     s0 = Te4[(t0 >> 24i32) as usize] & 0xff000000u32
-        ^ Te4[(t1 >> 16i32 & 0xffi32 as u32) as usize] & 0xff0000i32 as u32
-        ^ Te4[(t2 >> 8i32 & 0xffi32 as u32) as usize] & 0xff00i32 as u32
-        ^ Te4[(t3 & 0xffi32 as u32) as usize] & 0xffi32 as u32
+        ^ Te4[(t1 >> 16i32 & 0xff_u32) as usize] & 0xff0000_u32
+        ^ Te4[(t2 >> 8i32 & 0xff_u32) as usize] & 0xff00_u32
+        ^ Te4[(t3 & 0xff_u32) as usize] & 0xff_u32
         ^ *rk.offset(0);
     *ciphertext.offset(0) = (s0 >> 24i32) as u8;
     *ciphertext.offset(1) = (s0 >> 16i32) as u8;
     *ciphertext.offset(2) = (s0 >> 8i32) as u8;
     *ciphertext.offset(3) = s0 as u8;
     s1 = Te4[(t1 >> 24i32) as usize] & 0xff000000u32
-        ^ Te4[(t2 >> 16i32 & 0xffi32 as u32) as usize] & 0xff0000i32 as u32
-        ^ Te4[(t3 >> 8i32 & 0xffi32 as u32) as usize] & 0xff00i32 as u32
-        ^ Te4[(t0 & 0xffi32 as u32) as usize] & 0xffi32 as u32
+        ^ Te4[(t2 >> 16i32 & 0xff_u32) as usize] & 0xff0000_u32
+        ^ Te4[(t3 >> 8i32 & 0xff_u32) as usize] & 0xff00_u32
+        ^ Te4[(t0 & 0xff_u32) as usize] & 0xff_u32
         ^ *rk.offset(1);
     *ciphertext.offset(4).offset(0) = (s1 >> 24i32) as u8;
     *ciphertext.offset(4).offset(1) = (s1 >> 16i32) as u8;
     *ciphertext.offset(4).offset(2) = (s1 >> 8i32) as u8;
     *ciphertext.offset(4).offset(3) = s1 as u8;
     s2 = Te4[(t2 >> 24i32) as usize] & 0xff000000u32
-        ^ Te4[(t3 >> 16i32 & 0xffi32 as u32) as usize] & 0xff0000i32 as u32
-        ^ Te4[(t0 >> 8i32 & 0xffi32 as u32) as usize] & 0xff00i32 as u32
-        ^ Te4[(t1 & 0xffi32 as u32) as usize] & 0xffi32 as u32
+        ^ Te4[(t3 >> 16i32 & 0xff_u32) as usize] & 0xff0000_u32
+        ^ Te4[(t0 >> 8i32 & 0xff_u32) as usize] & 0xff00_u32
+        ^ Te4[(t1 & 0xff_u32) as usize] & 0xff_u32
         ^ *rk.offset(2);
     *ciphertext.offset(8).offset(0) = (s2 >> 24i32) as u8;
     *ciphertext.offset(8).offset(1) = (s2 >> 16i32) as u8;
     *ciphertext.offset(8).offset(2) = (s2 >> 8i32) as u8;
     *ciphertext.offset(8).offset(3) = s2 as u8;
     s3 = Te4[(t3 >> 24i32) as usize] & 0xff000000u32
-        ^ Te4[(t0 >> 16i32 & 0xffi32 as u32) as usize] & 0xff0000i32 as u32
-        ^ Te4[(t1 >> 8i32 & 0xffi32 as u32) as usize] & 0xff00i32 as u32
-        ^ Te4[(t2 & 0xffi32 as u32) as usize] & 0xffi32 as u32
+        ^ Te4[(t0 >> 16i32 & 0xff_u32) as usize] & 0xff0000_u32
+        ^ Te4[(t1 >> 8i32 & 0xff_u32) as usize] & 0xff00_u32
+        ^ Te4[(t2 & 0xff_u32) as usize] & 0xff_u32
         ^ *rk.offset(3);
     *ciphertext.offset(12).offset(0) = (s3 >> 24i32) as u8;
     *ciphertext.offset(12).offset(1) = (s3 >> 16i32) as u8;

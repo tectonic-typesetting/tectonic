@@ -497,7 +497,7 @@ pub unsafe extern "C" fn print(mut s: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_cstr(mut str: *const i8) {
-    let mut i: u32 = 0i32 as u32;
+    let mut i: u32 = 0_u32;
     while (i as u64) < strlen(str) {
         print_char(*str.offset(i as isize) as i32);
         i = i.wrapping_add(1)
@@ -505,7 +505,7 @@ pub unsafe extern "C" fn print_cstr(mut str: *const i8) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_nl(mut s: str_number) {
-    if term_offset > 0i32 && selector as u32 & 1i32 as u32 != 0
+    if term_offset > 0i32 && selector as u32 & 1_u32 != 0
         || file_offset > 0i32 && selector as u32 >= SELECTOR_LOG_ONLY as i32 as u32
     {
         print_ln();
@@ -514,7 +514,7 @@ pub unsafe extern "C" fn print_nl(mut s: str_number) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_nl_cstr(mut str: *const i8) {
-    if term_offset > 0i32 && selector as u32 & 1i32 as u32 != 0
+    if term_offset > 0i32 && selector as u32 & 1_u32 != 0
         || file_offset > 0i32 && selector as u32 >= SELECTOR_LOG_ONLY as i32 as u32
     {
         print_ln();

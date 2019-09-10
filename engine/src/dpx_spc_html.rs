@@ -622,7 +622,7 @@ unsafe extern "C" fn html_open_link(
         __assert_fail(
             b"name\x00" as *const u8 as *const i8,
             b"dpx-spc_html.c\x00" as *const u8 as *const i8,
-            289i32 as u32,
+            289_u32,
             (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
                 b"int html_open_link(struct spc_env *, const char *, struct spc_html_ *)\x00",
             ))
@@ -634,7 +634,7 @@ unsafe extern "C" fn html_open_link(
         __assert_fail(
             b"sd->link_dict == NULL\x00" as *const u8 as *const i8,
             b"dpx-spc_html.c\x00" as *const u8 as *const i8,
-            290i32 as u32,
+            290_u32,
             (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
                 b"int html_open_link(struct spc_env *, const char *, struct spc_html_ *)\x00",
             ))
@@ -716,7 +716,7 @@ unsafe extern "C" fn html_open_dest(
         __assert_fail(
             b"page_ref\x00" as *const u8 as *const i8,
             b"dpx-spc_html.c\x00" as *const u8 as *const i8,
-            346i32 as u32,
+            346_u32,
             (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
                 b"int html_open_dest(struct spc_env *, const char *, struct spc_html_ *)\x00",
             ))
@@ -1142,9 +1142,9 @@ unsafe extern "C" fn spc_html__img_empty(mut spe: *mut spc_env, mut attr: *mut p
                 );
                 pdf_release_obj(dict);
             }
-            pdf_doc_add_page_content(b" /\x00" as *const u8 as *const i8, 2i32 as u32);
+            pdf_doc_add_page_content(b" /\x00" as *const u8 as *const i8, 2_u32);
             pdf_doc_add_page_content(res_name, strlen(res_name) as u32);
-            pdf_doc_add_page_content(b" gs\x00" as *const u8 as *const i8, 3i32 as u32);
+            pdf_doc_add_page_content(b" gs\x00" as *const u8 as *const i8, 3_u32);
             free(res_name as *mut libc::c_void);
         }
         /* ENABLE_HTML_SVG_OPACITY */
@@ -1166,9 +1166,9 @@ unsafe extern "C" fn spc_html__img_empty(mut spe: *mut spc_env, mut attr: *mut p
         pdf_dev_concat(&mut M);
         pdf_dev_rectclip(r.llx, r.lly, r.urx - r.llx, r.ury - r.lly);
         res_name = pdf_ximage_get_resname(id);
-        pdf_doc_add_page_content(b" /\x00" as *const u8 as *const i8, 2i32 as u32);
+        pdf_doc_add_page_content(b" /\x00" as *const u8 as *const i8, 2_u32);
         pdf_doc_add_page_content(res_name, strlen(res_name) as u32);
-        pdf_doc_add_page_content(b" Do\x00" as *const u8 as *const i8, 3i32 as u32);
+        pdf_doc_add_page_content(b" Do\x00" as *const u8 as *const i8, 3_u32);
         pdf_dev_grestore();
         pdf_doc_add_page_resource(
             b"XObject\x00" as *const u8 as *const i8,
@@ -1482,7 +1482,7 @@ pub unsafe extern "C" fn spc_html_setup_handler(
         __assert_fail(b"sph && spe && ap\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_html.c\x00" as *const u8 as
-                          *const i8, 910i32 as u32,
+                          *const i8, 910_u32,
                       (*::std::mem::transmute::<&[u8; 85],
                                                 &[i8; 85]>(b"int spc_html_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }

@@ -407,7 +407,7 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
                     __assert_fail(
                         b"curpos >= 0 && curpos <= 255\x00" as *const u8 as *const i8,
                         b"dpx-subfont.c\x00" as *const u8 as *const i8,
-                        230i32 as u32,
+                        230_u32,
                         (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                             b"int read_sfd_record(struct sfd_rec_ *, const char *)\x00",
                         ))
@@ -446,7 +446,7 @@ unsafe extern "C" fn scan_sfd_file(
         __assert_fail(
             b"sfd && handle\x00" as *const u8 as *const i8,
             b"dpx-subfont.c\x00" as *const u8 as *const i8,
-            248i32 as u32,
+            248_u32,
             (*::std::mem::transmute::<&[u8; 61], &[i8; 61]>(
                 b"int scan_sfd_file(struct sfd_file_ *, rust_input_handle_t *)\x00",
             ))

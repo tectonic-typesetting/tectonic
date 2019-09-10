@@ -303,8 +303,8 @@ unsafe extern "C" fn ifreader_create(
     mut bufsize: size_t,
 ) -> *mut ifreader {
     let mut reader: *mut ifreader = 0 as *mut ifreader;
-    reader = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<ifreader>() as u64) as u32)
-        as *mut ifreader;
+    reader =
+        new((1_u64).wrapping_mul(::std::mem::size_of::<ifreader>() as u64) as u32) as *mut ifreader;
     (*reader).buf = new((bufsize.wrapping_add(1i32 as u64) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
     (*reader).max = bufsize;
@@ -321,7 +321,7 @@ unsafe extern "C" fn ifreader_destroy(mut reader: *mut ifreader) {
         __assert_fail(
             b"reader\x00" as *const u8 as *const i8,
             b"dpx-cmap_read.c\x00" as *const u8 as *const i8,
-            77i32 as u32,
+            77_u32,
             (*::std::mem::transmute::<&[u8; 34], &[i8; 34]>(
                 b"void ifreader_destroy(ifreader *)\x00",
             ))
@@ -339,7 +339,7 @@ unsafe extern "C" fn ifreader_read(mut reader: *mut ifreader, mut size: size_t) 
         __assert_fail(
             b"reader\x00" as *const u8 as *const i8,
             b"dpx-cmap_read.c\x00" as *const u8 as *const i8,
-            88i32 as u32,
+            88_u32,
             (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
                 b"size_t ifreader_read(ifreader *, size_t)\x00",
             ))
@@ -1062,7 +1062,7 @@ pub unsafe extern "C" fn CMap_parse(mut cmap: *mut CMap, mut handle: rust_input_
         __assert_fail(
             b"cmap && handle\x00" as *const u8 as *const i8,
             b"dpx-cmap_read.c\x00" as *const u8 as *const i8,
-            519i32 as u32,
+            519_u32,
             (*::std::mem::transmute::<&[u8; 44], &[i8; 44]>(
                 b"int CMap_parse(CMap *, rust_input_handle_t)\x00",
             ))

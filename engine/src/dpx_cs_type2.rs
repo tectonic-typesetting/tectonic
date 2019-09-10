@@ -131,9 +131,7 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                     status = -3i32;
                     return;
                 }
-                ivalue = 0xf700u32
-                    .wrapping_add(ivalue as u32)
-                    .wrapping_sub(108i32 as u32) as i32;
+                ivalue = 0xf700u32.wrapping_add(ivalue as u32).wrapping_sub(108_u32) as i32;
                 let fresh6 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh6 = (ivalue >> 8i32 & 0xffi32) as card8;
@@ -145,9 +143,7 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                     status = -3i32;
                     return;
                 }
-                ivalue = 0xfb00u32
-                    .wrapping_sub(ivalue as u32)
-                    .wrapping_sub(108i32 as u32) as i32;
+                ivalue = 0xfb00u32.wrapping_sub(ivalue as u32).wrapping_sub(108_u32) as i32;
                 let fresh8 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh8 = (ivalue >> 8i32 & 0xffi32) as card8;

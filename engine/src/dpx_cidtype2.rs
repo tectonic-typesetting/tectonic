@@ -1148,7 +1148,7 @@ unsafe extern "C" fn fix_CJK_symbols(mut code: u16) -> u16 {
     ];
     let mut i: u32 = 0;
     alt_code = code;
-    i = 0i32 as u32;
+    i = 0_u32;
     while (i as u64)
         < (::std::mem::size_of::<[C2RustUnnamed_2; 10]>() as u64)
             .wrapping_div(::std::mem::size_of::<C2RustUnnamed_2>() as u64)
@@ -1222,7 +1222,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     let mut glyphs: *mut tt_glyphs = 0 as *mut tt_glyphs;
     let mut cmap: *mut CMap = 0 as *mut CMap;
     let mut ttcmap: *mut tt_cmap = 0 as *mut tt_cmap;
-    let mut offset: u32 = 0i32 as u32;
+    let mut offset: u32 = 0_u32;
     let mut cid: CID = 0;
     let mut last_cid: CID = 0;
     let mut cidtogidmap: *mut u8 = 0 as *mut u8;
@@ -1304,7 +1304,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     match (*sfont).type_0 {
         16 => {
             offset = ttc_read_offset(sfont, (*(*font).options).index);
-            if offset == 0i32 as u32 {
+            if offset == 0_u32 {
                 _tt_abort(
                     b"Invalid TTC index in %s.\x00" as *const u8 as *const i8,
                     (*font).ident,
@@ -1319,7 +1319,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                     (*font).ident,
                 );
             }
-            offset = 0i32 as u32
+            offset = 0_u32
         }
         256 => offset = (*sfont).offset,
         _ => {
@@ -1800,14 +1800,14 @@ pub unsafe extern "C" fn CIDFont_type2_open(
 ) -> i32 {
     let mut fontname: *mut i8 = 0 as *mut i8;
     let mut sfont: *mut sfnt = 0 as *mut sfnt;
-    let mut offset: u32 = 0i32 as u32;
+    let mut offset: u32 = 0_u32;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     if !font.is_null() && !opt.is_null() {
     } else {
         __assert_fail(
             b"font && opt\x00" as *const u8 as *const i8,
             b"dpx-cidtype2.c\x00" as *const u8 as *const i8,
-            901i32 as u32,
+            901_u32,
             (*::std::mem::transmute::<&[u8; 73], &[i8; 73]>(
                 b"int CIDFont_type2_open(CIDFont *, const char *, CIDSysInfo *, cid_opt *)\x00",
             ))
@@ -1837,7 +1837,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
                     name,
                 );
             }
-            offset = 0i32 as u32
+            offset = 0_u32
         }
         256 => offset = (*sfont).offset,
         _ => {
@@ -1864,8 +1864,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
     let mut shortname: *mut i8 = 0 as *mut i8;
     let mut namelen: i32 = 0;
     /* MAC-ROMAN-EN-POSTSCRIPT or WIN-UNICODE-EN(US)-POSTSCRIPT */
-    shortname = new((127i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-        as *mut i8; /* for SJIS, UTF-16, ... string */
+    shortname = new((127_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8; /* for SJIS, UTF-16, ... string */
     namelen = tt_get_ps_fontname(sfont, shortname, 127i32 as u16) as i32;
     if namelen == 0i32 {
         memset(shortname as *mut libc::c_void, 0i32, 127i32 as u64);
@@ -1906,9 +1905,8 @@ pub unsafe extern "C" fn CIDFont_type2_open(
      */
     (*font).fontname = fontname; /* This means font's internal glyph ordering. */
     (*font).subtype = 2i32;
-    (*font).csi =
-        new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as u64) as u32)
-            as *mut CIDSysInfo;
+    (*font).csi = new((1_u64).wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as u64) as u32)
+        as *mut CIDSysInfo;
     if !(*opt).csi.is_null() {
         if !cmap_csi.is_null() {
             if strcmp((*(*opt).csi).registry, (*cmap_csi).registry) != 0

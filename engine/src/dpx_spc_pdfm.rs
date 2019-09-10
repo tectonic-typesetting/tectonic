@@ -697,7 +697,7 @@ unsafe extern "C" fn addresource(
     if ident.is_null() || res_id < 0i32 {
         return -1i32;
     }
-    r = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<resource_map>() as u64) as u32)
+    r = new((1_u64).wrapping_mul(::std::mem::size_of::<resource_map>() as u64) as u32)
         as *mut resource_map;
     (*r).type_0 = 0i32;
     (*r).res_id = res_id;
@@ -745,8 +745,7 @@ unsafe extern "C" fn spc_handler_pdfm__init(mut dp: *mut libc::c_void) -> i32 {
     (*sd).annot_dict = 0 as *mut pdf_obj;
     (*sd).lowest_level = 255i32;
     (*sd).resourcemap =
-        new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<ht_table>() as u64) as u32)
-            as *mut ht_table;
+        new((1_u64).wrapping_mul(::std::mem::size_of::<ht_table>() as u64) as u32) as *mut ht_table;
     ht_init_table(
         (*sd).resourcemap,
         Some(hval_free as unsafe extern "C" fn(_: *mut libc::c_void) -> ()),
@@ -822,7 +821,7 @@ unsafe extern "C" fn safeputresdent(
         __assert_fail(
             b"kp && vp && dp\x00" as *const u8 as *const i8,
             b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            221i32 as u32,
+            221_u32,
             (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int safeputresdent(pdf_obj *, pdf_obj *, void *)\x00",
             ))
@@ -852,7 +851,7 @@ unsafe extern "C" fn safeputresdict(
         __assert_fail(
             b"kp && vp && dp\x00" as *const u8 as *const i8,
             b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            243i32 as u32,
+            243_u32,
             (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int safeputresdict(pdf_obj *, pdf_obj *, void *)\x00",
             ))
@@ -1123,7 +1122,7 @@ unsafe extern "C" fn needreencode(
         __assert_fail(
             b"cd && cd->taintkeys\x00" as *const u8 as *const i8,
             b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            459i32 as u32,
+            459_u32,
             (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int needreencode(pdf_obj *, pdf_obj *, struct tounicode *)\x00",
             ))
@@ -1135,7 +1134,7 @@ unsafe extern "C" fn needreencode(
         __assert_fail(
             b"pdf_obj_typeof(kp) == PDF_NAME\x00" as *const u8 as *const i8,
             b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            460i32 as u32,
+            460_u32,
             (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int needreencode(pdf_obj *, pdf_obj *, struct tounicode *)\x00",
             ))
@@ -1147,14 +1146,14 @@ unsafe extern "C" fn needreencode(
         __assert_fail(
             b"pdf_obj_typeof(vp) == PDF_STRING\x00" as *const u8 as *const i8,
             b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            461i32 as u32,
+            461_u32,
             (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int needreencode(pdf_obj *, pdf_obj *, struct tounicode *)\x00",
             ))
             .as_ptr(),
         );
     }
-    i = 0i32 as u32;
+    i = 0_u32;
     while i < pdf_array_length((*cd).taintkeys) {
         tk = pdf_get_array((*cd).taintkeys, i as i32);
         if !tk.is_null() && pdf_obj_typeof(tk) == 4i32 {
@@ -1162,7 +1161,7 @@ unsafe extern "C" fn needreencode(
             __assert_fail(
                 b"tk && pdf_obj_typeof(tk) == PDF_NAME\x00" as *const u8 as *const i8,
                 b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-                465i32 as u32,
+                465_u32,
                 (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                     b"int needreencode(pdf_obj *, pdf_obj *, struct tounicode *)\x00",
                 ))
@@ -1178,7 +1177,7 @@ unsafe extern "C" fn needreencode(
     }
     if r != 0 {
         /* Check UTF-16BE BOM. */
-        if pdf_string_length(vp) >= 2i32 as u32
+        if pdf_string_length(vp) >= 2_u32
             && memcmp(
                 pdf_string_value(vp),
                 b"\xfe\xff\x00" as *const u8 as *const i8 as *const libc::c_void,
@@ -1202,7 +1201,7 @@ unsafe extern "C" fn modstrings(
         __assert_fail(
             b"pdf_obj_typeof(kp) == PDF_NAME\x00" as *const u8 as *const i8,
             b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            487i32 as u32,
+            487_u32,
             (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"int modstrings(pdf_obj *, pdf_obj *, void *)\x00",
             ))
@@ -2230,7 +2229,7 @@ unsafe extern "C" fn spc_handler_pdfm_content(
         pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as u32); /* op: q cm */
         len = (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as i32; /* op: ANY */
         pdf_doc_add_page_content((*args).curptr, len as u32); /* op: */
-        pdf_doc_add_page_content(b" Q\x00" as *const u8 as *const i8, 2i32 as u32);
+        pdf_doc_add_page_content(b" Q\x00" as *const u8 as *const i8, 2_u32);
         /* op: ANY */
     } /* op: */
     (*args).curptr = (*args).endptr; /* op: ANY */
@@ -2279,7 +2278,7 @@ unsafe extern "C" fn spc_handler_pdfm_literal(
             M.f = (*spe).y_user;
             pdf_dev_concat(&mut M);
         }
-        pdf_doc_add_page_content(b" \x00" as *const u8 as *const i8, 1i32 as u32);
+        pdf_doc_add_page_content(b" \x00" as *const u8 as *const i8, 1_u32);
         pdf_doc_add_page_content(
             (*args).curptr,
             (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as i32 as u32,
@@ -2331,7 +2330,7 @@ unsafe extern "C" fn spc_handler_pdfm_econtent(
 unsafe extern "C" fn spc_handler_pdfm_code(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr < (*args).endptr {
-        pdf_doc_add_page_content(b" \x00" as *const u8 as *const i8, 1i32 as u32);
+        pdf_doc_add_page_content(b" \x00" as *const u8 as *const i8, 1_u32);
         pdf_doc_add_page_content(
             (*args).curptr,
             (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as i32 as u32,
@@ -2803,9 +2802,8 @@ unsafe extern "C" fn spc_handler_pdfm_mapline(mut spe: *mut spc_env, mut ap: *mu
                 *fresh12 = *fresh11
             }
             *q = '\u{0}' as i32 as i8;
-            mrec = new((1i32 as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as u64)
-                as u32) as *mut fontmap_rec;
+            mrec = new((1_u64).wrapping_mul(::std::mem::size_of::<fontmap_rec>() as u64) as u32)
+                as *mut fontmap_rec;
             pdf_init_fontmap_record(mrec);
             error = pdf_read_fontmap_line(
                 mrec,
@@ -3776,7 +3774,7 @@ pub unsafe extern "C" fn spc_pdfm_setup_handler(
         __assert_fail(b"sph && spe && ap\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_pdfm.c\x00" as *const u8 as
-                          *const i8, 1970i32 as u32,
+                          *const i8, 1970_u32,
                       (*::std::mem::transmute::<&[u8; 85],
                                                 &[i8; 85]>(b"int spc_pdfm_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }

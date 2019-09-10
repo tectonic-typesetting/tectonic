@@ -577,11 +577,11 @@ unsafe extern "C" fn p_itoa(mut value: i32, mut buf: *mut i8) -> u32 {
         p = p.offset(1);
         *fresh0 = '-' as i32 as i8;
         value = -value;
-        sign = 1i32 as u32
+        sign = 1_u32
     } else {
-        sign = 0i32 as u32
+        sign = 0_u32
     }
-    ndigits = 0i32 as u32;
+    ndigits = 0_u32;
     loop
     /* Generate at least one digit in reverse order */
     {
@@ -595,17 +595,16 @@ unsafe extern "C" fn p_itoa(mut value: i32, mut buf: *mut i8) -> u32 {
     }
     /* Reverse the digits */
     let mut i: u32 = 0;
-    i = 0i32 as u32;
-    while i < ndigits.wrapping_div(2i32 as u32) {
+    i = 0_u32;
+    while i < ndigits.wrapping_div(2_u32) {
         let mut tmp: i8 = *p.offset(i as isize);
-        *p.offset(i as isize) =
-            *p.offset(ndigits.wrapping_sub(i).wrapping_sub(1i32 as u32) as isize);
-        *p.offset(ndigits.wrapping_sub(i).wrapping_sub(1i32 as u32) as isize) = tmp;
+        *p.offset(i as isize) = *p.offset(ndigits.wrapping_sub(i).wrapping_sub(1_u32) as isize);
+        *p.offset(ndigits.wrapping_sub(i).wrapping_sub(1_u32) as isize) = tmp;
         i = i.wrapping_add(1)
     }
     *p.offset(ndigits as isize) = '\u{0}' as i32 as i8;
     return if sign != 0 {
-        ndigits.wrapping_add(1i32 as u32)
+        ndigits.wrapping_add(1_u32)
     } else {
         ndigits
     };
@@ -907,7 +906,7 @@ unsafe extern "C" fn reset_text_state() {
     /*
      * We need to reset the line matrix to handle slanted fonts.
      */
-    pdf_doc_add_page_content(b" BT\x00" as *const u8 as *const i8, 3i32 as u32); /* op: BT */
+    pdf_doc_add_page_content(b" BT\x00" as *const u8 as *const i8, 3_u32); /* op: BT */
     /*
      * text_state.matrix is identity at top of page.
      * This sometimes write unnecessary "Tm"s when transition from
@@ -940,7 +939,7 @@ unsafe extern "C" fn text_mode() {
                 } else {
                     b")]TJ\x00" as *const u8 as *const i8
                 },
-                4i32 as u32,
+                4_u32,
             );
         }
         1 => {
@@ -962,7 +961,7 @@ pub unsafe extern "C" fn graphics_mode() {
                 } else {
                     b")]TJ\x00" as *const u8 as *const i8
                 },
-                4i32 as u32,
+                4_u32,
             );
             current_block_3 = 13064676843759196241;
         }
@@ -977,7 +976,7 @@ pub unsafe extern "C" fn graphics_mode() {
         13064676843759196241 =>
         /* continue */
         {
-            pdf_doc_add_page_content(b" ET\x00" as *const u8 as *const i8, 3i32 as u32); /* op: ET */
+            pdf_doc_add_page_content(b" ET\x00" as *const u8 as *const i8, 3_u32); /* op: ET */
             text_state.force_reset = 0i32;
             text_state.font_id = -1i32
         }
@@ -1222,7 +1221,7 @@ unsafe extern "C" fn start_string(
         } else {
             b" Td[(\x00" as *const u8 as *const i8
         },
-        5i32 as u32,
+        5_u32,
     ); /* op: Td */
     /* Error correction */
     text_state.ref_x = xpos - error_delx;
@@ -1261,7 +1260,7 @@ unsafe extern "C" fn string_mode(
                     } else {
                         b"[(\x00" as *const u8 as *const i8
                     },
-                    2i32 as u32,
+                    2_u32,
                 );
                 text_state.force_reset = 0i32
             } else {
@@ -1299,7 +1298,7 @@ unsafe extern "C" fn dev_set_font(mut font_id: i32) -> i32 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdfdev.c\x00" as *const u8 as *const i8,
-            847i32 as u32,
+            847_u32,
             (*::std::mem::transmute::<&[u8; 22], &[i8; 22]>(b"int dev_set_font(int)\x00")).as_ptr(),
         ); /* op: Tf */
     } /* _FIXME_ */
@@ -1433,7 +1432,7 @@ unsafe extern "C" fn handle_multibyte_string(
             *fresh36 = (gid >> 8i32) as u8;
             let fresh37 = outbuf;
             outbuf = outbuf.offset(1);
-            *fresh37 = (gid & 0xffi32 as u32) as u8;
+            *fresh37 = (gid & 0xff_u32) as u8;
             i = (i as u64).wrapping_add(2i32 as u64) as size_t as size_t
         }
         p = sbuf0.as_mut_ptr();
@@ -2556,8 +2555,8 @@ pub unsafe extern "C" fn pdf_dev_put_image(
         P.d = (*p).matrix.d;
         P.e = (*p).matrix.e;
         P.f = (*p).matrix.f;
-        i = 0i32 as u32;
-        while i < 4i32 as u32 {
+        i = 0_u32;
+        while i < 4_u32 {
             corner[i as usize].x -= rect.llx;
             corner[i as usize].y -= rect.lly;
             pdf_dev_transform(&mut *corner.as_mut_ptr().offset(i as isize), &mut P);
@@ -2569,8 +2568,8 @@ pub unsafe extern "C" fn pdf_dev_put_image(
         rect.lly = corner[0].y;
         rect.urx = corner[0].x;
         rect.ury = corner[0].y;
-        i = 0i32 as u32;
-        while i < 4i32 as u32 {
+        i = 0_u32;
+        while i < 4_u32 {
             if corner[i as usize].x < rect.llx {
                 rect.llx = corner[i as usize].x
             }
@@ -2739,7 +2738,7 @@ pub unsafe extern "C" fn pdf_dev_begin_actualtext(mut unicodes: *mut u16, mut co
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_end_actualtext() {
     graphics_mode();
-    pdf_doc_add_page_content(b" EMC\x00" as *const u8 as *const i8, 4i32 as u32);
+    pdf_doc_add_page_content(b" EMC\x00" as *const u8 as *const i8, 4_u32);
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

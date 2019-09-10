@@ -114,8 +114,8 @@ unsafe extern "C" fn match_expr(mut expr: *mut bt_node, mut key: *const i8) -> i
 }
 unsafe extern "C" fn bt_new_tree() -> *mut bt_node {
     let mut expr: *mut bt_node = 0 as *mut bt_node;
-    expr = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<bt_node>() as u64) as u32)
-        as *mut bt_node;
+    expr =
+        new((1_u64).wrapping_mul(::std::mem::size_of::<bt_node>() as u64) as u32) as *mut bt_node;
     (*expr).flag = 0i32;
     (*expr).left = 0 as *mut bt_node;
     (*expr).right = 0 as *mut bt_node;
@@ -253,8 +253,7 @@ unsafe extern "C" fn parse_expr(mut pp: *mut *const i8, mut endptr: *const i8) -
 #[no_mangle]
 pub unsafe extern "C" fn otl_new_opt() -> *mut otl_opt {
     let mut opt: *mut otl_opt = 0 as *mut otl_opt;
-    opt = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<otl_opt>() as u64) as u32)
-        as *mut otl_opt;
+    opt = new((1_u64).wrapping_mul(::std::mem::size_of::<otl_opt>() as u64) as u32) as *mut otl_opt;
     (*opt).rule = 0 as *mut bt_node;
     return opt as *mut otl_opt;
 }
@@ -275,7 +274,7 @@ pub unsafe extern "C" fn otl_parse_optstring(mut opt: *mut otl_opt, mut optstr: 
         __assert_fail(
             b"opt\x00" as *const u8 as *const i8,
             b"dpx-otl_opt.c\x00" as *const u8 as *const i8,
-            237i32 as u32,
+            237_u32,
             (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int otl_parse_optstring(otl_opt *, const char *)\x00",
             ))
@@ -315,7 +314,7 @@ pub unsafe extern "C" fn otl_match_optrule(mut opt: *mut otl_opt, mut tag: *cons
         __assert_fail(
             b"tag\x00" as *const u8 as *const i8,
             b"dpx-otl_opt.c\x00" as *const u8 as *const i8,
-            251i32 as u32,
+            251_u32,
             (*::std::mem::transmute::<&[u8; 47], &[i8; 47]>(
                 b"int otl_match_optrule(otl_opt *, const char *)\x00",
             ))

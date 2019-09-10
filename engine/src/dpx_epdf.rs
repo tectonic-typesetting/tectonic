@@ -1207,7 +1207,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
         pdf_close(pf);
         return -1i32;
     }
-    pdf_doc_add_page_content(b" \x00" as *const u8 as *const i8, 1i32 as u32);
+    pdf_doc_add_page_content(b" \x00" as *const u8 as *const i8, 1_u32);
     save_path = xmalloc((pdf_stream_length(contents) + 1i32) as size_t) as *mut i8;
     strncpy(
         save_path,
@@ -1313,7 +1313,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
             let mut p2: pdf_coord = pdf_coord { x: 0., y: 0. };
             let mut p3: pdf_coord = pdf_coord { x: 0., y: 0. };
             token = parse_ident(&mut clip_path, end_path);
-            j = 0i32 as u32;
+            j = 0_u32;
             while (j as u64)
                 < (::std::mem::size_of::<[operator; 39]>() as u64)
                     .wrapping_div(::std::mem::size_of::<operator>() as u64)
@@ -1508,7 +1508,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
                     current_block_157 = 6328367678128271922;
                 }
                 11 => {
-                    pdf_doc_add_page_content(b" n\x00" as *const u8 as *const i8, 2i32 as u32);
+                    pdf_doc_add_page_content(b" n\x00" as *const u8 as *const i8, 2_u32);
                     current_block_157 = 6328367678128271922;
                 }
                 12 => {

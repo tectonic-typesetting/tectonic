@@ -658,7 +658,7 @@ pub unsafe extern "C" fn pdf_font_open_type1c(mut font: *mut pdf_font) -> i32 {
     let mut cffont: *mut cff_font = 0 as *mut cff_font;
     let mut descriptor: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut offset: u32 = 0i32 as u32;
+    let mut offset: u32 = 0_u32;
     let mut encoding_id: i32 = 0;
     let mut embedding: i32 = 0;
     if !font.is_null() {
@@ -666,7 +666,7 @@ pub unsafe extern "C" fn pdf_font_open_type1c(mut font: *mut pdf_font) -> i32 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-type1c.c\x00" as *const u8 as *const i8,
-            74i32 as u32,
+            74_u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int pdf_font_open_type1c(pdf_font *)\x00",
             ))
@@ -682,12 +682,12 @@ pub unsafe extern "C" fn pdf_font_open_type1c(mut font: *mut pdf_font) -> i32 {
     sfont = sfnt_open(handle as rust_input_handle_t);
     if sfont.is_null()
         || (*sfont).type_0 != 1i32 << 2i32
-        || sfnt_read_table_directory(sfont, 0i32 as u32) < 0i32
+        || sfnt_read_table_directory(sfont, 0_u32) < 0i32
     {
         _tt_abort(b"Not a CFF/OpenType font (9)?\x00" as *const u8 as *const i8);
     }
     offset = sfnt_find_table_pos(sfont, b"CFF \x00" as *const u8 as *const i8);
-    if offset < 1i32 as u32 {
+    if offset < 1_u32 {
         _tt_abort(
             b"No \"CFF \" table found; not a CFF/OpenType font (10)?\x00" as *const u8 as *const i8,
         );
@@ -850,7 +850,7 @@ unsafe extern "C" fn add_SimpleMetrics(
             code += 1
         }
     }
-    if pdf_array_length(tmp_array) > 0i32 as u32 {
+    if pdf_array_length(tmp_array) > 0_u32 {
         pdf_add_dict(
             fontdict,
             pdf_new_name(b"Widths\x00" as *const u8 as *const i8),
@@ -952,7 +952,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-type1c.c\x00" as *const u8 as *const i8,
-            253i32 as u32,
+            253_u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int pdf_font_load_type1c(pdf_font *)\x00",
             ))
@@ -992,7 +992,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
             ident,
         );
     }
-    if sfnt_read_table_directory(sfont, 0i32 as u32) < 0i32 {
+    if sfnt_read_table_directory(sfont, 0_u32) < 0i32 {
         _tt_abort(
             b"Could not read OpenType table directory: %s\x00" as *const u8 as *const i8,
             ident,
@@ -1029,14 +1029,12 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     /* FIXME */
     (*cffont)._string = cff_new_index(0i32 as card16);
     /* New Charsets data */
-    charset =
-        new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_charsets>() as u64) as u32)
-            as *mut cff_charsets;
+    charset = new((1_u64).wrapping_mul(::std::mem::size_of::<cff_charsets>() as u64) as u32)
+        as *mut cff_charsets;
     (*charset).format = 0i32 as card8;
     (*charset).num_entries = 0i32 as card16;
-    (*charset).data.glyphs = new((256i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<s_SID>() as u64)
-        as u32) as *mut s_SID;
+    (*charset).data.glyphs =
+        new((256_u64).wrapping_mul(::std::mem::size_of::<s_SID>() as u64) as u32) as *mut s_SID;
     /*
      * Encoding related things.
      */
@@ -1048,9 +1046,8 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
         /*
          * Create enc_vec and ToUnicode CMap for built-in encoding.
          */
-        enc_vec = new(
-            (256i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<*mut i8>() as u64) as u32,
-        ) as *mut *mut i8;
+        enc_vec = new((256_u64).wrapping_mul(::std::mem::size_of::<*mut i8>() as u64) as u32)
+            as *mut *mut i8;
         code = 0i32 as card16;
         while (code as i32) < 256i32 {
             if *usedchars.offset(code as isize) != 0 {
@@ -1088,18 +1085,16 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
      *  Creating actual encoding date is delayed to eliminate character codes to
      *  be mapped to .notdef and to handle multiply-encoded glyphs.
      */
-    encoding =
-        new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_encoding>() as u64) as u32)
-            as *mut cff_encoding;
+    encoding = new((1_u64).wrapping_mul(::std::mem::size_of::<cff_encoding>() as u64) as u32)
+        as *mut cff_encoding;
     (*encoding).format = 1i32 as card8;
     (*encoding).num_entries = 0i32 as card8;
-    (*encoding).data.range1 = new((255i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<cff_range1>() as u64)
-        as u32) as *mut cff_range1;
+    (*encoding).data.range1 =
+        new((255_u64).wrapping_mul(::std::mem::size_of::<cff_range1>() as u64) as u32)
+            as *mut cff_range1;
     (*encoding).num_supps = 0i32 as card8;
     (*encoding).supp =
-        new((255i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_map>() as u64) as u32)
-            as *mut cff_map;
+        new((255_u64).wrapping_mul(::std::mem::size_of::<cff_map>() as u64) as u32) as *mut cff_map;
     /*
      * Charastrings.
      */
@@ -1179,8 +1174,8 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     } else {
         nominal_width = 0.0f64
     }
-    data = new((65536i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<card8>() as u64) as u32)
-        as *mut card8;
+    data =
+        new((65536_u64).wrapping_mul(::std::mem::size_of::<card8>() as u64) as u32) as *mut card8;
     /* First we add .notdef glyph.
      * All Type 1 font requires .notdef glyph to be present.
      */
@@ -1200,7 +1195,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
         (*cffont).handle,
         (offset as u32)
             .wrapping_add(*(*cs_idx).offset.offset(0))
-            .wrapping_sub(1i32 as u32) as ssize_t,
+            .wrapping_sub(1_u32) as ssize_t,
         0i32,
     );
     ttstub_input_read((*cffont).handle, data as *mut i8, size as size_t);
@@ -1323,7 +1318,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
                         (*cffont).handle,
                         (offset as u32)
                             .wrapping_add(*(*cs_idx).offset.offset(gid_0 as isize))
-                            .wrapping_sub(1i32 as u32) as ssize_t,
+                            .wrapping_sub(1_u32) as ssize_t,
                         0i32,
                     );
                     ttstub_input_read((*cffont).handle, data as *mut i8, size as size_t);
@@ -1608,14 +1603,13 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     );
     offset += private_size;
     /* Finally Top DICT */
-    (*topdict).data = new(
-        ((*(*topdict).offset.offset(1)).wrapping_sub(1i32 as u32) as u64)
-            .wrapping_mul(::std::mem::size_of::<card8>() as u64) as u32,
-    ) as *mut card8;
+    (*topdict).data = new(((*(*topdict).offset.offset(1)).wrapping_sub(1_u32) as u64)
+        .wrapping_mul(::std::mem::size_of::<card8>() as u64) as u32)
+        as *mut card8;
     cff_dict_pack(
         (*cffont).topdict,
         (*topdict).data,
-        (*(*topdict).offset.offset(1)).wrapping_sub(1i32 as u32) as i32,
+        (*(*topdict).offset.offset(1)).wrapping_sub(1_u32) as i32,
     );
     cff_pack_index(
         topdict,

@@ -321,7 +321,7 @@ pub unsafe extern "C" fn jpeg_include_image(
         pdf_new_name(b"DCTDecode\x00" as *const u8 as *const i8),
     );
     /* XMP Metadata */
-    if pdf_get_version() >= 4i32 as u32 {
+    if pdf_get_version() >= 4_u32 {
         if j_info.flags & 1i32 << 4i32 != 0 {
             let mut XMP_stream: *mut pdf_obj = 0 as *mut pdf_obj;
             XMP_stream = JPEG_get_XMP(&mut j_info);
@@ -395,7 +395,7 @@ pub unsafe extern "C" fn jpeg_include_image(
         let mut i: u32 = 0;
         dpx_warning(b"Adobe CMYK JPEG: Inverted color assumed.\x00" as *const u8 as *const i8);
         decode = pdf_new_array();
-        i = 0i32 as u32;
+        i = 0_u32;
         while i < j_info.num_components as u32 {
             pdf_add_array(decode, pdf_new_number(1.0f64));
             pdf_add_array(decode, pdf_new_number(0.0f64));
@@ -638,9 +638,8 @@ unsafe extern "C" fn read_APP14_Adobe(
     mut handle: rust_input_handle_t,
 ) -> u16 {
     let mut app_data: *mut JPEG_APPn_Adobe = 0 as *mut JPEG_APPn_Adobe;
-    app_data = new(
-        (1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<JPEG_APPn_Adobe>() as u64) as u32
-    ) as *mut JPEG_APPn_Adobe;
+    app_data = new((1_u64).wrapping_mul(::std::mem::size_of::<JPEG_APPn_Adobe>() as u64) as u32)
+        as *mut JPEG_APPn_Adobe;
     (*app_data).version = tt_get_unsigned_pair(handle);
     (*app_data).flag0 = tt_get_unsigned_pair(handle);
     (*app_data).flag1 = tt_get_unsigned_pair(handle);
@@ -699,8 +698,8 @@ unsafe extern "C" fn read_APP1_Exif(
     let mut xres: f64 = 0.0f64;
     let mut yres: f64 = 0.0f64;
     let mut res_unit: f64 = 1.0f64;
-    let mut xres_ms: u32 = 0i32 as u32;
-    let mut yres_ms: u32 = 0i32 as u32;
+    let mut xres_ms: u32 = 0_u32;
+    let mut yres_ms: u32 = 0_u32;
     let mut res_unit_ms: f64 = 0.0f64;
     let mut exifxdpi: f64 = 0.0f64;
     let mut exifydpi: f64 = 0.0f64;
@@ -873,9 +872,7 @@ unsafe extern "C" fn read_APP1_Exif(
                                 if xres > 0.0f64 && yres > 0.0f64 {
                                     exifxdpi = xres * res_unit;
                                     exifydpi = yres * res_unit
-                                } else if xres_ms > 0i32 as u32
-                                    && yres_ms > 0i32 as u32
-                                    && res_unit_ms > 0.0f64
+                                } else if xres_ms > 0_u32 && yres_ms > 0_u32 && res_unit_ms > 0.0f64
                                 {
                                     exifxdpi = xres_ms as f64 * res_unit_ms;
                                     exifydpi = yres_ms as f64 * res_unit_ms
@@ -918,9 +915,8 @@ unsafe extern "C" fn read_APP0_JFIF(
 ) -> size_t {
     let mut app_data: *mut JPEG_APPn_JFIF = 0 as *mut JPEG_APPn_JFIF;
     let mut thumb_data_len: size_t = 0;
-    app_data = new(
-        (1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<JPEG_APPn_JFIF>() as u64) as u32,
-    ) as *mut JPEG_APPn_JFIF;
+    app_data = new((1_u64).wrapping_mul(::std::mem::size_of::<JPEG_APPn_JFIF>() as u64) as u32)
+        as *mut JPEG_APPn_JFIF;
     (*app_data).version = tt_get_unsigned_pair(handle);
     (*app_data).units = tt_get_unsigned_byte(handle);
     (*app_data).Xdensity = tt_get_unsigned_pair(handle);
@@ -979,9 +975,8 @@ unsafe extern "C" fn read_APP1_XMP(
     mut length: size_t,
 ) -> size_t {
     let mut app_data: *mut JPEG_APPn_XMP = 0 as *mut JPEG_APPn_XMP;
-    app_data = new(
-        (1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<JPEG_APPn_XMP>() as u64) as u32,
-    ) as *mut JPEG_APPn_XMP;
+    app_data = new((1_u64).wrapping_mul(::std::mem::size_of::<JPEG_APPn_XMP>() as u64) as u32)
+        as *mut JPEG_APPn_XMP;
     (*app_data).length = length;
     (*app_data).packet = new(
         ((*app_data).length as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32
@@ -1001,9 +996,8 @@ unsafe extern "C" fn read_APP2_ICC(
     mut length: size_t,
 ) -> size_t {
     let mut app_data: *mut JPEG_APPn_ICC = 0 as *mut JPEG_APPn_ICC;
-    app_data = new(
-        (1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<JPEG_APPn_ICC>() as u64) as u32,
-    ) as *mut JPEG_APPn_ICC;
+    app_data = new((1_u64).wrapping_mul(::std::mem::size_of::<JPEG_APPn_ICC>() as u64) as u32)
+        as *mut JPEG_APPn_ICC;
     (*app_data).seq_id = tt_get_unsigned_byte(handle);
     (*app_data).num_chunks = tt_get_unsigned_byte(handle);
     (*app_data).length = length.wrapping_sub(2i32 as u64);

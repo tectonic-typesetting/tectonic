@@ -659,8 +659,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
     if !(*cmap).useCMap.is_null() {
         _tt_abort(b"UseCMap found (not supported yet)...\x00" as *const u8 as *const i8);
     }
-    wbuf.buf = new((4096i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-        as *mut i8;
+    wbuf.buf = new((4096_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     codestr = new(((*cmap).profile.maxBytesIn as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
     memset(

@@ -1907,9 +1907,9 @@ unsafe extern "C" fn parse_charstrings(
         max_size = 0i32
     }
     (*font).cstrings = charstrings;
-    (*font).charsets = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<cff_charsets>() as u64)
-        as u32) as *mut cff_charsets;
+    (*font).charsets =
+        new((1_u64).wrapping_mul(::std::mem::size_of::<cff_charsets>() as u64) as u32)
+            as *mut cff_charsets;
     charset = (*font).charsets;
     (*charset).format = 0i32 as card8;
     (*charset).num_entries = (count - 1i32) as card16;
@@ -2666,14 +2666,12 @@ unsafe extern "C" fn init_cff_font(mut cff: *mut cff_font) {
     (*cff).fdselect = 0 as *mut cff_fdselect;
     (*cff).cstrings = 0 as *mut cff_index;
     (*cff).fdarray = 0 as *mut *mut cff_dict;
-    (*cff).private = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as u64)
-        as u32) as *mut *mut cff_dict;
+    (*cff).private = new((1_u64).wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as u64) as u32)
+        as *mut *mut cff_dict;
     let ref mut fresh23 = *(*cff).private.offset(0);
     *fresh23 = cff_new_dict();
-    (*cff).subrs = new(
-        (1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<*mut cff_index>() as u64) as u32
-    ) as *mut *mut cff_index;
+    (*cff).subrs = new((1_u64).wrapping_mul(::std::mem::size_of::<*mut cff_index>() as u64) as u32)
+        as *mut *mut cff_index;
     let ref mut fresh24 = *(*cff).subrs.offset(0);
     *fresh24 = 0 as *mut cff_index;
     (*cff).offset = 0i32 as l_offset;
@@ -2722,8 +2720,8 @@ pub unsafe extern "C" fn t1_load_font(
     if buffer.is_null() || length == 0i32 {
         _tt_abort(b"Reading PFB (ASCII part) file failed.\x00" as *const u8 as *const i8);
     }
-    cff = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_font>() as u64) as u32)
-        as *mut cff_font;
+    cff =
+        new((1_u64).wrapping_mul(::std::mem::size_of::<cff_font>() as u64) as u32) as *mut cff_font;
     init_cff_font(cff);
     start = buffer;
     end = buffer.offset(length as isize);

@@ -531,7 +531,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            65i32 as u32,
+            65_u32,
             (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
                 b"int pdf_font_open_truetype(pdf_font *)\x00",
             ))
@@ -545,7 +545,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
         __assert_fail(
             b"ident\x00" as *const u8 as *const i8,
             b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            70i32 as u32,
+            70_u32,
             (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
                 b"int pdf_font_open_truetype(pdf_font *)\x00",
             ))
@@ -573,7 +573,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
     if (*sfont).type_0 == 1i32 << 4i32 {
         let mut offset: u32 = 0;
         offset = ttc_read_offset(sfont, index);
-        if offset == 0i32 as u32 {
+        if offset == 0_u32 {
             _tt_abort(
                 b"Invalid TTC index in %s.\x00" as *const u8 as *const i8,
                 ident,
@@ -601,7 +601,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
         __assert_fail(
             b"fontdict && descriptor\x00" as *const u8 as *const i8,
             b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            114i32 as u32,
+            114_u32,
             (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
                 b"int pdf_font_open_truetype(pdf_font *)\x00",
             ))
@@ -658,7 +658,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
         __assert_fail(
             b"pdf_obj_typeof(tmp) == PDF_DICT\x00" as *const u8 as *const i8,
             b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            154i32 as u32,
+            154_u32,
             (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
                 b"int pdf_font_open_truetype(pdf_font *)\x00",
             ))
@@ -848,7 +848,7 @@ unsafe extern "C" fn do_widths(mut font: *mut pdf_font, mut widths: *mut f64) {
         }
         code += 1
     }
-    if pdf_array_length(tmparray) > 0i32 as u32 {
+    if pdf_array_length(tmparray) > 0_u32 {
         pdf_add_dict(
             fontdict,
             pdf_new_name(b"Widths\x00" as *const u8 as *const i8),
@@ -896,8 +896,7 @@ unsafe extern "C" fn do_builtin_encoding(
         );
         return -1i32;
     }
-    cmap_table = new((274i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-        as *mut i8;
+    cmap_table = new((274_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     memset(cmap_table as *mut libc::c_void, 0i32, 274i32 as u64);
     put_big_endian(cmap_table as *mut libc::c_void, 0i32, 2i32);
     /* Version  */
@@ -984,7 +983,7 @@ unsafe extern "C" fn do_builtin_encoding(
         sfont,
         b"cmap\x00" as *const u8 as *const i8,
         cmap_table as *mut libc::c_void,
-        274i32 as u32,
+        274_u32,
     );
     return 0i32;
 }
@@ -1083,7 +1082,7 @@ unsafe extern "C" fn selectglyph(
         __assert_fail(
             b"suffix && gm && out\x00" as *const u8 as *const i8,
             b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            451i32 as u32,
+            451_u32,
             (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
                 b"int selectglyph(USHORT, const char *, struct glyph_mapper *, USHORT *)\x00",
             ))
@@ -1095,7 +1094,7 @@ unsafe extern "C" fn selectglyph(
         __assert_fail(
             b"suffix && *suffix != 0\x00" as *const u8 as *const i8,
             b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            452i32 as u32,
+            452_u32,
             (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
                 b"int selectglyph(USHORT, const char *, struct glyph_mapper *, USHORT *)\x00",
             ))
@@ -1195,7 +1194,7 @@ unsafe extern "C" fn composeglyph(
         __assert_fail(b"glyphs && n_glyphs > 0 && gm && gid\x00" as *const u8
                           as *const i8,
                       b"dpx-truetype.c\x00" as *const u8 as
-                          *const i8, 514i32 as u32,
+                          *const i8, 514_u32,
                       (*::std::mem::transmute::<&[u8; 79],
                                                 &[i8; 79]>(b"int composeglyph(USHORT *, int, const char *, struct glyph_mapper *, USHORT *)\x00")).as_ptr());
     }
@@ -1434,7 +1433,7 @@ unsafe extern "C" fn findparanoiac(
             __assert_fail(
                 b"0\x00" as *const u8 as *const i8,
                 b"dpx-truetype.c\x00" as *const u8 as *const i8,
-                670i32 as u32,
+                670_u32,
                 (*::std::mem::transmute::<&[u8; 65], &[i8; 65]>(
                     b"int findparanoiac(const char *, USHORT *, struct glyph_mapper *)\x00",
                 ))
@@ -1460,7 +1459,7 @@ unsafe extern "C" fn resolve_glyph(
         __assert_fail(
             b"glyphname\x00" as *const u8 as *const i8,
             b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            686i32 as u32,
+            686_u32,
             (*::std::mem::transmute::<&[u8; 65], &[i8; 65]>(
                 b"int resolve_glyph(const char *, USHORT *, struct glyph_mapper *)\x00",
             ))
@@ -1570,7 +1569,7 @@ unsafe extern "C" fn do_custom_encoding(
         __assert_fail(
             b"font && encoding && usedchars && sfont\x00" as *const u8 as *const i8,
             b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            778i32 as u32,
+            778_u32,
             (*::std::mem::transmute::<&[u8; 66], &[i8; 66]>(
                 b"int do_custom_encoding(pdf_font *, char **, const char *, sfnt *)\x00",
             ))
@@ -1586,8 +1585,7 @@ unsafe extern "C" fn do_custom_encoding(
         dpx_warning(b">> I can\'t find glyphs without this!\x00" as *const u8 as *const i8);
         return -1i32;
     }
-    cmap_table = new((274i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-        as *mut i8;
+    cmap_table = new((274_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     memset(cmap_table as *mut libc::c_void, 0i32, 274i32 as u64);
     put_big_endian(cmap_table as *mut libc::c_void, 0i32, 2i32);
     /* Version  */
@@ -1693,7 +1691,7 @@ unsafe extern "C" fn do_custom_encoding(
         sfont,
         b"cmap\x00" as *const u8 as *const i8,
         cmap_table as *mut libc::c_void,
-        274i32 as u32,
+        274_u32,
     );
     return 0i32;
 }
@@ -1771,7 +1769,7 @@ pub unsafe extern "C" fn pdf_font_load_truetype(mut font: *mut pdf_font) -> i32 
     if (*sfont).type_0 == 1i32 << 4i32 {
         let mut offset: u32 = 0;
         offset = ttc_read_offset(sfont, index);
-        if offset == 0i32 as u32 {
+        if offset == 0_u32 {
             _tt_abort(
                 b"Invalid TTC index in %s.\x00" as *const u8 as *const i8,
                 ident,

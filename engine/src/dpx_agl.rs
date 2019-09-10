@@ -253,8 +253,8 @@ pub unsafe extern "C" fn agl_set_verbose(mut level: i32) {
 }
 unsafe extern "C" fn agl_new_name() -> *mut agl_name {
     let mut agln: *mut agl_name = 0 as *mut agl_name;
-    agln = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<agl_name>() as u64) as u32)
-        as *mut agl_name;
+    agln =
+        new((1_u64).wrapping_mul(::std::mem::size_of::<agl_name>() as u64) as u32) as *mut agl_name;
     (*agln).name = 0 as *mut i8;
     (*agln).suffix = 0 as *mut i8;
     (*agln).n_components = 0i32;
@@ -286,7 +286,7 @@ pub unsafe extern "C" fn agl_chop_suffix(
         __assert_fail(
             b"glyphname && suffix\x00" as *const u8 as *const i8,
             b"dpx-agl.c\x00" as *const u8 as *const i8,
-            95i32 as u32,
+            95_u32,
             (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"char *agl_chop_suffix(const char *, char **)\x00",
             ))
@@ -387,7 +387,7 @@ unsafe extern "C" fn skip_modifier(mut p: *mut *const i8, mut endptr: *const i8)
     let mut len: size_t = 0;
     let mut i: u32 = 0;
     len = endptr.wrapping_offset_from(*p) as i64 as size_t;
-    i = 0i32 as u32;
+    i = 0_u32;
     while !modifiers[i as usize].is_null() {
         if len >= strlen(modifiers[i as usize])
             && memcmp(
@@ -880,8 +880,7 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_nam
     } else if is_smallcap(glyphname) {
         n = strlen(glyphname).wrapping_sub(5i32 as u64) as i32;
         (*agln).suffix =
-            new((3i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-                as *mut i8;
+            new((3_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
         strcpy((*agln).suffix, b"sc\x00" as *const u8 as *const i8);
         (*agln).name =
             new(((n + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
@@ -1331,7 +1330,7 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
         __assert_fail(b"glyphstr && dstpp\x00" as *const u8 as
                           *const i8,
                       b"dpx-agl.c\x00" as *const u8 as *const i8,
-                      656i32 as u32,
+                      656_u32,
                       (*::std::mem::transmute::<&[u8; 81],
                                                 &[i8; 81]>(b"int32_t agl_sput_UTF16BE(const char *, unsigned char **, unsigned char *, int *)\x00")).as_ptr());
     }

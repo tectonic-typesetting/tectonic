@@ -741,7 +741,7 @@ pub unsafe extern "C" fn otl_conf_get_script(mut conf: *mut pdf_obj) -> *mut i8 
         __assert_fail(
             b"conf\x00" as *const u8 as *const i8,
             b"dpx-otl_conf.c\x00" as *const u8 as *const i8,
-            585i32 as u32,
+            585_u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"char *otl_conf_get_script(pdf_obj *)\x00",
             ))
@@ -759,7 +759,7 @@ pub unsafe extern "C" fn otl_conf_get_language(mut conf: *mut pdf_obj) -> *mut i
         __assert_fail(
             b"conf\x00" as *const u8 as *const i8,
             b"dpx-otl_conf.c\x00" as *const u8 as *const i8,
-            597i32 as u32,
+            597_u32,
             (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
                 b"char *otl_conf_get_language(pdf_obj *)\x00",
             ))
@@ -776,7 +776,7 @@ pub unsafe extern "C" fn otl_conf_get_rule(mut conf: *mut pdf_obj) -> *mut pdf_o
         __assert_fail(
             b"conf\x00" as *const u8 as *const i8,
             b"dpx-otl_conf.c\x00" as *const u8 as *const i8,
-            607i32 as u32,
+            607_u32,
             (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
                 b"pdf_obj *otl_conf_get_rule(pdf_obj *)\x00",
             ))
@@ -797,7 +797,7 @@ pub unsafe extern "C" fn otl_conf_find_opt(
         __assert_fail(
             b"conf\x00" as *const u8 as *const i8,
             b"dpx-otl_conf.c\x00" as *const u8 as *const i8,
-            617i32 as u32,
+            617_u32,
             (*::std::mem::transmute::<&[u8; 52], &[i8; 52]>(
                 b"pdf_obj *otl_conf_find_opt(pdf_obj *, const char *)\x00",
             ))

@@ -247,7 +247,7 @@ unsafe extern "C" fn check_stream_is_dfont(mut handle: rust_input_handle_t) -> b
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     tt_get_unsigned_quad(handle);
     pos = tt_get_unsigned_quad(handle);
-    ttstub_input_seek(handle, pos.wrapping_add(0x18i32 as u32) as ssize_t, 0i32);
+    ttstub_input_seek(handle, pos.wrapping_add(0x18_u32) as ssize_t, 0i32);
     ttstub_input_seek(
         handle,
         pos.wrapping_add(tt_get_unsigned_pair(handle) as u32) as ssize_t,

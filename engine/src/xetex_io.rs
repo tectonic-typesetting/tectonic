@@ -669,7 +669,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
     }
     last = first;
     if (*f).encodingMode as i32 == 5i32 {
-        let mut bytesRead: u32 = 0i32 as u32;
+        let mut bytesRead: u32 = 0_u32;
         let mut cnv: *mut icu::UConverter = 0 as *mut icu::UConverter;
         let mut outLen: i32 = 0;
         let mut errorCode: UErrorCode = U_ZERO_ERROR;
@@ -703,7 +703,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
                 *byteBuffer.offset(fresh2 as isize) = i as i8
             }
         }
-        if i == -1i32 && *__errno_location() != 4i32 && bytesRead == 0i32 as u32 {
+        if i == -1i32 && *__errno_location() != 4i32 && bytesRead == 0_u32 {
             return 0i32;
         }
         if i != -1i32 && i != '\n' as i32 && i != '\r' as i32 {
@@ -1108,14 +1108,14 @@ pub unsafe extern "C" fn make_utf16_name() {
             _ => {}
         }
         rval = (rval as u32).wrapping_sub(offsetsFromUTF8[extraBytes as usize]) as u32;
-        if rval > 0xffffi32 as u32 {
-            rval = (rval as u32).wrapping_sub(0x10000i32 as u32) as u32;
+        if rval > 0xffff_u32 {
+            rval = (rval as u32).wrapping_sub(0x10000_u32) as u32;
             let fresh13 = t;
             t = t.offset(1);
-            *fresh13 = (0xd800i32 as u32).wrapping_add(rval.wrapping_div(0x400i32 as u32)) as u16;
+            *fresh13 = (0xd800_u32).wrapping_add(rval.wrapping_div(0x400_u32)) as u16;
             let fresh14 = t;
             t = t.offset(1);
-            *fresh14 = (0xdc00i32 as u32).wrapping_add(rval.wrapping_rem(0x400i32 as u32)) as u16
+            *fresh14 = (0xdc00_u32).wrapping_add(rval.wrapping_rem(0x400_u32)) as u16
         } else {
             let fresh15 = t;
             t = t.offset(1);

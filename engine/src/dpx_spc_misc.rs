@@ -215,7 +215,7 @@ unsafe extern "C" fn spc_handler_postscriptbox(mut spe: *mut spc_env, mut ap: *m
         __assert_fail(
             b"spe && ap\x00" as *const u8 as *const i8,
             b"dpx-spc_misc.c\x00" as *const u8 as *const i8,
-            51i32 as u32,
+            51_u32,
             (*::std::mem::transmute::<&[u8; 66], &[i8; 66]>(
                 b"int spc_handler_postscriptbox(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -422,7 +422,7 @@ pub unsafe extern "C" fn spc_misc_setup_handler(
         __assert_fail(b"handle && spe && args\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_misc.c\x00" as *const u8 as
-                          *const i8, 156i32 as u32,
+                          *const i8, 156_u32,
                       (*::std::mem::transmute::<&[u8; 85],
                                                 &[i8; 85]>(b"int spc_misc_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }

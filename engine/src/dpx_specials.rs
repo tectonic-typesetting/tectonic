@@ -609,7 +609,7 @@ pub unsafe extern "C" fn spc_lookup_reference(mut key: *const i8) -> *mut pdf_ob
         __assert_fail(
             b"named_objects\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            162i32 as u32,
+            162_u32,
             (*::std::mem::transmute::<&[u8; 44], &[i8; 44]>(
                 b"pdf_obj *spc_lookup_reference(const char *)\x00",
             ))
@@ -691,7 +691,7 @@ pub unsafe extern "C" fn spc_lookup_object(mut key: *const i8) -> *mut pdf_obj {
         __assert_fail(
             b"named_objects\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            227i32 as u32,
+            227_u32,
             (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
                 b"pdf_obj *spc_lookup_object(const char *)\x00",
             ))
@@ -746,7 +746,7 @@ pub unsafe extern "C" fn spc_push_object(mut key: *const i8, mut value: *mut pdf
         __assert_fail(
             b"named_objects\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            279i32 as u32,
+            279_u32,
             (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
                 b"void spc_push_object(const char *, pdf_obj *)\x00",
             ))
@@ -782,7 +782,7 @@ unsafe extern "C" fn spc_handler_unknown(mut spe: *mut spc_env, mut args: *mut s
         __assert_fail(
             b"spe && args\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            305i32 as u32,
+            305_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_unknown(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -824,7 +824,7 @@ unsafe extern "C" fn check_garbage(mut args: *mut spc_arg) {
         __assert_fail(
             b"args\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            339i32 as u32,
+            339_u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"void check_garbage(struct spc_arg *)\x00",
             ))
@@ -1029,7 +1029,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
 pub unsafe extern "C" fn spc_exec_at_begin_page() -> i32 {
     let mut error: i32 = 0i32;
     let mut i: u32 = 0;
-    i = 0i32 as u32;
+    i = 0_u32;
     while !known_specials[i as usize].key.is_null() {
         if known_specials[i as usize].bophk_func.is_some() {
             error = known_specials[i as usize]
@@ -1044,7 +1044,7 @@ pub unsafe extern "C" fn spc_exec_at_begin_page() -> i32 {
 pub unsafe extern "C" fn spc_exec_at_end_page() -> i32 {
     let mut error: i32 = 0i32;
     let mut i: u32 = 0;
-    i = 0i32 as u32;
+    i = 0_u32;
     while !known_specials[i as usize].key.is_null() {
         if known_specials[i as usize].eophk_func.is_some() {
             error = known_specials[i as usize]
@@ -1064,7 +1064,7 @@ pub unsafe extern "C" fn spc_exec_at_begin_document() -> i32 {
         __assert_fail(
             b"!named_objects\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            474i32 as u32,
+            474_u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int spc_exec_at_begin_document(void)\x00",
             ))
@@ -1072,7 +1072,7 @@ pub unsafe extern "C" fn spc_exec_at_begin_document() -> i32 {
         );
     }
     named_objects = pdf_new_name_tree();
-    i = 0i32 as u32;
+    i = 0_u32;
     while !known_specials[i as usize].key.is_null() {
         if known_specials[i as usize].bodhk_func.is_some() {
             error = known_specials[i as usize]
@@ -1087,7 +1087,7 @@ pub unsafe extern "C" fn spc_exec_at_begin_document() -> i32 {
 pub unsafe extern "C" fn spc_exec_at_end_document() -> i32 {
     let mut error: i32 = 0i32;
     let mut i: u32 = 0;
-    i = 0i32 as u32;
+    i = 0_u32;
     while !known_specials[i as usize].key.is_null() {
         if known_specials[i as usize].eodhk_func.is_some() {
             error = known_specials[i as usize]

@@ -5061,9 +5061,9 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: i32) {
         }
         70 => {
             print_esc_cstr(b"Umathchar\x00" as *const u8 as *const i8);
-            print_hex((chr_code as u32 >> 21i32 & 0x7i32 as u32) as i32);
-            print_hex((chr_code as u32 >> 24i32 & 0xffi32 as u32) as i32);
-            print_hex((chr_code as u32 & 0x1fffffi32 as u32) as i32);
+            print_hex((chr_code as u32 >> 21i32 & 0x7_u32) as i32);
+            print_hex((chr_code as u32 >> 24i32 & 0xff_u32) as i32);
+            print_hex((chr_code as u32 & 0x1fffff_u32) as i32);
         }
         86 => {
             if chr_code
@@ -10159,7 +10159,7 @@ pub unsafe extern "C" fn scan_char_num() {
 #[no_mangle]
 pub unsafe extern "C" fn scan_xetex_math_char_int() {
     scan_int();
-    if cur_val as u32 & 0x1fffffi32 as u32 == 0x1fffffi32 as u32 {
+    if cur_val as u32 & 0x1fffff_u32 == 0x1fffff_u32 {
         if cur_val != 0x1fffffi32 {
             if file_line_error_style_p != 0 {
                 print_file_line();
@@ -10174,7 +10174,7 @@ pub unsafe extern "C" fn scan_xetex_math_char_int() {
             int_error(cur_val);
             cur_val = 0x1fffffi32
         }
-    } else if cur_val as u32 & 0x1fffffi32 as u32 > 0x10ffffi32 as u32 {
+    } else if cur_val as u32 & 0x1fffff_u32 > 0x10ffff_u32 {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
@@ -10231,7 +10231,7 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
                     ))
                     .b32
                     .s1;
-                    if !(c as u32 & 0x1fffffi32 as u32 == 0x1fffffi32 as u32) {
+                    if !(c as u32 & 0x1fffff_u32 == 0x1fffff_u32) {
                         break 'c_118470;
                     }
                     cur_cs = cur_chr + 1i32;
@@ -10249,10 +10249,9 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
                 17 => {
                     if cur_chr == 2i32 {
                         scan_math_class_int();
-                        c = ((cur_val as u32 & 0x7i32 as u32) << 21i32) as i32;
+                        c = ((cur_val as u32 & 0x7_u32) << 21i32) as i32;
                         scan_math_fam_int();
-                        c = (c as u32).wrapping_add((cur_val as u32 & 0xffi32 as u32) << 24i32)
-                            as i32;
+                        c = (c as u32).wrapping_add((cur_val as u32 & 0xff_u32) << 24i32) as i32;
                         scan_usv_num();
                         c = c + cur_val
                     } else if cur_chr == 1i32 {
@@ -10260,20 +10259,16 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
                         c = cur_val
                     } else {
                         scan_fifteen_bit_int();
-                        c = (((cur_val / 4096i32) as u32 & 0x7i32 as u32) << 21i32)
-                            .wrapping_add(
-                                ((cur_val % 4096i32 / 256i32) as u32 & 0xffi32 as u32) << 24i32,
-                            )
+                        c = (((cur_val / 4096i32) as u32 & 0x7_u32) << 21i32)
+                            .wrapping_add(((cur_val % 4096i32 / 256i32) as u32 & 0xff_u32) << 24i32)
                             .wrapping_add((cur_val % 256i32) as u32)
                             as i32
                     }
                     break 'c_118470;
                 }
                 69 => {
-                    c = (((cur_chr / 4096i32) as u32 & 0x7i32 as u32) << 21i32)
-                        .wrapping_add(
-                            ((cur_chr % 4096i32 / 256i32) as u32 & 0xffi32 as u32) << 24i32,
-                        )
+                    c = (((cur_chr / 4096i32) as u32 & 0x7_u32) << 21i32)
+                        .wrapping_add(((cur_chr % 4096i32 / 256i32) as u32 & 0xff_u32) << 24i32)
                         .wrapping_add((cur_chr % 256i32) as u32) as i32;
                     break 'c_118470;
                 }
@@ -10284,17 +10279,16 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
                 15 => {
                     if cur_chr == 1i32 {
                         scan_math_class_int();
-                        c = ((cur_val as u32 & 0x7i32 as u32) << 21i32) as i32;
+                        c = ((cur_val as u32 & 0x7_u32) << 21i32) as i32;
                         scan_math_fam_int();
-                        c = (c as u32).wrapping_add((cur_val as u32 & 0xffi32 as u32) << 24i32)
-                            as i32;
+                        c = (c as u32).wrapping_add((cur_val as u32 & 0xff_u32) << 24i32) as i32;
                         scan_usv_num();
                         c = c + cur_val
                     } else {
                         scan_delimiter_int();
                         c = cur_val / 4096i32;
-                        c = (((c / 4096i32) as u32 & 0x7i32 as u32) << 21i32)
-                            .wrapping_add(((c % 4096i32 / 256i32) as u32 & 0xffi32 as u32) << 24i32)
+                        c = (((c / 4096i32) as u32 & 0x7_u32) << 21i32)
+                            .wrapping_add(((c % 4096i32 / 256i32) as u32 & 0xff_u32) << 24i32)
                             .wrapping_add((c % 256i32) as u32) as i32
                     }
                     break 'c_118470;
@@ -10312,7 +10306,7 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
     }
     (*mem.offset(p as isize)).b32.s1 = 1i32;
     (*mem.offset(p as isize)).b16.s0 = (c as i64 % 65536) as u16;
-    if c as u32 >> 21i32 & 0x7i32 as u32 == 7i32 as u32
+    if c as u32 >> 21i32 & 0x7_u32 == 7_u32
         && ((*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -10402,17 +10396,17 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
         .b32
         .s1 as u16
     } else {
-        (*mem.offset(p as isize)).b16.s1 = (c as u32 >> 24i32 & 0xffi32 as u32) as u16
+        (*mem.offset(p as isize)).b16.s1 = (c as u32 >> 24i32 & 0xff_u32) as u16
     }
     (*mem.offset(p as isize)).b16.s1 = ((*mem.offset(p as isize)).b16.s1 as i64
-        + (c as u32 & 0x1fffffi32 as u32) as i64 / 65536 * 256i32 as i64)
+        + (c as u32 & 0x1fffff_u32) as i64 / 65536 * 256i32 as i64)
         as u16;
 }
 #[no_mangle]
 pub unsafe extern "C" fn set_math_char(mut c: i32) {
     let mut p: i32 = 0;
     let mut ch: UnicodeScalar = 0;
-    if c as u32 & 0x1fffffi32 as u32 == 0x1fffffi32 as u32 {
+    if c as u32 & 0x1fffff_u32 == 0x1fffff_u32 {
         /*1187: */
         cur_cs = cur_chr + 1i32; /* ... "between 0 and 15" */
         cur_cmd = (*eqtb.offset(cur_cs as isize)).b16.s1 as eight_bits; /* ... "between 0 and 15" */
@@ -10422,10 +10416,10 @@ pub unsafe extern "C" fn set_math_char(mut c: i32) {
     } else {
         p = new_noad();
         (*mem.offset((p + 1i32) as isize)).b32.s1 = 1i32;
-        ch = (c as u32 & 0x1fffffi32 as u32) as UnicodeScalar;
+        ch = (c as u32 & 0x1fffff_u32) as UnicodeScalar;
         (*mem.offset((p + 1i32) as isize)).b16.s0 = (ch as i64 % 65536) as u16;
-        (*mem.offset((p + 1i32) as isize)).b16.s1 = (c as u32 >> 24i32 & 0xffi32 as u32) as u16;
-        if c as u32 >> 21i32 & 0x7i32 as u32 == 7i32 as u32 {
+        (*mem.offset((p + 1i32) as isize)).b16.s1 = (c as u32 >> 24i32 & 0xff_u32) as u16;
+        if c as u32 >> 21i32 & 0x7_u32 == 7_u32 {
             if (*eqtb.offset(
                 (1i32
                     + (0x10ffffi32 + 1i32)
@@ -10518,7 +10512,7 @@ pub unsafe extern "C" fn set_math_char(mut c: i32) {
             (*mem.offset(p as isize)).b16.s1 = 16i32 as u16
         } else {
             (*mem.offset(p as isize)).b16.s1 =
-                (16i32 as u32).wrapping_add(c as u32 >> 21i32 & 0x7i32 as u32) as u16
+                (16_u32).wrapping_add(c as u32 >> 21i32 & 0x7_u32) as u16
         }
         (*mem.offset((p + 1i32) as isize)).b16.s1 =
             ((*mem.offset((p + 1i32) as isize)).b16.s1 as i64 + ch as i64 / 65536 * 256i32 as i64)
@@ -10873,11 +10867,11 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                 ))
                 .b32
                 .s1;
-                if cur_val1 as u32 & 0x1fffffi32 as u32 == 0x1fffffi32 as u32 {
+                if cur_val1 as u32 & 0x1fffff_u32 == 0x1fffff_u32 {
                     cur_val1 = 0x8000i32
-                } else if cur_val1 as u32 >> 21i32 & 0x7i32 as u32 > 7i32 as u32
-                    || cur_val1 as u32 >> 24i32 & 0xffi32 as u32 > 15i32 as u32
-                    || cur_val1 as u32 & 0x1fffffi32 as u32 > 255i32 as u32
+                } else if cur_val1 as u32 >> 21i32 & 0x7_u32 > 7_u32
+                    || cur_val1 as u32 >> 24i32 & 0xff_u32 > 15_u32
+                    || cur_val1 as u32 & 0x1fffff_u32 > 255_u32
                 {
                     if file_line_error_style_p != 0 {
                         print_file_line();
@@ -10892,13 +10886,10 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                     int_error(cur_val1);
                     cur_val1 = 0i32
                 }
-                cur_val1 = (cur_val1 as u32 >> 21i32 & 0x7i32 as u32)
-                    .wrapping_mul(0x1000i32 as u32)
-                    .wrapping_add(
-                        (cur_val1 as u32 >> 24i32 & 0xffi32 as u32).wrapping_mul(0x100i32 as u32),
-                    )
-                    .wrapping_add(cur_val1 as u32 & 0x1fffffi32 as u32)
-                    as i32;
+                cur_val1 = (cur_val1 as u32 >> 21i32 & 0x7_u32)
+                    .wrapping_mul(0x1000_u32)
+                    .wrapping_add((cur_val1 as u32 >> 24i32 & 0xff_u32).wrapping_mul(0x100_u32))
+                    .wrapping_add(cur_val1 as u32 & 0x1fffff_u32) as i32;
                 cur_val = cur_val1;
                 cur_val_level = 0i32 as u8
             } else if m
@@ -16222,7 +16213,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
             let fresh39 = cp;
             cp = cp.offset(1);
             rval = *fresh39 as UInt32;
-            if !(rval != 0i32 as u32) {
+            if !(rval != 0_u32) {
                 break;
             }
             let mut extraBytes: UInt16 = bytesFromUTF8[rval as usize] as UInt16;
@@ -16303,18 +16294,16 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
             }
             rval = (rval as u32).wrapping_sub(offsetsFromUTF8[extraBytes as usize]) as UInt32
                 as UInt32;
-            if rval > 0xffffi32 as u32 {
-                rval = (rval as u32).wrapping_sub(0x10000i32 as u32) as UInt32 as UInt32;
+            if rval > 0xffff_u32 {
+                rval = (rval as u32).wrapping_sub(0x10000_u32) as UInt32 as UInt32;
                 let fresh45 = pool_ptr;
                 pool_ptr = pool_ptr + 1;
-                *str_pool.offset(fresh45 as isize) = (0xd800i32 as u32)
-                    .wrapping_add(rval.wrapping_div(0x400i32 as u32))
-                    as packed_UTF16_code;
+                *str_pool.offset(fresh45 as isize) =
+                    (0xd800_u32).wrapping_add(rval.wrapping_div(0x400_u32)) as packed_UTF16_code;
                 let fresh46 = pool_ptr;
                 pool_ptr = pool_ptr + 1;
-                *str_pool.offset(fresh46 as isize) = (0xdc00i32 as u32)
-                    .wrapping_add(rval.wrapping_rem(0x400i32 as u32))
-                    as packed_UTF16_code
+                *str_pool.offset(fresh46 as isize) =
+                    (0xdc00_u32).wrapping_add(rval.wrapping_rem(0x400_u32)) as packed_UTF16_code
             } else {
                 let fresh47 = pool_ptr;
                 pool_ptr = pool_ptr + 1;
@@ -27732,7 +27721,7 @@ pub unsafe extern "C" fn new_interaction() {
         selector = SELECTOR_TERM_ONLY
     }
     if log_opened {
-        selector = (selector as u32).wrapping_add(2i32 as u32) as selector_t
+        selector = (selector as u32).wrapping_add(2_u32) as selector_t
     };
 }
 #[no_mangle]
@@ -29589,10 +29578,9 @@ pub unsafe extern "C" fn main_control() {
                         224 => {
                             if cur_chr == 2i32 {
                                 scan_math_class_int();
-                                t = ((cur_val as u32 & 0x7i32 as u32) << 21i32) as i32;
+                                t = ((cur_val as u32 & 0x7_u32) << 21i32) as i32;
                                 scan_math_fam_int();
-                                t = (t as u32)
-                                    .wrapping_add((cur_val as u32 & 0xffi32 as u32) << 24i32)
+                                t = (t as u32).wrapping_add((cur_val as u32 & 0xff_u32) << 24i32)
                                     as i32;
                                 scan_usv_num();
                                 t = t + cur_val;
@@ -29603,9 +29591,9 @@ pub unsafe extern "C" fn main_control() {
                             } else {
                                 scan_fifteen_bit_int();
                                 set_math_char(
-                                    (((cur_val / 4096i32) as u32 & 0x7i32 as u32) << 21i32)
+                                    (((cur_val / 4096i32) as u32 & 0x7_u32) << 21i32)
                                         .wrapping_add(
-                                            ((cur_val % 4096i32 / 256i32) as u32 & 0xffi32 as u32)
+                                            ((cur_val % 4096i32 / 256i32) as u32 & 0xff_u32)
                                                 << 24i32,
                                         )
                                         .wrapping_add((cur_val % 256i32) as u32)
@@ -29616,10 +29604,9 @@ pub unsafe extern "C" fn main_control() {
                         }
                         276 => {
                             set_math_char(
-                                (((cur_chr / 4096i32) as u32 & 0x7i32 as u32) << 21i32)
+                                (((cur_chr / 4096i32) as u32 & 0x7_u32) << 21i32)
                                     .wrapping_add(
-                                        ((cur_chr % 4096i32 / 256i32) as u32 & 0xffi32 as u32)
-                                            << 24i32,
+                                        ((cur_chr % 4096i32 / 256i32) as u32 & 0xff_u32) << 24i32,
                                     )
                                     .wrapping_add((cur_chr % 256i32) as u32)
                                     as i32,
@@ -29633,10 +29620,9 @@ pub unsafe extern "C" fn main_control() {
                         222 => {
                             if cur_chr == 1i32 {
                                 scan_math_class_int();
-                                t = ((cur_val as u32 & 0x7i32 as u32) << 21i32) as i32;
+                                t = ((cur_val as u32 & 0x7_u32) << 21i32) as i32;
                                 scan_math_fam_int();
-                                t = (t as u32)
-                                    .wrapping_add((cur_val as u32 & 0xffi32 as u32) << 24i32)
+                                t = (t as u32).wrapping_add((cur_val as u32 & 0xff_u32) << 24i32)
                                     as i32;
                                 scan_usv_num();
                                 t = t + cur_val;
@@ -29645,9 +29631,9 @@ pub unsafe extern "C" fn main_control() {
                                 scan_delimiter_int();
                                 cur_val = cur_val / 4096i32;
                                 set_math_char(
-                                    (((cur_val / 4096i32) as u32 & 0x7i32 as u32) << 21i32)
+                                    (((cur_val / 4096i32) as u32 & 0x7_u32) << 21i32)
                                         .wrapping_add(
-                                            ((cur_val % 4096i32 / 256i32) as u32 & 0xffi32 as u32)
+                                            ((cur_val % 4096i32 / 256i32) as u32 & 0xff_u32)
                                                 << 24i32,
                                         )
                                         .wrapping_add((cur_val % 256i32) as u32)
@@ -31948,7 +31934,7 @@ pub unsafe extern "C" fn close_files_and_terminate() {
     if log_opened {
         ttstub_output_putc(log_file, '\n' as i32);
         ttstub_output_close(log_file);
-        selector = (selector as u32).wrapping_sub(2i32 as u32) as selector_t;
+        selector = (selector as u32).wrapping_sub(2_u32) as selector_t;
         if selector as u32 == SELECTOR_TERM_ONLY as i32 as u32 {
             print_nl_cstr(b"Transcript written on \x00" as *const u8 as *const i8);
             print(texmf_log_name);

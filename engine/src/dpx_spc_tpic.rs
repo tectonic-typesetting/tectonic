@@ -636,7 +636,7 @@ unsafe extern "C" fn spc_handler_tpic_pn(mut spe: *mut spc_env, mut ap: *mut spc
         __assert_fail(
             b"spe && ap && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            421i32 as u32,
+            421_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_tpic_pn(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -667,7 +667,7 @@ unsafe extern "C" fn spc_handler_tpic_pa(mut spe: *mut spc_env, mut ap: *mut spc
         __assert_fail(
             b"spe && ap && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            444i32 as u32,
+            444_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_tpic_pa(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -720,7 +720,7 @@ unsafe extern "C" fn spc_handler_tpic_fp(mut spe: *mut spc_env, mut ap: *mut spc
         __assert_fail(
             b"spe && ap && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            482i32 as u32,
+            482_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_tpic_fp(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -747,7 +747,7 @@ unsafe extern "C" fn spc_handler_tpic_ip(mut spe: *mut spc_env, mut ap: *mut spc
         __assert_fail(
             b"spe && ap && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            502i32 as u32,
+            502_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_tpic_ip(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -776,7 +776,7 @@ unsafe extern "C" fn spc_handler_tpic_da(mut spe: *mut spc_env, mut ap: *mut spc
         __assert_fail(
             b"spe && ap && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            524i32 as u32,
+            524_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_tpic_da(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -811,7 +811,7 @@ unsafe extern "C" fn spc_handler_tpic_dt(mut spe: *mut spc_env, mut ap: *mut spc
         __assert_fail(
             b"spe && ap && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            552i32 as u32,
+            552_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_tpic_dt(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -846,7 +846,7 @@ unsafe extern "C" fn spc_handler_tpic_sp(mut spe: *mut spc_env, mut ap: *mut spc
         __assert_fail(
             b"spe && ap && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            580i32 as u32,
+            580_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_tpic_sp(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -882,7 +882,7 @@ unsafe extern "C" fn spc_handler_tpic_ar(mut spe: *mut spc_env, mut ap: *mut spc
         __assert_fail(
             b"spe && ap && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            609i32 as u32,
+            609_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_tpic_ar(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -934,7 +934,7 @@ unsafe extern "C" fn spc_handler_tpic_ia(mut spe: *mut spc_env, mut ap: *mut spc
         __assert_fail(
             b"spe && ap && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            649i32 as u32,
+            649_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_tpic_ia(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -982,7 +982,7 @@ unsafe extern "C" fn spc_handler_tpic_sh(mut spe: *mut spc_env, mut ap: *mut spc
         __assert_fail(
             b"spe && ap && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            685i32 as u32,
+            685_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_tpic_sh(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -1016,7 +1016,7 @@ unsafe extern "C" fn spc_handler_tpic_wh(mut spe: *mut spc_env, mut ap: *mut spc
         __assert_fail(
             b"spe && ap && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            712i32 as u32,
+            712_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_tpic_wh(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -1035,7 +1035,7 @@ unsafe extern "C" fn spc_handler_tpic_bk(mut spe: *mut spc_env, mut ap: *mut spc
         __assert_fail(
             b"spe && ap && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            726i32 as u32,
+            726_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_tpic_bk(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -1054,7 +1054,7 @@ unsafe extern "C" fn spc_handler_tpic_tx(mut spe: *mut spc_env, mut ap: *mut spc
         __assert_fail(
             b"spe && ap && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            740i32 as u32,
+            740_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_tpic_tx(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -1078,7 +1078,7 @@ unsafe extern "C" fn spc_handler_tpic__init(
     (*tp).points = 0 as *mut pdf_coord;
     (*tp).num_points = 0i32;
     (*tp).max_points = 0i32;
-    if (*tp).mode.fill != 0i32 && pdf_get_version() < 4i32 as u32 {
+    if (*tp).mode.fill != 0i32 && pdf_get_version() < 4_u32 {
         spc_warn(
             spe,
             b"Tpic shading support requires PDF version 1.4.\x00" as *const u8 as *const i8,
@@ -1094,7 +1094,7 @@ unsafe extern "C" fn spc_handler_tpic__bophook(mut dp: *mut libc::c_void) -> i32
         __assert_fail(
             b"tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            774i32 as u32,
+            774_u32,
             (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
                 b"int spc_handler_tpic__bophook(void *)\x00",
             ))
@@ -1114,7 +1114,7 @@ unsafe extern "C" fn spc_handler_tpic__eophook(
         __assert_fail(
             b"tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            786i32 as u32,
+            786_u32,
             (*::std::mem::transmute::<&[u8; 56], &[i8; 56]>(
                 b"int spc_handler_tpic__eophook(struct spc_env *, void *)\x00",
             ))
@@ -1140,7 +1140,7 @@ unsafe extern "C" fn spc_handler_tpic__clean(
         __assert_fail(
             b"tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            800i32 as u32,
+            800_u32,
             (*::std::mem::transmute::<&[u8; 54], &[i8; 54]>(
                 b"int spc_handler_tpic__clean(struct spc_env *, void *)\x00",
             ))
@@ -1246,7 +1246,7 @@ unsafe extern "C" fn tpic_filter_getopts(
         __assert_fail(
             b"kp && vp && tp\x00" as *const u8 as *const i8,
             b"dpx-spc_tpic.c\x00" as *const u8 as *const i8,
-            910i32 as u32,
+            910_u32,
             (*::std::mem::transmute::<&[u8; 54], &[i8; 54]>(
                 b"int tpic_filter_getopts(pdf_obj *, pdf_obj *, void *)\x00",
             ))
@@ -1306,7 +1306,7 @@ unsafe extern "C" fn spc_handler_tpic__setopts(mut spe: *mut spc_env, mut ap: *m
         tp as *mut libc::c_void,
     );
     if error == 0 {
-        if (*tp).mode.fill != 0i32 && pdf_get_version() < 4i32 as u32 {
+        if (*tp).mode.fill != 0i32 && pdf_get_version() < 4_u32 {
             spc_warn(
                 spe,
                 b"Transparent fill mode requires PDF version 1.4.\x00" as *const u8 as *const i8,
@@ -1534,7 +1534,7 @@ pub unsafe extern "C" fn spc_tpic_setup_handler(
         __assert_fail(b"sph && spe && ap\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_tpic.c\x00" as *const u8 as
-                          *const i8, 1031i32 as u32,
+                          *const i8, 1031_u32,
                       (*::std::mem::transmute::<&[u8; 85],
                                                 &[i8; 85]>(b"int spc_tpic_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }
@@ -1571,7 +1571,7 @@ pub unsafe extern "C" fn spc_tpic_setup_handler(
         error = 0i32;
         free(q as *mut libc::c_void);
     } else {
-        i = 0i32 as u32;
+        i = 0_u32;
         while (i as u64)
             < (::std::mem::size_of::<[spc_handler; 13]>() as u64)
                 .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)

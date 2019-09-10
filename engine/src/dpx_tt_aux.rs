@@ -265,8 +265,8 @@ pub unsafe extern "C" fn tt_aux_set_verbose(mut level: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttc_read_offset(mut sfont: *mut sfnt, mut ttc_idx: i32) -> u32 {
-    let mut offset: u32 = 0i32 as u32;
-    let mut num_dirs: u32 = 0i32 as u32;
+    let mut offset: u32 = 0_u32;
+    let mut num_dirs: u32 = 0_u32;
     if sfont.is_null() || (*sfont).handle.is_null() {
         _tt_abort(b"file not opened\x00" as *const u8 as *const i8);
     }
@@ -277,7 +277,7 @@ pub unsafe extern "C" fn ttc_read_offset(mut sfont: *mut sfnt, mut ttc_idx: i32)
     /* version = */
     tt_get_unsigned_quad((*sfont).handle);
     num_dirs = tt_get_unsigned_quad((*sfont).handle);
-    if ttc_idx < 0i32 || ttc_idx as u32 > num_dirs.wrapping_sub(1i32 as u32) {
+    if ttc_idx < 0i32 || ttc_idx as u32 > num_dirs.wrapping_sub(1_u32) {
         _tt_abort(b"Invalid TTC index number\x00" as *const u8 as *const i8);
     }
     ttstub_input_seek((*sfont).handle, (12i32 + ttc_idx * 4i32) as ssize_t, 0i32);

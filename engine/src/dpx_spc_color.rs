@@ -252,7 +252,7 @@ pub unsafe extern "C" fn spc_color_setup_handler(
         __assert_fail(b"sph && spe && ap\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_color.c\x00" as *const u8 as
-                          *const i8, 141i32 as u32,
+                          *const i8, 141_u32,
                       (*::std::mem::transmute::<&[u8; 86],
                                                 &[i8; 86]>(b"int spc_color_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }

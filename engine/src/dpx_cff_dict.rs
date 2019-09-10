@@ -288,8 +288,8 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 #[no_mangle]
 pub unsafe extern "C" fn cff_new_dict() -> *mut cff_dict {
     let mut dict: *mut cff_dict = 0 as *mut cff_dict;
-    dict = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_dict>() as u64) as u32)
-        as *mut cff_dict;
+    dict =
+        new((1_u64).wrapping_mul(::std::mem::size_of::<cff_dict>() as u64) as u32) as *mut cff_dict;
     (*dict).max = 16i32;
     (*dict).count = 0i32;
     (*dict).entries = new(((*dict).max as u32 as u64)
@@ -935,8 +935,7 @@ unsafe extern "C" fn add_dict(
         (*(*dict).entries.offset((*dict).count as isize)).count = 1i32;
         let ref mut fresh13 = (*(*dict).entries.offset((*dict).count as isize)).values;
         *fresh13 =
-            new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<f64>() as u64) as u32)
-                as *mut f64;
+            new((1_u64).wrapping_mul(::std::mem::size_of::<f64>() as u64) as u32) as *mut f64;
         *(*(*dict).entries.offset((*dict).count as isize))
             .values
             .offset(0) = arg_stack[stack_top as usize];
@@ -1031,9 +1030,7 @@ unsafe extern "C" fn pack_integer(mut dest: *mut card8, mut destlen: i32, mut va
                 b"CFF\x00" as *const u8 as *const i8,
             );
         }
-        value = 0xf700u32
-            .wrapping_add(value as u32)
-            .wrapping_sub(108i32 as u32) as i32;
+        value = 0xf700u32.wrapping_add(value as u32).wrapping_sub(108_u32) as i32;
         *dest.offset(0) = (value >> 8i32 & 0xffi32) as card8;
         *dest.offset(1) = (value & 0xffi32) as card8;
         len = 2i32
@@ -1044,9 +1041,7 @@ unsafe extern "C" fn pack_integer(mut dest: *mut card8, mut destlen: i32, mut va
                 b"CFF\x00" as *const u8 as *const i8,
             );
         }
-        value = 0xfb00u32
-            .wrapping_sub(value as u32)
-            .wrapping_sub(108i32 as u32) as i32;
+        value = 0xfb00u32.wrapping_sub(value as u32).wrapping_sub(108_u32) as i32;
         *dest.offset(0) = (value >> 8i32 & 0xffi32) as card8;
         *dest.offset(1) = (value & 0xffi32) as card8;
         len = 2i32
@@ -1390,7 +1385,7 @@ pub unsafe extern "C" fn cff_dict_get(
         __assert_fail(
             b"key && dict\x00" as *const u8 as *const i8,
             b"dpx-cff_dict.c\x00" as *const u8 as *const i8,
-            658i32 as u32,
+            658_u32,
             (*::std::mem::transmute::<&[u8; 51], &[i8; 51]>(
                 b"double cff_dict_get(cff_dict *, const char *, int)\x00",
             ))
@@ -1437,7 +1432,7 @@ pub unsafe extern "C" fn cff_dict_set(
         __assert_fail(
             b"dict && key\x00" as *const u8 as *const i8,
             b"dpx-cff_dict.c\x00" as *const u8 as *const i8,
-            680i32 as u32,
+            680_u32,
             (*::std::mem::transmute::<&[u8; 57], &[i8; 57]>(
                 b"void cff_dict_set(cff_dict *, const char *, int, double)\x00",
             ))

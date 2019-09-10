@@ -671,7 +671,7 @@ static mut cff_stdstr: [*const i8; 391] = [
     b"Semibold\x00" as *const u8 as *const i8,
 ];
 unsafe extern "C" fn get_unsigned(mut handle: rust_input_handle_t, mut n: i32) -> u32 {
-    let mut v: u32 = 0i32 as u32;
+    let mut v: u32 = 0_u32;
     loop {
         let fresh0 = n;
         n = n - 1;
@@ -695,8 +695,8 @@ pub unsafe extern "C" fn cff_open(
 ) -> *mut cff_font {
     let mut cff: *mut cff_font = 0 as *mut cff_font; /* not used */
     let mut idx: *mut cff_index = 0 as *mut cff_index;
-    cff = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_font>() as u64) as u32)
-        as *mut cff_font;
+    cff =
+        new((1_u64).wrapping_mul(::std::mem::size_of::<cff_font>() as u64) as u32) as *mut cff_font;
     (*cff).fontname = 0 as *mut i8;
     (*cff).index = n;
     (*cff).handle = handle;
@@ -719,7 +719,7 @@ pub unsafe extern "C" fn cff_open(
     (*cff)._string = 0 as *mut cff_index;
     ttstub_input_seek(
         (*cff).handle,
-        (*cff).offset.wrapping_add(0i32 as u32) as ssize_t,
+        (*cff).offset.wrapping_add(0_u32) as ssize_t,
         0i32,
     );
     (*cff).header.major = tt_get_unsigned_byte((*cff).handle);
@@ -937,8 +937,9 @@ pub unsafe extern "C" fn cff_get_name(mut cff: *mut cff_font) -> *mut i8 {
     idx = (*cff).name;
     len = (*(*idx).offset.offset(((*cff).index + 1i32) as isize))
         .wrapping_sub(*(*idx).offset.offset((*cff).index as isize));
-    fontname = new((len.wrapping_add(1i32 as u32) as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    fontname = new(
+        (len.wrapping_add(1_u32) as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
+    ) as *mut i8;
     memcpy(
         fontname as *mut libc::c_void,
         (*idx)
@@ -959,14 +960,13 @@ pub unsafe extern "C" fn cff_set_name(mut cff: *mut cff_font, mut name: *mut i8)
     if !(*cff).name.is_null() {
         cff_release_index((*cff).name);
     }
-    idx = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_index>() as u64) as u32)
+    idx = new((1_u64).wrapping_mul(::std::mem::size_of::<cff_index>() as u64) as u32)
         as *mut cff_index;
     (*cff).name = idx;
     (*idx).count = 1i32 as card16;
     (*idx).offsize = 1i32 as c_offsize;
     (*idx).offset =
-        new((2i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<l_offset>() as u64) as u32)
-            as *mut l_offset;
+        new((2_u64).wrapping_mul(::std::mem::size_of::<l_offset>() as u64) as u32) as *mut l_offset;
     *(*idx).offset.offset(0) = 1i32 as l_offset;
     *(*idx).offset.offset(1) = strlen(name).wrapping_add(1i32 as u64) as l_offset;
     (*idx).data = new(
@@ -1010,7 +1010,7 @@ pub unsafe extern "C" fn cff_get_index_header(mut cff: *mut cff_font) -> *mut cf
     let mut idx: *mut cff_index = 0 as *mut cff_index;
     let mut i: card16 = 0;
     let mut count: card16 = 0;
-    idx = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_index>() as u64) as u32)
+    idx = new((1_u64).wrapping_mul(::std::mem::size_of::<cff_index>() as u64) as u32)
         as *mut cff_index;
     count = tt_get_unsigned_pair((*cff).handle);
     (*idx).count = count;
@@ -1037,7 +1037,7 @@ pub unsafe extern "C" fn cff_get_index_header(mut cff: *mut cff_font) -> *mut cf
         } else {
             *(*idx).offset.offset(i as isize) = get_unsigned((*cff).handle, (*idx).offsize as i32)
         }
-        if *(*idx).offset.offset(0) != 1i32 as u32 {
+        if *(*idx).offset.offset(0) != 1_u32 {
             _tt_abort(b"cff_get_index(): invalid index data\x00" as *const u8 as *const i8);
         }
         (*idx).data = 0 as *mut card8
@@ -1056,7 +1056,7 @@ pub unsafe extern "C" fn cff_get_index(mut cff: *mut cff_font) -> *mut cff_index
     let mut length: i32 = 0;
     let mut nb_read: i32 = 0;
     let mut offset: i32 = 0;
-    idx = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_index>() as u64) as u32)
+    idx = new((1_u64).wrapping_mul(::std::mem::size_of::<cff_index>() as u64) as u32)
         as *mut cff_index;
     count = tt_get_unsigned_pair((*cff).handle);
     (*idx).count = count;
@@ -1073,7 +1073,7 @@ pub unsafe extern "C" fn cff_get_index(mut cff: *mut cff_font) -> *mut cff_index
             *(*idx).offset.offset(i as isize) = get_unsigned((*cff).handle, (*idx).offsize as i32);
             i = i.wrapping_add(1)
         }
-        if *(*idx).offset.offset(0) != 1i32 as u32 {
+        if *(*idx).offset.offset(0) != 1_u32 {
             _tt_abort(b"Invalid CFF Index offset data\x00" as *const u8 as *const i8);
         }
         length =
@@ -1115,7 +1115,7 @@ pub unsafe extern "C" fn cff_pack_index(
         return 2i32;
     }
     len = cff_index_size(idx);
-    datalen = (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1i32 as u32) as size_t;
+    datalen = (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1_u32) as size_t;
     if destlen < len {
         _tt_abort(b"Not enough space available...\x00" as *const u8 as *const i8);
     }
@@ -1134,7 +1134,7 @@ pub unsafe extern "C" fn cff_pack_index(
         while i as i32 <= (*idx).count as i32 {
             let fresh8 = dest;
             dest = dest.offset(1);
-            *fresh8 = (*(*idx).offset.offset(i as isize) & 0xffi32 as u32) as card8;
+            *fresh8 = (*(*idx).offset.offset(i as isize) & 0xff_u32) as card8;
             i = i.wrapping_add(1)
         }
     } else if datalen < 0xffff {
@@ -1146,10 +1146,10 @@ pub unsafe extern "C" fn cff_pack_index(
         while i as i32 <= (*idx).count as i32 {
             let fresh10 = dest;
             dest = dest.offset(1);
-            *fresh10 = (*(*idx).offset.offset(i as isize) >> 8i32 & 0xffi32 as u32) as card8;
+            *fresh10 = (*(*idx).offset.offset(i as isize) >> 8i32 & 0xff_u32) as card8;
             let fresh11 = dest;
             dest = dest.offset(1);
-            *fresh11 = (*(*idx).offset.offset(i as isize) & 0xffi32 as u32) as card8;
+            *fresh11 = (*(*idx).offset.offset(i as isize) & 0xff_u32) as card8;
             i = i.wrapping_add(1)
         }
     } else if datalen < 0xffffff {
@@ -1161,13 +1161,13 @@ pub unsafe extern "C" fn cff_pack_index(
         while i as i32 <= (*idx).count as i32 {
             let fresh13 = dest;
             dest = dest.offset(1);
-            *fresh13 = (*(*idx).offset.offset(i as isize) >> 16i32 & 0xffi32 as u32) as card8;
+            *fresh13 = (*(*idx).offset.offset(i as isize) >> 16i32 & 0xff_u32) as card8;
             let fresh14 = dest;
             dest = dest.offset(1);
-            *fresh14 = (*(*idx).offset.offset(i as isize) >> 8i32 & 0xffi32 as u32) as card8;
+            *fresh14 = (*(*idx).offset.offset(i as isize) >> 8i32 & 0xff_u32) as card8;
             let fresh15 = dest;
             dest = dest.offset(1);
-            *fresh15 = (*(*idx).offset.offset(i as isize) & 0xffi32 as u32) as card8;
+            *fresh15 = (*(*idx).offset.offset(i as isize) & 0xff_u32) as card8;
             i = i.wrapping_add(1)
         }
     } else {
@@ -1179,23 +1179,23 @@ pub unsafe extern "C" fn cff_pack_index(
         while i as i32 <= (*idx).count as i32 {
             let fresh17 = dest;
             dest = dest.offset(1);
-            *fresh17 = (*(*idx).offset.offset(i as isize) >> 24i32 & 0xffi32 as u32) as card8;
+            *fresh17 = (*(*idx).offset.offset(i as isize) >> 24i32 & 0xff_u32) as card8;
             let fresh18 = dest;
             dest = dest.offset(1);
-            *fresh18 = (*(*idx).offset.offset(i as isize) >> 16i32 & 0xffi32 as u32) as card8;
+            *fresh18 = (*(*idx).offset.offset(i as isize) >> 16i32 & 0xff_u32) as card8;
             let fresh19 = dest;
             dest = dest.offset(1);
-            *fresh19 = (*(*idx).offset.offset(i as isize) >> 8i32 & 0xffi32 as u32) as card8;
+            *fresh19 = (*(*idx).offset.offset(i as isize) >> 8i32 & 0xff_u32) as card8;
             let fresh20 = dest;
             dest = dest.offset(1);
-            *fresh20 = (*(*idx).offset.offset(i as isize) & 0xffi32 as u32) as card8;
+            *fresh20 = (*(*idx).offset.offset(i as isize) & 0xff_u32) as card8;
             i = i.wrapping_add(1)
         }
     }
     memmove(
         dest as *mut libc::c_void,
         (*idx).data as *const libc::c_void,
-        (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1i32 as u32) as u64,
+        (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1_u32) as u64,
     );
     return len;
 }
@@ -1203,7 +1203,7 @@ pub unsafe extern "C" fn cff_pack_index(
 pub unsafe extern "C" fn cff_index_size(mut idx: *mut cff_index) -> i32 {
     if (*idx).count as i32 > 0i32 {
         let mut datalen: l_offset = 0;
-        datalen = (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1i32 as u32);
+        datalen = (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1_u32);
         if (datalen as u64) < 0xff {
             (*idx).offsize = 1i32 as c_offsize
         } else if (datalen as u64) < 0xffff {
@@ -1222,7 +1222,7 @@ pub unsafe extern "C" fn cff_index_size(mut idx: *mut cff_index) -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn cff_new_index(mut count: card16) -> *mut cff_index {
     let mut idx: *mut cff_index = 0 as *mut cff_index;
-    idx = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_index>() as u64) as u32)
+    idx = new((1_u64).wrapping_mul(::std::mem::size_of::<cff_index>() as u64) as u32)
         as *mut cff_index;
     (*idx).count = count;
     (*idx).offsize = 0i32 as c_offsize;
@@ -1437,7 +1437,7 @@ pub unsafe extern "C" fn cff_add_string(
     offset = if (*strings).count as i32 > 0i32 {
         *(*strings).offset.offset((*strings).count as isize)
     } else {
-        1i32 as u32
+        1_u32
     };
     (*strings).offset = renew(
         (*strings).offset as *mut libc::c_void,
@@ -1504,9 +1504,8 @@ pub unsafe extern "C" fn cff_read_encoding(mut cff: *mut cff_font) -> i32 {
         (*cff).offset.wrapping_add(offset as u32) as ssize_t,
         0i32,
     );
-    encoding =
-        new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_encoding>() as u64) as u32)
-            as *mut cff_encoding;
+    encoding = new((1_u64).wrapping_mul(::std::mem::size_of::<cff_encoding>() as u64) as u32)
+        as *mut cff_encoding;
     (*cff).encoding = encoding;
     (*encoding).format = tt_get_unsigned_byte((*cff).handle);
     length = 1i32;
@@ -1783,9 +1782,8 @@ pub unsafe extern "C" fn cff_read_charsets(mut cff: *mut cff_font) -> i32 {
         (*cff).offset.wrapping_add(offset as u32) as ssize_t,
         0i32,
     );
-    charset =
-        new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_charsets>() as u64) as u32)
-            as *mut cff_charsets;
+    charset = new((1_u64).wrapping_mul(::std::mem::size_of::<cff_charsets>() as u64) as u32)
+        as *mut cff_charsets;
     (*cff).charsets = charset;
     (*charset).format = tt_get_unsigned_byte((*cff).handle);
     (*charset).num_entries = 0i32 as card16;
@@ -2234,9 +2232,8 @@ pub unsafe extern "C" fn cff_read_fdselect(mut cff: *mut cff_font) -> i32 {
         (*cff).offset.wrapping_add(offset as u32) as ssize_t,
         0i32,
     );
-    fdsel =
-        new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_fdselect>() as u64) as u32)
-            as *mut cff_fdselect;
+    fdsel = new((1_u64).wrapping_mul(::std::mem::size_of::<cff_fdselect>() as u64) as u32)
+        as *mut cff_fdselect;
     (*cff).fdselect = fdsel;
     (*fdsel).format = tt_get_unsigned_byte((*cff).handle);
     length = 1i32;
@@ -2671,9 +2668,9 @@ pub unsafe extern "C" fn cff_read_private(mut cff: *mut cff_font) -> i32 {
         }
     } else {
         (*cff).num_fds = 1i32 as card8;
-        (*cff).private = new((1i32 as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as u64)
-            as u32) as *mut *mut cff_dict;
+        (*cff).private =
+            new((1_u64).wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as u64) as u32)
+                as *mut *mut cff_dict;
         if cff_dict_known((*cff).topdict, b"Private\x00" as *const u8 as *const i8) != 0 && {
             size = cff_dict_get(
                 (*cff).topdict,

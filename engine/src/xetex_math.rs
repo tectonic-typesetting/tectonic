@@ -1706,19 +1706,19 @@ pub unsafe extern "C" fn math_ac() {
             }
         }
         scan_math_class_int();
-        c = ((cur_val as u32 & 0x7i32 as u32) << 21i32) as i32;
+        c = ((cur_val as u32 & 0x7_u32) << 21i32) as i32;
         scan_math_fam_int();
-        c = (c as u32).wrapping_add((cur_val as u32 & 0xffi32 as u32) << 24i32) as i32;
+        c = (c as u32).wrapping_add((cur_val as u32 & 0xff_u32) << 24i32) as i32;
         scan_usv_num();
         cur_val = cur_val + c
     } else {
         scan_fifteen_bit_int();
-        cur_val = (((cur_val / 4096i32) as u32 & 0x7i32 as u32) << 21i32)
-            .wrapping_add(((cur_val % 4096i32 / 256i32) as u32 & 0xffi32 as u32) << 24i32)
+        cur_val = (((cur_val / 4096i32) as u32 & 0x7_u32) << 21i32)
+            .wrapping_add(((cur_val % 4096i32 / 256i32) as u32 & 0xff_u32) << 24i32)
             .wrapping_add((cur_val % 256i32) as u32) as i32
     }
     (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s0 = (cur_val as i64 % 65536) as u16;
-    if cur_val as u32 >> 21i32 & 0x7i32 as u32 == 7i32 as u32
+    if cur_val as u32 >> 21i32 & 0x7_u32 == 7_u32
         && ((*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -1809,11 +1809,11 @@ pub unsafe extern "C" fn math_ac() {
         .s1 as u16
     } else {
         (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 =
-            (cur_val as u32 >> 24i32 & 0xffi32 as u32) as u16
+            (cur_val as u32 >> 24i32 & 0xff_u32) as u16
     }
     (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 =
         ((*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 as i64
-            + (cur_val as u32 & 0x1fffffi32 as u32) as i64 / 65536 * 256i32 as i64) as u16;
+            + (cur_val as u32 & 0x1fffff_u32) as i64 / 65536 * 256i32 as i64) as u16;
     scan_math(cur_list.tail + 1i32);
 }
 #[no_mangle]
@@ -5095,7 +5095,7 @@ unsafe extern "C" fn compute_ot_math_accent_pos(mut p: i32) -> scaled_t {
         q = new_native_character(cur_f, cur_c);
         g = real_get_native_glyph(
             &mut *mem.offset(q as isize) as *mut memory_word as *mut libc::c_void,
-            0i32 as u32,
+            0_u32,
         ) as scaled_t;
         s = get_ot_math_accent_pos(cur_f, g)
     } else if (*mem.offset((p + 1i32) as isize)).b32.s1 == 3i32 {
@@ -5274,7 +5274,7 @@ unsafe extern "C" fn make_math_accent(mut q: i32) {
             (*mem.offset((p + 4i32) as isize)).b16.s1 = real_get_native_glyph(
                 &mut *mem.offset((*mem.offset((y + 5i32) as isize)).b32.s1 as isize)
                     as *mut memory_word as *mut libc::c_void,
-                0i32 as u32,
+                0_u32,
             );
             measure_native_glyph(
                 &mut *mem.offset(p as isize) as *mut memory_word as *mut libc::c_void,
@@ -5989,7 +5989,7 @@ unsafe extern "C" fn make_scripts(mut q: i32, mut delta: scaled_t) {
                     script_g = real_get_native_glyph(
                         &mut *mem.offset(script_c as isize) as *mut memory_word
                             as *mut libc::c_void,
-                        0i32 as u32,
+                        0_u32,
                     );
                     script_f = cur_f
                 } else {
@@ -6097,7 +6097,7 @@ unsafe extern "C" fn make_scripts(mut q: i32, mut delta: scaled_t) {
                     script_g = real_get_native_glyph(
                         &mut *mem.offset(script_c as isize) as *mut memory_word
                             as *mut libc::c_void,
-                        0i32 as u32,
+                        0_u32,
                     );
                     script_f = cur_f
                 } else {
@@ -6224,7 +6224,7 @@ unsafe extern "C" fn make_scripts(mut q: i32, mut delta: scaled_t) {
                         script_g = real_get_native_glyph(
                             &mut *mem.offset(script_c as isize) as *mut memory_word
                                 as *mut libc::c_void,
-                            0i32 as u32,
+                            0_u32,
                         );
                         script_f = cur_f
                     } else {
@@ -6263,7 +6263,7 @@ unsafe extern "C" fn make_scripts(mut q: i32, mut delta: scaled_t) {
                         script_g = real_get_native_glyph(
                             &mut *mem.offset(script_c as isize) as *mut memory_word
                                 as *mut libc::c_void,
-                            0i32 as u32,
+                            0_u32,
                         );
                         script_f = cur_f
                     } else {
@@ -6628,7 +6628,7 @@ unsafe extern "C" fn mlist_to_hlist() {
                             (*mem.offset((p + 4i32) as isize)).b16.s1 = real_get_native_glyph(
                                 &mut *mem.offset(z as isize) as *mut memory_word
                                     as *mut libc::c_void,
-                                0i32 as u32,
+                                0_u32,
                             );
                             measure_native_glyph(
                                 &mut *mem.offset(p as isize) as *mut memory_word

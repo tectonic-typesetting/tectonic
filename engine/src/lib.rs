@@ -551,7 +551,7 @@ pub unsafe extern "C" fn dvipdfmx_simple_main(
         compress,
         deterministic_tags,
         0i32 != 0,
-        0i32 as u32,
+        0_u32,
     );
     tectonic_global_bridge = 0 as *mut tt_bridge_api_t;
     return rv;

@@ -621,8 +621,8 @@ unsafe extern "C" fn SWAP16(p: u16) -> u16 {
 #[inline]
 unsafe extern "C" fn SWAP32(p: u32) -> u32 {
     return (p >> 24i32)
-        .wrapping_add(p >> 8i32 & 0xff00i32 as u32)
-        .wrapping_add(p << 8i32 & 0xff0000i32 as u32)
+        .wrapping_add(p >> 8i32 & 0xff00_u32)
+        .wrapping_add(p << 8i32 & 0xff0000_u32)
         .wrapping_add(p << 24i32);
 }
 /* xetex-shipout */
@@ -929,7 +929,7 @@ pub unsafe extern "C" fn apply_tfm_font_mapping(mut cnv: *mut libc::c_void, mut 
         &mut outUsed,
         1i32 as Byte,
     );
-    if outUsed < 1i32 as u32 {
+    if outUsed < 1_u32 {
         return 0i32;
     } else {
         return out[0] as i32;
@@ -998,8 +998,8 @@ unsafe extern "C" fn read_tag_with_param(mut cp: *const i8, mut param: *mut i32)
 }
 #[no_mangle]
 pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> u32 {
-    let mut rgbValue: u32 = 0i32 as u32;
-    let mut alpha: u32 = 0i32 as u32;
+    let mut rgbValue: u32 = 0_u32;
+    let mut alpha: u32 = 0_u32;
     let mut i: i32 = 0;
     i = 0i32;
     while i < 6i32 {
@@ -1011,14 +1011,14 @@ pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> u32 {
             rgbValue = (rgbValue << 4i32)
                 .wrapping_add(**cp as u32)
                 .wrapping_sub('A' as i32 as u32)
-                .wrapping_add(10i32 as u32)
+                .wrapping_add(10_u32)
         } else if **cp as i32 >= 'a' as i32 && **cp as i32 <= 'f' as i32 {
             rgbValue = (rgbValue << 4i32)
                 .wrapping_add(**cp as u32)
                 .wrapping_sub('a' as i32 as u32)
-                .wrapping_add(10i32 as u32)
+                .wrapping_add(10_u32)
         } else {
-            return 0xffi32 as u32;
+            return 0xff_u32;
         }
         *cp = (*cp).offset(1);
         i += 1
@@ -1034,7 +1034,7 @@ pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> u32 {
             alpha = (alpha << 4i32)
                 .wrapping_add(**cp as u32)
                 .wrapping_sub('A' as i32 as u32)
-                .wrapping_add(10i32 as u32)
+                .wrapping_add(10_u32)
         } else {
             if !(**cp as i32 >= 'a' as i32 && **cp as i32 <= 'f' as i32) {
                 break;
@@ -1042,7 +1042,7 @@ pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> u32 {
             alpha = (alpha << 4i32)
                 .wrapping_add(**cp as u32)
                 .wrapping_sub('a' as i32 as u32)
-                .wrapping_add(10i32 as u32)
+                .wrapping_add(10_u32)
         }
         *cp = (*cp).offset(1);
         i += 1
@@ -1050,7 +1050,7 @@ pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> u32 {
     if i == 2i32 {
         rgbValue = (rgbValue as u32).wrapping_add(alpha) as u32
     } else {
-        rgbValue = (rgbValue as u32).wrapping_add(0xffi32 as u32) as u32
+        rgbValue = (rgbValue as u32).wrapping_add(0xff_u32) as u32
     }
     return rgbValue;
 }
@@ -1145,7 +1145,7 @@ unsafe extern "C" fn readFeatureNumber(
         let fresh5 = s;
         s = s.offset(1);
         *f = (*f)
-            .wrapping_mul(10i32 as u32)
+            .wrapping_mul(10_u32)
             .wrapping_add(*fresh5 as u32)
             .wrapping_sub('0' as i32 as u32)
     }
@@ -1182,10 +1182,10 @@ unsafe extern "C" fn loadOTfont(
 ) -> *mut libc::c_void {
     let mut current_block: u64;
     let mut engine: XeTeXLayoutEngine = 0 as XeTeXLayoutEngine;
-    let mut script: hb_tag_t = (0i32 as u32 & 0xffi32 as u32) << 24i32
-        | (0i32 as u32 & 0xffi32 as u32) << 16i32
-        | (0i32 as u32 & 0xffi32 as u32) << 8i32
-        | 0i32 as u32 & 0xffi32 as u32;
+    let mut script: hb_tag_t = (0_u32 & 0xff_u32) << 24i32
+        | (0_u32 & 0xff_u32) << 16i32
+        | (0_u32 & 0xff_u32) << 8i32
+        | 0_u32 & 0xff_u32;
     let mut language: *mut i8 = 0 as *mut i8;
     let mut features: *mut hb_feature_t = 0 as *mut hb_feature_t;
     let mut shapers: *mut *mut i8 = 0 as *mut *mut i8;
@@ -1194,7 +1194,7 @@ unsafe extern "C" fn loadOTfont(
     let mut cp2: *mut i8 = 0 as *mut i8;
     let mut cp3: *const i8 = 0 as *const i8;
     let mut tag: hb_tag_t = 0;
-    let mut rgbValue: u32 = 0xffi32 as u32;
+    let mut rgbValue: u32 = 0xff_u32;
     let mut extend: f32 = 1.0f64 as f32;
     let mut slant: f32 = 0.0f64 as f32;
     let mut embolden: f32 = 0.0f64 as f32;
@@ -1339,7 +1339,7 @@ unsafe extern "C" fn loadOTfont(
                                         as *mut hb_feature_t;
                                     (*features.offset(nFeatures as isize)).tag = tag;
                                     (*features.offset(nFeatures as isize)).value = value as u32;
-                                    (*features.offset(nFeatures as isize)).start = 0i32 as u32;
+                                    (*features.offset(nFeatures as isize)).start = 0_u32;
                                     (*features.offset(nFeatures as isize)).end = -1i32 as u32;
                                     nFeatures += 1;
                                     current_block = 13857423536159756434;
@@ -1363,7 +1363,7 @@ unsafe extern "C" fn loadOTfont(
                                         )
                                             as *mut hb_feature_t;
                                         (*features.offset(nFeatures as isize)).tag = tag;
-                                        (*features.offset(nFeatures as isize)).start = 0i32 as u32;
+                                        (*features.offset(nFeatures as isize)).start = 0_u32;
                                         (*features.offset(nFeatures as isize)).end = -1i32 as u32;
                                         // for backward compatibility with pre-0.9999 where feature
                                         // indices started from 0
@@ -1387,9 +1387,9 @@ unsafe extern "C" fn loadOTfont(
                                         )
                                             as *mut hb_feature_t;
                                         (*features.offset(nFeatures as isize)).tag = tag;
-                                        (*features.offset(nFeatures as isize)).start = 0i32 as u32;
+                                        (*features.offset(nFeatures as isize)).start = 0_u32;
                                         (*features.offset(nFeatures as isize)).end = -1i32 as u32;
-                                        (*features.offset(nFeatures as isize)).value = 0i32 as u32;
+                                        (*features.offset(nFeatures as isize)).value = 0_u32;
                                         nFeatures += 1;
                                         current_block = 13857423536159756434;
                                     } else if !strstartswith(
@@ -1460,7 +1460,7 @@ unsafe extern "C" fn loadOTfont(
         loaded_font_letter_space = (letterspace as f64 / 100.0f64 * scaled_size as f64) as scaled_t
     }
     if loaded_font_flags as i32 & 0x1i32 == 0i32 {
-        rgbValue = 0xffi32 as u32
+        rgbValue = 0xff_u32
     }
     if loaded_font_flags as i32 & 0x2i32 != 0i32 {
         setFontLayoutDir(font, 1i32);
@@ -1965,7 +1965,7 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
             __assert_fail(
                 b"filename\x00" as *const u8 as *const i8,
                 b"xetex-ext.c\x00" as *const u8 as *const i8,
-                1190i32 as u32,
+                1190_u32,
                 (*::std::mem::transmute::<&[u8; 27], &[i8; 27]>(b"int make_font_def(int32_t)\x00"))
                     .as_ptr(),
             );
@@ -2558,13 +2558,13 @@ pub unsafe extern "C" fn real_get_native_italic_correction(mut pNode: *mut libc:
     let mut node: *mut memory_word = pNode as *mut memory_word;
     let mut f: u32 = (*node.offset(4)).b16.s2 as u32;
     let mut n: u32 = (*node.offset(4)).b16.s0 as u32;
-    if n > 0i32 as u32 {
+    if n > 0_u32 {
         let mut locations: *mut FixedPoint = (*node.offset(5)).ptr as *mut FixedPoint;
         let mut glyphIDs: *mut u16 = locations.offset(n as isize) as *mut u16;
         if *font_area.offset(f as isize) as u32 == 0xfffeu32 {
             return D2Fix(getGlyphItalCorr(
                 *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine,
-                *glyphIDs.offset(n.wrapping_sub(1i32 as u32) as isize) as u32,
+                *glyphIDs.offset(n.wrapping_sub(1_u32) as isize) as u32,
             ) as f64)
                 + *font_letter_space.offset(f as isize);
         }
@@ -2768,7 +2768,7 @@ pub unsafe extern "C" fn real_get_native_word_cp(
             __assert_fail(
                 b"0\x00" as *const u8 as *const i8,
                 b"xetex-ext.c\x00" as *const u8 as *const i8,
-                2136i32 as u32,
+                2136_u32,
                 (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                     b"int32_t real_get_native_word_cp(void *, int)\x00",
                 ))

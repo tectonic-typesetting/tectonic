@@ -3185,7 +3185,7 @@ pub unsafe extern "C" fn prefixed_command() {
                         scan_math_class_int();
                         n =
                             ((cur_val as u32 &
-                                  0x7i32 as u32) << 21i32) as
+                                  0x7_u32) << 21i32) as
                                 i32;
                         scan_math_fam_int();
                         n =
@@ -3646,7 +3646,7 @@ pub unsafe extern "C" fn prefixed_command() {
                 scan_optional_equals();
                 scan_math_class_int();
                 n =
-                    ((cur_val as u32 & 0x7i32 as u32) <<
+                    ((cur_val as u32 & 0x7_u32) <<
                          21i32) as i32;
                 scan_math_fam_int();
                 n =
@@ -3816,10 +3816,10 @@ pub unsafe extern "C" fn prefixed_command() {
                 } else {
                     cur_val =
                         (((cur_val / 4096i32) as u32 &
-                              0x7i32 as u32) <<
+                              0x7_u32) <<
                              21i32).wrapping_add(((cur_val % 4096i32 / 256i32)
                                                       as u32 &
-                                                      0xffi32 as u32)
+                                                      0xff_u32)
                                                      <<
                                                      24i32).wrapping_add((cur_val
                                                                               %
@@ -9559,7 +9559,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
                 + k) as isize,
         ))
         .b32
-        .s1 = (k as u32).wrapping_add((7i32 as u32 & 0x7i32 as u32) << 21i32) as i32;
+        .s1 = (k as u32).wrapping_add((7_u32 & 0x7_u32) << 21i32) as i32;
         k += 1
     }
     k = 'A' as i32;
@@ -9637,8 +9637,8 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         ))
         .b32
         .s1 = (k as u32)
-            .wrapping_add((1i32 as u32 & 0xffi32 as u32) << 24i32)
-            .wrapping_add((7i32 as u32 & 0x7i32 as u32) << 21i32) as i32;
+            .wrapping_add((1_u32 & 0xff_u32) << 24i32)
+            .wrapping_add((7_u32 & 0x7_u32) << 21i32) as i32;
         (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -9666,8 +9666,8 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         ))
         .b32
         .s1 = ((k + 32i32) as u32)
-            .wrapping_add((1i32 as u32 & 0xffi32 as u32) << 24i32)
-            .wrapping_add((7i32 as u32 & 0x7i32 as u32) << 21i32) as i32;
+            .wrapping_add((1_u32 & 0xff_u32) << 24i32)
+            .wrapping_add((7_u32 & 0x7_u32) << 21i32) as i32;
         (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)

@@ -1096,13 +1096,13 @@ unsafe extern "C" fn try_pdf_reference(
     mut endptr: *mut *const i8,
     mut pf: *mut pdf_file,
 ) -> *mut pdf_obj {
-    let mut id: u32 = 0i32 as u32;
+    let mut id: u32 = 0_u32;
     let mut gen: u16 = 0i32 as u16;
     if !pf.is_null() {
     } else {
         __assert_fail(b"pf\x00" as *const u8 as *const i8,
                       b"dpx-pdfparse.c\x00" as *const u8 as
-                          *const i8, 883i32 as u32,
+                          *const i8, 883_u32,
                       (*::std::mem::transmute::<&[u8; 82],
                                                 &[i8; 82]>(b"pdf_obj *try_pdf_reference(const char *, const char *, const char **, pdf_file *)\x00")).as_ptr());
     }
@@ -1132,7 +1132,7 @@ unsafe extern "C" fn try_pdf_reference(
             return 0 as *mut pdf_obj;
         }
         id = id
-            .wrapping_mul(10i32 as u32)
+            .wrapping_mul(10_u32)
             .wrapping_add((*start as i32 - '0' as i32) as u32);
         start = start.offset(1)
     }

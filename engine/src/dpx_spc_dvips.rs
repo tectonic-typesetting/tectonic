@@ -418,7 +418,7 @@ unsafe extern "C" fn spc_handler_ps_file(mut spe: *mut spc_env, mut args: *mut s
         __assert_fail(
             b"spe && args\x00" as *const u8 as *const i8,
             b"dpx-spc_dvips.c\x00" as *const u8 as *const i8,
-            140i32 as u32,
+            140_u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_ps_file(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -500,7 +500,7 @@ unsafe extern "C" fn spc_handler_ps_plotfile(mut spe: *mut spc_env, mut args: *m
         __assert_fail(
             b"spe && args\x00" as *const u8 as *const i8,
             b"dpx-spc_dvips.c\x00" as *const u8 as *const i8,
-            185i32 as u32,
+            185_u32,
             (*::std::mem::transmute::<&[u8; 64], &[i8; 64]>(
                 b"int spc_handler_ps_plotfile(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -547,7 +547,7 @@ unsafe extern "C" fn spc_handler_ps_literal(mut spe: *mut spc_env, mut args: *mu
         __assert_fail(
             b"spe && args && args->curptr <= args->endptr\x00" as *const u8 as *const i8,
             b"dpx-spc_dvips.c\x00" as *const u8 as *const i8,
-            218i32 as u32,
+            218_u32,
             (*::std::mem::transmute::<&[u8; 63], &[i8; 63]>(
                 b"int spc_handler_ps_literal(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -662,7 +662,7 @@ unsafe extern "C" fn spc_handler_ps_default(mut spe: *mut spc_env, mut args: *mu
         __assert_fail(
             b"spe && args\x00" as *const u8 as *const i8,
             b"dpx-spc_dvips.c\x00" as *const u8 as *const i8,
-            291i32 as u32,
+            291_u32,
             (*::std::mem::transmute::<&[u8; 63], &[i8; 63]>(
                 b"int spc_handler_ps_default(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -917,7 +917,7 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
         __assert_fail(b"handle && spe && args\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_dvips.c\x00" as *const u8 as
-                          *const i8, 402i32 as u32,
+                          *const i8, 402_u32,
                       (*::std::mem::transmute::<&[u8; 86],
                                                 &[i8; 86]>(b"int spc_dvips_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }

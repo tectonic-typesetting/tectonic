@@ -175,7 +175,7 @@ pub unsafe extern "C" fn spc_dvipdfmx_setup_handler(
         __assert_fail(b"sph && spe && ap\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_dvipdfmx.c\x00" as *const u8 as
-                          *const i8, 69i32 as u32,
+                          *const i8, 69_u32,
                       (*::std::mem::transmute::<&[u8; 89],
                                                 &[i8; 89]>(b"int spc_dvipdfmx_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }

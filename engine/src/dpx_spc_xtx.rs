@@ -523,9 +523,8 @@ unsafe extern "C" fn spc_handler_xtx_fontmapline(
                 *fresh2 = *fresh1
             }
             *q = '\u{0}' as i32 as i8;
-            mrec = new((1i32 as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as u64)
-                as u32) as *mut fontmap_rec;
+            mrec = new((1_u64).wrapping_mul(::std::mem::size_of::<fontmap_rec>() as u64) as u32)
+                as *mut fontmap_rec;
             pdf_init_fontmap_record(mrec);
             error = pdf_read_fontmap_line(
                 mrec,
@@ -622,7 +621,7 @@ unsafe extern "C" fn spc_handler_xtx_clipoverlay(
             strlen(b"all\x00" as *const u8 as *const i8),
         ) != 0i32
     {
-        pdf_doc_add_page_content(b" 0 0 m W n\x00" as *const u8 as *const i8, 10i32 as u32);
+        pdf_doc_add_page_content(b" 0 0 m W n\x00" as *const u8 as *const i8, 10_u32);
     }
     (*args).curptr = (*args).endptr;
     return 0i32;
@@ -654,7 +653,7 @@ unsafe extern "C" fn spc_handler_xtx_renderingmode(
     );
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr < (*args).endptr {
-        pdf_doc_add_page_content(b" \x00" as *const u8 as *const i8, 1i32 as u32);
+        pdf_doc_add_page_content(b" \x00" as *const u8 as *const i8, 1_u32);
         pdf_doc_add_page_content(
             (*args).curptr,
             (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as u32,
@@ -959,7 +958,7 @@ pub unsafe extern "C" fn spc_xtx_setup_handler(
         __assert_fail(b"sph && spe && ap\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_xtx.c\x00" as *const u8 as
-                          *const i8, 413i32 as u32,
+                          *const i8, 413_u32,
                       (*::std::mem::transmute::<&[u8; 84],
                                                 &[i8; 84]>(b"int spc_xtx_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }
@@ -983,7 +982,7 @@ pub unsafe extern "C" fn spc_xtx_setup_handler(
     skip_white(&mut (*ap).curptr, (*ap).endptr);
     q = parse_c_ident(&mut (*ap).curptr, (*ap).endptr);
     if !q.is_null() {
-        i = 0i32 as u32;
+        i = 0_u32;
         while (i as u64)
             < (::std::mem::size_of::<[spc_handler; 21]>() as u64)
                 .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)

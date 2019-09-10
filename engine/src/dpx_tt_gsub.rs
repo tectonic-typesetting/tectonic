@@ -323,7 +323,7 @@ unsafe extern "C" fn clt_read_record(mut rec: *mut clt_record, mut sfont: *mut s
         __assert_fail(
             b"rec && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            71i32 as u32,
+            71_u32,
             (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int clt_read_record(struct clt_record *, sfnt *)\x00",
             ))
@@ -345,7 +345,7 @@ unsafe extern "C" fn clt_read_range(mut rec: *mut clt_range, mut sfont: *mut sfn
         __assert_fail(
             b"rec && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            85i32 as u32,
+            85_u32,
             (*::std::mem::transmute::<&[u8; 47], &[i8; 47]>(
                 b"int clt_read_range(struct clt_range *, sfnt *)\x00",
             ))
@@ -368,7 +368,7 @@ unsafe extern "C" fn clt_read_record_list(
         __assert_fail(
             b"list && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            117i32 as u32,
+            117_u32,
             (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int clt_read_record_list(struct clt_record_list *, sfnt *)\x00",
             ))
@@ -407,7 +407,7 @@ unsafe extern "C" fn clt_read_number_list(
         __assert_fail(
             b"list && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            148i32 as u32,
+            148_u32,
             (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int clt_read_number_list(struct clt_number_list *, sfnt *)\x00",
             ))
@@ -445,7 +445,7 @@ unsafe extern "C" fn clt_read_script_table(
         __assert_fail(
             b"tab && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            283i32 as u32,
+            283_u32,
             (*::std::mem::transmute::<&[u8; 61], &[i8; 61]>(
                 b"int clt_read_script_table(struct clt_script_table *, sfnt *)\x00",
             ))
@@ -472,7 +472,7 @@ unsafe extern "C" fn clt_read_langsys_table(
         __assert_fail(
             b"tab && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            314i32 as u32,
+            314_u32,
             (*::std::mem::transmute::<&[u8; 63], &[i8; 63]>(
                 b"int clt_read_langsys_table(struct clt_langsys_table *, sfnt *)\x00",
             ))
@@ -500,7 +500,7 @@ unsafe extern "C" fn clt_read_feature_table(
         __assert_fail(
             b"tab && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            344i32 as u32,
+            344_u32,
             (*::std::mem::transmute::<&[u8; 63], &[i8; 63]>(
                 b"int clt_read_feature_table(struct clt_feature_table *, sfnt *)\x00",
             ))
@@ -527,7 +527,7 @@ unsafe extern "C" fn clt_read_lookup_table(
         __assert_fail(
             b"tab && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            377i32 as u32,
+            377_u32,
             (*::std::mem::transmute::<&[u8; 61], &[i8; 61]>(
                 b"int clt_read_lookup_table(struct clt_lookup_table *, sfnt *)\x00",
             ))
@@ -553,7 +553,7 @@ unsafe extern "C" fn clt_read_coverage(mut cov: *mut clt_coverage, mut sfont: *m
         __assert_fail(
             b"cov && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            399i32 as u32,
+            399_u32,
             (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                 b"int clt_read_coverage(struct clt_coverage *, sfnt *)\x00",
             ))
@@ -620,7 +620,7 @@ unsafe extern "C" fn clt_lookup_coverage(mut cov: *mut clt_coverage, mut gid: u1
         __assert_fail(
             b"cov\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            460i32 as u32,
+            460_u32,
             (*::std::mem::transmute::<&[u8; 55], &[i8; 55]>(
                 b"int clt_lookup_coverage(struct clt_coverage *, USHORT)\x00",
             ))
@@ -672,7 +672,7 @@ unsafe extern "C" fn otl_gsub_read_single(
         __assert_fail(
             b"subtab && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            496i32 as u32,
+            496_u32,
             (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int otl_gsub_read_single(struct otl_gsub_subtab *, sfnt *)\x00",
             ))
@@ -685,9 +685,8 @@ unsafe extern "C" fn otl_gsub_read_single(
     len = 2i32;
     if (*subtab).SubstFormat as i32 == 1i32 {
         let mut data: *mut otl_gsub_single1 = 0 as *mut otl_gsub_single1;
-        data = new((1i32 as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<otl_gsub_single1>() as u64)
-            as u32) as *mut otl_gsub_single1;
+        data = new((1_u64).wrapping_mul(::std::mem::size_of::<otl_gsub_single1>() as u64) as u32)
+            as *mut otl_gsub_single1;
         (*subtab).table.single1 = data;
         cov_offset = tt_get_unsigned_pair((*sfont).handle);
         (*data).DeltaGlyphID = tt_get_signed_pair((*sfont).handle);
@@ -701,9 +700,8 @@ unsafe extern "C" fn otl_gsub_read_single(
     } else if (*subtab).SubstFormat as i32 == 2i32 {
         let mut data_0: *mut otl_gsub_single2 = 0 as *mut otl_gsub_single2;
         let mut count: u16 = 0;
-        data_0 = new((1i32 as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<otl_gsub_single2>() as u64)
-            as u32) as *mut otl_gsub_single2;
+        data_0 = new((1_u64).wrapping_mul(::std::mem::size_of::<otl_gsub_single2>() as u64) as u32)
+            as *mut otl_gsub_single2;
         (*subtab).table.single2 = data_0;
         cov_offset = tt_get_unsigned_pair((*sfont).handle);
         (*data_0).GlyphCount = tt_get_unsigned_pair((*sfont).handle);
@@ -752,7 +750,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
         __assert_fail(
             b"subtab && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            555i32 as u32,
+            555_u32,
             (*::std::mem::transmute::<&[u8; 62], &[i8; 62]>(
                 b"int otl_gsub_read_alternate(struct otl_gsub_subtab *, sfnt *)\x00",
             ))
@@ -770,8 +768,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
         return -1i32;
     }
     len = 2i32;
-    data = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<otl_gsub_alternate1>() as u64) as u32)
+    data = new((1_u64).wrapping_mul(::std::mem::size_of::<otl_gsub_alternate1>() as u64) as u32)
         as *mut otl_gsub_alternate1;
     (*subtab).table.alternate1 = data;
     cov_offset = tt_get_unsigned_pair((*sfont).handle);
@@ -841,7 +838,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
         __assert_fail(
             b"subtab && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            622i32 as u32,
+            622_u32,
             (*::std::mem::transmute::<&[u8; 61], &[i8; 61]>(
                 b"int otl_gsub_read_ligature(struct otl_gsub_subtab *, sfnt *)\x00",
             ))
@@ -859,10 +856,8 @@ unsafe extern "C" fn otl_gsub_read_ligature(
         return -1i32;
     }
     len = 2i32;
-    data = new(
-        (1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<otl_gsub_ligature1>() as u64)
-            as u32,
-    ) as *mut otl_gsub_ligature1;
+    data = new((1_u64).wrapping_mul(::std::mem::size_of::<otl_gsub_ligature1>() as u64) as u32)
+        as *mut otl_gsub_ligature1;
     (*subtab).table.ligature1 = data;
     cov_offset = tt_get_unsigned_pair((*sfont).handle);
     len += 2i32;
@@ -1037,7 +1032,7 @@ unsafe extern "C" fn otl_gsub_read_header(
         __assert_fail(
             b"head && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            787i32 as u32,
+            787_u32,
             (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int otl_gsub_read_header(struct otl_gsub_header *, sfnt *)\x00",
             ))
@@ -1084,7 +1079,7 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
         __assert_fail(
             b"gsub && sfont\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            830i32 as u32,
+            830_u32,
             (*::std::mem::transmute::<&[u8; 54], &[i8; 54]>(
                 b"int otl_gsub_read_feat(struct otl_gsub_tab *, sfnt *)\x00",
             ))
@@ -1092,7 +1087,7 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
         );
     }
     gsub_offset = sfnt_find_table_pos(sfont, b"GSUB\x00" as *const u8 as *const i8);
-    if gsub_offset == 0i32 as u32 {
+    if gsub_offset == 0_u32 {
         return -1i32;
     }
     script = otl_new_opt();
@@ -1529,7 +1524,7 @@ unsafe extern "C" fn otl_gsub_apply_single(
         __assert_fail(
             b"subtab && gid\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            1145i32 as u32,
+            1145_u32,
             (*::std::mem::transmute::<&[u8; 62], &[i8; 62]>(
                 b"int otl_gsub_apply_single(struct otl_gsub_subtab *, USHORT *)\x00",
             ))
@@ -1566,7 +1561,7 @@ unsafe extern "C" fn otl_gsub_apply_alternate(
         __assert_fail(
             b"subtab && gid\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            1177i32 as u32,
+            1177_u32,
             (*::std::mem::transmute::<&[u8; 73], &[i8; 73]>(
                 b"int otl_gsub_apply_alternate(struct otl_gsub_subtab *, USHORT, USHORT *)\x00",
             ))
@@ -1623,7 +1618,7 @@ unsafe extern "C" fn otl_gsub_apply_ligature(
         __assert_fail(b"subtab && gid_out\x00" as *const u8 as
                           *const i8,
                       b"dpx-tt_gsub.c\x00" as *const u8 as
-                          *const i8, 1226i32 as u32,
+                          *const i8, 1226_u32,
                       (*::std::mem::transmute::<&[u8; 82],
                                                 &[i8; 82]>(b"int otl_gsub_apply_ligature(struct otl_gsub_subtab *, USHORT *, USHORT, USHORT *)\x00")).as_ptr());
     }
@@ -1660,8 +1655,7 @@ unsafe extern "C" fn otl_gsub_apply_ligature(
 pub unsafe extern "C" fn otl_gsub_new() -> *mut otl_gsub {
     let mut gsub_list: *mut otl_gsub = 0 as *mut otl_gsub;
     gsub_list =
-        new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<otl_gsub>() as u64) as u32)
-            as *mut otl_gsub;
+        new((1_u64).wrapping_mul(::std::mem::size_of::<otl_gsub>() as u64) as u32) as *mut otl_gsub;
     (*gsub_list).num_gsubs = 0i32;
     (*gsub_list).select = -1i32;
     (*gsub_list).first = 0 as *mut gsub_entry;
@@ -1751,7 +1745,7 @@ unsafe extern "C" fn scan_otl_tag(
         __assert_fail(
             b"script && language && feature\x00" as *const u8 as *const i8,
             b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
-            1357i32 as u32,
+            1357_u32,
             (*::std::mem::transmute::<&[u8; 69], &[i8; 69]>(
                 b"int scan_otl_tag(const char *, const char *, char *, char *, char *)\x00",
             ))
@@ -2005,9 +1999,8 @@ pub unsafe extern "C" fn otl_gsub_set_chain(
             );
             if idx >= 0i32 && idx <= (*gsub_list).num_gsubs {
                 let mut entry: *mut gsub_entry = 0 as *mut gsub_entry;
-                entry = new((1i32 as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<gsub_entry>() as u64)
-                    as u32) as *mut gsub_entry;
+                entry = new((1_u64).wrapping_mul(::std::mem::size_of::<gsub_entry>() as u64) as u32)
+                    as *mut gsub_entry;
                 if (*gsub_list).first.is_null() {
                     (*gsub_list).first = entry
                 }

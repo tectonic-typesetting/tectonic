@@ -202,7 +202,7 @@ unsafe extern "C" fn pdf_init_resource(mut res: *mut pdf_res) {
         __assert_fail(
             b"res\x00" as *const u8 as *const i8,
             b"dpx-pdfresource.c\x00" as *const u8 as *const i8,
-            94i32 as u32,
+            94_u32,
             (*::std::mem::transmute::<&[u8; 34], &[i8; 34]>(
                 b"void pdf_init_resource(pdf_res *)\x00",
             ))
@@ -239,7 +239,7 @@ unsafe extern "C" fn pdf_clean_resource(mut res: *mut pdf_res) {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_init_resources() {
     let mut i: u32 = 0;
-    i = 0i32 as u32;
+    i = 0_u32;
     while (i as u64)
         < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as u64)
             .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as u64)
@@ -253,7 +253,7 @@ pub unsafe extern "C" fn pdf_init_resources() {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_close_resources() {
     let mut i: u32 = 0;
-    i = 0i32 as u32;
+    i = 0_u32;
     while (i as u64)
         < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as u64)
             .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as u64)
@@ -276,7 +276,7 @@ pub unsafe extern "C" fn pdf_close_resources() {
 }
 unsafe extern "C" fn get_category(mut category: *const i8) -> i32 {
     let mut i: u32 = 0;
-    i = 0i32 as u32;
+    i = 0_u32;
     while (i as u64)
         < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as u64)
             .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as u64)
@@ -304,7 +304,7 @@ pub unsafe extern "C" fn pdf_defineresource(
         __assert_fail(
             b"category && object\x00" as *const u8 as *const i8,
             b"dpx-pdfresource.c\x00" as *const u8 as *const i8,
-            192i32 as u32,
+            192_u32,
             (*::std::mem::transmute::<&[u8; 67], &[i8; 67]>(
                 b"int pdf_defineresource(const char *, const char *, pdf_obj *, int)\x00",
             ))
@@ -384,7 +384,7 @@ pub unsafe extern "C" fn pdf_findresource(mut category: *const i8, mut resname: 
         __assert_fail(
             b"resname && category\x00" as *const u8 as *const i8,
             b"dpx-pdfresource.c\x00" as *const u8 as *const i8,
-            254i32 as u32,
+            254_u32,
             (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int pdf_findresource(const char *, const char *)\x00",
             ))

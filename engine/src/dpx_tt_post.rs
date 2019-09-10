@@ -270,9 +270,8 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
     let mut post: *mut tt_post_table = 0 as *mut tt_post_table;
     /* offset = */
     sfnt_locate_table(sfont, b"post\x00" as *const u8 as *const i8); /* Fixed */
-    post = new(
-        (1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<tt_post_table>() as u64) as u32,
-    ) as *mut tt_post_table; /* Fixed */
+    post = new((1_u64).wrapping_mul(::std::mem::size_of::<tt_post_table>() as u64) as u32)
+        as *mut tt_post_table; /* Fixed */
     (*post).Version = tt_get_unsigned_quad((*sfont).handle); /* FWord */
     (*post).italicAngle = tt_get_unsigned_quad((*sfont).handle); /* FWord */
     (*post).underlinePosition = tt_get_signed_pair((*sfont).handle); /* wrong */
@@ -318,7 +317,7 @@ pub unsafe extern "C" fn tt_lookup_post_table(
         __assert_fail(
             b"post && glyphname\x00" as *const u8 as *const i8,
             b"dpx-tt_post.c\x00" as *const u8 as *const i8,
-            157i32 as u32,
+            157_u32,
             (*::std::mem::transmute::<&[u8; 66], &[i8; 66]>(
                 b"USHORT tt_lookup_post_table(struct tt_post_table *, const char *)\x00",
             ))
@@ -375,7 +374,7 @@ pub unsafe extern "C" fn tt_release_post_table(mut post: *mut tt_post_table) {
         __assert_fail(
             b"post\x00" as *const u8 as *const i8,
             b"dpx-tt_post.c\x00" as *const u8 as *const i8,
-            182i32 as u32,
+            182_u32,
             (*::std::mem::transmute::<&[u8; 51], &[i8; 51]>(
                 b"void tt_release_post_table(struct tt_post_table *)\x00",
             ))

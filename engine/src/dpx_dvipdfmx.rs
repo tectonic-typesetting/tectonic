@@ -623,14 +623,14 @@ unsafe extern "C" fn select_pages(
     mut ret_num_page_ranges: *mut u32,
 ) {
     let mut page_ranges: *mut PageRange = 0 as *mut PageRange;
-    let mut num_page_ranges: u32 = 0i32 as u32;
-    let mut max_page_ranges: u32 = 0i32 as u32;
+    let mut num_page_ranges: u32 = 0_u32;
+    let mut max_page_ranges: u32 = 0_u32;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = pagespec;
     while *p as i32 != '\u{0}' as i32 {
         /* Enlarge page range table if necessary */
         if num_page_ranges >= max_page_ranges {
-            max_page_ranges = max_page_ranges.wrapping_add(4i32 as u32); /* Can't be signed. */
+            max_page_ranges = max_page_ranges.wrapping_add(4_u32); /* Can't be signed. */
             page_ranges = renew(
                 page_ranges as *mut libc::c_void,
                 (max_page_ranges as u64).wrapping_mul(::std::mem::size_of::<PageRange>() as u64)
@@ -738,13 +738,13 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange, mut num_page_
     init_paper_width = page_width;
     page_height = paper_height;
     init_paper_height = page_height;
-    page_count = 0i32 as u32;
+    page_count = 0_u32;
     mediabox.llx = 0.0f64;
     mediabox.lly = 0.0f64;
     mediabox.urx = paper_width;
     mediabox.ury = paper_height;
-    pdf_doc_set_mediabox(0i32 as u32, &mut mediabox);
-    i = 0i32 as u32;
+    pdf_doc_set_mediabox(0_u32, &mut mediabox);
+    i = 0_u32;
     while i < num_page_ranges && dvi_npages() != 0 {
         if (*page_ranges.offset(i as isize)).last < 0i32 {
             let ref mut fresh0 = (*page_ranges.offset(i as isize)).last;
@@ -807,7 +807,7 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange, mut num_page_
                     mediabox.lly = 0.0f64;
                     mediabox.urx = page_width;
                     mediabox.ury = page_height;
-                    pdf_doc_set_mediabox(page_count.wrapping_add(1i32 as u32), &mut mediabox);
+                    pdf_doc_set_mediabox(page_count.wrapping_add(1_u32), &mut mediabox);
                 }
                 dvi_do_page(page_height, x_offset, y_offset);
                 page_count = page_count.wrapping_add(1);
@@ -823,7 +823,7 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange, mut num_page_
         }
         i = i.wrapping_add(1)
     }
-    if page_count < 1i32 as u32 {
+    if page_count < 1_u32 {
         _tt_abort(b"No pages fall in range!\x00" as *const u8 as *const i8);
     }
     spc_exec_at_end_document();
@@ -865,13 +865,13 @@ pub unsafe extern "C" fn dvipdfmx_main(
 ) -> i32 {
     let mut enable_object_stream: bool = 1i32 != 0; /* This must come before parsing options... */
     let mut dvi2pts: f64 = 0.;
-    let mut num_page_ranges: u32 = 0i32 as u32;
+    let mut num_page_ranges: u32 = 0_u32;
     let mut page_ranges: *mut PageRange = 0 as *mut PageRange;
     if !pdf_filename.is_null() {
     } else {
         __assert_fail(b"pdf_filename\x00" as *const u8 as *const i8,
                       b"dpx-dvipdfmx.c\x00" as *const u8 as
-                          *const i8, 381i32 as u32,
+                          *const i8, 381_u32,
                       (*::std::mem::transmute::<&[u8; 107],
                                                 &[i8; 107]>(b"int dvipdfmx_main(const char *, const char *, const char *, int, _Bool, _Bool, _Bool, _Bool, unsigned int)\x00")).as_ptr());
     }
@@ -879,7 +879,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
     } else {
         __assert_fail(b"dvi_filename\x00" as *const u8 as *const i8,
                       b"dpx-dvipdfmx.c\x00" as *const u8 as
-                          *const i8, 382i32 as u32,
+                          *const i8, 382_u32,
                       (*::std::mem::transmute::<&[u8; 107],
                                                 &[i8; 107]>(b"int dvipdfmx_main(const char *, const char *, const char *, int, _Bool, _Bool, _Bool, _Bool, unsigned int)\x00")).as_ptr());
     }
@@ -913,7 +913,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
     /* We used to read the config file here. It synthesized command-line
      * arguments, so we emulate the default TeXLive config file by copying those
      * code bits. */
-    pdf_set_version(5i32 as u32); /* last page */
+    pdf_set_version(5_u32); /* last page */
     select_paper(b"letter\x00" as *const u8 as *const i8);
     annot_grow = 0i32 as f64;
     bookmark_open = 0i32;
@@ -929,14 +929,13 @@ pub unsafe extern "C" fn dvipdfmx_main(
         select_pages(pagespec, &mut page_ranges, &mut num_page_ranges);
     }
     if page_ranges.is_null() {
-        page_ranges = new((1i32 as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<PageRange>() as u64)
-            as u32) as *mut PageRange
+        page_ranges = new((1_u64).wrapping_mul(::std::mem::size_of::<PageRange>() as u64) as u32)
+            as *mut PageRange
     }
-    if num_page_ranges == 0i32 as u32 {
+    if num_page_ranges == 0_u32 {
         (*page_ranges.offset(0)).first = 0i32;
         (*page_ranges.offset(0)).last = -1i32;
-        num_page_ranges = 1i32 as u32
+        num_page_ranges = 1_u32
     }
     /*kpse_init_prog("", font_dpi, NULL, NULL);
     kpse_set_program_enabled(kpse_pk_format, true, kpse_src_texmf_cnf);*/
@@ -980,7 +979,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
                 key_bits,
             );
         } else {
-            if key_bits > 40i32 && pdf_get_version() < 4i32 as u32 {
+            if key_bits > 40i32 && pdf_get_version() < 4_u32 {
                 _tt_abort(
                     b"Chosen key length requires at least PDF 1.4. Use \"-V 4\" to change.\x00"
                         as *const u8 as *const i8,
