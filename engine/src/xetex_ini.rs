@@ -15,20 +15,20 @@ extern "C" {
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_output_open(path: *const libc::c_char, is_gz: libc::c_int) -> rust_output_handle_t;
+    fn ttstub_output_open(path: *const i8, is_gz: libc::c_int) -> rust_output_handle_t;
     #[no_mangle]
     fn ttstub_output_open_stdout() -> rust_output_handle_t;
     #[no_mangle]
     fn ttstub_output_write(
         handle: rust_output_handle_t,
-        data: *const libc::c_char,
+        data: *const i8,
         len: size_t,
     ) -> size_t;
     #[no_mangle]
@@ -37,14 +37,14 @@ extern "C" {
     fn ttstub_output_close(handle: rust_output_handle_t) -> libc::c_int;
     #[no_mangle]
     fn ttstub_input_open(
-        path: *const libc::c_char,
+        path: *const i8,
         format: tt_input_format_type,
         is_gz: libc::c_int,
     ) -> rust_input_handle_t;
     #[no_mangle]
     fn ttstub_input_read(
         handle: rust_input_handle_t,
-        data: *mut libc::c_char,
+        data: *mut i8,
         len: size_t,
     ) -> ssize_t;
     #[no_mangle]
@@ -120,7 +120,7 @@ extern "C" {
     #[no_mangle]
     fn scan_optional_equals();
     #[no_mangle]
-    fn scan_keyword(s: *const libc::c_char) -> bool;
+    fn scan_keyword(s: *const i8) -> bool;
     #[no_mangle]
     fn scan_glyph_number(f: internal_font_number);
     #[no_mangle]
@@ -158,15 +158,15 @@ extern "C" {
     #[no_mangle]
     fn make_name_string() -> str_number;
     #[no_mangle]
-    fn pack_job_name(_: *const libc::c_char);
+    fn pack_job_name(_: *const i8);
     #[no_mangle]
     fn open_log_file();
     #[no_mangle]
-    fn start_input(primary_input_name: *const libc::c_char);
+    fn start_input(primary_input_name: *const i8);
     #[no_mangle]
     fn max_hyphenatable_length() -> int32_t;
     #[no_mangle]
-    fn overflow(s: *const libc::c_char, n: int32_t) -> !;
+    fn overflow(s: *const i8, n: int32_t) -> !;
     #[no_mangle]
     fn show_save_groups();
     #[no_mangle]
@@ -190,15 +190,15 @@ extern "C" {
     #[no_mangle]
     fn new_interaction();
     #[no_mangle]
-    fn confusion(s: *const libc::c_char) -> !;
+    fn confusion(s: *const i8) -> !;
     #[no_mangle]
     fn error();
     #[no_mangle]
-    fn print_cstr(s: *const libc::c_char);
+    fn print_cstr(s: *const i8);
     #[no_mangle]
-    fn print_esc_cstr(s: *const libc::c_char);
+    fn print_esc_cstr(s: *const i8);
     #[no_mangle]
-    fn print_nl_cstr(s: *const libc::c_char);
+    fn print_nl_cstr(s: *const i8);
     #[no_mangle]
     fn print_file_line();
     #[no_mangle]
@@ -238,7 +238,7 @@ extern "C" {
     #[no_mangle]
     fn release_font_engine(engine: *mut libc::c_void, type_flag: libc::c_int);
     #[no_mangle]
-    fn maketexstring(s: *const libc::c_char) -> libc::c_int;
+    fn maketexstring(s: *const i8) -> libc::c_int;
     #[no_mangle]
     fn set_cp_code(fontNum: libc::c_int, code: libc::c_uint, side: libc::c_int, value: libc::c_int);
     /* synctex.h
@@ -649,7 +649,7 @@ pub static mut eqtb: *mut memory_word = 0 as *const memory_word as *mut memory_w
 #[no_mangle]
 pub static mut bad: int32_t = 0;
 #[no_mangle]
-pub static mut name_of_file: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
+pub static mut name_of_file: *mut i8 = 0 as *const i8 as *mut i8;
 #[no_mangle]
 pub static mut name_of_file16: *mut UTF16_code = 0 as *const UTF16_code as *mut UTF16_code;
 #[no_mangle]
@@ -772,7 +772,7 @@ pub static mut history: tt_history_t = HISTORY_SPOTLESS;
 #[no_mangle]
 pub static mut error_count: libc::c_schar = 0;
 #[no_mangle]
-pub static mut help_line: [*const libc::c_char; 6] = [0 as *const libc::c_char; 6];
+pub static mut help_line: [*const i8; 6] = [0 as *const i8; 6];
 #[no_mangle]
 pub static mut help_ptr: u8 = 0;
 #[no_mangle]
@@ -988,8 +988,8 @@ pub static mut file_name_quote_char: UTF16_code = 0;
 #[no_mangle]
 pub static mut format_default_length: int32_t = 0;
 #[no_mangle]
-pub static mut TEX_format_default: *mut libc::c_char =
-    0 as *const libc::c_char as *mut libc::c_char;
+pub static mut TEX_format_default: *mut i8 =
+    0 as *const i8 as *mut i8;
 #[no_mangle]
 pub static mut name_in_progress: bool = false;
 #[no_mangle]
@@ -997,7 +997,7 @@ pub static mut job_name: str_number = 0;
 #[no_mangle]
 pub static mut log_opened: bool = false;
 #[no_mangle]
-pub static mut output_file_extension: *const libc::c_char = 0 as *const libc::c_char;
+pub static mut output_file_extension: *const i8 = 0 as *const i8;
 #[no_mangle]
 pub static mut texmf_log_name: str_number = 0;
 #[no_mangle]
@@ -1043,14 +1043,14 @@ pub static mut font_layout_engine: *mut *mut libc::c_void =
 pub static mut font_mapping: *mut *mut libc::c_void =
     0 as *const *mut libc::c_void as *mut *mut libc::c_void;
 #[no_mangle]
-pub static mut font_flags: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
+pub static mut font_flags: *mut i8 = 0 as *const i8 as *mut i8;
 #[no_mangle]
 pub static mut font_letter_space: *mut scaled_t = 0 as *const scaled_t as *mut scaled_t;
 #[no_mangle]
 pub static mut loaded_font_mapping: *mut libc::c_void =
     0 as *const libc::c_void as *mut libc::c_void;
 #[no_mangle]
-pub static mut loaded_font_flags: libc::c_char = 0;
+pub static mut loaded_font_flags: i8 = 0;
 #[no_mangle]
 pub static mut loaded_font_letter_space: scaled_t = 0;
 #[no_mangle]
@@ -1058,7 +1058,7 @@ pub static mut loaded_font_design_size: scaled_t = 0;
 #[no_mangle]
 pub static mut mapped_text: *mut UTF16_code = 0 as *const UTF16_code as *mut UTF16_code;
 #[no_mangle]
-pub static mut xdv_buffer: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
+pub static mut xdv_buffer: *mut i8 = 0 as *const i8 as *mut i8;
 #[no_mangle]
 pub static mut char_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
@@ -1330,7 +1330,7 @@ pub static mut if_stack: *mut int32_t = 0 as *const int32_t as *mut int32_t;
 #[no_mangle]
 pub static mut max_reg_num: int32_t = 0;
 #[no_mangle]
-pub static mut max_reg_help_line: *const libc::c_char = 0 as *const libc::c_char;
+pub static mut max_reg_help_line: *const i8 = 0 as *const i8;
 #[no_mangle]
 pub static mut sa_root: [int32_t; 8] = [0; 8];
 #[no_mangle]
@@ -1401,8 +1401,8 @@ none of the standard formats do that.  */
 `temp'.  */
 /* Make the NITEMS items pointed at by P, each of size SIZE, be the
 opposite-endianness of whatever they are now.  */
-unsafe extern "C" fn swap_items(mut p: *mut libc::c_char, mut nitems: size_t, mut size: size_t) {
-    let mut temp: libc::c_char = 0;
+unsafe extern "C" fn swap_items(mut p: *mut i8, mut nitems: size_t, mut size: size_t) {
+    let mut temp: i8 = 0;
     match size {
         16 => loop {
             let fresh0 = nitems;
@@ -1485,7 +1485,7 @@ unsafe extern "C" fn swap_items(mut p: *mut libc::c_char, mut nitems: size_t, mu
         _ => {
             _tt_abort(
                 b"can\'t swap a %zu-byte item for (un)dumping\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
                 size,
             );
         }
@@ -1496,7 +1496,7 @@ unsafe extern "C" fn swap_items(mut p: *mut libc::c_char, mut nitems: size_t, mu
 The pointer to the stuff to write is P, and we write to the file
 OUT_FILE.  */
 unsafe extern "C" fn do_dump(
-    mut p: *mut libc::c_char,
+    mut p: *mut i8,
     mut item_size: size_t,
     mut nitems: size_t,
     mut out_file: rust_output_handle_t,
@@ -1506,7 +1506,7 @@ unsafe extern "C" fn do_dump(
         ttstub_output_write(out_file, p, item_size.wrapping_mul(nitems)) as ssize_t;
     if r < 0i32 as libc::c_long || r as size_t != item_size.wrapping_mul(nitems) {
         _tt_abort(
-            b"could not write %zu %zu-byte item(s) to %s\x00" as *const u8 as *const libc::c_char,
+            b"could not write %zu %zu-byte item(s) to %s\x00" as *const u8 as *const i8,
             nitems,
             item_size,
             name_of_file,
@@ -1518,7 +1518,7 @@ unsafe extern "C" fn do_dump(
 }
 /* Here is the dual of the writing routine.  */
 unsafe extern "C" fn do_undump(
-    mut p: *mut libc::c_char,
+    mut p: *mut i8,
     mut item_size: size_t,
     mut nitems: size_t,
     mut in_file: rust_input_handle_t,
@@ -1527,7 +1527,7 @@ unsafe extern "C" fn do_undump(
     if r < 0i32 as libc::c_long || r as size_t != item_size.wrapping_mul(nitems) {
         _tt_abort(
             b"could not undump %zu %zu-byte item(s) from %s\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
             nitems,
             item_size,
             name_of_file,
@@ -1576,14 +1576,14 @@ unsafe extern "C" fn sort_avail() {
 }
 /*:271*/
 /*276: */
-unsafe extern "C" fn primitive(mut ident: *const libc::c_char, mut c: u16, mut o: int32_t) {
+unsafe extern "C" fn primitive(mut ident: *const i8, mut c: u16, mut o: int32_t) {
     let mut prim_val: int32_t = 0;
     let mut len: libc::c_int = strlen(ident) as libc::c_int;
     if len > 1i32 {
         let mut s: str_number = maketexstring(ident);
         if first + len > buf_size + 1i32 {
             overflow(
-                b"buffer size\x00" as *const u8 as *const libc::c_char,
+                b"buffer size\x00" as *const u8 as *const i8,
                 buf_size,
             );
         }
@@ -1630,14 +1630,14 @@ pub unsafe extern "C" fn new_trie_op(
         if l == 0i32 {
             if trie_op_ptr as libc::c_long == 35111 {
                 overflow(
-                    b"pattern memory ops\x00" as *const u8 as *const libc::c_char,
+                    b"pattern memory ops\x00" as *const u8 as *const i8,
                     35111 as int32_t,
                 );
             }
             u = trie_used[cur_lang as usize];
             if u as libc::c_long == 65535 {
                 overflow(
-                    b"pattern memory ops per language\x00" as *const u8 as *const libc::c_char,
+                    b"pattern memory ops per language\x00" as *const u8 as *const i8,
                     (65535 - 0i32 as libc::c_long) as int32_t,
                 );
             }
@@ -1725,7 +1725,7 @@ pub unsafe extern "C" fn first_fit(mut p: trie_pointer) {
         if trie_max < h + max_hyph_char {
             if trie_size <= h + max_hyph_char {
                 overflow(
-                    b"pattern memory\x00" as *const u8 as *const libc::c_char,
+                    b"pattern memory\x00" as *const u8 as *const i8,
                     trie_size,
                 );
             }
@@ -1970,12 +1970,12 @@ unsafe extern "C" fn new_patterns() {
                                 if file_line_error_style_p != 0 {
                                     print_file_line();
                                 } else {
-                                    print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                                    print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                                 }
-                                print_cstr(b"Nonletter\x00" as *const u8 as *const libc::c_char);
+                                print_cstr(b"Nonletter\x00" as *const u8 as *const i8);
                                 help_ptr = 1i32 as u8;
                                 help_line[0] =
-                                    b"(See Appendix H.)\x00" as *const u8 as *const libc::c_char;
+                                    b"(See Appendix H.)\x00" as *const u8 as *const i8;
                                 error();
                             }
                         }
@@ -2037,7 +2037,7 @@ unsafe extern "C" fn new_patterns() {
                                 /*999:*/
                                 if trie_ptr == trie_size {
                                     overflow(
-                                        b"pattern memory\x00" as *const u8 as *const libc::c_char,
+                                        b"pattern memory\x00" as *const u8 as *const i8,
                                         trie_size,
                                     );
                                 }
@@ -2059,14 +2059,14 @@ unsafe extern "C" fn new_patterns() {
                             if file_line_error_style_p != 0 {
                                 print_file_line();
                             } else {
-                                print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                                print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                             }
                             print_cstr(
-                                b"Duplicate pattern\x00" as *const u8 as *const libc::c_char,
+                                b"Duplicate pattern\x00" as *const u8 as *const i8,
                             );
                             help_ptr = 1i32 as u8;
                             help_line[0] =
-                                b"(See Appendix H.)\x00" as *const u8 as *const libc::c_char;
+                                b"(See Appendix H.)\x00" as *const u8 as *const i8;
                             error();
                         }
                         *trie_o.offset(q as isize) = v
@@ -2082,12 +2082,12 @@ unsafe extern "C" fn new_patterns() {
                     if file_line_error_style_p != 0 {
                         print_file_line();
                     } else {
-                        print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                        print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                     }
-                    print_cstr(b"Bad \x00" as *const u8 as *const libc::c_char);
-                    print_esc_cstr(b"patterns\x00" as *const u8 as *const libc::c_char);
+                    print_cstr(b"Bad \x00" as *const u8 as *const i8);
+                    print_esc_cstr(b"patterns\x00" as *const u8 as *const i8);
                     help_ptr = 1i32 as u8;
-                    help_line[0] = b"(See Appendix H.)\x00" as *const u8 as *const libc::c_char;
+                    help_line[0] = b"(See Appendix H.)\x00" as *const u8 as *const i8;
                     error();
                 }
             }
@@ -2139,7 +2139,7 @@ unsafe extern "C" fn new_patterns() {
                 /*999:*/
                 if trie_ptr == trie_size {
                     overflow(
-                        b"pattern memory\x00" as *const u8 as *const libc::c_char,
+                        b"pattern memory\x00" as *const u8 as *const i8,
                         trie_size,
                     );
                 }
@@ -2190,7 +2190,7 @@ unsafe extern "C" fn new_patterns() {
                         /*999:*/
                         if trie_ptr == trie_size {
                             overflow(
-                                b"pattern memory\x00" as *const u8 as *const libc::c_char,
+                                b"pattern memory\x00" as *const u8 as *const i8,
                                 trie_size,
                             ); /*:987 */
                         }
@@ -2248,13 +2248,13 @@ unsafe extern "C" fn new_patterns() {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
-        print_cstr(b"Too late for \x00" as *const u8 as *const libc::c_char);
-        print_esc_cstr(b"patterns\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b"Too late for \x00" as *const u8 as *const i8);
+        print_esc_cstr(b"patterns\x00" as *const u8 as *const i8);
         help_ptr = 1i32 as u8;
         help_line[0] = b"All patterns must be given before typesetting begins.\x00" as *const u8
-            as *const libc::c_char;
+            as *const i8;
         error();
         (*mem.offset((4999999i32 - 12i32) as isize)).b32.s1 = scan_toks(0i32 != 0, 0i32 != 0);
         flush_list(def_ref);
@@ -2601,17 +2601,17 @@ unsafe extern "C" fn new_hyph_exceptions() {
                             if file_line_error_style_p != 0 {
                                 print_file_line();
                             } else {
-                                print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                                print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                             }
-                            print_cstr(b"Not a letter\x00" as *const u8 as *const libc::c_char);
+                            print_cstr(b"Not a letter\x00" as *const u8 as *const i8);
                             help_ptr = 2i32 as u8;
                             help_line[1] =
                                 b"Letters in \\hyphenation words must have \\lccode>0.\x00"
                                     as *const u8
-                                    as *const libc::c_char;
+                                    as *const i8;
                             help_line[0] = b"Proceed; I\'ll ignore the character I just read.\x00"
                                 as *const u8
-                                as *const libc::c_char;
+                                as *const i8;
                             error();
                         } else if (n as libc::c_int) < max_hyphenatable_length() {
                             n += 1;
@@ -2647,16 +2647,16 @@ unsafe extern "C" fn new_hyph_exceptions() {
                     if file_line_error_style_p != 0 {
                         print_file_line();
                     } else {
-                        print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                        print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                     }
-                    print_cstr(b"Improper \x00" as *const u8 as *const libc::c_char);
-                    print_esc_cstr(b"hyphenation\x00" as *const u8 as *const libc::c_char);
-                    print_cstr(b" will be flushed\x00" as *const u8 as *const libc::c_char);
+                    print_cstr(b"Improper \x00" as *const u8 as *const i8);
+                    print_esc_cstr(b"hyphenation\x00" as *const u8 as *const i8);
+                    print_cstr(b" will be flushed\x00" as *const u8 as *const i8);
                     help_ptr = 2i32 as u8;
                     help_line[1] = b"Hyphenation exceptions must contain only letters\x00"
-                        as *const u8 as *const libc::c_char;
+                        as *const u8 as *const i8;
                     help_line[0] = b"and hyphens. But continue; I\'ll forgive and forget.\x00"
-                        as *const u8 as *const libc::c_char;
+                        as *const u8 as *const i8;
                     error();
                     continue 's_91;
                 }
@@ -2669,7 +2669,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                 hc[n as usize] = cur_lang as int32_t;
                 if pool_ptr + n as libc::c_int > pool_size {
                     overflow(
-                        b"pool size\x00" as *const u8 as *const libc::c_char,
+                        b"pool size\x00" as *const u8 as *const i8,
                         pool_size - init_pool_ptr,
                     );
                 }
@@ -2691,7 +2691,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                 }
                 if hyph_count == hyph_size || hyph_next == 0i32 {
                     overflow(
-                        b"exception dictionary\x00" as *const u8 as *const libc::c_char,
+                        b"exception dictionary\x00" as *const u8 as *const i8,
                         hyph_size,
                     );
                 }
@@ -2780,15 +2780,15 @@ pub unsafe extern "C" fn prefixed_command() {
             if file_line_error_style_p != 0 {
                 print_file_line();
             } else {
-                print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                print_nl_cstr(b"! \x00" as *const u8 as *const i8);
             }
-            print_cstr(b"You can\'t use a prefix with `\x00" as *const u8 as *const libc::c_char);
+            print_cstr(b"You can\'t use a prefix with `\x00" as *const u8 as *const i8);
             print_cmd_chr(cur_cmd as u16, cur_chr);
             print_char('\'' as i32);
             help_ptr = 1i32 as u8;
             help_line[0] =
                 b"I\'ll pretend you didn\'t say \\long or \\outer or \\global or \\protected.\x00"
-                    as *const u8 as *const libc::c_char;
+                    as *const u8 as *const i8;
             back_error();
             return;
         }
@@ -2835,18 +2835,18 @@ pub unsafe extern "C" fn prefixed_command() {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
-        print_cstr(b"You can\'t use `\x00" as *const u8 as *const libc::c_char);
-        print_esc_cstr(b"long\x00" as *const u8 as *const libc::c_char);
-        print_cstr(b"\' or `\x00" as *const u8 as *const libc::c_char);
-        print_esc_cstr(b"outer\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b"You can\'t use `\x00" as *const u8 as *const i8);
+        print_esc_cstr(b"long\x00" as *const u8 as *const i8);
+        print_cstr(b"\' or `\x00" as *const u8 as *const i8);
+        print_esc_cstr(b"outer\x00" as *const u8 as *const i8);
         help_ptr = 1i32 as u8;
         help_line[0] = b"I\'ll pretend you didn\'t say \\long or \\outer or \\protected here.\x00"
-            as *const u8 as *const libc::c_char;
-        print_cstr(b"\' or `\x00" as *const u8 as *const libc::c_char);
-        print_esc_cstr(b"protected\x00" as *const u8 as *const libc::c_char);
-        print_cstr(b"\' with `\x00" as *const u8 as *const libc::c_char);
+            as *const u8 as *const i8;
+        print_cstr(b"\' or `\x00" as *const u8 as *const i8);
+        print_esc_cstr(b"protected\x00" as *const u8 as *const i8);
+        print_cstr(b"\' with `\x00" as *const u8 as *const i8);
         print_cmd_chr(cur_cmd as u16, cur_chr);
         print_char('\'' as i32);
         error();
@@ -3033,7 +3033,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                      isize)).b32.s1 > 0i32 {
                     begin_diagnostic();
                     print_nl_cstr(b"New character substitution: \x00" as
-                                      *const u8 as *const libc::c_char);
+                                      *const u8 as *const i8);
                     print(p -
                               (1i32 + (0x10ffffi32 + 1i32) +
                                    (0x10ffffi32 + 1i32) + 1i32 + 15000i32 +
@@ -3045,7 +3045,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                    (0x10ffffi32 + 1i32) +
                                    (0x10ffffi32 + 1i32)));
                     print_cstr(b" = \x00" as *const u8 as
-                                   *const libc::c_char);
+                                   *const i8);
                     print(n);
                     print_char(' ' as i32);
                     print(cur_val);
@@ -3418,22 +3418,22 @@ pub unsafe extern "C" fn prefixed_command() {
             j = cur_chr;
             scan_int();
             n = cur_val;
-            if !scan_keyword(b"to\x00" as *const u8 as *const libc::c_char) {
+            if !scan_keyword(b"to\x00" as *const u8 as *const i8) {
                 if file_line_error_style_p != 0 {
                     print_file_line();
                 } else {
                     print_nl_cstr(b"! \x00" as *const u8 as
-                                      *const libc::c_char);
+                                      *const i8);
                 }
                 print_cstr(b"Missing `to\' inserted\x00" as *const u8 as
-                               *const libc::c_char);
+                               *const i8);
                 help_ptr = 2i32 as u8;
                 help_line[1] =
                     b"You should have said `\\read<number> to \\cs\'.\x00" as
-                        *const u8 as *const libc::c_char;
+                        *const u8 as *const i8;
                 help_line[0] =
                     b"I\'m going to look for the \\cs now.\x00" as *const u8
-                        as *const libc::c_char;
+                        as *const i8;
                 error();
             }
             get_r_token();
@@ -3796,10 +3796,10 @@ pub unsafe extern "C" fn prefixed_command() {
                     print_file_line();
                 } else {
                     print_nl_cstr(b"! \x00" as *const u8 as
-                                      *const libc::c_char);
+                                      *const i8);
                 }
                 print_cstr(b"Invalid code (\x00" as *const u8 as
-                               *const libc::c_char);
+                               *const i8);
                 print_int(cur_val);
                 if p <
                        1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
@@ -3811,16 +3811,16 @@ pub unsafe extern "C" fn prefixed_command() {
                            (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 85i32
                            + 256i32 {
                     print_cstr(b"), should be in the range 0..\x00" as
-                                   *const u8 as *const libc::c_char);
+                                   *const u8 as *const i8);
                 } else {
                     print_cstr(b"), should be at most \x00" as *const u8 as
-                                   *const libc::c_char);
+                                   *const i8);
                 }
                 print_int(n);
                 help_ptr = 1i32 as u8;
                 help_line[0] =
                     b"I\'m going to use 0 instead of that illegal code value.\x00"
-                        as *const u8 as *const libc::c_char;
+                        as *const u8 as *const i8;
                 error();
                 cur_val = 0i32
             }
@@ -3910,19 +3910,19 @@ pub unsafe extern "C" fn prefixed_command() {
                     print_file_line();
                 } else {
                     print_nl_cstr(b"! \x00" as *const u8 as
-                                      *const libc::c_char);
+                                      *const i8);
                 }
                 print_cstr(b"Improper \x00" as *const u8 as
-                               *const libc::c_char);
+                               *const i8);
                 print_esc_cstr(b"setbox\x00" as *const u8 as
-                                   *const libc::c_char);
+                                   *const i8);
                 help_ptr = 2i32 as u8;
                 help_line[1] =
                     b"Sorry, \\setbox is not allowed after \\halign in a display,\x00"
-                        as *const u8 as *const libc::c_char;
+                        as *const u8 as *const i8;
                 help_line[0] =
                     b"or between \\accent and an accented character.\x00" as
-                        *const u8 as *const libc::c_char;
+                        *const u8 as *const i8;
                 error();
             }
         }
@@ -3982,10 +3982,10 @@ pub unsafe extern "C" fn prefixed_command() {
                         print_file_line();
                     } else {
                         print_nl_cstr(b"! \x00" as *const u8 as
-                                          *const libc::c_char);
+                                          *const i8);
                     }
                     print_cstr(b"Patterns can be loaded only by INITEX\x00" as
-                                   *const u8 as *const libc::c_char);
+                                   *const u8 as *const i8);
                     help_ptr = 0i32 as u8;
                     error();
                     loop  {
@@ -4032,7 +4032,7 @@ pub unsafe extern "C" fn prefixed_command() {
         }
         90 => { new_font(a); }
         102 => { new_interaction(); }
-        _ => { confusion(b"prefix\x00" as *const u8 as *const libc::c_char); }
+        _ => { confusion(b"prefix\x00" as *const u8 as *const i8); }
     }
     /*1304:*/
     if after_token != 0i32 {
@@ -4056,11 +4056,11 @@ unsafe extern "C" fn store_fmt_file() {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
-        print_cstr(b"You can\'t dump inside a group\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b"You can\'t dump inside a group\x00" as *const u8 as *const i8);
         help_ptr = 1i32 as u8;
-        help_line[0] = b"`{...\\dump}\' is a no-no.\x00" as *const u8 as *const libc::c_char;
+        help_line[0] = b"`{...\\dump}\' is a no-no.\x00" as *const u8 as *const i8;
         if interaction as libc::c_int == 3i32 {
             interaction = 2i32 as u8
         }
@@ -4070,10 +4070,10 @@ unsafe extern "C" fn store_fmt_file() {
         history = HISTORY_FATAL_ERROR;
         close_files_and_terminate();
         ttstub_output_flush(rust_stdout);
-        _tt_abort(b"\\dump inside a group\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"\\dump inside a group\x00" as *const u8 as *const i8);
     }
     selector = SELECTOR_NEW_STRING;
-    print_cstr(b" (preloaded format=\x00" as *const u8 as *const libc::c_char);
+    print_cstr(b" (preloaded format=\x00" as *const u8 as *const i8);
     print(job_name);
     print_char(' ' as i32);
     print_int(
@@ -4179,43 +4179,43 @@ unsafe extern "C" fn store_fmt_file() {
     }
     if pool_ptr + 1i32 > pool_size {
         overflow(
-            b"pool size\x00" as *const u8 as *const libc::c_char,
+            b"pool size\x00" as *const u8 as *const i8,
             pool_size - init_pool_ptr,
         );
     }
     format_ident = make_string();
-    pack_job_name(b".fmt\x00" as *const u8 as *const libc::c_char);
+    pack_job_name(b".fmt\x00" as *const u8 as *const i8);
     fmt_out = ttstub_output_open(name_of_file, 0i32);
     if fmt_out.is_null() {
         _tt_abort(
-            b"cannot open format output file \"%s\"\x00" as *const u8 as *const libc::c_char,
+            b"cannot open format output file \"%s\"\x00" as *const u8 as *const i8,
             name_of_file,
         );
     }
-    print_nl_cstr(b"Beginning to dump on file \x00" as *const u8 as *const libc::c_char);
+    print_nl_cstr(b"Beginning to dump on file \x00" as *const u8 as *const i8);
     print(make_name_string());
     str_ptr -= 1;
     pool_ptr = *str_start.offset((str_ptr - 65536i32) as isize);
-    print_nl_cstr(b"\x00" as *const u8 as *const libc::c_char);
+    print_nl_cstr(b"\x00" as *const u8 as *const i8);
     print(format_ident);
     /* Header */
     let mut x_val: int32_t = 0x54544e43i32; /* TODO: can we move this farther up in this function? */
     do_dump(
-        &mut x_val as *mut int32_t as *mut libc::c_char,
+        &mut x_val as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_0: int32_t = 28i32;
     do_dump(
-        &mut x_val_0 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_0 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_1: int32_t = hash_high;
     do_dump(
-        &mut x_val_1 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_1 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
@@ -4225,7 +4225,7 @@ unsafe extern "C" fn store_fmt_file() {
     }
     let mut x_val_2: int32_t = 4999999i32;
     do_dump(
-        &mut x_val_2 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_2 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
@@ -4261,21 +4261,21 @@ unsafe extern "C" fn store_fmt_file() {
         + 256i32
         - 1i32;
     do_dump(
-        &mut x_val_3 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_3 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_4: int32_t = 8501i32;
     do_dump(
-        &mut x_val_4 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_4 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_5: int32_t = 607i32;
     do_dump(
-        &mut x_val_5 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_5 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
@@ -4283,47 +4283,47 @@ unsafe extern "C" fn store_fmt_file() {
     /* string pool */
     let mut x_val_6: int32_t = pool_ptr;
     do_dump(
-        &mut x_val_6 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_6 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_7: int32_t = str_ptr;
     do_dump(
-        &mut x_val_7 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_7 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *str_start.offset(0) as *mut pool_pointer as *mut libc::c_char,
+        &mut *str_start.offset(0) as *mut pool_pointer as *mut i8,
         ::std::mem::size_of::<pool_pointer>() as u64,
         (str_ptr - 65536i32 + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *str_pool.offset(0) as *mut packed_UTF16_code as *mut libc::c_char,
+        &mut *str_pool.offset(0) as *mut packed_UTF16_code as *mut i8,
         ::std::mem::size_of::<packed_UTF16_code>() as u64,
         pool_ptr as size_t,
         fmt_out,
     );
     print_ln();
     print_int(str_ptr);
-    print_cstr(b" strings of total length \x00" as *const u8 as *const libc::c_char);
+    print_cstr(b" strings of total length \x00" as *const u8 as *const i8);
     print_int(pool_ptr);
     /* "memory locations" */
     sort_avail();
     var_used = 0i32;
     let mut x_val_8: int32_t = lo_mem_max;
     do_dump(
-        &mut x_val_8 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_8 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_9: int32_t = rover;
     do_dump(
-        &mut x_val_9 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_9 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
@@ -4332,7 +4332,7 @@ unsafe extern "C" fn store_fmt_file() {
     while k <= 6i32 {
         let mut x_val_10: int32_t = sa_root[k as usize];
         do_dump(
-            &mut x_val_10 as *mut int32_t as *mut libc::c_char,
+            &mut x_val_10 as *mut int32_t as *mut i8,
             ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_out,
@@ -4344,7 +4344,7 @@ unsafe extern "C" fn store_fmt_file() {
     x = 0i32;
     loop {
         do_dump(
-            &mut *mem.offset(p as isize) as *mut memory_word as *mut libc::c_char,
+            &mut *mem.offset(p as isize) as *mut memory_word as *mut i8,
             ::std::mem::size_of::<memory_word>() as u64,
             (q + 2i32 - p) as size_t,
             fmt_out,
@@ -4360,7 +4360,7 @@ unsafe extern "C" fn store_fmt_file() {
     var_used = var_used + lo_mem_max - p;
     dyn_used = mem_end + 1i32 - hi_mem_min;
     do_dump(
-        &mut *mem.offset(p as isize) as *mut memory_word as *mut libc::c_char,
+        &mut *mem.offset(p as isize) as *mut memory_word as *mut i8,
         ::std::mem::size_of::<memory_word>() as u64,
         (lo_mem_max + 1i32 - p) as size_t,
         fmt_out,
@@ -4368,20 +4368,20 @@ unsafe extern "C" fn store_fmt_file() {
     x = x + lo_mem_max + 1i32 - p;
     let mut x_val_11: int32_t = hi_mem_min;
     do_dump(
-        &mut x_val_11 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_11 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_12: int32_t = avail;
     do_dump(
-        &mut x_val_12 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_12 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *mem.offset(hi_mem_min as isize) as *mut memory_word as *mut libc::c_char,
+        &mut *mem.offset(hi_mem_min as isize) as *mut memory_word as *mut i8,
         ::std::mem::size_of::<memory_word>() as u64,
         (mem_end + 1i32 - hi_mem_min) as size_t,
         fmt_out,
@@ -4394,14 +4394,14 @@ unsafe extern "C" fn store_fmt_file() {
     }
     let mut x_val_13: int32_t = var_used;
     do_dump(
-        &mut x_val_13 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_13 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_14: int32_t = dyn_used;
     do_dump(
-        &mut x_val_14 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_14 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
@@ -4409,7 +4409,7 @@ unsafe extern "C" fn store_fmt_file() {
     print_ln();
     print_int(x);
     print_cstr(
-        b" memory locations dumped; current usage is \x00" as *const u8 as *const libc::c_char,
+        b" memory locations dumped; current usage is \x00" as *const u8 as *const i8,
     );
     print_int(var_used);
     print_char('&' as i32);
@@ -4530,13 +4530,13 @@ unsafe extern "C" fn store_fmt_file() {
         }
         let mut x_val_15: int32_t = l - k;
         do_dump(
-            &mut x_val_15 as *mut int32_t as *mut libc::c_char,
+            &mut x_val_15 as *mut int32_t as *mut i8,
             ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_out,
         );
         do_dump(
-            &mut *eqtb.offset(k as isize) as *mut memory_word as *mut libc::c_char,
+            &mut *eqtb.offset(k as isize) as *mut memory_word as *mut i8,
             ::std::mem::size_of::<memory_word>() as u64,
             (l - k) as size_t,
             fmt_out,
@@ -4544,7 +4544,7 @@ unsafe extern "C" fn store_fmt_file() {
         k = j + 1i32;
         let mut x_val_16: int32_t = k - l;
         do_dump(
-            &mut x_val_16 as *mut int32_t as *mut libc::c_char,
+            &mut x_val_16 as *mut int32_t as *mut i8,
             ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_out,
@@ -4700,13 +4700,13 @@ unsafe extern "C" fn store_fmt_file() {
         }
         let mut x_val_17: int32_t = l - k;
         do_dump(
-            &mut x_val_17 as *mut int32_t as *mut libc::c_char,
+            &mut x_val_17 as *mut int32_t as *mut i8,
             ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_out,
         );
         do_dump(
-            &mut *eqtb.offset(k as isize) as *mut memory_word as *mut libc::c_char,
+            &mut *eqtb.offset(k as isize) as *mut memory_word as *mut i8,
             ::std::mem::size_of::<memory_word>() as u64,
             (l - k) as size_t,
             fmt_out,
@@ -4714,7 +4714,7 @@ unsafe extern "C" fn store_fmt_file() {
         k = j + 1i32;
         let mut x_val_18: int32_t = k - l;
         do_dump(
-            &mut x_val_18 as *mut int32_t as *mut libc::c_char,
+            &mut x_val_18 as *mut int32_t as *mut i8,
             ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_out,
@@ -4788,7 +4788,7 @@ unsafe extern "C" fn store_fmt_file() {
                     + 256i32
                     - 1i32
                     + 1i32) as isize,
-            ) as *mut memory_word as *mut libc::c_char,
+            ) as *mut memory_word as *mut i8,
             ::std::mem::size_of::<memory_word>() as u64,
             hash_high as size_t,
             fmt_out,
@@ -4796,14 +4796,14 @@ unsafe extern "C" fn store_fmt_file() {
     }
     let mut x_val_19: int32_t = par_loc;
     do_dump(
-        &mut x_val_19 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_19 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_20: int32_t = write_loc;
     do_dump(
-        &mut x_val_20 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_20 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
@@ -4811,7 +4811,7 @@ unsafe extern "C" fn store_fmt_file() {
     p = 0i32;
     while p <= 500i32 {
         do_dump(
-            &mut *prim.as_mut_ptr().offset(p as isize) as *mut b32x2 as *mut libc::c_char,
+            &mut *prim.as_mut_ptr().offset(p as isize) as *mut b32x2 as *mut i8,
             ::std::mem::size_of::<b32x2>() as u64,
             1i32 as size_t,
             fmt_out,
@@ -4822,7 +4822,7 @@ unsafe extern "C" fn store_fmt_file() {
     while p <= 500i32 {
         do_dump(
             &mut *prim_eqtb.as_mut_ptr().offset(p as isize) as *mut memory_word
-                as *mut libc::c_char,
+                as *mut i8,
             ::std::mem::size_of::<memory_word>() as u64,
             1i32 as size_t,
             fmt_out,
@@ -4832,7 +4832,7 @@ unsafe extern "C" fn store_fmt_file() {
     /* control sequences */
     let mut x_val_21: int32_t = hash_used;
     do_dump(
-        &mut x_val_21 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_21 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
@@ -4845,13 +4845,13 @@ unsafe extern "C" fn store_fmt_file() {
         if (*hash.offset(p as isize)).s1 != 0i32 {
             let mut x_val_22: int32_t = p;
             do_dump(
-                &mut x_val_22 as *mut int32_t as *mut libc::c_char,
+                &mut x_val_22 as *mut int32_t as *mut i8,
                 ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
             do_dump(
-                &mut *hash.offset(p as isize) as *mut b32x2 as *mut libc::c_char,
+                &mut *hash.offset(p as isize) as *mut b32x2 as *mut i8,
                 ::std::mem::size_of::<b32x2>() as u64,
                 1i32 as size_t,
                 fmt_out,
@@ -4861,7 +4861,7 @@ unsafe extern "C" fn store_fmt_file() {
         p += 1
     }
     do_dump(
-        &mut *hash.offset((hash_used + 1i32) as isize) as *mut b32x2 as *mut libc::c_char,
+        &mut *hash.offset((hash_used + 1i32) as isize) as *mut b32x2 as *mut i8,
         ::std::mem::size_of::<b32x2>() as u64,
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -4909,7 +4909,7 @@ unsafe extern "C" fn store_fmt_file() {
                     + 256i32
                     - 1i32
                     + 1i32) as isize,
-            ) as *mut b32x2 as *mut libc::c_char,
+            ) as *mut b32x2 as *mut i8,
             ::std::mem::size_of::<b32x2>() as u64,
             hash_high as size_t,
             fmt_out,
@@ -4917,176 +4917,176 @@ unsafe extern "C" fn store_fmt_file() {
     }
     let mut x_val_23: int32_t = cs_count;
     do_dump(
-        &mut x_val_23 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_23 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     print_ln();
     print_int(cs_count);
-    print_cstr(b" multiletter control sequences\x00" as *const u8 as *const libc::c_char);
+    print_cstr(b" multiletter control sequences\x00" as *const u8 as *const i8);
     /* fonts */
     let mut x_val_24: int32_t = fmem_ptr;
     do_dump(
-        &mut x_val_24 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_24 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *font_info.offset(0) as *mut memory_word as *mut libc::c_char,
+        &mut *font_info.offset(0) as *mut memory_word as *mut i8,
         ::std::mem::size_of::<memory_word>() as u64,
         fmem_ptr as size_t,
         fmt_out,
     );
     let mut x_val_25: int32_t = font_ptr;
     do_dump(
-        &mut x_val_25 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_25 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *font_check.offset(0) as *mut b16x4 as *mut libc::c_char,
+        &mut *font_check.offset(0) as *mut b16x4 as *mut i8,
         ::std::mem::size_of::<b16x4>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *font_size.offset(0) as *mut scaled_t as *mut libc::c_char,
+        &mut *font_size.offset(0) as *mut scaled_t as *mut i8,
         ::std::mem::size_of::<scaled_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *font_dsize.offset(0) as *mut scaled_t as *mut libc::c_char,
+        &mut *font_dsize.offset(0) as *mut scaled_t as *mut i8,
         ::std::mem::size_of::<scaled_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *font_params.offset(0) as *mut font_index as *mut libc::c_char,
+        &mut *font_params.offset(0) as *mut font_index as *mut i8,
         ::std::mem::size_of::<font_index>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *hyphen_char.offset(0) as *mut int32_t as *mut libc::c_char,
+        &mut *hyphen_char.offset(0) as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *skew_char.offset(0) as *mut int32_t as *mut libc::c_char,
+        &mut *skew_char.offset(0) as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *font_name.offset(0) as *mut str_number as *mut libc::c_char,
+        &mut *font_name.offset(0) as *mut str_number as *mut i8,
         ::std::mem::size_of::<str_number>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *font_area.offset(0) as *mut str_number as *mut libc::c_char,
+        &mut *font_area.offset(0) as *mut str_number as *mut i8,
         ::std::mem::size_of::<str_number>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *font_bc.offset(0) as *mut UTF16_code as *mut libc::c_char,
+        &mut *font_bc.offset(0) as *mut UTF16_code as *mut i8,
         ::std::mem::size_of::<UTF16_code>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *font_ec.offset(0) as *mut UTF16_code as *mut libc::c_char,
+        &mut *font_ec.offset(0) as *mut UTF16_code as *mut i8,
         ::std::mem::size_of::<UTF16_code>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *char_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        &mut *char_base.offset(0) as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *width_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        &mut *width_base.offset(0) as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *height_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        &mut *height_base.offset(0) as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *depth_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        &mut *depth_base.offset(0) as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *italic_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        &mut *italic_base.offset(0) as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *lig_kern_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        &mut *lig_kern_base.offset(0) as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *kern_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        &mut *kern_base.offset(0) as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *exten_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        &mut *exten_base.offset(0) as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *param_base.offset(0) as *mut int32_t as *mut libc::c_char,
+        &mut *param_base.offset(0) as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *font_glue.offset(0) as *mut int32_t as *mut libc::c_char,
+        &mut *font_glue.offset(0) as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *bchar_label.offset(0) as *mut font_index as *mut libc::c_char,
+        &mut *bchar_label.offset(0) as *mut font_index as *mut i8,
         ::std::mem::size_of::<font_index>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *font_bchar.offset(0) as *mut nine_bits as *mut libc::c_char,
+        &mut *font_bchar.offset(0) as *mut nine_bits as *mut i8,
         ::std::mem::size_of::<nine_bits>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *font_false_bchar.offset(0) as *mut nine_bits as *mut libc::c_char,
+        &mut *font_false_bchar.offset(0) as *mut nine_bits as *mut i8,
         ::std::mem::size_of::<nine_bits>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     k = 0i32;
     while k <= font_ptr {
-        print_nl_cstr(b"\\font\x00" as *const u8 as *const libc::c_char);
+        print_nl_cstr(b"\\font\x00" as *const u8 as *const i8);
         print_esc(
             (*hash.offset(
                 (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 12i32 + k)
@@ -5107,19 +5107,19 @@ unsafe extern "C" fn store_fmt_file() {
             if file_line_error_style_p != 0 {
                 print_file_line();
             } else {
-                print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                print_nl_cstr(b"! \x00" as *const u8 as *const i8);
             }
             print_cstr(
                 b"Can\'t \\dump a format with native fonts or font-mappings\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
             help_ptr = 3i32 as u8;
             help_line[2] = b"You really, really don\'t want to do this.\x00" as *const u8
-                as *const libc::c_char;
+                as *const i8;
             help_line[1] =
-                b"It won\'t work, and only confuses me.\x00" as *const u8 as *const libc::c_char;
+                b"It won\'t work, and only confuses me.\x00" as *const u8 as *const i8;
             help_line[0] = b"(Load them at runtime, not as part of the format file.)\x00"
-                as *const u8 as *const libc::c_char;
+                as *const u8 as *const i8;
             error();
         } else {
             print_file_name(
@@ -5129,25 +5129,25 @@ unsafe extern "C" fn store_fmt_file() {
             );
         }
         if *font_size.offset(k as isize) != *font_dsize.offset(k as isize) {
-            print_cstr(b" at \x00" as *const u8 as *const libc::c_char);
+            print_cstr(b" at \x00" as *const u8 as *const i8);
             print_scaled(*font_size.offset(k as isize));
-            print_cstr(b"pt\x00" as *const u8 as *const libc::c_char);
+            print_cstr(b"pt\x00" as *const u8 as *const i8);
         }
         k += 1
     }
     print_ln();
     print_int(fmem_ptr - 7i32);
-    print_cstr(b" words of font info for \x00" as *const u8 as *const libc::c_char);
+    print_cstr(b" words of font info for \x00" as *const u8 as *const i8);
     print_int(font_ptr - 0i32);
     if font_ptr != 0i32 + 1i32 {
-        print_cstr(b" preloaded fonts\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" preloaded fonts\x00" as *const u8 as *const i8);
     } else {
-        print_cstr(b" preloaded font\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" preloaded font\x00" as *const u8 as *const i8);
     }
     /* hyphenation info */
     let mut x_val_26: int32_t = hyph_count;
     do_dump(
-        &mut x_val_26 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_26 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
@@ -5157,7 +5157,7 @@ unsafe extern "C" fn store_fmt_file() {
     }
     let mut x_val_27: int32_t = hyph_next;
     do_dump(
-        &mut x_val_27 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_27 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
@@ -5169,21 +5169,21 @@ unsafe extern "C" fn store_fmt_file() {
                 + 65536 * *hyph_link.offset(k as isize) as libc::c_long)
                 as int32_t;
             do_dump(
-                &mut x_val_28 as *mut int32_t as *mut libc::c_char,
+                &mut x_val_28 as *mut int32_t as *mut i8,
                 ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
             let mut x_val_29: int32_t = *hyph_word.offset(k as isize);
             do_dump(
-                &mut x_val_29 as *mut int32_t as *mut libc::c_char,
+                &mut x_val_29 as *mut int32_t as *mut i8,
                 ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
             let mut x_val_30: int32_t = *hyph_list.offset(k as isize);
             do_dump(
-                &mut x_val_30 as *mut int32_t as *mut libc::c_char,
+                &mut x_val_30 as *mut int32_t as *mut i8,
                 ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_out,
@@ -5194,105 +5194,105 @@ unsafe extern "C" fn store_fmt_file() {
     print_ln();
     print_int(hyph_count);
     if hyph_count != 1i32 {
-        print_cstr(b" hyphenation exceptions\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" hyphenation exceptions\x00" as *const u8 as *const i8);
     } else {
-        print_cstr(b" hyphenation exception\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" hyphenation exception\x00" as *const u8 as *const i8);
     }
     if trie_not_ready {
         init_trie();
     }
     let mut x_val_31: int32_t = trie_max;
     do_dump(
-        &mut x_val_31 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_31 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_32: int32_t = hyph_start;
     do_dump(
-        &mut x_val_32 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_32 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *trie_trl.offset(0) as *mut trie_pointer as *mut libc::c_char,
+        &mut *trie_trl.offset(0) as *mut trie_pointer as *mut i8,
         ::std::mem::size_of::<trie_pointer>() as u64,
         (trie_max + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *trie_tro.offset(0) as *mut trie_pointer as *mut libc::c_char,
+        &mut *trie_tro.offset(0) as *mut trie_pointer as *mut i8,
         ::std::mem::size_of::<trie_pointer>() as u64,
         (trie_max + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *trie_trc.offset(0) as *mut u16 as *mut libc::c_char,
+        &mut *trie_trc.offset(0) as *mut u16 as *mut i8,
         ::std::mem::size_of::<u16>() as u64,
         (trie_max + 1i32) as size_t,
         fmt_out,
     );
     let mut x_val_33: int32_t = max_hyph_char;
     do_dump(
-        &mut x_val_33 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_33 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_34: int32_t = trie_op_ptr;
     do_dump(
-        &mut x_val_34 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_34 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *hyf_distance.as_mut_ptr().offset(1) as *mut small_number as *mut libc::c_char,
+        &mut *hyf_distance.as_mut_ptr().offset(1) as *mut small_number as *mut i8,
         ::std::mem::size_of::<small_number>() as u64,
         trie_op_ptr as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *hyf_num.as_mut_ptr().offset(1) as *mut small_number as *mut libc::c_char,
+        &mut *hyf_num.as_mut_ptr().offset(1) as *mut small_number as *mut i8,
         ::std::mem::size_of::<small_number>() as u64,
         trie_op_ptr as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *hyf_next.as_mut_ptr().offset(1) as *mut trie_opcode as *mut libc::c_char,
+        &mut *hyf_next.as_mut_ptr().offset(1) as *mut trie_opcode as *mut i8,
         ::std::mem::size_of::<trie_opcode>() as u64,
         trie_op_ptr as size_t,
         fmt_out,
     );
-    print_nl_cstr(b"Hyphenation trie of length \x00" as *const u8 as *const libc::c_char);
+    print_nl_cstr(b"Hyphenation trie of length \x00" as *const u8 as *const i8);
     print_int(trie_max);
-    print_cstr(b" has \x00" as *const u8 as *const libc::c_char);
+    print_cstr(b" has \x00" as *const u8 as *const i8);
     print_int(trie_op_ptr);
     if trie_op_ptr != 1i32 {
-        print_cstr(b" ops\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" ops\x00" as *const u8 as *const i8);
     } else {
-        print_cstr(b" op\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" op\x00" as *const u8 as *const i8);
     }
-    print_cstr(b" out of \x00" as *const u8 as *const libc::c_char);
+    print_cstr(b" out of \x00" as *const u8 as *const i8);
     print_int(35111 as int32_t);
     k = 255i32;
     while k >= 0i32 {
         if trie_used[k as usize] as libc::c_int > 0i32 {
-            print_nl_cstr(b"  \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"  \x00" as *const u8 as *const i8);
             print_int(trie_used[k as usize] as int32_t);
-            print_cstr(b" for language \x00" as *const u8 as *const libc::c_char);
+            print_cstr(b" for language \x00" as *const u8 as *const i8);
             print_int(k);
             let mut x_val_35: int32_t = k;
             do_dump(
-                &mut x_val_35 as *mut int32_t as *mut libc::c_char,
+                &mut x_val_35 as *mut int32_t as *mut i8,
                 ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
             let mut x_val_36: int32_t = trie_used[k as usize] as int32_t;
             do_dump(
-                &mut x_val_36 as *mut int32_t as *mut libc::c_char,
+                &mut x_val_36 as *mut int32_t as *mut i8,
                 ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_out,
@@ -5303,7 +5303,7 @@ unsafe extern "C" fn store_fmt_file() {
     /* footer */
     let mut x_val_37: int32_t = 0x29ai32; /*:1361*/
     do_dump(
-        &mut x_val_37 as *mut int32_t as *mut libc::c_char,
+        &mut x_val_37 as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
@@ -5344,7 +5344,7 @@ unsafe extern "C" fn pack_buffered_name(mut n: small_number, mut a: int32_t, mut
     name_of_file = xmalloc(
         ((format_default_length + 1i32 + 1i32) as u64)
             .wrapping_mul(::std::mem::size_of::<UTF8_code>() as u64),
-    ) as *mut libc::c_char;
+    ) as *mut i8;
     strcpy(name_of_file, TEX_format_default);
     name_length = strlen(name_of_file) as int32_t;
 }
@@ -5363,7 +5363,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
     fmt_in = ttstub_input_open(name_of_file, TTIF_FORMAT, 0i32);
     if fmt_in.is_null() {
         _tt_abort(
-            b"cannot open the format file \"%s\"\x00" as *const u8 as *const libc::c_char,
+            b"cannot open the format file \"%s\"\x00" as *const u8 as *const i8,
             name_of_file,
         );
     }
@@ -5379,14 +5379,14 @@ unsafe extern "C" fn load_fmt_file() -> bool {
     }
     /* start reading the header */
     do_undump(
-        &mut x as *mut int32_t as *mut libc::c_char,
+        &mut x as *mut int32_t as *mut i8,
         ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_in,
     );
     if !(x != 0x54544e43i32) {
         do_undump(
-            &mut x as *mut int32_t as *mut libc::c_char,
+            &mut x as *mut int32_t as *mut i8,
             ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_in,
@@ -5394,7 +5394,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
         if x != 28i32 {
             _tt_abort(
                 b"format file \"%s\" is of the wrong version: expected %d, found %d\x00"
-                    as *const u8 as *const libc::c_char,
+                    as *const u8 as *const i8,
                 name_of_file,
                 28i32,
                 x,
@@ -5402,7 +5402,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
         }
         /* hash table parameters */
         do_undump(
-            &mut hash_high as *mut int32_t as *mut libc::c_char,
+            &mut hash_high as *mut int32_t as *mut i8,
             ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_in,
@@ -5555,10 +5555,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
             }
             max_reg_num = 32767i32;
             max_reg_help_line = b"A register number must be between 0 and 32767.\x00" as *const u8
-                as *const libc::c_char;
+                as *const i8;
             /* "memory locations" */
             do_undump(
-                &mut x as *mut int32_t as *mut libc::c_char,
+                &mut x as *mut int32_t as *mut i8,
                 ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_in,
@@ -5572,7 +5572,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                         .wrapping_mul(::std::mem::size_of::<memory_word>() as u64),
                 ) as *mut memory_word;
                 do_undump(
-                    &mut x as *mut int32_t as *mut libc::c_char,
+                    &mut x as *mut int32_t as *mut i8,
                     ::std::mem::size_of::<int32_t>() as u64,
                     1i32 as size_t,
                     fmt_in,
@@ -5610,14 +5610,14 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                         - 1i32)
                 {
                     do_undump(
-                        &mut x as *mut int32_t as *mut libc::c_char,
+                        &mut x as *mut int32_t as *mut i8,
                         ::std::mem::size_of::<int32_t>() as u64,
                         1i32 as size_t,
                         fmt_in,
                     );
                     if !(x != 8501i32) {
                         do_undump(
-                            &mut x as *mut int32_t as *mut libc::c_char,
+                            &mut x as *mut int32_t as *mut i8,
                             ::std::mem::size_of::<int32_t>() as u64,
                             1i32 as size_t,
                             fmt_in,
@@ -5625,7 +5625,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                         if !(x != 607i32) {
                             /* string pool */
                             do_undump(
-                                &mut x as *mut int32_t as *mut libc::c_char,
+                                &mut x as *mut int32_t as *mut i8,
                                 ::std::mem::size_of::<int32_t>() as u64,
                                 1i32 as size_t,
                                 fmt_in,
@@ -5634,7 +5634,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                 if x as libc::c_long > 40000000 - pool_free as libc::c_long {
                                     _tt_abort(
                                         b"must increase string_pool_size\x00" as *const u8
-                                            as *const libc::c_char,
+                                            as *const i8,
                                     );
                                 }
                                 pool_ptr = x;
@@ -5642,7 +5642,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                     pool_size = pool_ptr + pool_free
                                 }
                                 do_undump(
-                                    &mut x as *mut int32_t as *mut libc::c_char,
+                                    &mut x as *mut int32_t as *mut i8,
                                     ::std::mem::size_of::<int32_t>() as u64,
                                     1i32 as size_t,
                                     fmt_in,
@@ -5651,7 +5651,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                     if x as libc::c_long > 2097151 - strings_free as libc::c_long {
                                         _tt_abort(
                                             b"must increase sup_strings\x00" as *const u8
-                                                as *const libc::c_char,
+                                                as *const i8,
                                         );
                                     }
                                     str_ptr = x;
@@ -5667,7 +5667,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                     let mut i: libc::c_int = 0;
                                     do_undump(
                                         &mut *str_start.offset(0) as *mut pool_pointer
-                                            as *mut libc::c_char,
+                                            as *mut i8,
                                         ::std::mem::size_of::<pool_pointer>() as u64,
                                         (str_ptr - 65536i32 + 1i32) as size_t,
                                         fmt_in,
@@ -5683,7 +5683,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                         {
                                             _tt_abort(b"item %u (=%ld) of .fmt array at %lx <%ld or >%ld\x00"
                                                           as *const u8 as
-                                                          *const libc::c_char,
+                                                          *const i8,
                                                       i,
                                                       *(&mut *str_start.offset(0)
                                                             as
@@ -5707,7 +5707,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                             as *mut packed_UTF16_code;
                                     do_undump(
                                         &mut *str_pool.offset(0) as *mut packed_UTF16_code
-                                            as *mut libc::c_char,
+                                            as *mut i8,
                                         ::std::mem::size_of::<packed_UTF16_code>() as u64,
                                         pool_ptr as size_t,
                                         fmt_in,
@@ -5718,7 +5718,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                      * of |mem|, we are usually able to get by without having to dump very
                                      * much of the dynamic memory." */
                                     do_undump(
-                                        &mut x as *mut int32_t as *mut libc::c_char,
+                                        &mut x as *mut int32_t as *mut i8,
                                         ::std::mem::size_of::<int32_t>() as u64,
                                         1i32 as size_t,
                                         fmt_in,
@@ -5726,7 +5726,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                     if !(x < 1019i32 || x > 4999999i32 - 15i32) {
                                         lo_mem_max = x;
                                         do_undump(
-                                            &mut x as *mut int32_t as *mut libc::c_char,
+                                            &mut x as *mut int32_t as *mut i8,
                                             ::std::mem::size_of::<int32_t>() as u64,
                                             1i32 as size_t,
                                             fmt_in,
@@ -5740,7 +5740,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                     break;
                                                 }
                                                 do_undump(
-                                                    &mut x as *mut int32_t as *mut libc::c_char,
+                                                    &mut x as *mut int32_t as *mut i8,
                                                     ::std::mem::size_of::<int32_t>()
                                                         as u64,
                                                     1i32 as size_t,
@@ -5762,7 +5762,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                         do_undump(
                                                             &mut *mem.offset(p as isize)
                                                                 as *mut memory_word
-                                                                as *mut libc::c_char,
+                                                                as *mut i8,
                                                             ::std::mem::size_of::<memory_word>()
                                                                 as u64,
                                                             (q + 2i32 - p) as size_t,
@@ -5795,7 +5795,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                             do_undump(
                                                                 &mut *mem.offset(p as isize)
                                                                     as *mut memory_word
-                                                                    as *mut libc::c_char,
+                                                                    as *mut i8,
                                                                 ::std::mem::size_of::<memory_word>()
                                                                     as u64,
                                                                 (lo_mem_max + 1i32 - p) as size_t,
@@ -5803,7 +5803,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                             );
                                                             do_undump(
                                                                 &mut x as *mut int32_t
-                                                                    as *mut libc::c_char,
+                                                                    as *mut i8,
                                                                 ::std::mem::size_of::<int32_t>()
                                                                     as u64,
                                                                 1i32 as size_t,
@@ -5815,7 +5815,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                 hi_mem_min = x;
                                                                 do_undump(
                                                                     &mut x as *mut int32_t
-                                                                        as *mut libc::c_char,
+                                                                        as *mut i8,
                                                                     ::std::mem::size_of::<int32_t>()
                                                                         as u64,
                                                                     1i32 as size_t,
@@ -5831,7 +5831,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                             hi_mem_min as isize,
                                                                         )
                                                                             as *mut memory_word
-                                                                            as *mut libc::c_char,
+                                                                            as *mut i8,
                                                                         ::std::mem::size_of::<
                                                                             memory_word,
                                                                         >(
@@ -5845,7 +5845,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                     do_undump(
                                                                         &mut var_used
                                                                             as *mut int32_t
-                                                                            as *mut libc::c_char,
+                                                                            as *mut i8,
                                                                         ::std::mem::size_of::<int32_t>(
                                                                         )
                                                                             as u64,
@@ -5855,7 +5855,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                     do_undump(
                                                                         &mut dyn_used
                                                                             as *mut int32_t
-                                                                            as *mut libc::c_char,
+                                                                            as *mut i8,
                                                                         ::std::mem::size_of::<int32_t>(
                                                                         )
                                                                             as u64,
@@ -5876,7 +5876,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                       as
                                                                                       *mut int32_t
                                                                                       as
-                                                                                      *mut libc::c_char,
+                                                                                      *mut i8,
                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                       as
                                                                                       u64,
@@ -5937,7 +5937,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                       as
                                                                                       *mut memory_word
                                                                                       as
-                                                                                      *mut libc::c_char,
+                                                                                      *mut i8,
                                                                                   ::std::mem::size_of::<memory_word>()
                                                                                       as
                                                                                       u64,
@@ -5950,7 +5950,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                       as
                                                                                       *mut int32_t
                                                                                       as
-                                                                                      *mut libc::c_char,
+                                                                                      *mut i8,
                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                       as
                                                                                       u64,
@@ -6152,7 +6152,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                               as
                                                                                               *mut memory_word
                                                                                               as
-                                                                                              *mut libc::c_char,
+                                                                                              *mut i8,
                                                                                           ::std::mem::size_of::<memory_word>()
                                                                                               as
                                                                                               u64,
@@ -6165,7 +6165,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                           as
                                                                                           *mut int32_t
                                                                                           as
-                                                                                          *mut libc::c_char,
+                                                                                          *mut i8,
                                                                                       ::std::mem::size_of::<int32_t>()
                                                                                           as
                                                                                           u64,
@@ -6189,7 +6189,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                               as
                                                                                               *mut int32_t
                                                                                               as
-                                                                                              *mut libc::c_char,
+                                                                                              *mut i8,
                                                                                           ::std::mem::size_of::<int32_t>()
                                                                                               as
                                                                                               u64,
@@ -6224,7 +6224,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                       as
                                                                                                       *mut b32x2
                                                                                                       as
-                                                                                                      *mut libc::c_char,
+                                                                                                      *mut i8,
                                                                                                   ::std::mem::size_of::<b32x2>()
                                                                                                       as
                                                                                                       u64,
@@ -6244,7 +6244,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                       as
                                                                                                       *mut memory_word
                                                                                                       as
-                                                                                                      *mut libc::c_char,
+                                                                                                      *mut i8,
                                                                                                   ::std::mem::size_of::<memory_word>()
                                                                                                       as
                                                                                                       u64,
@@ -6258,7 +6258,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                   as
                                                                                                   *mut int32_t
                                                                                                   as
-                                                                                                  *mut libc::c_char,
+                                                                                                  *mut i8,
                                                                                               ::std::mem::size_of::<int32_t>()
                                                                                                   as
                                                                                                   u64,
@@ -6320,7 +6320,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                           as
                                                                                                           *mut int32_t
                                                                                                           as
-                                                                                                          *mut libc::c_char,
+                                                                                                          *mut i8,
                                                                                                       ::std::mem::size_of::<int32_t>()
                                                                                                           as
                                                                                                           u64,
@@ -6353,7 +6353,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                           as
                                                                                                           *mut b32x2
                                                                                                           as
-                                                                                                          *mut libc::c_char,
+                                                                                                          *mut i8,
                                                                                                       ::std::mem::size_of::<b32x2>()
                                                                                                           as
                                                                                                           u64,
@@ -6389,7 +6389,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                               as
                                                                                                               *mut b32x2
                                                                                                               as
-                                                                                                              *mut libc::c_char,
+                                                                                                              *mut i8,
                                                                                                           ::std::mem::size_of::<b32x2>()
                                                                                                               as
                                                                                                               u64,
@@ -6509,7 +6509,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   as
                                                                                                                   *mut b32x2
                                                                                                                   as
-                                                                                                                  *mut libc::c_char,
+                                                                                                                  *mut i8,
                                                                                                               ::std::mem::size_of::<b32x2>()
                                                                                                                   as
                                                                                                                   u64,
@@ -6522,7 +6522,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                               as
                                                                                                               *mut int32_t
                                                                                                               as
-                                                                                                              *mut libc::c_char,
+                                                                                                              *mut i8,
                                                                                                           ::std::mem::size_of::<int32_t>()
                                                                                                               as
                                                                                                               u64,
@@ -6535,7 +6535,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                               as
                                                                                                               *mut int32_t
                                                                                                               as
-                                                                                                              *mut libc::c_char,
+                                                                                                              *mut i8,
                                                                                                           ::std::mem::size_of::<int32_t>()
                                                                                                               as
                                                                                                               u64,
@@ -6557,7 +6557,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *const u8
                                                                                                                       as
-                                                                                                                      *const libc::c_char);
+                                                                                                                      *const i8);
                                                                                                     }
                                                                                                     fmem_ptr
                                                                                                         =
@@ -6585,7 +6585,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   as
                                                                                                                   *mut memory_word
                                                                                                                   as
-                                                                                                                  *mut libc::c_char,
+                                                                                                                  *mut i8,
                                                                                                               ::std::mem::size_of::<memory_word>()
                                                                                                                   as
                                                                                                                   u64,
@@ -6597,7 +6597,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   as
                                                                                                                   *mut int32_t
                                                                                                                   as
-                                                                                                                  *mut libc::c_char,
+                                                                                                                  *mut i8,
                                                                                                               ::std::mem::size_of::<int32_t>()
                                                                                                                   as
                                                                                                                   u64,
@@ -6619,7 +6619,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           as
                                                                                                                           *const u8
                                                                                                                           as
-                                                                                                                          *const libc::c_char);
+                                                                                                                          *const i8);
                                                                                                         }
                                                                                                         font_ptr
                                                                                                             =
@@ -6653,11 +6653,11 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<libc::c_char>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<i8>()
                                                                                                                                                          as
                                                                                                                                                          u64))
                                                                                                                 as
-                                                                                                                *mut libc::c_char;
+                                                                                                                *mut i8;
                                                                                                         font_letter_space
                                                                                                             =
                                                                                                             xmalloc(((font_max
@@ -6946,7 +6946,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut b16x4
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<b16x4>()
                                                                                                                       as
                                                                                                                       u64,
@@ -6960,7 +6960,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut scaled_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<scaled_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -6974,7 +6974,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut scaled_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<scaled_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -6991,7 +6991,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut font_index
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<font_index>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7030,7 +7030,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                               as
                                                                                                                               *const u8
                                                                                                                               as
-                                                                                                                              *const libc::c_char,
+                                                                                                                              *const i8,
                                                                                                                           i_0,
                                                                                                                           *(&mut *font_params.offset(0)
                                                                                                                                 as
@@ -7059,7 +7059,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut int32_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7073,7 +7073,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut int32_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7090,7 +7090,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut str_number
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<str_number>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7121,7 +7121,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                               as
                                                                                                                               *const u8
                                                                                                                               as
-                                                                                                                              *const libc::c_char,
+                                                                                                                              *const i8,
                                                                                                                           i_1,
                                                                                                                           *(&mut *font_name.offset(0)
                                                                                                                                 as
@@ -7150,7 +7150,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut str_number
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<str_number>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7181,7 +7181,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                               as
                                                                                                                               *const u8
                                                                                                                               as
-                                                                                                                              *const libc::c_char,
+                                                                                                                              *const i8,
                                                                                                                           i_2,
                                                                                                                           *(&mut *font_area.offset(0)
                                                                                                                                 as
@@ -7207,7 +7207,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut UTF16_code
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<UTF16_code>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7221,7 +7221,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut UTF16_code
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<UTF16_code>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7235,7 +7235,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut int32_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7249,7 +7249,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut int32_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7263,7 +7263,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut int32_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7277,7 +7277,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut int32_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7291,7 +7291,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut int32_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7305,7 +7305,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut int32_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7319,7 +7319,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut int32_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7333,7 +7333,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut int32_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7347,7 +7347,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut int32_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7364,7 +7364,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut int32_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7403,7 +7403,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                               as
                                                                                                                               *const u8
                                                                                                                               as
-                                                                                                                              *const libc::c_char,
+                                                                                                                              *const i8,
                                                                                                                           i_3,
                                                                                                                           *(&mut *font_glue.offset(0)
                                                                                                                                 as
@@ -7435,7 +7435,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut font_index
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<font_index>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7476,7 +7476,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                               as
                                                                                                                               *const u8
                                                                                                                               as
-                                                                                                                              *const libc::c_char,
+                                                                                                                              *const i8,
                                                                                                                           i_4,
                                                                                                                           *(&mut *bchar_label.offset(0)
                                                                                                                                 as
@@ -7510,7 +7510,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut nine_bits
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<nine_bits>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7549,7 +7549,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                               as
                                                                                                                               *const u8
                                                                                                                               as
-                                                                                                                              *const libc::c_char,
+                                                                                                                              *const i8,
                                                                                                                           i_5,
                                                                                                                           *(&mut *font_bchar.offset(0)
                                                                                                                                 as
@@ -7581,7 +7581,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut nine_bits
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<nine_bits>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7620,7 +7620,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                               as
                                                                                                                               *const u8
                                                                                                                               as
-                                                                                                                              *const libc::c_char,
+                                                                                                                              *const i8,
                                                                                                                           i_6,
                                                                                                                           *(&mut *font_false_bchar.offset(0)
                                                                                                                                 as
@@ -7650,7 +7650,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       as
                                                                                                                       *mut int32_t
                                                                                                                       as
-                                                                                                                      *mut libc::c_char,
+                                                                                                                      *mut i8,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
                                                                                                                       u64,
@@ -7670,7 +7670,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                               as
                                                                                                                               *const u8
                                                                                                                               as
-                                                                                                                              *const libc::c_char);
+                                                                                                                              *const i8);
                                                                                                             }
                                                                                                             hyph_count
                                                                                                                 =
@@ -7679,7 +7679,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           as
                                                                                                                           *mut int32_t
                                                                                                                           as
-                                                                                                                          *mut libc::c_char,
+                                                                                                                          *mut i8,
                                                                                                                       ::std::mem::size_of::<int32_t>()
                                                                                                                           as
                                                                                                                           u64,
@@ -7699,7 +7699,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                   as
                                                                                                                                   *const u8
                                                                                                                                   as
-                                                                                                                                  *const libc::c_char);
+                                                                                                                                  *const i8);
                                                                                                                 }
                                                                                                                 hyph_next
                                                                                                                     =
@@ -7726,7 +7726,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                   as
                                                                                                                                   *mut int32_t
                                                                                                                                   as
-                                                                                                                                  *mut libc::c_char,
+                                                                                                                                  *mut i8,
                                                                                                                               ::std::mem::size_of::<int32_t>()
                                                                                                                                   as
                                                                                                                                   u64,
@@ -7802,7 +7802,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                   as
                                                                                                                                   *mut int32_t
                                                                                                                                   as
-                                                                                                                                  *mut libc::c_char,
+                                                                                                                                  *mut i8,
                                                                                                                               ::std::mem::size_of::<int32_t>()
                                                                                                                                   as
                                                                                                                                   u64,
@@ -7833,7 +7833,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                   as
                                                                                                                                   *mut int32_t
                                                                                                                                   as
-                                                                                                                                  *mut libc::c_char,
+                                                                                                                                  *mut i8,
                                                                                                                               ::std::mem::size_of::<int32_t>()
                                                                                                                                   as
                                                                                                                                   u64,
@@ -7906,7 +7906,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                       as
                                                                                                                                       *mut int32_t
                                                                                                                                       as
-                                                                                                                                      *mut libc::c_char,
+                                                                                                                                      *mut i8,
                                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                                       as
                                                                                                                                       u64,
@@ -7926,7 +7926,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                               as
                                                                                                                                               *const u8
                                                                                                                                               as
-                                                                                                                                              *const libc::c_char);
+                                                                                                                                              *const i8);
                                                                                                                             }
                                                                                                                             j
                                                                                                                                 =
@@ -7938,7 +7938,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                           as
                                                                                                                                           *mut int32_t
                                                                                                                                           as
-                                                                                                                                          *mut libc::c_char,
+                                                                                                                                          *mut i8,
                                                                                                                                       ::std::mem::size_of::<int32_t>()
                                                                                                                                           as
                                                                                                                                           u64,
@@ -7977,7 +7977,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                               as
                                                                                                                                               *mut trie_pointer
                                                                                                                                               as
-                                                                                                                                              *mut libc::c_char,
+                                                                                                                                              *mut i8,
                                                                                                                                           ::std::mem::size_of::<trie_pointer>()
                                                                                                                                               as
                                                                                                                                               u64,
@@ -8007,7 +8007,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                               as
                                                                                                                                               *mut trie_pointer
                                                                                                                                               as
-                                                                                                                                              *mut libc::c_char,
+                                                                                                                                              *mut i8,
                                                                                                                                           ::std::mem::size_of::<trie_pointer>()
                                                                                                                                               as
                                                                                                                                               u64,
@@ -8037,7 +8037,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                               as
                                                                                                                                               *mut u16
                                                                                                                                               as
-                                                                                                                                              *mut libc::c_char,
+                                                                                                                                              *mut i8,
                                                                                                                                           ::std::mem::size_of::<u16>()
                                                                                                                                               as
                                                                                                                                               u64,
@@ -8051,7 +8051,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                               as
                                                                                                                                               *mut int32_t
                                                                                                                                               as
-                                                                                                                                              *mut libc::c_char,
+                                                                                                                                              *mut i8,
                                                                                                                                           ::std::mem::size_of::<int32_t>()
                                                                                                                                               as
                                                                                                                                               u64,
@@ -8063,7 +8063,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                               as
                                                                                                                                               *mut int32_t
                                                                                                                                               as
-                                                                                                                                              *mut libc::c_char,
+                                                                                                                                              *mut i8,
                                                                                                                                           ::std::mem::size_of::<int32_t>()
                                                                                                                                               as
                                                                                                                                               u64,
@@ -8085,7 +8085,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                       as
                                                                                                                                                       *const u8
                                                                                                                                                       as
-                                                                                                                                                      *const libc::c_char);
+                                                                                                                                                      *const i8);
                                                                                                                                     }
                                                                                                                                     j
                                                                                                                                         =
@@ -8097,7 +8097,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                   as
                                                                                                                                                   *mut small_number
                                                                                                                                                   as
-                                                                                                                                                  *mut libc::c_char,
+                                                                                                                                                  *mut i8,
                                                                                                                                               ::std::mem::size_of::<small_number>()
                                                                                                                                                   as
                                                                                                                                                   u64,
@@ -8109,7 +8109,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                   as
                                                                                                                                                   *mut small_number
                                                                                                                                                   as
-                                                                                                                                                  *mut libc::c_char,
+                                                                                                                                                  *mut i8,
                                                                                                                                               ::std::mem::size_of::<small_number>()
                                                                                                                                                   as
                                                                                                                                                   u64,
@@ -8124,7 +8124,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                   as
                                                                                                                                                   *mut trie_opcode
                                                                                                                                                   as
-                                                                                                                                                  *mut libc::c_char,
+                                                                                                                                                  *mut i8,
                                                                                                                                               ::std::mem::size_of::<trie_opcode>()
                                                                                                                                                   as
                                                                                                                                                   u64,
@@ -8153,7 +8153,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                           as
                                                                                                                                                           *const u8
                                                                                                                                                           as
-                                                                                                                                                          *const libc::c_char,
+                                                                                                                                                          *const i8,
                                                                                                                                                       i_7,
                                                                                                                                                       *(&mut *hyf_next.as_mut_ptr().offset(1)
                                                                                                                                                             as
@@ -8214,7 +8214,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                       as
                                                                                                                                                       *mut int32_t
                                                                                                                                                       as
-                                                                                                                                                      *mut libc::c_char,
+                                                                                                                                                      *mut i8,
                                                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                                                       as
                                                                                                                                                       u64,
@@ -8245,7 +8245,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                       as
                                                                                                                                                       *mut int32_t
                                                                                                                                                       as
-                                                                                                                                                      *mut libc::c_char,
+                                                                                                                                                      *mut i8,
                                                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                                                       as
                                                                                                                                                       u64,
@@ -8304,7 +8304,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                           as
                                                                                                                                                           *mut int32_t
                                                                                                                                                           as
-                                                                                                                                                          *mut libc::c_char,
+                                                                                                                                                          *mut i8,
                                                                                                                                                       ::std::mem::size_of::<int32_t>()
                                                                                                                                                           as
                                                                                                                                                           u64,
@@ -8355,7 +8355,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
             }
         }
     }
-    _tt_abort(b"fatal format file error\x00" as *const u8 as *const libc::c_char);
+    _tt_abort(b"fatal format file error\x00" as *const u8 as *const i8);
 }
 unsafe extern "C" fn final_cleanup() {
     let mut c: small_number = 0;
@@ -8371,27 +8371,27 @@ unsafe extern "C" fn final_cleanup() {
         }
     }
     while open_parens > 0i32 {
-        print_cstr(b" )\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" )\x00" as *const u8 as *const i8);
         open_parens -= 1
     }
     if cur_level as libc::c_int > 1i32 {
         print_nl('(' as i32);
-        print_esc_cstr(b"end occurred \x00" as *const u8 as *const libc::c_char);
-        print_cstr(b"inside a group at level \x00" as *const u8 as *const libc::c_char);
+        print_esc_cstr(b"end occurred \x00" as *const u8 as *const i8);
+        print_cstr(b"inside a group at level \x00" as *const u8 as *const i8);
         print_int(cur_level as libc::c_int - 1i32);
         print_char(')' as i32);
         show_save_groups();
     }
     while cond_ptr != -0xfffffffi32 {
         print_nl('(' as i32);
-        print_esc_cstr(b"end occurred \x00" as *const u8 as *const libc::c_char);
-        print_cstr(b"when \x00" as *const u8 as *const libc::c_char);
+        print_esc_cstr(b"end occurred \x00" as *const u8 as *const i8);
+        print_cstr(b"when \x00" as *const u8 as *const i8);
         print_cmd_chr(107i32 as u16, cur_if as int32_t);
         if if_line != 0i32 {
-            print_cstr(b" on line \x00" as *const u8 as *const libc::c_char);
+            print_cstr(b" on line \x00" as *const u8 as *const i8);
             print_int(if_line);
         }
-        print_cstr(b" was incomplete)\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" was incomplete)\x00" as *const u8 as *const i8);
         if_line = (*mem.offset((cond_ptr + 1i32) as isize)).b32.s1;
         cur_if = (*mem.offset(cond_ptr as isize)).b16.s0 as small_number;
         temp_ptr = cond_ptr;
@@ -8406,7 +8406,7 @@ unsafe extern "C" fn final_cleanup() {
                 selector = SELECTOR_TERM_ONLY;
                 print_nl_cstr(
                     b"(see the transcript file for additional information)\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
                 selector = SELECTOR_TERM_AND_LOG
             }
@@ -8454,7 +8454,7 @@ unsafe extern "C" fn final_cleanup() {
             return;
         }
         print_nl_cstr(
-            b"(\\dump is performed only by INITEX)\x00" as *const u8 as *const libc::c_char,
+            b"(\\dump is performed only by INITEX)\x00" as *const u8 as *const i8,
         );
         return;
     };
@@ -10307,7 +10307,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 9i32) as isize,
     ))
-    .s1 = maketexstring(b"notexpanded:\x00" as *const u8 as *const libc::c_char);
+    .s1 = maketexstring(b"notexpanded:\x00" as *const u8 as *const i8);
     (*eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 11i32) as isize,
     ))
@@ -10326,7 +10326,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 11i32) as isize,
     ))
-    .s1 = maketexstring(b"primitive\x00" as *const u8 as *const libc::c_char);
+    .s1 = maketexstring(b"primitive\x00" as *const u8 as *const i8);
     k = -(35111 as int32_t);
     while k as libc::c_long <= 35111 {
         _trie_op_hash_array[(k as libc::c_long - -35111) as usize] = 0i32;
@@ -10343,12 +10343,12 @@ unsafe extern "C" fn initialize_more_initex_variables() {
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 0i32) as isize,
     ))
-    .s1 = maketexstring(b"inaccessible\x00" as *const u8 as *const libc::c_char);
-    format_ident = maketexstring(b" (INITEX)\x00" as *const u8 as *const libc::c_char);
+    .s1 = maketexstring(b"inaccessible\x00" as *const u8 as *const i8);
+    format_ident = maketexstring(b" (INITEX)\x00" as *const u8 as *const i8);
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32) as isize,
     ))
-    .s1 = maketexstring(b"endwrite\x00" as *const u8 as *const libc::c_char);
+    .s1 = maketexstring(b"endwrite\x00" as *const u8 as *const i8);
     (*eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32) as isize,
     ))
@@ -10366,7 +10366,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
     .s1 = -0xfffffffi32;
     max_reg_num = 32767i32;
     max_reg_help_line =
-        b"A register number must be between 0 and 32767.\x00" as *const u8 as *const libc::c_char;
+        b"A register number must be between 0 and 32767.\x00" as *const u8 as *const i8;
     i = 0i32;
     while i <= 6i32 {
         sa_root[i as usize] = -0xfffffffi32;
@@ -10408,7 +10408,7 @@ unsafe extern "C" fn initialize_primitives() {
     no_new_control_sequence = 0i32 != 0;
     first = 0i32;
     primitive(
-        b"lineskip\x00" as *const u8 as *const libc::c_char,
+        b"lineskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10421,7 +10421,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 0i32,
     );
     primitive(
-        b"baselineskip\x00" as *const u8 as *const libc::c_char,
+        b"baselineskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10434,7 +10434,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 1i32,
     );
     primitive(
-        b"parskip\x00" as *const u8 as *const libc::c_char,
+        b"parskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10447,7 +10447,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 2i32,
     );
     primitive(
-        b"abovedisplayskip\x00" as *const u8 as *const libc::c_char,
+        b"abovedisplayskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10460,7 +10460,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 3i32,
     );
     primitive(
-        b"belowdisplayskip\x00" as *const u8 as *const libc::c_char,
+        b"belowdisplayskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10473,7 +10473,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 4i32,
     );
     primitive(
-        b"abovedisplayshortskip\x00" as *const u8 as *const libc::c_char,
+        b"abovedisplayshortskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10486,7 +10486,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 5i32,
     );
     primitive(
-        b"belowdisplayshortskip\x00" as *const u8 as *const libc::c_char,
+        b"belowdisplayshortskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10499,7 +10499,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 6i32,
     );
     primitive(
-        b"leftskip\x00" as *const u8 as *const libc::c_char,
+        b"leftskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10512,7 +10512,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 7i32,
     );
     primitive(
-        b"rightskip\x00" as *const u8 as *const libc::c_char,
+        b"rightskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10525,7 +10525,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 8i32,
     );
     primitive(
-        b"topskip\x00" as *const u8 as *const libc::c_char,
+        b"topskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10538,7 +10538,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 9i32,
     );
     primitive(
-        b"splittopskip\x00" as *const u8 as *const libc::c_char,
+        b"splittopskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10551,7 +10551,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 10i32,
     );
     primitive(
-        b"tabskip\x00" as *const u8 as *const libc::c_char,
+        b"tabskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10564,7 +10564,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 11i32,
     );
     primitive(
-        b"spaceskip\x00" as *const u8 as *const libc::c_char,
+        b"spaceskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10577,7 +10577,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 12i32,
     );
     primitive(
-        b"xspaceskip\x00" as *const u8 as *const libc::c_char,
+        b"xspaceskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10590,7 +10590,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 13i32,
     );
     primitive(
-        b"parfillskip\x00" as *const u8 as *const libc::c_char,
+        b"parfillskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10603,7 +10603,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 14i32,
     );
     primitive(
-        b"XeTeXlinebreakskip\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXlinebreakskip\x00" as *const u8 as *const i8,
         76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10616,7 +10616,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 15i32,
     );
     primitive(
-        b"thinmuskip\x00" as *const u8 as *const libc::c_char,
+        b"thinmuskip\x00" as *const u8 as *const i8,
         77i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10629,7 +10629,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 16i32,
     );
     primitive(
-        b"medmuskip\x00" as *const u8 as *const libc::c_char,
+        b"medmuskip\x00" as *const u8 as *const i8,
         77i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10642,7 +10642,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 17i32,
     );
     primitive(
-        b"thickmuskip\x00" as *const u8 as *const libc::c_char,
+        b"thickmuskip\x00" as *const u8 as *const i8,
         77i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10655,7 +10655,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 18i32,
     );
     primitive(
-        b"output\x00" as *const u8 as *const libc::c_char,
+        b"output\x00" as *const u8 as *const i8,
         73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10671,7 +10671,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 1i32,
     );
     primitive(
-        b"everypar\x00" as *const u8 as *const libc::c_char,
+        b"everypar\x00" as *const u8 as *const i8,
         73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10687,7 +10687,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 2i32,
     );
     primitive(
-        b"everymath\x00" as *const u8 as *const libc::c_char,
+        b"everymath\x00" as *const u8 as *const i8,
         73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10703,7 +10703,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 3i32,
     );
     primitive(
-        b"everydisplay\x00" as *const u8 as *const libc::c_char,
+        b"everydisplay\x00" as *const u8 as *const i8,
         73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10719,7 +10719,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 4i32,
     );
     primitive(
-        b"everyhbox\x00" as *const u8 as *const libc::c_char,
+        b"everyhbox\x00" as *const u8 as *const i8,
         73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10735,7 +10735,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 5i32,
     );
     primitive(
-        b"everyvbox\x00" as *const u8 as *const libc::c_char,
+        b"everyvbox\x00" as *const u8 as *const i8,
         73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10751,7 +10751,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 6i32,
     );
     primitive(
-        b"everyjob\x00" as *const u8 as *const libc::c_char,
+        b"everyjob\x00" as *const u8 as *const i8,
         73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10767,7 +10767,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 7i32,
     );
     primitive(
-        b"everycr\x00" as *const u8 as *const libc::c_char,
+        b"everycr\x00" as *const u8 as *const i8,
         73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10783,7 +10783,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 8i32,
     );
     primitive(
-        b"errhelp\x00" as *const u8 as *const libc::c_char,
+        b"errhelp\x00" as *const u8 as *const i8,
         73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10799,7 +10799,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 9i32,
     );
     primitive(
-        b"everyeof\x00" as *const u8 as *const libc::c_char,
+        b"everyeof\x00" as *const u8 as *const i8,
         73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10815,7 +10815,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 10i32,
     );
     primitive(
-        b"XeTeXinterchartoks\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXinterchartoks\x00" as *const u8 as *const i8,
         73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10831,7 +10831,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 11i32,
     );
     primitive(
-        b"TectonicCodaTokens\x00" as *const u8 as *const libc::c_char,
+        b"TectonicCodaTokens\x00" as *const u8 as *const i8,
         73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10847,7 +10847,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 12i32,
     );
     primitive(
-        b"pretolerance\x00" as *const u8 as *const libc::c_char,
+        b"pretolerance\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10875,7 +10875,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 0i32,
     );
     primitive(
-        b"tolerance\x00" as *const u8 as *const libc::c_char,
+        b"tolerance\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10903,7 +10903,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 1i32,
     );
     primitive(
-        b"linepenalty\x00" as *const u8 as *const libc::c_char,
+        b"linepenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10931,7 +10931,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 2i32,
     );
     primitive(
-        b"hyphenpenalty\x00" as *const u8 as *const libc::c_char,
+        b"hyphenpenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10959,7 +10959,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 3i32,
     );
     primitive(
-        b"exhyphenpenalty\x00" as *const u8 as *const libc::c_char,
+        b"exhyphenpenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -10987,7 +10987,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 4i32,
     );
     primitive(
-        b"clubpenalty\x00" as *const u8 as *const libc::c_char,
+        b"clubpenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11015,7 +11015,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 5i32,
     );
     primitive(
-        b"widowpenalty\x00" as *const u8 as *const libc::c_char,
+        b"widowpenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11043,7 +11043,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 6i32,
     );
     primitive(
-        b"displaywidowpenalty\x00" as *const u8 as *const libc::c_char,
+        b"displaywidowpenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11071,7 +11071,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 7i32,
     );
     primitive(
-        b"brokenpenalty\x00" as *const u8 as *const libc::c_char,
+        b"brokenpenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11099,7 +11099,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 8i32,
     );
     primitive(
-        b"binoppenalty\x00" as *const u8 as *const libc::c_char,
+        b"binoppenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11127,7 +11127,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 9i32,
     );
     primitive(
-        b"relpenalty\x00" as *const u8 as *const libc::c_char,
+        b"relpenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11155,7 +11155,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 10i32,
     );
     primitive(
-        b"predisplaypenalty\x00" as *const u8 as *const libc::c_char,
+        b"predisplaypenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11183,7 +11183,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 11i32,
     );
     primitive(
-        b"postdisplaypenalty\x00" as *const u8 as *const libc::c_char,
+        b"postdisplaypenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11211,7 +11211,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 12i32,
     );
     primitive(
-        b"interlinepenalty\x00" as *const u8 as *const libc::c_char,
+        b"interlinepenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11239,7 +11239,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 13i32,
     );
     primitive(
-        b"doublehyphendemerits\x00" as *const u8 as *const libc::c_char,
+        b"doublehyphendemerits\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11267,7 +11267,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 14i32,
     );
     primitive(
-        b"finalhyphendemerits\x00" as *const u8 as *const libc::c_char,
+        b"finalhyphendemerits\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11295,7 +11295,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 15i32,
     );
     primitive(
-        b"adjdemerits\x00" as *const u8 as *const libc::c_char,
+        b"adjdemerits\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11323,7 +11323,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 16i32,
     );
     primitive(
-        b"mag\x00" as *const u8 as *const libc::c_char,
+        b"mag\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11351,7 +11351,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 17i32,
     );
     primitive(
-        b"delimiterfactor\x00" as *const u8 as *const libc::c_char,
+        b"delimiterfactor\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11379,7 +11379,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 18i32,
     );
     primitive(
-        b"looseness\x00" as *const u8 as *const libc::c_char,
+        b"looseness\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11407,7 +11407,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 19i32,
     );
     primitive(
-        b"time\x00" as *const u8 as *const libc::c_char,
+        b"time\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11435,7 +11435,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 20i32,
     );
     primitive(
-        b"day\x00" as *const u8 as *const libc::c_char,
+        b"day\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11463,7 +11463,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 21i32,
     );
     primitive(
-        b"month\x00" as *const u8 as *const libc::c_char,
+        b"month\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11491,7 +11491,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 22i32,
     );
     primitive(
-        b"year\x00" as *const u8 as *const libc::c_char,
+        b"year\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11519,7 +11519,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 23i32,
     );
     primitive(
-        b"showboxbreadth\x00" as *const u8 as *const libc::c_char,
+        b"showboxbreadth\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11547,7 +11547,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 24i32,
     );
     primitive(
-        b"showboxdepth\x00" as *const u8 as *const libc::c_char,
+        b"showboxdepth\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11575,7 +11575,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 25i32,
     );
     primitive(
-        b"hbadness\x00" as *const u8 as *const libc::c_char,
+        b"hbadness\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11603,7 +11603,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 26i32,
     );
     primitive(
-        b"vbadness\x00" as *const u8 as *const libc::c_char,
+        b"vbadness\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11631,7 +11631,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 27i32,
     );
     primitive(
-        b"pausing\x00" as *const u8 as *const libc::c_char,
+        b"pausing\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11659,7 +11659,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 28i32,
     );
     primitive(
-        b"tracingonline\x00" as *const u8 as *const libc::c_char,
+        b"tracingonline\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11687,7 +11687,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 29i32,
     );
     primitive(
-        b"tracingmacros\x00" as *const u8 as *const libc::c_char,
+        b"tracingmacros\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11715,7 +11715,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 30i32,
     );
     primitive(
-        b"tracingstats\x00" as *const u8 as *const libc::c_char,
+        b"tracingstats\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11743,7 +11743,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 31i32,
     );
     primitive(
-        b"tracingparagraphs\x00" as *const u8 as *const libc::c_char,
+        b"tracingparagraphs\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11771,7 +11771,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 32i32,
     );
     primitive(
-        b"tracingpages\x00" as *const u8 as *const libc::c_char,
+        b"tracingpages\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11799,7 +11799,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 33i32,
     );
     primitive(
-        b"tracingoutput\x00" as *const u8 as *const libc::c_char,
+        b"tracingoutput\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11827,7 +11827,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 34i32,
     );
     primitive(
-        b"tracinglostchars\x00" as *const u8 as *const libc::c_char,
+        b"tracinglostchars\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11855,7 +11855,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 35i32,
     );
     primitive(
-        b"tracingcommands\x00" as *const u8 as *const libc::c_char,
+        b"tracingcommands\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11883,7 +11883,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 36i32,
     );
     primitive(
-        b"tracingrestores\x00" as *const u8 as *const libc::c_char,
+        b"tracingrestores\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11911,7 +11911,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 37i32,
     );
     primitive(
-        b"uchyph\x00" as *const u8 as *const libc::c_char,
+        b"uchyph\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11939,7 +11939,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 38i32,
     );
     primitive(
-        b"outputpenalty\x00" as *const u8 as *const libc::c_char,
+        b"outputpenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11967,7 +11967,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 39i32,
     );
     primitive(
-        b"maxdeadcycles\x00" as *const u8 as *const libc::c_char,
+        b"maxdeadcycles\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -11995,7 +11995,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 40i32,
     );
     primitive(
-        b"hangafter\x00" as *const u8 as *const libc::c_char,
+        b"hangafter\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12023,7 +12023,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 41i32,
     );
     primitive(
-        b"floatingpenalty\x00" as *const u8 as *const libc::c_char,
+        b"floatingpenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12051,7 +12051,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 42i32,
     );
     primitive(
-        b"globaldefs\x00" as *const u8 as *const libc::c_char,
+        b"globaldefs\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12079,7 +12079,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 43i32,
     );
     primitive(
-        b"fam\x00" as *const u8 as *const libc::c_char,
+        b"fam\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12107,7 +12107,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 44i32,
     );
     primitive(
-        b"escapechar\x00" as *const u8 as *const libc::c_char,
+        b"escapechar\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12135,7 +12135,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 45i32,
     );
     primitive(
-        b"defaulthyphenchar\x00" as *const u8 as *const libc::c_char,
+        b"defaulthyphenchar\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12163,7 +12163,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 46i32,
     );
     primitive(
-        b"defaultskewchar\x00" as *const u8 as *const libc::c_char,
+        b"defaultskewchar\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12191,7 +12191,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 47i32,
     );
     primitive(
-        b"endlinechar\x00" as *const u8 as *const libc::c_char,
+        b"endlinechar\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12219,7 +12219,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 48i32,
     );
     primitive(
-        b"newlinechar\x00" as *const u8 as *const libc::c_char,
+        b"newlinechar\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12247,7 +12247,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 49i32,
     );
     primitive(
-        b"language\x00" as *const u8 as *const libc::c_char,
+        b"language\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12275,7 +12275,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 50i32,
     );
     primitive(
-        b"lefthyphenmin\x00" as *const u8 as *const libc::c_char,
+        b"lefthyphenmin\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12303,7 +12303,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 51i32,
     );
     primitive(
-        b"righthyphenmin\x00" as *const u8 as *const libc::c_char,
+        b"righthyphenmin\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12331,7 +12331,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 52i32,
     );
     primitive(
-        b"holdinginserts\x00" as *const u8 as *const libc::c_char,
+        b"holdinginserts\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12359,7 +12359,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 53i32,
     );
     primitive(
-        b"errorcontextlines\x00" as *const u8 as *const libc::c_char,
+        b"errorcontextlines\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12387,7 +12387,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 54i32,
     );
     primitive(
-        b"XeTeXlinebreakpenalty\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXlinebreakpenalty\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12415,7 +12415,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 69i32,
     );
     primitive(
-        b"XeTeXprotrudechars\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXprotrudechars\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12443,7 +12443,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 70i32,
     );
     primitive(
-        b"parindent\x00" as *const u8 as *const libc::c_char,
+        b"parindent\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12474,7 +12474,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 0i32,
     );
     primitive(
-        b"mathsurround\x00" as *const u8 as *const libc::c_char,
+        b"mathsurround\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12505,7 +12505,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 1i32,
     );
     primitive(
-        b"lineskiplimit\x00" as *const u8 as *const libc::c_char,
+        b"lineskiplimit\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12536,7 +12536,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 2i32,
     );
     primitive(
-        b"hsize\x00" as *const u8 as *const libc::c_char,
+        b"hsize\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12567,7 +12567,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 3i32,
     );
     primitive(
-        b"vsize\x00" as *const u8 as *const libc::c_char,
+        b"vsize\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12598,7 +12598,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 4i32,
     );
     primitive(
-        b"maxdepth\x00" as *const u8 as *const libc::c_char,
+        b"maxdepth\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12629,7 +12629,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 5i32,
     );
     primitive(
-        b"splitmaxdepth\x00" as *const u8 as *const libc::c_char,
+        b"splitmaxdepth\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12660,7 +12660,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 6i32,
     );
     primitive(
-        b"boxmaxdepth\x00" as *const u8 as *const libc::c_char,
+        b"boxmaxdepth\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12691,7 +12691,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 7i32,
     );
     primitive(
-        b"hfuzz\x00" as *const u8 as *const libc::c_char,
+        b"hfuzz\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12722,7 +12722,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 8i32,
     );
     primitive(
-        b"vfuzz\x00" as *const u8 as *const libc::c_char,
+        b"vfuzz\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12753,7 +12753,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 9i32,
     );
     primitive(
-        b"delimitershortfall\x00" as *const u8 as *const libc::c_char,
+        b"delimitershortfall\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12784,7 +12784,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 10i32,
     );
     primitive(
-        b"nulldelimiterspace\x00" as *const u8 as *const libc::c_char,
+        b"nulldelimiterspace\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12815,7 +12815,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 11i32,
     );
     primitive(
-        b"scriptspace\x00" as *const u8 as *const libc::c_char,
+        b"scriptspace\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12846,7 +12846,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 12i32,
     );
     primitive(
-        b"predisplaysize\x00" as *const u8 as *const libc::c_char,
+        b"predisplaysize\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12877,7 +12877,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 13i32,
     );
     primitive(
-        b"displaywidth\x00" as *const u8 as *const libc::c_char,
+        b"displaywidth\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12908,7 +12908,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 14i32,
     );
     primitive(
-        b"displayindent\x00" as *const u8 as *const libc::c_char,
+        b"displayindent\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12939,7 +12939,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 15i32,
     );
     primitive(
-        b"overfullrule\x00" as *const u8 as *const libc::c_char,
+        b"overfullrule\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -12970,7 +12970,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 16i32,
     );
     primitive(
-        b"hangindent\x00" as *const u8 as *const libc::c_char,
+        b"hangindent\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -13001,7 +13001,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 17i32,
     );
     primitive(
-        b"hoffset\x00" as *const u8 as *const libc::c_char,
+        b"hoffset\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -13032,7 +13032,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 18i32,
     );
     primitive(
-        b"voffset\x00" as *const u8 as *const libc::c_char,
+        b"voffset\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -13063,7 +13063,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 19i32,
     );
     primitive(
-        b"emergencystretch\x00" as *const u8 as *const libc::c_char,
+        b"emergencystretch\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -13094,7 +13094,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 20i32,
     );
     primitive(
-        b"pdfpagewidth\x00" as *const u8 as *const libc::c_char,
+        b"pdfpagewidth\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -13125,7 +13125,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 21i32,
     );
     primitive(
-        b"pdfpageheight\x00" as *const u8 as *const libc::c_char,
+        b"pdfpageheight\x00" as *const u8 as *const i8,
         75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -13156,209 +13156,209 @@ unsafe extern "C" fn initialize_primitives() {
             + 22i32,
     );
     primitive(
-        b" \x00" as *const u8 as *const libc::c_char,
+        b" \x00" as *const u8 as *const i8,
         64i32 as u16,
         0i32,
     );
     primitive(
-        b"/\x00" as *const u8 as *const libc::c_char,
+        b"/\x00" as *const u8 as *const i8,
         44i32 as u16,
         0i32,
     );
     primitive(
-        b"accent\x00" as *const u8 as *const libc::c_char,
+        b"accent\x00" as *const u8 as *const i8,
         45i32 as u16,
         0i32,
     );
     primitive(
-        b"advance\x00" as *const u8 as *const libc::c_char,
+        b"advance\x00" as *const u8 as *const i8,
         92i32 as u16,
         0i32,
     );
     primitive(
-        b"afterassignment\x00" as *const u8 as *const libc::c_char,
+        b"afterassignment\x00" as *const u8 as *const i8,
         40i32 as u16,
         0i32,
     );
     primitive(
-        b"aftergroup\x00" as *const u8 as *const libc::c_char,
+        b"aftergroup\x00" as *const u8 as *const i8,
         41i32 as u16,
         0i32,
     );
     primitive(
-        b"begingroup\x00" as *const u8 as *const libc::c_char,
+        b"begingroup\x00" as *const u8 as *const i8,
         61i32 as u16,
         0i32,
     );
     primitive(
-        b"char\x00" as *const u8 as *const libc::c_char,
+        b"char\x00" as *const u8 as *const i8,
         16i32 as u16,
         0i32,
     );
     primitive(
-        b"csname\x00" as *const u8 as *const libc::c_char,
+        b"csname\x00" as *const u8 as *const i8,
         109i32 as u16,
         0i32,
     );
     primitive(
-        b"delimiter\x00" as *const u8 as *const libc::c_char,
+        b"delimiter\x00" as *const u8 as *const i8,
         15i32 as u16,
         0i32,
     );
     primitive(
-        b"XeTeXdelimiter\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXdelimiter\x00" as *const u8 as *const i8,
         15i32 as u16,
         1i32,
     );
     primitive(
-        b"Udelimiter\x00" as *const u8 as *const libc::c_char,
+        b"Udelimiter\x00" as *const u8 as *const i8,
         15i32 as u16,
         1i32,
     );
     primitive(
-        b"divide\x00" as *const u8 as *const libc::c_char,
+        b"divide\x00" as *const u8 as *const i8,
         94i32 as u16,
         0i32,
     );
     primitive(
-        b"endcsname\x00" as *const u8 as *const libc::c_char,
+        b"endcsname\x00" as *const u8 as *const i8,
         67i32 as u16,
         0i32,
     );
     primitive(
-        b"endgroup\x00" as *const u8 as *const libc::c_char,
+        b"endgroup\x00" as *const u8 as *const i8,
         62i32 as u16,
         0i32,
     );
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 2i32) as isize,
     ))
-    .s1 = maketexstring(b"endgroup\x00" as *const u8 as *const libc::c_char);
+    .s1 = maketexstring(b"endgroup\x00" as *const u8 as *const i8);
     *eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 2i32) as isize,
     ) = *eqtb.offset(cur_val as isize);
     primitive(
-        b"expandafter\x00" as *const u8 as *const libc::c_char,
+        b"expandafter\x00" as *const u8 as *const i8,
         104i32 as u16,
         0i32,
     );
     primitive(
-        b"font\x00" as *const u8 as *const libc::c_char,
+        b"font\x00" as *const u8 as *const i8,
         90i32 as u16,
         0i32,
     );
     primitive(
-        b"fontdimen\x00" as *const u8 as *const libc::c_char,
+        b"fontdimen\x00" as *const u8 as *const i8,
         78i32 as u16,
         0i32,
     );
     primitive(
-        b"halign\x00" as *const u8 as *const libc::c_char,
+        b"halign\x00" as *const u8 as *const i8,
         32i32 as u16,
         0i32,
     );
     primitive(
-        b"hrule\x00" as *const u8 as *const libc::c_char,
+        b"hrule\x00" as *const u8 as *const i8,
         36i32 as u16,
         0i32,
     );
     primitive(
-        b"ignorespaces\x00" as *const u8 as *const libc::c_char,
+        b"ignorespaces\x00" as *const u8 as *const i8,
         39i32 as u16,
         0i32,
     );
     primitive(
-        b"insert\x00" as *const u8 as *const libc::c_char,
+        b"insert\x00" as *const u8 as *const i8,
         37i32 as u16,
         0i32,
     );
     primitive(
-        b"mark\x00" as *const u8 as *const libc::c_char,
+        b"mark\x00" as *const u8 as *const i8,
         18i32 as u16,
         0i32,
     );
     primitive(
-        b"mathaccent\x00" as *const u8 as *const libc::c_char,
+        b"mathaccent\x00" as *const u8 as *const i8,
         46i32 as u16,
         0i32,
     );
     primitive(
-        b"XeTeXmathaccent\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXmathaccent\x00" as *const u8 as *const i8,
         46i32 as u16,
         1i32,
     );
     primitive(
-        b"Umathaccent\x00" as *const u8 as *const libc::c_char,
+        b"Umathaccent\x00" as *const u8 as *const i8,
         46i32 as u16,
         1i32,
     );
     primitive(
-        b"mathchar\x00" as *const u8 as *const libc::c_char,
+        b"mathchar\x00" as *const u8 as *const i8,
         17i32 as u16,
         0i32,
     );
     primitive(
-        b"XeTeXmathcharnum\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXmathcharnum\x00" as *const u8 as *const i8,
         17i32 as u16,
         1i32,
     );
     primitive(
-        b"Umathcharnum\x00" as *const u8 as *const libc::c_char,
+        b"Umathcharnum\x00" as *const u8 as *const i8,
         17i32 as u16,
         1i32,
     );
     primitive(
-        b"XeTeXmathchar\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXmathchar\x00" as *const u8 as *const i8,
         17i32 as u16,
         2i32,
     );
     primitive(
-        b"Umathchar\x00" as *const u8 as *const libc::c_char,
+        b"Umathchar\x00" as *const u8 as *const i8,
         17i32 as u16,
         2i32,
     );
     primitive(
-        b"mathchoice\x00" as *const u8 as *const libc::c_char,
+        b"mathchoice\x00" as *const u8 as *const i8,
         54i32 as u16,
         0i32,
     );
     primitive(
-        b"multiply\x00" as *const u8 as *const libc::c_char,
+        b"multiply\x00" as *const u8 as *const i8,
         93i32 as u16,
         0i32,
     );
     primitive(
-        b"noalign\x00" as *const u8 as *const libc::c_char,
+        b"noalign\x00" as *const u8 as *const i8,
         34i32 as u16,
         0i32,
     );
     primitive(
-        b"noboundary\x00" as *const u8 as *const libc::c_char,
+        b"noboundary\x00" as *const u8 as *const i8,
         65i32 as u16,
         0i32,
     );
     primitive(
-        b"noexpand\x00" as *const u8 as *const libc::c_char,
+        b"noexpand\x00" as *const u8 as *const i8,
         105i32 as u16,
         0i32,
     );
     primitive(
-        b"primitive\x00" as *const u8 as *const libc::c_char,
+        b"primitive\x00" as *const u8 as *const i8,
         105i32 as u16,
         1i32,
     );
     primitive(
-        b"nonscript\x00" as *const u8 as *const libc::c_char,
+        b"nonscript\x00" as *const u8 as *const i8,
         55i32 as u16,
         0i32,
     );
     primitive(
-        b"omit\x00" as *const u8 as *const libc::c_char,
+        b"omit\x00" as *const u8 as *const i8,
         63i32 as u16,
         0i32,
     );
     primitive(
-        b"parshape\x00" as *const u8 as *const libc::c_char,
+        b"parshape\x00" as *const u8 as *const i8,
         85i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -13374,408 +13374,408 @@ unsafe extern "C" fn initialize_primitives() {
             + 0i32,
     );
     primitive(
-        b"penalty\x00" as *const u8 as *const libc::c_char,
+        b"penalty\x00" as *const u8 as *const i8,
         42i32 as u16,
         0i32,
     );
     primitive(
-        b"prevgraf\x00" as *const u8 as *const libc::c_char,
+        b"prevgraf\x00" as *const u8 as *const i8,
         81i32 as u16,
         0i32,
     );
     primitive(
-        b"radical\x00" as *const u8 as *const libc::c_char,
+        b"radical\x00" as *const u8 as *const i8,
         66i32 as u16,
         0i32,
     );
     primitive(
-        b"XeTeXradical\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXradical\x00" as *const u8 as *const i8,
         66i32 as u16,
         1i32,
     );
     primitive(
-        b"Uradical\x00" as *const u8 as *const libc::c_char,
+        b"Uradical\x00" as *const u8 as *const i8,
         66i32 as u16,
         1i32,
     );
     primitive(
-        b"read\x00" as *const u8 as *const libc::c_char,
+        b"read\x00" as *const u8 as *const i8,
         98i32 as u16,
         0i32,
     );
     primitive(
-        b"relax\x00" as *const u8 as *const libc::c_char,
+        b"relax\x00" as *const u8 as *const i8,
         0i32 as u16,
         0x10ffffi32 + 1i32,
     );
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 7i32) as isize,
     ))
-    .s1 = maketexstring(b"relax\x00" as *const u8 as *const libc::c_char);
+    .s1 = maketexstring(b"relax\x00" as *const u8 as *const i8);
     *eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 7i32) as isize,
     ) = *eqtb.offset(cur_val as isize);
     primitive(
-        b"setbox\x00" as *const u8 as *const libc::c_char,
+        b"setbox\x00" as *const u8 as *const i8,
         100i32 as u16,
         0i32,
     );
     primitive(
-        b"the\x00" as *const u8 as *const libc::c_char,
+        b"the\x00" as *const u8 as *const i8,
         111i32 as u16,
         0i32,
     );
     primitive(
-        b"toks\x00" as *const u8 as *const libc::c_char,
+        b"toks\x00" as *const u8 as *const i8,
         72i32 as u16,
         0i32,
     );
     primitive(
-        b"vadjust\x00" as *const u8 as *const libc::c_char,
+        b"vadjust\x00" as *const u8 as *const i8,
         38i32 as u16,
         0i32,
     );
     primitive(
-        b"valign\x00" as *const u8 as *const libc::c_char,
+        b"valign\x00" as *const u8 as *const i8,
         33i32 as u16,
         0i32,
     );
     primitive(
-        b"vcenter\x00" as *const u8 as *const libc::c_char,
+        b"vcenter\x00" as *const u8 as *const i8,
         56i32 as u16,
         0i32,
     );
     primitive(
-        b"vrule\x00" as *const u8 as *const libc::c_char,
+        b"vrule\x00" as *const u8 as *const i8,
         35i32 as u16,
         0i32,
     );
     primitive(
-        b"par\x00" as *const u8 as *const libc::c_char,
+        b"par\x00" as *const u8 as *const i8,
         13i32 as u16,
         0x10ffffi32 + 1i32,
     );
     par_loc = cur_val;
     par_token = 0x1ffffffi32 + par_loc;
     primitive(
-        b"input\x00" as *const u8 as *const libc::c_char,
+        b"input\x00" as *const u8 as *const i8,
         106i32 as u16,
         0i32,
     );
     primitive(
-        b"endinput\x00" as *const u8 as *const libc::c_char,
+        b"endinput\x00" as *const u8 as *const i8,
         106i32 as u16,
         1i32,
     );
     primitive(
-        b"topmark\x00" as *const u8 as *const libc::c_char,
+        b"topmark\x00" as *const u8 as *const i8,
         112i32 as u16,
         0i32,
     );
     primitive(
-        b"firstmark\x00" as *const u8 as *const libc::c_char,
+        b"firstmark\x00" as *const u8 as *const i8,
         112i32 as u16,
         1i32,
     );
     primitive(
-        b"botmark\x00" as *const u8 as *const libc::c_char,
+        b"botmark\x00" as *const u8 as *const i8,
         112i32 as u16,
         2i32,
     );
     primitive(
-        b"splitfirstmark\x00" as *const u8 as *const libc::c_char,
+        b"splitfirstmark\x00" as *const u8 as *const i8,
         112i32 as u16,
         3i32,
     );
     primitive(
-        b"splitbotmark\x00" as *const u8 as *const libc::c_char,
+        b"splitbotmark\x00" as *const u8 as *const i8,
         112i32 as u16,
         4i32,
     );
     primitive(
-        b"count\x00" as *const u8 as *const libc::c_char,
+        b"count\x00" as *const u8 as *const i8,
         91i32 as u16,
         0i32,
     );
     primitive(
-        b"dimen\x00" as *const u8 as *const libc::c_char,
+        b"dimen\x00" as *const u8 as *const i8,
         91i32 as u16,
         1i32,
     );
     primitive(
-        b"skip\x00" as *const u8 as *const libc::c_char,
+        b"skip\x00" as *const u8 as *const i8,
         91i32 as u16,
         2i32,
     );
     primitive(
-        b"muskip\x00" as *const u8 as *const libc::c_char,
+        b"muskip\x00" as *const u8 as *const i8,
         91i32 as u16,
         3i32,
     );
     primitive(
-        b"spacefactor\x00" as *const u8 as *const libc::c_char,
+        b"spacefactor\x00" as *const u8 as *const i8,
         80i32 as u16,
         104i32,
     );
     primitive(
-        b"prevdepth\x00" as *const u8 as *const libc::c_char,
+        b"prevdepth\x00" as *const u8 as *const i8,
         80i32 as u16,
         1i32,
     );
     primitive(
-        b"deadcycles\x00" as *const u8 as *const libc::c_char,
+        b"deadcycles\x00" as *const u8 as *const i8,
         83i32 as u16,
         0i32,
     );
     primitive(
-        b"insertpenalties\x00" as *const u8 as *const libc::c_char,
+        b"insertpenalties\x00" as *const u8 as *const i8,
         83i32 as u16,
         1i32,
     );
     primitive(
-        b"wd\x00" as *const u8 as *const libc::c_char,
+        b"wd\x00" as *const u8 as *const i8,
         84i32 as u16,
         1i32,
     );
     primitive(
-        b"ht\x00" as *const u8 as *const libc::c_char,
+        b"ht\x00" as *const u8 as *const i8,
         84i32 as u16,
         3i32,
     );
     primitive(
-        b"dp\x00" as *const u8 as *const libc::c_char,
+        b"dp\x00" as *const u8 as *const i8,
         84i32 as u16,
         2i32,
     );
     primitive(
-        b"lastpenalty\x00" as *const u8 as *const libc::c_char,
+        b"lastpenalty\x00" as *const u8 as *const i8,
         71i32 as u16,
         0i32,
     );
     primitive(
-        b"lastkern\x00" as *const u8 as *const libc::c_char,
+        b"lastkern\x00" as *const u8 as *const i8,
         71i32 as u16,
         1i32,
     );
     primitive(
-        b"lastskip\x00" as *const u8 as *const libc::c_char,
+        b"lastskip\x00" as *const u8 as *const i8,
         71i32 as u16,
         2i32,
     );
     primitive(
-        b"inputlineno\x00" as *const u8 as *const libc::c_char,
+        b"inputlineno\x00" as *const u8 as *const i8,
         71i32 as u16,
         4i32,
     );
     primitive(
-        b"badness\x00" as *const u8 as *const libc::c_char,
+        b"badness\x00" as *const u8 as *const i8,
         71i32 as u16,
         5i32,
     );
     primitive(
-        b"number\x00" as *const u8 as *const libc::c_char,
+        b"number\x00" as *const u8 as *const i8,
         110i32 as u16,
         0i32,
     );
     primitive(
-        b"romannumeral\x00" as *const u8 as *const libc::c_char,
+        b"romannumeral\x00" as *const u8 as *const i8,
         110i32 as u16,
         1i32,
     );
     primitive(
-        b"string\x00" as *const u8 as *const libc::c_char,
+        b"string\x00" as *const u8 as *const i8,
         110i32 as u16,
         2i32,
     );
     primitive(
-        b"meaning\x00" as *const u8 as *const libc::c_char,
+        b"meaning\x00" as *const u8 as *const i8,
         110i32 as u16,
         3i32,
     );
     primitive(
-        b"fontname\x00" as *const u8 as *const libc::c_char,
+        b"fontname\x00" as *const u8 as *const i8,
         110i32 as u16,
         4i32,
     );
     primitive(
-        b"jobname\x00" as *const u8 as *const libc::c_char,
+        b"jobname\x00" as *const u8 as *const i8,
         110i32 as u16,
         15i32,
     );
     primitive(
-        b"leftmarginkern\x00" as *const u8 as *const libc::c_char,
+        b"leftmarginkern\x00" as *const u8 as *const i8,
         110i32 as u16,
         11i32,
     );
     primitive(
-        b"rightmarginkern\x00" as *const u8 as *const libc::c_char,
+        b"rightmarginkern\x00" as *const u8 as *const i8,
         110i32 as u16,
         12i32,
     );
     primitive(
-        b"Uchar\x00" as *const u8 as *const libc::c_char,
+        b"Uchar\x00" as *const u8 as *const i8,
         110i32 as u16,
         13i32,
     );
     primitive(
-        b"Ucharcat\x00" as *const u8 as *const libc::c_char,
+        b"Ucharcat\x00" as *const u8 as *const i8,
         110i32 as u16,
         14i32,
     );
     primitive(
-        b"if\x00" as *const u8 as *const libc::c_char,
+        b"if\x00" as *const u8 as *const i8,
         107i32 as u16,
         0i32,
     );
     primitive(
-        b"ifcat\x00" as *const u8 as *const libc::c_char,
+        b"ifcat\x00" as *const u8 as *const i8,
         107i32 as u16,
         1i32,
     );
     primitive(
-        b"ifnum\x00" as *const u8 as *const libc::c_char,
+        b"ifnum\x00" as *const u8 as *const i8,
         107i32 as u16,
         2i32,
     );
     primitive(
-        b"ifdim\x00" as *const u8 as *const libc::c_char,
+        b"ifdim\x00" as *const u8 as *const i8,
         107i32 as u16,
         3i32,
     );
     primitive(
-        b"ifodd\x00" as *const u8 as *const libc::c_char,
+        b"ifodd\x00" as *const u8 as *const i8,
         107i32 as u16,
         4i32,
     );
     primitive(
-        b"ifvmode\x00" as *const u8 as *const libc::c_char,
+        b"ifvmode\x00" as *const u8 as *const i8,
         107i32 as u16,
         5i32,
     );
     primitive(
-        b"ifhmode\x00" as *const u8 as *const libc::c_char,
+        b"ifhmode\x00" as *const u8 as *const i8,
         107i32 as u16,
         6i32,
     );
     primitive(
-        b"ifmmode\x00" as *const u8 as *const libc::c_char,
+        b"ifmmode\x00" as *const u8 as *const i8,
         107i32 as u16,
         7i32,
     );
     primitive(
-        b"ifinner\x00" as *const u8 as *const libc::c_char,
+        b"ifinner\x00" as *const u8 as *const i8,
         107i32 as u16,
         8i32,
     );
     primitive(
-        b"ifvoid\x00" as *const u8 as *const libc::c_char,
+        b"ifvoid\x00" as *const u8 as *const i8,
         107i32 as u16,
         9i32,
     );
     primitive(
-        b"ifhbox\x00" as *const u8 as *const libc::c_char,
+        b"ifhbox\x00" as *const u8 as *const i8,
         107i32 as u16,
         10i32,
     );
     primitive(
-        b"ifvbox\x00" as *const u8 as *const libc::c_char,
+        b"ifvbox\x00" as *const u8 as *const i8,
         107i32 as u16,
         11i32,
     );
     primitive(
-        b"ifx\x00" as *const u8 as *const libc::c_char,
+        b"ifx\x00" as *const u8 as *const i8,
         107i32 as u16,
         12i32,
     );
     primitive(
-        b"ifeof\x00" as *const u8 as *const libc::c_char,
+        b"ifeof\x00" as *const u8 as *const i8,
         107i32 as u16,
         13i32,
     );
     primitive(
-        b"iftrue\x00" as *const u8 as *const libc::c_char,
+        b"iftrue\x00" as *const u8 as *const i8,
         107i32 as u16,
         14i32,
     );
     primitive(
-        b"iffalse\x00" as *const u8 as *const libc::c_char,
+        b"iffalse\x00" as *const u8 as *const i8,
         107i32 as u16,
         15i32,
     );
     primitive(
-        b"ifcase\x00" as *const u8 as *const libc::c_char,
+        b"ifcase\x00" as *const u8 as *const i8,
         107i32 as u16,
         16i32,
     );
     primitive(
-        b"ifprimitive\x00" as *const u8 as *const libc::c_char,
+        b"ifprimitive\x00" as *const u8 as *const i8,
         107i32 as u16,
         21i32,
     );
     primitive(
-        b"fi\x00" as *const u8 as *const libc::c_char,
+        b"fi\x00" as *const u8 as *const i8,
         108i32 as u16,
         2i32,
     );
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 4i32) as isize,
     ))
-    .s1 = maketexstring(b"fi\x00" as *const u8 as *const libc::c_char);
+    .s1 = maketexstring(b"fi\x00" as *const u8 as *const i8);
     *eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 4i32) as isize,
     ) = *eqtb.offset(cur_val as isize);
     primitive(
-        b"or\x00" as *const u8 as *const libc::c_char,
+        b"or\x00" as *const u8 as *const i8,
         108i32 as u16,
         4i32,
     );
     primitive(
-        b"else\x00" as *const u8 as *const libc::c_char,
+        b"else\x00" as *const u8 as *const i8,
         108i32 as u16,
         3i32,
     );
     primitive(
-        b"nullfont\x00" as *const u8 as *const libc::c_char,
+        b"nullfont\x00" as *const u8 as *const i8,
         89i32 as u16,
         0i32,
     );
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 12i32) as isize,
     ))
-    .s1 = maketexstring(b"nullfont\x00" as *const u8 as *const libc::c_char);
+    .s1 = maketexstring(b"nullfont\x00" as *const u8 as *const i8);
     *eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 12i32) as isize,
     ) = *eqtb.offset(cur_val as isize);
     primitive(
-        b"span\x00" as *const u8 as *const libc::c_char,
+        b"span\x00" as *const u8 as *const i8,
         4i32 as u16,
         0x10ffffi32 + 2i32,
     );
     primitive(
-        b"cr\x00" as *const u8 as *const libc::c_char,
+        b"cr\x00" as *const u8 as *const i8,
         5i32 as u16,
         0x10ffffi32 + 3i32,
     );
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 1i32) as isize,
     ))
-    .s1 = maketexstring(b"cr\x00" as *const u8 as *const libc::c_char);
+    .s1 = maketexstring(b"cr\x00" as *const u8 as *const i8);
     *eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 1i32) as isize,
     ) = *eqtb.offset(cur_val as isize);
     primitive(
-        b"crcr\x00" as *const u8 as *const libc::c_char,
+        b"crcr\x00" as *const u8 as *const i8,
         5i32 as u16,
         0x10ffffi32 + 4i32,
     );
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 5i32) as isize,
     ))
-    .s1 = maketexstring(b"endtemplate\x00" as *const u8 as *const libc::c_char);
+    .s1 = maketexstring(b"endtemplate\x00" as *const u8 as *const i8);
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 6i32) as isize,
     ))
-    .s1 = maketexstring(b"endtemplate\x00" as *const u8 as *const libc::c_char);
+    .s1 = maketexstring(b"endtemplate\x00" as *const u8 as *const i8);
     (*eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 6i32) as isize,
     ))
@@ -13802,494 +13802,494 @@ unsafe extern "C" fn initialize_primitives() {
     .b16
     .s1 = 117i32 as u16;
     primitive(
-        b"pagegoal\x00" as *const u8 as *const libc::c_char,
+        b"pagegoal\x00" as *const u8 as *const i8,
         82i32 as u16,
         0i32,
     );
     primitive(
-        b"pagetotal\x00" as *const u8 as *const libc::c_char,
+        b"pagetotal\x00" as *const u8 as *const i8,
         82i32 as u16,
         1i32,
     );
     primitive(
-        b"pagestretch\x00" as *const u8 as *const libc::c_char,
+        b"pagestretch\x00" as *const u8 as *const i8,
         82i32 as u16,
         2i32,
     );
     primitive(
-        b"pagefilstretch\x00" as *const u8 as *const libc::c_char,
+        b"pagefilstretch\x00" as *const u8 as *const i8,
         82i32 as u16,
         3i32,
     );
     primitive(
-        b"pagefillstretch\x00" as *const u8 as *const libc::c_char,
+        b"pagefillstretch\x00" as *const u8 as *const i8,
         82i32 as u16,
         4i32,
     );
     primitive(
-        b"pagefilllstretch\x00" as *const u8 as *const libc::c_char,
+        b"pagefilllstretch\x00" as *const u8 as *const i8,
         82i32 as u16,
         5i32,
     );
     primitive(
-        b"pageshrink\x00" as *const u8 as *const libc::c_char,
+        b"pageshrink\x00" as *const u8 as *const i8,
         82i32 as u16,
         6i32,
     );
     primitive(
-        b"pagedepth\x00" as *const u8 as *const libc::c_char,
+        b"pagedepth\x00" as *const u8 as *const i8,
         82i32 as u16,
         7i32,
     );
     primitive(
-        b"end\x00" as *const u8 as *const libc::c_char,
+        b"end\x00" as *const u8 as *const i8,
         14i32 as u16,
         0i32,
     );
     primitive(
-        b"dump\x00" as *const u8 as *const libc::c_char,
+        b"dump\x00" as *const u8 as *const i8,
         14i32 as u16,
         1i32,
     );
     primitive(
-        b"hskip\x00" as *const u8 as *const libc::c_char,
+        b"hskip\x00" as *const u8 as *const i8,
         26i32 as u16,
         4i32,
     );
     primitive(
-        b"hfil\x00" as *const u8 as *const libc::c_char,
+        b"hfil\x00" as *const u8 as *const i8,
         26i32 as u16,
         0i32,
     );
     primitive(
-        b"hfill\x00" as *const u8 as *const libc::c_char,
+        b"hfill\x00" as *const u8 as *const i8,
         26i32 as u16,
         1i32,
     );
     primitive(
-        b"hss\x00" as *const u8 as *const libc::c_char,
+        b"hss\x00" as *const u8 as *const i8,
         26i32 as u16,
         2i32,
     );
     primitive(
-        b"hfilneg\x00" as *const u8 as *const libc::c_char,
+        b"hfilneg\x00" as *const u8 as *const i8,
         26i32 as u16,
         3i32,
     );
     primitive(
-        b"vskip\x00" as *const u8 as *const libc::c_char,
+        b"vskip\x00" as *const u8 as *const i8,
         27i32 as u16,
         4i32,
     );
     primitive(
-        b"vfil\x00" as *const u8 as *const libc::c_char,
+        b"vfil\x00" as *const u8 as *const i8,
         27i32 as u16,
         0i32,
     );
     primitive(
-        b"vfill\x00" as *const u8 as *const libc::c_char,
+        b"vfill\x00" as *const u8 as *const i8,
         27i32 as u16,
         1i32,
     );
     primitive(
-        b"vss\x00" as *const u8 as *const libc::c_char,
+        b"vss\x00" as *const u8 as *const i8,
         27i32 as u16,
         2i32,
     );
     primitive(
-        b"vfilneg\x00" as *const u8 as *const libc::c_char,
+        b"vfilneg\x00" as *const u8 as *const i8,
         27i32 as u16,
         3i32,
     );
     primitive(
-        b"mskip\x00" as *const u8 as *const libc::c_char,
+        b"mskip\x00" as *const u8 as *const i8,
         28i32 as u16,
         5i32,
     );
     primitive(
-        b"kern\x00" as *const u8 as *const libc::c_char,
+        b"kern\x00" as *const u8 as *const i8,
         29i32 as u16,
         1i32,
     );
     primitive(
-        b"mkern\x00" as *const u8 as *const libc::c_char,
+        b"mkern\x00" as *const u8 as *const i8,
         30i32 as u16,
         99i32,
     );
     primitive(
-        b"moveleft\x00" as *const u8 as *const libc::c_char,
+        b"moveleft\x00" as *const u8 as *const i8,
         21i32 as u16,
         1i32,
     );
     primitive(
-        b"moveright\x00" as *const u8 as *const libc::c_char,
+        b"moveright\x00" as *const u8 as *const i8,
         21i32 as u16,
         0i32,
     );
     primitive(
-        b"raise\x00" as *const u8 as *const libc::c_char,
+        b"raise\x00" as *const u8 as *const i8,
         22i32 as u16,
         1i32,
     );
     primitive(
-        b"lower\x00" as *const u8 as *const libc::c_char,
+        b"lower\x00" as *const u8 as *const i8,
         22i32 as u16,
         0i32,
     );
     primitive(
-        b"box\x00" as *const u8 as *const libc::c_char,
+        b"box\x00" as *const u8 as *const i8,
         20i32 as u16,
         0i32,
     );
     primitive(
-        b"copy\x00" as *const u8 as *const libc::c_char,
+        b"copy\x00" as *const u8 as *const i8,
         20i32 as u16,
         1i32,
     );
     primitive(
-        b"lastbox\x00" as *const u8 as *const libc::c_char,
+        b"lastbox\x00" as *const u8 as *const i8,
         20i32 as u16,
         2i32,
     );
     primitive(
-        b"vsplit\x00" as *const u8 as *const libc::c_char,
+        b"vsplit\x00" as *const u8 as *const i8,
         20i32 as u16,
         3i32,
     );
     primitive(
-        b"vtop\x00" as *const u8 as *const libc::c_char,
+        b"vtop\x00" as *const u8 as *const i8,
         20i32 as u16,
         4i32,
     );
     primitive(
-        b"vbox\x00" as *const u8 as *const libc::c_char,
+        b"vbox\x00" as *const u8 as *const i8,
         20i32 as u16,
         4i32 + 1i32,
     );
     primitive(
-        b"hbox\x00" as *const u8 as *const libc::c_char,
+        b"hbox\x00" as *const u8 as *const i8,
         20i32 as u16,
         4i32 + 104i32,
     );
     primitive(
-        b"shipout\x00" as *const u8 as *const libc::c_char,
+        b"shipout\x00" as *const u8 as *const i8,
         31i32 as u16,
         100i32 - 1i32,
     );
     primitive(
-        b"leaders\x00" as *const u8 as *const libc::c_char,
+        b"leaders\x00" as *const u8 as *const i8,
         31i32 as u16,
         100i32,
     );
     primitive(
-        b"cleaders\x00" as *const u8 as *const libc::c_char,
+        b"cleaders\x00" as *const u8 as *const i8,
         31i32 as u16,
         101i32,
     );
     primitive(
-        b"xleaders\x00" as *const u8 as *const libc::c_char,
+        b"xleaders\x00" as *const u8 as *const i8,
         31i32 as u16,
         102i32,
     );
     primitive(
-        b"indent\x00" as *const u8 as *const libc::c_char,
+        b"indent\x00" as *const u8 as *const i8,
         43i32 as u16,
         1i32,
     );
     primitive(
-        b"noindent\x00" as *const u8 as *const libc::c_char,
+        b"noindent\x00" as *const u8 as *const i8,
         43i32 as u16,
         0i32,
     );
     primitive(
-        b"unpenalty\x00" as *const u8 as *const libc::c_char,
+        b"unpenalty\x00" as *const u8 as *const i8,
         25i32 as u16,
         12i32,
     );
     primitive(
-        b"unkern\x00" as *const u8 as *const libc::c_char,
+        b"unkern\x00" as *const u8 as *const i8,
         25i32 as u16,
         11i32,
     );
     primitive(
-        b"unskip\x00" as *const u8 as *const libc::c_char,
+        b"unskip\x00" as *const u8 as *const i8,
         25i32 as u16,
         10i32,
     );
     primitive(
-        b"unhbox\x00" as *const u8 as *const libc::c_char,
+        b"unhbox\x00" as *const u8 as *const i8,
         23i32 as u16,
         0i32,
     );
     primitive(
-        b"unhcopy\x00" as *const u8 as *const libc::c_char,
+        b"unhcopy\x00" as *const u8 as *const i8,
         23i32 as u16,
         1i32,
     );
     primitive(
-        b"unvbox\x00" as *const u8 as *const libc::c_char,
+        b"unvbox\x00" as *const u8 as *const i8,
         24i32 as u16,
         0i32,
     );
     primitive(
-        b"unvcopy\x00" as *const u8 as *const libc::c_char,
+        b"unvcopy\x00" as *const u8 as *const i8,
         24i32 as u16,
         1i32,
     );
     primitive(
-        b"-\x00" as *const u8 as *const libc::c_char,
+        b"-\x00" as *const u8 as *const i8,
         47i32 as u16,
         1i32,
     );
     primitive(
-        b"discretionary\x00" as *const u8 as *const libc::c_char,
+        b"discretionary\x00" as *const u8 as *const i8,
         47i32 as u16,
         0i32,
     );
     primitive(
-        b"eqno\x00" as *const u8 as *const libc::c_char,
+        b"eqno\x00" as *const u8 as *const i8,
         48i32 as u16,
         0i32,
     );
     primitive(
-        b"leqno\x00" as *const u8 as *const libc::c_char,
+        b"leqno\x00" as *const u8 as *const i8,
         48i32 as u16,
         1i32,
     );
     primitive(
-        b"mathord\x00" as *const u8 as *const libc::c_char,
+        b"mathord\x00" as *const u8 as *const i8,
         50i32 as u16,
         16i32,
     );
     primitive(
-        b"mathop\x00" as *const u8 as *const libc::c_char,
+        b"mathop\x00" as *const u8 as *const i8,
         50i32 as u16,
         17i32,
     );
     primitive(
-        b"mathbin\x00" as *const u8 as *const libc::c_char,
+        b"mathbin\x00" as *const u8 as *const i8,
         50i32 as u16,
         18i32,
     );
     primitive(
-        b"mathrel\x00" as *const u8 as *const libc::c_char,
+        b"mathrel\x00" as *const u8 as *const i8,
         50i32 as u16,
         19i32,
     );
     primitive(
-        b"mathopen\x00" as *const u8 as *const libc::c_char,
+        b"mathopen\x00" as *const u8 as *const i8,
         50i32 as u16,
         20i32,
     );
     primitive(
-        b"mathclose\x00" as *const u8 as *const libc::c_char,
+        b"mathclose\x00" as *const u8 as *const i8,
         50i32 as u16,
         21i32,
     );
     primitive(
-        b"mathpunct\x00" as *const u8 as *const libc::c_char,
+        b"mathpunct\x00" as *const u8 as *const i8,
         50i32 as u16,
         22i32,
     );
     primitive(
-        b"mathinner\x00" as *const u8 as *const libc::c_char,
+        b"mathinner\x00" as *const u8 as *const i8,
         50i32 as u16,
         23i32,
     );
     primitive(
-        b"underline\x00" as *const u8 as *const libc::c_char,
+        b"underline\x00" as *const u8 as *const i8,
         50i32 as u16,
         26i32,
     );
     primitive(
-        b"overline\x00" as *const u8 as *const libc::c_char,
+        b"overline\x00" as *const u8 as *const i8,
         50i32 as u16,
         27i32,
     );
     primitive(
-        b"displaylimits\x00" as *const u8 as *const libc::c_char,
+        b"displaylimits\x00" as *const u8 as *const i8,
         51i32 as u16,
         0i32,
     );
     primitive(
-        b"limits\x00" as *const u8 as *const libc::c_char,
+        b"limits\x00" as *const u8 as *const i8,
         51i32 as u16,
         1i32,
     );
     primitive(
-        b"nolimits\x00" as *const u8 as *const libc::c_char,
+        b"nolimits\x00" as *const u8 as *const i8,
         51i32 as u16,
         2i32,
     );
     primitive(
-        b"displaystyle\x00" as *const u8 as *const libc::c_char,
+        b"displaystyle\x00" as *const u8 as *const i8,
         53i32 as u16,
         0i32,
     );
     primitive(
-        b"textstyle\x00" as *const u8 as *const libc::c_char,
+        b"textstyle\x00" as *const u8 as *const i8,
         53i32 as u16,
         2i32,
     );
     primitive(
-        b"scriptstyle\x00" as *const u8 as *const libc::c_char,
+        b"scriptstyle\x00" as *const u8 as *const i8,
         53i32 as u16,
         4i32,
     );
     primitive(
-        b"scriptscriptstyle\x00" as *const u8 as *const libc::c_char,
+        b"scriptscriptstyle\x00" as *const u8 as *const i8,
         53i32 as u16,
         6i32,
     );
     primitive(
-        b"above\x00" as *const u8 as *const libc::c_char,
+        b"above\x00" as *const u8 as *const i8,
         52i32 as u16,
         0i32,
     );
     primitive(
-        b"over\x00" as *const u8 as *const libc::c_char,
+        b"over\x00" as *const u8 as *const i8,
         52i32 as u16,
         1i32,
     );
     primitive(
-        b"atop\x00" as *const u8 as *const libc::c_char,
+        b"atop\x00" as *const u8 as *const i8,
         52i32 as u16,
         2i32,
     );
     primitive(
-        b"abovewithdelims\x00" as *const u8 as *const libc::c_char,
+        b"abovewithdelims\x00" as *const u8 as *const i8,
         52i32 as u16,
         3i32 + 0i32,
     );
     primitive(
-        b"overwithdelims\x00" as *const u8 as *const libc::c_char,
+        b"overwithdelims\x00" as *const u8 as *const i8,
         52i32 as u16,
         3i32 + 1i32,
     );
     primitive(
-        b"atopwithdelims\x00" as *const u8 as *const libc::c_char,
+        b"atopwithdelims\x00" as *const u8 as *const i8,
         52i32 as u16,
         3i32 + 2i32,
     );
     primitive(
-        b"left\x00" as *const u8 as *const libc::c_char,
+        b"left\x00" as *const u8 as *const i8,
         49i32 as u16,
         30i32,
     );
     primitive(
-        b"right\x00" as *const u8 as *const libc::c_char,
+        b"right\x00" as *const u8 as *const i8,
         49i32 as u16,
         31i32,
     );
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 3i32) as isize,
     ))
-    .s1 = maketexstring(b"right\x00" as *const u8 as *const libc::c_char);
+    .s1 = maketexstring(b"right\x00" as *const u8 as *const i8);
     *eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 3i32) as isize,
     ) = *eqtb.offset(cur_val as isize);
     primitive(
-        b"long\x00" as *const u8 as *const libc::c_char,
+        b"long\x00" as *const u8 as *const i8,
         95i32 as u16,
         1i32,
     );
     primitive(
-        b"outer\x00" as *const u8 as *const libc::c_char,
+        b"outer\x00" as *const u8 as *const i8,
         95i32 as u16,
         2i32,
     );
     primitive(
-        b"global\x00" as *const u8 as *const libc::c_char,
+        b"global\x00" as *const u8 as *const i8,
         95i32 as u16,
         4i32,
     );
     primitive(
-        b"def\x00" as *const u8 as *const libc::c_char,
+        b"def\x00" as *const u8 as *const i8,
         99i32 as u16,
         0i32,
     );
     primitive(
-        b"gdef\x00" as *const u8 as *const libc::c_char,
+        b"gdef\x00" as *const u8 as *const i8,
         99i32 as u16,
         1i32,
     );
     primitive(
-        b"edef\x00" as *const u8 as *const libc::c_char,
+        b"edef\x00" as *const u8 as *const i8,
         99i32 as u16,
         2i32,
     );
     primitive(
-        b"xdef\x00" as *const u8 as *const libc::c_char,
+        b"xdef\x00" as *const u8 as *const i8,
         99i32 as u16,
         3i32,
     );
     primitive(
-        b"let\x00" as *const u8 as *const libc::c_char,
+        b"let\x00" as *const u8 as *const i8,
         96i32 as u16,
         0i32,
     );
     primitive(
-        b"futurelet\x00" as *const u8 as *const libc::c_char,
+        b"futurelet\x00" as *const u8 as *const i8,
         96i32 as u16,
         0i32 + 1i32,
     );
     primitive(
-        b"chardef\x00" as *const u8 as *const libc::c_char,
+        b"chardef\x00" as *const u8 as *const i8,
         97i32 as u16,
         0i32,
     );
     primitive(
-        b"mathchardef\x00" as *const u8 as *const libc::c_char,
+        b"mathchardef\x00" as *const u8 as *const i8,
         97i32 as u16,
         1i32,
     );
     primitive(
-        b"XeTeXmathcharnumdef\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXmathcharnumdef\x00" as *const u8 as *const i8,
         97i32 as u16,
         8i32,
     );
     primitive(
-        b"Umathcharnumdef\x00" as *const u8 as *const libc::c_char,
+        b"Umathcharnumdef\x00" as *const u8 as *const i8,
         97i32 as u16,
         8i32,
     );
     primitive(
-        b"XeTeXmathchardef\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXmathchardef\x00" as *const u8 as *const i8,
         97i32 as u16,
         9i32,
     );
     primitive(
-        b"Umathchardef\x00" as *const u8 as *const libc::c_char,
+        b"Umathchardef\x00" as *const u8 as *const i8,
         97i32 as u16,
         9i32,
     );
     primitive(
-        b"countdef\x00" as *const u8 as *const libc::c_char,
+        b"countdef\x00" as *const u8 as *const i8,
         97i32 as u16,
         2i32,
     );
     primitive(
-        b"dimendef\x00" as *const u8 as *const libc::c_char,
+        b"dimendef\x00" as *const u8 as *const i8,
         97i32 as u16,
         3i32,
     );
     primitive(
-        b"skipdef\x00" as *const u8 as *const libc::c_char,
+        b"skipdef\x00" as *const u8 as *const i8,
         97i32 as u16,
         4i32,
     );
     primitive(
-        b"muskipdef\x00" as *const u8 as *const libc::c_char,
+        b"muskipdef\x00" as *const u8 as *const i8,
         97i32 as u16,
         5i32,
     );
     primitive(
-        b"toksdef\x00" as *const u8 as *const libc::c_char,
+        b"toksdef\x00" as *const u8 as *const i8,
         97i32 as u16,
         6i32,
     );
     primitive(
-        b"catcode\x00" as *const u8 as *const libc::c_char,
+        b"catcode\x00" as *const u8 as *const i8,
         86i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14310,7 +14310,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 3i32 * 256i32,
     );
     primitive(
-        b"mathcode\x00" as *const u8 as *const libc::c_char,
+        b"mathcode\x00" as *const u8 as *const i8,
         86i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14335,7 +14335,7 @@ unsafe extern "C" fn initialize_primitives() {
             + (0x10ffffi32 + 1i32),
     );
     primitive(
-        b"XeTeXmathcodenum\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXmathcodenum\x00" as *const u8 as *const i8,
         87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14360,7 +14360,7 @@ unsafe extern "C" fn initialize_primitives() {
             + (0x10ffffi32 + 1i32),
     );
     primitive(
-        b"Umathcodenum\x00" as *const u8 as *const libc::c_char,
+        b"Umathcodenum\x00" as *const u8 as *const i8,
         87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14385,7 +14385,7 @@ unsafe extern "C" fn initialize_primitives() {
             + (0x10ffffi32 + 1i32),
     );
     primitive(
-        b"XeTeXmathcode\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXmathcode\x00" as *const u8 as *const i8,
         87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14411,7 +14411,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 1i32,
     );
     primitive(
-        b"Umathcode\x00" as *const u8 as *const libc::c_char,
+        b"Umathcode\x00" as *const u8 as *const i8,
         87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14437,7 +14437,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 1i32,
     );
     primitive(
-        b"lccode\x00" as *const u8 as *const libc::c_char,
+        b"lccode\x00" as *const u8 as *const i8,
         86i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14459,7 +14459,7 @@ unsafe extern "C" fn initialize_primitives() {
             + (0x10ffffi32 + 1i32),
     );
     primitive(
-        b"uccode\x00" as *const u8 as *const libc::c_char,
+        b"uccode\x00" as *const u8 as *const i8,
         86i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14482,7 +14482,7 @@ unsafe extern "C" fn initialize_primitives() {
             + (0x10ffffi32 + 1i32),
     );
     primitive(
-        b"sfcode\x00" as *const u8 as *const libc::c_char,
+        b"sfcode\x00" as *const u8 as *const i8,
         86i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14506,7 +14506,7 @@ unsafe extern "C" fn initialize_primitives() {
             + (0x10ffffi32 + 1i32),
     );
     primitive(
-        b"XeTeXcharclass\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXcharclass\x00" as *const u8 as *const i8,
         87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14530,7 +14530,7 @@ unsafe extern "C" fn initialize_primitives() {
             + (0x10ffffi32 + 1i32),
     );
     primitive(
-        b"delcode\x00" as *const u8 as *const libc::c_char,
+        b"delcode\x00" as *const u8 as *const i8,
         86i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14559,7 +14559,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 256i32,
     );
     primitive(
-        b"XeTeXdelcodenum\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXdelcodenum\x00" as *const u8 as *const i8,
         87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14588,7 +14588,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 256i32,
     );
     primitive(
-        b"Udelcodenum\x00" as *const u8 as *const libc::c_char,
+        b"Udelcodenum\x00" as *const u8 as *const i8,
         87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14617,7 +14617,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 256i32,
     );
     primitive(
-        b"XeTeXdelcode\x00" as *const u8 as *const libc::c_char,
+        b"XeTeXdelcode\x00" as *const u8 as *const i8,
         87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14647,7 +14647,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 1i32,
     );
     primitive(
-        b"Udelcode\x00" as *const u8 as *const libc::c_char,
+        b"Udelcode\x00" as *const u8 as *const i8,
         87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14677,7 +14677,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 1i32,
     );
     primitive(
-        b"textfont\x00" as *const u8 as *const libc::c_char,
+        b"textfont\x00" as *const u8 as *const i8,
         88i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14698,7 +14698,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 0i32,
     );
     primitive(
-        b"scriptfont\x00" as *const u8 as *const libc::c_char,
+        b"scriptfont\x00" as *const u8 as *const i8,
         88i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14719,7 +14719,7 @@ unsafe extern "C" fn initialize_primitives() {
             + 256i32,
     );
     primitive(
-        b"scriptscriptfont\x00" as *const u8 as *const libc::c_char,
+        b"scriptscriptfont\x00" as *const u8 as *const i8,
         88i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14740,77 +14740,77 @@ unsafe extern "C" fn initialize_primitives() {
             + 2i32 * 256i32,
     );
     primitive(
-        b"hyphenation\x00" as *const u8 as *const libc::c_char,
+        b"hyphenation\x00" as *const u8 as *const i8,
         101i32 as u16,
         0i32,
     );
     primitive(
-        b"patterns\x00" as *const u8 as *const libc::c_char,
+        b"patterns\x00" as *const u8 as *const i8,
         101i32 as u16,
         1i32,
     );
     primitive(
-        b"hyphenchar\x00" as *const u8 as *const libc::c_char,
+        b"hyphenchar\x00" as *const u8 as *const i8,
         79i32 as u16,
         0i32,
     );
     primitive(
-        b"skewchar\x00" as *const u8 as *const libc::c_char,
+        b"skewchar\x00" as *const u8 as *const i8,
         79i32 as u16,
         1i32,
     );
     primitive(
-        b"lpcode\x00" as *const u8 as *const libc::c_char,
+        b"lpcode\x00" as *const u8 as *const i8,
         79i32 as u16,
         2i32,
     );
     primitive(
-        b"rpcode\x00" as *const u8 as *const libc::c_char,
+        b"rpcode\x00" as *const u8 as *const i8,
         79i32 as u16,
         3i32,
     );
     primitive(
-        b"batchmode\x00" as *const u8 as *const libc::c_char,
+        b"batchmode\x00" as *const u8 as *const i8,
         102i32 as u16,
         0i32,
     );
     primitive(
-        b"nonstopmode\x00" as *const u8 as *const libc::c_char,
+        b"nonstopmode\x00" as *const u8 as *const i8,
         102i32 as u16,
         1i32,
     );
     primitive(
-        b"scrollmode\x00" as *const u8 as *const libc::c_char,
+        b"scrollmode\x00" as *const u8 as *const i8,
         102i32 as u16,
         2i32,
     );
     primitive(
-        b"errorstopmode\x00" as *const u8 as *const libc::c_char,
+        b"errorstopmode\x00" as *const u8 as *const i8,
         102i32 as u16,
         3i32,
     );
     primitive(
-        b"openin\x00" as *const u8 as *const libc::c_char,
+        b"openin\x00" as *const u8 as *const i8,
         60i32 as u16,
         1i32,
     );
     primitive(
-        b"closein\x00" as *const u8 as *const libc::c_char,
+        b"closein\x00" as *const u8 as *const i8,
         60i32 as u16,
         0i32,
     );
     primitive(
-        b"message\x00" as *const u8 as *const libc::c_char,
+        b"message\x00" as *const u8 as *const i8,
         58i32 as u16,
         0i32,
     );
     primitive(
-        b"errmessage\x00" as *const u8 as *const libc::c_char,
+        b"errmessage\x00" as *const u8 as *const i8,
         58i32 as u16,
         1i32,
     );
     primitive(
-        b"lowercase\x00" as *const u8 as *const libc::c_char,
+        b"lowercase\x00" as *const u8 as *const i8,
         57i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14832,7 +14832,7 @@ unsafe extern "C" fn initialize_primitives() {
             + (0x10ffffi32 + 1i32),
     );
     primitive(
-        b"uppercase\x00" as *const u8 as *const libc::c_char,
+        b"uppercase\x00" as *const u8 as *const i8,
         57i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14855,65 +14855,65 @@ unsafe extern "C" fn initialize_primitives() {
             + (0x10ffffi32 + 1i32),
     );
     primitive(
-        b"show\x00" as *const u8 as *const libc::c_char,
+        b"show\x00" as *const u8 as *const i8,
         19i32 as u16,
         0i32,
     );
     primitive(
-        b"showbox\x00" as *const u8 as *const libc::c_char,
+        b"showbox\x00" as *const u8 as *const i8,
         19i32 as u16,
         1i32,
     );
     primitive(
-        b"showthe\x00" as *const u8 as *const libc::c_char,
+        b"showthe\x00" as *const u8 as *const i8,
         19i32 as u16,
         2i32,
     );
     primitive(
-        b"showlists\x00" as *const u8 as *const libc::c_char,
+        b"showlists\x00" as *const u8 as *const i8,
         19i32 as u16,
         3i32,
     );
     primitive(
-        b"openout\x00" as *const u8 as *const libc::c_char,
+        b"openout\x00" as *const u8 as *const i8,
         59i32 as u16,
         0i32,
     );
     primitive(
-        b"write\x00" as *const u8 as *const libc::c_char,
+        b"write\x00" as *const u8 as *const i8,
         59i32 as u16,
         1i32,
     );
     write_loc = cur_val;
     primitive(
-        b"closeout\x00" as *const u8 as *const libc::c_char,
+        b"closeout\x00" as *const u8 as *const i8,
         59i32 as u16,
         2i32,
     );
     primitive(
-        b"special\x00" as *const u8 as *const libc::c_char,
+        b"special\x00" as *const u8 as *const i8,
         59i32 as u16,
         3i32,
     );
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 10i32) as isize,
     ))
-    .s1 = maketexstring(b"special\x00" as *const u8 as *const libc::c_char);
+    .s1 = maketexstring(b"special\x00" as *const u8 as *const i8);
     *eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 10i32) as isize,
     ) = *eqtb.offset(cur_val as isize);
     primitive(
-        b"immediate\x00" as *const u8 as *const libc::c_char,
+        b"immediate\x00" as *const u8 as *const i8,
         59i32 as u16,
         4i32,
     );
     primitive(
-        b"setlanguage\x00" as *const u8 as *const libc::c_char,
+        b"setlanguage\x00" as *const u8 as *const i8,
         59i32 as u16,
         5i32,
     );
     primitive(
-        b"synctex\x00" as *const u8 as *const libc::c_char,
+        b"synctex\x00" as *const u8 as *const i8,
         74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -14948,7 +14948,7 @@ unsafe extern "C" fn get_strings_started() {
     *str_start.offset(0) = 0i32;
     str_ptr = 65536i32;
     if load_pool_strings(pool_size - string_vacancies) == 0i32 {
-        _tt_abort(b"must increase pool_size\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"must increase pool_size\x00" as *const u8 as *const i8);
     };
 }
 /* xetex-errors */
@@ -14965,8 +14965,8 @@ unsafe extern "C" fn get_strings_started() {
 /*:1001*/
 #[no_mangle]
 pub unsafe extern "C" fn tt_run_engine(
-    mut dump_name: *mut libc::c_char,
-    mut input_file_name: *mut libc::c_char,
+    mut dump_name: *mut i8,
+    mut input_file_name: *mut i8,
 ) -> tt_history_t {
     let mut font_k: int32_t = 0;
     /* Miscellaneous initializations that were mostly originally done in the
@@ -14974,7 +14974,7 @@ pub unsafe extern "C" fn tt_run_engine(
     /* Get our stdout handle */
     rust_stdout = ttstub_output_open_stdout();
     let mut len: size_t = strlen(dump_name);
-    TEX_format_default = xmalloc(len.wrapping_add(1i32 as u64)) as *mut libc::c_char;
+    TEX_format_default = xmalloc(len.wrapping_add(1i32 as u64)) as *mut i8;
     strcpy(TEX_format_default, dump_name);
     format_default_length = len as int32_t;
     /* Not sure why these get custom initializations. */
@@ -15228,7 +15228,7 @@ pub unsafe extern "C" fn tt_run_engine(
     }
     if bad > 0i32 {
         _tt_abort(
-            b"failed internal consistency check #%d\x00" as *const u8 as *const libc::c_char,
+            b"failed internal consistency check #%d\x00" as *const u8 as *const i8,
             bad,
         );
     }
@@ -15253,9 +15253,9 @@ pub unsafe extern "C" fn tt_run_engine(
     name_in_progress = 0i32 != 0;
     log_opened = 0i32 != 0;
     if semantic_pagination_enabled {
-        output_file_extension = b".spx\x00" as *const u8 as *const libc::c_char
+        output_file_extension = b".spx\x00" as *const u8 as *const i8
     } else {
-        output_file_extension = b".xdv\x00" as *const u8 as *const libc::c_char
+        output_file_extension = b".xdv\x00" as *const u8 as *const i8
     }
     input_ptr = 0i32;
     max_in_stack = 0i32;
@@ -15291,247 +15291,247 @@ pub unsafe extern "C" fn tt_run_engine(
     if in_initex_mode {
         no_new_control_sequence = 0i32 != 0;
         primitive(
-            b"XeTeXpicfile\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXpicfile\x00" as *const u8 as *const i8,
             59i32 as u16,
             41i32,
         );
         primitive(
-            b"XeTeXpdffile\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXpdffile\x00" as *const u8 as *const i8,
             59i32 as u16,
             42i32,
         );
         primitive(
-            b"XeTeXglyph\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXglyph\x00" as *const u8 as *const i8,
             59i32 as u16,
             43i32,
         );
         primitive(
-            b"XeTeXlinebreaklocale\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXlinebreaklocale\x00" as *const u8 as *const i8,
             59i32 as u16,
             46i32,
         );
         primitive(
-            b"pdfsavepos\x00" as *const u8 as *const libc::c_char,
+            b"pdfsavepos\x00" as *const u8 as *const i8,
             59i32 as u16,
             6i32 + 0i32,
         );
         primitive(
-            b"lastnodetype\x00" as *const u8 as *const libc::c_char,
+            b"lastnodetype\x00" as *const u8 as *const i8,
             71i32 as u16,
             3i32,
         );
         primitive(
-            b"eTeXversion\x00" as *const u8 as *const libc::c_char,
+            b"eTeXversion\x00" as *const u8 as *const i8,
             71i32 as u16,
             6i32,
         );
         primitive(
-            b"eTeXrevision\x00" as *const u8 as *const libc::c_char,
+            b"eTeXrevision\x00" as *const u8 as *const i8,
             110i32 as u16,
             5i32,
         );
         primitive(
-            b"XeTeXversion\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXversion\x00" as *const u8 as *const i8,
             71i32 as u16,
             14i32,
         );
         primitive(
-            b"XeTeXrevision\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXrevision\x00" as *const u8 as *const i8,
             110i32 as u16,
             6i32,
         );
         primitive(
-            b"XeTeXcountglyphs\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXcountglyphs\x00" as *const u8 as *const i8,
             71i32 as u16,
             15i32,
         );
         primitive(
-            b"XeTeXcountvariations\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXcountvariations\x00" as *const u8 as *const i8,
             71i32 as u16,
             16i32,
         );
         primitive(
-            b"XeTeXvariation\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXvariation\x00" as *const u8 as *const i8,
             71i32 as u16,
             17i32,
         );
         primitive(
-            b"XeTeXfindvariationbyname\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXfindvariationbyname\x00" as *const u8 as *const i8,
             71i32 as u16,
             18i32,
         );
         primitive(
-            b"XeTeXvariationmin\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXvariationmin\x00" as *const u8 as *const i8,
             71i32 as u16,
             19i32,
         );
         primitive(
-            b"XeTeXvariationmax\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXvariationmax\x00" as *const u8 as *const i8,
             71i32 as u16,
             20i32,
         );
         primitive(
-            b"XeTeXvariationdefault\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXvariationdefault\x00" as *const u8 as *const i8,
             71i32 as u16,
             21i32,
         );
         primitive(
-            b"XeTeXcountfeatures\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXcountfeatures\x00" as *const u8 as *const i8,
             71i32 as u16,
             22i32,
         );
         primitive(
-            b"XeTeXfeaturecode\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXfeaturecode\x00" as *const u8 as *const i8,
             71i32 as u16,
             23i32,
         );
         primitive(
-            b"XeTeXfindfeaturebyname\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXfindfeaturebyname\x00" as *const u8 as *const i8,
             71i32 as u16,
             24i32,
         );
         primitive(
-            b"XeTeXisexclusivefeature\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXisexclusivefeature\x00" as *const u8 as *const i8,
             71i32 as u16,
             25i32,
         );
         primitive(
-            b"XeTeXcountselectors\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXcountselectors\x00" as *const u8 as *const i8,
             71i32 as u16,
             26i32,
         );
         primitive(
-            b"XeTeXselectorcode\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXselectorcode\x00" as *const u8 as *const i8,
             71i32 as u16,
             27i32,
         );
         primitive(
-            b"XeTeXfindselectorbyname\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXfindselectorbyname\x00" as *const u8 as *const i8,
             71i32 as u16,
             28i32,
         );
         primitive(
-            b"XeTeXisdefaultselector\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXisdefaultselector\x00" as *const u8 as *const i8,
             71i32 as u16,
             29i32,
         );
         primitive(
-            b"XeTeXvariationname\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXvariationname\x00" as *const u8 as *const i8,
             110i32 as u16,
             7i32,
         );
         primitive(
-            b"XeTeXfeaturename\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXfeaturename\x00" as *const u8 as *const i8,
             110i32 as u16,
             8i32,
         );
         primitive(
-            b"XeTeXselectorname\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXselectorname\x00" as *const u8 as *const i8,
             110i32 as u16,
             9i32,
         );
         primitive(
-            b"XeTeXOTcountscripts\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXOTcountscripts\x00" as *const u8 as *const i8,
             71i32 as u16,
             30i32,
         );
         primitive(
-            b"XeTeXOTcountlanguages\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXOTcountlanguages\x00" as *const u8 as *const i8,
             71i32 as u16,
             31i32,
         );
         primitive(
-            b"XeTeXOTcountfeatures\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXOTcountfeatures\x00" as *const u8 as *const i8,
             71i32 as u16,
             32i32,
         );
         primitive(
-            b"XeTeXOTscripttag\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXOTscripttag\x00" as *const u8 as *const i8,
             71i32 as u16,
             33i32,
         );
         primitive(
-            b"XeTeXOTlanguagetag\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXOTlanguagetag\x00" as *const u8 as *const i8,
             71i32 as u16,
             34i32,
         );
         primitive(
-            b"XeTeXOTfeaturetag\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXOTfeaturetag\x00" as *const u8 as *const i8,
             71i32 as u16,
             35i32,
         );
         primitive(
-            b"XeTeXcharglyph\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXcharglyph\x00" as *const u8 as *const i8,
             71i32 as u16,
             36i32,
         );
         primitive(
-            b"XeTeXglyphindex\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXglyphindex\x00" as *const u8 as *const i8,
             71i32 as u16,
             37i32,
         );
         primitive(
-            b"XeTeXglyphbounds\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXglyphbounds\x00" as *const u8 as *const i8,
             71i32 as u16,
             47i32,
         );
         primitive(
-            b"XeTeXglyphname\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXglyphname\x00" as *const u8 as *const i8,
             110i32 as u16,
             10i32,
         );
         primitive(
-            b"XeTeXfonttype\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXfonttype\x00" as *const u8 as *const i8,
             71i32 as u16,
             38i32,
         );
         primitive(
-            b"XeTeXfirstfontchar\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXfirstfontchar\x00" as *const u8 as *const i8,
             71i32 as u16,
             39i32,
         );
         primitive(
-            b"XeTeXlastfontchar\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXlastfontchar\x00" as *const u8 as *const i8,
             71i32 as u16,
             40i32,
         );
         primitive(
-            b"pdflastxpos\x00" as *const u8 as *const libc::c_char,
+            b"pdflastxpos\x00" as *const u8 as *const i8,
             71i32 as u16,
             41i32,
         );
         primitive(
-            b"pdflastypos\x00" as *const u8 as *const libc::c_char,
+            b"pdflastypos\x00" as *const u8 as *const i8,
             71i32 as u16,
             42i32,
         );
         primitive(
-            b"strcmp\x00" as *const u8 as *const libc::c_char,
+            b"strcmp\x00" as *const u8 as *const i8,
             110i32 as u16,
             43i32,
         );
         primitive(
-            b"mdfivesum\x00" as *const u8 as *const libc::c_char,
+            b"mdfivesum\x00" as *const u8 as *const i8,
             110i32 as u16,
             44i32,
         );
         primitive(
-            b"pdfmdfivesum\x00" as *const u8 as *const libc::c_char,
+            b"pdfmdfivesum\x00" as *const u8 as *const i8,
             110i32 as u16,
             44i32,
         );
         primitive(
-            b"shellescape\x00" as *const u8 as *const libc::c_char,
+            b"shellescape\x00" as *const u8 as *const i8,
             71i32 as u16,
             45i32,
         );
         primitive(
-            b"XeTeXpdfpagecount\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXpdfpagecount\x00" as *const u8 as *const i8,
             71i32 as u16,
             46i32,
         );
         primitive(
-            b"tracingassigns\x00" as *const u8 as *const libc::c_char,
+            b"tracingassigns\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -15559,7 +15559,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 58i32,
         );
         primitive(
-            b"tracinggroups\x00" as *const u8 as *const libc::c_char,
+            b"tracinggroups\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -15587,7 +15587,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 59i32,
         );
         primitive(
-            b"tracingifs\x00" as *const u8 as *const libc::c_char,
+            b"tracingifs\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -15615,7 +15615,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 60i32,
         );
         primitive(
-            b"tracingscantokens\x00" as *const u8 as *const libc::c_char,
+            b"tracingscantokens\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -15643,7 +15643,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 61i32,
         );
         primitive(
-            b"tracingnesting\x00" as *const u8 as *const libc::c_char,
+            b"tracingnesting\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -15671,7 +15671,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 62i32,
         );
         primitive(
-            b"predisplaydirection\x00" as *const u8 as *const libc::c_char,
+            b"predisplaydirection\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -15699,7 +15699,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 63i32,
         );
         primitive(
-            b"lastlinefit\x00" as *const u8 as *const libc::c_char,
+            b"lastlinefit\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -15727,7 +15727,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 64i32,
         );
         primitive(
-            b"savingvdiscards\x00" as *const u8 as *const libc::c_char,
+            b"savingvdiscards\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -15755,7 +15755,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 65i32,
         );
         primitive(
-            b"savinghyphcodes\x00" as *const u8 as *const libc::c_char,
+            b"savinghyphcodes\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -15783,102 +15783,102 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 66i32,
         );
         primitive(
-            b"currentgrouplevel\x00" as *const u8 as *const libc::c_char,
+            b"currentgrouplevel\x00" as *const u8 as *const i8,
             71i32 as u16,
             7i32,
         );
         primitive(
-            b"currentgrouptype\x00" as *const u8 as *const libc::c_char,
+            b"currentgrouptype\x00" as *const u8 as *const i8,
             71i32 as u16,
             8i32,
         );
         primitive(
-            b"currentiflevel\x00" as *const u8 as *const libc::c_char,
+            b"currentiflevel\x00" as *const u8 as *const i8,
             71i32 as u16,
             9i32,
         );
         primitive(
-            b"currentiftype\x00" as *const u8 as *const libc::c_char,
+            b"currentiftype\x00" as *const u8 as *const i8,
             71i32 as u16,
             10i32,
         );
         primitive(
-            b"currentifbranch\x00" as *const u8 as *const libc::c_char,
+            b"currentifbranch\x00" as *const u8 as *const i8,
             71i32 as u16,
             11i32,
         );
         primitive(
-            b"fontcharwd\x00" as *const u8 as *const libc::c_char,
+            b"fontcharwd\x00" as *const u8 as *const i8,
             71i32 as u16,
             48i32,
         );
         primitive(
-            b"fontcharht\x00" as *const u8 as *const libc::c_char,
+            b"fontcharht\x00" as *const u8 as *const i8,
             71i32 as u16,
             49i32,
         );
         primitive(
-            b"fontchardp\x00" as *const u8 as *const libc::c_char,
+            b"fontchardp\x00" as *const u8 as *const i8,
             71i32 as u16,
             50i32,
         );
         primitive(
-            b"fontcharic\x00" as *const u8 as *const libc::c_char,
+            b"fontcharic\x00" as *const u8 as *const i8,
             71i32 as u16,
             51i32,
         );
         primitive(
-            b"parshapelength\x00" as *const u8 as *const libc::c_char,
+            b"parshapelength\x00" as *const u8 as *const i8,
             71i32 as u16,
             52i32,
         );
         primitive(
-            b"parshapeindent\x00" as *const u8 as *const libc::c_char,
+            b"parshapeindent\x00" as *const u8 as *const i8,
             71i32 as u16,
             53i32,
         );
         primitive(
-            b"parshapedimen\x00" as *const u8 as *const libc::c_char,
+            b"parshapedimen\x00" as *const u8 as *const i8,
             71i32 as u16,
             54i32,
         );
         primitive(
-            b"showgroups\x00" as *const u8 as *const libc::c_char,
+            b"showgroups\x00" as *const u8 as *const i8,
             19i32 as u16,
             4i32,
         );
         primitive(
-            b"showtokens\x00" as *const u8 as *const libc::c_char,
+            b"showtokens\x00" as *const u8 as *const i8,
             19i32 as u16,
             5i32,
         );
         primitive(
-            b"unexpanded\x00" as *const u8 as *const libc::c_char,
+            b"unexpanded\x00" as *const u8 as *const i8,
             111i32 as u16,
             1i32,
         );
         primitive(
-            b"detokenize\x00" as *const u8 as *const libc::c_char,
+            b"detokenize\x00" as *const u8 as *const i8,
             111i32 as u16,
             5i32,
         );
         primitive(
-            b"showifs\x00" as *const u8 as *const libc::c_char,
+            b"showifs\x00" as *const u8 as *const i8,
             19i32 as u16,
             6i32,
         );
         primitive(
-            b"interactionmode\x00" as *const u8 as *const libc::c_char,
+            b"interactionmode\x00" as *const u8 as *const i8,
             83i32 as u16,
             2i32,
         );
         primitive(
-            b"middle\x00" as *const u8 as *const libc::c_char,
+            b"middle\x00" as *const u8 as *const i8,
             49i32 as u16,
             1i32,
         );
         primitive(
-            b"suppressfontnotfounderror\x00" as *const u8 as *const libc::c_char,
+            b"suppressfontnotfounderror\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -15906,7 +15906,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 67i32,
         );
         primitive(
-            b"TeXXeTstate\x00" as *const u8 as *const libc::c_char,
+            b"TeXXeTstate\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -15934,7 +15934,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 71i32,
         );
         primitive(
-            b"XeTeXupwardsmode\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXupwardsmode\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -15962,7 +15962,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 73i32,
         );
         primitive(
-            b"XeTeXuseglyphmetrics\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXuseglyphmetrics\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -15990,7 +15990,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 74i32,
         );
         primitive(
-            b"XeTeXinterchartokenstate\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXinterchartokenstate\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -16018,7 +16018,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 75i32,
         );
         primitive(
-            b"XeTeXdashbreakstate\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXdashbreakstate\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -16046,7 +16046,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 72i32,
         );
         primitive(
-            b"XeTeXinputnormalization\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXinputnormalization\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -16074,7 +16074,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 76i32,
         );
         primitive(
-            b"XeTeXtracingfonts\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXtracingfonts\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -16102,7 +16102,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 79i32,
         );
         primitive(
-            b"XeTeXinterwordspaceshaping\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXinterwordspaceshaping\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -16130,7 +16130,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 80i32,
         );
         primitive(
-            b"XeTeXgenerateactualtext\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXgenerateactualtext\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -16158,7 +16158,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 81i32,
         );
         primitive(
-            b"XeTeXhyphenatablelength\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXhyphenatablelength\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -16186,7 +16186,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 82i32,
         );
         primitive(
-            b"pdfoutput\x00" as *const u8 as *const libc::c_char,
+            b"pdfoutput\x00" as *const u8 as *const i8,
             74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -16214,167 +16214,167 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 84i32,
         );
         primitive(
-            b"XeTeXinputencoding\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXinputencoding\x00" as *const u8 as *const i8,
             59i32 as u16,
             44i32,
         );
         primitive(
-            b"XeTeXdefaultencoding\x00" as *const u8 as *const libc::c_char,
+            b"XeTeXdefaultencoding\x00" as *const u8 as *const i8,
             59i32 as u16,
             45i32,
         );
         primitive(
-            b"beginL\x00" as *const u8 as *const libc::c_char,
+            b"beginL\x00" as *const u8 as *const i8,
             33i32 as u16,
             6i32,
         );
         primitive(
-            b"endL\x00" as *const u8 as *const libc::c_char,
+            b"endL\x00" as *const u8 as *const i8,
             33i32 as u16,
             7i32,
         );
         primitive(
-            b"beginR\x00" as *const u8 as *const libc::c_char,
+            b"beginR\x00" as *const u8 as *const i8,
             33i32 as u16,
             10i32,
         );
         primitive(
-            b"endR\x00" as *const u8 as *const libc::c_char,
+            b"endR\x00" as *const u8 as *const i8,
             33i32 as u16,
             11i32,
         );
         primitive(
-            b"scantokens\x00" as *const u8 as *const libc::c_char,
+            b"scantokens\x00" as *const u8 as *const i8,
             106i32 as u16,
             2i32,
         );
         primitive(
-            b"readline\x00" as *const u8 as *const libc::c_char,
+            b"readline\x00" as *const u8 as *const i8,
             98i32 as u16,
             1i32,
         );
         primitive(
-            b"unless\x00" as *const u8 as *const libc::c_char,
+            b"unless\x00" as *const u8 as *const i8,
             104i32 as u16,
             1i32,
         );
         primitive(
-            b"ifdefined\x00" as *const u8 as *const libc::c_char,
+            b"ifdefined\x00" as *const u8 as *const i8,
             107i32 as u16,
             17i32,
         );
         primitive(
-            b"ifcsname\x00" as *const u8 as *const libc::c_char,
+            b"ifcsname\x00" as *const u8 as *const i8,
             107i32 as u16,
             18i32,
         );
         primitive(
-            b"iffontchar\x00" as *const u8 as *const libc::c_char,
+            b"iffontchar\x00" as *const u8 as *const i8,
             107i32 as u16,
             19i32,
         );
         primitive(
-            b"ifincsname\x00" as *const u8 as *const libc::c_char,
+            b"ifincsname\x00" as *const u8 as *const i8,
             107i32 as u16,
             20i32,
         );
         primitive(
-            b"protected\x00" as *const u8 as *const libc::c_char,
+            b"protected\x00" as *const u8 as *const i8,
             95i32 as u16,
             8i32,
         );
         primitive(
-            b"numexpr\x00" as *const u8 as *const libc::c_char,
+            b"numexpr\x00" as *const u8 as *const i8,
             71i32 as u16,
             59i32 + 0i32,
         );
         primitive(
-            b"dimexpr\x00" as *const u8 as *const libc::c_char,
+            b"dimexpr\x00" as *const u8 as *const i8,
             71i32 as u16,
             59i32 + 1i32,
         );
         primitive(
-            b"glueexpr\x00" as *const u8 as *const libc::c_char,
+            b"glueexpr\x00" as *const u8 as *const i8,
             71i32 as u16,
             59i32 + 2i32,
         );
         primitive(
-            b"muexpr\x00" as *const u8 as *const libc::c_char,
+            b"muexpr\x00" as *const u8 as *const i8,
             71i32 as u16,
             59i32 + 3i32,
         );
         primitive(
-            b"gluestretchorder\x00" as *const u8 as *const libc::c_char,
+            b"gluestretchorder\x00" as *const u8 as *const i8,
             71i32 as u16,
             12i32,
         );
         primitive(
-            b"glueshrinkorder\x00" as *const u8 as *const libc::c_char,
+            b"glueshrinkorder\x00" as *const u8 as *const i8,
             71i32 as u16,
             13i32,
         );
         primitive(
-            b"gluestretch\x00" as *const u8 as *const libc::c_char,
+            b"gluestretch\x00" as *const u8 as *const i8,
             71i32 as u16,
             55i32,
         );
         primitive(
-            b"glueshrink\x00" as *const u8 as *const libc::c_char,
+            b"glueshrink\x00" as *const u8 as *const i8,
             71i32 as u16,
             56i32,
         );
         primitive(
-            b"mutoglue\x00" as *const u8 as *const libc::c_char,
+            b"mutoglue\x00" as *const u8 as *const i8,
             71i32 as u16,
             57i32,
         );
         primitive(
-            b"gluetomu\x00" as *const u8 as *const libc::c_char,
+            b"gluetomu\x00" as *const u8 as *const i8,
             71i32 as u16,
             58i32,
         );
         primitive(
-            b"marks\x00" as *const u8 as *const libc::c_char,
+            b"marks\x00" as *const u8 as *const i8,
             18i32 as u16,
             5i32,
         );
         primitive(
-            b"topmarks\x00" as *const u8 as *const libc::c_char,
+            b"topmarks\x00" as *const u8 as *const i8,
             112i32 as u16,
             0i32 + 5i32,
         );
         primitive(
-            b"firstmarks\x00" as *const u8 as *const libc::c_char,
+            b"firstmarks\x00" as *const u8 as *const i8,
             112i32 as u16,
             1i32 + 5i32,
         );
         primitive(
-            b"botmarks\x00" as *const u8 as *const libc::c_char,
+            b"botmarks\x00" as *const u8 as *const i8,
             112i32 as u16,
             2i32 + 5i32,
         );
         primitive(
-            b"splitfirstmarks\x00" as *const u8 as *const libc::c_char,
+            b"splitfirstmarks\x00" as *const u8 as *const i8,
             112i32 as u16,
             3i32 + 5i32,
         );
         primitive(
-            b"splitbotmarks\x00" as *const u8 as *const libc::c_char,
+            b"splitbotmarks\x00" as *const u8 as *const i8,
             112i32 as u16,
             4i32 + 5i32,
         );
         primitive(
-            b"pagediscards\x00" as *const u8 as *const libc::c_char,
+            b"pagediscards\x00" as *const u8 as *const i8,
             24i32 as u16,
             2i32,
         );
         primitive(
-            b"splitdiscards\x00" as *const u8 as *const libc::c_char,
+            b"splitdiscards\x00" as *const u8 as *const i8,
             24i32 as u16,
             3i32,
         );
         primitive(
-            b"interlinepenalties\x00" as *const u8 as *const libc::c_char,
+            b"interlinepenalties\x00" as *const u8 as *const i8,
             85i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -16392,7 +16392,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 0i32,
         );
         primitive(
-            b"clubpenalties\x00" as *const u8 as *const libc::c_char,
+            b"clubpenalties\x00" as *const u8 as *const i8,
             85i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -16410,7 +16410,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 1i32,
         );
         primitive(
-            b"widowpenalties\x00" as *const u8 as *const libc::c_char,
+            b"widowpenalties\x00" as *const u8 as *const i8,
             85i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -16428,7 +16428,7 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 2i32,
         );
         primitive(
-            b"displaywidowpenalties\x00" as *const u8 as *const libc::c_char,
+            b"displaywidowpenalties\x00" as *const u8 as *const i8,
             85i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -16447,7 +16447,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         max_reg_num = 32767i32;
         max_reg_help_line = b"A register number must be between 0 and 32767.\x00" as *const u8
-            as *const libc::c_char
+            as *const i8
     }
     no_new_control_sequence = 1i32 != 0;
     if !in_initex_mode {
@@ -16837,8 +16837,8 @@ pub unsafe extern "C" fn tt_run_engine(
         ) as *mut *mut libc::c_void;
         font_flags = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<libc::c_char>() as u64,
-        ) as *mut libc::c_char;
+            ::std::mem::size_of::<i8>() as u64,
+        ) as *mut i8;
         font_letter_space = xcalloc(
             (font_max + 1i32) as size_t,
             ::std::mem::size_of::<scaled_t>() as u64,
@@ -16937,7 +16937,7 @@ pub unsafe extern "C" fn tt_run_engine(
         ) as *mut int32_t;
         font_ptr = 0i32;
         fmem_ptr = 7i32;
-        *font_name.offset(0) = maketexstring(b"nullfont\x00" as *const u8 as *const libc::c_char);
+        *font_name.offset(0) = maketexstring(b"nullfont\x00" as *const u8 as *const i8);
         *font_area.offset(0) = (65536 + 1i32 as libc::c_long) as str_number;
         *hyphen_char.offset(0) = '-' as i32;
         *skew_char.offset(0) = -1i32;

@@ -21,7 +21,7 @@ extern "C" {
     #[no_mangle]
     static mut str_start: *mut pool_pointer;
     #[no_mangle]
-    static mut help_line: [*const libc::c_char; 6];
+    static mut help_line: [*const i8; 6];
     #[no_mangle]
     static mut help_ptr: u8;
     #[no_mangle]
@@ -199,15 +199,15 @@ extern "C" {
     #[no_mangle]
     fn effective_char(err_p: bool, f: internal_font_number, c: u16) -> int32_t;
     #[no_mangle]
-    fn confusion(s: *const libc::c_char) -> !;
+    fn confusion(s: *const i8) -> !;
     #[no_mangle]
-    fn print_nl_cstr(s: *const libc::c_char);
+    fn print_nl_cstr(s: *const i8);
     #[no_mangle]
     fn error();
     #[no_mangle]
-    fn print_cstr(s: *const libc::c_char);
+    fn print_cstr(s: *const i8);
     #[no_mangle]
-    fn pdf_error(t: *const libc::c_char, p: *const libc::c_char) -> !;
+    fn pdf_error(t: *const i8, p: *const i8) -> !;
     #[no_mangle]
     fn print_file_line();
 }
@@ -2713,12 +2713,12 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                             disc_width += (*mem.offset((s + 1i32) as isize)).b32.s1
                                         } else {
                                             confusion(
-                                                b"disc3a\x00" as *const u8 as *const libc::c_char,
+                                                b"disc3a\x00" as *const u8 as *const i8,
                                             );
                                         }
                                     }
                                     _ => {
-                                        confusion(b"disc3\x00" as *const u8 as *const libc::c_char);
+                                        confusion(b"disc3\x00" as *const u8 as *const i8);
                                     }
                                 }
                             }
@@ -2819,12 +2819,12 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                         active_width[1] += (*mem.offset((s + 1i32) as isize)).b32.s1
                                     } else {
                                         confusion(
-                                            b"disc4a\x00" as *const u8 as *const libc::c_char,
+                                            b"disc4a\x00" as *const u8 as *const i8,
                                         );
                                     }
                                 }
                                 _ => {
-                                    confusion(b"disc4\x00" as *const u8 as *const libc::c_char);
+                                    confusion(b"disc4\x00" as *const u8 as *const i8);
                                 }
                             }
                         }
@@ -2862,7 +2862,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                 }
                 4 | 3 | 5 => {}
                 _ => {
-                    confusion(b"paragraph\x00" as *const u8 as *const libc::c_char);
+                    confusion(b"paragraph\x00" as *const u8 as *const i8);
                 }
             }
             global_prev_p = cur_p;
@@ -3764,7 +3764,7 @@ unsafe extern "C" fn post_line_break(mut d: bool) {
     }
     if cur_line != best_line || (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1 != -0xfffffffi32
     {
-        confusion(b"line breaking\x00" as *const u8 as *const libc::c_char);
+        confusion(b"line breaking\x00" as *const u8 as *const i8);
     }
     cur_list.prev_graf = best_line - 1i32;
     cur_list.eTeX_aux = LR_ptr;
@@ -3940,14 +3940,14 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                                                 } else {
                                                     confusion(
                                                         b"disc1a\x00" as *const u8
-                                                            as *const libc::c_char,
+                                                            as *const i8,
                                                     );
                                                 }
                                             }
                                             _ => {
                                                 confusion(
                                                     b"disc1\x00" as *const u8
-                                                        as *const libc::c_char,
+                                                        as *const i8,
                                                 );
                                             }
                                         }
@@ -4029,14 +4029,14 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                                                 } else {
                                                     confusion(
                                                         b"disc2a\x00" as *const u8
-                                                            as *const libc::c_char,
+                                                            as *const i8,
                                                     );
                                                 }
                                             }
                                             _ => {
                                                 confusion(
                                                     b"disc2\x00" as *const u8
-                                                        as *const libc::c_char,
+                                                        as *const i8,
                                                 );
                                             }
                                         }
@@ -5409,22 +5409,22 @@ unsafe extern "C" fn finite_shrink(mut p: int32_t) -> int32_t {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
         print_cstr(
-            b"Infinite glue shrinkage found in a paragraph\x00" as *const u8 as *const libc::c_char,
+            b"Infinite glue shrinkage found in a paragraph\x00" as *const u8 as *const i8,
         );
         help_ptr = 5i32 as u8;
         help_line[4] = b"The paragraph just ended includes some glue that has\x00" as *const u8
-            as *const libc::c_char;
+            as *const i8;
         help_line[3] = b"infinite shrinkability, e.g., `\\hskip 0pt minus 1fil\'.\x00" as *const u8
-            as *const libc::c_char;
+            as *const i8;
         help_line[2] = b"Such glue doesn\'t belong there---it allows a paragraph\x00" as *const u8
-            as *const libc::c_char;
+            as *const i8;
         help_line[1] = b"of any length to fit on one line. But it\'s safe to proceed,\x00"
-            as *const u8 as *const libc::c_char;
+            as *const u8 as *const i8;
         help_line[0] = b"since the offensive shrinkability has been made finite.\x00" as *const u8
-            as *const libc::c_char;
+            as *const i8;
         error();
     }
     q = new_spec(p);
@@ -5931,8 +5931,8 @@ unsafe extern "C" fn find_protchar_right(mut l: int32_t, mut r: int32_t) -> int3
 unsafe extern "C" fn push_node(mut p: int32_t) {
     if hlist_stack_level as libc::c_int > 512i32 {
         pdf_error(
-            b"push_node\x00" as *const u8 as *const libc::c_char,
-            b"stack overflow\x00" as *const u8 as *const libc::c_char,
+            b"push_node\x00" as *const u8 as *const i8,
+            b"stack overflow\x00" as *const u8 as *const i8,
         );
     }
     hlist_stack[hlist_stack_level as usize] = p;
@@ -5942,8 +5942,8 @@ unsafe extern "C" fn pop_node() -> int32_t {
     hlist_stack_level = (hlist_stack_level as libc::c_int - 1i32) as libc::c_short;
     if (hlist_stack_level as libc::c_int) < 0i32 {
         pdf_error(
-            b"pop_node\x00" as *const u8 as *const libc::c_char,
-            b"stack underflow (internal error)\x00" as *const u8 as *const libc::c_char,
+            b"pop_node\x00" as *const u8 as *const i8,
+            b"stack underflow (internal error)\x00" as *const u8 as *const i8,
         );
     }
     return hlist_stack[hlist_stack_level as usize];

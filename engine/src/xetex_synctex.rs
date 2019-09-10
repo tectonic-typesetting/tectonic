@@ -13,26 +13,26 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcat(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     /* Global symbols that route through the global API variable. Hopefully we
      * will one day eliminate all of the global state and get rid of all of
      * these. */
     #[no_mangle]
-    fn ttstub_issue_warning(format: *const libc::c_char, _: ...);
+    fn ttstub_issue_warning(format: *const i8, _: ...);
     #[no_mangle]
-    fn ttstub_issue_error(format: *const libc::c_char, _: ...);
+    fn ttstub_issue_error(format: *const i8, _: ...);
     #[no_mangle]
     fn ttstub_fprintf(
         handle: rust_output_handle_t,
-        format: *const libc::c_char,
+        format: *const i8,
         _: ...
     ) -> libc::c_int;
     #[no_mangle]
-    fn ttstub_output_open(path: *const libc::c_char, is_gz: libc::c_int) -> rust_output_handle_t;
+    fn ttstub_output_open(path: *const i8, is_gz: libc::c_int) -> rust_output_handle_t;
     #[no_mangle]
     fn ttstub_output_close(handle: rust_output_handle_t) -> libc::c_int;
     /* tectonic/core-memory.h: basic dynamic memory helpers
@@ -40,13 +40,13 @@ extern "C" {
        Licensed under the MIT License.
     */
     #[no_mangle]
-    fn xstrdup(s: *const libc::c_char) -> *mut libc::c_char;
+    fn xstrdup(s: *const i8) -> *mut i8;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
     fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
     #[no_mangle]
-    fn gettexstring(_: str_number) -> *mut libc::c_char;
+    fn gettexstring(_: str_number) -> *mut i8;
     /* Needed here for UFILE */
     /* variables! */
     /* All the following variables are defined in xetexini.c */
@@ -73,7 +73,7 @@ extern "C" {
     #[no_mangle]
     static mut synctex_enabled: libc::c_int;
     #[no_mangle]
-    static mut name_of_input_file: *mut libc::c_char;
+    static mut name_of_input_file: *mut i8;
 }
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
@@ -166,7 +166,7 @@ pub struct _flags {
 #[repr(C)]
 pub struct C2RustUnnamed {
     pub file: rust_output_handle_t,
-    pub root_name: *mut libc::c_char,
+    pub root_name: *mut i8,
     pub count: int32_t,
     pub node: int32_t,
     pub recorder: synctex_recorder_t,
@@ -213,7 +213,7 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 // Initialized in run_static_initializers
 static mut synctex_ctxt: C2RustUnnamed = C2RustUnnamed {
     file: 0 as *const libc::c_void as *mut libc::c_void,
-    root_name: 0 as *const libc::c_char as *mut libc::c_char,
+    root_name: 0 as *const i8 as *mut i8,
     count: 0,
     node: 0,
     recorder: None,
@@ -232,12 +232,12 @@ static mut synctex_ctxt: C2RustUnnamed = C2RustUnnamed {
         c2rust_padding: [0; 3],
     },
 };
-unsafe extern "C" fn get_current_name() -> *mut libc::c_char {
+unsafe extern "C" fn get_current_name() -> *mut i8 {
     /* This used to always make the pathname absolute but I'm getting rid of
      * that since it ends up adding dependencies on a bunch of functions I
      * don't want to have to deal with. */
     if name_of_input_file.is_null() {
-        return xstrdup(b"\x00" as *const u8 as *const libc::c_char);
+        return xstrdup(b"\x00" as *const u8 as *const i8);
     }
     return xstrdup(name_of_input_file);
 }
@@ -290,7 +290,7 @@ pub unsafe extern "C" fn synctex_init_command() {
      * argument. */
     /* Reset state */
     synctex_ctxt.file = 0 as *mut libc::c_void;
-    synctex_ctxt.root_name = 0 as *mut libc::c_char;
+    synctex_ctxt.root_name = 0 as *mut i8;
     synctex_ctxt.count = 0i32;
     synctex_ctxt.node = 0i32;
     synctex_ctxt.recorder = None;
@@ -381,13 +381,13 @@ unsafe extern "C" fn synctexabort() {
         synctex_ctxt.file = 0 as *mut libc::c_void
     }
     synctex_ctxt.root_name =
-        mfree(synctex_ctxt.root_name as *mut libc::c_void) as *mut libc::c_char;
+        mfree(synctex_ctxt.root_name as *mut libc::c_void) as *mut i8;
     synctex_ctxt.flags.set_off(1i32 as libc::c_uint);
     /* disable synctex */
 }
-static mut synctex_suffix: *const libc::c_char =
-    b".synctex\x00" as *const u8 as *const libc::c_char;
-static mut synctex_suffix_gz: *const libc::c_char = b".gz\x00" as *const u8 as *const libc::c_char;
+static mut synctex_suffix: *const i8 =
+    b".synctex\x00" as *const u8 as *const i8;
+static mut synctex_suffix_gz: *const i8 = b".gz\x00" as *const u8 as *const i8;
 /*  synctex_dot_open ensures that the foo.synctex file is open.
  *  In case of problem, it definitely disables synchronization.
  *  Now all the output synchronization info is gathered in only one file.
@@ -397,8 +397,8 @@ static mut synctex_suffix_gz: *const libc::c_char = b".gz\x00" as *const u8 as *
  *  information for page i alone.
  */
 unsafe extern "C" fn synctex_dot_open() -> rust_output_handle_t {
-    let mut tmp: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut the_name: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut tmp: *mut i8 = 0 as *mut i8;
+    let mut the_name: *mut i8 = 0 as *mut i8;
     let mut len: size_t = 0;
     if synctex_ctxt.flags.off() as libc::c_int != 0
         || (*eqtb.offset(
@@ -443,21 +443,21 @@ unsafe extern "C" fn synctex_dot_open() -> rust_output_handle_t {
             len.wrapping_add(strlen(synctex_suffix))
                 .wrapping_add(strlen(synctex_suffix_gz))
                 .wrapping_add(1i32 as u64),
-        ) as *mut libc::c_char;
+        ) as *mut i8;
         strcpy(the_name, tmp);
         strcat(the_name, synctex_suffix);
         strcat(the_name, synctex_suffix_gz);
-        tmp = mfree(tmp as *mut libc::c_void) as *mut libc::c_char;
+        tmp = mfree(tmp as *mut libc::c_void) as *mut i8;
         synctex_ctxt.file = ttstub_output_open(the_name, 1i32);
         if !synctex_ctxt.file.is_null() {
             if !(synctex_record_preamble() != 0) {
                 synctex_ctxt.magnification = 1000i32;
                 synctex_ctxt.unit = 1i32;
-                the_name = mfree(the_name as *mut libc::c_void) as *mut libc::c_char;
+                the_name = mfree(the_name as *mut libc::c_void) as *mut i8;
                 if !synctex_ctxt.root_name.is_null() {
                     synctex_record_input(1i32, synctex_ctxt.root_name);
                     synctex_ctxt.root_name =
-                        mfree(synctex_ctxt.root_name as *mut libc::c_void) as *mut libc::c_char
+                        mfree(synctex_ctxt.root_name as *mut libc::c_void) as *mut i8
                 }
                 synctex_ctxt.count = 0i32;
                 return synctex_ctxt.file;
@@ -538,18 +538,18 @@ pub unsafe extern "C" fn synctex_start_input() {
         if strlen(synctex_ctxt.root_name) == 0 {
             synctex_ctxt.root_name = xrealloc(
                 synctex_ctxt.root_name as *mut libc::c_void,
-                strlen(b"texput\x00" as *const u8 as *const libc::c_char)
+                strlen(b"texput\x00" as *const u8 as *const i8)
                     .wrapping_add(1i32 as u64),
-            ) as *mut libc::c_char;
+            ) as *mut i8;
             strcpy(
                 synctex_ctxt.root_name,
-                b"texput\x00" as *const u8 as *const libc::c_char,
+                b"texput\x00" as *const u8 as *const i8,
             );
         }
         return;
     }
     if !synctex_ctxt.file.is_null() || !synctex_dot_open().is_null() {
-        let mut tmp: *mut libc::c_char = get_current_name();
+        let mut tmp: *mut i8 = get_current_name();
         /* Always record the input, even if INTPAR(synctex) is 0 */
         synctex_record_input(cur_input.synctex_tag, tmp);
         free(tmp as *mut libc::c_void);
@@ -621,7 +621,7 @@ pub unsafe extern "C" fn synctex_sheet(mut mag: int32_t) {
             synctex_ctxt.flags.set_warn(1i32 as libc::c_uint);
             ttstub_issue_warning(
                 b"SyncTeX was disabled -- changing the value of \\synctex has no effect\x00"
-                    as *const u8 as *const libc::c_char,
+                    as *const u8 as *const i8,
             );
         }
         return;
@@ -1154,7 +1154,7 @@ pub unsafe extern "C" fn synctex_horizontal_rule_or_glue(mut p: int32_t, mut thi
         }
         _ => {
             ttstub_issue_error(
-                b"unknown node type %d in SyncTeX\x00" as *const u8 as *const libc::c_char,
+                b"unknown node type %d in SyncTeX\x00" as *const u8 as *const i8,
                 (*mem.offset(p as isize)).b16.s1 as libc::c_int,
             ); /*  always record synchronously: maybe some text is outside the box  */
         }
@@ -1181,7 +1181,7 @@ pub unsafe extern "C" fn synctex_horizontal_rule_or_glue(mut p: int32_t, mut thi
         }
         _ => {
             ttstub_issue_error(
-                b"unknown node type %d in SyncTeX\x00" as *const u8 as *const libc::c_char,
+                b"unknown node type %d in SyncTeX\x00" as *const u8 as *const i8,
                 (*mem.offset(p as isize)).b16.s1 as libc::c_int,
             );
         }
@@ -1303,7 +1303,7 @@ pub unsafe extern "C" fn synctex_current() {
     } /* XXX: should this be `+=`? */
     len = ttstub_fprintf(
         synctex_ctxt.file,
-        b"x%i,%i:%i,%i\n\x00" as *const u8 as *const libc::c_char,
+        b"x%i,%i:%i,%i\n\x00" as *const u8 as *const i8,
         synctex_ctxt.tag,
         synctex_ctxt.line,
         (cur_h + 4736287i32) / synctex_ctxt.unit,
@@ -1325,7 +1325,7 @@ unsafe extern "C" fn synctex_record_settings() -> libc::c_int {
     len = ttstub_fprintf(
         synctex_ctxt.file,
         b"Output:pdf\nMagnification:%i\nUnit:%i\nX Offset:0\nY Offset:0\n\x00" as *const u8
-            as *const libc::c_char,
+            as *const i8,
         synctex_ctxt.magnification,
         synctex_ctxt.unit,
     );
@@ -1340,7 +1340,7 @@ unsafe extern "C" fn synctex_record_settings() -> libc::c_int {
 unsafe extern "C" fn synctex_record_preamble() -> libc::c_int {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
-        b"SyncTeX Version:%i\n\x00" as *const u8 as *const libc::c_char,
+        b"SyncTeX Version:%i\n\x00" as *const u8 as *const i8,
         1i32,
     );
     if len > 0i32 {
@@ -1353,11 +1353,11 @@ unsafe extern "C" fn synctex_record_preamble() -> libc::c_int {
 #[inline]
 unsafe extern "C" fn synctex_record_input(
     mut tag: int32_t,
-    mut name: *mut libc::c_char,
+    mut name: *mut i8,
 ) -> libc::c_int {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
-        b"Input:%i:%s\n\x00" as *const u8 as *const libc::c_char,
+        b"Input:%i:%s\n\x00" as *const u8 as *const i8,
         tag,
         name,
     );
@@ -1372,7 +1372,7 @@ unsafe extern "C" fn synctex_record_input(
 unsafe extern "C" fn synctex_record_anchor() -> libc::c_int {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
-        b"!%i\n\x00" as *const u8 as *const libc::c_char,
+        b"!%i\n\x00" as *const u8 as *const i8,
         synctex_ctxt.total_length,
     );
     if len > 0i32 {
@@ -1387,7 +1387,7 @@ unsafe extern "C" fn synctex_record_anchor() -> libc::c_int {
 unsafe extern "C" fn synctex_record_content() -> libc::c_int {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
-        b"Content:\n\x00" as *const u8 as *const libc::c_char,
+        b"Content:\n\x00" as *const u8 as *const i8,
     );
     if len > 0i32 {
         synctex_ctxt.total_length += len;
@@ -1401,7 +1401,7 @@ unsafe extern "C" fn synctex_record_sheet(mut sheet: int32_t) -> libc::c_int {
     if 0i32 == synctex_record_anchor() {
         let mut len: libc::c_int = ttstub_fprintf(
             synctex_ctxt.file,
-            b"{%i\n\x00" as *const u8 as *const libc::c_char,
+            b"{%i\n\x00" as *const u8 as *const i8,
             sheet,
         );
         if len > 0i32 {
@@ -1419,7 +1419,7 @@ unsafe extern "C" fn synctex_record_teehs(mut sheet: int32_t) -> libc::c_int {
     if 0i32 == synctex_record_anchor() {
         let mut len: libc::c_int = ttstub_fprintf(
             synctex_ctxt.file,
-            b"}%i\n\x00" as *const u8 as *const libc::c_char,
+            b"}%i\n\x00" as *const u8 as *const i8,
             sheet,
         );
         if len > 0i32 {
@@ -1471,7 +1471,7 @@ pub unsafe extern "C" fn synctex_pdfxform(mut p: int32_t) {
             synctex_ctxt.flags.set_warn(1i32 as libc::c_uint);
             ttstub_issue_warning(
                 b"SyncTeX was disabled - changing the value of \\synctex has no effect\x00"
-                    as *const u8 as *const libc::c_char,
+                    as *const u8 as *const i8,
             );
         }
         return;
@@ -1537,7 +1537,7 @@ unsafe extern "C" fn synctex_record_pdfxform(mut form: int32_t) -> libc::c_int {
         synctex_ctxt.form_depth += 1;
         len = ttstub_fprintf(
             synctex_ctxt.file,
-            b"<%i\n\x00" as *const u8 as *const libc::c_char,
+            b"<%i\n\x00" as *const u8 as *const i8,
             synctex_ctxt.form_depth,
         );
         if len > 0i32 {
@@ -1558,7 +1558,7 @@ unsafe extern "C" fn synctex_record_mrofxfdp() -> libc::c_int {
         synctex_ctxt.form_depth -= 1;
         len = ttstub_fprintf(
             synctex_ctxt.file,
-            b">\n\x00" as *const u8 as *const libc::c_char,
+            b">\n\x00" as *const u8 as *const i8,
         );
         if len > 0i32 {
             synctex_ctxt.total_length += len;
@@ -1612,7 +1612,7 @@ unsafe extern "C" fn synctex_record_node_pdfrefxform(mut objnum: libc::c_int) ->
         let mut len: libc::c_int = 0i32;
         len = ttstub_fprintf(
             synctex_ctxt.file,
-            b"f%i:%i,%i\n\x00" as *const u8 as *const libc::c_char,
+            b"f%i:%i,%i\n\x00" as *const u8 as *const i8,
             objnum,
             (cur_h + 4736287i32) / synctex_ctxt.unit,
             (cur_v + 4736287i32) / synctex_ctxt.unit,
@@ -1631,7 +1631,7 @@ unsafe extern "C" fn synctex_record_node_pdfrefxform(mut objnum: libc::c_int) ->
 unsafe extern "C" fn synctex_record_node_void_vlist(mut p: int32_t) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
-        b"v%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const libc::c_char,
+        b"v%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const i8,
         (*mem.offset((p + 8i32 - 1i32) as isize)).b32.s0,
         (*mem.offset((p + 8i32 - 1i32) as isize)).b32.s1,
         synctex_ctxt.curh / synctex_ctxt.unit,
@@ -1654,7 +1654,7 @@ unsafe extern "C" fn synctex_record_node_vlist(mut p: int32_t) {
     synctex_ctxt.flags.set_not_void(1i32 as libc::c_uint);
     len = ttstub_fprintf(
         synctex_ctxt.file,
-        b"[%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const libc::c_char,
+        b"[%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const i8,
         (*mem.offset((p + 8i32 - 1i32) as isize)).b32.s0,
         (*mem.offset((p + 8i32 - 1i32) as isize)).b32.s1,
         synctex_ctxt.curh / synctex_ctxt.unit,
@@ -1675,7 +1675,7 @@ unsafe extern "C" fn synctex_record_node_vlist(mut p: int32_t) {
 unsafe extern "C" fn synctex_record_node_tsilv(mut p: int32_t) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
-        b"]\n\x00" as *const u8 as *const libc::c_char,
+        b"]\n\x00" as *const u8 as *const i8,
     );
     if len > 0i32 {
         synctex_ctxt.total_length += len
@@ -1688,7 +1688,7 @@ unsafe extern "C" fn synctex_record_node_tsilv(mut p: int32_t) {
 unsafe extern "C" fn synctex_record_node_void_hlist(mut p: int32_t) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
-        b"h%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const libc::c_char,
+        b"h%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const i8,
         (*mem.offset((p + 8i32 - 1i32) as isize)).b32.s0,
         (*mem.offset((p + 8i32 - 1i32) as isize)).b32.s1,
         synctex_ctxt.curh / synctex_ctxt.unit,
@@ -1711,7 +1711,7 @@ unsafe extern "C" fn synctex_record_node_hlist(mut p: int32_t) {
     synctex_ctxt.flags.set_not_void(1i32 as libc::c_uint);
     len = ttstub_fprintf(
         synctex_ctxt.file,
-        b"(%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const libc::c_char,
+        b"(%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const i8,
         (*mem.offset((p + 8i32 - 1i32) as isize)).b32.s0,
         (*mem.offset((p + 8i32 - 1i32) as isize)).b32.s1,
         synctex_ctxt.curh / synctex_ctxt.unit,
@@ -1732,7 +1732,7 @@ unsafe extern "C" fn synctex_record_node_hlist(mut p: int32_t) {
 unsafe extern "C" fn synctex_record_node_tsilh(mut p: int32_t) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
-        b")\n\x00" as *const u8 as *const libc::c_char,
+        b")\n\x00" as *const u8 as *const i8,
     );
     if len > 0i32 {
         synctex_ctxt.total_length += len;
@@ -1745,7 +1745,7 @@ unsafe extern "C" fn synctex_record_node_tsilh(mut p: int32_t) {
 unsafe extern "C" fn synctex_record_count() -> libc::c_int {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
-        b"Count:%i\n\x00" as *const u8 as *const libc::c_char,
+        b"Count:%i\n\x00" as *const u8 as *const i8,
         synctex_ctxt.count,
     );
     if len > 0i32 {
@@ -1760,14 +1760,14 @@ unsafe extern "C" fn synctex_record_postamble() -> libc::c_int {
     if 0i32 == synctex_record_anchor() {
         let mut len: libc::c_int = ttstub_fprintf(
             synctex_ctxt.file,
-            b"Postamble:\n\x00" as *const u8 as *const libc::c_char,
+            b"Postamble:\n\x00" as *const u8 as *const i8,
         );
         if len > 0i32 {
             synctex_ctxt.total_length += len;
             if synctex_record_count() == 0 && synctex_record_anchor() == 0 {
                 len = ttstub_fprintf(
                     synctex_ctxt.file,
-                    b"Post scriptum:\n\x00" as *const u8 as *const libc::c_char,
+                    b"Post scriptum:\n\x00" as *const u8 as *const i8,
                 );
                 if len > 0i32 {
                     synctex_ctxt.total_length += len;
@@ -1783,7 +1783,7 @@ unsafe extern "C" fn synctex_record_postamble() -> libc::c_int {
 unsafe extern "C" fn synctex_record_node_glue(mut p: int32_t) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
-        b"g%i,%i:%i,%i\n\x00" as *const u8 as *const libc::c_char,
+        b"g%i,%i:%i,%i\n\x00" as *const u8 as *const i8,
         (*mem.offset((p + 3i32 - 1i32) as isize)).b32.s0,
         (*mem.offset((p + 3i32 - 1i32) as isize)).b32.s1,
         synctex_ctxt.curh / synctex_ctxt.unit,
@@ -1801,7 +1801,7 @@ unsafe extern "C" fn synctex_record_node_glue(mut p: int32_t) {
 unsafe extern "C" fn synctex_record_node_kern(mut p: int32_t) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
-        b"k%i,%i:%i,%i:%i\n\x00" as *const u8 as *const libc::c_char,
+        b"k%i,%i:%i,%i:%i\n\x00" as *const u8 as *const i8,
         (*mem.offset((p + 3i32 - 1i32) as isize)).b32.s0,
         (*mem.offset((p + 3i32 - 1i32) as isize)).b32.s1,
         synctex_ctxt.curh / synctex_ctxt.unit,
@@ -1820,7 +1820,7 @@ unsafe extern "C" fn synctex_record_node_kern(mut p: int32_t) {
 unsafe extern "C" fn synctex_record_node_rule(mut p: int32_t) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
-        b"r%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const libc::c_char,
+        b"r%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const i8,
         (*mem.offset((p + 5i32 - 1i32) as isize)).b32.s0,
         (*mem.offset((p + 5i32 - 1i32) as isize)).b32.s1,
         synctex_ctxt.curh / synctex_ctxt.unit,
@@ -1840,7 +1840,7 @@ unsafe extern "C" fn synctex_record_node_rule(mut p: int32_t) {
 unsafe extern "C" fn synctex_record_node_math(mut p: int32_t) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
-        b"$%i,%i:%i,%i\n\x00" as *const u8 as *const libc::c_char,
+        b"$%i,%i:%i,%i\n\x00" as *const u8 as *const i8,
         (*mem.offset((p + 3i32 - 1i32) as isize)).b32.s0,
         (*mem.offset((p + 3i32 - 1i32) as isize)).b32.s1,
         synctex_ctxt.curh / synctex_ctxt.unit,
@@ -1858,7 +1858,7 @@ unsafe extern "C" fn run_static_initializers() {
     synctex_ctxt = {
         let mut init = C2RustUnnamed {
             file: 0 as *mut libc::c_void,
-            root_name: 0 as *mut libc::c_char,
+            root_name: 0 as *mut i8,
             count: 0i32,
             node: 0i32,
             recorder: None,

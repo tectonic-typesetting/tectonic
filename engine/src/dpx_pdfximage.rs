@@ -15,19 +15,19 @@ extern "C" {
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn ttstub_input_open(
-        path: *const libc::c_char,
+        path: *const i8,
         format: tt_input_format_type,
         is_gz: libc::c_int,
     ) -> rust_input_handle_t;
@@ -40,7 +40,7 @@ extern "C" {
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
@@ -53,7 +53,7 @@ extern "C" {
     fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
     /* Name does not include the / */
     #[no_mangle]
-    fn pdf_new_name(name: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_merge_dict(dict1: *mut pdf_obj, dict2: *mut pdf_obj);
     /* pdf_add_dict() want pdf_obj as key, however, key must always be name
@@ -91,20 +91,20 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    static mut work_buffer: [libc::c_char; 0];
+    static mut work_buffer: [i8; 0];
     /* Tectonic-enabled versions */
     #[no_mangle]
     fn tt_mfgets(
-        buffer: *mut libc::c_char,
+        buffer: *mut i8,
         length: libc::c_int,
         file: rust_input_handle_t,
-    ) -> *mut libc::c_char;
+    ) -> *mut i8;
     #[no_mangle]
     fn bmp_include_image(ximage: *mut pdf_ximage, handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
     fn check_for_bmp(handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
-    fn dpx_delete_temp_file(tmp: *mut libc::c_char, force: libc::c_int);
+    fn dpx_delete_temp_file(tmp: *mut i8, force: libc::c_int);
     /* tmp freed here */
     #[no_mangle]
     static mut keep_cache: libc::c_int;
@@ -147,7 +147,7 @@ extern "C" {
     fn pdf_include_page(
         ximage: *mut pdf_ximage,
         handle: rust_input_handle_t,
-        ident: *const libc::c_char,
+        ident: *const i8,
         options: load_options,
     ) -> libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -172,9 +172,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_message(fmt: *const libc::c_char, _: ...);
+    fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -347,11 +347,11 @@ pub struct load_options {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_ximage_ {
-    pub ident: *mut libc::c_char,
-    pub res_name: [libc::c_char; 16],
+    pub ident: *mut i8,
+    pub res_name: [i8; 16],
     pub subtype: libc::c_int,
     pub attr: attr_,
-    pub filename: *mut libc::c_char,
+    pub filename: *mut i8,
     pub reference: *mut pdf_obj,
     pub resource: *mut pdf_obj,
 }
@@ -367,7 +367,7 @@ pub struct attr_ {
     pub page_count: libc::c_int,
     pub bbox_type: libc::c_int,
     pub dict: *mut pdf_obj,
-    pub tempfile: libc::c_char,
+    pub tempfile: i8,
 }
 pub type pdf_ximage = pdf_ximage_;
 /* quasi-hack to get the primary input */
@@ -376,7 +376,7 @@ pub type pdf_ximage = pdf_ximage_;
 #[repr(C)]
 pub struct opt_ {
     pub verbose: libc::c_int,
-    pub cmdtmpl: *mut libc::c_char,
+    pub cmdtmpl: *mut i8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -398,7 +398,7 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     } /* unsafe? */
@@ -406,20 +406,20 @@ unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc:
 }
 #[inline]
 unsafe extern "C" fn strstartswith(
-    mut s: *const libc::c_char,
-    mut prefix: *const libc::c_char,
-) -> *const libc::c_char {
+    mut s: *const i8,
+    mut prefix: *const i8,
+) -> *const i8 {
     let mut length: size_t = 0;
     length = strlen(prefix);
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const libc::c_char;
+    return 0 as *const i8;
 }
 static mut _opts: opt_ = {
     let mut init = opt_ {
         verbose: 0i32,
-        cmdtmpl: 0 as *const libc::c_char as *mut libc::c_char,
+        cmdtmpl: 0 as *const i8 as *mut i8,
     };
     init
 };
@@ -436,8 +436,8 @@ static mut _ic: ic_ = {
     init
 };
 unsafe extern "C" fn pdf_init_ximage_struct(mut I: *mut pdf_ximage) {
-    (*I).ident = 0 as *mut libc::c_char;
-    (*I).filename = 0 as *mut libc::c_char;
+    (*I).ident = 0 as *mut i8;
+    (*I).filename = 0 as *mut i8;
     (*I).subtype = -1i32;
     memset(
         (*I).res_name.as_mut_ptr() as *mut libc::c_void,
@@ -458,7 +458,7 @@ unsafe extern "C" fn pdf_init_ximage_struct(mut I: *mut pdf_ximage) {
     (*I).attr.page_count = 1i32;
     (*I).attr.bbox_type = 0i32;
     (*I).attr.dict = 0 as *mut pdf_obj;
-    (*I).attr.tempfile = 0i32 as libc::c_char;
+    (*I).attr.tempfile = 0i32 as i8;
 }
 unsafe extern "C" fn pdf_clean_ximage_struct(mut I: *mut pdf_ximage) {
     free((*I).ident as *mut libc::c_void);
@@ -495,12 +495,12 @@ pub unsafe extern "C" fn pdf_close_images() {
                 if _opts.verbose > 1i32 && keep_cache != 1i32 {
                     dpx_message(
                         b"pdf_image>> deleting temporary file \"%s\"\n\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                         (*I).filename,
                     ); /* temporary filename freed here */
                 }
                 dpx_delete_temp_file((*I).filename, 0i32);
-                (*I).filename = 0 as *mut libc::c_char
+                (*I).filename = 0 as *mut i8
             }
             pdf_clean_ximage_struct(I);
             i += 1
@@ -509,7 +509,7 @@ pub unsafe extern "C" fn pdf_close_images() {
         (*ic).capacity = 0i32;
         (*ic).count = (*ic).capacity
     }
-    _opts.cmdtmpl = mfree(_opts.cmdtmpl as *mut libc::c_void) as *mut libc::c_char;
+    _opts.cmdtmpl = mfree(_opts.cmdtmpl as *mut libc::c_void) as *mut i8;
 }
 unsafe extern "C" fn source_image_type(mut handle: rust_input_handle_t) -> libc::c_int {
     let mut format: libc::c_int = -1i32;
@@ -528,7 +528,7 @@ unsafe extern "C" fn source_image_type(mut handle: rust_input_handle_t) -> libc:
     } else {
         dpx_warning(
             b"Tectonic was unable to detect an image\'s format\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
         format = -1i32
     }
@@ -536,8 +536,8 @@ unsafe extern "C" fn source_image_type(mut handle: rust_input_handle_t) -> libc:
     return format;
 }
 unsafe extern "C" fn load_image(
-    mut ident: *const libc::c_char,
-    mut fullname: *const libc::c_char,
+    mut ident: *const i8,
+    mut fullname: *const i8,
     mut format: libc::c_int,
     mut handle: rust_input_handle_t,
     mut options: load_options,
@@ -561,17 +561,17 @@ unsafe extern "C" fn load_image(
     if !ident.is_null() {
         (*I).ident = new(
             (strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                 as u32,
-        ) as *mut libc::c_char;
+        ) as *mut i8;
         strcpy((*I).ident, ident);
     }
     if !fullname.is_null() {
         (*I).filename = new(
             (strlen(fullname).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                 as u32,
-        ) as *mut libc::c_char;
+        ) as *mut i8;
         strcpy((*I).filename, fullname);
     }
     (*I).attr.page_no = options.page_no;
@@ -582,7 +582,7 @@ unsafe extern "C" fn load_image(
     match format {
         1 => {
             if _opts.verbose != 0 {
-                dpx_message(b"[JPEG]\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b"[JPEG]\x00" as *const u8 as *const i8);
             }
             if jpeg_include_image(I, handle) < 0i32 {
                 current_block = 15386155914718490365;
@@ -593,17 +593,17 @@ unsafe extern "C" fn load_image(
         }
         7 => {
             if _opts.verbose != 0 {
-                dpx_message(b"[JP2]\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b"[JP2]\x00" as *const u8 as *const i8);
             }
             /*if (jp2_include_image(I, fp) < 0)*/
-            dpx_warning(b"Tectonic: JP2 not yet supported\x00" as *const u8 as *const libc::c_char);
+            dpx_warning(b"Tectonic: JP2 not yet supported\x00" as *const u8 as *const i8);
             current_block = 15386155914718490365;
         }
         2 => {
             /*I->subtype = PDF_XOBJECT_TYPE_IMAGE;
             break;*/
             if _opts.verbose != 0 {
-                dpx_message(b"[PNG]\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b"[PNG]\x00" as *const u8 as *const i8);
             }
             if png_include_image(I, handle) < 0i32 {
                 current_block = 15386155914718490365;
@@ -614,7 +614,7 @@ unsafe extern "C" fn load_image(
         }
         6 => {
             if _opts.verbose != 0 {
-                dpx_message(b"[BMP]\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b"[BMP]\x00" as *const u8 as *const i8);
             }
             if bmp_include_image(I, handle) < 0i32 {
                 current_block = 15386155914718490365;
@@ -625,7 +625,7 @@ unsafe extern "C" fn load_image(
         }
         0 => {
             if _opts.verbose != 0 {
-                dpx_message(b"[PDF]\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b"[PDF]\x00" as *const u8 as *const i8);
             }
             let mut result: libc::c_int = pdf_include_page(I, handle, fullname, options);
             /* Tectonic: this used to try ps_include_page() */
@@ -634,7 +634,7 @@ unsafe extern "C" fn load_image(
             } else {
                 if _opts.verbose != 0 {
                     dpx_message(
-                        b",Page:%d\x00" as *const u8 as *const libc::c_char,
+                        b",Page:%d\x00" as *const u8 as *const i8,
                         (*I).attr.page_no,
                     );
                 }
@@ -644,19 +644,19 @@ unsafe extern "C" fn load_image(
         }
         5 => {
             if _opts.verbose != 0 {
-                dpx_message(b"[EPS]\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b"[EPS]\x00" as *const u8 as *const i8);
             }
             dpx_warning(
                 b"sorry, PostScript images are not supported by Tectonic\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
             dpx_warning(b"for details, please see https://github.com/tectonic-typesetting/tectonic/issues/27\x00"
-                            as *const u8 as *const libc::c_char);
+                            as *const u8 as *const i8);
             current_block = 15386155914718490365;
         }
         _ => {
             if _opts.verbose != 0 {
-                dpx_message(b"[UNKNOWN]\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b"[UNKNOWN]\x00" as *const u8 as *const i8);
             }
             current_block = 15386155914718490365;
         }
@@ -673,20 +673,20 @@ unsafe extern "C" fn load_image(
                 1 => {
                     sprintf(
                         (*I).res_name.as_mut_ptr(),
-                        b"Im%d\x00" as *const u8 as *const libc::c_char,
+                        b"Im%d\x00" as *const u8 as *const i8,
                         id,
                     );
                 }
                 0 => {
                     sprintf(
                         (*I).res_name.as_mut_ptr(),
-                        b"Fm%d\x00" as *const u8 as *const libc::c_char,
+                        b"Fm%d\x00" as *const u8 as *const i8,
                         id,
                     );
                 }
                 _ => {
                     _tt_abort(
-                        b"Unknown XObject subtype: %d\x00" as *const u8 as *const libc::c_char,
+                        b"Unknown XObject subtype: %d\x00" as *const u8 as *const i8,
                         (*I).subtype,
                     );
                 }
@@ -698,7 +698,7 @@ unsafe extern "C" fn load_image(
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_ximage_findresource(
-    mut ident: *const libc::c_char,
+    mut ident: *const i8,
     mut options: load_options,
 ) -> libc::c_int {
     let mut ic: *mut ic_ = &mut _ic;
@@ -735,23 +735,23 @@ pub unsafe extern "C" fn pdf_ximage_findresource(
     handle = ttstub_input_open(ident, TTIF_PICT, 0i32);
     if handle.is_null() {
         dpx_warning(
-            b"Error locating image file \"%s\"\x00" as *const u8 as *const libc::c_char,
+            b"Error locating image file \"%s\"\x00" as *const u8 as *const i8,
             ident,
         );
         return -1i32;
     }
     if _opts.verbose != 0 {
-        dpx_message(b"(Image:%s\x00" as *const u8 as *const libc::c_char, ident);
+        dpx_message(b"(Image:%s\x00" as *const u8 as *const i8, ident);
     }
     format = source_image_type(handle);
     id = load_image(ident, ident, format, handle, options);
     ttstub_input_close(handle);
     if _opts.verbose != 0 {
-        dpx_message(b")\x00" as *const u8 as *const libc::c_char);
+        dpx_message(b")\x00" as *const u8 as *const i8);
     }
     if id < 0i32 {
         dpx_warning(
-            b"pdf: image inclusion failed for \"%s\".\x00" as *const u8 as *const libc::c_char,
+            b"pdf: image inclusion failed for \"%s\".\x00" as *const u8 as *const i8,
             ident,
         );
     }
@@ -835,7 +835,7 @@ pub unsafe extern "C" fn pdf_ximage_set_image(
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut info: *mut ximage_info = image_info as *mut ximage_info;
     if !(!resource.is_null() && pdf_obj_typeof(resource) == 7i32) {
-        _tt_abort(b"Image XObject must be of stream type.\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"Image XObject must be of stream type.\x00" as *const u8 as *const i8);
     }
     (*I).subtype = 1i32;
     (*I).attr.width = (*info).width;
@@ -846,29 +846,29 @@ pub unsafe extern "C" fn pdf_ximage_set_image(
     dict = pdf_stream_dict(resource);
     pdf_add_dict(
         dict,
-        pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"XObject\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+        pdf_new_name(b"XObject\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         dict,
-        pdf_new_name(b"Subtype\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"Image\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Subtype\x00" as *const u8 as *const i8),
+        pdf_new_name(b"Image\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         dict,
-        pdf_new_name(b"Width\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Width\x00" as *const u8 as *const i8),
         pdf_new_number((*info).width as libc::c_double),
     );
     pdf_add_dict(
         dict,
-        pdf_new_name(b"Height\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Height\x00" as *const u8 as *const i8),
         pdf_new_number((*info).height as libc::c_double),
     );
     if (*info).bits_per_component > 0i32 {
         /* Ignored for JPXDecode filter. FIXME */
         pdf_add_dict(
             dict,
-            pdf_new_name(b"BitsPerComponent\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"BitsPerComponent\x00" as *const u8 as *const i8),
             pdf_new_number((*info).bits_per_component as libc::c_double),
         ); /* Caller don't know we are using reference. */
     }
@@ -923,7 +923,7 @@ pub unsafe extern "C" fn pdf_ximage_get_reference(mut id: libc::c_int) -> *mut p
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
         _tt_abort(
-            b"Invalid XObject ID: %d\x00" as *const u8 as *const libc::c_char,
+            b"Invalid XObject ID: %d\x00" as *const u8 as *const i8,
             id,
         );
     }
@@ -936,7 +936,7 @@ pub unsafe extern "C" fn pdf_ximage_get_reference(mut id: libc::c_int) -> *mut p
 /* called from pdfdoc.c only for late binding */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_ximage_defineresource(
-    mut ident: *const libc::c_char,
+    mut ident: *const i8,
     mut subtype: libc::c_int,
     mut info: *mut libc::c_void,
     mut resource: *mut pdf_obj,
@@ -959,9 +959,9 @@ pub unsafe extern "C" fn pdf_ximage_defineresource(
     if !ident.is_null() {
         (*I).ident = new(
             (strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                 as u32,
-        ) as *mut libc::c_char;
+        ) as *mut i8;
         strcpy((*I).ident, ident);
     }
     match subtype {
@@ -969,7 +969,7 @@ pub unsafe extern "C" fn pdf_ximage_defineresource(
             pdf_ximage_set_image(I, info, resource);
             sprintf(
                 (*I).res_name.as_mut_ptr(),
-                b"Im%d\x00" as *const u8 as *const libc::c_char,
+                b"Im%d\x00" as *const u8 as *const i8,
                 id,
             );
         }
@@ -977,13 +977,13 @@ pub unsafe extern "C" fn pdf_ximage_defineresource(
             pdf_ximage_set_form(I, info, resource);
             sprintf(
                 (*I).res_name.as_mut_ptr(),
-                b"Fm%d\x00" as *const u8 as *const libc::c_char,
+                b"Fm%d\x00" as *const u8 as *const i8,
                 id,
             );
         }
         _ => {
             _tt_abort(
-                b"Unknown XObject subtype: %d\x00" as *const u8 as *const libc::c_char,
+                b"Unknown XObject subtype: %d\x00" as *const u8 as *const i8,
                 subtype,
             );
         }
@@ -992,12 +992,12 @@ pub unsafe extern "C" fn pdf_ximage_defineresource(
     return id;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_get_resname(mut id: libc::c_int) -> *mut libc::c_char {
+pub unsafe extern "C" fn pdf_ximage_get_resname(mut id: libc::c_int) -> *mut i8 {
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
         _tt_abort(
-            b"Invalid XObject ID: %d\x00" as *const u8 as *const libc::c_char,
+            b"Invalid XObject ID: %d\x00" as *const u8 as *const i8,
             id,
         );
     }
@@ -1010,7 +1010,7 @@ pub unsafe extern "C" fn pdf_ximage_get_subtype(mut id: libc::c_int) -> libc::c_
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
         _tt_abort(
-            b"Invalid XObject ID: %d\x00" as *const u8 as *const libc::c_char,
+            b"Invalid XObject ID: %d\x00" as *const u8 as *const i8,
             id,
         );
     }
@@ -1034,7 +1034,7 @@ pub unsafe extern "C" fn pdf_ximage_set_attr(
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
         _tt_abort(
-            b"Invalid XObject ID: %d\x00" as *const u8 as *const libc::c_char,
+            b"Invalid XObject ID: %d\x00" as *const u8 as *const i8,
             id,
         );
     }
@@ -1083,11 +1083,11 @@ unsafe extern "C" fn scale_to_fit_I(
         d_y = 0.0f64
     }
     if wd0 == 0.0f64 {
-        dpx_warning(b"Image width=0.0!\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Image width=0.0!\x00" as *const u8 as *const i8);
         wd0 = 1.0f64
     }
     if ht0 == 0.0f64 {
-        dpx_warning(b"Image height=0.0!\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Image height=0.0!\x00" as *const u8 as *const i8);
         ht0 = 1.0f64
     }
     if (*p).flags & 1i32 << 1i32 != 0 && (*p).flags & 1i32 << 2i32 != 0 {
@@ -1138,11 +1138,11 @@ unsafe extern "C" fn scale_to_fit_F(
         d_y = 0.0f64
     }
     if wd0 == 0.0f64 {
-        dpx_warning(b"Image width=0.0!\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Image width=0.0!\x00" as *const u8 as *const i8);
         wd0 = 1.0f64
     }
     if ht0 == 0.0f64 {
-        dpx_warning(b"Image height=0.0!\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Image height=0.0!\x00" as *const u8 as *const i8);
         ht0 = 1.0f64
     }
     if (*p).flags & 1i32 << 1i32 != 0 && (*p).flags & 1i32 << 2i32 != 0 {
@@ -1182,7 +1182,7 @@ pub unsafe extern "C" fn pdf_ximage_scale_image(
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
         _tt_abort(
-            b"Invalid XObject ID: %d\x00" as *const u8 as *const libc::c_char,
+            b"Invalid XObject ID: %d\x00" as *const u8 as *const i8,
             id,
         );
     }
@@ -1256,15 +1256,15 @@ pub unsafe extern "C" fn pdf_ximage_scale_image(
 }
 /* Migrated from psimage.c */
 #[no_mangle]
-pub unsafe extern "C" fn set_distiller_template(mut s: *mut libc::c_char) {
+pub unsafe extern "C" fn set_distiller_template(mut s: *mut i8) {
     free(_opts.cmdtmpl as *mut libc::c_void);
     if s.is_null() || *s as libc::c_int == '\u{0}' as i32 {
-        _opts.cmdtmpl = 0 as *mut libc::c_char
+        _opts.cmdtmpl = 0 as *mut i8
     } else {
         _opts.cmdtmpl = new((strlen(s).wrapping_add(1i32 as u64) as u32
             as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-            as u32) as *mut libc::c_char;
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+            as u32) as *mut i8;
         strcpy(_opts.cmdtmpl, s);
     };
 }
@@ -1298,7 +1298,7 @@ pub unsafe extern "C" fn set_distiller_template(mut s: *mut libc::c_char) {
 /* Called by pngimage, jpegimage, epdf, mpost, etc. */
 /* from pdfximage.c */
 #[no_mangle]
-pub unsafe extern "C" fn get_distiller_template() -> *mut libc::c_char {
+pub unsafe extern "C" fn get_distiller_template() -> *mut i8 {
     return _opts.cmdtmpl;
 }
 unsafe extern "C" fn check_for_ps(mut handle: rust_input_handle_t) -> libc::c_int {
@@ -1306,7 +1306,7 @@ unsafe extern "C" fn check_for_ps(mut handle: rust_input_handle_t) -> libc::c_in
     tt_mfgets(work_buffer.as_mut_ptr(), 1024i32, handle);
     if !strstartswith(
         work_buffer.as_mut_ptr(),
-        b"%!\x00" as *const u8 as *const libc::c_char,
+        b"%!\x00" as *const u8 as *const i8,
     )
     .is_null()
     {

@@ -14,17 +14,17 @@ extern "C" {
     fn floor(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -51,7 +51,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -256,10 +256,10 @@ unsafe extern "C" fn add_stem(
     if !cd.is_null() {
     } else {
         __assert_fail(
-            b"cd\x00" as *const u8 as *const libc::c_char,
-            b"dpx-t1_char.c\x00" as *const u8 as *const libc::c_char,
+            b"cd\x00" as *const u8 as *const i8,
+            b"dpx-t1_char.c\x00" as *const u8 as *const i8,
             290i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 49], &[libc::c_char; 49]>(
+            (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int add_stem(t1_chardesc *, double, double, int)\x00",
             ))
             .as_ptr(),
@@ -325,10 +325,10 @@ unsafe extern "C" fn add_charpath(
     if !cd.is_null() {
     } else {
         __assert_fail(
-            b"cd\x00" as *const u8 as *const libc::c_char,
-            b"dpx-t1_char.c\x00" as *const u8 as *const libc::c_char,
+            b"cd\x00" as *const u8 as *const i8,
+            b"dpx-t1_char.c\x00" as *const u8 as *const i8,
             350i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 53], &[libc::c_char; 53]>(
+            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                 b"void add_charpath(t1_chardesc *, int, double *, int)\x00",
             ))
             .as_ptr(),
@@ -337,10 +337,10 @@ unsafe extern "C" fn add_charpath(
     if argn <= 48i32 {
     } else {
         __assert_fail(
-            b"argn <= CS_ARG_STACK_MAX\x00" as *const u8 as *const libc::c_char,
-            b"dpx-t1_char.c\x00" as *const u8 as *const libc::c_char,
+            b"argn <= CS_ARG_STACK_MAX\x00" as *const u8 as *const i8,
+            b"dpx-t1_char.c\x00" as *const u8 as *const i8,
             351i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 53], &[libc::c_char; 53]>(
+            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                 b"void add_charpath(t1_chardesc *, int, double *, int)\x00",
             ))
             .as_ptr(),
@@ -399,10 +399,10 @@ unsafe extern "C" fn release_charpath(mut cd: *mut t1_chardesc) {
     if !cd.is_null() {
     } else {
         __assert_fail(
-            b"cd\x00" as *const u8 as *const libc::c_char,
-            b"dpx-t1_char.c\x00" as *const u8 as *const libc::c_char,
+            b"cd\x00" as *const u8 as *const i8,
+            b"dpx-t1_char.c\x00" as *const u8 as *const i8,
             388i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"void release_charpath(t1_chardesc *)\x00",
             ))
             .as_ptr(),
@@ -468,7 +468,7 @@ unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc, mut data: *mut *mut 
                 },
             );
             if stem_id < 0i32 {
-                dpx_warning(b"Too many hints...\x00" as *const u8 as *const libc::c_char);
+                dpx_warning(b"Too many hints...\x00" as *const u8 as *const i8);
                 status = -1i32;
                 return;
             }
@@ -617,12 +617,12 @@ unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc, mut data: *mut *mut 
         }
         11 => {}
         10 => {
-            _tt_abort(b"Unexpected callsubr.\x00" as *const u8 as *const libc::c_char);
+            _tt_abort(b"Unexpected callsubr.\x00" as *const u8 as *const i8);
         }
         _ => {
             /* no-op ? */
             dpx_warning(
-                b"Unknown charstring operator: 0x%02x\x00" as *const u8 as *const libc::c_char,
+                b"Unknown charstring operator: 0x%02x\x00" as *const u8 as *const i8,
                 op as libc::c_int,
             );
             status = -1i32
@@ -908,7 +908,7 @@ unsafe extern "C" fn do_callothersubr(mut cd: *mut t1_chardesc) {
         }
         _ => {
             _tt_abort(
-                b"Unknown othersubr #%d.\x00" as *const u8 as *const libc::c_char,
+                b"Unknown othersubr #%d.\x00" as *const u8 as *const i8,
                 subrno,
             );
         }
@@ -971,7 +971,7 @@ unsafe extern "C" fn do_operator2(
                     },
                 );
                 if stem_id < 0i32 {
-                    dpx_warning(b"Too many hints...\x00" as *const u8 as *const libc::c_char);
+                    dpx_warning(b"Too many hints...\x00" as *const u8 as *const i8);
                     status = -1i32;
                     return;
                 }
@@ -1056,7 +1056,7 @@ unsafe extern "C" fn do_operator2(
         _ => {
             /* no-op ? */
             dpx_warning(
-                b"Unknown charstring operator: 0x0c%02x\x00" as *const u8 as *const libc::c_char,
+                b"Unknown charstring operator: 0x0c%02x\x00" as *const u8 as *const i8,
                 op as libc::c_int,
             );
             status = -1i32
@@ -1094,7 +1094,7 @@ unsafe extern "C" fn put_numbers(
              * We must use `a b mul ...' or `a c div' to represent large values.
              */
             _tt_abort(
-                b"Argument value too large. (This is bug)\x00" as *const u8 as *const libc::c_char,
+                b"Argument value too large. (This is bug)\x00" as *const u8 as *const i8,
             );
         } else {
             if fabs(value - ivalue as libc::c_double) > 3.0e-5f64 {
@@ -1174,7 +1174,7 @@ unsafe extern "C" fn put_numbers(
                 *dest = (*dest).offset(1);
                 *fresh20 = (ivalue & 0xffi32) as card8
             } else {
-                _tt_abort(b"Unexpected error.\x00" as *const u8 as *const libc::c_char);
+                _tt_abort(b"Unexpected error.\x00" as *const u8 as *const i8);
             }
         }
         i += 1
@@ -1275,7 +1275,7 @@ unsafe extern "C" fn t1char_build_charpath(
     let mut subr: *mut card8 = 0 as *mut card8;
     let mut len: libc::c_int = 0;
     if nest > 10i32 {
-        _tt_abort(b"Subroutine nested too deeply.\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"Subroutine nested too deeply.\x00" as *const u8 as *const i8);
     }
     nest += 1;
     while *data < endptr && status == 0i32 {
@@ -1293,7 +1293,7 @@ unsafe extern "C" fn t1char_build_charpath(
                 cs_stack_top -= 1;
                 idx = cs_arg_stack[cs_stack_top as usize] as libc::c_int;
                 if subrs.is_null() || idx >= (*subrs).count as libc::c_int {
-                    _tt_abort(b"Invalid Subr#.\x00" as *const u8 as *const libc::c_char);
+                    _tt_abort(b"Invalid Subr#.\x00" as *const u8 as *const i8);
                 }
                 subr = (*subrs)
                     .data
@@ -1325,7 +1325,7 @@ unsafe extern "C" fn t1char_build_charpath(
     } else if status == 3i32 && *data < endptr {
         if !(*data == endptr.offset(-1) && **data as libc::c_int == 11i32) {
             dpx_warning(
-                b"Garbage after endchar. (%d bytes)\x00" as *const u8 as *const libc::c_char,
+                b"Garbage after endchar. (%d bytes)\x00" as *const u8 as *const i8,
                 endptr.wrapping_offset_from(*data) as libc::c_long as libc::c_int,
             );
         }
@@ -1333,7 +1333,7 @@ unsafe extern "C" fn t1char_build_charpath(
         /* error */
         _tt_abort(
             b"Parsing charstring failed: (status=%d, stack=%d)\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
             status,
             cs_stack_top,
         );
@@ -1725,7 +1725,7 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
             _ => {
                 _tt_abort(
                     b"Unexpected Type 2 charstring command %d.\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                     (*cur).type_0,
                 );
             }
@@ -1794,7 +1794,7 @@ pub unsafe extern "C" fn t1char_get_metrics(
     t1char_build_charpath(cd, &mut src, src.offset(srclen as isize), subrs);
     if cs_stack_top != 0i32 || ps_stack_top != 0i32 {
         dpx_warning(
-            b"Stack not empty. (%d, %d)\x00" as *const u8 as *const libc::c_char,
+            b"Stack not empty. (%d, %d)\x00" as *const u8 as *const i8,
             cs_stack_top,
             ps_stack_top,
         );
@@ -1835,10 +1835,10 @@ unsafe extern "C" fn t1char_encode_charpath(
     if !cd.is_null() {
     } else {
         __assert_fail(
-            b"cd\x00" as *const u8 as *const libc::c_char,
-            b"dpx-t1_char.c\x00" as *const u8 as *const libc::c_char,
+            b"cd\x00" as *const u8 as *const i8,
+            b"dpx-t1_char.c\x00" as *const u8 as *const i8,
             1360i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 76], &[libc::c_char; 76]>(
+            (*::std::mem::transmute::<&[u8; 76], &[i8; 76]>(
                 b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00",
             ))
             .as_ptr(),
@@ -1859,7 +1859,7 @@ unsafe extern "C" fn t1char_encode_charpath(
         put_numbers(&mut wx, 1i32, &mut dst, endptr);
         if status != 0i32 {
             _tt_abort(
-                b"Charstring encoder error: %d\x00" as *const u8 as *const libc::c_char,
+                b"Charstring encoder error: %d\x00" as *const u8 as *const i8,
                 status,
             );
         }
@@ -1885,14 +1885,14 @@ unsafe extern "C" fn t1char_encode_charpath(
         put_numbers(stem.as_mut_ptr(), 2i32, &mut dst, endptr);
         if status != 0i32 {
             _tt_abort(
-                b"Charstring encoder error: %d\x00" as *const u8 as *const libc::c_char,
+                b"Charstring encoder error: %d\x00" as *const u8 as *const i8,
                 status,
             );
         }
         reset = 0i32;
         if 2i32 * num_hstems > 48i32 - 3i32 {
             if dst.offset(1) >= endptr {
-                _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
+                _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
             }
             let fresh23 = dst;
             dst = dst.offset(1);
@@ -1907,7 +1907,7 @@ unsafe extern "C" fn t1char_encode_charpath(
     }
     if reset == 0i32 {
         if dst.offset(1) >= endptr {
-            _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
+            _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
         }
         let fresh24 = dst;
         dst = dst.offset(1);
@@ -1932,14 +1932,14 @@ unsafe extern "C" fn t1char_encode_charpath(
             put_numbers(stem.as_mut_ptr(), 2i32, &mut dst, endptr);
             if status != 0i32 {
                 _tt_abort(
-                    b"Charstring encoder error: %d\x00" as *const u8 as *const libc::c_char,
+                    b"Charstring encoder error: %d\x00" as *const u8 as *const i8,
                     status,
                 );
             }
             reset = 0i32;
             if 2i32 * num_vstems > 48i32 - 3i32 {
                 if dst.offset(1) >= endptr {
-                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
+                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
                 }
                 let fresh25 = dst;
                 dst = dst.offset(1);
@@ -1954,7 +1954,7 @@ unsafe extern "C" fn t1char_encode_charpath(
         }
         if reset == 0i32 {
             if dst.offset(1) >= endptr {
-                _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
+                _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
             }
             if (*cd).flags & 1i32 << 0i32 != 0 || (*cd).flags & 1i32 << 1i32 != 0 {
                 /*
@@ -1992,12 +1992,12 @@ unsafe extern "C" fn t1char_encode_charpath(
                     if stem_idx < (*cd).num_stems {
                     } else {
                         __assert_fail(b"stem_idx < cd->num_stems\x00" as
-                                          *const u8 as *const libc::c_char,
+                                          *const u8 as *const i8,
                                       b"dpx-t1_char.c\x00" as *const u8 as
-                                          *const libc::c_char,
+                                          *const i8,
                                       1452i32 as libc::c_uint,
                                       (*::std::mem::transmute::<&[u8; 76],
-                                                                &[libc::c_char; 76]>(b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00")).as_ptr());
+                                                                &[i8; 76]>(b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00")).as_ptr());
                     }
                     hintmask[(stem_idx / 8i32) as usize] =
                         (hintmask[(stem_idx / 8i32) as usize] as libc::c_int
@@ -2006,7 +2006,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                 }
                 if (*cd).flags & 1i32 << 0i32 != 0 {
                     if dst.offset((((*cd).num_stems + 7i32) / 8i32 + 1i32) as isize) >= endptr {
-                        _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
+                        _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
                     }
                     let fresh28 = dst;
                     dst = dst.offset(1);
@@ -2034,12 +2034,12 @@ unsafe extern "C" fn t1char_encode_charpath(
                     if stem_idx_0 < (*cd).num_stems {
                     } else {
                         __assert_fail(b"stem_idx < cd->num_stems\x00" as
-                                          *const u8 as *const libc::c_char,
+                                          *const u8 as *const i8,
                                       b"dpx-t1_char.c\x00" as *const u8 as
-                                          *const libc::c_char,
+                                          *const i8,
                                       1472i32 as libc::c_uint,
                                       (*::std::mem::transmute::<&[u8; 76],
-                                                                &[libc::c_char; 76]>(b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00")).as_ptr());
+                                                                &[i8; 76]>(b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00")).as_ptr());
                     }
                     cntrmask[(stem_idx_0 / 8i32) as usize] =
                         (cntrmask[(stem_idx_0 / 8i32) as usize] as libc::c_int
@@ -2047,7 +2047,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                     i_0 += 1
                 }
                 if dst.offset((((*cd).num_stems + 7i32) / 8i32 + 1i32) as isize) >= endptr {
-                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
+                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
                 }
                 let fresh29 = dst;
                 dst = dst.offset(1);
@@ -2069,12 +2069,12 @@ unsafe extern "C" fn t1char_encode_charpath(
                 );
                 if status != 0i32 {
                     _tt_abort(
-                        b"Charstring encoder error: %d\x00" as *const u8 as *const libc::c_char,
+                        b"Charstring encoder error: %d\x00" as *const u8 as *const i8,
                         status,
                     );
                 }
                 if dst.offset(1) >= endptr {
-                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
+                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
                 }
                 let fresh30 = dst;
                 dst = dst.offset(1);
@@ -2090,12 +2090,12 @@ unsafe extern "C" fn t1char_encode_charpath(
                 );
                 if status != 0i32 {
                     _tt_abort(
-                        b"Charstring encoder error: %d\x00" as *const u8 as *const libc::c_char,
+                        b"Charstring encoder error: %d\x00" as *const u8 as *const i8,
                         status,
                     );
                 }
                 if dst.offset(2) >= endptr {
-                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
+                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
                 }
                 let fresh31 = dst;
                 dst = dst.offset(1);
@@ -2108,7 +2108,7 @@ unsafe extern "C" fn t1char_encode_charpath(
             _ => {
                 _tt_abort(
                     b"Unknown Type 2 charstring command: %d\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                     (*curr).type_0,
                 );
             }
@@ -2126,20 +2126,20 @@ unsafe extern "C" fn t1char_encode_charpath(
         put_numbers(seac.as_mut_ptr(), 4i32, &mut dst, endptr);
         if status != 0i32 {
             _tt_abort(
-                b"Charstring encoder error: %d\x00" as *const u8 as *const libc::c_char,
+                b"Charstring encoder error: %d\x00" as *const u8 as *const i8,
                 status,
             );
         }
         if dst.offset(2) >= endptr {
-            _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
+            _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
         }
         dpx_warning(
             b"Obsolete four arguments of \"endchar\" will be used for Type 1 \"seac\" operator.\x00"
-                as *const u8 as *const libc::c_char,
+                as *const u8 as *const i8,
         );
     }
     if dst.offset(1) >= endptr {
-        _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
     }
     let fresh33 = dst;
     dst = dst.offset(1);
@@ -2200,7 +2200,7 @@ pub unsafe extern "C" fn t1char_convert_charstring(
     t1char_build_charpath(cd, &mut src, src.offset(srclen as isize), subrs);
     if cs_stack_top != 0i32 || ps_stack_top != 0i32 {
         dpx_warning(
-            b"Stack not empty. (%d, %d)\x00" as *const u8 as *const libc::c_char,
+            b"Stack not empty. (%d, %d)\x00" as *const u8 as *const i8,
             cs_stack_top,
             ps_stack_top,
         );

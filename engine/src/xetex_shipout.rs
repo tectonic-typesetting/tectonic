@@ -13,18 +13,18 @@ extern "C" {
     #[no_mangle]
     fn abs(_: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn strerror(_: libc::c_int) -> *mut libc::c_char;
+    fn strerror(_: libc::c_int) -> *mut i8;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_output_open(path: *const libc::c_char, is_gz: libc::c_int) -> rust_output_handle_t;
+    fn ttstub_output_open(path: *const i8, is_gz: libc::c_int) -> rust_output_handle_t;
     #[no_mangle]
     fn ttstub_output_write(
         handle: rust_output_handle_t,
-        data: *const libc::c_char,
+        data: *const i8,
         len: size_t,
     ) -> size_t;
     #[no_mangle]
@@ -39,7 +39,7 @@ extern "C" {
     #[no_mangle]
     static mut eqtb: *mut memory_word;
     #[no_mangle]
-    static mut name_of_file: *mut libc::c_char;
+    static mut name_of_file: *mut i8;
     #[no_mangle]
     static mut max_print_line: int32_t;
     #[no_mangle]
@@ -67,7 +67,7 @@ extern "C" {
     #[no_mangle]
     static mut doing_special: bool;
     #[no_mangle]
-    static mut help_line: [*const libc::c_char; 6];
+    static mut help_line: [*const i8; 6];
     #[no_mangle]
     static mut help_ptr: u8;
     #[no_mangle]
@@ -97,7 +97,7 @@ extern "C" {
     #[no_mangle]
     static mut log_opened: bool;
     #[no_mangle]
-    static mut output_file_extension: *const libc::c_char;
+    static mut output_file_extension: *const i8;
     #[no_mangle]
     static mut font_info: *mut memory_word;
     #[no_mangle]
@@ -125,7 +125,7 @@ extern "C" {
     #[no_mangle]
     static mut font_letter_space: *mut scaled_t;
     #[no_mangle]
-    static mut xdv_buffer: *mut libc::c_char;
+    static mut xdv_buffer: *mut i8;
     #[no_mangle]
     static mut char_base: *mut int32_t;
     #[no_mangle]
@@ -223,7 +223,7 @@ extern "C" {
     #[no_mangle]
     fn store_justified_native_glyphs(node: *mut libc::c_void);
     #[no_mangle]
-    fn maketexstring(s: *const libc::c_char) -> libc::c_int;
+    fn maketexstring(s: *const i8) -> libc::c_int;
     #[no_mangle]
     fn apply_tfm_font_mapping(mapping: *mut libc::c_void, c: libc::c_int) -> libc::c_int;
     #[no_mangle]
@@ -233,17 +233,17 @@ extern "C" {
     #[no_mangle]
     fn pack_file_name(n: str_number, a: str_number, e: str_number);
     #[no_mangle]
-    fn pack_job_name(_: *const libc::c_char);
+    fn pack_job_name(_: *const i8);
     #[no_mangle]
     fn open_log_file();
     #[no_mangle]
     fn new_native_word_node(f: internal_font_number, n: int32_t) -> int32_t;
     #[no_mangle]
-    fn confusion(s: *const libc::c_char) -> !;
+    fn confusion(s: *const i8) -> !;
     #[no_mangle]
-    fn fatal_error(s: *const libc::c_char) -> !;
+    fn fatal_error(s: *const i8) -> !;
     #[no_mangle]
-    fn overflow(s: *const libc::c_char, n: int32_t) -> !;
+    fn overflow(s: *const i8, n: int32_t) -> !;
     #[no_mangle]
     fn tex_round(_: libc::c_double) -> int32_t;
     #[no_mangle]
@@ -251,9 +251,9 @@ extern "C" {
     #[no_mangle]
     fn print_ln();
     #[no_mangle]
-    fn print_nl_cstr(s: *const libc::c_char);
+    fn print_nl_cstr(s: *const i8);
     #[no_mangle]
-    fn print_cstr(s: *const libc::c_char);
+    fn print_cstr(s: *const i8);
     #[no_mangle]
     fn print_file_name(n: int32_t, a: int32_t, e: int32_t);
     #[no_mangle]
@@ -587,7 +587,7 @@ pub struct list_state_record {
     pub aux: memory_word,
 }
 #[inline]
-unsafe extern "C" fn print_c_string(mut str: *const libc::c_char) {
+unsafe extern "C" fn print_c_string(mut str: *const i8) {
     while *str != 0 {
         let fresh0 = str;
         str = str.offset(1);
@@ -657,8 +657,8 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
     let mut s: pool_pointer = 0;
     let mut old_setting: u8 = 0;
     let mut l: u8 = 0;
-    let mut output_comment: *const libc::c_char =
-        b"tectonic\x00" as *const u8 as *const libc::c_char;
+    let mut output_comment: *const i8 =
+        b"tectonic\x00" as *const u8 as *const i8;
     synctex_sheet(
         (*eqtb.offset(
             (1i32
@@ -723,9 +723,9 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
     .b32
     .s1 > 0i32
     {
-        print_nl_cstr(b"\x00" as *const u8 as *const libc::c_char);
+        print_nl_cstr(b"\x00" as *const u8 as *const i8);
         print_ln();
-        print_cstr(b"Completed box being shipped out\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b"Completed box being shipped out\x00" as *const u8 as *const i8);
     }
     if term_offset > max_print_line - 9i32 {
         print_ln();
@@ -921,14 +921,14 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
-        print_cstr(b"Huge page cannot be shipped out\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b"Huge page cannot be shipped out\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
         help_line[1] = b"The page just created is more than 18 feet tall or\x00" as *const u8
-            as *const libc::c_char;
+            as *const i8;
         help_line[0] = b"more than 18 feet wide, so I suspect something went wrong.\x00"
-            as *const u8 as *const libc::c_char;
+            as *const u8 as *const i8;
         error();
         if (*eqtb.offset(
             (1i32
@@ -962,7 +962,7 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
         {
             begin_diagnostic();
             print_nl_cstr(
-                b"The following box has been deleted:\x00" as *const u8 as *const libc::c_char,
+                b"The following box has been deleted:\x00" as *const u8 as *const i8,
             );
             show_box(p);
             end_diagnostic(1i32 != 0);
@@ -1357,7 +1357,7 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
             dvi_file = ttstub_output_open(name_of_file, 0i32);
             if dvi_file.is_null() {
                 _tt_abort(
-                    b"cannot open output file \"%s\"\x00" as *const u8 as *const libc::c_char,
+                    b"cannot open output file \"%s\"\x00" as *const u8 as *const i8,
                     name_of_file,
                 );
             }
@@ -1457,7 +1457,7 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
         /* Generate a PDF pagesize special unilaterally */
         old_setting = selector as u8;
         selector = SELECTOR_NEW_STRING;
-        print_cstr(b"pdf:pagesize \x00" as *const u8 as *const libc::c_char);
+        print_cstr(b"pdf:pagesize \x00" as *const u8 as *const i8);
         if (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -1523,9 +1523,9 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
             .b32
             .s1 <= 0i32
         {
-            print_cstr(b"default\x00" as *const u8 as *const libc::c_char);
+            print_cstr(b"default\x00" as *const u8 as *const i8);
         } else {
-            print_cstr(b"width\x00" as *const u8 as *const libc::c_char);
+            print_cstr(b"width\x00" as *const u8 as *const i8);
             print(' ' as i32);
             print_scaled(
                 (*eqtb.offset(
@@ -1561,9 +1561,9 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
                 .b32
                 .s1,
             );
-            print_cstr(b"pt\x00" as *const u8 as *const libc::c_char);
+            print_cstr(b"pt\x00" as *const u8 as *const i8);
             print(' ' as i32);
-            print_cstr(b"height\x00" as *const u8 as *const libc::c_char);
+            print_cstr(b"height\x00" as *const u8 as *const i8);
             print(' ' as i32);
             print_scaled(
                 (*eqtb.offset(
@@ -1599,7 +1599,7 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
                 .b32
                 .s1,
             );
-            print_cstr(b"pt\x00" as *const u8 as *const libc::c_char);
+            print_cstr(b"pt\x00" as *const u8 as *const i8);
         }
         selector = old_setting as selector_t;
         dvi_out(239i32 as eight_bits);
@@ -1657,17 +1657,17 @@ pub unsafe extern "C" fn ship_out(mut p: int32_t) {
     /*1518: "Check for LR anomalies at the end of ship_out" */
     if LR_problems > 0i32 {
         print_ln();
-        print_nl_cstr(b"\\endL or \\endR problem (\x00" as *const u8 as *const libc::c_char);
+        print_nl_cstr(b"\\endL or \\endR problem (\x00" as *const u8 as *const i8);
         print_int(LR_problems / 10000i32);
-        print_cstr(b" missing, \x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" missing, \x00" as *const u8 as *const i8);
         print_int(LR_problems % 10000i32);
-        print_cstr(b" extra\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" extra\x00" as *const u8 as *const i8);
         LR_problems = 0i32;
         print_char(')' as i32);
         print_ln();
     }
     if LR_ptr != -0xfffffffi32 || cur_dir as libc::c_int != 0i32 {
-        confusion(b"LR3\x00" as *const u8 as *const libc::c_char);
+        confusion(b"LR3\x00" as *const u8 as *const i8);
     }
     if (*eqtb.offset(
         (1i32
@@ -1898,7 +1898,7 @@ unsafe extern "C" fn hlist_out() {
                     if p != r {
                         if pool_ptr + k > pool_size {
                             overflow(
-                                b"pool size\x00" as *const u8 as *const libc::c_char,
+                                b"pool size\x00" as *const u8 as *const i8,
                                 pool_size - init_pool_ptr,
                             );
                         }
@@ -2766,7 +2766,7 @@ unsafe extern "C" fn vlist_out() {
         /*652: "Output node p and move to the next node, maintaining the
          * condition cur_h = left_edge" */
         if is_char_node(p) {
-            confusion(b"vlistout\x00" as *const u8 as *const libc::c_char);
+            confusion(b"vlistout\x00" as *const u8 as *const i8);
         } else {
             /*653: "Output the non-char_node p" */
             match (*mem.offset(p as isize)).b16.s1 as libc::c_int {
@@ -3248,7 +3248,7 @@ unsafe extern "C" fn reverse(
                             }
                         }
                         14 => {
-                            confusion(b"LR2\x00" as *const u8 as *const libc::c_char);
+                            confusion(b"LR2\x00" as *const u8 as *const i8);
                         }
                         _ => {
                             current_block = 10883403804712335414;
@@ -3370,14 +3370,14 @@ pub unsafe extern "C" fn out_what(mut p: int32_t) {
                         cur_area = (*mem.offset((p + 2i32) as isize)).b32.s0;
                         cur_ext = (*mem.offset((p + 2i32) as isize)).b32.s1;
                         if length(cur_ext) == 0i32 {
-                            cur_ext = maketexstring(b".tex\x00" as *const u8 as *const libc::c_char)
+                            cur_ext = maketexstring(b".tex\x00" as *const u8 as *const i8)
                         }
                         pack_file_name(cur_name, cur_area, cur_ext);
                         write_file[j as usize] = ttstub_output_open(name_of_file, 0i32);
                         if write_file[j as usize].is_null() {
                             _tt_abort(
                                 b"cannot open output file \"%s\"\x00" as *const u8
-                                    as *const libc::c_char,
+                                    as *const i8,
                                 name_of_file,
                             );
                         }
@@ -3418,12 +3418,12 @@ pub unsafe extern "C" fn out_what(mut p: int32_t) {
                             } else {
                                 selector = SELECTOR_TERM_AND_LOG
                             }
-                            print_nl_cstr(b"\\openout\x00" as *const u8 as *const libc::c_char);
+                            print_nl_cstr(b"\\openout\x00" as *const u8 as *const i8);
                             print_int(j as int32_t);
-                            print_cstr(b" = `\x00" as *const u8 as *const libc::c_char);
+                            print_cstr(b" = `\x00" as *const u8 as *const i8);
                             print_file_name(cur_name, cur_area, cur_ext);
-                            print_cstr(b"\'.\x00" as *const u8 as *const libc::c_char);
-                            print_nl_cstr(b"\x00" as *const u8 as *const libc::c_char);
+                            print_cstr(b"\'.\x00" as *const u8 as *const i8);
+                            print_nl_cstr(b"\x00" as *const u8 as *const i8);
                             print_ln();
                             selector = old_setting as selector_t
                         }
@@ -3436,7 +3436,7 @@ pub unsafe extern "C" fn out_what(mut p: int32_t) {
         }
         4 => {}
         _ => {
-            confusion(b"ext4\x00" as *const u8 as *const libc::c_char);
+            confusion(b"ext4\x00" as *const u8 as *const i8);
         }
     };
 }
@@ -3764,7 +3764,7 @@ unsafe extern "C" fn special_out(mut p: int32_t) {
     selector = old_setting as selector_t;
     if pool_ptr + 1i32 > pool_size {
         overflow(
-            b"pool size\x00" as *const u8 as *const libc::c_char,
+            b"pool size\x00" as *const u8 as *const i8,
             pool_size - init_pool_ptr,
         );
     }
@@ -3822,14 +3822,14 @@ unsafe extern "C" fn write_out(mut p: int32_t) {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
-        print_cstr(b"Unbalanced write command\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b"Unbalanced write command\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
         help_line[1] = b"On this page there\'s a \\write with fewer real {\'s than }\'s.\x00"
-            as *const u8 as *const libc::c_char;
+            as *const u8 as *const i8;
         help_line[0] =
-            b"I can\'t handle that very well; good luck.\x00" as *const u8 as *const libc::c_char;
+            b"I can\'t handle that very well; good luck.\x00" as *const u8 as *const i8;
         error();
         loop {
             get_token();
@@ -3855,7 +3855,7 @@ unsafe extern "C" fn write_out(mut p: int32_t) {
         {
             selector = SELECTOR_LOG_ONLY
         }
-        print_nl_cstr(b"\x00" as *const u8 as *const libc::c_char);
+        print_nl_cstr(b"\x00" as *const u8 as *const i8);
     }
     token_show(def_ref);
     print_ln();
@@ -3898,7 +3898,7 @@ unsafe extern "C" fn write_out(mut p: int32_t) {
         if !log_opened {
             selector = SELECTOR_TERM_ONLY
         }
-        print_nl_cstr(b"runsystem(\x00" as *const u8 as *const libc::c_char);
+        print_nl_cstr(b"runsystem(\x00" as *const u8 as *const i8);
         d = 0i32;
         while d <= cur_length() - 1i32 {
             print(
@@ -3907,10 +3907,10 @@ unsafe extern "C" fn write_out(mut p: int32_t) {
             );
             d += 1
         }
-        print_cstr(b")...\x00" as *const u8 as *const libc::c_char);
-        print_cstr(b"disabled\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b")...\x00" as *const u8 as *const i8);
+        print_cstr(b"disabled\x00" as *const u8 as *const i8);
         print_char('.' as i32);
-        print_nl_cstr(b"\x00" as *const u8 as *const libc::c_char);
+        print_nl_cstr(b"\x00" as *const u8 as *const i8);
         print_ln();
         pool_ptr = *str_start.offset((str_ptr - 65536i32) as isize)
     }
@@ -3930,8 +3930,8 @@ unsafe extern "C" fn pic_out(mut p: int32_t) {
     }
     old_setting = selector as u8;
     selector = SELECTOR_NEW_STRING;
-    print_cstr(b"pdf:image \x00" as *const u8 as *const libc::c_char);
-    print_cstr(b"matrix \x00" as *const u8 as *const libc::c_char);
+    print_cstr(b"pdf:image \x00" as *const u8 as *const i8);
+    print_cstr(b"matrix \x00" as *const u8 as *const i8);
     print_scaled((*mem.offset((p + 5i32) as isize)).b32.s0);
     print(' ' as i32);
     print_scaled((*mem.offset((p + 5i32) as isize)).b32.s1);
@@ -3944,24 +3944,24 @@ unsafe extern "C" fn pic_out(mut p: int32_t) {
     print(' ' as i32);
     print_scaled((*mem.offset((p + 7i32) as isize)).b32.s1);
     print(' ' as i32);
-    print_cstr(b"page \x00" as *const u8 as *const libc::c_char);
+    print_cstr(b"page \x00" as *const u8 as *const i8);
     print_int((*mem.offset((p + 4i32) as isize)).b16.s0 as int32_t);
     print(' ' as i32);
     match (*mem.offset((p + 8i32) as isize)).b16.s1 as libc::c_int {
         1 => {
-            print_cstr(b"pagebox cropbox \x00" as *const u8 as *const libc::c_char);
+            print_cstr(b"pagebox cropbox \x00" as *const u8 as *const i8);
         }
         2 => {
-            print_cstr(b"pagebox mediabox \x00" as *const u8 as *const libc::c_char);
+            print_cstr(b"pagebox mediabox \x00" as *const u8 as *const i8);
         }
         3 => {
-            print_cstr(b"pagebox bleedbox \x00" as *const u8 as *const libc::c_char);
+            print_cstr(b"pagebox bleedbox \x00" as *const u8 as *const i8);
         }
         5 => {
-            print_cstr(b"pagebox artbox \x00" as *const u8 as *const libc::c_char);
+            print_cstr(b"pagebox artbox \x00" as *const u8 as *const i8);
         }
         4 => {
-            print_cstr(b"pagebox trimbox \x00" as *const u8 as *const libc::c_char);
+            print_cstr(b"pagebox trimbox \x00" as *const u8 as *const i8);
         }
         _ => {}
     }
@@ -4011,7 +4011,7 @@ pub unsafe extern "C" fn finalize_dvi_file() {
         cur_s -= 1
     }
     if total_pages == 0i32 {
-        print_nl_cstr(b"No pages of output.\x00" as *const u8 as *const libc::c_char);
+        print_nl_cstr(b"No pages of output.\x00" as *const u8 as *const i8);
         return;
     }
     if cur_s == -2i32 {
@@ -4084,34 +4084,34 @@ pub unsafe extern "C" fn finalize_dvi_file() {
     }
     if dvi_ptr > 0x7fffffffi32 - dvi_offset {
         cur_s = -2i32;
-        fatal_error(b"dvi length exceeds 0x7FFFFFFF\x00" as *const u8 as *const libc::c_char);
+        fatal_error(b"dvi length exceeds 0x7FFFFFFF\x00" as *const u8 as *const i8);
     }
     if dvi_ptr > 0i32 {
         write_to_dvi(0i32, dvi_ptr - 1i32);
     }
     k = ttstub_output_close(dvi_file) as u8;
     if k as libc::c_int == 0i32 {
-        print_nl_cstr(b"Output written on \x00" as *const u8 as *const libc::c_char);
+        print_nl_cstr(b"Output written on \x00" as *const u8 as *const i8);
         print(output_file_name);
-        print_cstr(b" (\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" (\x00" as *const u8 as *const i8);
         print_int(total_pages);
         if total_pages != 1i32 {
-            print_cstr(b" pages\x00" as *const u8 as *const libc::c_char);
+            print_cstr(b" pages\x00" as *const u8 as *const i8);
         } else {
-            print_cstr(b" page\x00" as *const u8 as *const libc::c_char);
+            print_cstr(b" page\x00" as *const u8 as *const i8);
         }
-        print_cstr(b", \x00" as *const u8 as *const libc::c_char);
+        print_cstr(b", \x00" as *const u8 as *const i8);
         print_int(dvi_offset + dvi_ptr);
-        print_cstr(b" bytes).\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" bytes).\x00" as *const u8 as *const i8);
     } else {
-        print_nl_cstr(b"Error \x00" as *const u8 as *const libc::c_char);
+        print_nl_cstr(b"Error \x00" as *const u8 as *const i8);
         print_int(k as int32_t);
-        print_cstr(b" (\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" (\x00" as *const u8 as *const i8);
         print_c_string(strerror(k as libc::c_int));
-        print_cstr(b") generating output;\x00" as *const u8 as *const libc::c_char);
-        print_nl_cstr(b"file \x00" as *const u8 as *const libc::c_char);
+        print_cstr(b") generating output;\x00" as *const u8 as *const i8);
+        print_nl_cstr(b"file \x00" as *const u8 as *const i8);
         print(output_file_name);
-        print_cstr(b" may not be valid.\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b" may not be valid.\x00" as *const u8 as *const i8);
         /* XeTeX adds history = OUTPUT_FAILURE = 4 here; I'm not implementing that. */
     };
 }
@@ -4119,17 +4119,17 @@ unsafe extern "C" fn write_to_dvi(mut a: int32_t, mut b: int32_t) {
     let mut n: int32_t = b - a + 1i32;
     if ttstub_output_write(
         dvi_file,
-        &mut *dvi_buf.offset(a as isize) as *mut eight_bits as *mut libc::c_char,
+        &mut *dvi_buf.offset(a as isize) as *mut eight_bits as *mut i8,
         n as size_t,
     ) != n as u64
     {
-        _tt_abort(b"failed to write data to XDV file\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"failed to write data to XDV file\x00" as *const u8 as *const i8);
     };
 }
 unsafe extern "C" fn dvi_swap() {
     if dvi_ptr > 0x7fffffffi32 - dvi_offset {
         cur_s = -2i32;
-        fatal_error(b"dvi length exceeds 0x7FFFFFFF\x00" as *const u8 as *const libc::c_char);
+        fatal_error(b"dvi length exceeds 0x7FFFFFFF\x00" as *const u8 as *const i8);
     }
     if dvi_limit == 16384i32 {
         write_to_dvi(0i32, 8192i32 - 1i32);

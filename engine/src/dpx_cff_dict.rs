@@ -10,10 +10,10 @@ extern crate libc;
 extern "C" {
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn __errno_location() -> *mut libc::c_int;
@@ -22,18 +22,18 @@ extern "C" {
     #[no_mangle]
     fn floor(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
     #[no_mangle]
-    fn strtod(_: *const libc::c_char, _: *mut *mut libc::c_char) -> libc::c_double;
+    fn strtod(_: *const i8, _: *mut *mut i8) -> libc::c_double;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -56,7 +56,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -83,12 +83,12 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    static mut work_buffer: [libc::c_char; 0];
+    static mut work_buffer: [i8; 0];
     /* String */
     #[no_mangle]
-    fn cff_get_string(cff: *mut cff_font, id: s_SID) -> *mut libc::c_char;
+    fn cff_get_string(cff: *mut cff_font, id: s_SID) -> *mut i8;
     #[no_mangle]
-    fn cff_add_string(cff: *mut cff_font, str: *const libc::c_char, unique: libc::c_int) -> s_SID;
+    fn cff_add_string(cff: *mut cff_font, str: *const i8, unique: libc::c_int) -> s_SID;
 }
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type card8 = u8;
@@ -148,7 +148,7 @@ pub struct cff_header {
 #[repr(C)]
 pub struct cff_dict_entry {
     pub id: libc::c_int,
-    pub key: *const libc::c_char,
+    pub key: *const i8,
     pub count: libc::c_int,
     pub values: *mut libc::c_double,
     /* values                                  */
@@ -236,7 +236,7 @@ pub union C2RustUnnamed_1 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_font {
-    pub fontname: *mut libc::c_char,
+    pub fontname: *mut i8,
     pub header: cff_header,
     pub name: *mut cff_index,
     pub topdict: *mut cff_dict,
@@ -263,7 +263,7 @@ pub struct cff_font {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_2 {
-    pub opname: *const libc::c_char,
+    pub opname: *const i8,
     pub argtype: libc::c_int,
 }
 #[inline]
@@ -279,7 +279,7 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
@@ -318,427 +318,427 @@ static mut arg_stack: [libc::c_double; 64] = [0.; 64];
 static mut dict_operator: [C2RustUnnamed_2; 61] = [
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"version\x00" as *const u8 as *const libc::c_char,
+            opname: b"version\x00" as *const u8 as *const i8,
             argtype: 1i32 << 3i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"Notice\x00" as *const u8 as *const libc::c_char,
+            opname: b"Notice\x00" as *const u8 as *const i8,
             argtype: 1i32 << 3i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"FullName\x00" as *const u8 as *const libc::c_char,
+            opname: b"FullName\x00" as *const u8 as *const i8,
             argtype: 1i32 << 3i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"FamilyName\x00" as *const u8 as *const libc::c_char,
+            opname: b"FamilyName\x00" as *const u8 as *const i8,
             argtype: 1i32 << 3i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"Weight\x00" as *const u8 as *const libc::c_char,
+            opname: b"Weight\x00" as *const u8 as *const i8,
             argtype: 1i32 << 3i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"FontBBox\x00" as *const u8 as *const libc::c_char,
+            opname: b"FontBBox\x00" as *const u8 as *const i8,
             argtype: 1i32 << 4i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"BlueValues\x00" as *const u8 as *const libc::c_char,
+            opname: b"BlueValues\x00" as *const u8 as *const i8,
             argtype: 1i32 << 5i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"OtherBlues\x00" as *const u8 as *const libc::c_char,
+            opname: b"OtherBlues\x00" as *const u8 as *const i8,
             argtype: 1i32 << 5i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"FamilyBlues\x00" as *const u8 as *const libc::c_char,
+            opname: b"FamilyBlues\x00" as *const u8 as *const i8,
             argtype: 1i32 << 5i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"FamilyOtherBlues\x00" as *const u8 as *const libc::c_char,
+            opname: b"FamilyOtherBlues\x00" as *const u8 as *const i8,
             argtype: 1i32 << 5i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"StdHW\x00" as *const u8 as *const libc::c_char,
+            opname: b"StdHW\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"StdVW\x00" as *const u8 as *const libc::c_char,
+            opname: b"StdVW\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: 0 as *const libc::c_char,
+            opname: 0 as *const i8,
             argtype: -1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"UniqueID\x00" as *const u8 as *const libc::c_char,
+            opname: b"UniqueID\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"XUID\x00" as *const u8 as *const libc::c_char,
+            opname: b"XUID\x00" as *const u8 as *const i8,
             argtype: 1i32 << 4i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"charset\x00" as *const u8 as *const libc::c_char,
+            opname: b"charset\x00" as *const u8 as *const i8,
             argtype: 1i32 << 7i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"Encoding\x00" as *const u8 as *const libc::c_char,
+            opname: b"Encoding\x00" as *const u8 as *const i8,
             argtype: 1i32 << 7i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"CharStrings\x00" as *const u8 as *const libc::c_char,
+            opname: b"CharStrings\x00" as *const u8 as *const i8,
             argtype: 1i32 << 7i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"Private\x00" as *const u8 as *const libc::c_char,
+            opname: b"Private\x00" as *const u8 as *const i8,
             argtype: 1i32 << 8i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"Subrs\x00" as *const u8 as *const libc::c_char,
+            opname: b"Subrs\x00" as *const u8 as *const i8,
             argtype: 1i32 << 7i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"defaultWidthX\x00" as *const u8 as *const libc::c_char,
+            opname: b"defaultWidthX\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"nominalWidthX\x00" as *const u8 as *const libc::c_char,
+            opname: b"nominalWidthX\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"Copyright\x00" as *const u8 as *const libc::c_char,
+            opname: b"Copyright\x00" as *const u8 as *const i8,
             argtype: 1i32 << 3i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"IsFixedPitch\x00" as *const u8 as *const libc::c_char,
+            opname: b"IsFixedPitch\x00" as *const u8 as *const i8,
             argtype: 1i32 << 2i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"ItalicAngle\x00" as *const u8 as *const libc::c_char,
+            opname: b"ItalicAngle\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"UnderlinePosition\x00" as *const u8 as *const libc::c_char,
+            opname: b"UnderlinePosition\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"UnderlineThickness\x00" as *const u8 as *const libc::c_char,
+            opname: b"UnderlineThickness\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"PaintType\x00" as *const u8 as *const libc::c_char,
+            opname: b"PaintType\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"CharstringType\x00" as *const u8 as *const libc::c_char,
+            opname: b"CharstringType\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"FontMatrix\x00" as *const u8 as *const libc::c_char,
+            opname: b"FontMatrix\x00" as *const u8 as *const i8,
             argtype: 1i32 << 4i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"StrokeWidth\x00" as *const u8 as *const libc::c_char,
+            opname: b"StrokeWidth\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"BlueScale\x00" as *const u8 as *const libc::c_char,
+            opname: b"BlueScale\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"BlueShift\x00" as *const u8 as *const libc::c_char,
+            opname: b"BlueShift\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"BlueFuzz\x00" as *const u8 as *const libc::c_char,
+            opname: b"BlueFuzz\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"StemSnapH\x00" as *const u8 as *const libc::c_char,
+            opname: b"StemSnapH\x00" as *const u8 as *const i8,
             argtype: 1i32 << 5i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"StemSnapV\x00" as *const u8 as *const libc::c_char,
+            opname: b"StemSnapV\x00" as *const u8 as *const i8,
             argtype: 1i32 << 5i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"ForceBold\x00" as *const u8 as *const libc::c_char,
+            opname: b"ForceBold\x00" as *const u8 as *const i8,
             argtype: 1i32 << 2i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: 0 as *const libc::c_char,
+            opname: 0 as *const i8,
             argtype: -1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: 0 as *const libc::c_char,
+            opname: 0 as *const i8,
             argtype: -1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"LanguageGroup\x00" as *const u8 as *const libc::c_char,
+            opname: b"LanguageGroup\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"ExpansionFactor\x00" as *const u8 as *const libc::c_char,
+            opname: b"ExpansionFactor\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"InitialRandomSeed\x00" as *const u8 as *const libc::c_char,
+            opname: b"InitialRandomSeed\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"SyntheticBase\x00" as *const u8 as *const libc::c_char,
+            opname: b"SyntheticBase\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"PostScript\x00" as *const u8 as *const libc::c_char,
+            opname: b"PostScript\x00" as *const u8 as *const i8,
             argtype: 1i32 << 3i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"BaseFontName\x00" as *const u8 as *const libc::c_char,
+            opname: b"BaseFontName\x00" as *const u8 as *const i8,
             argtype: 1i32 << 3i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"BaseFontBlend\x00" as *const u8 as *const libc::c_char,
+            opname: b"BaseFontBlend\x00" as *const u8 as *const i8,
             argtype: 1i32 << 5i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: 0 as *const libc::c_char,
+            opname: 0 as *const i8,
             argtype: -1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: 0 as *const libc::c_char,
+            opname: 0 as *const i8,
             argtype: -1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: 0 as *const libc::c_char,
+            opname: 0 as *const i8,
             argtype: -1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: 0 as *const libc::c_char,
+            opname: 0 as *const i8,
             argtype: -1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: 0 as *const libc::c_char,
+            opname: 0 as *const i8,
             argtype: -1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: 0 as *const libc::c_char,
+            opname: 0 as *const i8,
             argtype: -1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"ROS\x00" as *const u8 as *const libc::c_char,
+            opname: b"ROS\x00" as *const u8 as *const i8,
             argtype: 1i32 << 6i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"CIDFontVersion\x00" as *const u8 as *const libc::c_char,
+            opname: b"CIDFontVersion\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"CIDFontRevision\x00" as *const u8 as *const libc::c_char,
+            opname: b"CIDFontRevision\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"CIDFontType\x00" as *const u8 as *const libc::c_char,
+            opname: b"CIDFontType\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"CIDCount\x00" as *const u8 as *const libc::c_char,
+            opname: b"CIDCount\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"UIDBase\x00" as *const u8 as *const libc::c_char,
+            opname: b"UIDBase\x00" as *const u8 as *const i8,
             argtype: 1i32 << 0i32 | 1i32 << 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"FDArray\x00" as *const u8 as *const libc::c_char,
+            opname: b"FDArray\x00" as *const u8 as *const i8,
             argtype: 1i32 << 7i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"FDSelect\x00" as *const u8 as *const libc::c_char,
+            opname: b"FDSelect\x00" as *const u8 as *const i8,
             argtype: 1i32 << 7i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            opname: b"FontName\x00" as *const u8 as *const libc::c_char,
+            opname: b"FontName\x00" as *const u8 as *const i8,
             argtype: 1i32 << 3i32,
         };
         init
@@ -832,33 +832,33 @@ unsafe extern "C" fn get_real(
             let fresh6 = len;
             len = len + 1;
             *work_buffer.as_mut_ptr().offset(fresh6 as isize) =
-                (nibble + '0' as i32) as libc::c_char
+                (nibble + '0' as i32) as i8
         } else if nibble == 0xai32 {
             /* . */
             let fresh7 = len;
             len = len + 1;
-            *work_buffer.as_mut_ptr().offset(fresh7 as isize) = '.' as i32 as libc::c_char
+            *work_buffer.as_mut_ptr().offset(fresh7 as isize) = '.' as i32 as i8
         } else if nibble == 0xbi32 || nibble == 0xci32 {
             /* E, E- */
             let fresh8 = len;
             len = len + 1;
-            *work_buffer.as_mut_ptr().offset(fresh8 as isize) = 'e' as i32 as libc::c_char;
+            *work_buffer.as_mut_ptr().offset(fresh8 as isize) = 'e' as i32 as i8;
             if nibble == 0xci32 {
                 let fresh9 = len;
                 len = len + 1;
-                *work_buffer.as_mut_ptr().offset(fresh9 as isize) = '-' as i32 as libc::c_char
+                *work_buffer.as_mut_ptr().offset(fresh9 as isize) = '-' as i32 as i8
             }
         } else if nibble == 0xei32 {
             /* `-' */
             let fresh10 = len; /* invalid */
             len = len + 1;
-            *work_buffer.as_mut_ptr().offset(fresh10 as isize) = '-' as i32 as libc::c_char
+            *work_buffer.as_mut_ptr().offset(fresh10 as isize) = '-' as i32 as i8
         } else if !(nibble == 0xdi32) {
             if nibble == 0xfi32 {
                 /* end */
                 let fresh11 = len;
                 len = len + 1;
-                *work_buffer.as_mut_ptr().offset(fresh11 as isize) = '\u{0}' as i32 as libc::c_char;
+                *work_buffer.as_mut_ptr().offset(fresh11 as isize) = '\u{0}' as i32 as i8;
                 if pos % 2i32 == 0i32 && **data as libc::c_int != 0xffi32 {
                     fail = 1i32
                 }
@@ -875,7 +875,7 @@ unsafe extern "C" fn get_real(
     if fail != 0 || nibble != 0xfi32 {
         *status = -1i32
     } else {
-        let mut s: *mut libc::c_char = 0 as *mut libc::c_char;
+        let mut s: *mut i8 = 0 as *mut i8;
         result = strtod(work_buffer.as_mut_ptr(), &mut s);
         if *s as libc::c_int != 0i32 || *__errno_location() == 34i32 {
             *status = -1i32
@@ -1002,15 +1002,15 @@ pub unsafe extern "C" fn cff_dict_unpack(
     }
     if status != 0i32 {
         _tt_abort(
-            b"%s: Parsing CFF DICT failed. (error=%d)\x00" as *const u8 as *const libc::c_char,
-            b"CFF\x00" as *const u8 as *const libc::c_char,
+            b"%s: Parsing CFF DICT failed. (error=%d)\x00" as *const u8 as *const i8,
+            b"CFF\x00" as *const u8 as *const i8,
             status,
         );
     } else {
         if stack_top != 0i32 {
             dpx_warning(
-                b"%s: Garbage in CFF DICT data.\x00" as *const u8 as *const libc::c_char,
-                b"CFF\x00" as *const u8 as *const libc::c_char,
+                b"%s: Garbage in CFF DICT data.\x00" as *const u8 as *const i8,
+                b"CFF\x00" as *const u8 as *const i8,
             );
             stack_top = 0i32
         }
@@ -1027,8 +1027,8 @@ unsafe extern "C" fn pack_integer(
     if value >= -107i32 && value <= 107i32 {
         if destlen < 1i32 {
             _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const libc::c_char,
-                b"CFF\x00" as *const u8 as *const libc::c_char,
+                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
+                b"CFF\x00" as *const u8 as *const i8,
             );
         }
         *dest.offset(0) = (value + 139i32 & 0xffi32) as card8;
@@ -1036,8 +1036,8 @@ unsafe extern "C" fn pack_integer(
     } else if value >= 108i32 && value <= 1131i32 {
         if destlen < 2i32 {
             _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const libc::c_char,
-                b"CFF\x00" as *const u8 as *const libc::c_char,
+                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
+                b"CFF\x00" as *const u8 as *const i8,
             );
         }
         value = 0xf700u32
@@ -1049,8 +1049,8 @@ unsafe extern "C" fn pack_integer(
     } else if value >= -1131i32 && value <= -108i32 {
         if destlen < 2i32 {
             _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const libc::c_char,
-                b"CFF\x00" as *const u8 as *const libc::c_char,
+                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
+                b"CFF\x00" as *const u8 as *const i8,
             );
         }
         value = 0xfb00u32
@@ -1063,8 +1063,8 @@ unsafe extern "C" fn pack_integer(
         /* shortint */
         if destlen < 3i32 {
             _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const libc::c_char,
-                b"CFF\x00" as *const u8 as *const libc::c_char,
+                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
+                b"CFF\x00" as *const u8 as *const i8,
             );
         }
         *dest.offset(0) = 28i32 as card8;
@@ -1074,8 +1074,8 @@ unsafe extern "C" fn pack_integer(
     } else {
         if destlen < 5i32 {
             _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const libc::c_char,
-                b"CFF\x00" as *const u8 as *const libc::c_char,
+                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
+                b"CFF\x00" as *const u8 as *const i8,
             );
         }
         *dest.offset(0) = 29i32 as card8;
@@ -1094,11 +1094,11 @@ unsafe extern "C" fn pack_real(
 ) -> libc::c_int {
     let mut i: libc::c_int = 0i32;
     let mut pos: libc::c_int = 2i32;
-    let mut buffer: [libc::c_char; 32] = [0; 32];
+    let mut buffer: [i8; 32] = [0; 32];
     if destlen < 2i32 {
         _tt_abort(
-            b"%s: Buffer overflow.\x00" as *const u8 as *const libc::c_char,
-            b"CFF\x00" as *const u8 as *const libc::c_char,
+            b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
+            b"CFF\x00" as *const u8 as *const i8,
         );
     }
     *dest.offset(0) = 30i32 as card8;
@@ -1116,7 +1116,7 @@ unsafe extern "C" fn pack_real(
      * on June 27, 2007 for musix20.pfb */
     sprintf(
         buffer.as_mut_ptr(),
-        b"%.13g\x00" as *const u8 as *const libc::c_char,
+        b"%.13g\x00" as *const u8 as *const i8,
         value,
     );
     i = 0i32;
@@ -1137,14 +1137,14 @@ unsafe extern "C" fn pack_real(
             }) as u8
         } else {
             _tt_abort(
-                b"%s: Invalid character.\x00" as *const u8 as *const libc::c_char,
-                b"CFF\x00" as *const u8 as *const libc::c_char,
+                b"%s: Invalid character.\x00" as *const u8 as *const i8,
+                b"CFF\x00" as *const u8 as *const i8,
             );
         }
         if destlen < pos / 2i32 + 1i32 {
             _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const libc::c_char,
-                b"CFF\x00" as *const u8 as *const libc::c_char,
+                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
+                b"CFF\x00" as *const u8 as *const i8,
             );
         }
         if pos % 2i32 != 0 {
@@ -1163,8 +1163,8 @@ unsafe extern "C" fn pack_real(
     } else {
         if destlen < pos / 2i32 + 1i32 {
             _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const libc::c_char,
-                b"CFF\x00" as *const u8 as *const libc::c_char,
+                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
+                b"CFF\x00" as *const u8 as *const i8,
             );
         }
         *dest.offset((pos / 2i32) as isize) = 0xffi32 as card8;
@@ -1187,8 +1187,8 @@ unsafe extern "C" fn cff_dict_put_number(
         lvalue = value as libc::c_int;
         if destlen < 5i32 {
             _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const libc::c_char,
-                b"CFF\x00" as *const u8 as *const libc::c_char,
+                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
+                b"CFF\x00" as *const u8 as *const i8,
             );
         }
         *dest.offset(0) = 29i32 as card8;
@@ -1239,8 +1239,8 @@ unsafe extern "C" fn put_dict_entry(
         if id >= 0i32 && id < 22i32 {
             if len + 1i32 > destlen {
                 _tt_abort(
-                    b"%s: Buffer overflow.\x00" as *const u8 as *const libc::c_char,
-                    b"CFF\x00" as *const u8 as *const libc::c_char,
+                    b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
+                    b"CFF\x00" as *const u8 as *const i8,
                 );
             }
             let fresh17 = len;
@@ -1249,7 +1249,7 @@ unsafe extern "C" fn put_dict_entry(
         } else if id >= 0i32 && id < 22i32 + 39i32 {
             if len + 2i32 > destlen {
                 _tt_abort(
-                    b"in cff_dict_pack(): Buffer overflow\x00" as *const u8 as *const libc::c_char,
+                    b"in cff_dict_pack(): Buffer overflow\x00" as *const u8 as *const i8,
                 );
             }
             let fresh18 = len;
@@ -1260,8 +1260,8 @@ unsafe extern "C" fn put_dict_entry(
             *dest.offset(fresh19 as isize) = (id - 22i32) as card8
         } else {
             _tt_abort(
-                b"%s: Invalid CFF DICT operator ID.\x00" as *const u8 as *const libc::c_char,
-                b"CFF\x00" as *const u8 as *const libc::c_char,
+                b"%s: Invalid CFF DICT operator ID.\x00" as *const u8 as *const i8,
+                b"CFF\x00" as *const u8 as *const i8,
             );
         }
     }
@@ -1279,7 +1279,7 @@ pub unsafe extern "C" fn cff_dict_pack(
     while i < (*dict).count {
         if streq_ptr(
             (*(*dict).entries.offset(i as isize)).key,
-            b"ROS\x00" as *const u8 as *const libc::c_char,
+            b"ROS\x00" as *const u8 as *const i8,
         ) {
             len += put_dict_entry(&mut *(*dict).entries.offset(i as isize), dest, destlen);
             break;
@@ -1291,7 +1291,7 @@ pub unsafe extern "C" fn cff_dict_pack(
     while i < (*dict).count {
         if strcmp(
             (*(*dict).entries.offset(i as isize)).key,
-            b"ROS\x00" as *const u8 as *const libc::c_char,
+            b"ROS\x00" as *const u8 as *const i8,
         ) != 0
         {
             len += put_dict_entry(
@@ -1307,7 +1307,7 @@ pub unsafe extern "C" fn cff_dict_pack(
 #[no_mangle]
 pub unsafe extern "C" fn cff_dict_add(
     mut dict: *mut cff_dict,
-    mut key: *const libc::c_char,
+    mut key: *const i8,
     mut count: libc::c_int,
 ) {
     let mut id: libc::c_int = 0;
@@ -1324,8 +1324,8 @@ pub unsafe extern "C" fn cff_dict_add(
     }
     if id == 22i32 + 39i32 {
         _tt_abort(
-            b"%s: Unknown CFF DICT operator.\x00" as *const u8 as *const libc::c_char,
-            b"CFF\x00" as *const u8 as *const libc::c_char,
+            b"%s: Unknown CFF DICT operator.\x00" as *const u8 as *const i8,
+            b"CFF\x00" as *const u8 as *const i8,
         );
     }
     i = 0i32;
@@ -1334,8 +1334,8 @@ pub unsafe extern "C" fn cff_dict_add(
             if (*(*dict).entries.offset(i as isize)).count != count {
                 _tt_abort(
                     b"%s: Inconsistent DICT argument number.\x00" as *const u8
-                        as *const libc::c_char,
-                    b"CFF\x00" as *const u8 as *const libc::c_char,
+                        as *const i8,
+                    b"CFF\x00" as *const u8 as *const i8,
                 );
             }
             return;
@@ -1373,7 +1373,7 @@ pub unsafe extern "C" fn cff_dict_add(
     (*dict).count += 1i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn cff_dict_remove(mut dict: *mut cff_dict, mut key: *const libc::c_char) {
+pub unsafe extern "C" fn cff_dict_remove(mut dict: *mut cff_dict, mut key: *const i8) {
     let mut i: libc::c_int = 0;
     i = 0i32;
     while i < (*dict).count {
@@ -1389,7 +1389,7 @@ pub unsafe extern "C" fn cff_dict_remove(mut dict: *mut cff_dict, mut key: *cons
 #[no_mangle]
 pub unsafe extern "C" fn cff_dict_known(
     mut dict: *mut cff_dict,
-    mut key: *const libc::c_char,
+    mut key: *const i8,
 ) -> libc::c_int {
     let mut i: libc::c_int = 0;
     i = 0i32;
@@ -1406,7 +1406,7 @@ pub unsafe extern "C" fn cff_dict_known(
 #[no_mangle]
 pub unsafe extern "C" fn cff_dict_get(
     mut dict: *mut cff_dict,
-    mut key: *const libc::c_char,
+    mut key: *const i8,
     mut idx: libc::c_int,
 ) -> libc::c_double {
     let mut value: libc::c_double = 0.0f64;
@@ -1414,10 +1414,10 @@ pub unsafe extern "C" fn cff_dict_get(
     if !key.is_null() && !dict.is_null() {
     } else {
         __assert_fail(
-            b"key && dict\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cff_dict.c\x00" as *const u8 as *const libc::c_char,
+            b"key && dict\x00" as *const u8 as *const i8,
+            b"dpx-cff_dict.c\x00" as *const u8 as *const i8,
             658i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 51], &[libc::c_char; 51]>(
+            (*::std::mem::transmute::<&[u8; 51], &[i8; 51]>(
                 b"double cff_dict_get(cff_dict *, const char *, int)\x00",
             ))
             .as_ptr(),
@@ -1432,8 +1432,8 @@ pub unsafe extern "C" fn cff_dict_get(
                     .offset(idx as isize)
             } else {
                 _tt_abort(
-                    b"%s: Invalid index number.\x00" as *const u8 as *const libc::c_char,
-                    b"CFF\x00" as *const u8 as *const libc::c_char,
+                    b"%s: Invalid index number.\x00" as *const u8 as *const i8,
+                    b"CFF\x00" as *const u8 as *const i8,
                 );
             }
             break;
@@ -1443,8 +1443,8 @@ pub unsafe extern "C" fn cff_dict_get(
     }
     if i == (*dict).count {
         _tt_abort(
-            b"%s: DICT entry \"%s\" not found.\x00" as *const u8 as *const libc::c_char,
-            b"CFF\x00" as *const u8 as *const libc::c_char,
+            b"%s: DICT entry \"%s\" not found.\x00" as *const u8 as *const i8,
+            b"CFF\x00" as *const u8 as *const i8,
             key,
         );
     }
@@ -1453,7 +1453,7 @@ pub unsafe extern "C" fn cff_dict_get(
 #[no_mangle]
 pub unsafe extern "C" fn cff_dict_set(
     mut dict: *mut cff_dict,
-    mut key: *const libc::c_char,
+    mut key: *const i8,
     mut idx: libc::c_int,
     mut value: libc::c_double,
 ) {
@@ -1461,10 +1461,10 @@ pub unsafe extern "C" fn cff_dict_set(
     if !dict.is_null() && !key.is_null() {
     } else {
         __assert_fail(
-            b"dict && key\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cff_dict.c\x00" as *const u8 as *const libc::c_char,
+            b"dict && key\x00" as *const u8 as *const i8,
+            b"dpx-cff_dict.c\x00" as *const u8 as *const i8,
             680i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 57], &[libc::c_char; 57]>(
+            (*::std::mem::transmute::<&[u8; 57], &[i8; 57]>(
                 b"void cff_dict_set(cff_dict *, const char *, int, double)\x00",
             ))
             .as_ptr(),
@@ -1479,8 +1479,8 @@ pub unsafe extern "C" fn cff_dict_set(
                     .offset(idx as isize) = value
             } else {
                 _tt_abort(
-                    b"%s: Invalid index number.\x00" as *const u8 as *const libc::c_char,
-                    b"CFF\x00" as *const u8 as *const libc::c_char,
+                    b"%s: Invalid index number.\x00" as *const u8 as *const i8,
+                    b"CFF\x00" as *const u8 as *const i8,
                 );
             }
             break;
@@ -1490,8 +1490,8 @@ pub unsafe extern "C" fn cff_dict_set(
     }
     if i == (*dict).count {
         _tt_abort(
-            b"%s: DICT entry \"%s\" not found.\x00" as *const u8 as *const libc::c_char,
-            b"CFF\x00" as *const u8 as *const libc::c_char,
+            b"%s: DICT entry \"%s\" not found.\x00" as *const u8 as *const i8,
+            b"CFF\x00" as *const u8 as *const i8,
             key,
         );
     };
@@ -1522,7 +1522,7 @@ pub unsafe extern "C" fn cff_dict_update(mut dict: *mut cff_dict, mut cff: *mut 
     i = 0i32;
     while i < (*dict).count {
         if (*(*dict).entries.offset(i as isize)).count > 0i32 {
-            let mut str: *mut libc::c_char = 0 as *mut libc::c_char;
+            let mut str: *mut i8 = 0 as *mut i8;
             let mut id: libc::c_int = 0;
             id = (*(*dict).entries.offset(i as isize)).id;
             if dict_operator[id as usize].argtype == 1i32 << 3i32 {

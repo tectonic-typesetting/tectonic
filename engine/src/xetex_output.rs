@@ -11,7 +11,7 @@ extern "C" {
     #[no_mangle]
     fn abs(_: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn ttstub_output_putc(handle: rust_output_handle_t, c: libc::c_int) -> libc::c_int;
     /* Needed here for UFILE */
@@ -343,11 +343,11 @@ pub unsafe extern "C" fn print_char(mut s: int32_t) {
 pub unsafe extern "C" fn print(mut s: int32_t) {
     let mut nl: int32_t = 0;
     if s >= str_ptr {
-        return print_cstr(b"???\x00" as *const u8 as *const libc::c_char);
+        return print_cstr(b"???\x00" as *const u8 as *const i8);
     } else {
         if s < 0xffffi32 {
             if s < 0i32 {
-                return print_cstr(b"???\x00" as *const u8 as *const libc::c_char);
+                return print_cstr(b"???\x00" as *const u8 as *const i8);
             } else {
                 if selector as libc::c_uint > SELECTOR_PSEUDO as libc::c_int as libc::c_uint {
                     print_char(s);
@@ -504,7 +504,7 @@ pub unsafe extern "C" fn print(mut s: int32_t) {
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn print_cstr(mut str: *const libc::c_char) {
+pub unsafe extern "C" fn print_cstr(mut str: *const i8) {
     let mut i: libc::c_uint = 0i32 as libc::c_uint;
     while (i as u64) < strlen(str) {
         print_char(*str.offset(i as isize) as int32_t);
@@ -522,7 +522,7 @@ pub unsafe extern "C" fn print_nl(mut s: str_number) {
     print(s);
 }
 #[no_mangle]
-pub unsafe extern "C" fn print_nl_cstr(mut str: *const libc::c_char) {
+pub unsafe extern "C" fn print_nl_cstr(mut str: *const i8) {
     if term_offset > 0i32 && selector as libc::c_uint & 1i32 as libc::c_uint != 0
         || file_offset > 0i32
             && selector as libc::c_uint >= SELECTOR_LOG_ONLY as libc::c_int as libc::c_uint
@@ -568,7 +568,7 @@ pub unsafe extern "C" fn print_esc(mut s: str_number) {
     print(s);
 }
 #[no_mangle]
-pub unsafe extern "C" fn print_esc_cstr(mut s: *const libc::c_char) {
+pub unsafe extern "C" fn print_esc_cstr(mut s: *const i8) {
     let mut c: int32_t = (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -649,8 +649,8 @@ pub unsafe extern "C" fn print_cs(mut p: int32_t) {
     if p < 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 {
         if p >= 1i32 + (0x10ffffi32 + 1i32) {
             if p == 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) {
-                print_esc_cstr(b"csname\x00" as *const u8 as *const libc::c_char);
-                print_esc_cstr(b"endcsname\x00" as *const u8 as *const libc::c_char);
+                print_esc_cstr(b"csname\x00" as *const u8 as *const i8);
+                print_esc_cstr(b"endcsname\x00" as *const u8 as *const i8);
                 print_char(' ' as i32);
             } else {
                 print_esc(p - (1i32 + (0x10ffffi32 + 1i32)));
@@ -682,7 +682,7 @@ pub unsafe extern "C" fn print_cs(mut p: int32_t) {
                 }
             }
         } else if p < 1i32 {
-            print_esc_cstr(b"IMPOSSIBLE.\x00" as *const u8 as *const libc::c_char);
+            print_esc_cstr(b"IMPOSSIBLE.\x00" as *const u8 as *const i8);
         } else {
             print_char(p - 1i32);
         }
@@ -727,9 +727,9 @@ pub unsafe extern "C" fn print_cs(mut p: int32_t) {
             - 1i32
         || p > eqtb_top
     {
-        print_esc_cstr(b"IMPOSSIBLE.\x00" as *const u8 as *const libc::c_char);
+        print_esc_cstr(b"IMPOSSIBLE.\x00" as *const u8 as *const i8);
     } else if (*hash.offset(p as isize)).s1 >= str_ptr {
-        print_esc_cstr(b"NONEXISTENT.\x00" as *const u8 as *const libc::c_char);
+        print_esc_cstr(b"NONEXISTENT.\x00" as *const u8 as *const i8);
     } else {
         print_esc((*hash.offset(p as isize)).s1);
         print_char(' ' as i32);
@@ -743,8 +743,8 @@ pub unsafe extern "C" fn sprint_cs(mut p: int32_t) {
         } else if p < 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) {
             print_esc(p - (1i32 + (0x10ffffi32 + 1i32)));
         } else {
-            print_esc_cstr(b"csname\x00" as *const u8 as *const libc::c_char);
-            print_esc_cstr(b"endcsname\x00" as *const u8 as *const libc::c_char);
+            print_esc_cstr(b"csname\x00" as *const u8 as *const i8);
+            print_esc_cstr(b"endcsname\x00" as *const u8 as *const i8);
         }
     } else {
         print_esc((*hash.offset(p as isize)).s1);
@@ -876,15 +876,15 @@ pub unsafe extern "C" fn print_file_name(mut n: int32_t, mut a: int32_t, mut e: 
 #[no_mangle]
 pub unsafe extern "C" fn print_size(mut s: int32_t) {
     if s == 0i32 {
-        print_esc_cstr(b"textfont\x00" as *const u8 as *const libc::c_char);
+        print_esc_cstr(b"textfont\x00" as *const u8 as *const i8);
     } else if s == 256i32 {
-        print_esc_cstr(b"scriptfont\x00" as *const u8 as *const libc::c_char);
+        print_esc_cstr(b"scriptfont\x00" as *const u8 as *const i8);
     } else {
-        print_esc_cstr(b"scriptscriptfont\x00" as *const u8 as *const libc::c_char);
+        print_esc_cstr(b"scriptscriptfont\x00" as *const u8 as *const i8);
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn print_write_whatsit(mut s: *const libc::c_char, mut p: int32_t) {
+pub unsafe extern "C" fn print_write_whatsit(mut s: *const i8, mut p: int32_t) {
     print_esc_cstr(s);
     if (*mem.offset((p + 1i32) as isize)).b32.s0 < 16i32 {
         print_int((*mem.offset((p + 1i32) as isize)).b32.s0);
@@ -952,9 +952,9 @@ pub unsafe extern "C" fn print_file_line() {
         level -= 1
     }
     if level == 0i32 {
-        print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+        print_nl_cstr(b"! \x00" as *const u8 as *const i8);
     } else {
-        print_nl_cstr(b"\x00" as *const u8 as *const libc::c_char);
+        print_nl_cstr(b"\x00" as *const u8 as *const i8);
         print(*full_source_filename_stack.offset(level as isize));
         print(':' as i32);
         if level == in_open {
@@ -962,7 +962,7 @@ pub unsafe extern "C" fn print_file_line() {
         } else {
             print_int(*line_stack.offset((level + 1i32) as isize));
         }
-        print_cstr(b": \x00" as *const u8 as *const libc::c_char);
+        print_cstr(b": \x00" as *const u8 as *const i8);
     };
 }
 /*:251 */
@@ -992,8 +992,8 @@ pub unsafe extern "C" fn print_hex(mut n: int32_t) {
 pub unsafe extern "C" fn print_roman_int(mut n: int32_t) {
     let mut u: int32_t = 0;
     let mut v: int32_t = 0;
-    let mut roman_data: *const libc::c_char =
-        b"m2d5c2l5x2v5i\x00" as *const u8 as *const libc::c_char;
+    let mut roman_data: *const i8 =
+        b"m2d5c2l5x2v5i\x00" as *const u8 as *const i8;
     let mut j: u8 = 0i32 as u8;
     let mut k: u8 = 0i32 as u8;
     v = 1000i32;

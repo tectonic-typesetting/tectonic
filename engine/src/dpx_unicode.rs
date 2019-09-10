@@ -10,10 +10,10 @@ extern crate libc;
 extern "C" {
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
 }
 pub type __int32_t = libc::c_int;
@@ -217,10 +217,10 @@ pub unsafe extern "C" fn UC_UTF8_encode_char(
     if !pp.is_null() && !(*pp).is_null() && !endptr.is_null() {
     } else {
         __assert_fail(
-            b"pp && *pp && endptr\x00" as *const u8 as *const libc::c_char,
-            b"dpx-unicode.c\x00" as *const u8 as *const libc::c_char,
+            b"pp && *pp && endptr\x00" as *const u8 as *const i8,
+            b"dpx-unicode.c\x00" as *const u8 as *const i8,
             197i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 71], &[libc::c_char; 71]>(
+            (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
                 b"size_t UC_UTF8_encode_char(int32_t, unsigned char **, unsigned char *)\x00",
             ))
             .as_ptr(),

@@ -9,29 +9,29 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn atof(__nptr: *const libc::c_char) -> libc::c_double;
+    fn atof(__nptr: *const i8) -> libc::c_double;
     #[no_mangle]
-    fn atoi(__nptr: *const libc::c_char) -> libc::c_int;
+    fn atoi(__nptr: *const i8) -> libc::c_int;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn strchr(_: *const libc::c_char, _: libc::c_int) -> *mut libc::c_char;
+    fn strchr(_: *const i8, _: libc::c_int) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn pdf_obj_set_verbose(level: libc::c_int);
@@ -73,7 +73,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_close_fontmaps();
     #[no_mangle]
-    fn pdf_load_fontmap_file(filename: *const libc::c_char, mode: libc::c_int) -> libc::c_int;
+    fn pdf_load_fontmap_file(filename: *const i8, mode: libc::c_int) -> libc::c_int;
     #[no_mangle]
     fn pdf_fontmap_set_verbose(level: libc::c_int);
     #[no_mangle]
@@ -81,21 +81,21 @@ extern "C" {
     #[no_mangle]
     fn pdf_init_fontmaps();
     #[no_mangle]
-    fn paperinfo(ppformat: *const libc::c_char) -> *const paper;
+    fn paperinfo(ppformat: *const i8) -> *const paper;
     #[no_mangle]
     fn dpx_file_set_verbose(level: libc::c_int);
     #[no_mangle]
     fn dpx_delete_old_cache(life: libc::c_int);
     #[no_mangle]
     fn parse_float_decimal(
-        pp: *mut *const libc::c_char,
-        endptr: *const libc::c_char,
-    ) -> *mut libc::c_char;
+        pp: *mut *const i8,
+        endptr: *const i8,
+    ) -> *mut i8;
     #[no_mangle]
     fn parse_c_ident(
-        pp: *mut *const libc::c_char,
-        endptr: *const libc::c_char,
-    ) -> *mut libc::c_char;
+        pp: *mut *const i8,
+        endptr: *const i8,
+    ) -> *mut i8;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -160,9 +160,9 @@ extern "C" {
     #[no_mangle]
     fn dvi_reset_global_state();
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dvi_init(dvi_filename: *const libc::c_char, mag_0: libc::c_double) -> libc::c_double;
+    fn dvi_init(dvi_filename: *const i8, mag_0: libc::c_double) -> libc::c_double;
     #[no_mangle]
     fn pdf_init_device(unit_conv: libc::c_double, precision: libc::c_int, is_bw: libc::c_int);
     #[no_mangle]
@@ -170,9 +170,9 @@ extern "C" {
     #[no_mangle]
     fn dvi_close();
     #[no_mangle]
-    fn dpx_message(fmt: *const libc::c_char, _: ...);
+    fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dvi_comment() -> *const libc::c_char;
+    fn dvi_comment() -> *const i8;
     #[no_mangle]
     fn dvi_npages() -> libc::c_uint;
     #[no_mangle]
@@ -194,8 +194,8 @@ extern "C" {
         do_enc: *mut libc::c_int,
         keybits: *mut libc::c_int,
         perm: *mut int32_t,
-        opasswd: *mut libc::c_char,
-        upasswd: *mut libc::c_char,
+        opasswd: *mut i8,
+        upasswd: *mut i8,
     );
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -247,7 +247,7 @@ extern "C" {
     fn pdf_doc_set_verbose(level: libc::c_int);
     #[no_mangle]
     fn pdf_open_document(
-        filename: *const libc::c_char,
+        filename: *const i8,
         enable_encrypt: bool,
         enable_object_stream: bool,
         media_width: libc::c_double,
@@ -260,7 +260,7 @@ extern "C" {
     fn pdf_close_document();
     /* PDF document metadata */
     #[no_mangle]
-    fn pdf_doc_set_creator(creator: *const libc::c_char);
+    fn pdf_doc_set_creator(creator: *const i8);
     #[no_mangle]
     fn pdf_doc_set_mediabox(page_no: libc::c_uint, mediabox: *const pdf_rect);
     /*
@@ -287,13 +287,13 @@ extern "C" {
     #[no_mangle]
     fn pdf_enc_set_verbose(level: libc::c_int);
     #[no_mangle]
-    fn pdf_enc_compute_id_string(dviname: *const libc::c_char, pdfname: *const libc::c_char);
+    fn pdf_enc_compute_id_string(dviname: *const i8, pdfname: *const i8);
     #[no_mangle]
     fn pdf_enc_set_passwd(
         size: libc::c_uint,
         perm: libc::c_uint,
-        owner: *const libc::c_char,
-        user: *const libc::c_char,
+        owner: *const i8,
+        user: *const i8,
     );
     #[no_mangle]
     fn pdf_font_set_dpi(font_dpi_0: libc::c_int);
@@ -302,12 +302,12 @@ extern "C" {
     #[no_mangle]
     fn pdf_font_set_deterministic_unique_tags(value: libc::c_int);
     #[no_mangle]
-    fn skip_white(start: *mut *const libc::c_char, end: *const libc::c_char);
+    fn skip_white(start: *mut *const i8, end: *const i8);
     #[no_mangle]
     fn parse_unsigned(
-        start: *mut *const libc::c_char,
-        end: *const libc::c_char,
-    ) -> *mut libc::c_char;
+        start: *mut *const i8,
+        end: *const i8,
+    ) -> *mut i8;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -466,7 +466,7 @@ pub struct pdf_rect {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct paper {
-    pub name: *const libc::c_char,
+    pub name: *const i8,
     pub pswidth: libc::c_double,
     pub psheight: libc::c_double,
 }
@@ -474,7 +474,7 @@ pub struct paper {
 pub static mut is_xdv: libc::c_int = 0i32;
 #[no_mangle]
 pub static mut translate_origin: libc::c_int = 0i32;
-static mut ignore_colors: libc::c_char = 0i32 as libc::c_char;
+static mut ignore_colors: i8 = 0i32 as i8;
 static mut annot_grow: libc::c_double = 0.0f64;
 static mut bookmark_open: libc::c_int = 0i32;
 static mut mag: libc::c_double = 1.0f64;
@@ -508,24 +508,24 @@ pub static mut always_embed: libc::c_int = 0i32;
 /* XXX: there are four quasi-redundant versions of this; grp for K_UNIT__PT */
 unsafe extern "C" fn read_length(
     mut vp: *mut libc::c_double,
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> libc::c_int {
-    let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut p: *const libc::c_char = *pp;
+    let mut q: *mut i8 = 0 as *mut i8;
+    let mut p: *const i8 = *pp;
     let mut v: libc::c_double = 0.;
     let mut u: libc::c_double = 1.0f64;
-    let mut _ukeys: [*const libc::c_char; 10] = [
-        b"pt\x00" as *const u8 as *const libc::c_char,
-        b"in\x00" as *const u8 as *const libc::c_char,
-        b"cm\x00" as *const u8 as *const libc::c_char,
-        b"mm\x00" as *const u8 as *const libc::c_char,
-        b"bp\x00" as *const u8 as *const libc::c_char,
-        b"pc\x00" as *const u8 as *const libc::c_char,
-        b"dd\x00" as *const u8 as *const libc::c_char,
-        b"cc\x00" as *const u8 as *const libc::c_char,
-        b"sp\x00" as *const u8 as *const libc::c_char,
-        0 as *const libc::c_char,
+    let mut _ukeys: [*const i8; 10] = [
+        b"pt\x00" as *const u8 as *const i8,
+        b"in\x00" as *const u8 as *const i8,
+        b"cm\x00" as *const u8 as *const i8,
+        b"mm\x00" as *const u8 as *const i8,
+        b"bp\x00" as *const u8 as *const i8,
+        b"pc\x00" as *const u8 as *const i8,
+        b"dd\x00" as *const u8 as *const i8,
+        b"cc\x00" as *const u8 as *const i8,
+        b"sp\x00" as *const u8 as *const i8,
+        0 as *const i8,
     ];
     let mut k: libc::c_int = 0;
     let mut error: libc::c_int = 0i32;
@@ -540,15 +540,15 @@ unsafe extern "C" fn read_length(
     skip_white(&mut p, endptr);
     q = parse_c_ident(&mut p, endptr);
     if !q.is_null() {
-        let mut qq: *mut libc::c_char = q;
-        if strlen(q) >= strlen(b"true\x00" as *const u8 as *const libc::c_char)
+        let mut qq: *mut i8 = q;
+        if strlen(q) >= strlen(b"true\x00" as *const u8 as *const i8)
             && memcmp(
                 q as *const libc::c_void,
-                b"true\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-                strlen(b"true\x00" as *const u8 as *const libc::c_char),
+                b"true\x00" as *const u8 as *const i8 as *const libc::c_void,
+                strlen(b"true\x00" as *const u8 as *const i8),
             ) == 0
         {
-            q = q.offset(strlen(b"true\x00" as *const u8 as *const libc::c_char) as isize)
+            q = q.offset(strlen(b"true\x00" as *const u8 as *const i8) as isize)
             /* just skip "true" */
         }
         if strlen(q) == 0i32 as u64 {
@@ -574,7 +574,7 @@ unsafe extern "C" fn read_length(
                 8 => u *= 72.0f64 / (72.27f64 * 65536i32 as libc::c_double),
                 _ => {
                     dpx_warning(
-                        b"Unknown unit of measure: %s\x00" as *const u8 as *const libc::c_char,
+                        b"Unknown unit of measure: %s\x00" as *const u8 as *const i8,
                         q,
                     );
                     error = -1i32
@@ -583,7 +583,7 @@ unsafe extern "C" fn read_length(
             free(qq as *mut libc::c_void);
         } else {
             dpx_warning(
-                b"Missing unit of measure after \"true\"\x00" as *const u8 as *const libc::c_char,
+                b"Missing unit of measure after \"true\"\x00" as *const u8 as *const i8,
             );
             error = -1i32
         }
@@ -592,7 +592,7 @@ unsafe extern "C" fn read_length(
     *pp = p;
     return error;
 }
-unsafe extern "C" fn select_paper(mut paperspec: *const libc::c_char) {
+unsafe extern "C" fn select_paper(mut paperspec: *const i8) {
     let mut pi: *const paper = 0 as *const paper;
     let mut error: libc::c_int = 0i32;
     pi = paperinfo(paperspec);
@@ -600,7 +600,7 @@ unsafe extern "C" fn select_paper(mut paperspec: *const libc::c_char) {
         && !(if !pi.is_null() && !(*pi).name.is_null() {
             (*pi).name
         } else {
-            0 as *const libc::c_char
+            0 as *const i8
         })
         .is_null()
     {
@@ -615,14 +615,14 @@ unsafe extern "C" fn select_paper(mut paperspec: *const libc::c_char) {
             0.0f64
         }
     } else {
-        let mut p: *const libc::c_char = paperspec;
-        let mut endptr: *const libc::c_char = 0 as *const libc::c_char;
-        let mut comma: *const libc::c_char = 0 as *const libc::c_char;
+        let mut p: *const i8 = paperspec;
+        let mut endptr: *const i8 = 0 as *const i8;
+        let mut comma: *const i8 = 0 as *const i8;
         comma = strchr(p, ',' as i32);
         endptr = p.offset(strlen(p) as isize);
         if comma.is_null() {
             _tt_abort(
-                b"Unrecognized paper format: %s\x00" as *const u8 as *const libc::c_char,
+                b"Unrecognized paper format: %s\x00" as *const u8 as *const i8,
                 paperspec,
             );
         }
@@ -632,7 +632,7 @@ unsafe extern "C" fn select_paper(mut paperspec: *const libc::c_char) {
     }
     if error != 0 || paper_width <= 0.0f64 || paper_height <= 0.0f64 {
         _tt_abort(
-            b"Invalid paper size: %s (%.2fx%.2f)\x00" as *const u8 as *const libc::c_char,
+            b"Invalid paper size: %s (%.2fx%.2f)\x00" as *const u8 as *const i8,
             paperspec,
             paper_width,
             paper_height,
@@ -640,15 +640,15 @@ unsafe extern "C" fn select_paper(mut paperspec: *const libc::c_char) {
     };
 }
 unsafe extern "C" fn select_pages(
-    mut pagespec: *const libc::c_char,
+    mut pagespec: *const i8,
     mut ret_page_ranges: *mut *mut PageRange,
     mut ret_num_page_ranges: *mut libc::c_uint,
 ) {
     let mut page_ranges: *mut PageRange = 0 as *mut PageRange;
     let mut num_page_ranges: libc::c_uint = 0i32 as libc::c_uint;
     let mut max_page_ranges: libc::c_uint = 0i32 as libc::c_uint;
-    let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut p: *const libc::c_char = pagespec;
+    let mut q: *mut i8 = 0 as *mut i8;
+    let mut p: *const i8 = pagespec;
     while *p as libc::c_int != '\u{0}' as i32 {
         /* Enlarge page range table if necessary */
         if num_page_ranges >= max_page_ranges {
@@ -730,7 +730,7 @@ unsafe extern "C" fn select_pages(
             }
             if *p != 0 {
                 _tt_abort(
-                    b"Bad page range specification: %s\x00" as *const u8 as *const libc::c_char,
+                    b"Bad page range specification: %s\x00" as *const u8 as *const i8,
                     p,
                 );
             }
@@ -740,10 +740,10 @@ unsafe extern "C" fn select_pages(
     *ret_num_page_ranges = num_page_ranges;
 }
 unsafe extern "C" fn system_default() {
-    if !(b"a4\x00" as *const u8 as *const libc::c_char).is_null() {
-        select_paper(b"a4\x00" as *const u8 as *const libc::c_char);
-    } else if !(b"a4\x00" as *const u8 as *const libc::c_char).is_null() {
-        select_paper(b"a4\x00" as *const u8 as *const libc::c_char);
+    if !(b"a4\x00" as *const u8 as *const i8).is_null() {
+        select_paper(b"a4\x00" as *const u8 as *const i8);
+    } else if !(b"a4\x00" as *const u8 as *const i8).is_null() {
+        select_paper(b"a4\x00" as *const u8 as *const i8);
     };
 }
 unsafe extern "C" fn do_dvi_pages(
@@ -797,7 +797,7 @@ unsafe extern "C" fn do_dvi_pages(
                 let mut yo: libc::c_double = 0.;
                 let mut lm: libc::c_int = 0;
                 dpx_message(
-                    b"[%d\x00" as *const u8 as *const libc::c_char,
+                    b"[%d\x00" as *const u8 as *const i8,
                     page_no + 1i32,
                 );
                 /* Users want to change page size even after page is started! */
@@ -820,8 +820,8 @@ unsafe extern "C" fn do_dvi_pages(
                     0 as *mut libc::c_int,
                     0 as *mut libc::c_int,
                     0 as *mut int32_t,
-                    0 as *mut libc::c_char,
-                    0 as *mut libc::c_char,
+                    0 as *mut i8,
+                    0 as *mut i8,
                 );
                 if lm != landscape_mode {
                     let mut _tmp: libc::c_double = w;
@@ -849,7 +849,7 @@ unsafe extern "C" fn do_dvi_pages(
                 }
                 dvi_do_page(page_height, x_offset, y_offset);
                 page_count = page_count.wrapping_add(1);
-                dpx_message(b"]\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b"]\x00" as *const u8 as *const i8);
             }
             if step > 0i32 && page_no >= (*page_ranges.offset(i as isize)).last {
                 break;
@@ -862,7 +862,7 @@ unsafe extern "C" fn do_dvi_pages(
         i = i.wrapping_add(1)
     }
     if page_count < 1i32 as libc::c_uint {
-        _tt_abort(b"No pages fall in range!\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"No pages fall in range!\x00" as *const u8 as *const i8);
     }
     spc_exec_at_end_document();
 }
@@ -891,9 +891,9 @@ unsafe extern "C" fn do_dvi_pages(
 */
 #[no_mangle]
 pub unsafe extern "C" fn dvipdfmx_main(
-    mut pdf_filename: *const libc::c_char,
-    mut dvi_filename: *const libc::c_char,
-    mut pagespec: *const libc::c_char,
+    mut pdf_filename: *const i8,
+    mut dvi_filename: *const i8,
+    mut pagespec: *const i8,
     mut opt_flags: libc::c_int,
     mut translate: bool,
     mut compress: bool,
@@ -907,19 +907,19 @@ pub unsafe extern "C" fn dvipdfmx_main(
     let mut page_ranges: *mut PageRange = 0 as *mut PageRange;
     if !pdf_filename.is_null() {
     } else {
-        __assert_fail(b"pdf_filename\x00" as *const u8 as *const libc::c_char,
+        __assert_fail(b"pdf_filename\x00" as *const u8 as *const i8,
                       b"dpx-dvipdfmx.c\x00" as *const u8 as
-                          *const libc::c_char, 381i32 as libc::c_uint,
+                          *const i8, 381i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 107],
-                                                &[libc::c_char; 107]>(b"int dvipdfmx_main(const char *, const char *, const char *, int, _Bool, _Bool, _Bool, _Bool, unsigned int)\x00")).as_ptr());
+                                                &[i8; 107]>(b"int dvipdfmx_main(const char *, const char *, const char *, int, _Bool, _Bool, _Bool, _Bool, unsigned int)\x00")).as_ptr());
     }
     if !dvi_filename.is_null() {
     } else {
-        __assert_fail(b"dvi_filename\x00" as *const u8 as *const libc::c_char,
+        __assert_fail(b"dvi_filename\x00" as *const u8 as *const i8,
                       b"dpx-dvipdfmx.c\x00" as *const u8 as
-                          *const libc::c_char, 382i32 as libc::c_uint,
+                          *const i8, 382i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 107],
-                                                &[libc::c_char; 107]>(b"int dvipdfmx_main(const char *, const char *, const char *, int, _Bool, _Bool, _Bool, _Bool, unsigned int)\x00")).as_ptr());
+                                                &[i8; 107]>(b"int dvipdfmx_main(const char *, const char *, const char *, int, _Bool, _Bool, _Bool, _Bool, unsigned int)\x00")).as_ptr());
     }
     translate_origin = translate as libc::c_int;
     dvi_reset_global_state();
@@ -956,7 +956,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
      * arguments, so we emulate the default TeXLive config file by copying those
      * code bits. */
     pdf_set_version(5i32 as libc::c_uint); /* last page */
-    select_paper(b"letter\x00" as *const u8 as *const libc::c_char);
+    select_paper(b"letter\x00" as *const u8 as *const i8);
     annot_grow = 0i32 as libc::c_double;
     bookmark_open = 0i32;
     key_bits = 40i32;
@@ -965,15 +965,15 @@ pub unsafe extern "C" fn dvipdfmx_main(
     pdfdecimaldigits = 5i32;
     image_cache_life = -2i32;
     pdf_load_fontmap_file(
-        b"pdftex.map\x00" as *const u8 as *const libc::c_char,
+        b"pdftex.map\x00" as *const u8 as *const i8,
         '+' as i32,
     );
     pdf_load_fontmap_file(
-        b"kanjix.map\x00" as *const u8 as *const libc::c_char,
+        b"kanjix.map\x00" as *const u8 as *const i8,
         '+' as i32,
     );
     pdf_load_fontmap_file(
-        b"ckx.map\x00" as *const u8 as *const libc::c_char,
+        b"ckx.map\x00" as *const u8 as *const i8,
         '+' as i32,
     );
     if !pagespec.is_null() {
@@ -996,12 +996,12 @@ pub unsafe extern "C" fn dvipdfmx_main(
     pdf_enc_compute_id_string(dvi_filename, pdf_filename);
     let mut ver_major: libc::c_int = 0i32;
     let mut ver_minor: libc::c_int = 0i32;
-    let mut owner_pw: [libc::c_char; 127] = [0; 127];
-    let mut user_pw: [libc::c_char; 127] = [0; 127];
+    let mut owner_pw: [i8; 127] = [0; 127];
+    let mut user_pw: [i8; 127] = [0; 127];
     /* Dependency between DVI and PDF side is rather complicated... */
     dvi2pts = dvi_init(dvi_filename, mag);
     if dvi2pts == 0.0f64 {
-        _tt_abort(b"dvi_init() failed!\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"dvi_init() failed!\x00" as *const u8 as *const i8);
     }
     pdf_doc_set_creator(dvi_comment());
     dvi_scan_specials(
@@ -1028,14 +1028,14 @@ pub unsafe extern "C" fn dvipdfmx_main(
         {
             _tt_abort(
                 b"Invalid encryption key length specified: %u\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
                 key_bits,
             );
         } else {
             if key_bits > 40i32 && pdf_get_version() < 4i32 as libc::c_uint {
                 _tt_abort(
                     b"Chosen key length requires at least PDF 1.4. Use \"-V 4\" to change.\x00"
-                        as *const u8 as *const libc::c_char,
+                        as *const u8 as *const i8,
                 );
             }
         }
@@ -1092,7 +1092,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
     pdf_close_document(); /* pdf_font may depend on fontmap. */
     pdf_close_fontmaps();
     dvi_close();
-    dpx_message(b"\n\x00" as *const u8 as *const libc::c_char);
+    dpx_message(b"\n\x00" as *const u8 as *const i8);
     free(page_ranges as *mut libc::c_void);
     return 0i32;
 }

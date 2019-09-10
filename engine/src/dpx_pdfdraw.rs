@@ -21,26 +21,26 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_get_param(param_type: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn pdf_sprint_length(buf: *mut libc::c_char, value: libc::c_double) -> libc::c_int;
+    fn pdf_sprint_length(buf: *mut i8, value: libc::c_double) -> libc::c_int;
     #[no_mangle]
-    fn pdf_sprint_coord(buf: *mut libc::c_char, p: *const pdf_coord) -> libc::c_int;
+    fn pdf_sprint_coord(buf: *mut i8, p: *const pdf_coord) -> libc::c_int;
     #[no_mangle]
-    fn pdf_sprint_rect(buf: *mut libc::c_char, p: *const pdf_rect) -> libc::c_int;
+    fn pdf_sprint_rect(buf: *mut i8, p: *const pdf_rect) -> libc::c_int;
     #[no_mangle]
-    fn pdf_sprint_matrix(buf: *mut libc::c_char, p: *const pdf_tmatrix) -> libc::c_int;
+    fn pdf_sprint_matrix(buf: *mut i8, p: *const pdf_tmatrix) -> libc::c_int;
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
     #[no_mangle]
     fn pdf_color_graycolor(color: *mut pdf_color, g: libc::c_double) -> libc::c_int;
     #[no_mangle]
@@ -52,13 +52,13 @@ extern "C" {
     #[no_mangle]
     fn pdf_color_to_string(
         color: *const pdf_color,
-        buffer: *mut libc::c_char,
-        mask: libc::c_char,
+        buffer: *mut i8,
+        mask: i8,
     ) -> libc::c_int;
     #[no_mangle]
     fn pdf_color_is_valid(color: *const pdf_color) -> bool;
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -85,13 +85,13 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const libc::c_char, length: libc::c_uint);
+    fn pdf_doc_add_page_content(buffer: *const i8, length: libc::c_uint);
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
     pub num_components: libc::c_int,
-    pub spot_color_name: *mut libc::c_char,
+    pub spot_color_name: *mut i8,
     pub values: [libc::c_double; 4],
 }
 #[derive(Copy, Clone)]
@@ -186,9 +186,9 @@ pub struct m_stack_elem {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
-    pub opchr: libc::c_char,
+    pub opchr: i8,
     pub n_pts: libc::c_int,
-    pub strkey: *const libc::c_char,
+    pub strkey: *const i8,
 }
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
@@ -203,7 +203,7 @@ unsafe extern "C" fn inversematrix(
     det = (*M).a * (*M).d - (*M).b * (*M).c;
     if fabs(det) < 2.5e-16f64 {
         dpx_warning(
-            b"Inverting matrix with zero determinant...\x00" as *const u8 as *const libc::c_char,
+            b"Inverting matrix with zero determinant...\x00" as *const u8 as *const i8,
         );
         return -1i32;
     }
@@ -287,10 +287,10 @@ pub unsafe extern "C" fn pdf_invertmatrix(mut M: *mut pdf_tmatrix) {
     if !M.is_null() {
     } else {
         __assert_fail(
-            b"M\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"M\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             137i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"void pdf_invertmatrix(pdf_tmatrix *)\x00",
             ))
             .as_ptr(),
@@ -299,7 +299,7 @@ pub unsafe extern "C" fn pdf_invertmatrix(mut M: *mut pdf_tmatrix) {
     det = (*M).a * (*M).d - (*M).b * (*M).c;
     if fabs(det) < 2.5e-16f64 {
         dpx_warning(
-            b"Inverting matrix with zero determinant...\x00" as *const u8 as *const libc::c_char,
+            b"Inverting matrix with zero determinant...\x00" as *const u8 as *const i8,
         );
         W.a = 1.0f64;
         W.c = 0.0f64;
@@ -327,70 +327,70 @@ pub unsafe extern "C" fn pdf_invertmatrix(mut M: *mut pdf_tmatrix) {
 static mut petypes: [C2RustUnnamed_0; 7] = [
     {
         let mut init = C2RustUnnamed_0 {
-            opchr: 'm' as i32 as libc::c_char,
+            opchr: 'm' as i32 as i8,
             n_pts: 1i32,
-            strkey: b"moveto\x00" as *const u8 as *const libc::c_char,
+            strkey: b"moveto\x00" as *const u8 as *const i8,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_0 {
-            opchr: 'l' as i32 as libc::c_char,
+            opchr: 'l' as i32 as i8,
             n_pts: 1i32,
-            strkey: b"lineto\x00" as *const u8 as *const libc::c_char,
+            strkey: b"lineto\x00" as *const u8 as *const i8,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_0 {
-            opchr: 'c' as i32 as libc::c_char,
+            opchr: 'c' as i32 as i8,
             n_pts: 3i32,
-            strkey: b"curveto\x00" as *const u8 as *const libc::c_char,
+            strkey: b"curveto\x00" as *const u8 as *const i8,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_0 {
-            opchr: 'v' as i32 as libc::c_char,
+            opchr: 'v' as i32 as i8,
             n_pts: 2i32,
-            strkey: b"vcurveto\x00" as *const u8 as *const libc::c_char,
+            strkey: b"vcurveto\x00" as *const u8 as *const i8,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_0 {
-            opchr: 'y' as i32 as libc::c_char,
+            opchr: 'y' as i32 as i8,
             n_pts: 2i32,
-            strkey: b"ycurveto\x00" as *const u8 as *const libc::c_char,
+            strkey: b"ycurveto\x00" as *const u8 as *const i8,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_0 {
-            opchr: 'h' as i32 as libc::c_char,
+            opchr: 'h' as i32 as i8,
             n_pts: 0i32,
-            strkey: b"closepath\x00" as *const u8 as *const libc::c_char,
+            strkey: b"closepath\x00" as *const u8 as *const i8,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_0 {
-            opchr: ' ' as i32 as libc::c_char,
+            opchr: ' ' as i32 as i8,
             n_pts: 0i32,
-            strkey: 0 as *const libc::c_char,
+            strkey: 0 as *const i8,
         };
         init
     },
 ];
-static mut fmt_buf: [libc::c_char; 1024] = [0; 1024];
+static mut fmt_buf: [i8; 1024] = [0; 1024];
 unsafe extern "C" fn init_a_path(mut p: *mut pdf_path) {
     if !p.is_null() {
     } else {
         __assert_fail(
-            b"p\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"p\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             212i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 29], &[libc::c_char; 29]>(
+            (*::std::mem::transmute::<&[u8; 29], &[i8; 29]>(
                 b"void init_a_path(pdf_path *)\x00",
             ))
             .as_ptr(),
@@ -404,10 +404,10 @@ unsafe extern "C" fn pdf_path__clearpath(mut p: *mut pdf_path) {
     if !p.is_null() {
     } else {
         __assert_fail(
-            b"p\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"p\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             224i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"void pdf_path__clearpath(pdf_path *)\x00",
             ))
             .as_ptr(),
@@ -438,10 +438,10 @@ unsafe extern "C" fn clear_a_path(mut p: *mut pdf_path) {
     if !p.is_null() {
     } else {
         __assert_fail(
-            b"p\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"p\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             246i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 30], &[libc::c_char; 30]>(
+            (*::std::mem::transmute::<&[u8; 30], &[i8; 30]>(
                 b"void clear_a_path(pdf_path *)\x00",
             ))
             .as_ptr(),
@@ -595,10 +595,10 @@ unsafe extern "C" fn pdf_path__transform(
     if !pa.is_null() && !M.is_null() {
     } else {
         __assert_fail(
-            b"pa && M\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"pa && M\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             376i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 57], &[libc::c_char; 57]>(
+            (*::std::mem::transmute::<&[u8; 57], &[i8; 57]>(
                 b"int pdf_path__transform(pdf_path *, const pdf_tmatrix *)\x00",
             ))
             .as_ptr(),
@@ -892,10 +892,10 @@ unsafe extern "C" fn pdf_path__isarect(
 unsafe extern "C" fn INVERTIBLE_MATRIX(mut M: *const pdf_tmatrix) -> libc::c_int {
     if fabs((*M).a * (*M).d - (*M).b * (*M).c) < 2.5e-16f64 {
         dpx_warning(
-            b"Transformation matrix not invertible.\x00" as *const u8 as *const libc::c_char,
+            b"Transformation matrix not invertible.\x00" as *const u8 as *const i8,
         );
         dpx_warning(
-            b"--- M = [%g %g %g %g %g %g]\x00" as *const u8 as *const libc::c_char,
+            b"--- M = [%g %g %g %g %g %g]\x00" as *const u8 as *const i8,
             (*M).a,
             (*M).b,
             (*M).c,
@@ -922,9 +922,9 @@ unsafe extern "C" fn INVERTIBLE_MATRIX(mut M: *const pdf_tmatrix) -> libc::c_int
 unsafe extern "C" fn pdf_dev__rectshape(
     mut r: *const pdf_rect,
     mut M: *const pdf_tmatrix,
-    mut opchr: libc::c_char,
+    mut opchr: i8,
 ) -> libc::c_int {
-    let mut buf: *mut libc::c_char = fmt_buf.as_mut_ptr();
+    let mut buf: *mut i8 = fmt_buf.as_mut_ptr();
     let mut len: libc::c_int = 0i32;
     let mut isclip: libc::c_int = 0i32;
     let mut p: pdf_coord = pdf_coord { x: 0., y: 0. };
@@ -942,10 +942,10 @@ unsafe extern "C" fn pdf_dev__rectshape(
     {
     } else {
         __assert_fail(
-            b"r && PT_OP_VALID(opchr)\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"r && PT_OP_VALID(opchr)\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             667i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 68], &[libc::c_char; 68]>(
+            (*::std::mem::transmute::<&[u8; 68], &[i8; 68]>(
                 b"int pdf_dev__rectshape(const pdf_rect *, const pdf_tmatrix *, char)\x00",
             ))
             .as_ptr(),
@@ -966,72 +966,72 @@ unsafe extern "C" fn pdf_dev__rectshape(
     graphics_mode();
     let fresh10 = len;
     len = len + 1;
-    *buf.offset(fresh10 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh10 as isize) = ' ' as i32 as i8;
     if isclip == 0 {
         let fresh11 = len;
         len = len + 1;
-        *buf.offset(fresh11 as isize) = 'q' as i32 as libc::c_char;
+        *buf.offset(fresh11 as isize) = 'q' as i32 as i8;
         if !M.is_null() {
             let fresh12 = len;
             len = len + 1;
-            *buf.offset(fresh12 as isize) = ' ' as i32 as libc::c_char;
+            *buf.offset(fresh12 as isize) = ' ' as i32 as i8;
             len += pdf_sprint_matrix(buf.offset(len as isize), M);
             let fresh13 = len;
             len = len + 1;
-            *buf.offset(fresh13 as isize) = ' ' as i32 as libc::c_char;
+            *buf.offset(fresh13 as isize) = ' ' as i32 as i8;
             let fresh14 = len;
             len = len + 1;
-            *buf.offset(fresh14 as isize) = 'c' as i32 as libc::c_char;
+            *buf.offset(fresh14 as isize) = 'c' as i32 as i8;
             let fresh15 = len;
             len = len + 1;
-            *buf.offset(fresh15 as isize) = 'm' as i32 as libc::c_char
+            *buf.offset(fresh15 as isize) = 'm' as i32 as i8
         }
         let fresh16 = len;
         len = len + 1;
-        *buf.offset(fresh16 as isize) = ' ' as i32 as libc::c_char
+        *buf.offset(fresh16 as isize) = ' ' as i32 as i8
     }
     let fresh17 = len;
     len = len + 1;
-    *buf.offset(fresh17 as isize) = 'n' as i32 as libc::c_char;
+    *buf.offset(fresh17 as isize) = 'n' as i32 as i8;
     p.x = (*r).llx;
     p.y = (*r).lly;
     wd = (*r).urx - (*r).llx;
     ht = (*r).ury - (*r).lly;
     let fresh18 = len;
     len = len + 1;
-    *buf.offset(fresh18 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh18 as isize) = ' ' as i32 as i8;
     len += pdf_sprint_coord(buf.offset(len as isize), &mut p);
     let fresh19 = len;
     len = len + 1;
-    *buf.offset(fresh19 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh19 as isize) = ' ' as i32 as i8;
     len += pdf_sprint_length(buf.offset(len as isize), wd);
     let fresh20 = len;
     len = len + 1;
-    *buf.offset(fresh20 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh20 as isize) = ' ' as i32 as i8;
     len += pdf_sprint_length(buf.offset(len as isize), ht);
     let fresh21 = len;
     len = len + 1;
-    *buf.offset(fresh21 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh21 as isize) = ' ' as i32 as i8;
     let fresh22 = len;
     len = len + 1;
-    *buf.offset(fresh22 as isize) = 'r' as i32 as libc::c_char;
+    *buf.offset(fresh22 as isize) = 'r' as i32 as i8;
     let fresh23 = len;
     len = len + 1;
-    *buf.offset(fresh23 as isize) = 'e' as i32 as libc::c_char;
+    *buf.offset(fresh23 as isize) = 'e' as i32 as i8;
     if opchr as libc::c_int != ' ' as i32 {
         let fresh24 = len;
         len = len + 1;
-        *buf.offset(fresh24 as isize) = ' ' as i32 as libc::c_char;
+        *buf.offset(fresh24 as isize) = ' ' as i32 as i8;
         let fresh25 = len;
         len = len + 1;
         *buf.offset(fresh25 as isize) = opchr;
         let fresh26 = len;
         len = len + 1;
-        *buf.offset(fresh26 as isize) = ' ' as i32 as libc::c_char;
+        *buf.offset(fresh26 as isize) = ' ' as i32 as i8;
         let fresh27 = len;
         len = len + 1;
         *buf.offset(fresh27 as isize) =
-            (if isclip != 0 { 'n' as i32 } else { 'Q' as i32 }) as libc::c_char
+            (if isclip != 0 { 'n' as i32 } else { 'Q' as i32 }) as i8
     }
     pdf_doc_add_page_content(buf, len as libc::c_uint);
     return 0i32;
@@ -1040,13 +1040,13 @@ static mut path_added: libc::c_int = 0i32;
 /* FIXME */
 unsafe extern "C" fn pdf_dev__flushpath(
     mut pa: *mut pdf_path,
-    mut opchr: libc::c_char,
+    mut opchr: i8,
     mut rule: libc::c_int,
     mut ignore_rule: libc::c_int,
 ) -> libc::c_int {
     let mut pe: *mut pa_elem = 0 as *mut pa_elem; /* FIXME */
     let mut pe1: *mut pa_elem = 0 as *mut pa_elem; /* width...  */
-    let mut b: *mut libc::c_char = fmt_buf.as_mut_ptr(); /* height... */
+    let mut b: *mut i8 = fmt_buf.as_mut_ptr(); /* height... */
     let mut b_len: libc::c_int = 1024i32; /* op: re */
     let mut r: pdf_rect = pdf_rect {
         llx: 0.,
@@ -1074,10 +1074,10 @@ unsafe extern "C" fn pdf_dev__flushpath(
     {
     } else {
         __assert_fail(
-            b"pa && PT_OP_VALID(opchr)\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"pa && PT_OP_VALID(opchr)\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             738i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 51], &[libc::c_char; 51]>(
+            (*::std::mem::transmute::<&[u8; 51], &[i8; 51]>(
                 b"int pdf_dev__flushpath(pdf_path *, char, int, int)\x00",
             ))
             .as_ptr(),
@@ -1103,17 +1103,17 @@ unsafe extern "C" fn pdf_dev__flushpath(
         r.ury = (*pe1).p[0].y - (*pe).p[0].y;
         let fresh28 = len;
         len = len + 1;
-        *b.offset(fresh28 as isize) = ' ' as i32 as libc::c_char;
+        *b.offset(fresh28 as isize) = ' ' as i32 as i8;
         len += pdf_sprint_rect(b.offset(len as isize), &mut r);
         let fresh29 = len;
         len = len + 1;
-        *b.offset(fresh29 as isize) = ' ' as i32 as libc::c_char;
+        *b.offset(fresh29 as isize) = ' ' as i32 as i8;
         let fresh30 = len;
         len = len + 1;
-        *b.offset(fresh30 as isize) = 'r' as i32 as libc::c_char;
+        *b.offset(fresh30 as isize) = 'r' as i32 as i8;
         let fresh31 = len;
         len = len + 1;
-        *b.offset(fresh31 as isize) = 'e' as i32 as libc::c_char;
+        *b.offset(fresh31 as isize) = 'e' as i32 as i8;
         pdf_doc_add_page_content(b, len as libc::c_uint);
         len = 0i32
     } else {
@@ -1132,14 +1132,14 @@ unsafe extern "C" fn pdf_dev__flushpath(
             while j < n_pts {
                 let fresh32 = len;
                 len = len + 1;
-                *b.offset(fresh32 as isize) = ' ' as i32 as libc::c_char;
+                *b.offset(fresh32 as isize) = ' ' as i32 as i8;
                 len += pdf_sprint_coord(b.offset(len as isize), pt);
                 j += 1;
                 pt = pt.offset(1)
             }
             let fresh33 = len;
             len = len + 1;
-            *b.offset(fresh33 as isize) = ' ' as i32 as libc::c_char;
+            *b.offset(fresh33 as isize) = ' ' as i32 as i8;
             let fresh34 = len;
             len = len + 1;
             *b.offset(fresh34 as isize) =
@@ -1147,7 +1147,7 @@ unsafe extern "C" fn pdf_dev__flushpath(
                     petypes[(*pe).type_0 as usize].opchr as libc::c_int
                 } else {
                     ' ' as i32
-                }) as libc::c_char;
+                }) as i8;
             if len + 128i32 > b_len {
                 pdf_doc_add_page_content(b, len as libc::c_uint);
                 len = 0i32
@@ -1162,22 +1162,22 @@ unsafe extern "C" fn pdf_dev__flushpath(
     }
     let fresh35 = len;
     len = len + 1;
-    *b.offset(fresh35 as isize) = ' ' as i32 as libc::c_char;
+    *b.offset(fresh35 as isize) = ' ' as i32 as i8;
     let fresh36 = len;
     len = len + 1;
     *b.offset(fresh36 as isize) = opchr;
     if rule == 1i32 {
         let fresh37 = len;
         len = len + 1;
-        *b.offset(fresh37 as isize) = '*' as i32 as libc::c_char
+        *b.offset(fresh37 as isize) = '*' as i32 as i8
     }
     if isclip != 0 {
         let fresh38 = len;
         len = len + 1;
-        *b.offset(fresh38 as isize) = ' ' as i32 as libc::c_char;
+        *b.offset(fresh38 as isize) = ' ' as i32 as i8;
         let fresh39 = len;
         len = len + 1;
-        *b.offset(fresh39 as isize) = 'n' as i32 as libc::c_char
+        *b.offset(fresh39 as isize) = 'n' as i32 as i8
     }
     pdf_doc_add_page_content(b, len as libc::c_uint);
     return 0i32;
@@ -1186,10 +1186,10 @@ unsafe extern "C" fn m_stack_init(mut stack: *mut m_stack) {
     if !stack.is_null() {
     } else {
         __assert_fail(
-            b"stack\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"stack\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             850i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 29], &[libc::c_char; 29]>(
+            (*::std::mem::transmute::<&[u8; 29], &[i8; 29]>(
                 b"void m_stack_init(m_stack *)\x00",
             ))
             .as_ptr(),
@@ -1204,10 +1204,10 @@ unsafe extern "C" fn m_stack_push(mut stack: *mut m_stack, mut data: *mut libc::
     if !stack.is_null() {
     } else {
         __assert_fail(
-            b"stack\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"stack\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             864i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"void m_stack_push(m_stack *, void *)\x00",
             ))
             .as_ptr(),
@@ -1230,10 +1230,10 @@ unsafe extern "C" fn m_stack_pop(mut stack: *mut m_stack) -> *mut libc::c_void {
     if !stack.is_null() {
     } else {
         __assert_fail(
-            b"stack\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"stack\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             885i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 29], &[libc::c_char; 29]>(
+            (*::std::mem::transmute::<&[u8; 29], &[i8; 29]>(
                 b"void *m_stack_pop(m_stack *)\x00",
             ))
             .as_ptr(),
@@ -1257,10 +1257,10 @@ unsafe extern "C" fn m_stack_top(mut stack: *mut m_stack) -> *mut libc::c_void {
     if !stack.is_null() {
     } else {
         __assert_fail(
-            b"stack\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"stack\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             907i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 29], &[libc::c_char; 29]>(
+            (*::std::mem::transmute::<&[u8; 29], &[i8; 29]>(
                 b"void *m_stack_top(m_stack *)\x00",
             ))
             .as_ptr(),
@@ -1314,10 +1314,10 @@ unsafe extern "C" fn copy_a_gstate(mut gs1: *mut pdf_gstate, mut gs2: *mut pdf_g
     if !gs1.is_null() && !gs2.is_null() {
     } else {
         __assert_fail(
-            b"gs1 && gs2\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"gs1 && gs2\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             964i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 47], &[libc::c_char; 47]>(
+            (*::std::mem::transmute::<&[u8; 47], &[i8; 47]>(
                 b"void copy_a_gstate(pdf_gstate *, pdf_gstate *)\x00",
             ))
             .as_ptr(),
@@ -1371,7 +1371,7 @@ pub unsafe extern "C" fn pdf_dev_clear_gstates() {
         /* at least 1 elem. */
         dpx_warning(
             b"GS stack depth is not zero at the end of the document.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         ); /* op: q */
     }
     loop {
@@ -1395,7 +1395,7 @@ pub unsafe extern "C" fn pdf_dev_gsave() -> libc::c_int {
     copy_a_gstate(gs1, gs0);
     m_stack_push(&mut gs_stack, gs1 as *mut libc::c_void);
     pdf_doc_add_page_content(
-        b" q\x00" as *const u8 as *const libc::c_char,
+        b" q\x00" as *const u8 as *const i8,
         2i32 as libc::c_uint,
     );
     return 0i32;
@@ -1405,14 +1405,14 @@ pub unsafe extern "C" fn pdf_dev_grestore() -> libc::c_int {
     let mut gs: *mut pdf_gstate = 0 as *mut pdf_gstate;
     if gs_stack.size <= 1i32 {
         /* Initial state at bottom */
-        dpx_warning(b"Too many grestores.\x00" as *const u8 as *const libc::c_char); /* op: Q */
+        dpx_warning(b"Too many grestores.\x00" as *const u8 as *const i8); /* op: Q */
         return -1i32;
     }
     gs = m_stack_pop(&mut gs_stack) as *mut pdf_gstate;
     clear_a_gstate(gs);
     free(gs as *mut libc::c_void);
     pdf_doc_add_page_content(
-        b" Q\x00" as *const u8 as *const libc::c_char,
+        b" Q\x00" as *const u8 as *const i8,
         2i32 as libc::c_uint,
     );
     pdf_dev_reset_fonts(0i32);
@@ -1435,7 +1435,7 @@ pub unsafe extern "C" fn pdf_dev_pop_gstate() -> libc::c_int {
     let mut gs: *mut pdf_gstate = 0 as *mut pdf_gstate;
     if (*gss).size <= 1i32 {
         /* Initial state at bottom */
-        dpx_warning(b"Too many grestores.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Too many grestores.\x00" as *const u8 as *const i8);
         return -1i32;
     }
     gs = m_stack_pop(gss) as *mut pdf_gstate;
@@ -1455,10 +1455,10 @@ pub unsafe extern "C" fn pdf_dev_grestore_to(mut depth: libc::c_int) {
     if depth >= 0i32 {
     } else {
         __assert_fail(
-            b"depth >= 0\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"depth >= 0\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             1113i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 30], &[libc::c_char; 30]>(
+            (*::std::mem::transmute::<&[u8; 30], &[i8; 30]>(
                 b"void pdf_dev_grestore_to(int)\x00",
             ))
             .as_ptr(),
@@ -1467,12 +1467,12 @@ pub unsafe extern "C" fn pdf_dev_grestore_to(mut depth: libc::c_int) {
     if (*gss).size > depth + 1i32 {
         dpx_warning(
             b"Closing pending transformations at end of page/XObject.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
     }
     while (*gss).size > depth + 1i32 {
         pdf_doc_add_page_content(
-            b" Q\x00" as *const u8 as *const libc::c_char,
+            b" Q\x00" as *const u8 as *const i8,
             2i32 as libc::c_uint,
         );
         gs = m_stack_pop(gss) as *mut pdf_gstate;
@@ -1489,10 +1489,10 @@ pub unsafe extern "C" fn pdf_dev_currentpoint(mut p: *mut pdf_coord) -> libc::c_
     if !p.is_null() {
     } else {
         __assert_fail(
-            b"p\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"p\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             1137i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 38], &[libc::c_char; 38]>(
+            (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
                 b"int pdf_dev_currentpoint(pdf_coord *)\x00",
             ))
             .as_ptr(),
@@ -1510,10 +1510,10 @@ pub unsafe extern "C" fn pdf_dev_currentmatrix(mut M: *mut pdf_tmatrix) -> libc:
     if !M.is_null() {
     } else {
         __assert_fail(
-            b"M\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"M\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             1151i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+            (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
                 b"int pdf_dev_currentmatrix(pdf_tmatrix *)\x00",
             ))
             .as_ptr(),
@@ -1536,7 +1536,7 @@ pub unsafe extern "C" fn pdf_dev_currentmatrix(mut M: *mut pdf_tmatrix) -> libc:
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_set_color(
     mut color: *const pdf_color,
-    mut mask: libc::c_char,
+    mut mask: i8,
     mut force: libc::c_int,
 ) {
     let mut len: libc::c_int = 0;
@@ -1549,10 +1549,10 @@ pub unsafe extern "C" fn pdf_dev_set_color(
     if pdf_color_is_valid(color) {
     } else {
         __assert_fail(
-            b"pdf_color_is_valid(color)\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"pdf_color_is_valid(color)\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             1172i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 53], &[libc::c_char; 53]>(
+            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                 b"void pdf_dev_set_color(const pdf_color *, char, int)\x00",
             ))
             .as_ptr(),
@@ -1568,25 +1568,25 @@ pub unsafe extern "C" fn pdf_dev_set_color(
     len = pdf_color_to_string(color, fmt_buf.as_mut_ptr(), mask);
     let fresh40 = len;
     len = len + 1;
-    fmt_buf[fresh40 as usize] = ' ' as i32 as libc::c_char;
+    fmt_buf[fresh40 as usize] = ' ' as i32 as i8;
     match pdf_color_type(color) {
         -3 => {
             let fresh41 = len;
             len = len + 1;
-            fmt_buf[fresh41 as usize] = ('R' as i32 | mask as libc::c_int) as libc::c_char;
+            fmt_buf[fresh41 as usize] = ('R' as i32 | mask as libc::c_int) as i8;
             let fresh42 = len;
             len = len + 1;
-            fmt_buf[fresh42 as usize] = ('G' as i32 | mask as libc::c_int) as libc::c_char
+            fmt_buf[fresh42 as usize] = ('G' as i32 | mask as libc::c_int) as i8
         }
         -4 => {
             let fresh43 = len;
             len = len + 1;
-            fmt_buf[fresh43 as usize] = ('K' as i32 | mask as libc::c_int) as libc::c_char
+            fmt_buf[fresh43 as usize] = ('K' as i32 | mask as libc::c_int) as i8
         }
         -1 => {
             let fresh44 = len;
             len = len + 1;
-            fmt_buf[fresh44 as usize] = ('G' as i32 | mask as libc::c_int) as libc::c_char
+            fmt_buf[fresh44 as usize] = ('G' as i32 | mask as libc::c_int) as i8
         }
         _ => {}
     }
@@ -1611,15 +1611,15 @@ pub unsafe extern "C" fn pdf_dev_concat(mut M: *const pdf_tmatrix) -> libc::c_in
         };
         init
     };
-    let mut buf: *mut libc::c_char = fmt_buf.as_mut_ptr();
+    let mut buf: *mut i8 = fmt_buf.as_mut_ptr();
     let mut len: libc::c_int = 0i32;
     if !M.is_null() {
     } else {
         __assert_fail(
-            b"M\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"M\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             1215i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 40], &[libc::c_char; 40]>(
+            (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
                 b"int pdf_dev_concat(const pdf_tmatrix *)\x00",
             ))
             .as_ptr(),
@@ -1630,10 +1630,10 @@ pub unsafe extern "C" fn pdf_dev_concat(mut M: *const pdf_tmatrix) -> libc::c_in
      */
     if fabs((*M).a * (*M).d - (*M).b * (*M).c) < 2.5e-16f64 {
         dpx_warning(
-            b"Transformation matrix not invertible.\x00" as *const u8 as *const libc::c_char,
+            b"Transformation matrix not invertible.\x00" as *const u8 as *const i8,
         ); /* op: cm */
         dpx_warning(
-            b"--- M = [%g %g %g %g %g %g]\x00" as *const u8 as *const libc::c_char,
+            b"--- M = [%g %g %g %g %g %g]\x00" as *const u8 as *const i8,
             (*M).a,
             (*M).b,
             (*M).c,
@@ -1652,17 +1652,17 @@ pub unsafe extern "C" fn pdf_dev_concat(mut M: *const pdf_tmatrix) -> libc::c_in
     {
         let fresh45 = len;
         len = len + 1;
-        *buf.offset(fresh45 as isize) = ' ' as i32 as libc::c_char;
+        *buf.offset(fresh45 as isize) = ' ' as i32 as i8;
         len += pdf_sprint_matrix(buf.offset(len as isize), M);
         let fresh46 = len;
         len = len + 1;
-        *buf.offset(fresh46 as isize) = ' ' as i32 as libc::c_char;
+        *buf.offset(fresh46 as isize) = ' ' as i32 as i8;
         let fresh47 = len;
         len = len + 1;
-        *buf.offset(fresh47 as isize) = 'c' as i32 as libc::c_char;
+        *buf.offset(fresh47 as isize) = 'c' as i32 as i8;
         let fresh48 = len;
         len = len + 1;
-        *buf.offset(fresh48 as isize) = 'm' as i32 as libc::c_char;
+        *buf.offset(fresh48 as isize) = 'm' as i32 as i8;
         pdf_doc_add_page_content(buf, len as libc::c_uint);
         let mut _tmp_a: libc::c_double = 0.;
         let mut _tmp_b: libc::c_double = 0.;
@@ -1699,18 +1699,18 @@ pub unsafe extern "C" fn pdf_dev_setmiterlimit(mut mlimit: libc::c_double) -> li
     let mut gss: *mut m_stack = &mut gs_stack; /* op: M */
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate; /* op: J */
     let mut len: libc::c_int = 0i32; /* op: j */
-    let mut buf: *mut libc::c_char = fmt_buf.as_mut_ptr(); /* op: w */
+    let mut buf: *mut i8 = fmt_buf.as_mut_ptr(); /* op: w */
     if (*gs).miterlimit != mlimit {
         let fresh49 = len; /* op: */
         len = len + 1; /* op: */
-        *buf.offset(fresh49 as isize) = ' ' as i32 as libc::c_char; /* op: */
+        *buf.offset(fresh49 as isize) = ' ' as i32 as i8; /* op: */
         len += pdf_sprint_length(buf.offset(len as isize), mlimit); /* op: */
         let fresh50 = len; /* op: d */
         len = len + 1;
-        *buf.offset(fresh50 as isize) = ' ' as i32 as libc::c_char;
+        *buf.offset(fresh50 as isize) = ' ' as i32 as i8;
         let fresh51 = len;
         len = len + 1;
-        *buf.offset(fresh51 as isize) = 'M' as i32 as libc::c_char;
+        *buf.offset(fresh51 as isize) = 'M' as i32 as i8;
         pdf_doc_add_page_content(buf, len as libc::c_uint);
         (*gs).miterlimit = mlimit
     }
@@ -1721,11 +1721,11 @@ pub unsafe extern "C" fn pdf_dev_setlinecap(mut capstyle: libc::c_int) -> libc::
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
     let mut len: libc::c_int = 0i32;
-    let mut buf: *mut libc::c_char = fmt_buf.as_mut_ptr();
+    let mut buf: *mut i8 = fmt_buf.as_mut_ptr();
     if (*gs).linecap != capstyle {
         len = sprintf(
             buf,
-            b" %d J\x00" as *const u8 as *const libc::c_char,
+            b" %d J\x00" as *const u8 as *const i8,
             capstyle,
         );
         pdf_doc_add_page_content(buf, len as libc::c_uint);
@@ -1738,11 +1738,11 @@ pub unsafe extern "C" fn pdf_dev_setlinejoin(mut joinstyle: libc::c_int) -> libc
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
     let mut len: libc::c_int = 0i32;
-    let mut buf: *mut libc::c_char = fmt_buf.as_mut_ptr();
+    let mut buf: *mut i8 = fmt_buf.as_mut_ptr();
     if (*gs).linejoin != joinstyle {
         len = sprintf(
             buf,
-            b" %d j\x00" as *const u8 as *const libc::c_char,
+            b" %d j\x00" as *const u8 as *const i8,
             joinstyle,
         );
         pdf_doc_add_page_content(buf, len as libc::c_uint);
@@ -1755,18 +1755,18 @@ pub unsafe extern "C" fn pdf_dev_setlinewidth(mut width: libc::c_double) -> libc
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
     let mut len: libc::c_int = 0i32;
-    let mut buf: *mut libc::c_char = fmt_buf.as_mut_ptr();
+    let mut buf: *mut i8 = fmt_buf.as_mut_ptr();
     if (*gs).linewidth != width {
         let fresh52 = len;
         len = len + 1;
-        *buf.offset(fresh52 as isize) = ' ' as i32 as libc::c_char;
+        *buf.offset(fresh52 as isize) = ' ' as i32 as i8;
         len += pdf_sprint_length(buf.offset(len as isize), width);
         let fresh53 = len;
         len = len + 1;
-        *buf.offset(fresh53 as isize) = ' ' as i32 as libc::c_char;
+        *buf.offset(fresh53 as isize) = ' ' as i32 as i8;
         let fresh54 = len;
         len = len + 1;
-        *buf.offset(fresh54 as isize) = 'w' as i32 as libc::c_char;
+        *buf.offset(fresh54 as isize) = 'w' as i32 as i8;
         pdf_doc_add_page_content(buf, len as libc::c_uint);
         (*gs).linewidth = width
     }
@@ -1781,30 +1781,30 @@ pub unsafe extern "C" fn pdf_dev_setdash(
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
     let mut len: libc::c_int = 0i32;
-    let mut buf: *mut libc::c_char = fmt_buf.as_mut_ptr();
+    let mut buf: *mut i8 = fmt_buf.as_mut_ptr();
     let mut i: libc::c_int = 0;
     (*gs).linedash.num_dash = count;
     (*gs).linedash.offset = offset;
     pdf_doc_add_page_content(
-        b" [\x00" as *const u8 as *const libc::c_char,
+        b" [\x00" as *const u8 as *const i8,
         2i32 as libc::c_uint,
     );
     i = 0i32;
     while i < count {
-        *buf.offset(0) = ' ' as i32 as libc::c_char;
+        *buf.offset(0) = ' ' as i32 as i8;
         len = pdf_sprint_length(buf.offset(1), *pattern.offset(i as isize));
         pdf_doc_add_page_content(buf, (len + 1i32) as libc::c_uint);
         (*gs).linedash.pattern[i as usize] = *pattern.offset(i as isize);
         i += 1
     }
     pdf_doc_add_page_content(
-        b"] \x00" as *const u8 as *const libc::c_char,
+        b"] \x00" as *const u8 as *const i8,
         2i32 as libc::c_uint,
     );
     len = pdf_sprint_length(buf, offset);
     pdf_doc_add_page_content(buf, len as libc::c_uint);
     pdf_doc_add_page_content(
-        b" d\x00" as *const u8 as *const libc::c_char,
+        b" d\x00" as *const u8 as *const i8,
         2i32 as libc::c_uint,
     );
     return 0i32;
@@ -1815,18 +1815,18 @@ pub unsafe extern "C" fn pdf_dev_clip() -> libc::c_int {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
     let mut cpa: *mut pdf_path = &mut (*gs).path;
-    return pdf_dev__flushpath(cpa, 'W' as i32 as libc::c_char, 0i32, 0i32);
+    return pdf_dev__flushpath(cpa, 'W' as i32 as i8, 0i32, 0i32);
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_eoclip() -> libc::c_int {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
     let mut cpa: *mut pdf_path = &mut (*gs).path;
-    return pdf_dev__flushpath(cpa, 'W' as i32 as libc::c_char, 1i32, 0i32);
+    return pdf_dev__flushpath(cpa, 'W' as i32 as i8, 1i32, 0i32);
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_flushpath(
-    mut p_op: libc::c_char,
+    mut p_op: i8,
     mut fill_rule: libc::c_int,
 ) -> libc::c_int {
     let mut gss: *mut m_stack = &mut gs_stack;
@@ -1852,7 +1852,7 @@ pub unsafe extern "C" fn pdf_dev_newpath() -> libc::c_int {
     }
     /* The following is required for "newpath" operator in mpost.c. */
     pdf_doc_add_page_content(
-        b" n\x00" as *const u8 as *const libc::c_char,
+        b" n\x00" as *const u8 as *const i8,
         2i32 as libc::c_uint,
     ); /* op: n */
     return 0i32;
@@ -2017,10 +2017,10 @@ pub unsafe extern "C" fn pdf_dev_dtransform(mut p: *mut pdf_coord, mut M: *const
     if !p.is_null() {
     } else {
         __assert_fail(
-            b"p\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"p\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             1557i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 58], &[libc::c_char; 58]>(
+            (*::std::mem::transmute::<&[u8; 58], &[i8; 58]>(
                 b"void pdf_dev_dtransform(pdf_coord *, const pdf_tmatrix *)\x00",
             ))
             .as_ptr(),
@@ -2043,10 +2043,10 @@ pub unsafe extern "C" fn pdf_dev_idtransform(mut p: *mut pdf_coord, mut M: *cons
     if !p.is_null() {
     } else {
         __assert_fail(
-            b"p\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"p\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             1571i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 59], &[libc::c_char; 59]>(
+            (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"void pdf_dev_idtransform(pdf_coord *, const pdf_tmatrix *)\x00",
             ))
             .as_ptr(),
@@ -2069,10 +2069,10 @@ pub unsafe extern "C" fn pdf_dev_transform(mut p: *mut pdf_coord, mut M: *const 
     if !p.is_null() {
     } else {
         __assert_fail(
-            b"p\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdraw.c\x00" as *const u8 as *const libc::c_char,
+            b"p\x00" as *const u8 as *const i8,
+            b"dpx-pdfdraw.c\x00" as *const u8 as *const i8,
             1585i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 57], &[libc::c_char; 57]>(
+            (*::std::mem::transmute::<&[u8; 57], &[i8; 57]>(
                 b"void pdf_dev_transform(pdf_coord *, const pdf_tmatrix *)\x00",
             ))
             .as_ptr(),
@@ -2184,7 +2184,7 @@ pub unsafe extern "C" fn pdf_dev_rectfill(
     r.lly = y;
     r.urx = x + w;
     r.ury = y + h;
-    return pdf_dev__rectshape(&mut r, 0 as *const pdf_tmatrix, 'f' as i32 as libc::c_char);
+    return pdf_dev__rectshape(&mut r, 0 as *const pdf_tmatrix, 'f' as i32 as i8);
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_rectclip(
@@ -2203,7 +2203,7 @@ pub unsafe extern "C" fn pdf_dev_rectclip(
     r.lly = y;
     r.urx = x + w;
     r.ury = y + h;
-    return pdf_dev__rectshape(&mut r, 0 as *const pdf_tmatrix, 'W' as i32 as libc::c_char);
+    return pdf_dev__rectshape(&mut r, 0 as *const pdf_tmatrix, 'W' as i32 as i8);
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_rectadd(
@@ -2223,7 +2223,7 @@ pub unsafe extern "C" fn pdf_dev_rectadd(
     r.urx = x + w;
     r.ury = y + h;
     path_added = 1i32;
-    return pdf_dev__rectshape(&mut r, 0 as *const pdf_tmatrix, ' ' as i32 as libc::c_char);
+    return pdf_dev__rectshape(&mut r, 0 as *const pdf_tmatrix, ' ' as i32 as i8);
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_set_fixed_point(mut x: libc::c_double, mut y: libc::c_double) {

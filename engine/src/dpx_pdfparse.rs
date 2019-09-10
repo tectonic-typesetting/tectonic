@@ -13,10 +13,10 @@ extern "C" {
     fn pow(_: libc::c_double, _: libc::c_double) -> libc::c_double;
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
@@ -41,7 +41,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_null() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_boolean(value: libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_boolean(value: i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
     #[no_mangle]
@@ -49,7 +49,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_name(name: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_array() -> *mut pdf_obj;
     #[no_mangle]
@@ -59,7 +59,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_merge_dict(dict1: *mut pdf_obj, dict2: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
     #[no_mangle]
@@ -73,13 +73,13 @@ extern "C" {
     #[no_mangle]
     fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn strchr(_: *const libc::c_char, _: libc::c_int) -> *mut libc::c_char;
+    fn strchr(_: *const i8, _: libc::c_int) -> *mut i8;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn xtoi(c: libc::c_char) -> libc::c_int;
+    fn xtoi(c: i8) -> libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -102,9 +102,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_message(fmt: *const libc::c_char, _: ...);
+    fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -131,7 +131,7 @@ extern "C" {
     /* PDF parser shouldn't depend on this...
      */
     #[no_mangle]
-    fn spc_lookup_reference(ident: *const libc::c_char) -> *mut pdf_obj;
+    fn spc_lookup_reference(ident: *const i8) -> *mut pdf_obj;
 }
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
@@ -177,42 +177,42 @@ pub struct C2RustUnnamed_0 {
 }
 #[inline]
 unsafe extern "C" fn strstartswith(
-    mut s: *const libc::c_char,
-    mut prefix: *const libc::c_char,
-) -> *const libc::c_char {
+    mut s: *const i8,
+    mut prefix: *const i8,
+) -> *const i8 {
     let mut length: size_t = 0;
     length = strlen(prefix);
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const libc::c_char;
+    return 0 as *const i8;
 }
 static mut parser_state: C2RustUnnamed_0 = {
     let mut init = C2RustUnnamed_0 { tainted: 0i32 };
     init
 };
-static mut save: *const libc::c_char = 0 as *const libc::c_char;
+static mut save: *const i8 = 0 as *const i8;
 #[no_mangle]
-pub unsafe extern "C" fn dump(mut start: *const libc::c_char, mut end: *const libc::c_char) {
-    let mut p: *const libc::c_char = start;
-    dpx_message(b"\nCurrent input buffer is -->\x00" as *const u8 as *const libc::c_char);
+pub unsafe extern "C" fn dump(mut start: *const i8, mut end: *const i8) {
+    let mut p: *const i8 = start;
+    dpx_message(b"\nCurrent input buffer is -->\x00" as *const u8 as *const i8);
     while p < end && p < start.offset(50) {
         let fresh0 = p;
         p = p.offset(1);
         dpx_message(
-            b"%c\x00" as *const u8 as *const libc::c_char,
+            b"%c\x00" as *const u8 as *const i8,
             *fresh0 as libc::c_int,
         );
     }
     if p == start.offset(50) {
-        dpx_message(b"...\x00" as *const u8 as *const libc::c_char);
+        dpx_message(b"...\x00" as *const u8 as *const i8);
     }
-    dpx_message(b"<--\n\x00" as *const u8 as *const libc::c_char);
+    dpx_message(b"<--\n\x00" as *const u8 as *const i8);
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdfparse_skip_line(
-    mut start: *mut *const libc::c_char,
-    mut end: *const libc::c_char,
+    mut start: *mut *const i8,
+    mut end: *const i8,
 ) {
     while *start < end
         && **start as libc::c_int != '\n' as i32
@@ -234,8 +234,8 @@ pub unsafe extern "C" fn pdfparse_skip_line(
 }
 #[no_mangle]
 pub unsafe extern "C" fn skip_white(
-    mut start: *mut *const libc::c_char,
-    mut end: *const libc::c_char,
+    mut start: *mut *const i8,
+    mut end: *const i8,
 ) {
     /*
      * The null (NUL; 0x00) character is a white-space character in PDF spec
@@ -260,32 +260,32 @@ pub unsafe extern "C" fn skip_white(
     }
 }
 unsafe extern "C" fn parsed_string(
-    mut start: *const libc::c_char,
-    mut end: *const libc::c_char,
-) -> *mut libc::c_char {
-    let mut result: *mut libc::c_char = 0 as *mut libc::c_char;
+    mut start: *const i8,
+    mut end: *const i8,
+) -> *mut i8 {
+    let mut result: *mut i8 = 0 as *mut i8;
     let mut len: libc::c_int = 0;
     len = end.wrapping_offset_from(start) as libc::c_long as libc::c_int;
     if len > 0i32 {
         result = new(((len + 1i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-            as u32) as *mut libc::c_char;
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+            as u32) as *mut i8;
         memcpy(
             result as *mut libc::c_void,
             start as *const libc::c_void,
             len as u64,
         );
-        *result.offset(len as isize) = '\u{0}' as i32 as libc::c_char
+        *result.offset(len as isize) = '\u{0}' as i32 as i8
     }
     return result;
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_number(
-    mut start: *mut *const libc::c_char,
-    mut end: *const libc::c_char,
-) -> *mut libc::c_char {
-    let mut number: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
+    mut start: *mut *const i8,
+    mut end: *const i8,
+) -> *mut i8 {
+    let mut number: *mut i8 = 0 as *mut i8;
+    let mut p: *const i8 = 0 as *const i8;
     skip_white(start, end);
     p = *start;
     if p < end && (*p as libc::c_int == '+' as i32 || *p as libc::c_int == '-' as i32) {
@@ -315,11 +315,11 @@ pub unsafe extern "C" fn parse_number(
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_unsigned(
-    mut start: *mut *const libc::c_char,
-    mut end: *const libc::c_char,
-) -> *mut libc::c_char {
-    let mut number: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
+    mut start: *mut *const i8,
+    mut end: *const i8,
+) -> *mut i8 {
+    let mut number: *mut i8 = 0 as *mut i8;
+    let mut p: *const i8 = 0 as *const i8;
     skip_white(start, end);
     p = *start;
     while p < end {
@@ -336,12 +336,12 @@ pub unsafe extern "C" fn parse_unsigned(
     return number;
 }
 unsafe extern "C" fn parse_gen_ident(
-    mut start: *mut *const libc::c_char,
-    mut end: *const libc::c_char,
-    mut valid_chars: *const libc::c_char,
-) -> *mut libc::c_char {
-    let mut ident: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
+    mut start: *mut *const i8,
+    mut end: *const i8,
+    mut valid_chars: *const i8,
+) -> *mut i8 {
+    let mut ident: *mut i8 = 0 as *mut i8;
+    let mut p: *const i8 = 0 as *const i8;
     /* No skip_white(start, end)? */
     p = *start;
     while p < end {
@@ -356,41 +356,41 @@ unsafe extern "C" fn parse_gen_ident(
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_ident(
-    mut start: *mut *const libc::c_char,
-    mut end: *const libc::c_char,
-) -> *mut libc::c_char {
-    static mut valid_chars: *const libc::c_char =
+    mut start: *mut *const i8,
+    mut end: *const i8,
+) -> *mut i8 {
+    static mut valid_chars: *const i8 =
         b"!\"#$&\'*+,-.0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\^_`abcdefghijklmnopqrstuvwxyz|~\x00"
-            as *const u8 as *const libc::c_char;
+            as *const u8 as *const i8;
     return parse_gen_ident(start, end, valid_chars);
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_val_ident(
-    mut start: *mut *const libc::c_char,
-    mut end: *const libc::c_char,
-) -> *mut libc::c_char {
-    static mut valid_chars: *const libc::c_char =
+    mut start: *mut *const i8,
+    mut end: *const i8,
+) -> *mut i8 {
+    static mut valid_chars: *const i8 =
         b"!\"#$&\'*+,-./0123456789:;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\^_`abcdefghijklmnopqrstuvwxyz|~\x00"
-            as *const u8 as *const libc::c_char;
+            as *const u8 as *const i8;
     return parse_gen_ident(start, end, valid_chars);
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_opt_ident(
-    mut start: *mut *const libc::c_char,
-    mut end: *const libc::c_char,
-) -> *mut libc::c_char {
+    mut start: *mut *const i8,
+    mut end: *const i8,
+) -> *mut i8 {
     if *start < end && **start as libc::c_int == '@' as i32 {
         *start = (*start).offset(1);
         return parse_ident(start, end);
     }
-    return 0 as *mut libc::c_char;
+    return 0 as *mut i8;
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_number(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> *mut pdf_obj {
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
     let mut v: libc::c_double = 0.0f64;
     let mut nddigits: libc::c_int = 0i32;
     let mut sign: libc::c_int = 1i32;
@@ -406,13 +406,13 @@ pub unsafe extern "C" fn parse_pdf_number(
             && *p.offset(0) as libc::c_int != '+' as i32
             && *p.offset(0) as libc::c_int != '-' as i32
     {
-        dpx_warning(b"Could not find a numeric object.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Could not find a numeric object.\x00" as *const u8 as *const i8);
         return 0 as *mut pdf_obj;
     }
     if *p.offset(0) as libc::c_int == '-' as i32 {
         if p.offset(1) >= endptr {
             dpx_warning(
-                b"Could not find a numeric object.\x00" as *const u8 as *const libc::c_char,
+                b"Could not find a numeric object.\x00" as *const u8 as *const i8,
             );
             return 0 as *mut pdf_obj;
         }
@@ -421,7 +421,7 @@ pub unsafe extern "C" fn parse_pdf_number(
     } else if *p.offset(0) as libc::c_int == '+' as i32 {
         if p.offset(1) >= endptr {
             dpx_warning(
-                b"Could not find a numeric object.\x00" as *const u8 as *const libc::c_char,
+                b"Could not find a numeric object.\x00" as *const u8 as *const i8,
             );
             return 0 as *mut pdf_obj;
         }
@@ -448,7 +448,7 @@ pub unsafe extern "C" fn parse_pdf_number(
             if has_dot != 0 {
                 /* Two dots */
                 dpx_warning(
-                    b"Could not find a numeric object.\x00" as *const u8 as *const libc::c_char,
+                    b"Could not find a numeric object.\x00" as *const u8 as *const i8,
                 );
                 return 0 as *mut pdf_obj;
             } else {
@@ -469,7 +469,7 @@ pub unsafe extern "C" fn parse_pdf_number(
             }
         } else {
             dpx_warning(
-                b"Could not find a numeric object.\x00" as *const u8 as *const libc::c_char,
+                b"Could not find a numeric object.\x00" as *const u8 as *const i8,
             );
             return 0 as *mut pdf_obj;
         }
@@ -484,11 +484,11 @@ pub unsafe extern "C" fn parse_pdf_number(
  *  PDF-1.2+: Two hexadecimal digits preceded by a number sign.
  */
 unsafe extern "C" fn pn_getc(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> libc::c_int {
     let mut ch: libc::c_int = 0i32;
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
     p = *pp;
     if *p.offset(0) as libc::c_int == '#' as i32 {
         if p.offset(2) >= endptr {
@@ -516,18 +516,18 @@ unsafe extern "C" fn pn_getc(
     }
     return ch;
 }
-static mut sbuf: [libc::c_char; 65536] = [0; 65536];
+static mut sbuf: [i8; 65536] = [0; 65536];
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_name(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> *mut pdf_obj {
-    let mut name: [libc::c_char; 129] = [0; 129];
+    let mut name: [i8; 129] = [0; 129];
     let mut ch: libc::c_int = 0;
     let mut len: libc::c_int = 0i32;
     skip_white(pp, endptr);
     if *pp >= endptr || **pp as libc::c_int != '/' as i32 {
-        dpx_warning(b"Could not find a name object.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Could not find a name object.\x00" as *const u8 as *const i8);
         return 0 as *mut pdf_obj;
     }
     *pp = (*pp).offset(1);
@@ -551,47 +551,47 @@ pub unsafe extern "C" fn parse_pdf_name(
         if ch < 0i32 || ch > 0xffi32 {
             dpx_warning(
                 b"Invalid char in PDF name object. (ignored)\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
         } else if ch == 0i32 {
             dpx_warning(
                 b"Null char not allowed in PDF name object. (ignored)\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
         } else if len < 65535i32 + 1i32 {
             if len == 128i32 {
                 dpx_warning(
                     b"PDF name length too long. (>= %d bytes)\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                     128i32,
                 );
             }
             let fresh1 = len;
             len = len + 1;
-            name[fresh1 as usize] = ch as libc::c_char
+            name[fresh1 as usize] = ch as i8
         } else {
             dpx_warning(
                 b"PDF name length too long. (>= %d bytes, truncated)\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
                 65535i32 + 1i32,
             );
         }
     }
     if len < 1i32 {
-        dpx_warning(b"No valid name object found.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"No valid name object found.\x00" as *const u8 as *const i8);
         return 0 as *mut pdf_obj;
     }
-    name[len as usize] = '\u{0}' as i32 as libc::c_char;
+    name[len as usize] = '\u{0}' as i32 as i8;
     return pdf_new_name(name.as_mut_ptr());
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_boolean(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> *mut pdf_obj {
     skip_white(pp, endptr);
     if (*pp).offset(4) <= endptr
-        && !strstartswith(*pp, b"true\x00" as *const u8 as *const libc::c_char).is_null()
+        && !strstartswith(*pp, b"true\x00" as *const u8 as *const i8).is_null()
     {
         if (*pp).offset(4) == endptr
             || (*(*pp).offset(4) as libc::c_int == ' ' as i32
@@ -610,10 +610,10 @@ pub unsafe extern "C" fn parse_pdf_boolean(
                     || *(*pp).offset(4) as libc::c_int == '%' as i32))
         {
             *pp = (*pp).offset(4);
-            return pdf_new_boolean(1i32 as libc::c_char);
+            return pdf_new_boolean(1i32 as i8);
         }
     } else if (*pp).offset(5) <= endptr
-        && !strstartswith(*pp, b"false\x00" as *const u8 as *const libc::c_char).is_null()
+        && !strstartswith(*pp, b"false\x00" as *const u8 as *const i8).is_null()
     {
         if (*pp).offset(5) == endptr
             || (*(*pp).offset(5) as libc::c_int == ' ' as i32
@@ -632,20 +632,20 @@ pub unsafe extern "C" fn parse_pdf_boolean(
                     || *(*pp).offset(5) as libc::c_int == '%' as i32))
         {
             *pp = (*pp).offset(5);
-            return pdf_new_boolean(0i32 as libc::c_char);
+            return pdf_new_boolean(0i32 as i8);
         }
     }
-    dpx_warning(b"Not a boolean object.\x00" as *const u8 as *const libc::c_char);
+    dpx_warning(b"Not a boolean object.\x00" as *const u8 as *const i8);
     return 0 as *mut pdf_obj;
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_null(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> *mut pdf_obj {
     skip_white(pp, endptr);
     if (*pp).offset(4) > endptr {
-        dpx_warning(b"Not a null object.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Not a null object.\x00" as *const u8 as *const i8);
         return 0 as *mut pdf_obj;
     } else {
         if (*pp).offset(4) < endptr
@@ -664,28 +664,28 @@ pub unsafe extern "C" fn parse_pdf_null(
                     || *(*pp).offset(4) as libc::c_int == ']' as i32
                     || *(*pp).offset(4) as libc::c_int == '%' as i32))
         {
-            dpx_warning(b"Not a null object.\x00" as *const u8 as *const libc::c_char);
+            dpx_warning(b"Not a null object.\x00" as *const u8 as *const i8);
             return 0 as *mut pdf_obj;
         } else {
-            if !strstartswith(*pp, b"null\x00" as *const u8 as *const libc::c_char).is_null() {
+            if !strstartswith(*pp, b"null\x00" as *const u8 as *const i8).is_null() {
                 *pp = (*pp).offset(4);
                 return pdf_new_null();
             }
         }
     }
-    dpx_warning(b"Not a null object.\x00" as *const u8 as *const libc::c_char);
+    dpx_warning(b"Not a null object.\x00" as *const u8 as *const i8);
     return 0 as *mut pdf_obj;
 }
 /*
  * PDF Literal String
  */
 unsafe extern "C" fn ps_getescc(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> libc::c_int {
     let mut ch: libc::c_int = 0; /* backslash assumed. */
     let mut i: libc::c_int = 0;
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
     p = (*pp).offset(1);
     match *p.offset(0) as libc::c_int {
         110 => {
@@ -756,13 +756,13 @@ unsafe extern "C" fn ps_getescc(
     return ch;
 }
 unsafe extern "C" fn parse_pdf_literal_string(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> *mut pdf_obj {
     let mut ch: libc::c_int = 0;
     let mut op_count: libc::c_int = 0i32;
     let mut len: libc::c_int = 0i32;
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
     p = *pp;
     skip_white(&mut p, endptr);
     if p >= endptr || *p.offset(0) as libc::c_int != '(' as i32 {
@@ -789,7 +789,7 @@ unsafe extern "C" fn parse_pdf_literal_string(
                 if len + 2i32 >= 65535i32 {
                     dpx_warning(
                         b"PDF string length too long. (limit: %d)\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                         65535i32,
                     );
                     return 0 as *mut pdf_obj;
@@ -807,7 +807,7 @@ unsafe extern "C" fn parse_pdf_literal_string(
         /* !PDF_PARSE_STRICT */
         if len + 1i32 >= 65535i32 {
             dpx_warning(
-                b"PDF string length too long. (limit: %d)\x00" as *const u8 as *const libc::c_char,
+                b"PDF string length too long. (limit: %d)\x00" as *const u8 as *const i8,
                 65535i32,
             );
             return 0 as *mut pdf_obj;
@@ -818,7 +818,7 @@ unsafe extern "C" fn parse_pdf_literal_string(
                 if ch >= 0i32 {
                     let fresh4 = len;
                     len = len + 1;
-                    sbuf[fresh4 as usize] = (ch & 0xffi32) as libc::c_char
+                    sbuf[fresh4 as usize] = (ch & 0xffi32) as i8
                 }
             }
             13 => {
@@ -828,7 +828,7 @@ unsafe extern "C" fn parse_pdf_literal_string(
                 }
                 let fresh5 = len;
                 len = len + 1;
-                sbuf[fresh5 as usize] = '\n' as i32 as libc::c_char
+                sbuf[fresh5 as usize] = '\n' as i32 as i8
             }
             _ => {
                 if ch == '(' as i32 {
@@ -838,7 +838,7 @@ unsafe extern "C" fn parse_pdf_literal_string(
                 }
                 let fresh6 = len;
                 len = len + 1;
-                sbuf[fresh6 as usize] = ch as libc::c_char;
+                sbuf[fresh6 as usize] = ch as i8;
                 p = p.offset(1)
             }
         }
@@ -846,7 +846,7 @@ unsafe extern "C" fn parse_pdf_literal_string(
     if op_count > 0i32 || p >= endptr || *p.offset(0) as libc::c_int != ')' as i32 {
         dpx_warning(
             b"Unbalanced parens/truncated PDF literal string.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
         return 0 as *mut pdf_obj;
     }
@@ -857,10 +857,10 @@ unsafe extern "C" fn parse_pdf_literal_string(
  * PDF Hex String
  */
 unsafe extern "C" fn parse_pdf_hex_string(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> *mut pdf_obj {
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
     let mut len: libc::c_int = 0;
     p = *pp;
     skip_white(&mut p, endptr);
@@ -888,15 +888,15 @@ unsafe extern "C" fn parse_pdf_hex_string(
         }
         let fresh7 = len;
         len = len + 1;
-        sbuf[fresh7 as usize] = (ch & 0xffi32) as libc::c_char
+        sbuf[fresh7 as usize] = (ch & 0xffi32) as i8
     }
     if p >= endptr {
-        dpx_warning(b"Premature end of input hex string.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Premature end of input hex string.\x00" as *const u8 as *const i8);
         return 0 as *mut pdf_obj;
     } else {
         if *p.offset(0) as libc::c_int != '>' as i32 {
             dpx_warning(
-                b"PDF string length too long. (limit: %d)\x00" as *const u8 as *const libc::c_char,
+                b"PDF string length too long. (limit: %d)\x00" as *const u8 as *const i8,
                 65535i32,
             );
             return 0 as *mut pdf_obj;
@@ -907,8 +907,8 @@ unsafe extern "C" fn parse_pdf_hex_string(
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_string(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> *mut pdf_obj {
     skip_white(pp, endptr);
     if (*pp).offset(2) <= endptr {
@@ -927,13 +927,13 @@ pub unsafe extern "C" fn parse_pdf_string(
             }
         }
     }
-    dpx_warning(b"Could not find a string object.\x00" as *const u8 as *const libc::c_char);
+    dpx_warning(b"Could not find a string object.\x00" as *const u8 as *const i8);
     return 0 as *mut pdf_obj;
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_tainted_dict(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     parser_state.tainted = 1i32;
@@ -945,12 +945,12 @@ pub unsafe extern "C" fn parse_pdf_tainted_dict(
 /* !PDF_PARSE_STRICT */
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_dict(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
     mut pf: *mut pdf_file,
 ) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
     p = *pp;
     skip_white(&mut p, endptr);
     /* At least four letter <<>>. */
@@ -971,7 +971,7 @@ pub unsafe extern "C" fn parse_pdf_dict(
         if key.is_null() {
             dpx_warning(
                 b"Could not find a key in dictionary object.\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
             pdf_release_obj(result);
             return 0 as *mut pdf_obj;
@@ -984,7 +984,7 @@ pub unsafe extern "C" fn parse_pdf_dict(
             pdf_release_obj(result);
             dpx_warning(
                 b"Could not find a value in dictionary object.\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
             return 0 as *mut pdf_obj;
         }
@@ -997,7 +997,7 @@ pub unsafe extern "C" fn parse_pdf_dict(
     {
         dpx_warning(
             b"Syntax error: Dictionary object ended prematurely.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
         pdf_release_obj(result);
         return 0 as *mut pdf_obj;
@@ -1007,16 +1007,16 @@ pub unsafe extern "C" fn parse_pdf_dict(
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_array(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
     mut pf: *mut pdf_file,
 ) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
     p = *pp;
     skip_white(&mut p, endptr);
     if p.offset(2) > endptr || *p.offset(0) as libc::c_int != '[' as i32 {
-        dpx_warning(b"Could not find an array object.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Could not find an array object.\x00" as *const u8 as *const i8);
         return 0 as *mut pdf_obj;
     }
     result = pdf_new_array();
@@ -1029,7 +1029,7 @@ pub unsafe extern "C" fn parse_pdf_array(
             pdf_release_obj(result);
             dpx_warning(
                 b"Could not find a valid object in array object.\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
             return 0 as *mut pdf_obj;
         }
@@ -1037,7 +1037,7 @@ pub unsafe extern "C" fn parse_pdf_array(
         skip_white(&mut p, endptr);
     }
     if p >= endptr || *p.offset(0) as libc::c_int != ']' as i32 {
-        dpx_warning(b"Array object ended prematurely.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Array object ended prematurely.\x00" as *const u8 as *const i8);
         pdf_release_obj(result);
         return 0 as *mut pdf_obj;
     }
@@ -1045,18 +1045,18 @@ pub unsafe extern "C" fn parse_pdf_array(
     return result;
 }
 unsafe extern "C" fn parse_pdf_stream(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
     mut dict: *mut pdf_obj,
 ) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
     let mut stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut stream_length: libc::c_int = 0;
     p = *pp;
     skip_white(&mut p, endptr);
     if p.offset(6) > endptr
-        || strstartswith(p, b"stream\x00" as *const u8 as *const libc::c_char).is_null()
+        || strstartswith(p, b"stream\x00" as *const u8 as *const i8).is_null()
     {
         return 0 as *mut pdf_obj;
     }
@@ -1078,7 +1078,7 @@ unsafe extern "C" fn parse_pdf_stream(
     /* Stream length */
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut tmp2: *mut pdf_obj = 0 as *mut pdf_obj;
-    tmp = pdf_lookup_dict(dict, b"Length\x00" as *const u8 as *const libc::c_char);
+    tmp = pdf_lookup_dict(dict, b"Length\x00" as *const u8 as *const i8);
     if !tmp.is_null() {
         tmp2 = pdf_deref_obj(tmp);
         if pdf_obj_typeof(tmp2) != 2i32 {
@@ -1098,7 +1098,7 @@ unsafe extern "C" fn parse_pdf_stream(
      * Should we use filter for ASCIIHexEncode/ASCII85Encode-ed streams?
      */
     let mut filters: *mut pdf_obj = 0 as *mut pdf_obj;
-    filters = pdf_lookup_dict(dict, b"Filter\x00" as *const u8 as *const libc::c_char);
+    filters = pdf_lookup_dict(dict, b"Filter\x00" as *const u8 as *const i8);
     if filters.is_null() && stream_length > 10i32 {
         result = pdf_new_stream(1i32 << 0i32)
     } else {
@@ -1122,7 +1122,7 @@ unsafe extern "C" fn parse_pdf_stream(
     if p.offset(9) > endptr
         || memcmp(
             p as *const libc::c_void,
-            b"endstream\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
+            b"endstream\x00" as *const u8 as *const i8 as *const libc::c_void,
             9i32 as u64,
         ) != 0
     {
@@ -1136,11 +1136,11 @@ unsafe extern "C" fn parse_pdf_stream(
 /* PLEASE REMOVE THIS */
 /* This is not PDF indirect reference. */
 unsafe extern "C" fn parse_pdf_reference(
-    mut start: *mut *const libc::c_char,
-    mut end: *const libc::c_char,
+    mut start: *mut *const i8,
+    mut end: *const i8,
 ) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut name: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut name: *mut i8 = 0 as *mut i8;
     save = *start;
     skip_white(start, end);
     name = parse_opt_ident(start, end);
@@ -1149,7 +1149,7 @@ unsafe extern "C" fn parse_pdf_reference(
         if result.is_null() {
             dpx_warning(
                 b"Could not find the named reference (@%s).\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
                 name,
             );
             dump(save, end);
@@ -1157,7 +1157,7 @@ unsafe extern "C" fn parse_pdf_reference(
         }
         free(name as *mut libc::c_void);
     } else {
-        dpx_warning(b"Could not find a reference name.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Could not find a reference name.\x00" as *const u8 as *const i8);
         dump(save, end);
         *start = save;
         result = 0 as *mut pdf_obj
@@ -1166,20 +1166,20 @@ unsafe extern "C" fn parse_pdf_reference(
 }
 /* !PDF_PARSE_STRICT */
 unsafe extern "C" fn try_pdf_reference(
-    mut start: *const libc::c_char,
-    mut end: *const libc::c_char,
-    mut endptr: *mut *const libc::c_char,
+    mut start: *const i8,
+    mut end: *const i8,
+    mut endptr: *mut *const i8,
     mut pf: *mut pdf_file,
 ) -> *mut pdf_obj {
     let mut id: libc::c_uint = 0i32 as libc::c_uint;
     let mut gen: u16 = 0i32 as u16;
     if !pf.is_null() {
     } else {
-        __assert_fail(b"pf\x00" as *const u8 as *const libc::c_char,
+        __assert_fail(b"pf\x00" as *const u8 as *const i8,
                       b"dpx-pdfparse.c\x00" as *const u8 as
-                          *const libc::c_char, 883i32 as libc::c_uint,
+                          *const i8, 883i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 82],
-                                                &[libc::c_char; 82]>(b"pdf_obj *try_pdf_reference(const char *, const char *, const char **, pdf_file *)\x00")).as_ptr());
+                                                &[i8; 82]>(b"pdf_obj *try_pdf_reference(const char *, const char *, const char **, pdf_file *)\x00")).as_ptr());
     }
     if !endptr.is_null() {
         *endptr = start
@@ -1292,16 +1292,16 @@ unsafe extern "C" fn try_pdf_reference(
 /* Please remove this */
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_object(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
     mut pf: *mut pdf_file,
 ) -> *mut pdf_obj
 /* If pf is NULL, then indirect references are not allowed */ {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut nextptr: *const libc::c_char = 0 as *const libc::c_char;
+    let mut nextptr: *const i8 = 0 as *const i8;
     skip_white(pp, endptr);
     if *pp >= endptr {
-        dpx_warning(b"Could not find any valid object.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Could not find any valid object.\x00" as *const u8 as *const i8);
         return 0 as *mut pdf_obj;
     }
     match **pp as libc::c_int {
@@ -1316,7 +1316,7 @@ pub unsafe extern "C" fn parse_pdf_object(
                     && *pp <= endptr.offset(-15)
                     && memcmp(
                         *pp as *const libc::c_void,
-                        b"stream\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
+                        b"stream\x00" as *const u8 as *const i8 as *const libc::c_void,
                         6i32 as u64,
                     ) == 0
                 {
@@ -1348,7 +1348,7 @@ pub unsafe extern "C" fn parse_pdf_object(
         }
         64 => result = parse_pdf_reference(pp, endptr),
         _ => {
-            dpx_warning(b"Unknown PDF object type.\x00" as *const u8 as *const libc::c_char);
+            dpx_warning(b"Unknown PDF object type.\x00" as *const u8 as *const i8);
             result = 0 as *mut pdf_obj
         }
     }

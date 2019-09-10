@@ -18,9 +18,9 @@ extern "C" {
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
         -> *mut libc::c_void;
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
 }
 pub type card8 = u8;
 pub type card16 = u16;
@@ -94,8 +94,8 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
              */
             _tt_abort(
                 b"%s: Argument value too large. (This is bug)\x00" as *const u8
-                    as *const libc::c_char,
-                b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+                    as *const i8,
+                b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
             );
         } else {
             if fabs(value - ivalue as libc::c_double) > 3.0e-5f64 {
@@ -176,8 +176,8 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                 *fresh12 = (ivalue & 0xffi32) as card8
             } else {
                 _tt_abort(
-                    b"%s: Unexpected error.\x00" as *const u8 as *const libc::c_char,
-                    b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+                    b"%s: Unexpected error.\x00" as *const u8 as *const i8,
+                    b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
                 );
             }
         }
@@ -294,15 +294,15 @@ unsafe extern "C" fn do_operator1(
             } else if stack_top == 4i32 || stack_top == 5i32 {
                 dpx_warning(
                     b"\"seac\" character deprecated in Type 2 charstring.\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
                 status = -1i32;
                 return;
             } else {
                 if stack_top > 0i32 {
                     dpx_warning(
-                        b"%s: Operand stack not empty.\x00" as *const u8 as *const libc::c_char,
-                        b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+                        b"%s: Operand stack not empty.\x00" as *const u8 as *const i8,
+                        b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
                     );
                 }
             }
@@ -319,8 +319,8 @@ unsafe extern "C" fn do_operator1(
             /* above oprators are candidate for first stack-clearing operator */
             if phase < 2i32 {
                 dpx_warning(
-                    b"%s: Broken Type 2 charstring.\x00" as *const u8 as *const libc::c_char,
-                    b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+                    b"%s: Broken Type 2 charstring.\x00" as *const u8 as *const i8,
+                    b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
                 );
                 status = -1i32;
                 return;
@@ -338,15 +338,15 @@ unsafe extern "C" fn do_operator1(
             /* all operotors above are stack-clearing operator */
             /* no output */
             _tt_abort(
-                b"%s: Unexpected call(g)subr/return\x00" as *const u8 as *const libc::c_char,
-                b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+                b"%s: Unexpected call(g)subr/return\x00" as *const u8 as *const i8,
+                b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
             );
         }
         _ => {
             /* no-op ? */
             dpx_warning(
-                b"%s: Unknown charstring operator: 0x%02x\x00" as *const u8 as *const libc::c_char,
-                b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+                b"%s: Unknown charstring operator: 0x%02x\x00" as *const u8 as *const i8,
+                b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
                 op as libc::c_int,
             );
             status = -1i32
@@ -379,7 +379,7 @@ unsafe extern "C" fn do_operator2(
             /* deprecated */
             dpx_warning(
                 b"Operator \"dotsection\" deprecated in Type 2 charstring.\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
             status = -1i32;
             return;
@@ -387,8 +387,8 @@ unsafe extern "C" fn do_operator2(
         34 | 35 | 36 | 37 => {
             if phase < 2i32 {
                 dpx_warning(
-                    b"%s: Broken Type 2 charstring.\x00" as *const u8 as *const libc::c_char,
-                    b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+                    b"%s: Broken Type 2 charstring.\x00" as *const u8 as *const i8,
+                    b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
                 );
                 status = -1i32;
                 return;
@@ -643,8 +643,8 @@ unsafe extern "C" fn do_operator2(
         23 => {
             dpx_warning(
                 b"%s: Charstring operator \"random\" found.\x00" as *const u8
-                    as *const libc::c_char,
-                b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+                    as *const i8,
+                b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
             );
             if 48i32 < stack_top + 1i32 {
                 status = -2i32;
@@ -658,8 +658,8 @@ unsafe extern "C" fn do_operator2(
             /* no-op ? */
             dpx_warning(
                 b"%s: Unknown charstring operator: 0x0c%02x\x00" as *const u8
-                    as *const libc::c_char,
-                b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+                    as *const i8,
+                b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
                 op as libc::c_int,
             );
             status = -1i32
@@ -768,8 +768,8 @@ unsafe extern "C" fn get_subr(
     if subr_idx.is_null() {
         _tt_abort(
             b"%s: Subroutine called but no subroutine found.\x00" as *const u8
-                as *const libc::c_char,
-            b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+                as *const i8,
+            b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
         );
     }
     count = (*subr_idx).count;
@@ -783,8 +783,8 @@ unsafe extern "C" fn get_subr(
     }
     if id > count as libc::c_int {
         _tt_abort(
-            b"%s: Invalid Subr index: %d (max=%u)\x00" as *const u8 as *const libc::c_char,
-            b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+            b"%s: Invalid Subr index: %d (max=%u)\x00" as *const u8 as *const i8,
+            b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
             id,
             count as libc::c_int,
         );
@@ -815,8 +815,8 @@ unsafe extern "C" fn do_charstring(
     let mut len: libc::c_int = 0;
     if nest > 10i32 {
         _tt_abort(
-            b"%s: Subroutine nested too deeply.\x00" as *const u8 as *const libc::c_char,
-            b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+            b"%s: Subroutine nested too deeply.\x00" as *const u8 as *const i8,
+            b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
         );
     }
     nest += 1;
@@ -840,8 +840,8 @@ unsafe extern "C" fn do_charstring(
                 );
                 if (*dest).offset(len as isize) > limit {
                     _tt_abort(
-                        b"%s: Possible buffer overflow.\x00" as *const u8 as *const libc::c_char,
-                        b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+                        b"%s: Possible buffer overflow.\x00" as *const u8 as *const i8,
+                        b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
                     );
                 }
                 do_charstring(
@@ -867,8 +867,8 @@ unsafe extern "C" fn do_charstring(
                 );
                 if limit < (*dest).offset(len as isize) {
                     _tt_abort(
-                        b"%s: Possible buffer overflow.\x00" as *const u8 as *const libc::c_char,
-                        b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+                        b"%s: Possible buffer overflow.\x00" as *const u8 as *const i8,
+                        b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
                     );
                 }
                 do_charstring(
@@ -900,15 +900,15 @@ unsafe extern "C" fn do_charstring(
         status = 0i32
     } else if status == 3i32 && *data < endptr {
         dpx_warning(
-            b"%s: Garbage after endchar.\x00" as *const u8 as *const libc::c_char,
-            b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+            b"%s: Garbage after endchar.\x00" as *const u8 as *const i8,
+            b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
         );
     } else if status < 0i32 {
         /* error */
         _tt_abort(
             b"%s: Parsing charstring failed: (status=%d, stack=%d)\x00" as *const u8
-                as *const libc::c_char,
-            b"Type2 Charstring Parser\x00" as *const u8 as *const libc::c_char,
+                as *const i8,
+            b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
             status,
             stack_top,
         );

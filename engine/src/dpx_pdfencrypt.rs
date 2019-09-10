@@ -11,13 +11,13 @@ extern "C" {
     pub type pdf_obj;
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
     #[no_mangle]
     fn rand() -> libc::c_int;
     #[no_mangle]
@@ -25,11 +25,11 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -39,7 +39,7 @@ extern "C" {
     #[no_mangle]
     fn localtime(__timer: *const time_t) -> *mut tm;
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn MD5_init(ctx: *mut MD5_CONTEXT);
     #[no_mangle]
@@ -90,7 +90,7 @@ extern "C" {
         cipher_len: *mut size_t,
     );
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -122,7 +122,7 @@ extern "C" {
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     /* Name does not include the / */
     #[no_mangle]
-    fn pdf_new_name(name: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_array() -> *mut pdf_obj;
     /* pdf_add_dict requires key but pdf_add_array does not.
@@ -174,7 +174,7 @@ extern "C" {
      * Callers are completely responsible for doing right thing...
      */
     #[no_mangle]
-    fn pdf_doc_get_dictionary(category: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_doc_get_dictionary(category: *const i8) -> *mut pdf_obj;
 }
 pub type __int32_t = libc::c_int;
 pub type __time_t = libc::c_long;
@@ -194,7 +194,7 @@ pub struct tm {
     pub tm_yday: libc::c_int,
     pub tm_isdst: libc::c_int,
     pub tm_gmtoff: libc::c_long,
-    pub tm_zone: *const libc::c_char,
+    pub tm_zone: *const i8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -404,12 +404,12 @@ unsafe extern "C" fn pdf_enc_init(mut use_aes: libc::c_int, mut encrypt_metadata
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_enc_compute_id_string(
-    mut dviname: *const libc::c_char,
-    mut pdfname: *const libc::c_char,
+    mut dviname: *const i8,
+    mut pdfname: *const i8,
 ) {
     let mut p: *mut pdf_sec = &mut sec_data;
-    let mut date_string: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut producer: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut date_string: *mut i8 = 0 as *mut i8;
+    let mut producer: *mut i8 = 0 as *mut i8;
     let mut current_time: time_t = 0;
     let mut bd_time: *mut tm = 0 as *mut tm;
     let mut md5: MD5_CONTEXT = MD5_CONTEXT {
@@ -425,8 +425,8 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
     pdf_enc_init(1i32, 1i32);
     MD5_init(&mut md5);
     date_string = new((15i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-        as u32) as *mut libc::c_char;
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+        as u32) as *mut i8;
     current_time = get_unique_time_if_given();
     if current_time == -1i32 as time_t {
         time(&mut current_time);
@@ -436,7 +436,7 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
     }
     sprintf(
         date_string,
-        b"%04d%02d%02d%02d%02d%02d\x00" as *const u8 as *const libc::c_char,
+        b"%04d%02d%02d%02d%02d%02d\x00" as *const u8 as *const i8,
         (*bd_time).tm_year + 1900i32,
         (*bd_time).tm_mon + 1i32,
         (*bd_time).tm_mday,
@@ -452,19 +452,19 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
     free(date_string as *mut libc::c_void);
     producer = new((strlen(
         b"%s-%s, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata\x00"
-            as *const u8 as *const libc::c_char,
+            as *const u8 as *const i8,
     )
-    .wrapping_add(strlen(b"xdvipdfmx\x00" as *const u8 as *const libc::c_char))
-    .wrapping_add(strlen(b"0.1\x00" as *const u8 as *const libc::c_char))
+    .wrapping_add(strlen(b"xdvipdfmx\x00" as *const u8 as *const i8))
+    .wrapping_add(strlen(b"0.1\x00" as *const u8 as *const i8))
         as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-        as u32) as *mut libc::c_char;
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+        as u32) as *mut i8;
     sprintf(
         producer,
         b"%s-%s, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata\x00"
-            as *const u8 as *const libc::c_char,
-        b"xdvipdfmx\x00" as *const u8 as *const libc::c_char,
-        b"0.1\x00" as *const u8 as *const libc::c_char,
+            as *const u8 as *const i8,
+        b"xdvipdfmx\x00" as *const u8 as *const i8,
+        b"0.1\x00" as *const u8 as *const i8,
     );
     MD5_write(
         &mut md5,
@@ -488,7 +488,7 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
     }
     MD5_final((*p).ID.as_mut_ptr(), &mut md5);
 }
-unsafe extern "C" fn passwd_padding(mut src: *const libc::c_char, mut dst: *mut u8) {
+unsafe extern "C" fn passwd_padding(mut src: *const i8, mut dst: *mut u8) {
     let mut len: libc::c_int = 0;
     len = (if (32i32 as u64) < strlen(src) {
         32i32 as u64
@@ -508,8 +508,8 @@ unsafe extern "C" fn passwd_padding(mut src: *const libc::c_char, mut dst: *mut 
 }
 unsafe extern "C" fn compute_owner_password(
     mut p: *mut pdf_sec,
-    mut opasswd: *const libc::c_char,
-    mut upasswd: *const libc::c_char,
+    mut opasswd: *const i8,
+    mut upasswd: *const i8,
 ) {
     let mut i: libc::c_int = 0;
     let mut j: libc::c_int = 0;
@@ -593,7 +593,7 @@ unsafe extern "C" fn compute_owner_password(
         32i32 as u64,
     );
 }
-unsafe extern "C" fn compute_encryption_key(mut p: *mut pdf_sec, mut passwd: *const libc::c_char) {
+unsafe extern "C" fn compute_encryption_key(mut p: *mut pdf_sec, mut passwd: *const i8) {
     let mut i: libc::c_int = 0;
     let mut hash: [u8; 32] = [0; 32];
     let mut padded: [u8; 32] = [0; 32];
@@ -637,7 +637,7 @@ unsafe extern "C" fn compute_encryption_key(mut p: *mut pdf_sec, mut passwd: *co
         (*p).key_size as u64,
     );
 }
-unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *const libc::c_char) {
+unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *const i8) {
     let mut i: libc::c_int = 0;
     let mut j: libc::c_int = 0;
     let mut arc4: ARC4_CONTEXT = ARC4_CONTEXT {
@@ -718,7 +718,7 @@ unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *con
             );
         }
         _ => {
-            _tt_abort(b"Invalid revision number.\x00" as *const u8 as *const libc::c_char);
+            _tt_abort(b"Invalid revision number.\x00" as *const u8 as *const i8);
         }
     }
     memcpy(
@@ -730,7 +730,7 @@ unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *con
 /* Algorithm 2.B from ISO 32000-1 chapter 7 */
 unsafe extern "C" fn compute_hash_V5(
     mut hash: *mut u8,
-    mut passwd: *const libc::c_char,
+    mut passwd: *const i8,
     mut salt: *const u8,
     mut user_key: *const u8,
     mut R: libc::c_int,
@@ -767,11 +767,11 @@ unsafe extern "C" fn compute_hash_V5(
     if R == 5i32 || R == 6i32 {
     } else {
         __assert_fail(b"R ==5 || R == 6\x00" as *const u8 as
-                          *const libc::c_char,
+                          *const i8,
                       b"dpx-pdfencrypt.c\x00" as *const u8 as
-                          *const libc::c_char, 307i32 as libc::c_uint,
+                          *const i8, 307i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 103],
-                                                &[libc::c_char; 103]>(b"void compute_hash_V5(unsigned char *, const char *, const unsigned char *, const unsigned char *, int)\x00")).as_ptr());
+                                                &[i8; 103]>(b"void compute_hash_V5(unsigned char *, const char *, const unsigned char *, const unsigned char *, int)\x00")).as_ptr());
     }
     if R == 5i32 {
         return;
@@ -800,11 +800,11 @@ unsafe extern "C" fn compute_hash_V5(
         if K1_len < 240i32 as u64 {
         } else {
             __assert_fail(b"K1_len < 240\x00" as *const u8 as
-                              *const libc::c_char,
+                              *const i8,
                           b"dpx-pdfencrypt.c\x00" as *const u8 as
-                              *const libc::c_char, 319i32 as libc::c_uint,
+                              *const i8, 319i32 as libc::c_uint,
                           (*::std::mem::transmute::<&[u8; 103],
-                                                    &[libc::c_char; 103]>(b"void compute_hash_V5(unsigned char *, const char *, const unsigned char *, const unsigned char *, int)\x00")).as_ptr());
+                                                    &[i8; 103]>(b"void compute_hash_V5(unsigned char *, const char *, const unsigned char *, const unsigned char *, int)\x00")).as_ptr());
         }
         memcpy(
             K1.as_mut_ptr() as *mut libc::c_void,
@@ -935,7 +935,7 @@ unsafe extern "C" fn compute_hash_V5(
 }
 unsafe extern "C" fn compute_owner_password_V5(
     mut p: *mut pdf_sec,
-    mut oplain: *const libc::c_char,
+    mut oplain: *const i8,
 ) {
     let mut vsalt: [u8; 8] = [0; 8];
     let mut ksalt: [u8; 8] = [0; 8];
@@ -1003,7 +1003,7 @@ unsafe extern "C" fn compute_owner_password_V5(
 }
 unsafe extern "C" fn compute_user_password_V5(
     mut p: *mut pdf_sec,
-    mut uplain: *const libc::c_char,
+    mut uplain: *const i8,
 ) {
     let mut vsalt: [u8; 8] = [0; 8];
     let mut ksalt: [u8; 8] = [0; 8];
@@ -1073,35 +1073,35 @@ unsafe extern "C" fn check_version(mut p: *mut pdf_sec, mut version: libc::c_int
     if (*p).V > 2i32 && version < 4i32 {
         dpx_warning(
             b"Current encryption setting requires PDF version >= 1.4.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
         (*p).V = 1i32;
         (*p).key_size = 5i32
     } else if (*p).V == 4i32 && version < 5i32 {
         dpx_warning(
             b"Current encryption setting requires PDF version >= 1.5.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
         (*p).V = 2i32
     } else if (*p).V == 5i32 && version < 7i32 {
         dpx_warning(b"Current encryption setting requires PDF version >= 1.7 (plus Adobe Extension Level 3).\x00"
-                        as *const u8 as *const libc::c_char);
+                        as *const u8 as *const i8);
         (*p).V = 4i32
     };
 }
 unsafe extern "C" fn stringprep_profile(
-    mut input: *const libc::c_char,
-    mut output: *mut *mut libc::c_char,
-    mut profile: *const libc::c_char,
+    mut input: *const i8,
+    mut output: *mut *mut i8,
+    mut profile: *const i8,
     mut flags: Stringprep_profile_flags,
 ) -> libc::c_int {
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
-    let mut endptr: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
+    let mut endptr: *const i8 = 0 as *const i8;
     p = input;
     endptr = p.offset(strlen(p) as isize);
     while p < endptr {
         let mut ucv: int32_t = UC_UTF8_decode_char(
-            &mut p as *mut *const libc::c_char as *mut *const u8,
+            &mut p as *mut *const i8 as *mut *const u8,
             endptr as *const u8,
         );
         if !UC_is_valid(ucv) {
@@ -1110,18 +1110,18 @@ unsafe extern "C" fn stringprep_profile(
     }
     *output = new(
         (strlen(input).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32,
-    ) as *mut libc::c_char;
+    ) as *mut i8;
     strcpy(*output, input);
     return 0i32;
 }
 unsafe extern "C" fn preproc_password(
-    mut passwd: *const libc::c_char,
-    mut outbuf: *mut libc::c_char,
+    mut passwd: *const i8,
+    mut outbuf: *mut i8,
     mut V: libc::c_int,
 ) -> libc::c_int {
-    let mut saslpwd: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut saslpwd: *mut i8 = 0 as *mut i8;
     let mut error: libc::c_int = 0i32;
     memset(outbuf as *mut libc::c_void, 0i32, 128i32 as u64);
     match V {
@@ -1135,7 +1135,7 @@ unsafe extern "C" fn preproc_password(
                 {
                     dpx_warning(
                         b"Non-ASCII-printable character found in password.\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                     );
                 }
                 i = i.wrapping_add(1)
@@ -1155,7 +1155,7 @@ unsafe extern "C" fn preproc_password(
             if stringprep_profile(
                 passwd,
                 &mut saslpwd,
-                b"SASLprep\x00" as *const u8 as *const libc::c_char,
+                b"SASLprep\x00" as *const u8 as *const i8,
                 0i32,
             ) != 0i32
             {
@@ -1183,28 +1183,28 @@ unsafe extern "C" fn preproc_password(
 pub unsafe extern "C" fn pdf_enc_set_passwd(
     mut bits: libc::c_uint,
     mut perm: libc::c_uint,
-    mut oplain: *const libc::c_char,
-    mut uplain: *const libc::c_char,
+    mut oplain: *const i8,
+    mut uplain: *const i8,
 ) {
     let mut p: *mut pdf_sec = &mut sec_data;
-    let mut opasswd: [libc::c_char; 128] = [0; 128];
-    let mut upasswd: [libc::c_char; 128] = [0; 128];
+    let mut opasswd: [i8; 128] = [0; 128];
+    let mut upasswd: [i8; 128] = [0; 128];
     let mut version: libc::c_int = 0;
     if !oplain.is_null() {
     } else {
-        __assert_fail(b"oplain\x00" as *const u8 as *const libc::c_char,
+        __assert_fail(b"oplain\x00" as *const u8 as *const i8,
                       b"dpx-pdfencrypt.c\x00" as *const u8 as
-                          *const libc::c_char, 521i32 as libc::c_uint,
+                          *const i8, 521i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 80],
-                                                &[libc::c_char; 80]>(b"void pdf_enc_set_passwd(unsigned int, unsigned int, const char *, const char *)\x00")).as_ptr());
+                                                &[i8; 80]>(b"void pdf_enc_set_passwd(unsigned int, unsigned int, const char *, const char *)\x00")).as_ptr());
     }
     if !uplain.is_null() {
     } else {
-        __assert_fail(b"uplain\x00" as *const u8 as *const libc::c_char,
+        __assert_fail(b"uplain\x00" as *const u8 as *const i8,
                       b"dpx-pdfencrypt.c\x00" as *const u8 as
-                          *const libc::c_char, 522i32 as libc::c_uint,
+                          *const i8, 522i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 80],
-                                                &[libc::c_char; 80]>(b"void pdf_enc_set_passwd(unsigned int, unsigned int, const char *, const char *)\x00")).as_ptr());
+                                                &[i8; 80]>(b"void pdf_enc_set_passwd(unsigned int, unsigned int, const char *, const char *)\x00")).as_ptr());
     }
     version = pdf_get_version() as libc::c_int;
     (*p).key_size = bits.wrapping_div(8i32 as libc::c_uint) as libc::c_int;
@@ -1221,7 +1221,7 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
         (*p).V = 5i32
     } else {
         dpx_warning(
-            b"Key length %d unsupported.\x00" as *const u8 as *const libc::c_char,
+            b"Key length %d unsupported.\x00" as *const u8 as *const i8,
             bits,
         );
         (*p).key_size = 5i32;
@@ -1254,10 +1254,10 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
     );
     /* Password must be preprocessed. */
     if preproc_password(oplain, opasswd.as_mut_ptr(), (*p).V) < 0i32 {
-        dpx_warning(b"Invaid UTF-8 string for password.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Invaid UTF-8 string for password.\x00" as *const u8 as *const i8);
     }
     if preproc_password(uplain, upasswd.as_mut_ptr(), (*p).V) < 0i32 {
-        dpx_warning(b"Invalid UTF-8 string for passowrd.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Invalid UTF-8 string for passowrd.\x00" as *const u8 as *const i8);
     }
     if (*p).R >= 3i32 {
         (*p).P = ((*p).P as libc::c_uint | 0xfffff000u32) as int32_t
@@ -1380,7 +1380,7 @@ pub unsafe extern "C" fn pdf_encrypt_data(
         }
         _ => {
             _tt_abort(
-                b"pdfencrypt: Unexpected V value: %d\x00" as *const u8 as *const libc::c_char,
+                b"pdfencrypt: Unexpected V value: %d\x00" as *const u8 as *const i8,
                 (*p).V,
             );
         }
@@ -1393,17 +1393,17 @@ pub unsafe extern "C" fn pdf_encrypt_obj() -> *mut pdf_obj {
     doc_encrypt = pdf_new_dict();
     pdf_add_dict(
         doc_encrypt,
-        pdf_new_name(b"Filter\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"Standard\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Filter\x00" as *const u8 as *const i8),
+        pdf_new_name(b"Standard\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         doc_encrypt,
-        pdf_new_name(b"V\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"V\x00" as *const u8 as *const i8),
         pdf_new_number((*p).V as libc::c_double),
     );
     pdf_add_dict(
         doc_encrypt,
-        pdf_new_name(b"Length\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Length\x00" as *const u8 as *const i8),
         pdf_new_number(((*p).key_size * 8i32) as libc::c_double),
     );
     if (*p).V >= 4i32 {
@@ -1413,75 +1413,75 @@ pub unsafe extern "C" fn pdf_encrypt_obj() -> *mut pdf_obj {
         StdCF = pdf_new_dict();
         pdf_add_dict(
             StdCF,
-            pdf_new_name(b"CFM\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"CFM\x00" as *const u8 as *const i8),
             pdf_new_name(if (*p).V == 4i32 {
-                b"AESV2\x00" as *const u8 as *const libc::c_char
+                b"AESV2\x00" as *const u8 as *const i8
             } else {
-                b"AESV3\x00" as *const u8 as *const libc::c_char
+                b"AESV3\x00" as *const u8 as *const i8
             }),
         );
         pdf_add_dict(
             StdCF,
-            pdf_new_name(b"AuthEvent\x00" as *const u8 as *const libc::c_char),
-            pdf_new_name(b"DocOpen\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"AuthEvent\x00" as *const u8 as *const i8),
+            pdf_new_name(b"DocOpen\x00" as *const u8 as *const i8),
         );
         pdf_add_dict(
             StdCF,
-            pdf_new_name(b"Length\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Length\x00" as *const u8 as *const i8),
             pdf_new_number((*p).key_size as libc::c_double),
         );
         pdf_add_dict(
             CF,
-            pdf_new_name(b"StdCF\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"StdCF\x00" as *const u8 as *const i8),
             StdCF,
         );
         pdf_add_dict(
             doc_encrypt,
-            pdf_new_name(b"CF\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"CF\x00" as *const u8 as *const i8),
             CF,
         );
         pdf_add_dict(
             doc_encrypt,
-            pdf_new_name(b"StmF\x00" as *const u8 as *const libc::c_char),
-            pdf_new_name(b"StdCF\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"StmF\x00" as *const u8 as *const i8),
+            pdf_new_name(b"StdCF\x00" as *const u8 as *const i8),
         );
         pdf_add_dict(
             doc_encrypt,
-            pdf_new_name(b"StrF\x00" as *const u8 as *const libc::c_char),
-            pdf_new_name(b"StdCF\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"StrF\x00" as *const u8 as *const i8),
+            pdf_new_name(b"StdCF\x00" as *const u8 as *const i8),
         );
     }
     pdf_add_dict(
         doc_encrypt,
-        pdf_new_name(b"R\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"R\x00" as *const u8 as *const i8),
         pdf_new_number((*p).R as libc::c_double),
     );
     if (*p).V < 5i32 {
         pdf_add_dict(
             doc_encrypt,
-            pdf_new_name(b"O\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"O\x00" as *const u8 as *const i8),
             pdf_new_string((*p).O.as_mut_ptr() as *const libc::c_void, 32i32 as size_t),
         );
         pdf_add_dict(
             doc_encrypt,
-            pdf_new_name(b"U\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"U\x00" as *const u8 as *const i8),
             pdf_new_string((*p).U.as_mut_ptr() as *const libc::c_void, 32i32 as size_t),
         );
     } else if (*p).V == 5i32 {
         pdf_add_dict(
             doc_encrypt,
-            pdf_new_name(b"O\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"O\x00" as *const u8 as *const i8),
             pdf_new_string((*p).O.as_mut_ptr() as *const libc::c_void, 48i32 as size_t),
         );
         pdf_add_dict(
             doc_encrypt,
-            pdf_new_name(b"U\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"U\x00" as *const u8 as *const i8),
             pdf_new_string((*p).U.as_mut_ptr() as *const libc::c_void, 48i32 as size_t),
         );
     }
     pdf_add_dict(
         doc_encrypt,
-        pdf_new_name(b"P\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"P\x00" as *const u8 as *const i8),
         pdf_new_number((*p).P as libc::c_double),
     );
     if (*p).V == 5i32 {
@@ -1490,12 +1490,12 @@ pub unsafe extern "C" fn pdf_encrypt_obj() -> *mut pdf_obj {
         let mut cipher_len: size_t = 0i32 as size_t;
         pdf_add_dict(
             doc_encrypt,
-            pdf_new_name(b"OE\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"OE\x00" as *const u8 as *const i8),
             pdf_new_string((*p).OE.as_mut_ptr() as *const libc::c_void, 32i32 as size_t),
         );
         pdf_add_dict(
             doc_encrypt,
-            pdf_new_name(b"UE\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"UE\x00" as *const u8 as *const i8),
             pdf_new_string((*p).UE.as_mut_ptr() as *const libc::c_void, 32i32 as size_t),
         );
         perms[0] = ((*p).P & 0xffi32) as u8;
@@ -1528,34 +1528,34 @@ pub unsafe extern "C" fn pdf_encrypt_obj() -> *mut pdf_obj {
         );
         pdf_add_dict(
             doc_encrypt,
-            pdf_new_name(b"Perms\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Perms\x00" as *const u8 as *const i8),
             pdf_new_string(cipher as *const libc::c_void, cipher_len),
         );
         free(cipher as *mut libc::c_void);
     }
     if (*p).R > 5i32 {
         let mut catalog: *mut pdf_obj =
-            pdf_doc_get_dictionary(b"Catalog\x00" as *const u8 as *const libc::c_char);
+            pdf_doc_get_dictionary(b"Catalog\x00" as *const u8 as *const i8);
         let mut ext: *mut pdf_obj = pdf_new_dict();
         let mut adbe: *mut pdf_obj = pdf_new_dict();
         pdf_add_dict(
             adbe,
-            pdf_new_name(b"BaseVersion\x00" as *const u8 as *const libc::c_char),
-            pdf_new_name(b"1.7\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"BaseVersion\x00" as *const u8 as *const i8),
+            pdf_new_name(b"1.7\x00" as *const u8 as *const i8),
         );
         pdf_add_dict(
             adbe,
-            pdf_new_name(b"ExtensionLevel\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"ExtensionLevel\x00" as *const u8 as *const i8),
             pdf_new_number((if (*p).R == 5i32 { 3i32 } else { 8i32 }) as libc::c_double),
         );
         pdf_add_dict(
             ext,
-            pdf_new_name(b"ADBE\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"ADBE\x00" as *const u8 as *const i8),
             adbe,
         );
         pdf_add_dict(
             catalog,
-            pdf_new_name(b"Extensions\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Extensions\x00" as *const u8 as *const i8),
             ext,
         );
     }

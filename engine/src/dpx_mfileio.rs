@@ -13,7 +13,7 @@ extern "C" {
     pub type _IO_marker;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn ttstub_input_getc(handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
@@ -39,17 +39,17 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[repr(C)]
 pub struct _IO_FILE {
     pub _flags: libc::c_int,
-    pub _IO_read_ptr: *mut libc::c_char,
-    pub _IO_read_end: *mut libc::c_char,
-    pub _IO_read_base: *mut libc::c_char,
-    pub _IO_write_base: *mut libc::c_char,
-    pub _IO_write_ptr: *mut libc::c_char,
-    pub _IO_write_end: *mut libc::c_char,
-    pub _IO_buf_base: *mut libc::c_char,
-    pub _IO_buf_end: *mut libc::c_char,
-    pub _IO_save_base: *mut libc::c_char,
-    pub _IO_backup_base: *mut libc::c_char,
-    pub _IO_save_end: *mut libc::c_char,
+    pub _IO_read_ptr: *mut i8,
+    pub _IO_read_end: *mut i8,
+    pub _IO_read_base: *mut i8,
+    pub _IO_write_base: *mut i8,
+    pub _IO_write_ptr: *mut i8,
+    pub _IO_write_end: *mut i8,
+    pub _IO_buf_base: *mut i8,
+    pub _IO_buf_end: *mut i8,
+    pub _IO_save_base: *mut i8,
+    pub _IO_backup_base: *mut i8,
+    pub _IO_save_end: *mut i8,
     pub _markers: *mut _IO_marker,
     pub _chain: *mut _IO_FILE,
     pub _fileno: libc::c_int,
@@ -57,7 +57,7 @@ pub struct _IO_FILE {
     pub _old_offset: __off_t,
     pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
-    pub _shortbuf: [libc::c_char; 1],
+    pub _shortbuf: [i8; 1],
     pub _lock: *mut libc::c_void,
     pub _offset: __off64_t,
     pub _codecvt: *mut _IO_codecvt,
@@ -66,7 +66,7 @@ pub struct _IO_FILE {
     pub _freeres_buf: *mut libc::c_void,
     pub __pad5: size_t,
     pub _mode: libc::c_int,
-    pub _unused2: [libc::c_char; 20],
+    pub _unused2: [i8; 20],
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
@@ -94,7 +94,7 @@ pub type FILE = _IO_FILE;
 unsafe extern "C" fn os_error() {
     _tt_abort(
         b"io:  An OS command failed that should not have.\n\x00" as *const u8
-            as *const libc::c_char,
+            as *const i8,
     );
 }
 #[no_mangle]
@@ -115,7 +115,7 @@ unsafe extern "C" fn tell_position(mut file: *mut FILE) -> int32_t {
     }
     if size > 0x7fffffffi32 as libc::c_long {
         _tt_abort(
-            b"ftell: file size %ld exceeds 0x7fffffff.\n\x00" as *const u8 as *const libc::c_char,
+            b"ftell: file size %ld exceeds 0x7fffffff.\n\x00" as *const u8 as *const i8,
             size,
         );
     }
@@ -132,10 +132,10 @@ pub unsafe extern "C" fn file_size(mut file: *mut FILE) -> int32_t {
 /* Unlike fgets, mfgets works with \r, \n, or \r\n end of lines. */
 #[no_mangle]
 pub unsafe extern "C" fn mfgets(
-    mut buffer: *mut libc::c_char,
+    mut buffer: *mut i8,
     mut length: libc::c_int,
     mut file: *mut FILE,
-) -> *mut libc::c_char {
+) -> *mut i8 {
     let mut ch: libc::c_int = 0i32;
     let mut i: libc::c_int = 0i32;
     while i < length - 1i32
@@ -148,11 +148,11 @@ pub unsafe extern "C" fn mfgets(
     {
         let fresh0 = i;
         i = i + 1;
-        *buffer.offset(fresh0 as isize) = ch as libc::c_char
+        *buffer.offset(fresh0 as isize) = ch as i8
     }
-    *buffer.offset(i as isize) = 0i32 as libc::c_char;
+    *buffer.offset(i as isize) = 0i32 as i8;
     if ch < 0i32 && i == 0i32 {
-        return 0 as *mut libc::c_char;
+        return 0 as *mut i8;
     }
     if ch == '\r' as i32
         && {
@@ -167,7 +167,7 @@ pub unsafe extern "C" fn mfgets(
 }
 /* Note: this is really just a random array used in other files. */
 #[no_mangle]
-pub static mut work_buffer: [libc::c_char; 1024] = [0; 1024];
+pub static mut work_buffer: [i8; 1024] = [0; 1024];
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -193,10 +193,10 @@ pub static mut work_buffer: [libc::c_char; 1024] = [0; 1024];
 /* Modified versions of the above functions based on the Tectonic I/O system. */
 #[no_mangle]
 pub unsafe extern "C" fn tt_mfgets(
-    mut buffer: *mut libc::c_char,
+    mut buffer: *mut i8,
     mut length: libc::c_int,
     mut file: rust_input_handle_t,
-) -> *mut libc::c_char {
+) -> *mut i8 {
     let mut ch: libc::c_int = 0i32;
     let mut i: libc::c_int = 0i32;
     while i < length - 1i32
@@ -209,11 +209,11 @@ pub unsafe extern "C" fn tt_mfgets(
     {
         let fresh1 = i;
         i = i + 1;
-        *buffer.offset(fresh1 as isize) = ch as libc::c_char
+        *buffer.offset(fresh1 as isize) = ch as i8
     }
-    *buffer.offset(i as isize) = '\u{0}' as i32 as libc::c_char;
+    *buffer.offset(i as isize) = '\u{0}' as i32 as i8;
     if ch < 0i32 && i == 0i32 {
-        return 0 as *mut libc::c_char;
+        return 0 as *mut i8;
     }
     if ch == '\r' as i32
         && {

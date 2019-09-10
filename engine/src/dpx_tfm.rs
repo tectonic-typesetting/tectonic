@@ -13,8 +13,8 @@ extern "C" {
     #[no_mangle]
     fn tt_get_positive_quad(
         handle: rust_input_handle_t,
-        type_0: *const libc::c_char,
-        name: *const libc::c_char,
+        type_0: *const i8,
+        name: *const i8,
     ) -> u32;
     #[no_mangle]
     fn tt_get_signed_quad(handle: rust_input_handle_t) -> int32_t;
@@ -27,21 +27,21 @@ extern "C" {
     #[no_mangle]
     fn tt_skip_bytes(n: libc::c_uint, handle: rust_input_handle_t);
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcat(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn strrchr(_: *const libc::c_char, _: libc::c_int) -> *mut libc::c_char;
+    fn strrchr(_: *const i8, _: libc::c_int) -> *mut i8;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn ttstub_input_open(
-        path: *const libc::c_char,
+        path: *const i8,
         format: tt_input_format_type,
         is_gz: libc::c_int,
     ) -> rust_input_handle_t;
@@ -77,9 +77,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_message(fmt: *const libc::c_char, _: ...);
+    fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -147,9 +147,9 @@ pub type fixword = int32_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct font_metric {
-    pub tex_name: *mut libc::c_char,
+    pub tex_name: *mut i8,
     pub designsize: fixword,
-    pub codingscheme: *mut libc::c_char,
+    pub codingscheme: *mut i8,
     pub fontdir: libc::c_int,
     pub firstchar: libc::c_int,
     pub lastchar: libc::c_int,
@@ -235,7 +235,7 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
@@ -313,11 +313,11 @@ unsafe extern "C" fn lookup_range(
     return -1i32;
 }
 unsafe extern "C" fn fm_init(mut fm: *mut font_metric) {
-    (*fm).tex_name = 0 as *mut libc::c_char;
+    (*fm).tex_name = 0 as *mut i8;
     (*fm).firstchar = 0i32;
     (*fm).lastchar = 0i32;
     (*fm).fontdir = 0i32;
-    (*fm).codingscheme = 0 as *mut libc::c_char;
+    (*fm).codingscheme = 0 as *mut i8;
     (*fm).designsize = 0i32;
     (*fm).widths = 0 as *mut fixword;
     (*fm).heights = 0 as *mut fixword;
@@ -416,7 +416,7 @@ unsafe extern "C" fn tfm_check_size(mut tfm: *mut tfm_font, mut tfm_file_size: o
      }
     */
     if tfm_file_size < (*tfm).wlenfile as int64_t * 4i32 as libc::c_long {
-        _tt_abort(b"Can\'t proceed...\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"Can\'t proceed...\x00" as *const u8 as *const i8);
     }
     expected_size = (expected_size as libc::c_uint).wrapping_add(
         (*tfm)
@@ -445,14 +445,14 @@ unsafe extern "C" fn tfm_check_size(mut tfm: *mut tfm_font, mut tfm_file_size: o
     if expected_size != (*tfm).wlenfile {
         dpx_warning(
             b"TFM file size is expected to be %ld bytes but it says it is %ldbytes!\x00"
-                as *const u8 as *const libc::c_char,
+                as *const u8 as *const i8,
             expected_size as int64_t * 4i32 as libc::c_long,
             (*tfm).wlenfile as int64_t * 4i32 as libc::c_long,
         );
         if tfm_file_size > expected_size as int64_t * 4i32 as libc::c_long {
-            dpx_warning(b"Proceeding nervously...\x00" as *const u8 as *const libc::c_char);
+            dpx_warning(b"Proceeding nervously...\x00" as *const u8 as *const i8);
         } else {
-            _tt_abort(b"Can\'t proceed...\x00" as *const u8 as *const libc::c_char);
+            _tt_abort(b"Can\'t proceed...\x00" as *const u8 as *const i8);
         }
     };
 }
@@ -467,7 +467,7 @@ unsafe extern "C" fn tfm_get_sizes(
     (*tfm).ec = tt_get_unsigned_pair(tfm_handle) as u32;
     if (*tfm).ec < (*tfm).bc {
         _tt_abort(
-            b"TFM file error: ec(%u) < bc(%u) ???\x00" as *const u8 as *const libc::c_char,
+            b"TFM file error: ec(%u) < bc(%u) ???\x00" as *const u8 as *const i8,
             (*tfm).ec,
             (*tfm).bc,
         );
@@ -517,14 +517,14 @@ unsafe extern "C" fn tfm_unpack_arrays(mut fm: *mut font_metric, mut tfm: *mut t
     }
 }
 unsafe extern "C" fn sput_bigendian(
-    mut s: *mut libc::c_char,
+    mut s: *mut i8,
     mut v: int32_t,
     mut n: libc::c_int,
 ) -> libc::c_int {
     let mut i: libc::c_int = 0;
     i = n - 1i32;
     while i >= 0i32 {
-        *s.offset(i as isize) = (v & 0xffi32) as libc::c_char;
+        *s.offset(i as isize) = (v & 0xffi32) as i8;
         v >>= 8i32;
         i -= 1
     }
@@ -532,19 +532,19 @@ unsafe extern "C" fn sput_bigendian(
 }
 unsafe extern "C" fn tfm_unpack_header(mut fm: *mut font_metric, mut tfm: *mut tfm_font) {
     if (*tfm).wlenheader < 12i32 as libc::c_uint {
-        (*fm).codingscheme = 0 as *mut libc::c_char
+        (*fm).codingscheme = 0 as *mut i8
     } else {
         let mut i: libc::c_int = 0;
         let mut len: libc::c_int = 0;
-        let mut p: *mut libc::c_char = 0 as *mut libc::c_char;
+        let mut p: *mut i8 = 0 as *mut i8;
         len = *(*tfm).header.offset(2) >> 24i32;
         if len < 0i32 || len > 39i32 {
-            _tt_abort(b"Invalid TFM header.\x00" as *const u8 as *const libc::c_char);
+            _tt_abort(b"Invalid TFM header.\x00" as *const u8 as *const i8);
         }
         if len > 0i32 {
             (*fm).codingscheme = new((40i32 as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-                as u32) as *mut libc::c_char;
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32) as *mut i8;
             p = (*fm).codingscheme;
             p = p.offset(sput_bigendian(p, *(*tfm).header.offset(2), 3i32) as isize);
             i = 1i32;
@@ -554,9 +554,9 @@ unsafe extern "C" fn tfm_unpack_header(mut fm: *mut font_metric, mut tfm: *mut t
                 );
                 i += 1
             }
-            *(*fm).codingscheme.offset(len as isize) = '\u{0}' as i32 as libc::c_char
+            *(*fm).codingscheme.offset(len as isize) = '\u{0}' as i32 as i8
         } else {
-            (*fm).codingscheme = 0 as *mut libc::c_char
+            (*fm).codingscheme = 0 as *mut i8
         }
     }
     (*fm).designsize = *(*tfm).header.offset(1);
@@ -588,7 +588,7 @@ unsafe extern "C" fn ofm_check_size_one(mut tfm: *mut tfm_font, mut ofm_file_siz
         || (*tfm).wlenfile != ofm_size
     {
         _tt_abort(
-            b"OFM file problem.  Table sizes don\'t agree.\x00" as *const u8 as *const libc::c_char,
+            b"OFM file problem.  Table sizes don\'t agree.\x00" as *const u8 as *const i8,
         );
     };
 }
@@ -600,80 +600,80 @@ unsafe extern "C" fn ofm_get_sizes(
     (*tfm).level = tt_get_signed_quad(ofm_handle);
     (*tfm).wlenfile = tt_get_positive_quad(
         ofm_handle,
-        b"OFM\x00" as *const u8 as *const libc::c_char,
-        b"wlenfile\x00" as *const u8 as *const libc::c_char,
+        b"OFM\x00" as *const u8 as *const i8,
+        b"wlenfile\x00" as *const u8 as *const i8,
     );
     (*tfm).wlenheader = tt_get_positive_quad(
         ofm_handle,
-        b"OFM\x00" as *const u8 as *const libc::c_char,
-        b"wlenheader\x00" as *const u8 as *const libc::c_char,
+        b"OFM\x00" as *const u8 as *const i8,
+        b"wlenheader\x00" as *const u8 as *const i8,
     );
     (*tfm).bc = tt_get_positive_quad(
         ofm_handle,
-        b"OFM\x00" as *const u8 as *const libc::c_char,
-        b"bc\x00" as *const u8 as *const libc::c_char,
+        b"OFM\x00" as *const u8 as *const i8,
+        b"bc\x00" as *const u8 as *const i8,
     );
     (*tfm).ec = tt_get_positive_quad(
         ofm_handle,
-        b"OFM\x00" as *const u8 as *const libc::c_char,
-        b"ec\x00" as *const u8 as *const libc::c_char,
+        b"OFM\x00" as *const u8 as *const i8,
+        b"ec\x00" as *const u8 as *const i8,
     );
     if (*tfm).ec < (*tfm).bc {
         _tt_abort(
-            b"OFM file error: ec(%u) < bc(%u) ???\x00" as *const u8 as *const libc::c_char,
+            b"OFM file error: ec(%u) < bc(%u) ???\x00" as *const u8 as *const i8,
             (*tfm).ec,
             (*tfm).bc,
         );
     }
     (*tfm).nwidths = tt_get_positive_quad(
         ofm_handle,
-        b"OFM\x00" as *const u8 as *const libc::c_char,
-        b"nwidths\x00" as *const u8 as *const libc::c_char,
+        b"OFM\x00" as *const u8 as *const i8,
+        b"nwidths\x00" as *const u8 as *const i8,
     );
     (*tfm).nheights = tt_get_positive_quad(
         ofm_handle,
-        b"OFM\x00" as *const u8 as *const libc::c_char,
-        b"nheights\x00" as *const u8 as *const libc::c_char,
+        b"OFM\x00" as *const u8 as *const i8,
+        b"nheights\x00" as *const u8 as *const i8,
     );
     (*tfm).ndepths = tt_get_positive_quad(
         ofm_handle,
-        b"OFM\x00" as *const u8 as *const libc::c_char,
-        b"ndepths\x00" as *const u8 as *const libc::c_char,
+        b"OFM\x00" as *const u8 as *const i8,
+        b"ndepths\x00" as *const u8 as *const i8,
     );
     (*tfm).nitcor = tt_get_positive_quad(
         ofm_handle,
-        b"OFM\x00" as *const u8 as *const libc::c_char,
-        b"nitcor\x00" as *const u8 as *const libc::c_char,
+        b"OFM\x00" as *const u8 as *const i8,
+        b"nitcor\x00" as *const u8 as *const i8,
     );
     (*tfm).nlig = tt_get_positive_quad(
         ofm_handle,
-        b"OFM\x00" as *const u8 as *const libc::c_char,
-        b"nlig\x00" as *const u8 as *const libc::c_char,
+        b"OFM\x00" as *const u8 as *const i8,
+        b"nlig\x00" as *const u8 as *const i8,
     );
     (*tfm).nkern = tt_get_positive_quad(
         ofm_handle,
-        b"OFM\x00" as *const u8 as *const libc::c_char,
-        b"nkern\x00" as *const u8 as *const libc::c_char,
+        b"OFM\x00" as *const u8 as *const i8,
+        b"nkern\x00" as *const u8 as *const i8,
     );
     (*tfm).nextens = tt_get_positive_quad(
         ofm_handle,
-        b"OFM\x00" as *const u8 as *const libc::c_char,
-        b"nextens\x00" as *const u8 as *const libc::c_char,
+        b"OFM\x00" as *const u8 as *const i8,
+        b"nextens\x00" as *const u8 as *const i8,
     );
     (*tfm).nfonparm = tt_get_positive_quad(
         ofm_handle,
-        b"OFM\x00" as *const u8 as *const libc::c_char,
-        b"nfonparm\x00" as *const u8 as *const libc::c_char,
+        b"OFM\x00" as *const u8 as *const i8,
+        b"nfonparm\x00" as *const u8 as *const i8,
     );
     (*tfm).fontdir = tt_get_positive_quad(
         ofm_handle,
-        b"OFM\x00" as *const u8 as *const libc::c_char,
-        b"fontdir\x00" as *const u8 as *const libc::c_char,
+        b"OFM\x00" as *const u8 as *const i8,
+        b"fontdir\x00" as *const u8 as *const i8,
     );
     if (*tfm).fontdir != 0 {
         dpx_warning(
             b"I may be interpreting a font direction incorrectly.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
     }
     if (*tfm).level == 0i32 {
@@ -681,18 +681,18 @@ unsafe extern "C" fn ofm_get_sizes(
     } else if (*tfm).level == 1i32 {
         (*tfm).nco = tt_get_positive_quad(
             ofm_handle,
-            b"OFM\x00" as *const u8 as *const libc::c_char,
-            b"nco\x00" as *const u8 as *const libc::c_char,
+            b"OFM\x00" as *const u8 as *const i8,
+            b"nco\x00" as *const u8 as *const i8,
         );
         (*tfm).ncw = tt_get_positive_quad(
             ofm_handle,
-            b"OFM\x00" as *const u8 as *const libc::c_char,
-            b"nco\x00" as *const u8 as *const libc::c_char,
+            b"OFM\x00" as *const u8 as *const i8,
+            b"nco\x00" as *const u8 as *const i8,
         );
         (*tfm).npc = tt_get_positive_quad(
             ofm_handle,
-            b"OFM\x00" as *const u8 as *const libc::c_char,
-            b"npc\x00" as *const u8 as *const libc::c_char,
+            b"OFM\x00" as *const u8 as *const i8,
+            b"npc\x00" as *const u8 as *const i8,
         );
         ttstub_input_seek(
             ofm_handle,
@@ -701,7 +701,7 @@ unsafe extern "C" fn ofm_get_sizes(
         );
     } else {
         _tt_abort(
-            b"can\'t handle OFM files with level > 1\x00" as *const u8 as *const libc::c_char,
+            b"can\'t handle OFM files with level > 1\x00" as *const u8 as *const i8,
         );
     };
 }
@@ -791,7 +791,7 @@ unsafe extern "C" fn ofm_do_char_info_one(
             if i.wrapping_add(repeats) > num_chars {
                 _tt_abort(
                     b"OFM \"repeats\" causes number of characters to be exceeded.\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
             }
             j = 0i32 as u32;
@@ -881,7 +881,7 @@ unsafe extern "C" fn read_ofm(
     ofm_get_sizes(ofm_handle, ofm_file_size, &mut tfm);
     if tfm.level < 0i32 || tfm.level > 1i32 {
         _tt_abort(
-            b"OFM level %d not supported.\x00" as *const u8 as *const libc::c_char,
+            b"OFM level %d not supported.\x00" as *const u8 as *const i8,
             tfm.level,
         );
     }
@@ -1013,15 +1013,15 @@ unsafe extern "C" fn read_tfm(
 }
 #[no_mangle]
 pub unsafe extern "C" fn tfm_open(
-    mut tfm_name: *const libc::c_char,
+    mut tfm_name: *const i8,
     mut must_exist: libc::c_int,
 ) -> libc::c_int {
     let mut tfm_handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut i: libc::c_int = 0;
     let mut format: libc::c_int = 1i32;
     let mut tfm_file_size: off_t = 0;
-    let mut ofm_name: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut suffix: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut ofm_name: *mut i8 = 0 as *mut i8;
+    let mut suffix: *mut i8 = 0 as *mut i8;
     i = 0i32;
     while (i as libc::c_uint) < numfms {
         if streq_ptr(tfm_name, (*fms.offset(i as isize)).tex_name) {
@@ -1049,19 +1049,19 @@ pub unsafe extern "C" fn tfm_open(
      */
     suffix = strrchr(tfm_name, '.' as i32);
     if suffix.is_null()
-        || strcmp(suffix, b".tfm\x00" as *const u8 as *const libc::c_char) != 0i32
-            && strcmp(suffix, b".ofm\x00" as *const u8 as *const libc::c_char) != 0i32
+        || strcmp(suffix, b".tfm\x00" as *const u8 as *const i8) != 0i32
+            && strcmp(suffix, b".ofm\x00" as *const u8 as *const i8) != 0i32
     {
         ofm_name = new((strlen(tfm_name)
-            .wrapping_add(strlen(b".ofm\x00" as *const u8 as *const libc::c_char))
+            .wrapping_add(strlen(b".ofm\x00" as *const u8 as *const i8))
             .wrapping_add(1i32 as u64) as u32
             as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-            as u32) as *mut libc::c_char;
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+            as u32) as *mut i8;
         strcpy(ofm_name, tfm_name);
-        strcat(ofm_name, b".ofm\x00" as *const u8 as *const libc::c_char);
+        strcat(ofm_name, b".ofm\x00" as *const u8 as *const i8);
     } else {
-        ofm_name = 0 as *mut libc::c_char
+        ofm_name = 0 as *mut i8
     }
     if !ofm_name.is_null() && {
         tfm_handle = ttstub_input_open(ofm_name, TTIF_OFM, 0i32);
@@ -1083,7 +1083,7 @@ pub unsafe extern "C" fn tfm_open(
     if tfm_handle.is_null() {
         if must_exist != 0 {
             _tt_abort(
-                b"Unable to find TFM file \"%s\".\x00" as *const u8 as *const libc::c_char,
+                b"Unable to find TFM file \"%s\".\x00" as *const u8 as *const i8,
                 tfm_name,
             );
         }
@@ -1091,18 +1091,18 @@ pub unsafe extern "C" fn tfm_open(
     }
     if verbose != 0 {
         if format == 1i32 {
-            dpx_message(b"(TFM:%s\x00" as *const u8 as *const libc::c_char, tfm_name);
+            dpx_message(b"(TFM:%s\x00" as *const u8 as *const i8, tfm_name);
         } else if format == 2i32 {
-            dpx_message(b"(OFM:%s\x00" as *const u8 as *const libc::c_char, tfm_name);
+            dpx_message(b"(OFM:%s\x00" as *const u8 as *const i8, tfm_name);
         }
     }
     tfm_file_size = ttstub_input_get_size(tfm_handle) as off_t;
     if tfm_file_size as u64 > 0x1ffffffffu64 {
-        _tt_abort(b"TFM/OFM file size exceeds 33-bit\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"TFM/OFM file size exceeds 33-bit\x00" as *const u8 as *const i8);
     }
     if tfm_file_size < 24i32 as libc::c_long {
         _tt_abort(
-            b"TFM/OFM file too small to be a valid file.\x00" as *const u8 as *const libc::c_char,
+            b"TFM/OFM file too small to be a valid file.\x00" as *const u8 as *const i8,
         );
     }
     fms_need(numfms.wrapping_add(1i32 as libc::c_uint));
@@ -1116,12 +1116,12 @@ pub unsafe extern "C" fn tfm_open(
     let ref mut fresh0 = (*fms.offset(numfms as isize)).tex_name;
     *fresh0 = new(
         (strlen(tfm_name).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32,
-    ) as *mut libc::c_char;
+    ) as *mut i8;
     strcpy((*fms.offset(numfms as isize)).tex_name, tfm_name);
     if verbose != 0 {
-        dpx_message(b")\x00" as *const u8 as *const libc::c_char);
+        dpx_message(b")\x00" as *const u8 as *const i8);
     }
     let fresh1 = numfms;
     numfms = numfms.wrapping_add(1);
@@ -1145,7 +1145,7 @@ pub unsafe extern "C" fn tfm_get_fw_width(mut font_id: libc::c_int, mut ch: int3
     let mut idx: libc::c_int = 0i32;
     if font_id < 0i32 || font_id as libc::c_uint >= numfms {
         _tt_abort(
-            b"TFM: Invalid TFM ID: %d\x00" as *const u8 as *const libc::c_char,
+            b"TFM: Invalid TFM ID: %d\x00" as *const u8 as *const i8,
             font_id,
         );
     }
@@ -1156,7 +1156,7 @@ pub unsafe extern "C" fn tfm_get_fw_width(mut font_id: libc::c_int, mut ch: int3
                 idx = lookup_char((*fm).charmap.data as *const char_map, ch);
                 if idx < 0i32 {
                     _tt_abort(
-                        b"Invalid char: %d\n\x00" as *const u8 as *const libc::c_char,
+                        b"Invalid char: %d\n\x00" as *const u8 as *const i8,
                         ch,
                     );
                 }
@@ -1165,7 +1165,7 @@ pub unsafe extern "C" fn tfm_get_fw_width(mut font_id: libc::c_int, mut ch: int3
                 idx = lookup_range((*fm).charmap.data as *const range_map, ch);
                 if idx < 0i32 {
                     _tt_abort(
-                        b"Invalid char: %d\n\x00" as *const u8 as *const libc::c_char,
+                        b"Invalid char: %d\n\x00" as *const u8 as *const i8,
                         ch,
                     );
                 }
@@ -1174,7 +1174,7 @@ pub unsafe extern "C" fn tfm_get_fw_width(mut font_id: libc::c_int, mut ch: int3
         }
     } else {
         _tt_abort(
-            b"Invalid char: %d\n\x00" as *const u8 as *const libc::c_char,
+            b"Invalid char: %d\n\x00" as *const u8 as *const i8,
             ch,
         );
     }
@@ -1186,7 +1186,7 @@ pub unsafe extern "C" fn tfm_get_fw_height(mut font_id: libc::c_int, mut ch: int
     let mut idx: libc::c_int = 0i32;
     if font_id < 0i32 || font_id as libc::c_uint >= numfms {
         _tt_abort(
-            b"TFM: Invalid TFM ID: %d\x00" as *const u8 as *const libc::c_char,
+            b"TFM: Invalid TFM ID: %d\x00" as *const u8 as *const i8,
             font_id,
         );
     }
@@ -1197,7 +1197,7 @@ pub unsafe extern "C" fn tfm_get_fw_height(mut font_id: libc::c_int, mut ch: int
                 idx = lookup_char((*fm).charmap.data as *const char_map, ch);
                 if idx < 0i32 {
                     _tt_abort(
-                        b"Invalid char: %d\n\x00" as *const u8 as *const libc::c_char,
+                        b"Invalid char: %d\n\x00" as *const u8 as *const i8,
                         ch,
                     );
                 }
@@ -1206,7 +1206,7 @@ pub unsafe extern "C" fn tfm_get_fw_height(mut font_id: libc::c_int, mut ch: int
                 idx = lookup_range((*fm).charmap.data as *const range_map, ch);
                 if idx < 0i32 {
                     _tt_abort(
-                        b"Invalid char: %d\n\x00" as *const u8 as *const libc::c_char,
+                        b"Invalid char: %d\n\x00" as *const u8 as *const i8,
                         ch,
                     );
                 }
@@ -1215,7 +1215,7 @@ pub unsafe extern "C" fn tfm_get_fw_height(mut font_id: libc::c_int, mut ch: int
         }
     } else {
         _tt_abort(
-            b"Invalid char: %d\n\x00" as *const u8 as *const libc::c_char,
+            b"Invalid char: %d\n\x00" as *const u8 as *const i8,
             ch,
         );
     }
@@ -1227,7 +1227,7 @@ pub unsafe extern "C" fn tfm_get_fw_depth(mut font_id: libc::c_int, mut ch: int3
     let mut idx: libc::c_int = 0i32;
     if font_id < 0i32 || font_id as libc::c_uint >= numfms {
         _tt_abort(
-            b"TFM: Invalid TFM ID: %d\x00" as *const u8 as *const libc::c_char,
+            b"TFM: Invalid TFM ID: %d\x00" as *const u8 as *const i8,
             font_id,
         );
     }
@@ -1238,7 +1238,7 @@ pub unsafe extern "C" fn tfm_get_fw_depth(mut font_id: libc::c_int, mut ch: int3
                 idx = lookup_char((*fm).charmap.data as *const char_map, ch);
                 if idx < 0i32 {
                     _tt_abort(
-                        b"Invalid char: %d\n\x00" as *const u8 as *const libc::c_char,
+                        b"Invalid char: %d\n\x00" as *const u8 as *const i8,
                         ch,
                     );
                 }
@@ -1247,7 +1247,7 @@ pub unsafe extern "C" fn tfm_get_fw_depth(mut font_id: libc::c_int, mut ch: int3
                 idx = lookup_range((*fm).charmap.data as *const range_map, ch);
                 if idx < 0i32 {
                     _tt_abort(
-                        b"Invalid char: %d\n\x00" as *const u8 as *const libc::c_char,
+                        b"Invalid char: %d\n\x00" as *const u8 as *const i8,
                         ch,
                     );
                 }
@@ -1256,7 +1256,7 @@ pub unsafe extern "C" fn tfm_get_fw_depth(mut font_id: libc::c_int, mut ch: int3
         }
     } else {
         _tt_abort(
-            b"Invalid char: %d\n\x00" as *const u8 as *const libc::c_char,
+            b"Invalid char: %d\n\x00" as *const u8 as *const i8,
             ch,
         );
     }
@@ -1284,7 +1284,7 @@ pub unsafe extern "C" fn tfm_string_width(
     let mut i: libc::c_uint = 0;
     if font_id < 0i32 || font_id as libc::c_uint >= numfms {
         _tt_abort(
-            b"TFM: Invalid TFM ID: %d\x00" as *const u8 as *const libc::c_char,
+            b"TFM: Invalid TFM ID: %d\x00" as *const u8 as *const i8,
             font_id,
         );
     }
@@ -1299,7 +1299,7 @@ pub unsafe extern "C" fn tfm_string_width(
 pub unsafe extern "C" fn tfm_get_design_size(mut font_id: libc::c_int) -> libc::c_double {
     if font_id < 0i32 || font_id as libc::c_uint >= numfms {
         _tt_abort(
-            b"TFM: Invalid TFM ID: %d\x00" as *const u8 as *const libc::c_char,
+            b"TFM: Invalid TFM ID: %d\x00" as *const u8 as *const i8,
             font_id,
         );
     }
@@ -1330,7 +1330,7 @@ pub unsafe extern "C" fn tfm_get_design_size(mut font_id: libc::c_int) -> libc::
 */
 /* From TFM header */
 #[no_mangle]
-pub unsafe extern "C" fn tfm_exists(mut tfm_name: *const libc::c_char) -> bool {
+pub unsafe extern "C" fn tfm_exists(mut tfm_name: *const i8) -> bool {
     let mut handle: *mut rust_input_handle_t = 0 as *mut rust_input_handle_t;
     handle = ttstub_input_open(tfm_name, TTIF_OFM, 0i32) as *mut rust_input_handle_t;
     if !handle.is_null() {

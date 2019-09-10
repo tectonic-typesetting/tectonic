@@ -8,7 +8,7 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn malloc(_: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -43,7 +43,7 @@ pub unsafe extern "C" fn new(mut size: u32) -> *mut libc::c_void {
     let mut result: *mut libc::c_void = malloc(size as size_t);
     if result.is_null() {
         _tt_abort(
-            b"Out of memory - asked for %u bytes\n\x00" as *const u8 as *const libc::c_char,
+            b"Out of memory - asked for %u bytes\n\x00" as *const u8 as *const i8,
             size,
         );
     }
@@ -79,7 +79,7 @@ pub unsafe extern "C" fn renew(
         let mut result: *mut libc::c_void = realloc(mem, size as size_t);
         if result.is_null() {
             _tt_abort(
-                b"Out of memory - asked for %u bytes\n\x00" as *const u8 as *const libc::c_char,
+                b"Out of memory - asked for %u bytes\n\x00" as *const u8 as *const i8,
                 size,
             );
         }

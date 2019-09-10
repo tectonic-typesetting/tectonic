@@ -10,10 +10,10 @@ extern crate libc;
 extern "C" {
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
@@ -24,9 +24,9 @@ extern "C" {
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -76,11 +76,11 @@ pub struct bt_node {
     pub flag: libc::c_int,
     pub left: *mut bt_node,
     pub right: *mut bt_node,
-    pub data: [libc::c_char; 4],
+    pub data: [i8; 4],
 }
 unsafe extern "C" fn match_expr(
     mut expr: *mut bt_node,
-    mut key: *const libc::c_char,
+    mut key: *const i8,
 ) -> libc::c_int {
     let mut retval: libc::c_int = 1i32;
     let mut i: libc::c_int = 0;
@@ -143,8 +143,8 @@ unsafe extern "C" fn bt_release_tree(mut tree: *mut bt_node) {
     };
 }
 unsafe extern "C" fn parse_expr(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> *mut bt_node {
     let mut root: *mut bt_node = 0 as *mut bt_node;
     let mut curr: *mut bt_node = 0 as *mut bt_node;
@@ -170,7 +170,7 @@ unsafe extern "C" fn parse_expr(
                     expr = parse_expr(pp, endptr);
                     if expr.is_null() {
                         dpx_warning(
-                            b"Syntax error: %s\n\x00" as *const u8 as *const libc::c_char,
+                            b"Syntax error: %s\n\x00" as *const u8 as *const i8,
                             *pp,
                         );
                         return 0 as *mut bt_node;
@@ -178,7 +178,7 @@ unsafe extern "C" fn parse_expr(
                     if **pp as libc::c_int != ')' as i32 {
                         dpx_warning(
                             b"Syntax error: Unbalanced ()\n\x00" as *const u8
-                                as *const libc::c_char,
+                                as *const i8,
                         );
                         return 0 as *mut bt_node;
                     }
@@ -192,7 +192,7 @@ unsafe extern "C" fn parse_expr(
                     free(expr as *mut libc::c_void);
                 } else {
                     dpx_warning(
-                        b"Syntax error: Unbalanced ()\n\x00" as *const u8 as *const libc::c_char,
+                        b"Syntax error: Unbalanced ()\n\x00" as *const u8 as *const i8,
                     );
                     bt_release_tree(root);
                     return 0 as *mut bt_node;
@@ -203,7 +203,7 @@ unsafe extern "C" fn parse_expr(
             124 | 38 => {
                 if *pp >= endptr {
                     dpx_warning(
-                        b"Syntax error: %s\n\x00" as *const u8 as *const libc::c_char,
+                        b"Syntax error: %s\n\x00" as *const u8 as *const i8,
                         *pp,
                     );
                     bt_release_tree(root);
@@ -251,11 +251,11 @@ unsafe extern "C" fn parse_expr(
                         {
                             (*curr).data[i as usize] = **pp
                         } else if **pp as libc::c_int == '_' as i32 {
-                            (*curr).data[i as usize] = ' ' as i32 as libc::c_char
+                            (*curr).data[i as usize] = ' ' as i32 as i8
                         } else {
                             dpx_warning(
                                 b"Invalid char in tag: %c\n\x00" as *const u8
-                                    as *const libc::c_char,
+                                    as *const i8,
                                 **pp as libc::c_int,
                             );
                             bt_release_tree(root);
@@ -266,7 +266,7 @@ unsafe extern "C" fn parse_expr(
                     }
                 } else {
                     dpx_warning(
-                        b"Syntax error: %s\n\x00" as *const u8 as *const libc::c_char,
+                        b"Syntax error: %s\n\x00" as *const u8 as *const i8,
                         *pp,
                     );
                     bt_release_tree(root);
@@ -297,17 +297,17 @@ pub unsafe extern "C" fn otl_release_opt(mut opt: *mut otl_opt) {
 #[no_mangle]
 pub unsafe extern "C" fn otl_parse_optstring(
     mut opt: *mut otl_opt,
-    mut optstr: *const libc::c_char,
+    mut optstr: *const i8,
 ) -> libc::c_int {
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
-    let mut endptr: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
+    let mut endptr: *const i8 = 0 as *const i8;
     if !opt.is_null() {
     } else {
         __assert_fail(
-            b"opt\x00" as *const u8 as *const libc::c_char,
-            b"dpx-otl_opt.c\x00" as *const u8 as *const libc::c_char,
+            b"opt\x00" as *const u8 as *const i8,
+            b"dpx-otl_opt.c\x00" as *const u8 as *const i8,
             237i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 49], &[libc::c_char; 49]>(
+            (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int otl_parse_optstring(otl_opt *, const char *)\x00",
             ))
             .as_ptr(),
@@ -342,15 +342,15 @@ pub unsafe extern "C" fn otl_parse_optstring(
 #[no_mangle]
 pub unsafe extern "C" fn otl_match_optrule(
     mut opt: *mut otl_opt,
-    mut tag: *const libc::c_char,
+    mut tag: *const i8,
 ) -> libc::c_int {
     if !tag.is_null() {
     } else {
         __assert_fail(
-            b"tag\x00" as *const u8 as *const libc::c_char,
-            b"dpx-otl_opt.c\x00" as *const u8 as *const libc::c_char,
+            b"tag\x00" as *const u8 as *const i8,
+            b"dpx-otl_opt.c\x00" as *const u8 as *const i8,
             251i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 47], &[libc::c_char; 47]>(
+            (*::std::mem::transmute::<&[u8; 47], &[i8; 47]>(
                 b"int otl_match_optrule(otl_opt *, const char *)\x00",
             ))
             .as_ptr(),

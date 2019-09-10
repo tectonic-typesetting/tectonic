@@ -10,10 +10,10 @@ extern crate libc;
 extern "C" {
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
@@ -24,7 +24,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -65,7 +65,7 @@ pub const _ISupper: C2RustUnnamed = 256;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_entry {
-    pub key: *mut libc::c_char,
+    pub key: *mut i8,
     pub keylen: libc::c_int,
     pub value: *mut libc::c_void,
     pub next: *mut ht_entry,
@@ -116,7 +116,7 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn xtoi(mut c: libc::c_char) -> libc::c_int {
+pub unsafe extern "C" fn xtoi(mut c: i8) -> libc::c_int {
     if c as libc::c_int >= '0' as i32 && c as libc::c_int <= '9' as i32 {
         return c as libc::c_int - '0' as i32;
     }
@@ -190,10 +190,10 @@ pub unsafe extern "C" fn ht_init_table(mut ht: *mut ht_table, mut hval_free_fn: 
     if !ht.is_null() {
     } else {
         __assert_fail(
-            b"ht\x00" as *const u8 as *const libc::c_char,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const libc::c_char,
+            b"ht\x00" as *const u8 as *const i8,
+            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
             85i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 54], &[libc::c_char; 54]>(
+            (*::std::mem::transmute::<&[u8; 54], &[i8; 54]>(
                 b"void ht_init_table(struct ht_table *, hval_free_func)\x00",
             ))
             .as_ptr(),
@@ -213,10 +213,10 @@ pub unsafe extern "C" fn ht_clear_table(mut ht: *mut ht_table) {
     if !ht.is_null() {
     } else {
         __assert_fail(
-            b"ht\x00" as *const u8 as *const libc::c_char,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const libc::c_char,
+            b"ht\x00" as *const u8 as *const i8,
+            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
             99i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 39], &[libc::c_char; 39]>(
+            (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
                 b"void ht_clear_table(struct ht_table *)\x00",
             ))
             .as_ptr(),
@@ -235,7 +235,7 @@ pub unsafe extern "C" fn ht_clear_table(mut ht: *mut ht_table) {
             if !(*hent).key.is_null() {
                 free((*hent).key as *mut libc::c_void);
             }
-            (*hent).key = 0 as *mut libc::c_char;
+            (*hent).key = 0 as *mut i8;
             next = (*hent).next;
             free(hent as *mut libc::c_void);
             hent = next
@@ -251,10 +251,10 @@ pub unsafe extern "C" fn ht_table_size(mut ht: *mut ht_table) -> libc::c_int {
     if !ht.is_null() {
     } else {
         __assert_fail(
-            b"ht\x00" as *const u8 as *const libc::c_char,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const libc::c_char,
+            b"ht\x00" as *const u8 as *const i8,
+            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
             126i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int ht_table_size(struct ht_table *)\x00",
             ))
             .as_ptr(),
@@ -272,7 +272,7 @@ unsafe extern "C" fn get_hash(
     while i < keylen {
         hkey = (hkey << 5i32)
             .wrapping_add(hkey)
-            .wrapping_add(*(key as *const libc::c_char).offset(i as isize) as libc::c_uint);
+            .wrapping_add(*(key as *const i8).offset(i as isize) as libc::c_uint);
         i += 1
     }
     return hkey.wrapping_rem(503i32 as libc::c_uint);
@@ -288,10 +288,10 @@ pub unsafe extern "C" fn ht_lookup_table(
     if !ht.is_null() && !key.is_null() {
     } else {
         __assert_fail(
-            b"ht && key\x00" as *const u8 as *const libc::c_char,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const libc::c_char,
+            b"ht && key\x00" as *const u8 as *const i8,
+            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
             150i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 60], &[libc::c_char; 60]>(
+            (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"void *ht_lookup_table(struct ht_table *, const void *, int)\x00",
             ))
             .as_ptr(),
@@ -326,10 +326,10 @@ pub unsafe extern "C" fn ht_remove_table(
     if !ht.is_null() && !key.is_null() {
     } else {
         __assert_fail(
-            b"ht && key\x00" as *const u8 as *const libc::c_char,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const libc::c_char,
+            b"ht && key\x00" as *const u8 as *const i8,
+            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
             173i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 58], &[libc::c_char; 58]>(
+            (*::std::mem::transmute::<&[u8; 58], &[i8; 58]>(
                 b"int ht_remove_table(struct ht_table *, const void *, int)\x00",
             ))
             .as_ptr(),
@@ -352,7 +352,7 @@ pub unsafe extern "C" fn ht_remove_table(
         hent = (*hent).next
     }
     if !hent.is_null() {
-        (*hent).key = mfree((*hent).key as *mut libc::c_void) as *mut libc::c_char;
+        (*hent).key = mfree((*hent).key as *mut libc::c_void) as *mut i8;
         (*hent).keylen = 0i32;
         if !(*hent).value.is_null() && (*ht).hval_free_fn.is_some() {
             (*ht).hval_free_fn.expect("non-null function pointer")((*hent).value);
@@ -384,10 +384,10 @@ pub unsafe extern "C" fn ht_insert_table(
     if !ht.is_null() && !key.is_null() {
     } else {
         __assert_fail(
-            b"ht && key\x00" as *const u8 as *const libc::c_char,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const libc::c_char,
+            b"ht && key\x00" as *const u8 as *const i8,
+            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
             213i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 67], &[libc::c_char; 67]>(
+            (*::std::mem::transmute::<&[u8; 67], &[i8; 67]>(
                 b"void ht_insert_table(struct ht_table *, const void *, int, void *)\x00",
             ))
             .as_ptr(),
@@ -419,8 +419,8 @@ pub unsafe extern "C" fn ht_insert_table(
             .wrapping_mul(::std::mem::size_of::<ht_entry>() as u64)
             as u32) as *mut ht_entry;
         (*hent).key = new((keylen as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-            as u32) as *mut libc::c_char;
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+            as u32) as *mut i8;
         memcpy(
             (*hent).key as *mut libc::c_void,
             key,
@@ -465,8 +465,8 @@ pub unsafe extern "C" fn ht_append_table(
         (*last).next = hent
     }
     (*hent).key = new((keylen as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-        as u32) as *mut libc::c_char;
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+        as u32) as *mut i8;
     memcpy(
         (*hent).key as *mut libc::c_void,
         key,
@@ -483,10 +483,10 @@ pub unsafe extern "C" fn ht_set_iter(mut ht: *mut ht_table, mut iter: *mut ht_it
     if !ht.is_null() && !iter.is_null() {
     } else {
         __assert_fail(
-            b"ht && iter\x00" as *const u8 as *const libc::c_char,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const libc::c_char,
+            b"ht && iter\x00" as *const u8 as *const i8,
+            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
             280i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 53], &[libc::c_char; 53]>(
+            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                 b"int ht_set_iter(struct ht_table *, struct ht_iter *)\x00",
             ))
             .as_ptr(),
@@ -516,7 +516,7 @@ pub unsafe extern "C" fn ht_clear_iter(mut iter: *mut ht_iter) {
 pub unsafe extern "C" fn ht_iter_getkey(
     mut iter: *mut ht_iter,
     mut keylen: *mut libc::c_int,
-) -> *mut libc::c_char {
+) -> *mut i8 {
     let mut hent: *mut ht_entry = 0 as *mut ht_entry;
     hent = (*iter).curr as *mut ht_entry;
     if !iter.is_null() && !hent.is_null() {
@@ -524,7 +524,7 @@ pub unsafe extern "C" fn ht_iter_getkey(
         return (*hent).key;
     } else {
         *keylen = 0i32;
-        return 0 as *mut libc::c_char;
+        return 0 as *mut i8;
     };
 }
 #[no_mangle]
@@ -544,10 +544,10 @@ pub unsafe extern "C" fn ht_iter_next(mut iter: *mut ht_iter) -> libc::c_int {
     if !iter.is_null() {
     } else {
         __assert_fail(
-            b"iter\x00" as *const u8 as *const libc::c_char,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const libc::c_char,
+            b"iter\x00" as *const u8 as *const i8,
+            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
             338i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 35], &[libc::c_char; 35]>(
+            (*::std::mem::transmute::<&[u8; 35], &[i8; 35]>(
                 b"int ht_iter_next(struct ht_iter *)\x00",
             ))
             .as_ptr(),
@@ -566,13 +566,13 @@ pub unsafe extern "C" fn ht_iter_next(mut iter: *mut ht_iter) -> libc::c_int {
     return if !hent.is_null() { 0i32 } else { -1i32 };
 }
 unsafe extern "C" fn read_c_escchar(
-    mut r: *mut libc::c_char,
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut r: *mut i8,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> libc::c_int {
     let mut c: libc::c_int = 0i32;
     let mut l: libc::c_int = 1i32;
-    let mut p: *const libc::c_char = *pp;
+    let mut p: *const i8 = *pp;
     match *p.offset(0) as libc::c_int {
         97 => {
             c = '\u{7}' as i32;
@@ -669,7 +669,7 @@ unsafe extern "C" fn read_c_escchar(
         }
         _ => {
             dpx_warning(
-                b"Unknown escape char sequence: \\%c\x00" as *const u8 as *const libc::c_char,
+                b"Unknown escape char sequence: \\%c\x00" as *const u8 as *const i8,
                 *p.offset(0) as libc::c_int,
             );
             l = 0i32;
@@ -677,18 +677,18 @@ unsafe extern "C" fn read_c_escchar(
         }
     }
     if !r.is_null() {
-        *r = c as libc::c_char
+        *r = c as i8
     }
     *pp = p;
     return l;
 }
 unsafe extern "C" fn read_c_litstrc(
-    mut q: *mut libc::c_char,
+    mut q: *mut i8,
     mut len: libc::c_int,
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
 ) -> libc::c_int {
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
     let mut l: libc::c_int = 0i32;
     let mut s: libc::c_int = -1i32;
     l = 0i32;
@@ -708,7 +708,7 @@ unsafe extern "C" fn read_c_litstrc(
                         if !q.is_null() {
                             &mut *q.offset(l as isize)
                         } else {
-                            0 as *mut libc::c_char
+                            0 as *mut i8
                         },
                         &mut p,
                         endptr,
@@ -738,7 +738,7 @@ unsafe extern "C" fn read_c_litstrc(
         } else if !q.is_null() {
             let fresh1 = l;
             l = l + 1;
-            *q.offset(fresh1 as isize) = '\u{0}' as i32 as libc::c_char
+            *q.offset(fresh1 as isize) = '\u{0}' as i32 as i8
         }
     }
     *pp = p;
@@ -746,21 +746,21 @@ unsafe extern "C" fn read_c_litstrc(
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_c_string(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
-) -> *mut libc::c_char {
-    let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut p: *const libc::c_char = *pp;
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
+) -> *mut i8 {
+    let mut q: *mut i8 = 0 as *mut i8;
+    let mut p: *const i8 = *pp;
     let mut l: libc::c_int = 0i32;
     if p >= endptr || *p.offset(0) as libc::c_int != '\"' as i32 {
-        return 0 as *mut libc::c_char;
+        return 0 as *mut i8;
     }
     p = p.offset(1);
-    l = read_c_litstrc(0 as *mut libc::c_char, 0i32, &mut p, endptr);
+    l = read_c_litstrc(0 as *mut i8, 0i32, &mut p, endptr);
     if l >= 0i32 {
         q = new(((l + 1i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-            as u32) as *mut libc::c_char;
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+            as u32) as *mut i8;
         p = (*pp).offset(1);
         l = read_c_litstrc(q, l + 1i32, &mut p, endptr)
     }
@@ -769,18 +769,18 @@ pub unsafe extern "C" fn parse_c_string(
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_c_ident(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
-) -> *mut libc::c_char {
-    let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut p: *const libc::c_char = *pp;
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
+) -> *mut i8 {
+    let mut q: *mut i8 = 0 as *mut i8;
+    let mut p: *const i8 = *pp;
     let mut n: libc::c_int = 0;
     if p >= endptr
         || !(*p as libc::c_int == '_' as i32
             || *p as libc::c_int >= 'a' as i32 && *p as libc::c_int <= 'z' as i32
             || *p as libc::c_int >= 'A' as i32 && *p as libc::c_int <= 'Z' as i32)
     {
-        return 0 as *mut libc::c_char;
+        return 0 as *mut i8;
     }
     n = 0i32;
     while p < endptr
@@ -793,14 +793,14 @@ pub unsafe extern "C" fn parse_c_ident(
         n += 1
     }
     q = new(((n + 1i32) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-        as u32) as *mut libc::c_char;
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+        as u32) as *mut i8;
     memcpy(
         q as *mut libc::c_void,
         *pp as *const libc::c_void,
         n as u64,
     );
-    *q.offset(n as isize) = '\u{0}' as i32 as libc::c_char;
+    *q.offset(n as isize) = '\u{0}' as i32 as i8;
     *pp = p;
     return q;
 }
@@ -827,15 +827,15 @@ pub unsafe extern "C" fn parse_c_ident(
 */
 #[no_mangle]
 pub unsafe extern "C" fn parse_float_decimal(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
-) -> *mut libc::c_char {
-    let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut p: *const libc::c_char = *pp;
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
+) -> *mut i8 {
+    let mut q: *mut i8 = 0 as *mut i8;
+    let mut p: *const i8 = *pp;
     let mut s: libc::c_int = 0i32;
     let mut n: libc::c_int = 0i32;
     if p >= endptr {
-        return 0 as *mut libc::c_char;
+        return 0 as *mut i8;
     }
     if *p.offset(0) as libc::c_int == '+' as i32 || *p.offset(0) as libc::c_int == '-' as i32 {
         p = p.offset(1)
@@ -879,14 +879,14 @@ pub unsafe extern "C" fn parse_float_decimal(
     if n != 0i32 {
         n = p.wrapping_offset_from(*pp) as libc::c_long as libc::c_int;
         q = new(((n + 1i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-            as u32) as *mut libc::c_char;
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+            as u32) as *mut i8;
         memcpy(
             q as *mut libc::c_void,
             *pp as *const libc::c_void,
             n as u64,
         );
-        *q.offset(n as isize) = '\u{0}' as i32 as libc::c_char
+        *q.offset(n as isize) = '\u{0}' as i32 as i8
     }
     *pp = p;
     return q;

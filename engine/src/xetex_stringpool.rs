@@ -9,7 +9,7 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     static mut buffer: *mut UnicodeScalar;
     #[no_mangle]
@@ -29,7 +29,7 @@ extern "C" {
     #[no_mangle]
     static mut init_str_ptr: str_number;
     #[no_mangle]
-    fn overflow(s: *const libc::c_char, n: int32_t) -> !;
+    fn overflow(s: *const i8, n: int32_t) -> !;
 }
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
@@ -42,14 +42,14 @@ pub type packed_UTF16_code = u16;
    Copyright 2017-2018 the Tectonic Project
    Licensed under the MIT License.
 */
-static mut string_constants: [*const libc::c_char; 3] = [
-    b"this marks the start of the stringpool\x00" as *const u8 as *const libc::c_char,
-    b"\x00" as *const u8 as *const libc::c_char,
-    0 as *const libc::c_char,
+static mut string_constants: [*const i8; 3] = [
+    b"this marks the start of the stringpool\x00" as *const u8 as *const i8,
+    b"\x00" as *const u8 as *const i8,
+    0 as *const i8,
 ];
 #[no_mangle]
 pub unsafe extern "C" fn load_pool_strings(mut spare_size: int32_t) -> libc::c_int {
-    let mut s: *const libc::c_char = 0 as *const libc::c_char;
+    let mut s: *const i8 = 0 as *const i8;
     let mut i: libc::c_int = 0i32;
     let mut total_len: size_t = 0i32 as size_t;
     let mut g: str_number = 0i32;
@@ -101,7 +101,7 @@ pub unsafe extern "C" fn length(mut s: str_number) -> int32_t {
 pub unsafe extern "C" fn make_string() -> str_number {
     if str_ptr == max_strings {
         overflow(
-            b"number of strings\x00" as *const u8 as *const libc::c_char,
+            b"number of strings\x00" as *const u8 as *const i8,
             max_strings - init_str_ptr,
         );
     }
@@ -116,7 +116,7 @@ pub unsafe extern "C" fn append_str(mut s: str_number) {
     i = length(s);
     if pool_ptr + i > pool_size {
         overflow(
-            b"pool size\x00" as *const u8 as *const libc::c_char,
+            b"pool size\x00" as *const u8 as *const i8,
             pool_size - init_pool_ptr,
         );
     }

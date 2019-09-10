@@ -138,14 +138,14 @@ pub struct AES_CONTEXT {
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 unsafe extern "C" fn _gcry_burn_stack(mut bytes: libc::c_int) {
-    let mut buf: [libc::c_char; 64] = [0; 64];
+    let mut buf: [i8; 64] = [0; 64];
     memset(
         buf.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        ::std::mem::size_of::<[libc::c_char; 64]>() as u64,
+        ::std::mem::size_of::<[i8; 64]>() as u64,
     );
     bytes = (bytes as u64)
-        .wrapping_sub(::std::mem::size_of::<[libc::c_char; 64]>() as u64)
+        .wrapping_sub(::std::mem::size_of::<[i8; 64]>() as u64)
         as libc::c_int as libc::c_int;
     if bytes > 0i32 {
         _gcry_burn_stack(bytes);

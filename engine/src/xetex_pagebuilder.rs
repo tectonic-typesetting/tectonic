@@ -16,7 +16,7 @@ extern "C" {
     #[no_mangle]
     static mut file_line_error_style_p: libc::c_int;
     #[no_mangle]
-    static mut help_line: [*const libc::c_char; 6];
+    static mut help_line: [*const i8; 6];
     #[no_mangle]
     static mut help_ptr: u8;
     #[no_mangle]
@@ -109,13 +109,13 @@ extern "C" {
     #[no_mangle]
     fn error();
     #[no_mangle]
-    fn confusion(s: *const libc::c_char) -> !;
+    fn confusion(s: *const i8) -> !;
     #[no_mangle]
-    fn print_cstr(s: *const libc::c_char);
+    fn print_cstr(s: *const i8);
     #[no_mangle]
-    fn print_nl_cstr(s: *const libc::c_char);
+    fn print_nl_cstr(s: *const i8);
     #[no_mangle]
-    fn print_esc_cstr(s: *const libc::c_char);
+    fn print_esc_cstr(s: *const i8);
     #[no_mangle]
     fn print_int(n: int32_t);
     #[no_mangle]
@@ -329,16 +329,16 @@ unsafe extern "C" fn ensure_vbox(mut n: eight_bits) {
     if file_line_error_style_p != 0 {
         print_file_line();
     } else {
-        print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+        print_nl_cstr(b"! \x00" as *const u8 as *const i8);
     }
-    print_cstr(b"Insertions can only be added to a vbox\x00" as *const u8 as *const libc::c_char);
+    print_cstr(b"Insertions can only be added to a vbox\x00" as *const u8 as *const i8);
     help_ptr = 3i32 as u8;
     help_line[2] =
-        b"Tut tut: You\'re trying to \\insert into a\x00" as *const u8 as *const libc::c_char;
+        b"Tut tut: You\'re trying to \\insert into a\x00" as *const u8 as *const i8;
     help_line[1] =
-        b"\\box register that now contains an \\hbox.\x00" as *const u8 as *const libc::c_char;
+        b"\\box register that now contains an \\hbox.\x00" as *const u8 as *const i8;
     help_line[0] =
-        b"Proceed, and I\'ll discard its present contents.\x00" as *const u8 as *const libc::c_char;
+        b"Proceed, and I\'ll discard its present contents.\x00" as *const u8 as *const i8;
     box_error(n);
 }
 /*1047: "The fire_up subroutine prepares to output the curent page at the best
@@ -470,16 +470,16 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
         if file_line_error_style_p != 0 {
             print_file_line(); /* "this will count the number of insertions held over" */
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
-        print_cstr(b"\x00" as *const u8 as *const libc::c_char);
-        print_esc_cstr(b"box\x00" as *const u8 as *const libc::c_char);
-        print_cstr(b"255 is not void\x00" as *const u8 as *const libc::c_char);
+        print_cstr(b"\x00" as *const u8 as *const i8);
+        print_esc_cstr(b"box\x00" as *const u8 as *const i8);
+        print_cstr(b"255 is not void\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
         help_line[1] = b"You shouldn\'t use \\box255 except in \\output routines.\x00" as *const u8
-            as *const libc::c_char;
+            as *const i8;
         help_line[0] = b"Proceed, and I\'ll discard its present contents.\x00" as *const u8
-            as *const libc::c_char;
+            as *const i8;
         box_error(255i32 as eight_bits);
     }
     insert_penalties = 0i32;
@@ -1147,18 +1147,18 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
             if file_line_error_style_p != 0 {
                 print_file_line();
             } else {
-                print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                print_nl_cstr(b"! \x00" as *const u8 as *const i8);
             }
-            print_cstr(b"Output loop---\x00" as *const u8 as *const libc::c_char);
+            print_cstr(b"Output loop---\x00" as *const u8 as *const i8);
             print_int(dead_cycles);
-            print_cstr(b" consecutive dead cycles\x00" as *const u8 as *const libc::c_char);
+            print_cstr(b" consecutive dead cycles\x00" as *const u8 as *const i8);
             help_ptr = 3i32 as u8;
             help_line[2] = b"I\'ve concluded that your \\output is awry; it never does a\x00"
-                as *const u8 as *const libc::c_char;
+                as *const u8 as *const i8;
             help_line[1] = b"\\shipout, so I\'m shipping \\box255 out myself. Next time\x00"
-                as *const u8 as *const libc::c_char;
+                as *const u8 as *const i8;
             help_line[0] = b"increase \\maxdeadcycles if you want me to be more patient!\x00"
-                as *const u8 as *const libc::c_char;
+                as *const u8 as *const i8;
             error();
         } else {
             /*1060: "Fire up the user's output routine and return" */
@@ -1523,23 +1523,23 @@ pub unsafe extern "C" fn build_page() {
                             print_file_line();
                         } else {
                             print_nl_cstr(b"! \x00" as *const u8 as
-                                              *const libc::c_char);
+                                              *const i8);
                         }
                         print_cstr(b"Infinite glue shrinkage inserted from \x00"
-                                       as *const u8 as *const libc::c_char);
+                                       as *const u8 as *const i8);
                         print_esc_cstr(b"skip\x00" as *const u8 as
-                                           *const libc::c_char);
+                                           *const i8);
                         print_int(n as int32_t);
                         help_ptr = 3i32 as u8;
                         help_line[2] =
                             b"The correction glue for page breaking with insertions\x00"
-                                as *const u8 as *const libc::c_char;
+                                as *const u8 as *const i8;
                         help_line[1] =
                             b"must have finite shrinkability. But you may proceed,\x00"
-                                as *const u8 as *const libc::c_char;
+                                as *const u8 as *const i8;
                         help_line[0] =
                             b"since the offensive shrinkability has been made finite.\x00"
-                                as *const u8 as *const libc::c_char;
+                                as *const u8 as *const i8;
                         error();
                     }
                 }
@@ -1797,7 +1797,7 @@ pub unsafe extern "C" fn build_page() {
                 current_block = 11918621130838443904;
             }
             _ => {
-                confusion(b"page\x00" as *const u8 as *const libc::c_char);
+                confusion(b"page\x00" as *const u8 as *const i8);
             }
         }
         match current_block {
@@ -1931,23 +1931,23 @@ pub unsafe extern "C" fn build_page() {
                             print_file_line();
                         } else {
                             print_nl_cstr(b"! \x00" as *const u8 as
-                                              *const libc::c_char);
+                                              *const i8);
                         }
                         print_cstr(b"Infinite glue shrinkage found on current page\x00"
-                                       as *const u8 as *const libc::c_char);
+                                       as *const u8 as *const i8);
                         help_ptr = 4i32 as u8;
                         help_line[3] =
                             b"The page about to be output contains some infinitely\x00"
-                                as *const u8 as *const libc::c_char;
+                                as *const u8 as *const i8;
                         help_line[2] =
                             b"shrinkable glue, e.g., `\\vss\' or `\\vskip 0pt minus 1fil\'.\x00"
-                                as *const u8 as *const libc::c_char;
+                                as *const u8 as *const i8;
                         help_line[1] =
                             b"Such glue doesn\'t belong there; but you can safely proceed,\x00"
-                                as *const u8 as *const libc::c_char;
+                                as *const u8 as *const i8;
                         help_line[0] =
                             b"since the offensive shrinkability has been made finite.\x00"
-                                as *const u8 as *const libc::c_char;
+                                as *const u8 as *const i8;
                         error();
                         r = new_spec(q);
                         (*mem.offset(r as isize)).b16.s0 = 0i32 as u16;

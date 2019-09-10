@@ -11,10 +11,10 @@ extern "C" {
     pub type pst_obj;
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
@@ -22,7 +22,7 @@ extern "C" {
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn skip_white_spaces(s: *mut *mut u8, endptr: *mut u8);
     #[no_mangle]
@@ -229,10 +229,10 @@ pub unsafe extern "C" fn pst_get_token(
     if *inbuf <= inbufend && *inbufend == 0 {
     } else {
         __assert_fail(
-            b"*inbuf <= inbufend && !*inbufend\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pst.c\x00" as *const u8 as *const libc::c_char,
+            b"*inbuf <= inbufend && !*inbufend\x00" as *const u8 as *const i8,
+            b"dpx-pst.c\x00" as *const u8 as *const i8,
             87i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 58], &[libc::c_char; 58]>(
+            (*::std::mem::transmute::<&[u8; 58], &[i8; 58]>(
                 b"pst_obj *pst_get_token(unsigned char **, unsigned char *)\x00",
             ))
             .as_ptr(),
@@ -274,27 +274,27 @@ pub unsafe extern "C" fn pst_get_token(
             if (*inbuf).offset(1) >= inbufend || *(*inbuf).offset(1) as libc::c_int != '>' as i32 {
                 _tt_abort(
                     b"Unexpected end of ASCII hex string marker.\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
             } else {
-                let mut mark: *mut libc::c_char = 0 as *mut libc::c_char;
+                let mut mark: *mut i8 = 0 as *mut i8;
                 mark = new((3i32 as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-                    as u32) as *mut libc::c_char;
-                *mark.offset(0) = '>' as i32 as libc::c_char;
-                *mark.offset(1) = '>' as i32 as libc::c_char;
-                *mark.offset(2) = '\u{0}' as i32 as libc::c_char;
+                    .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                    as u32) as *mut i8;
+                *mark.offset(0) = '>' as i32 as i8;
+                *mark.offset(1) = '>' as i32 as i8;
+                *mark.offset(2) = '\u{0}' as i32 as i8;
                 obj = pst_new_obj(-1i32, mark as *mut libc::c_void);
                 *inbuf = (*inbuf).offset(2)
             }
         }
         93 | 125 => {
-            let mut mark_0: *mut libc::c_char = 0 as *mut libc::c_char;
+            let mut mark_0: *mut i8 = 0 as *mut i8;
             mark_0 = new((2i32 as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-                as u32) as *mut libc::c_char;
-            *mark_0.offset(0) = c as libc::c_char;
-            *mark_0.offset(1) = '\u{0}' as i32 as libc::c_char;
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32) as *mut i8;
+            *mark_0.offset(0) = c as i8;
+            *mark_0.offset(1) = '\u{0}' as i32 as i8;
             obj = pst_new_obj(-1i32, mark_0 as *mut libc::c_void);
             *inbuf = (*inbuf).offset(1)
         }

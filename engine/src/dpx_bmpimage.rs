@@ -24,7 +24,7 @@ extern "C" {
     #[no_mangle]
     fn ttstub_input_read(
         handle: rust_input_handle_t,
-        data: *mut libc::c_char,
+        data: *mut i8,
         len: size_t,
     ) -> ssize_t;
     #[no_mangle]
@@ -37,7 +37,7 @@ extern "C" {
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     /* Name does not include the / */
     #[no_mangle]
-    fn pdf_new_name(name: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_array() -> *mut pdf_obj;
     /* pdf_add_dict requires key but pdf_add_array does not.
@@ -104,7 +104,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -170,7 +170,7 @@ pub unsafe extern "C" fn check_for_bmp(mut handle: rust_input_handle_t) -> libc:
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     if ttstub_input_read(
         handle,
-        sigbytes.as_mut_ptr() as *mut libc::c_char,
+        sigbytes.as_mut_ptr() as *mut i8,
         ::std::mem::size_of::<[u8; 2]>() as u64,
     ) as u64
         != ::std::mem::size_of::<[u8; 2]>() as u64
@@ -310,7 +310,7 @@ pub unsafe extern "C" fn bmp_include_image(
             && hdr.bit_count as libc::c_int != 8i32
         {
             dpx_warning(
-                b"Unsupported palette size: %hu\x00" as *const u8 as *const libc::c_char,
+                b"Unsupported palette size: %hu\x00" as *const u8 as *const i8,
                 hdr.bit_count as libc::c_int,
             );
             return -1i32;
@@ -329,7 +329,7 @@ pub unsafe extern "C" fn bmp_include_image(
         info.num_components = 3i32
     } else {
         dpx_warning(
-            b"Unkown/Unsupported BMP bitCount value: %hu\x00" as *const u8 as *const libc::c_char,
+            b"Unkown/Unsupported BMP bitCount value: %hu\x00" as *const u8 as *const i8,
             hdr.bit_count as libc::c_int,
         );
         return -1i32;
@@ -337,7 +337,7 @@ pub unsafe extern "C" fn bmp_include_image(
     if info.width == 0i32 || info.height == 0i32 || num_palette < 1i32 {
         dpx_warning(
             b"Invalid BMP file: width=%u, height=%d, #palette=%d\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
             info.width,
             info.height,
             num_palette,
@@ -359,11 +359,11 @@ pub unsafe extern "C" fn bmp_include_image(
         while i < num_palette {
             if ttstub_input_read(
                 handle,
-                bgrq.as_mut_ptr() as *mut libc::c_char,
+                bgrq.as_mut_ptr() as *mut i8,
                 hdr.psize as size_t,
             ) != hdr.psize as libc::c_long
             {
-                dpx_warning(b"Reading file failed...\x00" as *const u8 as *const libc::c_char);
+                dpx_warning(b"Reading file failed...\x00" as *const u8 as *const i8);
                 free(palette as *mut libc::c_void);
                 return -1i32;
             }
@@ -381,11 +381,11 @@ pub unsafe extern "C" fn bmp_include_image(
         colorspace = pdf_new_array();
         pdf_add_array(
             colorspace,
-            pdf_new_name(b"Indexed\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Indexed\x00" as *const u8 as *const i8),
         );
         pdf_add_array(
             colorspace,
-            pdf_new_name(b"DeviceRGB\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"DeviceRGB\x00" as *const u8 as *const i8),
         );
         pdf_add_array(
             colorspace,
@@ -393,11 +393,11 @@ pub unsafe extern "C" fn bmp_include_image(
         );
         pdf_add_array(colorspace, lookup);
     } else {
-        colorspace = pdf_new_name(b"DeviceRGB\x00" as *const u8 as *const libc::c_char)
+        colorspace = pdf_new_name(b"DeviceRGB\x00" as *const u8 as *const i8)
     }
     pdf_add_dict(
         stream_dict,
-        pdf_new_name(b"ColorSpace\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"ColorSpace\x00" as *const u8 as *const i8),
         colorspace,
     );
     /* Raster data of BMP is four-byte aligned. */
@@ -424,11 +424,11 @@ pub unsafe extern "C" fn bmp_include_image(
         n = 0i32;
         while n < info.height {
             p = stream_data_ptr.offset((n * rowbytes) as isize);
-            if ttstub_input_read(handle, p as *mut libc::c_char, dib_rowbytes as size_t)
+            if ttstub_input_read(handle, p as *mut i8, dib_rowbytes as size_t)
                 != dib_rowbytes as libc::c_long
             {
                 dpx_warning(
-                    b"Reading BMP raster data failed...\x00" as *const u8 as *const libc::c_char,
+                    b"Reading BMP raster data failed...\x00" as *const u8 as *const i8,
                 );
                 pdf_release_obj(stream);
                 free(stream_data_ptr as *mut libc::c_void);
@@ -442,7 +442,7 @@ pub unsafe extern "C" fn bmp_include_image(
             as u32) as *mut u8;
         if read_raster_rle8(stream_data_ptr, info.width, info.height, handle) < 0i32 {
             dpx_warning(
-                b"Reading BMP raster data failed...\x00" as *const u8 as *const libc::c_char,
+                b"Reading BMP raster data failed...\x00" as *const u8 as *const i8,
             );
             pdf_release_obj(stream);
             free(stream_data_ptr as *mut libc::c_void);
@@ -454,7 +454,7 @@ pub unsafe extern "C" fn bmp_include_image(
             as u32) as *mut u8;
         if read_raster_rle4(stream_data_ptr, info.width, info.height, handle) < 0i32 {
             dpx_warning(
-                b"Reading BMP raster data failed...\x00" as *const u8 as *const libc::c_char,
+                b"Reading BMP raster data failed...\x00" as *const u8 as *const i8,
             );
             pdf_release_obj(stream);
             free(stream_data_ptr as *mut libc::c_void);
@@ -463,7 +463,7 @@ pub unsafe extern "C" fn bmp_include_image(
     } else {
         dpx_warning(
             b"Unknown/Unsupported compression type for BMP image: %d\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
             hdr.compression,
         );
         pdf_release_obj(stream);
@@ -524,17 +524,17 @@ unsafe extern "C" fn read_header(
     p = buf.as_mut_ptr();
     if ttstub_input_read(
         handle,
-        buf.as_mut_ptr() as *mut libc::c_char,
+        buf.as_mut_ptr() as *mut i8,
         (14i32 + 4i32) as size_t,
     ) != (14i32 + 4i32) as libc::c_long
     {
-        dpx_warning(b"Could not read BMP file header...\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Could not read BMP file header...\x00" as *const u8 as *const i8);
         return -1i32;
     }
     if *p.offset(0) as libc::c_int != 'B' as i32 || *p.offset(1) as libc::c_int != 'M' as i32 {
         dpx_warning(
             b"File not starting with \'B\' \'M\'... Not a BMP file?\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
         return -1i32;
     }
@@ -547,7 +547,7 @@ unsafe extern "C" fn read_header(
         + ((*p.offset(3) as libc::c_int) << 24i32)
         != 0i32
     {
-        dpx_warning(b"Not a BMP file???\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Not a BMP file???\x00" as *const u8 as *const i8);
         return -1i32;
     }
     p = p.offset(4);
@@ -564,11 +564,11 @@ unsafe extern "C" fn read_header(
     p = p.offset(4); /* undefined. FIXME */
     if ttstub_input_read(
         handle,
-        p as *mut libc::c_char,
+        p as *mut i8,
         (*hdr).hsize.wrapping_sub(4i32 as libc::c_uint) as size_t,
     ) != (*hdr).hsize.wrapping_sub(4i32 as libc::c_uint) as libc::c_long
     {
-        dpx_warning(b"Could not read BMP file header...\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Could not read BMP file header...\x00" as *const u8 as *const i8);
         return -1i32;
     }
     match (*hdr).hsize {
@@ -583,7 +583,7 @@ unsafe extern "C" fn read_header(
             if *p.offset(0) as libc::c_int + ((*p.offset(1) as libc::c_int) << 8i32) != 1i32 {
                 dpx_warning(
                     b"Unknown bcPlanes value in BMP COREHEADER.\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
                 return -1i32;
             }
@@ -610,7 +610,7 @@ unsafe extern "C" fn read_header(
             if *p.offset(0) as libc::c_int + ((*p.offset(1) as libc::c_int) << 8i32) != 1i32 {
                 dpx_warning(
                     b"Unknown biPlanes value in BMP INFOHEADER.\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
                 return -1i32;
             }
@@ -641,7 +641,7 @@ unsafe extern "C" fn read_header(
             (*hdr).psize = 4i32
         }
         _ => {
-            dpx_warning(b"Unknown BMP header type.\x00" as *const u8 as *const libc::c_char);
+            dpx_warning(b"Unknown BMP header type.\x00" as *const u8 as *const i8);
             return -1i32;
         }
     }
@@ -698,11 +698,11 @@ unsafe extern "C" fn read_raster_rle8(
                         h += b1 as libc::c_int;
                         if h > width {
                             dpx_warning(
-                                b"RLE decode failed...\x00" as *const u8 as *const libc::c_char,
+                                b"RLE decode failed...\x00" as *const u8 as *const i8,
                             );
                             return -1i32;
                         }
-                        if ttstub_input_read(handle, p as *mut libc::c_char, b1 as size_t)
+                        if ttstub_input_read(handle, p as *mut i8, b1 as size_t)
                             != b1 as libc::c_long
                         {
                             return -1i32;
@@ -717,7 +717,7 @@ unsafe extern "C" fn read_raster_rle8(
             } else {
                 h += b0 as libc::c_int;
                 if h > width {
-                    dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const libc::c_char);
+                    dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
                     return -1i32;
                 }
                 memset(
@@ -732,13 +732,13 @@ unsafe extern "C" fn read_raster_rle8(
             b0 = tt_get_unsigned_byte(handle);
             b1 = tt_get_unsigned_byte(handle);
             if b0 as libc::c_int != 0i32 {
-                dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const libc::c_char);
+                dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
                 return -1i32;
             } else {
                 if b1 as libc::c_int == 0x1i32 {
                     eoi = 1i32
                 } else if b1 as libc::c_int != 0i32 {
-                    dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const libc::c_char);
+                    dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
                     return -1i32;
                 }
             }
@@ -803,7 +803,7 @@ unsafe extern "C" fn read_raster_rle4(
                     _ => {
                         if h + b1 as libc::c_int > width {
                             dpx_warning(
-                                b"RLE decode failed...\x00" as *const u8 as *const libc::c_char,
+                                b"RLE decode failed...\x00" as *const u8 as *const i8,
                             );
                             return -1i32;
                         }
@@ -823,7 +823,7 @@ unsafe extern "C" fn read_raster_rle4(
                             }
                         } else if ttstub_input_read(
                             handle,
-                            p as *mut libc::c_char,
+                            p as *mut i8,
                             nbytes as size_t,
                         ) != nbytes as libc::c_long
                         {
@@ -839,7 +839,7 @@ unsafe extern "C" fn read_raster_rle4(
                 }
             } else {
                 if h + b0 as libc::c_int > width {
-                    dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const libc::c_char);
+                    dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
                     return -1i32;
                 }
                 if h % 2i32 != 0 {
@@ -872,7 +872,7 @@ unsafe extern "C" fn read_raster_rle4(
             if b0 as libc::c_int != 0i32 {
                 dpx_warning(
                     b"No EOL/EOI marker. RLE decode failed...\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
                 return -1i32;
             } else {
@@ -881,7 +881,7 @@ unsafe extern "C" fn read_raster_rle4(
                 } else if b1 as libc::c_int != 0i32 {
                     dpx_warning(
                         b"No EOL/EOI marker. RLE decode failed...\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                     );
                     return -1i32;
                 }

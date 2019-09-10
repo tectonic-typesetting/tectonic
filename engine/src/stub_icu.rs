@@ -300,7 +300,7 @@ extern_and_forward_stub! {
     pub fn ubrk_close => tt_ubrk_close(bi: *mut UBreakIterator) -> ();
     pub fn ubrk_open => tt_ubrk_open(
         type_0: UBreakIteratorType,
-        locale: *const libc::c_char,
+        locale: *const i8,
         text: *const UChar,
         textLength: int32_t,
         status: *mut UErrorCode
@@ -311,16 +311,16 @@ extern_and_forward_stub! {
         textLength: int32_t,
         status: *mut UErrorCode
     ) -> ();
-    pub fn ucnv_open => tt_ucnv_open(converterName: *const libc::c_char, err: *mut UErrorCode) -> *mut UConverter;
+    pub fn ucnv_open => tt_ucnv_open(converterName: *const i8, err: *mut UErrorCode) -> *mut UConverter;
     #[no_mangle]
     pub fn ucnv_close => tt_ucnv_close(converter: *mut UConverter) -> ();
     #[no_mangle]
     pub fn ucnv_toAlgorithmic => tt_ucnv_toAlgorithmic(
         algorithmicType: UConverterType,
         cnv: *mut UConverter,
-        target: *mut libc::c_char,
+        target: *mut i8,
         targetCapacity: int32_t,
-        source: *const libc::c_char,
+        source: *const i8,
         sourceLength: int32_t,
         pErrorCode: *mut UErrorCode
     ) -> int32_t;

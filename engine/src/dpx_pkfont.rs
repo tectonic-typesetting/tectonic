@@ -14,17 +14,17 @@ extern "C" {
     pub type pdf_obj;
     pub type pdf_font;
     #[no_mangle]
-    fn pdf_font_set_fontname(font: *mut pdf_font, fontname: *const libc::c_char) -> libc::c_int;
+    fn pdf_font_set_fontname(font: *mut pdf_font, fontname: *const i8) -> libc::c_int;
     #[no_mangle]
     fn pdf_font_get_param(font: *mut pdf_font, type_0: libc::c_int) -> libc::c_double;
     #[no_mangle]
     fn pdf_font_get_encoding(font: *mut pdf_font) -> libc::c_int;
     #[no_mangle]
-    fn pdf_font_get_usedchars(font: *mut pdf_font) -> *mut libc::c_char;
+    fn pdf_font_get_usedchars(font: *mut pdf_font) -> *mut i8;
     #[no_mangle]
     fn pdf_font_get_resource(font: *mut pdf_font) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_font_get_ident(font: *mut pdf_font) -> *mut libc::c_char;
+    fn pdf_font_get_ident(font: *mut pdf_font) -> *mut i8;
     #[no_mangle]
     fn pdf_font_is_in_use(font: *mut pdf_font) -> bool;
     #[no_mangle]
@@ -44,7 +44,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_array() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_name(name: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
     #[no_mangle]
@@ -61,19 +61,19 @@ extern "C" {
     #[no_mangle]
     fn fgetc(__stream: *mut FILE) -> libc::c_int;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
     #[no_mangle]
-    fn fopen(_: *const libc::c_char, _: *const libc::c_char) -> *mut FILE;
+    fn fopen(_: *const i8, _: *const i8) -> *mut FILE;
     #[no_mangle]
     fn fclose(__stream: *mut FILE) -> libc::c_int;
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
@@ -82,7 +82,7 @@ extern "C" {
     #[no_mangle]
     fn floor(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -153,22 +153,22 @@ extern "C" {
     #[no_mangle]
     fn get_unsigned_num(_: *mut FILE, _: u8) -> u32;
     #[no_mangle]
-    fn get_positive_quad(_: *mut FILE, _: *const libc::c_char, _: *const libc::c_char) -> u32;
+    fn get_positive_quad(_: *mut FILE, _: *const i8, _: *const i8) -> u32;
     #[no_mangle]
-    static mut work_buffer: [libc::c_char; 0];
+    static mut work_buffer: [i8; 0];
     #[no_mangle]
-    fn pdf_sprint_number(buf: *mut libc::c_char, value: libc::c_double) -> libc::c_int;
+    fn pdf_sprint_number(buf: *mut i8, value: libc::c_double) -> libc::c_int;
     #[no_mangle]
     fn pdf_encoding_used_by_type3(enc_id: libc::c_int);
     /* WARNING:
      * Pointer(s) may change after another encoding is loaded.
      */
     #[no_mangle]
-    fn pdf_encoding_get_name(enc_id: libc::c_int) -> *mut libc::c_char;
+    fn pdf_encoding_get_name(enc_id: libc::c_int) -> *mut i8;
     #[no_mangle]
-    fn pdf_encoding_get_encoding(enc_id: libc::c_int) -> *mut *mut libc::c_char;
+    fn pdf_encoding_get_encoding(enc_id: libc::c_int) -> *mut *mut i8;
     #[no_mangle]
-    fn tfm_open(tex_name: *const libc::c_char, must_exist: libc::c_int) -> libc::c_int;
+    fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
     /* From TFM header */
     #[no_mangle]
     fn tfm_get_design_size(font_id: libc::c_int) -> libc::c_double;
@@ -182,17 +182,17 @@ pub type size_t = u64;
 #[repr(C)]
 pub struct _IO_FILE {
     pub _flags: libc::c_int,
-    pub _IO_read_ptr: *mut libc::c_char,
-    pub _IO_read_end: *mut libc::c_char,
-    pub _IO_read_base: *mut libc::c_char,
-    pub _IO_write_base: *mut libc::c_char,
-    pub _IO_write_ptr: *mut libc::c_char,
-    pub _IO_write_end: *mut libc::c_char,
-    pub _IO_buf_base: *mut libc::c_char,
-    pub _IO_buf_end: *mut libc::c_char,
-    pub _IO_save_base: *mut libc::c_char,
-    pub _IO_backup_base: *mut libc::c_char,
-    pub _IO_save_end: *mut libc::c_char,
+    pub _IO_read_ptr: *mut i8,
+    pub _IO_read_end: *mut i8,
+    pub _IO_read_base: *mut i8,
+    pub _IO_write_base: *mut i8,
+    pub _IO_write_ptr: *mut i8,
+    pub _IO_write_end: *mut i8,
+    pub _IO_buf_base: *mut i8,
+    pub _IO_buf_end: *mut i8,
+    pub _IO_save_base: *mut i8,
+    pub _IO_backup_base: *mut i8,
+    pub _IO_save_end: *mut i8,
     pub _markers: *mut _IO_marker,
     pub _chain: *mut _IO_FILE,
     pub _fileno: libc::c_int,
@@ -200,7 +200,7 @@ pub struct _IO_FILE {
     pub _old_offset: __off_t,
     pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
-    pub _shortbuf: [libc::c_char; 1],
+    pub _shortbuf: [i8; 1],
     pub _lock: *mut libc::c_void,
     pub _offset: __off64_t,
     pub _codecvt: *mut _IO_codecvt,
@@ -209,7 +209,7 @@ pub struct _IO_FILE {
     pub _freeres_buf: *mut libc::c_void,
     pub __pad5: size_t,
     pub _mode: libc::c_int,
-    pub _unused2: [libc::c_char; 20],
+    pub _unused2: [i8; 20],
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
@@ -241,7 +241,7 @@ static mut base_dpi: libc::c_uint = 600u32;
 pub unsafe extern "C" fn PKFont_set_dpi(mut dpi: libc::c_int) {
     if dpi <= 0i32 {
         _tt_abort(
-            b"Invalid DPI: %d\n\x00" as *const u8 as *const libc::c_char,
+            b"Invalid DPI: %d\n\x00" as *const u8 as *const i8,
             dpi,
         );
     }
@@ -249,7 +249,7 @@ pub unsafe extern "C" fn PKFont_set_dpi(mut dpi: libc::c_int) {
 }
 /* (Only) This requires TFM to get design size... */
 unsafe extern "C" fn truedpi(
-    mut ident: *const libc::c_char,
+    mut ident: *const i8,
     mut point_size: libc::c_double,
     mut bdpi: libc::c_uint,
 ) -> libc::c_uint {
@@ -263,7 +263,7 @@ unsafe extern "C" fn truedpi(
     design_size = tfm_get_design_size(tfm_id);
     if design_size <= 0.0f64 {
         dpx_warning(
-            b"DESGIN_SIZE <= 0.0? (TFM=\"%s\")\x00" as *const u8 as *const libc::c_char,
+            b"DESGIN_SIZE <= 0.0? (TFM=\"%s\")\x00" as *const u8 as *const i8,
             ident,
         );
     } else {
@@ -273,23 +273,23 @@ unsafe extern "C" fn truedpi(
     return dpi;
 }
 unsafe extern "C" fn dpx_open_pk_font_at(
-    mut ident: *const libc::c_char,
+    mut ident: *const i8,
     mut dpi: libc::c_uint,
 ) -> *mut FILE {
     let mut fp: *mut FILE = 0 as *mut FILE;
-    let mut fqpn: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut fqpn: *mut i8 = 0 as *mut i8;
     /*kpse_glyph_file_type kpse_file_info;*/
-    fqpn = 0 as *mut libc::c_char; /*kpse_find_glyph(ident, dpi, kpse_pk_format, &kpse_file_info);*/
+    fqpn = 0 as *mut i8; /*kpse_find_glyph(ident, dpi, kpse_pk_format, &kpse_file_info);*/
     if fqpn.is_null() {
         return 0 as *mut FILE;
     }
-    fp = fopen(fqpn, b"rb\x00" as *const u8 as *const libc::c_char);
+    fp = fopen(fqpn, b"rb\x00" as *const u8 as *const i8);
     free(fqpn as *mut libc::c_void);
     return fp;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_open_pkfont(mut font: *mut pdf_font) -> libc::c_int {
-    let mut ident: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut ident: *mut i8 = 0 as *mut i8;
     let mut point_size: libc::c_double = 0.;
     let mut encoding_id: libc::c_int = 0;
     let mut dpi: libc::c_uint = 0;
@@ -314,13 +314,13 @@ pub unsafe extern "C" fn pdf_font_open_pkfont(mut font: *mut pdf_font) -> libc::
         pdf_encoding_used_by_type3(encoding_id);
         dpx_warning(
             b"PK font is found for font \"%s\" but non built-in encoding \"%s\" is specified.\x00"
-                as *const u8 as *const libc::c_char,
+                as *const u8 as *const i8,
             ident,
             pdf_encoding_get_name(encoding_id),
         );
         dpx_warning(
             b">> Assuming this is for glyph name assignment.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
     }
     return 0i32;
@@ -371,7 +371,7 @@ unsafe extern "C" fn pk_packed_num(
     let mut j: libc::c_int = 0;
     if i.wrapping_div(2i32 as libc::c_uint) == pl {
         dpx_warning(
-            b"EOD reached while unpacking pk_packed_num.\x00" as *const u8 as *const libc::c_char,
+            b"EOD reached while unpacking pk_packed_num.\x00" as *const u8 as *const i8,
         );
         return 0i32 as u32;
     }
@@ -387,7 +387,7 @@ unsafe extern "C" fn pk_packed_num(
             if i.wrapping_div(2i32 as libc::c_uint) == pl {
                 dpx_warning(
                     b"EOD reached while unpacking pk_packed_num.\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
                 break;
             } else {
@@ -415,7 +415,7 @@ unsafe extern "C" fn pk_packed_num(
             if i.wrapping_div(2i32 as libc::c_uint) == pl {
                 dpx_warning(
                     b"EOD reached while unpacking pk_packed_num.\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
                 break;
             } else {
@@ -441,7 +441,7 @@ unsafe extern "C" fn pk_packed_num(
         if i.wrapping_div(2i32 as libc::c_uint) == pl {
             dpx_warning(
                 b"EOD reached while unpacking pk_packed_num.\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
             return 0i32 as u32;
         }
@@ -542,7 +542,7 @@ unsafe extern "C" fn pk_decode_packed(
                 if repeat_count != 0i32 as libc::c_uint {
                     dpx_warning(
                         b"Second repeat count for this row!\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                     ); /* Consume this nybble */
                 } /* run_count */
                 np = np.wrapping_add(1); /* Consume this nybble */
@@ -551,7 +551,7 @@ unsafe extern "C" fn pk_decode_packed(
                 if repeat_count != 0i32 as libc::c_uint {
                     dpx_warning(
                         b"Second repeat count for this row!\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                     );
                 }
                 np = np.wrapping_add(1);
@@ -621,14 +621,14 @@ unsafe extern "C" fn pk_decode_bitmap(
     ];
     if dyn_f == 14i32 {
     } else {
-        __assert_fail(b"dyn_f == 14\x00" as *const u8 as *const libc::c_char,
-                      b"dpx-pkfont.c\x00" as *const u8 as *const libc::c_char,
+        __assert_fail(b"dyn_f == 14\x00" as *const u8 as *const i8,
+                      b"dpx-pkfont.c\x00" as *const u8 as *const i8,
                       308i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 89],
-                                                &[libc::c_char; 89]>(b"int pk_decode_bitmap(pdf_obj *, uint32_t, uint32_t, int, int, unsigned char *, uint32_t)\x00")).as_ptr());
+                                                &[i8; 89]>(b"int pk_decode_bitmap(pdf_obj *, uint32_t, uint32_t, int, int, unsigned char *, uint32_t)\x00")).as_ptr());
     }
     if run_color != 0i32 {
-        dpx_warning(b"run_color != 0 for bitmap pk data?\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"run_color != 0 for bitmap pk data?\x00" as *const u8 as *const i8);
     } else if pl
         < wd.wrapping_mul(ht)
             .wrapping_add(7i32 as libc::c_uint)
@@ -636,7 +636,7 @@ unsafe extern "C" fn pk_decode_bitmap(
     {
         dpx_warning(
             b"Insufficient bitmap pk data. %dbytes expected but only %dbytes read.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
             wd.wrapping_mul(ht)
                 .wrapping_add(7i32 as libc::c_uint)
                 .wrapping_div(8i32 as libc::c_uint),
@@ -685,7 +685,7 @@ unsafe extern "C" fn do_preamble(mut fp: *mut FILE) {
     } else {
         _tt_abort(
             b"embed_pk_font: PK ID byte is incorrect.  Are you sure this is a PK file?\x00"
-                as *const u8 as *const libc::c_char,
+                as *const u8 as *const i8,
         );
     };
 }
@@ -697,10 +697,10 @@ unsafe extern "C" fn read_pk_char_header(
     if !h.is_null() {
     } else {
         __assert_fail(
-            b"h\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pkfont.c\x00" as *const u8 as *const libc::c_char,
+            b"h\x00" as *const u8 as *const i8,
+            b"dpx-pkfont.c\x00" as *const u8 as *const i8,
             366i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 68], &[libc::c_char; 68]>(
+            (*::std::mem::transmute::<&[u8; 68], &[i8; 68]>(
                 b"int read_pk_char_header(struct pk_header_ *, unsigned char, FILE *)\x00",
             ))
             .as_ptr(),
@@ -724,8 +724,8 @@ unsafe extern "C" fn read_pk_char_header(
         /* long */
         (*h).pkt_len = get_positive_quad(
             fp,
-            b"PK\x00" as *const u8 as *const libc::c_char,
-            b"pkt_len\x00" as *const u8 as *const libc::c_char,
+            b"PK\x00" as *const u8 as *const i8,
+            b"pkt_len\x00" as *const u8 as *const i8,
         ); /* 16.16 fixed point number in pixels */
         (*h).chrcode = get_signed_quad(fp);
         (*h).wd = get_signed_quad(fp);
@@ -733,13 +733,13 @@ unsafe extern "C" fn read_pk_char_header(
         (*h).dy = get_signed_quad(fp);
         (*h).bm_wd = get_positive_quad(
             fp,
-            b"PK\x00" as *const u8 as *const libc::c_char,
-            b"bm_wd\x00" as *const u8 as *const libc::c_char,
+            b"PK\x00" as *const u8 as *const i8,
+            b"bm_wd\x00" as *const u8 as *const i8,
         );
         (*h).bm_ht = get_positive_quad(
             fp,
-            b"PK\x00" as *const u8 as *const libc::c_char,
-            b"bm_ht\x00" as *const u8 as *const libc::c_char,
+            b"PK\x00" as *const u8 as *const i8,
+            b"bm_ht\x00" as *const u8 as *const i8,
         );
         (*h).bm_hoff = get_signed_quad(fp);
         (*h).bm_voff = get_signed_quad(fp);
@@ -768,7 +768,7 @@ unsafe extern "C" fn read_pk_char_header(
     if (*h).chrcode as u32 > 0xffi32 as libc::c_uint {
         dpx_warning(
             b"Unable to handle long characters in PK files: code=0x%04x\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
             (*h).chrcode,
         );
         return -1i32;
@@ -805,7 +805,7 @@ unsafe extern "C" fn create_pk_CharProc_stream(
     len = pdf_sprint_number(work_buffer.as_mut_ptr(), chrwid);
     len += sprintf(
         work_buffer.as_mut_ptr().offset(len as isize),
-        b" 0 %d %d %d %d d1\n\x00" as *const u8 as *const libc::c_char,
+        b" 0 %d %d %d %d d1\n\x00" as *const u8 as *const i8,
         llx,
         lly,
         urx,
@@ -829,7 +829,7 @@ unsafe extern "C" fn create_pk_CharProc_stream(
         /* Scale and translate origin to lower left corner for raster data */
         len = sprintf(
             work_buffer.as_mut_ptr(),
-            b"q\n%u 0 0 %u %d %d cm\n\x00" as *const u8 as *const libc::c_char,
+            b"q\n%u 0 0 %u %d %d cm\n\x00" as *const u8 as *const i8,
             (*pkh).bm_wd,
             (*pkh).bm_ht,
             llx,
@@ -838,7 +838,7 @@ unsafe extern "C" fn create_pk_CharProc_stream(
         pdf_add_stream(stream, work_buffer.as_mut_ptr() as *const libc::c_void, len);
         len = sprintf(
             work_buffer.as_mut_ptr(),
-            b"BI\n/W %u\n/H %u\n/IM true\n/BPC 1\nID \x00" as *const u8 as *const libc::c_char,
+            b"BI\n/W %u\n/H %u\n/IM true\n/BPC 1\nID \x00" as *const u8 as *const i8,
             (*pkh).bm_wd,
             (*pkh).bm_ht,
         );
@@ -868,7 +868,7 @@ unsafe extern "C" fn create_pk_CharProc_stream(
         }
         len = sprintf(
             work_buffer.as_mut_ptr(),
-            b"\nEI\nQ\x00" as *const u8 as *const libc::c_char,
+            b"\nEI\nQ\x00" as *const u8 as *const i8,
         );
         pdf_add_stream(stream, work_buffer.as_mut_ptr() as *const libc::c_void, len);
     }
@@ -898,8 +898,8 @@ unsafe extern "C" fn create_pk_CharProc_stream(
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::c_int {
     let mut fontdict: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut usedchars: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut ident: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut usedchars: *mut i8 = 0 as *mut i8;
+    let mut ident: *mut i8 = 0 as *mut i8;
     let mut dpi: libc::c_uint = 0;
     let mut fp: *mut FILE = 0 as *mut FILE;
     let mut point_size: libc::c_double = 0.;
@@ -920,9 +920,9 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
         urx: 0.,
         ury: 0.,
     };
-    let mut charavail: [libc::c_char; 256] = [0; 256];
+    let mut charavail: [i8; 256] = [0; 256];
     let mut encoding_id: libc::c_int = 0;
-    let mut enc_vec: *mut *mut libc::c_char = 0 as *mut *mut libc::c_char;
+    let mut enc_vec: *mut *mut i8 = 0 as *mut *mut i8;
     /* ENABLE_GLYPHENC */
     let mut error: libc::c_int = 0i32;
     if !pdf_font_is_in_use(font) {
@@ -933,7 +933,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     usedchars = pdf_font_get_usedchars(font);
     encoding_id = pdf_font_get_encoding(font);
     if encoding_id < 0i32 {
-        enc_vec = 0 as *mut *mut libc::c_char
+        enc_vec = 0 as *mut *mut i8
     } else {
         enc_vec = pdf_encoding_get_encoding(encoding_id)
     }
@@ -941,10 +941,10 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     if !ident.is_null() && !usedchars.is_null() && point_size > 0.0f64 {
     } else {
         __assert_fail(
-            b"ident && usedchars && point_size > 0.0\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pkfont.c\x00" as *const u8 as *const libc::c_char,
+            b"ident && usedchars && point_size > 0.0\x00" as *const u8 as *const i8,
+            b"dpx-pkfont.c\x00" as *const u8 as *const i8,
             522i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int pdf_font_load_pkfont(pdf_font *)\x00",
             ))
             .as_ptr(),
@@ -955,7 +955,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     if fp.is_null() {
         _tt_abort(
             b"Could not find/open PK font file: %s (at %udpi)\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
             ident,
             dpi,
         );
@@ -998,13 +998,13 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
             if error != 0 {
                 _tt_abort(
                     b"Error in reading PK character header.\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
             } else {
                 if charavail[(pkh.chrcode & 0xffi32) as usize] != 0 {
                     dpx_warning(
                         b"More than two bitmap image for single glyph?: font=\"%s\" code=0x%02x\x00"
-                            as *const u8 as *const libc::c_char,
+                            as *const u8 as *const i8,
                         ident,
                         pkh.chrcode,
                     );
@@ -1013,7 +1013,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
             if *usedchars.offset((pkh.chrcode & 0xffi32) as isize) == 0 {
                 skip_bytes(pkh.pkt_len, fp);
             } else {
-                let mut charname: *mut libc::c_char = 0 as *mut libc::c_char;
+                let mut charname: *mut i8 = 0 as *mut i8;
                 let mut charproc: *mut pdf_obj = 0 as *mut pdf_obj;
                 let mut pkt_ptr: *mut u8 = 0 as *mut u8;
                 let mut bytesread: size_t = 0;
@@ -1061,7 +1061,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                 if bytesread != pkh.pkt_len as u64 {
                     _tt_abort(
                         b"Only %zu bytes PK packet read. (expected %d bytes)\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                         bytesread,
                         pkh.pkt_len,
                     );
@@ -1072,7 +1072,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                 if charproc.is_null() {
                     _tt_abort(
                         b"Unpacking PK character data failed.\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                     );
                 }
                 if encoding_id >= 0i32 && !enc_vec.is_null() {
@@ -1080,14 +1080,14 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                     if charname.is_null() {
                         dpx_warning(
                             b"\".notdef\" glyph used in font (code=0x%02x): %s\x00" as *const u8
-                                as *const libc::c_char,
+                                as *const i8,
                             pkh.chrcode,
                             ident,
                         );
                         charname = work_buffer.as_mut_ptr();
                         sprintf(
                             charname,
-                            b"x%02X\x00" as *const u8 as *const libc::c_char,
+                            b"x%02X\x00" as *const u8 as *const i8,
                             pkh.chrcode as u8 as libc::c_int,
                         );
                     }
@@ -1096,14 +1096,14 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                     charname = work_buffer.as_mut_ptr(); /* _FIXME_ */
                     sprintf(
                         charname,
-                        b"x%02X\x00" as *const u8 as *const libc::c_char,
+                        b"x%02X\x00" as *const u8 as *const i8,
                         pkh.chrcode as u8 as libc::c_int,
                     );
                 }
                 pdf_add_dict(charprocs, pdf_new_name(charname), pdf_ref_obj(charproc));
                 pdf_release_obj(charproc);
             }
-            charavail[(pkh.chrcode & 0xffi32) as usize] = 1i32 as libc::c_char
+            charavail[(pkh.chrcode & 0xffi32) as usize] = 1i32 as i8
         } else {
             match opcode {
                 240 | 241 | 242 | 243 => {
@@ -1111,7 +1111,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                         get_unsigned_num(fp, (opcode - 240i32) as u8) as int32_t;
                     if len < 0i32 {
                         dpx_warning(
-                            b"PK: Special with %d bytes???\x00" as *const u8 as *const libc::c_char,
+                            b"PK: Special with %d bytes???\x00" as *const u8 as *const i8,
                             len,
                         );
                     } else {
@@ -1135,7 +1135,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
         if *usedchars.offset(code as isize) as libc::c_int != 0 && charavail[code as usize] == 0 {
             dpx_warning(
                 b"Missing glyph code=0x%02x in PK font \"%s\".\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
                 code,
                 ident,
             );
@@ -1146,7 +1146,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     fontdict = pdf_font_get_resource(font);
     pdf_add_dict(
         fontdict,
-        pdf_new_name(b"CharProcs\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"CharProcs\x00" as *const u8 as *const i8),
         pdf_ref_obj(charprocs),
     );
     pdf_release_obj(charprocs);
@@ -1162,20 +1162,20 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     tmp_array = pdf_new_array();
     pdf_add_array(
         tmp_array,
-        pdf_new_name(b"PDF\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"PDF\x00" as *const u8 as *const i8),
     );
     pdf_add_array(
         tmp_array,
-        pdf_new_name(b"ImageB\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"ImageB\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         procset,
-        pdf_new_name(b"ProcSet\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"ProcSet\x00" as *const u8 as *const i8),
         tmp_array,
     );
     pdf_add_dict(
         fontdict,
-        pdf_new_name(b"Resources\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Resources\x00" as *const u8 as *const i8),
         procset,
     );
     /* Encoding */
@@ -1185,7 +1185,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     lastchar = 0i32;
     code = 0i32;
     while code < 256i32 {
-        let mut charname_0: *mut libc::c_char = 0 as *mut libc::c_char;
+        let mut charname_0: *mut i8 = 0 as *mut i8;
         if *usedchars.offset(code as isize) != 0 {
             if code < firstchar {
                 firstchar = code
@@ -1202,7 +1202,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                     charname_0 = work_buffer.as_mut_ptr();
                     sprintf(
                         charname_0,
-                        b"x%02X\x00" as *const u8 as *const libc::c_char,
+                        b"x%02X\x00" as *const u8 as *const i8,
                         code as u8 as libc::c_int,
                     );
                 }
@@ -1211,7 +1211,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                 charname_0 = work_buffer.as_mut_ptr();
                 sprintf(
                     charname_0,
-                    b"x%02X\x00" as *const u8 as *const libc::c_char,
+                    b"x%02X\x00" as *const u8 as *const i8,
                     code as u8 as libc::c_int,
                 );
             }
@@ -1224,7 +1224,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
         pdf_release_obj(tmp_array);
         _tt_abort(
             b"Unexpected error: firstchar > lastchar (%d %d)\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
             firstchar,
             lastchar,
         );
@@ -1234,17 +1234,17 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
         encoding = pdf_new_dict();
         pdf_add_dict(
             encoding,
-            pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-            pdf_new_name(b"Encoding\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+            pdf_new_name(b"Encoding\x00" as *const u8 as *const i8),
         );
         pdf_add_dict(
             encoding,
-            pdf_new_name(b"Differences\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Differences\x00" as *const u8 as *const i8),
             tmp_array,
         );
         pdf_add_dict(
             fontdict,
-            pdf_new_name(b"Encoding\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Encoding\x00" as *const u8 as *const i8),
             pdf_ref_obj(encoding),
         );
         pdf_release_obj(encoding);
@@ -1260,7 +1260,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     pdf_add_array(tmp_array, pdf_new_number(bbox.ury));
     pdf_add_dict(
         fontdict,
-        pdf_new_name(b"FontBBox\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"FontBBox\x00" as *const u8 as *const i8),
         tmp_array,
     );
     /* Widths:
@@ -1278,7 +1278,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     }
     pdf_add_dict(
         fontdict,
-        pdf_new_name(b"Widths\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Widths\x00" as *const u8 as *const i8),
         pdf_ref_obj(tmp_array),
     );
     pdf_release_obj(tmp_array);
@@ -1292,17 +1292,17 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     pdf_add_array(tmp_array, pdf_new_number(0.0f64));
     pdf_add_dict(
         fontdict,
-        pdf_new_name(b"FontMatrix\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"FontMatrix\x00" as *const u8 as *const i8),
         tmp_array,
     );
     pdf_add_dict(
         fontdict,
-        pdf_new_name(b"FirstChar\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"FirstChar\x00" as *const u8 as *const i8),
         pdf_new_number(firstchar as libc::c_double),
     );
     pdf_add_dict(
         fontdict,
-        pdf_new_name(b"LastChar\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"LastChar\x00" as *const u8 as *const i8),
         pdf_new_number(lastchar as libc::c_double),
     );
     return 0i32;

@@ -21,7 +21,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
     #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_dict() -> *mut pdf_obj;
     #[no_mangle]
@@ -29,7 +29,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_array() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_name(name: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
@@ -39,30 +39,30 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_version() -> libc::c_uint;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
-    fn CIDFont_get_fontname(font: *mut CIDFont) -> *mut libc::c_char;
+    fn CIDFont_get_fontname(font: *mut CIDFont) -> *mut i8;
     #[no_mangle]
-    fn CIDFont_get_ident(font: *mut CIDFont) -> *mut libc::c_char;
+    fn CIDFont_get_ident(font: *mut CIDFont) -> *mut i8;
     /* FIXME */
     #[no_mangle]
     fn CIDFont_get_opt_index(font: *mut CIDFont) -> libc::c_int;
@@ -87,7 +87,7 @@ extern "C" {
     fn CIDFont_is_UCSFont(font: *mut CIDFont) -> bool;
     #[no_mangle]
     fn CIDFont_cache_find(
-        map_name: *const libc::c_char,
+        map_name: *const i8,
         cmap_csi: *mut CIDSysInfo,
         fmap_opt: *mut fontmap_opt,
     ) -> libc::c_int;
@@ -125,9 +125,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dpx_message(fmt: *const libc::c_char, _: ...);
+    fn dpx_message(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -181,25 +181,25 @@ extern "C" {
     /* Indirect reference */
     #[no_mangle]
     fn otf_create_ToUnicode_stream(
-        map_name: *const libc::c_char,
+        map_name: *const i8,
         ttc_index: libc::c_int,
-        used_chars: *const libc::c_char,
+        used_chars: *const i8,
         cmap_id: libc::c_int,
     ) -> *mut pdf_obj;
     /* Just load CMap identified with 'ident'. (parsed)
      * PDF stream object (not reference) returned.
      */
     #[no_mangle]
-    fn pdf_load_ToUnicode_stream(ident: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_load_ToUnicode_stream(ident: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_defineresource(
-        category: *const libc::c_char,
-        resname: *const libc::c_char,
+        category: *const i8,
+        resname: *const i8,
         object: *mut pdf_obj,
         flags: libc::c_int,
     ) -> libc::c_int;
     #[no_mangle]
-    fn pdf_findresource(category: *const libc::c_char, resname: *const libc::c_char)
+    fn pdf_findresource(category: *const i8, resname: *const i8)
         -> libc::c_int;
     #[no_mangle]
     fn pdf_get_resource_reference(res_id: libc::c_int) -> *mut pdf_obj;
@@ -208,9 +208,9 @@ pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct Type0Font {
-    pub fontname: *mut libc::c_char,
-    pub encoding: *mut libc::c_char,
-    pub used_chars: *mut libc::c_char,
+    pub fontname: *mut i8,
+    pub encoding: *mut i8,
+    pub used_chars: *mut i8,
     pub descendant: *mut CIDFont,
     pub flags: libc::c_int,
     pub wmode: libc::c_int,
@@ -228,11 +228,11 @@ pub struct fontmap_opt {
     pub bold: libc::c_double,
     pub mapc: libc::c_int,
     pub flags: libc::c_int,
-    pub otl_tags: *mut libc::c_char,
-    pub tounicode: *mut libc::c_char,
+    pub otl_tags: *mut i8,
+    pub tounicode: *mut i8,
     pub cff_charsets: *mut libc::c_void,
     pub design_size: libc::c_double,
-    pub charcoll: *mut libc::c_char,
+    pub charcoll: *mut i8,
     pub index: libc::c_int,
     pub style: libc::c_int,
     pub stemv: libc::c_int,
@@ -240,8 +240,8 @@ pub struct fontmap_opt {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CIDSysInfo {
-    pub registry: *mut libc::c_char,
-    pub ordering: *mut libc::c_char,
+    pub registry: *mut i8,
+    pub ordering: *mut i8,
     pub supplement: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -254,7 +254,7 @@ pub struct font_cache {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CMap {
-    pub name: *mut libc::c_char,
+    pub name: *mut i8,
     pub type_0: libc::c_int,
     pub wmode: libc::c_int,
     pub CSI: *mut CIDSysInfo,
@@ -304,7 +304,7 @@ pub struct rangeDef {
     pub codeHi: *mut u8,
 }
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
@@ -315,11 +315,11 @@ static mut __verbose: libc::c_int = 0i32;
 pub unsafe extern "C" fn Type0Font_set_verbose(mut level: libc::c_int) {
     __verbose = level;
 }
-unsafe extern "C" fn new_used_chars2() -> *mut libc::c_char {
-    let mut used_chars: *mut libc::c_char = 0 as *mut libc::c_char;
+unsafe extern "C" fn new_used_chars2() -> *mut i8 {
+    let mut used_chars: *mut i8 = 0 as *mut i8;
     used_chars = new((8192i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-        as u32) as *mut libc::c_char;
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+        as u32) as *mut i8;
     memset(
         used_chars as *mut libc::c_void,
         0i32,
@@ -332,21 +332,21 @@ unsafe extern "C" fn Type0Font_init_font_struct(mut font: *mut Type0Font) {
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-type0.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-type0.c\x00" as *const u8 as *const i8,
             104i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 45], &[libc::c_char; 45]>(
+            (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"void Type0Font_init_font_struct(Type0Font *)\x00",
             ))
             .as_ptr(),
         );
     }
-    (*font).fontname = 0 as *mut libc::c_char;
+    (*font).fontname = 0 as *mut i8;
     (*font).fontdict = 0 as *mut pdf_obj;
     (*font).indirect = 0 as *mut pdf_obj;
     (*font).descriptor = 0 as *mut pdf_obj;
-    (*font).encoding = 0 as *mut libc::c_char;
-    (*font).used_chars = 0 as *mut libc::c_char;
+    (*font).encoding = 0 as *mut i8;
+    (*font).used_chars = 0 as *mut i8;
     (*font).descendant = 0 as *mut CIDFont;
     (*font).wmode = -1i32;
     (*font).cmap_id = -1i32;
@@ -356,21 +356,21 @@ unsafe extern "C" fn Type0Font_clean(mut font: *mut Type0Font) {
     if !font.is_null() {
         if !(*font).fontdict.is_null() {
             _tt_abort(
-                b"%s: Object not flushed.\x00" as *const u8 as *const libc::c_char,
-                b"Type0\x00" as *const u8 as *const libc::c_char,
+                b"%s: Object not flushed.\x00" as *const u8 as *const i8,
+                b"Type0\x00" as *const u8 as *const i8,
             );
         }
         if !(*font).indirect.is_null() {
             _tt_abort(
-                b"%s: Object not flushed.\x00" as *const u8 as *const libc::c_char,
-                b"Type0\x00" as *const u8 as *const libc::c_char,
+                b"%s: Object not flushed.\x00" as *const u8 as *const i8,
+                b"Type0\x00" as *const u8 as *const i8,
             );
         }
         if !(*font).descriptor.is_null() {
             _tt_abort(
                 b"%s: FontDescriptor unexpected for Type0 font.\x00" as *const u8
-                    as *const libc::c_char,
-                b"Type0\x00" as *const u8 as *const libc::c_char,
+                    as *const i8,
+                b"Type0\x00" as *const u8 as *const i8,
             );
         }
         if (*font).flags & 1i32 << 0i32 == 0 && !(*font).used_chars.is_null() {
@@ -381,9 +381,9 @@ unsafe extern "C" fn Type0Font_clean(mut font: *mut Type0Font) {
         (*font).fontdict = 0 as *mut pdf_obj;
         (*font).indirect = 0 as *mut pdf_obj;
         (*font).descriptor = 0 as *mut pdf_obj;
-        (*font).used_chars = 0 as *mut libc::c_char;
-        (*font).encoding = 0 as *mut libc::c_char;
-        (*font).fontname = 0 as *mut libc::c_char
+        (*font).used_chars = 0 as *mut i8;
+        (*font).encoding = 0 as *mut i8;
+        (*font).fontname = 0 as *mut i8
     };
 }
 /* PLEASE FIX THIS */
@@ -400,24 +400,24 @@ unsafe extern "C" fn Type0Font_create_ToUnicode_stream(mut font: *mut Type0Font)
  * font CMap reverse lookup. */
 unsafe extern "C" fn Type0Font_try_load_ToUnicode_stream(
     mut font: *mut Type0Font,
-    mut cmap_base: *mut libc::c_char,
+    mut cmap_base: *mut i8,
 ) -> *mut pdf_obj {
-    let mut cmap_name: *mut libc::c_char = new((strlen(cmap_base)
-        .wrapping_add(strlen(b"-UTF-16\x00" as *const u8 as *const libc::c_char))
+    let mut cmap_name: *mut i8 = new((strlen(cmap_base)
+        .wrapping_add(strlen(b"-UTF-16\x00" as *const u8 as *const i8))
         as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-        as u32) as *mut libc::c_char;
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+        as u32) as *mut i8;
     let mut tounicode: *mut pdf_obj = 0 as *mut pdf_obj;
     sprintf(
         cmap_name,
-        b"%s-UTF16\x00" as *const u8 as *const libc::c_char,
+        b"%s-UTF16\x00" as *const u8 as *const i8,
         cmap_base,
     );
     tounicode = pdf_read_ToUnicode_file(cmap_name);
     if tounicode.is_null() {
         sprintf(
             cmap_name,
-            b"%s-UCS2\x00" as *const u8 as *const libc::c_char,
+            b"%s-UCS2\x00" as *const u8 as *const i8,
             cmap_base,
         );
         tounicode = pdf_read_ToUnicode_file(cmap_name)
@@ -432,7 +432,7 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
     let mut tounicode: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut cidfont: *mut CIDFont = 0 as *mut CIDFont;
     let mut csi: *mut CIDSysInfo = 0 as *mut CIDSysInfo;
-    let mut fontname: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut fontname: *mut i8 = 0 as *mut i8;
     /*
      * ToUnicode CMap:
      *
@@ -444,8 +444,8 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
     cidfont = (*font).descendant;
     if cidfont.is_null() {
         _tt_abort(
-            b"%s: No descendant CID-keyed font.\x00" as *const u8 as *const libc::c_char,
-            b"Type0\x00" as *const u8 as *const libc::c_char,
+            b"%s: No descendant CID-keyed font.\x00" as *const u8 as *const i8,
+            b"Type0\x00" as *const u8 as *const i8,
         );
     }
     if CIDFont_is_ACCFont(cidfont) {
@@ -457,15 +457,15 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
              * Old version of dvipdfmx mistakenly used Adobe-Identity as Unicode.
              */
             tounicode = pdf_read_ToUnicode_file(
-                b"Adobe-Identity-UCS2\x00" as *const u8 as *const libc::c_char,
+                b"Adobe-Identity-UCS2\x00" as *const u8 as *const i8,
             );
             if tounicode.is_null() {
                 /* This should work */
-                tounicode = pdf_new_name(b"Identity-H\x00" as *const u8 as *const libc::c_char)
+                tounicode = pdf_new_name(b"Identity-H\x00" as *const u8 as *const i8)
             }
             pdf_add_dict(
                 (*font).fontdict,
-                pdf_new_name(b"ToUnicode\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"ToUnicode\x00" as *const u8 as *const i8),
                 tounicode,
             );
             return;
@@ -480,12 +480,12 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
     }
     if streq_ptr(
         (*csi).registry,
-        b"Adobe\x00" as *const u8 as *const libc::c_char,
+        b"Adobe\x00" as *const u8 as *const i8,
     ) as libc::c_int
         != 0
         && streq_ptr(
             (*csi).ordering,
-            b"Identity\x00" as *const u8 as *const libc::c_char,
+            b"Identity\x00" as *const u8 as *const i8,
         ) as libc::c_int
             != 0
     {
@@ -508,15 +508,15 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
             }
         }
     } else {
-        let mut cmap_base: *mut libc::c_char = new((strlen((*csi).registry)
+        let mut cmap_base: *mut i8 = new((strlen((*csi).registry)
             .wrapping_add(strlen((*csi).ordering))
             .wrapping_add(2i32 as u64)
             as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-            as u32) as *mut libc::c_char;
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+            as u32) as *mut i8;
         sprintf(
             cmap_base,
-            b"%s-%s\x00" as *const u8 as *const libc::c_char,
+            b"%s-%s\x00" as *const u8 as *const i8,
             (*csi).registry,
             (*csi).ordering,
         );
@@ -526,13 +526,13 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
     if !tounicode.is_null() {
         pdf_add_dict(
             (*font).fontdict,
-            pdf_new_name(b"ToUnicode\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"ToUnicode\x00" as *const u8 as *const i8),
             tounicode,
         );
     } else {
         dpx_warning(
             b"Failed to load ToUnicode CMap for font \"%s\"\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
             fontname,
         );
     };
@@ -545,10 +545,10 @@ pub unsafe extern "C" fn Type0Font_set_ToUnicode(
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-type0.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-type0.c\x00" as *const u8 as *const i8,
             259i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 53], &[libc::c_char; 53]>(
+            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                 b"void Type0Font_set_ToUnicode(Type0Font *, pdf_obj *)\x00",
             ))
             .as_ptr(),
@@ -556,7 +556,7 @@ pub unsafe extern "C" fn Type0Font_set_ToUnicode(
     }
     pdf_add_dict(
         (*font).fontdict,
-        pdf_new_name(b"ToUnicode\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"ToUnicode\x00" as *const u8 as *const i8),
         cmap_ref,
     );
 }
@@ -566,7 +566,7 @@ unsafe extern "C" fn Type0Font_dofont(mut font: *mut Type0Font) {
     }
     if pdf_lookup_dict(
         (*font).fontdict,
-        b"ToUnicode\x00" as *const u8 as *const libc::c_char,
+        b"ToUnicode\x00" as *const u8 as *const i8,
     )
     .is_null()
     {
@@ -583,8 +583,8 @@ unsafe extern "C" fn Type0Font_flush(mut font: *mut Type0Font) {
         if !(*font).descriptor.is_null() {
             _tt_abort(
                 b"%s: FontDescriptor unexpected for Type0 font.\x00" as *const u8
-                    as *const libc::c_char,
-                b"Type0\x00" as *const u8 as *const libc::c_char,
+                    as *const i8,
+                b"Type0\x00" as *const u8 as *const i8,
             );
         }
         (*font).descriptor = 0 as *mut pdf_obj
@@ -595,10 +595,10 @@ pub unsafe extern "C" fn Type0Font_get_wmode(mut font: *mut Type0Font) -> libc::
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-type0.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-type0.c\x00" as *const u8 as *const i8,
             293i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int Type0Font_get_wmode(Type0Font *)\x00",
             ))
             .as_ptr(),
@@ -607,14 +607,14 @@ pub unsafe extern "C" fn Type0Font_get_wmode(mut font: *mut Type0Font) -> libc::
     return (*font).wmode;
 }
 #[no_mangle]
-pub unsafe extern "C" fn Type0Font_get_usedchars(mut font: *mut Type0Font) -> *mut libc::c_char {
+pub unsafe extern "C" fn Type0Font_get_usedchars(mut font: *mut Type0Font) -> *mut i8 {
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-type0.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-type0.c\x00" as *const u8 as *const i8,
             301i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 43], &[libc::c_char; 43]>(
+            (*::std::mem::transmute::<&[u8; 43], &[i8; 43]>(
                 b"char *Type0Font_get_usedchars(Type0Font *)\x00",
             ))
             .as_ptr(),
@@ -627,10 +627,10 @@ pub unsafe extern "C" fn Type0Font_get_resource(mut font: *mut Type0Font) -> *mu
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-type0.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-type0.c\x00" as *const u8 as *const i8,
             309i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 45], &[libc::c_char; 45]>(
+            (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"pdf_obj *Type0Font_get_resource(Type0Font *)\x00",
             ))
             .as_ptr(),
@@ -645,7 +645,7 @@ pub unsafe extern "C" fn Type0Font_get_resource(mut font: *mut Type0Font) -> *mu
         pdf_add_array(array, CIDFont_get_resource((*font).descendant));
         pdf_add_dict(
             (*font).fontdict,
-            pdf_new_name(b"DescendantFonts\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"DescendantFonts\x00" as *const u8 as *const i8),
             array,
         );
         (*font).indirect = pdf_ref_obj((*font).fontdict)
@@ -664,8 +664,8 @@ static mut __cache: font_cache = {
 pub unsafe extern "C" fn Type0Font_cache_init() {
     if !__cache.fonts.is_null() {
         _tt_abort(
-            b"%s: Already initialized.\x00" as *const u8 as *const libc::c_char,
-            b"Type0\x00" as *const u8 as *const libc::c_char,
+            b"%s: Already initialized.\x00" as *const u8 as *const i8,
+            b"Type0\x00" as *const u8 as *const i8,
         );
     }
     __cache.count = 0i32;
@@ -676,8 +676,8 @@ pub unsafe extern "C" fn Type0Font_cache_init() {
 pub unsafe extern "C" fn Type0Font_cache_get(mut id: libc::c_int) -> *mut Type0Font {
     if id < 0i32 || id >= __cache.count {
         _tt_abort(
-            b"%s: Invalid ID %d\x00" as *const u8 as *const libc::c_char,
-            b"Type0\x00" as *const u8 as *const libc::c_char,
+            b"%s: Invalid ID %d\x00" as *const u8 as *const i8,
+            b"Type0\x00" as *const u8 as *const i8,
             id,
         );
     }
@@ -685,7 +685,7 @@ pub unsafe extern "C" fn Type0Font_cache_get(mut id: libc::c_int) -> *mut Type0F
 }
 #[no_mangle]
 pub unsafe extern "C" fn Type0Font_cache_find(
-    mut map_name: *const libc::c_char,
+    mut map_name: *const i8,
     mut cmap_id: libc::c_int,
     mut fmap_opt: *mut fontmap_opt,
 ) -> libc::c_int {
@@ -694,7 +694,7 @@ pub unsafe extern "C" fn Type0Font_cache_find(
     let mut cidfont: *mut CIDFont = 0 as *mut CIDFont;
     let mut cmap: *mut CMap = 0 as *mut CMap;
     let mut csi: *mut CIDSysInfo = 0 as *mut CIDSysInfo;
-    let mut fontname: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut fontname: *mut i8 = 0 as *mut i8;
     let mut cid_id: libc::c_int = -1i32;
     let mut parent_id: libc::c_int = -1i32;
     let mut wmode: libc::c_int = 0i32;
@@ -758,25 +758,25 @@ pub unsafe extern "C" fn Type0Font_cache_find(
      */
     if wmode != 0 {
         (*font).encoding = new(
-            (strlen(b"Identity-V\x00" as *const u8 as *const libc::c_char)
+            (strlen(b"Identity-V\x00" as *const u8 as *const i8)
                 .wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                 as u32,
-        ) as *mut libc::c_char;
+        ) as *mut i8;
         strcpy(
             (*font).encoding,
-            b"Identity-V\x00" as *const u8 as *const libc::c_char,
+            b"Identity-V\x00" as *const u8 as *const i8,
         );
     } else {
         (*font).encoding = new(
-            (strlen(b"Identity-H\x00" as *const u8 as *const libc::c_char)
+            (strlen(b"Identity-H\x00" as *const u8 as *const i8)
                 .wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                 as u32,
-        ) as *mut libc::c_char;
+        ) as *mut i8;
         strcpy(
             (*font).encoding,
-            b"Identity-H\x00" as *const u8 as *const libc::c_char,
+            b"Identity-H\x00" as *const u8 as *const i8,
         );
     }
     (*font).wmode = wmode;
@@ -787,13 +787,13 @@ pub unsafe extern "C" fn Type0Font_cache_find(
     (*font).fontdict = pdf_new_dict();
     pdf_add_dict(
         (*font).fontdict,
-        pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"Font\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+        pdf_new_name(b"Font\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         (*font).fontdict,
-        pdf_new_name(b"Subtype\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"Type0\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Subtype\x00" as *const u8 as *const i8),
+        pdf_new_name(b"Type0\x00" as *const u8 as *const i8),
     );
     /*
      * Type0 font does not have FontDescriptor because it is not a simple font.
@@ -815,12 +815,12 @@ pub unsafe extern "C" fn Type0Font_cache_find(
     if __verbose != 0 {
         if CIDFont_get_embedding(cidfont) != 0 && strlen(fontname) > 7i32 as u64 {
             dpx_message(
-                b"(CID:%s)\x00" as *const u8 as *const libc::c_char,
+                b"(CID:%s)\x00" as *const u8 as *const i8,
                 fontname.offset(7),
             );
         } else {
             dpx_message(
-                b"(CID:%s)\x00" as *const u8 as *const libc::c_char,
+                b"(CID:%s)\x00" as *const u8 as *const i8,
                 fontname,
             );
         }
@@ -836,7 +836,7 @@ pub unsafe extern "C" fn Type0Font_cache_find(
      * In most PDF file, encoding name is not appended to fontname for Type0
      * fonts having CIDFontType 2 font as their descendant.
      */
-    (*font).used_chars = 0 as *mut libc::c_char;
+    (*font).used_chars = 0 as *mut i8;
     (*font).flags = 0i32;
     match CIDFont_get_subtype(cidfont) {
         1 => {
@@ -844,17 +844,17 @@ pub unsafe extern "C" fn Type0Font_cache_find(
                 .wrapping_add(strlen((*font).encoding))
                 .wrapping_add(2i32 as u64) as u32
                 as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-                as u32) as *mut libc::c_char;
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32) as *mut i8;
             sprintf(
                 (*font).fontname,
-                b"%s-%s\x00" as *const u8 as *const libc::c_char,
+                b"%s-%s\x00" as *const u8 as *const i8,
                 fontname,
                 (*font).encoding,
             );
             pdf_add_dict(
                 (*font).fontdict,
-                pdf_new_name(b"BaseFont\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"BaseFont\x00" as *const u8 as *const i8),
                 pdf_new_name((*font).fontname),
             );
             /*
@@ -877,18 +877,18 @@ pub unsafe extern "C" fn Type0Font_cache_find(
              */
             pdf_add_dict(
                 (*font).fontdict,
-                pdf_new_name(b"BaseFont\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"BaseFont\x00" as *const u8 as *const i8),
                 pdf_new_name(fontname),
             );
             (*font).used_chars = new_used_chars2()
         }
         _ => {
-            _tt_abort(b"Unrecognized CIDFont Type\x00" as *const u8 as *const libc::c_char);
+            _tt_abort(b"Unrecognized CIDFont Type\x00" as *const u8 as *const i8);
         }
     }
     pdf_add_dict(
         (*font).fontdict,
-        pdf_new_name(b"Encoding\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Encoding\x00" as *const u8 as *const i8),
         pdf_new_name((*font).encoding),
     );
     __cache.count += 1;
@@ -947,34 +947,34 @@ pub unsafe extern "C" fn Type0Font_cache_close() {
 /* ******************************* COMPAT ********************************/
 unsafe extern "C" fn create_dummy_CMap() -> *mut pdf_obj {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut buf: [libc::c_char; 32] = [0; 32];
+    let mut buf: [i8; 32] = [0; 32];
     let mut i: libc::c_int = 0;
     let mut n: libc::c_int = 0;
     stream = pdf_new_stream(1i32 << 0i32);
     pdf_add_stream(stream,
                    b"%!PS-Adobe-3.0 Resource-CMap\n%%DocumentNeededResources: ProcSet (CIDInit)\n%%IncludeResource: ProcSet (CIDInit)\n%%BeginResource: CMap (Adobe-Identity-UCS2)\n%%Title: (Adobe-Identity-UCS2 Adobe UCS2 0)\n%%Version: 1.0\n%%Copyright:\n%% ---\n%%EndComments\n\n\x00"
-                       as *const u8 as *const libc::c_char as
+                       as *const u8 as *const i8 as
                        *const libc::c_void,
                    strlen(b"%!PS-Adobe-3.0 Resource-CMap\n%%DocumentNeededResources: ProcSet (CIDInit)\n%%IncludeResource: ProcSet (CIDInit)\n%%BeginResource: CMap (Adobe-Identity-UCS2)\n%%Title: (Adobe-Identity-UCS2 Adobe UCS2 0)\n%%Version: 1.0\n%%Copyright:\n%% ---\n%%EndComments\n\n\x00"
-                              as *const u8 as *const libc::c_char) as
+                              as *const u8 as *const i8) as
                        libc::c_int);
     pdf_add_stream(stream,
                    b"/CIDInit /ProcSet findresource begin\n\n12 dict begin\n\nbegincmap\n\n/CIDSystemInfo 3 dict dup begin\n  /Registry (Adobe) def\n  /Ordering (UCS2) def\n  /Supplement 0 def\nend def\n\n/CMapName /Adobe-Identity-UCS2 def\n/CMapVersion 1.0 def\n/CMapType 2 def\n\n2 begincodespacerange\n<0000> <FFFF>\nendcodespacerange\n\x00"
-                       as *const u8 as *const libc::c_char as
+                       as *const u8 as *const i8 as
                        *const libc::c_void,
                    strlen(b"/CIDInit /ProcSet findresource begin\n\n12 dict begin\n\nbegincmap\n\n/CIDSystemInfo 3 dict dup begin\n  /Registry (Adobe) def\n  /Ordering (UCS2) def\n  /Supplement 0 def\nend def\n\n/CMapName /Adobe-Identity-UCS2 def\n/CMapVersion 1.0 def\n/CMapType 2 def\n\n2 begincodespacerange\n<0000> <FFFF>\nendcodespacerange\n\x00"
-                              as *const u8 as *const libc::c_char) as
+                              as *const u8 as *const i8) as
                        libc::c_int);
     pdf_add_stream(
         stream,
-        b"\n100 beginbfrange\n\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-        strlen(b"\n100 beginbfrange\n\x00" as *const u8 as *const libc::c_char) as libc::c_int,
+        b"\n100 beginbfrange\n\x00" as *const u8 as *const i8 as *const libc::c_void,
+        strlen(b"\n100 beginbfrange\n\x00" as *const u8 as *const i8) as libc::c_int,
     );
     i = 0i32;
     while i < 0x64i32 {
         n = sprintf(
             buf.as_mut_ptr(),
-            b"<%02X00> <%02XFF> <%02X00>\n\x00" as *const u8 as *const libc::c_char,
+            b"<%02X00> <%02XFF> <%02X00>\n\x00" as *const u8 as *const i8,
             i,
             i,
             i,
@@ -984,19 +984,19 @@ unsafe extern "C" fn create_dummy_CMap() -> *mut pdf_obj {
     }
     pdf_add_stream(
         stream,
-        b"endbfrange\n\n\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-        strlen(b"endbfrange\n\n\x00" as *const u8 as *const libc::c_char) as libc::c_int,
+        b"endbfrange\n\n\x00" as *const u8 as *const i8 as *const libc::c_void,
+        strlen(b"endbfrange\n\n\x00" as *const u8 as *const i8) as libc::c_int,
     );
     pdf_add_stream(
         stream,
-        b"\n100 beginbfrange\n\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-        strlen(b"\n100 beginbfrange\n\x00" as *const u8 as *const libc::c_char) as libc::c_int,
+        b"\n100 beginbfrange\n\x00" as *const u8 as *const i8 as *const libc::c_void,
+        strlen(b"\n100 beginbfrange\n\x00" as *const u8 as *const i8) as libc::c_int,
     );
     i = 0x64i32;
     while i < 0xc8i32 {
         n = sprintf(
             buf.as_mut_ptr(),
-            b"<%02X00> <%02XFF> <%02X00>\n\x00" as *const u8 as *const libc::c_char,
+            b"<%02X00> <%02XFF> <%02X00>\n\x00" as *const u8 as *const i8,
             i,
             i,
             i,
@@ -1006,19 +1006,19 @@ unsafe extern "C" fn create_dummy_CMap() -> *mut pdf_obj {
     }
     pdf_add_stream(
         stream,
-        b"endbfrange\n\n\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-        strlen(b"endbfrange\n\n\x00" as *const u8 as *const libc::c_char) as libc::c_int,
+        b"endbfrange\n\n\x00" as *const u8 as *const i8 as *const libc::c_void,
+        strlen(b"endbfrange\n\n\x00" as *const u8 as *const i8) as libc::c_int,
     );
     pdf_add_stream(
         stream,
-        b"\n48 beginbfrange\n\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-        strlen(b"\n48 beginbfrange\n\x00" as *const u8 as *const libc::c_char) as libc::c_int,
+        b"\n48 beginbfrange\n\x00" as *const u8 as *const i8 as *const libc::c_void,
+        strlen(b"\n48 beginbfrange\n\x00" as *const u8 as *const i8) as libc::c_int,
     );
     i = 0xc8i32;
     while i <= 0xd7i32 {
         n = sprintf(
             buf.as_mut_ptr(),
-            b"<%02X00> <%02XFF> <%02X00>\n\x00" as *const u8 as *const libc::c_char,
+            b"<%02X00> <%02XFF> <%02X00>\n\x00" as *const u8 as *const i8,
             i,
             i,
             i,
@@ -1030,7 +1030,7 @@ unsafe extern "C" fn create_dummy_CMap() -> *mut pdf_obj {
     while i <= 0xffi32 {
         n = sprintf(
             buf.as_mut_ptr(),
-            b"<%02X00> <%02XFF> <%02X00>\n\x00" as *const u8 as *const libc::c_char,
+            b"<%02X00> <%02XFF> <%02X00>\n\x00" as *const u8 as *const i8,
             i,
             i,
             i,
@@ -1040,38 +1040,38 @@ unsafe extern "C" fn create_dummy_CMap() -> *mut pdf_obj {
     }
     pdf_add_stream(
         stream,
-        b"endbfrange\n\n\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-        strlen(b"endbfrange\n\n\x00" as *const u8 as *const libc::c_char) as libc::c_int,
+        b"endbfrange\n\n\x00" as *const u8 as *const i8 as *const libc::c_void,
+        strlen(b"endbfrange\n\n\x00" as *const u8 as *const i8) as libc::c_int,
     );
     pdf_add_stream(stream,
                    b"endcmap\n\nCMapName currentdict /CMap defineresource pop\n\nend\nend\n\n%%EndResource\n%%EOF\n\x00"
-                       as *const u8 as *const libc::c_char as
+                       as *const u8 as *const i8 as
                        *const libc::c_void,
                    strlen(b"endcmap\n\nCMapName currentdict /CMap defineresource pop\n\nend\nend\n\n%%EndResource\n%%EOF\n\x00"
-                              as *const u8 as *const libc::c_char) as
+                              as *const u8 as *const i8) as
                        libc::c_int);
     return stream;
 }
-unsafe extern "C" fn pdf_read_ToUnicode_file(mut cmap_name: *const libc::c_char) -> *mut pdf_obj {
+unsafe extern "C" fn pdf_read_ToUnicode_file(mut cmap_name: *const i8) -> *mut pdf_obj {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut res_id: libc::c_int = -1i32;
     if !cmap_name.is_null() {
     } else {
         __assert_fail(
-            b"cmap_name\x00" as *const u8 as *const libc::c_char,
-            b"dpx-type0.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap_name\x00" as *const u8 as *const i8,
+            b"dpx-type0.c\x00" as *const u8 as *const i8,
             646i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 47], &[libc::c_char; 47]>(
+            (*::std::mem::transmute::<&[u8; 47], &[i8; 47]>(
                 b"pdf_obj *pdf_read_ToUnicode_file(const char *)\x00",
             ))
             .as_ptr(),
         );
     }
-    res_id = pdf_findresource(b"CMap\x00" as *const u8 as *const libc::c_char, cmap_name);
+    res_id = pdf_findresource(b"CMap\x00" as *const u8 as *const i8, cmap_name);
     if res_id < 0i32 {
         if streq_ptr(
             cmap_name,
-            b"Adobe-Identity-UCS2\x00" as *const u8 as *const libc::c_char,
+            b"Adobe-Identity-UCS2\x00" as *const u8 as *const i8,
         ) {
             stream = create_dummy_CMap()
         } else {
@@ -1079,7 +1079,7 @@ unsafe extern "C" fn pdf_read_ToUnicode_file(mut cmap_name: *const libc::c_char)
         }
         if !stream.is_null() {
             res_id = pdf_defineresource(
-                b"CMap\x00" as *const u8 as *const libc::c_char,
+                b"CMap\x00" as *const u8 as *const i8,
                 cmap_name,
                 stream,
                 1i32,

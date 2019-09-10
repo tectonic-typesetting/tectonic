@@ -42,7 +42,7 @@ extern "C" {
     static mut always_embed: libc::c_int;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn ttstub_input_seek(
         handle: rust_input_handle_t,
@@ -55,7 +55,7 @@ extern "C" {
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     /* Name does not include the / */
     #[no_mangle]
-    fn pdf_new_name(name: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_array() -> *mut pdf_obj;
     /* pdf_add_dict requires key but pdf_add_array does not.
@@ -79,7 +79,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn tt_read_post_table(sfont: *mut sfnt) -> *mut tt_post_table;
     #[no_mangle]
@@ -104,11 +104,11 @@ pub type FWord = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table {
-    pub tag: [libc::c_char; 4],
+    pub tag: [i8; 4],
     pub check_sum: SFNT_ULONG,
     pub offset: SFNT_ULONG,
     pub length: SFNT_ULONG,
-    pub data: *mut libc::c_char,
+    pub data: *mut i8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -119,7 +119,7 @@ pub struct sfnt_table_directory {
     pub entry_selector: USHORT,
     pub range_shift: USHORT,
     pub num_kept_tables: USHORT,
-    pub flags: *mut libc::c_char,
+    pub flags: *mut i8,
     pub tables: *mut sfnt_table,
 }
 #[derive(Copy, Clone)]
@@ -162,8 +162,8 @@ pub struct tt_post_table {
     pub minMemType1: SFNT_ULONG,
     pub maxMemType1: SFNT_ULONG,
     pub numberOfGlyphs: USHORT,
-    pub glyphNamePtr: *mut *const libc::c_char,
-    pub names: *mut *mut libc::c_char,
+    pub glyphNamePtr: *mut *const i8,
+    pub names: *mut *mut i8,
     pub count: USHORT,
     /* Number of glyph names in names[] */
 }
@@ -280,17 +280,17 @@ pub unsafe extern "C" fn ttc_read_offset(
     let mut offset: SFNT_ULONG = 0i32 as SFNT_ULONG;
     let mut num_dirs: SFNT_ULONG = 0i32 as SFNT_ULONG;
     if sfont.is_null() || (*sfont).handle.is_null() {
-        _tt_abort(b"file not opened\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"file not opened\x00" as *const u8 as *const i8);
     }
     if (*sfont).type_0 != 1i32 << 4i32 {
-        _tt_abort(b"ttc_read_offset(): invalid font type\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"ttc_read_offset(): invalid font type\x00" as *const u8 as *const i8);
     }
     ttstub_input_seek((*sfont).handle, 4i32 as ssize_t, 0i32);
     /* version = */
     tt_get_unsigned_quad((*sfont).handle);
     num_dirs = tt_get_unsigned_quad((*sfont).handle);
     if ttc_idx < 0i32 || ttc_idx as libc::c_uint > num_dirs.wrapping_sub(1i32 as libc::c_uint) {
-        _tt_abort(b"Invalid TTC index number\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"Invalid TTC index number\x00" as *const u8 as *const i8);
     }
     ttstub_input_seek((*sfont).handle, (12i32 + ttc_idx * 4i32) as ssize_t, 0i32);
     offset = tt_get_unsigned_quad((*sfont).handle);
@@ -325,7 +325,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
     mut embed: *mut libc::c_int,
     mut stemv: libc::c_int,
     mut type_0: libc::c_int,
-    mut fontname: *const libc::c_char,
+    mut fontname: *const i8,
 ) -> *mut pdf_obj {
     let mut descriptor: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut bbox: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -335,7 +335,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
     let mut os2: *mut tt_os2__table = 0 as *mut tt_os2__table;
     let mut post: *mut tt_post_table = 0 as *mut tt_post_table;
     if sfont.is_null() {
-        _tt_abort(b"font file not opened\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"font file not opened\x00" as *const u8 as *const i8);
     }
     os2 = tt_read_os2__table(sfont);
     head = tt_read_head_table(sfont);
@@ -348,8 +348,8 @@ pub unsafe extern "C" fn tt_get_fontdesc(
     descriptor = pdf_new_dict();
     pdf_add_dict(
         descriptor,
-        pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"FontDescriptor\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+        pdf_new_name(b"FontDescriptor\x00" as *const u8 as *const i8),
     );
     if *embed != 0 && !os2.is_null() {
         /*
@@ -373,7 +373,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
             if verbose > 0i32 {
                 dpx_warning(
                     b"Font \"%s\" permits \"Preview & Print\" embedding only **\n\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                     fontname,
                 );
             }
@@ -382,7 +382,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
             if verbose > 0i32 {
                 dpx_warning(
                     b"Font \"%s\" may be subject to embedding restrictions **\n\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                     fontname,
                 );
             }
@@ -391,7 +391,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
             if verbose > 0i32 {
                 dpx_warning(
                     b"Embedding of font \"%s\" disabled due to license restrictions\x00"
-                        as *const u8 as *const libc::c_char,
+                        as *const u8 as *const i8,
                     fontname,
                 );
             }
@@ -401,7 +401,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
     if !os2.is_null() {
         pdf_add_dict(
             descriptor,
-            pdf_new_name(b"Ascent\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Ascent\x00" as *const u8 as *const i8),
             pdf_new_number(
                 floor(
                     1000.0f64 * (*os2).sTypoAscender as libc::c_int as libc::c_double
@@ -413,7 +413,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
         );
         pdf_add_dict(
             descriptor,
-            pdf_new_name(b"Descent\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Descent\x00" as *const u8 as *const i8),
             pdf_new_number(
                 floor(
                     1000.0f64 * (*os2).sTypoDescender as libc::c_int as libc::c_double
@@ -431,13 +431,13 @@ pub unsafe extern "C" fn tt_get_fontdesc(
         } /* arbitrary */
         pdf_add_dict(
             descriptor,
-            pdf_new_name(b"StemV\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"StemV\x00" as *const u8 as *const i8),
             pdf_new_number(stemv as libc::c_double),
         );
         if (*os2).version as libc::c_int == 0x2i32 {
             pdf_add_dict(
                 descriptor,
-                pdf_new_name(b"CapHeight\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"CapHeight\x00" as *const u8 as *const i8),
                 pdf_new_number(
                     floor(
                         1000.0f64 * (*os2).sCapHeight as libc::c_int as libc::c_double
@@ -450,7 +450,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
             /* optional */
             pdf_add_dict(
                 descriptor,
-                pdf_new_name(b"XHeight\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"XHeight\x00" as *const u8 as *const i8),
                 pdf_new_number(
                     floor(
                         1000.0f64 * (*os2).sxHeight as libc::c_int as libc::c_double
@@ -463,7 +463,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
         } else {
             pdf_add_dict(
                 descriptor,
-                pdf_new_name(b"CapHeight\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"CapHeight\x00" as *const u8 as *const i8),
                 pdf_new_number(
                     floor(
                         1000.0f64 * (*os2).sTypoAscender as libc::c_int as libc::c_double
@@ -478,7 +478,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
         if (*os2).xAvgCharWidth as libc::c_int != 0i32 {
             pdf_add_dict(
                 descriptor,
-                pdf_new_name(b"AvgWidth\x00" as *const u8 as *const libc::c_char),
+                pdf_new_name(b"AvgWidth\x00" as *const u8 as *const i8),
                 pdf_new_number(
                     floor(
                         1000.0f64 * (*os2).xAvgCharWidth as libc::c_int as libc::c_double
@@ -538,13 +538,13 @@ pub unsafe extern "C" fn tt_get_fontdesc(
     );
     pdf_add_dict(
         descriptor,
-        pdf_new_name(b"FontBBox\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"FontBBox\x00" as *const u8 as *const i8),
         bbox,
     );
     /* post */
     pdf_add_dict(
         descriptor,
-        pdf_new_name(b"ItalicAngle\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"ItalicAngle\x00" as *const u8 as *const i8),
         pdf_new_number(
             ((*post).italicAngle as libc::c_long % 0x10000) as libc::c_double
                 / 0x10000i64 as libc::c_double
@@ -576,7 +576,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
     }
     pdf_add_dict(
         descriptor,
-        pdf_new_name(b"Flags\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Flags\x00" as *const u8 as *const i8),
         pdf_new_number(flag as libc::c_double),
     );
     /* insert panose if you want */
@@ -594,12 +594,12 @@ pub unsafe extern "C" fn tt_get_fontdesc(
         styledict = pdf_new_dict();
         pdf_add_dict(
             styledict,
-            pdf_new_name(b"Panose\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Panose\x00" as *const u8 as *const i8),
             pdf_new_string(panose.as_mut_ptr() as *const libc::c_void, 12i32 as size_t),
         );
         pdf_add_dict(
             descriptor,
-            pdf_new_name(b"Style\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Style\x00" as *const u8 as *const i8),
             styledict,
         );
     }

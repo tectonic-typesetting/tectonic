@@ -10,10 +10,10 @@ extern crate libc;
 extern "C" {
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
@@ -24,17 +24,17 @@ extern "C" {
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn ttstub_input_open(
-        path: *const libc::c_char,
+        path: *const i8,
         format: tt_input_format_type,
         is_gz: libc::c_int,
     ) -> rust_input_handle_t;
@@ -43,9 +43,9 @@ extern "C" {
     #[no_mangle]
     static mut CSI_IDENTITY: CIDSysInfo;
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dpx_message(fmt: *const libc::c_char, _: ...);
+    fn dpx_message(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -129,8 +129,8 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CIDSysInfo {
-    pub registry: *mut libc::c_char,
-    pub ordering: *mut libc::c_char,
+    pub registry: *mut i8,
+    pub ordering: *mut i8,
     pub supplement: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -162,7 +162,7 @@ pub struct mapData {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CMap {
-    pub name: *mut libc::c_char,
+    pub name: *mut i8,
     pub type_0: libc::c_int,
     pub wmode: libc::c_int,
     pub CSI: *mut CIDSysInfo,
@@ -210,7 +210,7 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
@@ -267,7 +267,7 @@ pub unsafe extern "C" fn CMap_new() -> *mut CMap {
     cmap = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<CMap>() as u64) as u32)
         as *mut CMap;
-    (*cmap).name = 0 as *mut libc::c_char;
+    (*cmap).name = 0 as *mut i8;
     (*cmap).type_0 = 1i32;
     (*cmap).wmode = 0i32;
     (*cmap).useCMap = 0 as *mut CMap;
@@ -332,10 +332,10 @@ pub unsafe extern "C" fn CMap_is_Identity(mut cmap: *mut CMap) -> bool {
     if !cmap.is_null() {
     } else {
         __assert_fail(
-            b"cmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             149i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 31], &[libc::c_char; 31]>(
+            (*::std::mem::transmute::<&[u8; 31], &[i8; 31]>(
                 b"_Bool CMap_is_Identity(CMap *)\x00",
             ))
             .as_ptr(),
@@ -343,12 +343,12 @@ pub unsafe extern "C" fn CMap_is_Identity(mut cmap: *mut CMap) -> bool {
     }
     return streq_ptr(
         (*cmap).name,
-        b"Identity-H\x00" as *const u8 as *const libc::c_char,
+        b"Identity-H\x00" as *const u8 as *const i8,
     ) as libc::c_int
         != 0
         || streq_ptr(
             (*cmap).name,
-            b"Identity-V\x00" as *const u8 as *const libc::c_char,
+            b"Identity-V\x00" as *const u8 as *const i8,
         ) as libc::c_int
             != 0;
 }
@@ -373,7 +373,7 @@ pub unsafe extern "C" fn CMap_is_valid(mut cmap: *mut CMap) -> bool {
             || strcmp((*csi1).ordering, (*csi2).ordering) != 0
         {
             dpx_warning(
-                b"CIDSystemInfo mismatched %s <--> %s\x00" as *const u8 as *const libc::c_char,
+                b"CIDSystemInfo mismatched %s <--> %s\x00" as *const u8 as *const i8,
                 CMap_get_name(cmap),
                 CMap_get_name((*cmap).useCMap),
             );
@@ -391,10 +391,10 @@ pub unsafe extern "C" fn CMap_get_profile(
     if !cmap.is_null() {
     } else {
         __assert_fail(
-            b"cmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             184i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 34], &[libc::c_char; 34]>(
+            (*::std::mem::transmute::<&[u8; 34], &[i8; 34]>(
                 b"int CMap_get_profile(CMap *, int)\x00",
             ))
             .as_ptr(),
@@ -407,8 +407,8 @@ pub unsafe extern "C" fn CMap_get_profile(
         3 => value = (*cmap).profile.maxBytesOut as libc::c_int,
         _ => {
             _tt_abort(
-                b"%s: Unrecognized profile type %d.\x00" as *const u8 as *const libc::c_char,
-                b"CMap\x00" as *const u8 as *const libc::c_char,
+                b"%s: Unrecognized profile type %d.\x00" as *const u8 as *const i8,
+                b"CMap\x00" as *const u8 as *const i8,
                 type_0,
             );
         }
@@ -428,33 +428,33 @@ unsafe extern "C" fn handle_undefined(
     let mut len: size_t = 0i32 as size_t;
     if *outbytesleft < 2i32 as u64 {
         _tt_abort(
-            b"%s: Buffer overflow.\x00" as *const u8 as *const libc::c_char,
-            b"CMap\x00" as *const u8 as *const libc::c_char,
+            b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
+            b"CMap\x00" as *const u8 as *const i8,
         );
     }
     match (*cmap).type_0 {
         1 => {
             memcpy(
                 *outbuf as *mut libc::c_void,
-                b"\x00\x00\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
+                b"\x00\x00\x00" as *const u8 as *const i8 as *const libc::c_void,
                 2i32 as u64,
             );
         }
         2 => {
             memcpy(
                 *outbuf as *mut libc::c_void,
-                b"\xff\xfd\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
+                b"\xff\xfd\x00" as *const u8 as *const i8 as *const libc::c_void,
                 2i32 as u64,
             );
         }
         _ => {
             dpx_warning(
                 b"Cannot handle undefined mapping for this type of CMap mapping: %d\x00"
-                    as *const u8 as *const libc::c_char,
+                    as *const u8 as *const i8,
                 (*cmap).type_0,
             );
             dpx_warning(
-                b"<0000> is used for .notdef char.\x00" as *const u8 as *const libc::c_char,
+                b"<0000> is used for .notdef char.\x00" as *const u8 as *const i8,
             );
             memset(*outbuf as *mut libc::c_void, 0i32, 2i32 as u64);
         }
@@ -487,14 +487,14 @@ pub unsafe extern "C" fn CMap_decode_char(
     if (*cmap).type_0 == 0i32 {
         if (*inbytesleft).wrapping_rem(2i32 as u64) != 0 {
             _tt_abort(
-                b"%s: Invalid/truncated input string.\x00" as *const u8 as *const libc::c_char,
-                b"CMap\x00" as *const u8 as *const libc::c_char,
+                b"%s: Invalid/truncated input string.\x00" as *const u8 as *const i8,
+                b"CMap\x00" as *const u8 as *const i8,
             );
         }
         if *outbytesleft < 2i32 as u64 {
             _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const libc::c_char,
-                b"CMap\x00" as *const u8 as *const libc::c_char,
+                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
+                b"CMap\x00" as *const u8 as *const i8,
             );
         }
         memcpy(
@@ -518,7 +518,7 @@ pub unsafe extern "C" fn CMap_decode_char(
                 /* no mapping available in this CMap */
                 dpx_warning(
                     b"No mapping available for this character.\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
                 handle_undefined(cmap, inbuf, inbytesleft, outbuf, outbytesleft);
                 return;
@@ -527,11 +527,11 @@ pub unsafe extern "C" fn CMap_decode_char(
     }
     if !(*cmap).mapTbl.is_null() {
     } else {
-        __assert_fail(b"cmap->mapTbl\x00" as *const u8 as *const libc::c_char,
-                      b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+        __assert_fail(b"cmap->mapTbl\x00" as *const u8 as *const i8,
+                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
                       276i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 92],
-                                                &[libc::c_char; 92]>(b"void CMap_decode_char(CMap *, const unsigned char **, size_t *, unsigned char **, size_t *)\x00")).as_ptr());
+                                                &[i8; 92]>(b"void CMap_decode_char(CMap *, const unsigned char **, size_t *, unsigned char **, size_t *)\x00")).as_ptr());
     }
     t = (*cmap).mapTbl;
     while count < *inbytesleft {
@@ -547,8 +547,8 @@ pub unsafe extern "C" fn CMap_decode_char(
     if (*t.offset(c as isize)).flag & 1i32 << 4i32 != 0 {
         /* need more bytes */
         _tt_abort(
-            b"%s: Premature end of input string.\x00" as *const u8 as *const libc::c_char,
-            b"CMap\x00" as *const u8 as *const libc::c_char,
+            b"%s: Premature end of input string.\x00" as *const u8 as *const i8,
+            b"CMap\x00" as *const u8 as *const i8,
         );
     } else {
         if if (*t.offset(c as isize)).flag & 0xfi32 != 0i32 {
@@ -563,22 +563,22 @@ pub unsafe extern "C" fn CMap_decode_char(
             } else {
                 /* no mapping available in this CMap */
                 dpx_warning(
-                    b"No character mapping available.\x00" as *const u8 as *const libc::c_char,
+                    b"No character mapping available.\x00" as *const u8 as *const i8,
                 );
                 dpx_message(
-                    b" CMap name: %s\n\x00" as *const u8 as *const libc::c_char,
+                    b" CMap name: %s\n\x00" as *const u8 as *const i8,
                     CMap_get_name(cmap),
                 );
-                dpx_message(b" input str: \x00" as *const u8 as *const libc::c_char);
-                dpx_message(b"<\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b" input str: \x00" as *const u8 as *const i8);
+                dpx_message(b"<\x00" as *const u8 as *const i8);
                 while save < p {
                     dpx_message(
-                        b"%02x\x00" as *const u8 as *const libc::c_char,
+                        b"%02x\x00" as *const u8 as *const i8,
                         *save as libc::c_int,
                     );
                     save = save.offset(1)
                 }
-                dpx_message(b">\n\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b">\n\x00" as *const u8 as *const i8);
                 /*
                  * We know partial match found up to `count' bytes,
                  * but we will not use this information for the sake of simplicity.
@@ -591,21 +591,21 @@ pub unsafe extern "C" fn CMap_decode_char(
                 8 => {
                     dpx_warning(
                         b"Character mapped to .notdef found.\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                     );
                 }
                 1 | 4 => {}
                 2 => {
                     _tt_abort(
                         b"%s: CharName mapping not supported.\x00" as *const u8
-                            as *const libc::c_char,
-                        b"CMap\x00" as *const u8 as *const libc::c_char,
+                            as *const i8,
+                        b"CMap\x00" as *const u8 as *const i8,
                     );
                 }
                 _ => {
                     _tt_abort(
-                        b"%s: Unknown mapping type.\x00" as *const u8 as *const libc::c_char,
-                        b"CMap\x00" as *const u8 as *const libc::c_char,
+                        b"%s: Unknown mapping type.\x00" as *const u8 as *const i8,
+                        b"CMap\x00" as *const u8 as *const i8,
                     );
                 }
             }
@@ -618,8 +618,8 @@ pub unsafe extern "C" fn CMap_decode_char(
                 );
             } else {
                 _tt_abort(
-                    b"%s: Buffer overflow.\x00" as *const u8 as *const libc::c_char,
-                    b"CMap\x00" as *const u8 as *const libc::c_char,
+                    b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
+                    b"CMap\x00" as *const u8 as *const i8,
                 );
             }
             *outbuf = (*outbuf).offset((*t.offset(c as isize)).len as isize);
@@ -649,20 +649,20 @@ pub unsafe extern "C" fn CMap_decode(
     if !cmap.is_null() && !inbuf.is_null() && !outbuf.is_null() {
     } else {
         __assert_fail(b"cmap && inbuf && outbuf\x00" as *const u8 as
-                          *const libc::c_char,
-                      b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+                          *const i8,
+                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
                       344i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 89],
-                                                &[libc::c_char; 89]>(b"size_t CMap_decode(CMap *, const unsigned char **, size_t *, unsigned char **, size_t *)\x00")).as_ptr());
+                                                &[i8; 89]>(b"size_t CMap_decode(CMap *, const unsigned char **, size_t *, unsigned char **, size_t *)\x00")).as_ptr());
     }
     if !inbytesleft.is_null() && !outbytesleft.is_null() {
     } else {
         __assert_fail(b"inbytesleft && outbytesleft\x00" as *const u8 as
-                          *const libc::c_char,
-                      b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+                          *const i8,
+                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
                       345i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 89],
-                                                &[libc::c_char; 89]>(b"size_t CMap_decode(CMap *, const unsigned char **, size_t *, unsigned char **, size_t *)\x00")).as_ptr());
+                                                &[i8; 89]>(b"size_t CMap_decode(CMap *, const unsigned char **, size_t *, unsigned char **, size_t *)\x00")).as_ptr());
     }
     count = 0i32 as size_t;
     while *inbytesleft > 0i32 as u64 && *outbytesleft > 0i32 as u64 {
@@ -684,14 +684,14 @@ pub unsafe extern "C" fn CMap_reverse_decode(mut cmap: *mut CMap, mut cid: CID) 
     return ch;
 }
 #[no_mangle]
-pub unsafe extern "C" fn CMap_get_name(mut cmap: *mut CMap) -> *mut libc::c_char {
+pub unsafe extern "C" fn CMap_get_name(mut cmap: *mut CMap) -> *mut i8 {
     if !cmap.is_null() {
     } else {
         __assert_fail(
-            b"cmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             363i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 28], &[libc::c_char; 28]>(
+            (*::std::mem::transmute::<&[u8; 28], &[i8; 28]>(
                 b"char *CMap_get_name(CMap *)\x00",
             ))
             .as_ptr(),
@@ -704,10 +704,10 @@ pub unsafe extern "C" fn CMap_get_type(mut cmap: *mut CMap) -> libc::c_int {
     if !cmap.is_null() {
     } else {
         __assert_fail(
-            b"cmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             370i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 26], &[libc::c_char; 26]>(
+            (*::std::mem::transmute::<&[u8; 26], &[i8; 26]>(
                 b"int CMap_get_type(CMap *)\x00",
             ))
             .as_ptr(),
@@ -720,10 +720,10 @@ pub unsafe extern "C" fn CMap_get_wmode(mut cmap: *mut CMap) -> libc::c_int {
     if !cmap.is_null() {
     } else {
         __assert_fail(
-            b"cmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             377i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 27], &[libc::c_char; 27]>(
+            (*::std::mem::transmute::<&[u8; 27], &[i8; 27]>(
                 b"int CMap_get_wmode(CMap *)\x00",
             ))
             .as_ptr(),
@@ -736,10 +736,10 @@ pub unsafe extern "C" fn CMap_get_CIDSysInfo(mut cmap: *mut CMap) -> *mut CIDSys
     if !cmap.is_null() {
     } else {
         __assert_fail(
-            b"cmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             384i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 40], &[libc::c_char; 40]>(
+            (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
                 b"CIDSysInfo *CMap_get_CIDSysInfo(CMap *)\x00",
             ))
             .as_ptr(),
@@ -748,14 +748,14 @@ pub unsafe extern "C" fn CMap_get_CIDSysInfo(mut cmap: *mut CMap) -> *mut CIDSys
     return (*cmap).CSI;
 }
 #[no_mangle]
-pub unsafe extern "C" fn CMap_set_name(mut cmap: *mut CMap, mut name: *const libc::c_char) {
+pub unsafe extern "C" fn CMap_set_name(mut cmap: *mut CMap, mut name: *const i8) {
     if !cmap.is_null() {
     } else {
         __assert_fail(
-            b"cmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             391i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+            (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
                 b"void CMap_set_name(CMap *, const char *)\x00",
             ))
             .as_ptr(),
@@ -764,9 +764,9 @@ pub unsafe extern "C" fn CMap_set_name(mut cmap: *mut CMap, mut name: *const lib
     free((*cmap).name as *mut libc::c_void);
     (*cmap).name = new(
         (strlen(name).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32,
-    ) as *mut libc::c_char;
+    ) as *mut i8;
     strcpy((*cmap).name, name);
 }
 #[no_mangle]
@@ -774,10 +774,10 @@ pub unsafe extern "C" fn CMap_set_type(mut cmap: *mut CMap, mut type_0: libc::c_
     if !cmap.is_null() {
     } else {
         __assert_fail(
-            b"cmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             400i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 32], &[libc::c_char; 32]>(
+            (*::std::mem::transmute::<&[u8; 32], &[i8; 32]>(
                 b"void CMap_set_type(CMap *, int)\x00",
             ))
             .as_ptr(),
@@ -790,10 +790,10 @@ pub unsafe extern "C" fn CMap_set_wmode(mut cmap: *mut CMap, mut wmode: libc::c_
     if !cmap.is_null() {
     } else {
         __assert_fail(
-            b"cmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             407i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 33], &[libc::c_char; 33]>(
+            (*::std::mem::transmute::<&[u8; 33], &[i8; 33]>(
                 b"void CMap_set_wmode(CMap *, int)\x00",
             ))
             .as_ptr(),
@@ -806,10 +806,10 @@ pub unsafe extern "C" fn CMap_set_CIDSysInfo(mut cmap: *mut CMap, mut csi: *cons
     if !cmap.is_null() {
     } else {
         __assert_fail(
-            b"cmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             414i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 53], &[libc::c_char; 53]>(
+            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                 b"void CMap_set_CIDSysInfo(CMap *, const CIDSysInfo *)\x00",
             ))
             .as_ptr(),
@@ -826,17 +826,17 @@ pub unsafe extern "C" fn CMap_set_CIDSysInfo(mut cmap: *mut CMap, mut csi: *cons
             as u32) as *mut CIDSysInfo;
         (*(*cmap).CSI).registry = new((strlen((*csi).registry).wrapping_add(1i32 as u64)
             as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-            as u32) as *mut libc::c_char;
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+            as u32) as *mut i8;
         strcpy((*(*cmap).CSI).registry, (*csi).registry);
         (*(*cmap).CSI).ordering = new((strlen((*csi).ordering).wrapping_add(1i32 as u64)
             as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-            as u32) as *mut libc::c_char;
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+            as u32) as *mut i8;
         strcpy((*(*cmap).CSI).ordering, (*csi).ordering);
         (*(*cmap).CSI).supplement = (*csi).supplement
     } else {
-        dpx_warning(b"Invalid CIDSystemInfo.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Invalid CIDSystemInfo.\x00" as *const u8 as *const i8);
         (*cmap).CSI = 0 as *mut CIDSysInfo
     };
 }
@@ -849,10 +849,10 @@ pub unsafe extern "C" fn CMap_set_usecmap(mut cmap: *mut CMap, mut ucmap: *mut C
     if !cmap.is_null() {
     } else {
         __assert_fail(
-            b"cmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             443i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 38], &[libc::c_char; 38]>(
+            (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
                 b"void CMap_set_usecmap(CMap *, CMap *)\x00",
             ))
             .as_ptr(),
@@ -861,10 +861,10 @@ pub unsafe extern "C" fn CMap_set_usecmap(mut cmap: *mut CMap, mut ucmap: *mut C
     if !ucmap.is_null() {
     } else {
         __assert_fail(
-            b"ucmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"ucmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             444i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 38], &[libc::c_char; 38]>(
+            (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
                 b"void CMap_set_usecmap(CMap *, CMap *)\x00",
             ))
             .as_ptr(),
@@ -873,8 +873,8 @@ pub unsafe extern "C" fn CMap_set_usecmap(mut cmap: *mut CMap, mut ucmap: *mut C
     if cmap == ucmap {
         _tt_abort(
             b"%s: Identical CMap object cannot be used for usecmap CMap: 0x%p=0x%p\x00" as *const u8
-                as *const libc::c_char,
-            b"CMap\x00" as *const u8 as *const libc::c_char,
+                as *const i8,
+            b"CMap\x00" as *const u8 as *const i8,
             cmap,
             ucmap,
         );
@@ -882,8 +882,8 @@ pub unsafe extern "C" fn CMap_set_usecmap(mut cmap: *mut CMap, mut ucmap: *mut C
     /* Check if ucmap have neccesary information. */
     if !CMap_is_valid(ucmap) {
         _tt_abort(
-            b"%s: Invalid CMap.\x00" as *const u8 as *const libc::c_char,
-            b"CMap\x00" as *const u8 as *const libc::c_char,
+            b"%s: Invalid CMap.\x00" as *const u8 as *const i8,
+            b"CMap\x00" as *const u8 as *const i8,
         );
     }
     /*
@@ -893,8 +893,8 @@ pub unsafe extern "C" fn CMap_set_usecmap(mut cmap: *mut CMap, mut ucmap: *mut C
     if streq_ptr((*cmap).name, (*ucmap).name) {
         _tt_abort(
             b"%s: CMap refering itself not allowed: CMap %s --> %s\x00" as *const u8
-                as *const libc::c_char,
-            b"CMap\x00" as *const u8 as *const libc::c_char,
+                as *const i8,
+            b"CMap\x00" as *const u8 as *const i8,
             (*cmap).name,
             (*ucmap).name,
         );
@@ -908,8 +908,8 @@ pub unsafe extern "C" fn CMap_set_usecmap(mut cmap: *mut CMap, mut ucmap: *mut C
         {
             _tt_abort(
                 b"%s: CMap %s required by %s have different CSI.\x00" as *const u8
-                    as *const libc::c_char,
-                b"CMap\x00" as *const u8 as *const libc::c_char,
+                    as *const i8,
+                b"CMap\x00" as *const u8 as *const i8,
                 CMap_get_name(cmap),
                 CMap_get_name(ucmap),
             );
@@ -935,10 +935,10 @@ unsafe extern "C" fn CMap_match_codespace(
     if !cmap.is_null() {
     } else {
         __assert_fail(
-            b"cmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             484i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 64], &[libc::c_char; 64]>(
+            (*::std::mem::transmute::<&[u8; 64], &[i8; 64]>(
                 b"int CMap_match_codespace(CMap *, const unsigned char *, size_t)\x00",
             ))
             .as_ptr(),
@@ -984,11 +984,11 @@ pub unsafe extern "C" fn CMap_add_codespacerange(
     if !cmap.is_null() && dim > 0i32 as u64 {
     } else {
         __assert_fail(b"cmap && dim > 0\x00" as *const u8 as
-                          *const libc::c_char,
-                      b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+                          *const i8,
+                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
                       510i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 90],
-                                                &[libc::c_char; 90]>(b"int CMap_add_codespacerange(CMap *, const unsigned char *, const unsigned char *, size_t)\x00")).as_ptr());
+                                                &[i8; 90]>(b"int CMap_add_codespacerange(CMap *, const unsigned char *, const unsigned char *, size_t)\x00")).as_ptr());
     }
     i = 0i32 as libc::c_uint;
     while i < (*cmap).codespace.num {
@@ -1014,7 +1014,7 @@ pub unsafe extern "C" fn CMap_add_codespacerange(
         }
         if overlap {
             dpx_warning(
-                b"Overlapping codespace found. (ingored)\x00" as *const u8 as *const libc::c_char,
+                b"Overlapping codespace found. (ingored)\x00" as *const u8 as *const i8,
             );
             return -1i32;
         }
@@ -1076,11 +1076,11 @@ pub unsafe extern "C" fn CMap_add_notdefrange(
     let mut cur: *mut mapDef = 0 as *mut mapDef;
     if !cmap.is_null() {
     } else {
-        __assert_fail(b"cmap\x00" as *const u8 as *const libc::c_char,
-                      b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+        __assert_fail(b"cmap\x00" as *const u8 as *const i8,
+                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
                       564i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 92],
-                                                &[libc::c_char; 92]>(b"int CMap_add_notdefrange(CMap *, const unsigned char *, const unsigned char *, size_t, CID)\x00")).as_ptr());
+                                                &[i8; 92]>(b"int CMap_add_notdefrange(CMap *, const unsigned char *, const unsigned char *, size_t, CID)\x00")).as_ptr());
     }
     /* dst not used here */
     /* FIXME */
@@ -1113,7 +1113,7 @@ pub unsafe extern "C" fn CMap_add_notdefrange(
             if __silent == 0 {
                 dpx_warning(
                     b"Trying to redefine already defined code mapping. (ignored)\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
             }
         } else {
@@ -1156,11 +1156,11 @@ pub unsafe extern "C" fn CMap_add_bfrange(
     let mut cur: *mut mapDef = 0 as *mut mapDef;
     if !cmap.is_null() {
     } else {
-        __assert_fail(b"cmap\x00" as *const u8 as *const libc::c_char,
-                      b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+        __assert_fail(b"cmap\x00" as *const u8 as *const i8,
+                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
                       610i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 114],
-                                                &[libc::c_char; 114]>(b"int CMap_add_bfrange(CMap *, const unsigned char *, const unsigned char *, size_t, const unsigned char *, size_t)\x00")).as_ptr());
+                                                &[i8; 114]>(b"int CMap_add_bfrange(CMap *, const unsigned char *, const unsigned char *, size_t, const unsigned char *, size_t)\x00")).as_ptr());
     }
     if check_range(cmap, srclo, srchi, srcdim, base, dstdim) < 0i32 {
         return -1i32;
@@ -1245,11 +1245,11 @@ pub unsafe extern "C" fn CMap_add_cidrange(
     let mut cur: *mut mapDef = 0 as *mut mapDef;
     if !cmap.is_null() {
     } else {
-        __assert_fail(b"cmap\x00" as *const u8 as *const libc::c_char,
-                      b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+        __assert_fail(b"cmap\x00" as *const u8 as *const i8,
+                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
                       666i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 89],
-                                                &[libc::c_char; 89]>(b"int CMap_add_cidrange(CMap *, const unsigned char *, const unsigned char *, size_t, CID)\x00")).as_ptr());
+                                                &[i8; 89]>(b"int CMap_add_cidrange(CMap *, const unsigned char *, const unsigned char *, size_t, CID)\x00")).as_ptr());
     }
     /* base not used here */
     if check_range(
@@ -1284,7 +1284,7 @@ pub unsafe extern "C" fn CMap_add_cidrange(
             if __silent == 0 {
                 dpx_warning(
                     b"Trying to redefine already defined CID mapping. (ignored)\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
             }
         } else {
@@ -1299,7 +1299,7 @@ pub unsafe extern "C" fn CMap_add_cidrange(
             *(*cmap).reverseMap.offset(base as isize) = (v << 8i32).wrapping_add(c) as libc::c_int
         }
         if base as libc::c_int >= 65535i32 {
-            dpx_warning(b"CID number too large.\x00" as *const u8 as *const libc::c_char);
+            dpx_warning(b"CID number too large.\x00" as *const u8 as *const i8);
         }
         base = base.wrapping_add(1);
         c = c.wrapping_add(1)
@@ -1311,10 +1311,10 @@ unsafe extern "C" fn mapDef_release(mut t: *mut mapDef) {
     if !t.is_null() {
     } else {
         __assert_fail(
-            b"t\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"t\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             709i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 30], &[libc::c_char; 30]>(
+            (*::std::mem::transmute::<&[u8; 30], &[i8; 30]>(
                 b"void mapDef_release(mapDef *)\x00",
             ))
             .as_ptr(),
@@ -1352,10 +1352,10 @@ unsafe extern "C" fn get_mem(mut cmap: *mut CMap, mut size: libc::c_int) -> *mut
     if !cmap.is_null() && !(*cmap).mapData.is_null() && size >= 0i32 {
     } else {
         __assert_fail(
-            b"cmap && cmap->mapData && size >= 0\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap && cmap->mapData && size >= 0\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             739i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 36], &[libc::c_char; 36]>(
+            (*::std::mem::transmute::<&[u8; 36], &[i8; 36]>(
                 b"unsigned char *get_mem(CMap *, int)\x00",
             ))
             .as_ptr(),
@@ -1388,10 +1388,10 @@ unsafe extern "C" fn locate_tbl(
     if !cur.is_null() && !(*cur).is_null() {
     } else {
         __assert_fail(
-            b"cur && *cur\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cur && *cur\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             760i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 54], &[libc::c_char; 54]>(
+            (*::std::mem::transmute::<&[u8; 54], &[i8; 54]>(
                 b"int locate_tbl(mapDef **, const unsigned char *, int)\x00",
             ))
             .as_ptr(),
@@ -1406,7 +1406,7 @@ unsafe extern "C" fn locate_tbl(
             0i32
         } != 0
         {
-            dpx_warning(b"Ambiguous CMap entry.\x00" as *const u8 as *const libc::c_char);
+            dpx_warning(b"Ambiguous CMap entry.\x00" as *const u8 as *const i8);
             return -1i32;
         }
         if (*(*cur).offset(c as isize)).next.is_null() {
@@ -1438,10 +1438,10 @@ unsafe extern "C" fn bytes_consumed(
     if !cmap.is_null() {
     } else {
         __assert_fail(
-            b"cmap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"cmap\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             786i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+            (*::std::mem::transmute::<&[u8; 61], &[i8; 61]>(
                 b"size_t bytes_consumed(CMap *, const unsigned char *, size_t)\x00",
             ))
             .as_ptr(),
@@ -1512,7 +1512,7 @@ unsafe extern "C" fn check_range(
             > *srchi.offset(srcdim.wrapping_sub(1i32 as u64) as isize) as libc::c_int
     {
         dpx_warning(
-            b"Invalid CMap mapping entry. (ignored)\x00" as *const u8 as *const libc::c_char,
+            b"Invalid CMap mapping entry. (ignored)\x00" as *const u8 as *const i8,
         );
         return -1i32;
     }
@@ -1520,7 +1520,7 @@ unsafe extern "C" fn check_range(
         || CMap_match_codespace(cmap, srchi, srcdim) < 0i32
     {
         dpx_warning(
-            b"Invalid CMap mapping entry. (ignored)\x00" as *const u8 as *const libc::c_char,
+            b"Invalid CMap mapping entry. (ignored)\x00" as *const u8 as *const i8,
         );
         return -1i32;
     }
@@ -1545,8 +1545,8 @@ pub unsafe extern "C" fn CMap_cache_init() {
     static mut range_max: [u8; 2] = [0xffi32 as u8, 0xffi32 as u8];
     if !__cache.is_null() {
         _tt_abort(
-            b"%s: Already initialized.\x00" as *const u8 as *const libc::c_char,
-            b"CMap\x00" as *const u8 as *const libc::c_char,
+            b"%s: Already initialized.\x00" as *const u8 as *const i8,
+            b"CMap\x00" as *const u8 as *const i8,
         );
     }
     __cache = new((1i32 as u32 as u64)
@@ -1562,7 +1562,7 @@ pub unsafe extern "C" fn CMap_cache_init() {
     *fresh7 = CMap_new();
     CMap_set_name(
         *(*__cache).cmaps.offset(0),
-        b"Identity-H\x00" as *const u8 as *const libc::c_char,
+        b"Identity-H\x00" as *const u8 as *const i8,
     );
     CMap_set_type(*(*__cache).cmaps.offset(0), 0i32);
     CMap_set_wmode(*(*__cache).cmaps.offset(0), 0i32);
@@ -1577,7 +1577,7 @@ pub unsafe extern "C" fn CMap_cache_init() {
     *fresh8 = CMap_new();
     CMap_set_name(
         *(*__cache).cmaps.offset(1),
-        b"Identity-V\x00" as *const u8 as *const libc::c_char,
+        b"Identity-V\x00" as *const u8 as *const i8,
     );
     CMap_set_type(*(*__cache).cmaps.offset(1), 0i32);
     CMap_set_wmode(*(*__cache).cmaps.offset(1), 1i32);
@@ -1594,20 +1594,20 @@ pub unsafe extern "C" fn CMap_cache_init() {
 pub unsafe extern "C" fn CMap_cache_get(mut id: libc::c_int) -> *mut CMap {
     if __cache.is_null() {
         _tt_abort(
-            b"%s: CMap cache not initialized.\x00" as *const u8 as *const libc::c_char,
-            b"CMap\x00" as *const u8 as *const libc::c_char,
+            b"%s: CMap cache not initialized.\x00" as *const u8 as *const i8,
+            b"CMap\x00" as *const u8 as *const i8,
         );
     }
     if id < 0i32 || id >= (*__cache).num {
         _tt_abort(
-            b"Invalid CMap ID %d\x00" as *const u8 as *const libc::c_char,
+            b"Invalid CMap ID %d\x00" as *const u8 as *const i8,
             id,
         );
     }
     return *(*__cache).cmaps.offset(id as isize);
 }
 #[no_mangle]
-pub unsafe extern "C" fn CMap_cache_find(mut cmap_name: *const libc::c_char) -> libc::c_int {
+pub unsafe extern "C" fn CMap_cache_find(mut cmap_name: *const i8) -> libc::c_int {
     let mut id: libc::c_int = 0i32;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     if __cache.is_null() {
@@ -1616,10 +1616,10 @@ pub unsafe extern "C" fn CMap_cache_find(mut cmap_name: *const libc::c_char) -> 
     if !__cache.is_null() {
     } else {
         __assert_fail(
-            b"__cache\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cmap.c\x00" as *const u8 as *const libc::c_char,
+            b"__cache\x00" as *const u8 as *const i8,
+            b"dpx-cmap.c\x00" as *const u8 as *const i8,
             914i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 34], &[libc::c_char; 34]>(
+            (*::std::mem::transmute::<&[u8; 34], &[i8; 34]>(
                 b"int CMap_cache_find(const char *)\x00",
             ))
             .as_ptr(),
@@ -1627,7 +1627,7 @@ pub unsafe extern "C" fn CMap_cache_find(mut cmap_name: *const libc::c_char) -> 
     }
     id = 0i32;
     while id < (*__cache).num {
-        let mut name: *mut libc::c_char = 0 as *mut libc::c_char;
+        let mut name: *mut i8 = 0 as *mut i8;
         /* CMapName may be undefined when processing usecmap. */
         name = CMap_get_name(*(*__cache).cmaps.offset(id as isize));
         if !name.is_null() && streq_ptr(cmap_name, name) as libc::c_int != 0 {
@@ -1645,7 +1645,7 @@ pub unsafe extern "C" fn CMap_cache_find(mut cmap_name: *const libc::c_char) -> 
     }
     if __verbose != 0 {
         dpx_message(
-            b"(CMap:%s\x00" as *const u8 as *const libc::c_char,
+            b"(CMap:%s\x00" as *const u8 as *const i8,
             cmap_name,
         );
     }
@@ -1665,25 +1665,25 @@ pub unsafe extern "C" fn CMap_cache_find(mut cmap_name: *const libc::c_char) -> 
     *fresh9 = CMap_new();
     if CMap_parse(*(*__cache).cmaps.offset(id as isize), handle) < 0i32 {
         _tt_abort(
-            b"%s: Parsing CMap file failed.\x00" as *const u8 as *const libc::c_char,
-            b"CMap\x00" as *const u8 as *const libc::c_char,
+            b"%s: Parsing CMap file failed.\x00" as *const u8 as *const i8,
+            b"CMap\x00" as *const u8 as *const i8,
         );
     }
     ttstub_input_close(handle);
     if __verbose != 0 {
-        dpx_message(b")\x00" as *const u8 as *const libc::c_char);
+        dpx_message(b")\x00" as *const u8 as *const i8);
     }
     return id;
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_cache_add(mut cmap: *mut CMap) -> libc::c_int {
     let mut id: libc::c_int = 0;
-    let mut cmap_name0: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut cmap_name1: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut cmap_name0: *mut i8 = 0 as *mut i8;
+    let mut cmap_name1: *mut i8 = 0 as *mut i8;
     if !CMap_is_valid(cmap) {
         _tt_abort(
-            b"%s: Invalid CMap.\x00" as *const u8 as *const libc::c_char,
-            b"CMap\x00" as *const u8 as *const libc::c_char,
+            b"%s: Invalid CMap.\x00" as *const u8 as *const i8,
+            b"CMap\x00" as *const u8 as *const i8,
         );
     }
     id = 0i32;
@@ -1692,8 +1692,8 @@ pub unsafe extern "C" fn CMap_cache_add(mut cmap: *mut CMap) -> libc::c_int {
         cmap_name1 = CMap_get_name(*(*__cache).cmaps.offset(id as isize));
         if streq_ptr(cmap_name0, cmap_name1) {
             _tt_abort(
-                b"%s: CMap \"%s\" already defined.\x00" as *const u8 as *const libc::c_char,
-                b"CMap\x00" as *const u8 as *const libc::c_char,
+                b"%s: CMap \"%s\" already defined.\x00" as *const u8 as *const i8,
+                b"CMap\x00" as *const u8 as *const i8,
                 cmap_name0,
             );
         }

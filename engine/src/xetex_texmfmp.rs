@@ -11,22 +11,22 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_get_file_md5(path: *const libc::c_char, digest: *mut libc::c_char) -> libc::c_int;
+    fn ttstub_get_file_md5(path: *const i8, digest: *mut i8) -> libc::c_int;
     #[no_mangle]
     fn ttstub_get_data_md5(
-        data: *const libc::c_char,
+        data: *const i8,
         len: size_t,
-        digest: *mut libc::c_char,
+        digest: *mut i8,
     ) -> libc::c_int;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
     #[no_mangle]
     static mut pool_size: int32_t;
     #[no_mangle]
@@ -71,7 +71,7 @@ pub struct tm {
     pub tm_yday: libc::c_int,
     pub tm_isdst: libc::c_int,
     pub tm_gmtoff: libc::c_long,
-    pub tm_zone: *const libc::c_char,
+    pub tm_zone: *const i8,
 }
 /* texmfmp.c: Hand-coded routines for TeX or Metafont in C.  Originally
 written by Tim Morgan, drawing from other Unix ports of TeX.  This is
@@ -80,7 +80,7 @@ possible) to do in C.
 
 This file is public domain.  */
 /* For `struct tm'.  Moved here for Visual Studio 2005.  */
-static mut last_source_name: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
+static mut last_source_name: *mut i8 = 0 as *const i8 as *mut i8;
 static mut last_lineno: libc::c_int = 0;
 #[no_mangle]
 pub unsafe extern "C" fn get_date_and_time(
@@ -100,13 +100,13 @@ pub unsafe extern "C" fn get_date_and_time(
 unsafe extern "C" fn checkpool_pointer(mut pool_ptr_0: pool_pointer, mut len: size_t) {
     if (pool_ptr_0 as u64).wrapping_add(len) >= pool_size as u64 {
         _tt_abort(
-            b"string pool overflow [%i bytes]\x00" as *const u8 as *const libc::c_char,
+            b"string pool overflow [%i bytes]\x00" as *const u8 as *const i8,
             pool_size,
         );
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn maketexstring(mut s: *const libc::c_char) -> libc::c_int {
+pub unsafe extern "C" fn maketexstring(mut s: *const i8) -> libc::c_int {
     let mut len: size_t = 0;
     let mut rval: UInt32 = 0;
     let mut cp: *const u8 = s as *const u8;
@@ -228,19 +228,19 @@ pub unsafe extern "C" fn maketexstring(mut s: *const libc::c_char) -> libc::c_in
     return make_string();
 }
 #[no_mangle]
-pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut libc::c_char {
+pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut i8 {
     let mut bytesToWrite: libc::c_uint = 0i32 as libc::c_uint;
     let mut len: pool_pointer = 0;
     let mut i: pool_pointer = 0;
     let mut j: pool_pointer = 0;
-    let mut name: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut name: *mut i8 = 0 as *mut i8;
     if s as libc::c_long >= 65536 {
         len = *str_start.offset(((s + 1i32) as libc::c_long - 65536) as isize)
             - *str_start.offset((s as libc::c_long - 65536) as isize)
     } else {
         len = 0i32
     }
-    name = xmalloc((len * 3i32 + 1i32) as size_t) as *mut libc::c_char;
+    name = xmalloc((len * 3i32 + 1i32) as size_t) as *mut i8;
     i = 0i32;
     j = 0i32;
     while i < len {
@@ -282,7 +282,7 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut libc::c_char {
                 /* note: everything falls through. */
                 j -= 1;
                 *name.offset(j as isize) =
-                    ((c | 0x80i32 as libc::c_uint) & 0xbfi32 as libc::c_uint) as libc::c_char;
+                    ((c | 0x80i32 as libc::c_uint) & 0xbfi32 as libc::c_uint) as i8;
                 c >>= 6i32;
                 current_block_28 = 9281751456159701257;
             }
@@ -303,7 +303,7 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut libc::c_char {
             9281751456159701257 => {
                 j -= 1;
                 *name.offset(j as isize) =
-                    ((c | 0x80i32 as libc::c_uint) & 0xbfi32 as libc::c_uint) as libc::c_char;
+                    ((c | 0x80i32 as libc::c_uint) & 0xbfi32 as libc::c_uint) as i8;
                 c >>= 6i32;
                 current_block_28 = 13645261163415976511;
             }
@@ -313,7 +313,7 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut libc::c_char {
             13645261163415976511 => {
                 j -= 1;
                 *name.offset(j as isize) =
-                    ((c | 0x80i32 as libc::c_uint) & 0xbfi32 as libc::c_uint) as libc::c_char;
+                    ((c | 0x80i32 as libc::c_uint) & 0xbfi32 as libc::c_uint) as i8;
                 c >>= 6i32;
                 current_block_28 = 4925739576308592327;
             }
@@ -323,19 +323,19 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut libc::c_char {
             4925739576308592327 => {
                 j -= 1;
                 *name.offset(j as isize) =
-                    (c | firstByteMark[bytesToWrite as usize] as libc::c_uint) as libc::c_char
+                    (c | firstByteMark[bytesToWrite as usize] as libc::c_uint) as i8
             }
             _ => {}
         }
         j = (j as libc::c_uint).wrapping_add(bytesToWrite) as pool_pointer as pool_pointer;
         i += 1
     }
-    *name.offset(j as isize) = 0i32 as libc::c_char;
+    *name.offset(j as isize) = 0i32 as i8;
     return name;
 }
 unsafe extern "C" fn compare_paths(
-    mut p1: *const libc::c_char,
-    mut p2: *const libc::c_char,
+    mut p1: *const i8,
+    mut p2: *const i8,
 ) -> libc::c_int {
     let mut ret: libc::c_int = 0;
     loop {
@@ -362,7 +362,7 @@ pub unsafe extern "C" fn is_new_source(
     mut srcfilename: str_number,
     mut lineno: libc::c_int,
 ) -> bool {
-    let mut name: *mut libc::c_char = gettexstring(srcfilename);
+    let mut name: *mut i8 = gettexstring(srcfilename);
     return compare_paths(name, last_source_name) != 0i32 || lineno != last_lineno;
 }
 #[no_mangle]
@@ -380,16 +380,16 @@ pub unsafe extern "C" fn make_src_special(
     mut lineno: libc::c_int,
 ) -> pool_pointer {
     let mut oldpool_ptr: pool_pointer = pool_ptr;
-    let mut filename: *mut libc::c_char = gettexstring(srcfilename);
+    let mut filename: *mut i8 = gettexstring(srcfilename);
     /* FIXME: Magic number. */
-    let mut buf: [libc::c_char; 40] = [0; 40];
-    let mut s: *mut libc::c_char = buf.as_mut_ptr();
+    let mut buf: [i8; 40] = [0; 40];
+    let mut s: *mut i8 = buf.as_mut_ptr();
     /* Always put a space after the number, which makes things easier
      * to parse.
      */
     sprintf(
         buf.as_mut_ptr(),
-        b"src:%d \x00" as *const u8 as *const libc::c_char,
+        b"src:%d \x00" as *const u8 as *const i8,
         lineno,
     );
     if (pool_ptr as u64)
@@ -397,7 +397,7 @@ pub unsafe extern "C" fn make_src_special(
         .wrapping_add(strlen(filename))
         >= pool_size as size_t
     {
-        _tt_abort(b"string pool overflow\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"string pool overflow\x00" as *const u8 as *const i8);
     }
     s = buf.as_mut_ptr();
     while *s != 0 {
@@ -422,11 +422,11 @@ pub unsafe extern "C" fn make_src_special(
  * sizeof(out) should be at least lin*2+1.
  */
 unsafe extern "C" fn convertStringToHexString(
-    mut in_0: *const libc::c_char,
-    mut out: *mut libc::c_char,
+    mut in_0: *const i8,
+    mut out: *mut i8,
     mut lin: libc::c_int,
 ) {
-    static mut hexchars: [libc::c_char; 17] = [
+    static mut hexchars: [i8; 17] = [
         48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 0,
     ];
     let mut i: libc::c_int = 0;
@@ -443,14 +443,14 @@ unsafe extern "C" fn convertStringToHexString(
         *out.offset(fresh14 as isize) = hexchars[(c as libc::c_int & 0xfi32) as usize];
         i += 1
     }
-    *out.offset(j as isize) = '\u{0}' as i32 as libc::c_char;
+    *out.offset(j as isize) = '\u{0}' as i32 as i8;
 }
 /* Functions originating in texmfmp.c */
 #[no_mangle]
 pub unsafe extern "C" fn getmd5sum(mut s: str_number, mut file: bool) {
-    let mut digest: [libc::c_char; 16] = [0; 16];
-    let mut outbuf: [libc::c_char; 33] = [0; 33];
-    let mut xname: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut digest: [i8; 16] = [0; 16];
+    let mut outbuf: [i8; 33] = [0; 33];
+    let mut xname: *mut i8 = 0 as *mut i8;
     let mut ret: libc::c_int = 0;
     let mut i: libc::c_int = 0;
     xname = gettexstring(s);

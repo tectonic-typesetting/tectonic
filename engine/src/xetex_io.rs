@@ -14,13 +14,13 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn ttstub_input_open(
-        path: *const libc::c_char,
+        path: *const i8,
         format: tt_input_format_type,
         is_gz: libc::c_int,
     ) -> rust_input_handle_t;
@@ -43,7 +43,7 @@ extern "C" {
        Licensed under the MIT License.
     */
     #[no_mangle]
-    fn xstrdup(s: *const libc::c_char) -> *mut libc::c_char;
+    fn xstrdup(s: *const i8) -> *mut i8;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
@@ -72,14 +72,14 @@ extern "C" {
         converter: *mut TECkit_Converter,
     ) -> TECkit_Status;
     #[no_mangle]
-    fn gettexstring(_: str_number) -> *mut libc::c_char;
+    fn gettexstring(_: str_number) -> *mut i8;
     /* Needed here for UFILE */
     /* variables! */
     /* All the following variables are defined in xetexini.c */
     #[no_mangle]
     static mut eqtb: *mut memory_word;
     #[no_mangle]
-    static mut name_of_file: *mut libc::c_char;
+    static mut name_of_file: *mut i8;
     #[no_mangle]
     static mut name_of_file16: *mut UTF16_code;
     #[no_mangle]
@@ -461,7 +461,7 @@ pub struct UFILE {
 }
 
 #[inline]
-unsafe extern "C" fn print_c_string(mut str: *const libc::c_char) {
+unsafe extern "C" fn print_c_string(mut str: *const i8) {
     while *str != 0 {
         let fresh0 = str;
         str = str.offset(1);
@@ -473,8 +473,8 @@ unsafe extern "C" fn print_c_string(mut str: *const libc::c_char) {
    Licensed under the MIT License.
 */
 #[no_mangle]
-pub static mut name_of_input_file: *mut libc::c_char =
-    0 as *const libc::c_char as *mut libc::c_char;
+pub static mut name_of_input_file: *mut i8 =
+    0 as *const i8 as *mut i8;
 #[no_mangle]
 pub unsafe extern "C" fn tt_xetex_open_input(mut filefmt: libc::c_int) -> rust_input_handle_t {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
@@ -785,19 +785,19 @@ pub unsafe extern "C" fn set_input_file_encoding(
     match mode {
         1 | 2 | 3 | 4 => (*f).encodingMode = mode as libc::c_short,
         5 => {
-            let mut name: *mut libc::c_char = gettexstring(encodingData);
+            let mut name: *mut i8 = gettexstring(encodingData);
             let mut err: UErrorCode = U_ZERO_ERROR;
             let mut cnv: *mut icu::UConverter = icu::ucnv_open(name, &mut err);
             if cnv.is_null() {
                 begin_diagnostic();
                 print_nl('E' as i32);
-                print_c_string(b"rror \x00" as *const u8 as *const libc::c_char);
+                print_c_string(b"rror \x00" as *const u8 as *const i8);
                 print_int(err as int32_t);
                 print_c_string(
-                    b" creating Unicode converter for `\x00" as *const u8 as *const libc::c_char,
+                    b" creating Unicode converter for `\x00" as *const u8 as *const i8,
                 );
                 print_c_string(name);
-                print_c_string(b"\'; reading as raw bytes\x00" as *const u8 as *const libc::c_char);
+                print_c_string(b"\'; reading as raw bytes\x00" as *const u8 as *const i8);
                 end_diagnostic(1i32 != 0);
                 (*f).encodingMode = 4i32 as libc::c_short
             } else {
@@ -813,7 +813,7 @@ pub unsafe extern "C" fn set_input_file_encoding(
 pub unsafe extern "C" fn u_open_in(
     mut f: *mut *mut UFILE,
     mut filefmt: int32_t,
-    mut fopen_mode: *const libc::c_char,
+    mut fopen_mode: *const i8,
     mut mode: int32_t,
     mut encodingData: int32_t,
 ) -> libc::c_int {
@@ -860,7 +860,7 @@ pub unsafe extern "C" fn u_open_in(
 }
 unsafe extern "C" fn buffer_overflow() {
     _tt_abort(
-        b"unable to read an entire line (buf_size=%u)\x00" as *const u8 as *const libc::c_char,
+        b"unable to read an entire line (buf_size=%u)\x00" as *const u8 as *const i8,
         buf_size as libc::c_uint,
     );
 }
@@ -868,10 +868,10 @@ unsafe extern "C" fn conversion_error(mut errcode: libc::c_int) {
     begin_diagnostic();
     print_nl('U' as i32);
     print_c_string(
-        b"nicode conversion failed (ICU error code = \x00" as *const u8 as *const libc::c_char,
+        b"nicode conversion failed (ICU error code = \x00" as *const u8 as *const i8,
     );
     print_int(errcode);
-    print_c_string(b") discarding any remaining text\x00" as *const u8 as *const libc::c_char);
+    print_c_string(b") discarding any remaining text\x00" as *const u8 as *const i8);
     end_diagnostic(1i32 != 0);
 }
 unsafe extern "C" fn apply_normalization(
@@ -900,7 +900,7 @@ unsafe extern "C" fn apply_normalization(
         if status != 0i32 as libc::c_long {
             _tt_abort(
                 b"failed to create normalizer: error code = %d\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
                 status as libc::c_int,
             );
         }
@@ -927,7 +927,7 @@ unsafe extern "C" fn apply_normalization(
 }
 #[no_mangle]
 pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
-    static mut byteBuffer: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
+    static mut byteBuffer: *mut i8 = 0 as *const i8 as *mut i8;
     static mut utf32Buf: *mut u32 = 0 as *const u32 as *mut u32;
     let mut i: libc::c_int = 0;
     let mut tmpLen: libc::c_int = 0;
@@ -936,7 +936,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
         /* NULL 'handle' means this: */
         _tt_abort(
             b"reads from synthetic \"terminal\" file #0 should never happen\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
     }
     last = first;
@@ -946,7 +946,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
         let mut outLen: libc::c_int = 0;
         let mut errorCode: UErrorCode = U_ZERO_ERROR;
         if byteBuffer.is_null() {
-            byteBuffer = xmalloc((buf_size + 1i32) as size_t) as *mut libc::c_char
+            byteBuffer = xmalloc((buf_size + 1i32) as size_t) as *mut i8
         }
         /* Recognize either LF or CR as a line terminator; skip initial LF if prev line ended with CR.  */
         i = ttstub_input_getc((*f).handle);
@@ -959,7 +959,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
         if i != -1i32 && i != '\n' as i32 && i != '\r' as i32 {
             let fresh1 = bytesRead;
             bytesRead = bytesRead.wrapping_add(1);
-            *byteBuffer.offset(fresh1 as isize) = i as libc::c_char
+            *byteBuffer.offset(fresh1 as isize) = i as i8
         }
         if i != -1i32 && i != '\n' as i32 && i != '\r' as i32 {
             while bytesRead < buf_size as libc::c_uint
@@ -972,7 +972,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
             {
                 let fresh2 = bytesRead;
                 bytesRead = bytesRead.wrapping_add(1);
-                *byteBuffer.offset(fresh2 as isize) = i as libc::c_char
+                *byteBuffer.offset(fresh2 as isize) = i as i8
             }
         }
         if i == -1i32 && *__errno_location() != 4i32 && bytesRead == 0i32 as libc::c_uint {
@@ -996,7 +996,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                 tmpLen = icu::ucnv_toAlgorithmic(
                     icu::UCNV_UTF32_LittleEndian,
                     cnv,
-                    utf32Buf as *mut libc::c_char,
+                    utf32Buf as *mut i8,
                     (buf_size as u64)
                         .wrapping_mul(::std::mem::size_of::<u32>() as u64)
                         as int32_t,
@@ -1021,7 +1021,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                 outLen = icu::ucnv_toAlgorithmic(
                     icu::UCNV_UTF32_LittleEndian,
                     cnv,
-                    &mut *buffer.offset(first as isize) as *mut UnicodeScalar as *mut libc::c_char,
+                    &mut *buffer.offset(first as isize) as *mut UnicodeScalar as *mut i8,
                     (::std::mem::size_of::<UnicodeScalar>() as u64)
                         .wrapping_mul((buf_size - first) as u64)
                         as int32_t,
@@ -1285,7 +1285,7 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> libc::c_int {
         4 => rval = ttstub_input_getc((*f).handle),
         _ => {
             _tt_abort(
-                b"internal error; file input mode=%d\x00" as *const u8 as *const libc::c_char,
+                b"internal error; file input mode=%d\x00" as *const u8 as *const i8,
                 (*f).encodingMode as libc::c_int,
             );
         }
@@ -1432,7 +1432,7 @@ pub unsafe extern "C" fn open_or_close_in() {
         if u_open_in(
             &mut *read_file.as_mut_ptr().offset(n as isize),
             TTIF_TEX as libc::c_int,
-            b"rb\x00" as *const u8 as *const libc::c_char,
+            b"rb\x00" as *const u8 as *const i8,
             (*eqtb.offset(
                 (1i32
                     + (0x10ffffi32 + 1i32)

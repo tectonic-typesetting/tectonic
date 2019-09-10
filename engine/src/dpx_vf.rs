@@ -17,24 +17,24 @@ extern "C" {
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn ttstub_input_open(
-        path: *const libc::c_char,
+        path: *const i8,
         format: tt_input_format_type,
         is_gz: libc::c_int,
     ) -> rust_input_handle_t;
     #[no_mangle]
     fn ttstub_input_read(
         handle: rust_input_handle_t,
-        data: *mut libc::c_char,
+        data: *mut i8,
         len: size_t,
     ) -> ssize_t;
     #[no_mangle]
@@ -42,7 +42,7 @@ extern "C" {
     #[no_mangle]
     static mut stderr: *mut FILE;
     #[no_mangle]
-    fn fprintf(_: *mut FILE, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn fprintf(_: *mut FILE, _: *const i8, _: ...) -> libc::c_int;
     /* Tectonic enabled */
     #[no_mangle]
     fn tt_skip_bytes(n: libc::c_uint, handle: rust_input_handle_t);
@@ -55,8 +55,8 @@ extern "C" {
     #[no_mangle]
     fn tt_get_positive_quad(
         handle: rust_input_handle_t,
-        type_0: *const libc::c_char,
-        name: *const libc::c_char,
+        type_0: *const i8,
+        name: *const i8,
     ) -> u32;
     #[no_mangle]
     fn sqxfw(sq: int32_t, fw: fixword) -> int32_t;
@@ -92,7 +92,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dvi_z(ch: int32_t);
     #[no_mangle]
@@ -108,7 +108,7 @@ extern "C" {
     #[no_mangle]
     fn dvi_y0();
     #[no_mangle]
-    fn dvi_locate_font(name: *const libc::c_char, ptsize: spt_t) -> libc::c_uint;
+    fn dvi_locate_font(name: *const i8, ptsize: spt_t) -> libc::c_uint;
     #[no_mangle]
     fn dvi_vf_finish();
     #[no_mangle]
@@ -151,7 +151,7 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn tfm_open(tex_name: *const libc::c_char, must_exist: libc::c_int) -> libc::c_int;
+    fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
 }
 pub type __int32_t = libc::c_int;
 pub type __off_t = libc::c_long;
@@ -192,17 +192,17 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[repr(C)]
 pub struct _IO_FILE {
     pub _flags: libc::c_int,
-    pub _IO_read_ptr: *mut libc::c_char,
-    pub _IO_read_end: *mut libc::c_char,
-    pub _IO_read_base: *mut libc::c_char,
-    pub _IO_write_base: *mut libc::c_char,
-    pub _IO_write_ptr: *mut libc::c_char,
-    pub _IO_write_end: *mut libc::c_char,
-    pub _IO_buf_base: *mut libc::c_char,
-    pub _IO_buf_end: *mut libc::c_char,
-    pub _IO_save_base: *mut libc::c_char,
-    pub _IO_backup_base: *mut libc::c_char,
-    pub _IO_save_end: *mut libc::c_char,
+    pub _IO_read_ptr: *mut i8,
+    pub _IO_read_end: *mut i8,
+    pub _IO_read_base: *mut i8,
+    pub _IO_write_base: *mut i8,
+    pub _IO_write_ptr: *mut i8,
+    pub _IO_write_end: *mut i8,
+    pub _IO_buf_base: *mut i8,
+    pub _IO_buf_end: *mut i8,
+    pub _IO_save_base: *mut i8,
+    pub _IO_backup_base: *mut i8,
+    pub _IO_save_end: *mut i8,
     pub _markers: *mut _IO_marker,
     pub _chain: *mut _IO_FILE,
     pub _fileno: libc::c_int,
@@ -210,7 +210,7 @@ pub struct _IO_FILE {
     pub _old_offset: __off_t,
     pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
-    pub _shortbuf: [libc::c_char; 1],
+    pub _shortbuf: [i8; 1],
     pub _lock: *mut libc::c_void,
     pub _offset: __off64_t,
     pub _codecvt: *mut _IO_codecvt,
@@ -219,7 +219,7 @@ pub struct _IO_FILE {
     pub _freeres_buf: *mut libc::c_void,
     pub __pad5: size_t,
     pub _mode: libc::c_int,
-    pub _unused2: [libc::c_char; 20],
+    pub _unused2: [i8; 20],
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
@@ -228,7 +228,7 @@ pub type spt_t = libc::c_int;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct vf {
-    pub tex_name: *mut libc::c_char,
+    pub tex_name: *mut i8,
     pub ptsize: spt_t,
     pub design_size: u32,
     pub num_dev_fonts: libc::c_uint,
@@ -245,8 +245,8 @@ pub struct font_def {
     pub checksum: u32,
     pub size: u32,
     pub design_size: u32,
-    pub directory: *mut libc::c_char,
-    pub name: *mut libc::c_char,
+    pub directory: *mut i8,
+    pub name: *mut i8,
     pub tfm_id: libc::c_int,
     pub dev_id: libc::c_int,
     /* quasi-hack to get the primary input */
@@ -260,7 +260,7 @@ pub struct font_def {
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
@@ -286,7 +286,7 @@ unsafe extern "C" fn read_header(mut vf_handle: rust_input_handle_t, mut thisfon
     {
         fprintf(
             stderr,
-            b"VF file may be corrupt\n\x00" as *const u8 as *const libc::c_char,
+            b"VF file may be corrupt\n\x00" as *const u8 as *const i8,
         );
         return;
     }
@@ -296,8 +296,8 @@ unsafe extern "C" fn read_header(mut vf_handle: rust_input_handle_t, mut thisfon
     tt_skip_bytes(4i32 as libc::c_uint, vf_handle);
     (*vf_fonts.offset(thisfont as isize)).design_size = tt_get_positive_quad(
         vf_handle,
-        b"VF\x00" as *const u8 as *const libc::c_char,
-        b"design_size\x00" as *const u8 as *const libc::c_char,
+        b"VF\x00" as *const u8 as *const i8,
+        b"design_size\x00" as *const u8 as *const i8,
     );
 }
 unsafe extern "C" fn resize_vf_fonts(mut size: libc::c_int) {
@@ -366,10 +366,10 @@ unsafe extern "C" fn read_a_char_def(
         pkt = new((pkt_len as u64)
             .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32) as *mut u8;
-        if ttstub_input_read(vf_handle, pkt as *mut libc::c_char, pkt_len as size_t)
+        if ttstub_input_read(vf_handle, pkt as *mut i8, pkt_len as size_t)
             != pkt_len as libc::c_long
         {
-            _tt_abort(b"VF file ended prematurely.\x00" as *const u8 as *const libc::c_char);
+            _tt_abort(b"VF file ended prematurely.\x00" as *const u8 as *const i8);
         }
         let ref mut fresh2 = *(*vf_fonts.offset(thisfont as isize))
             .ch_pkt
@@ -408,34 +408,34 @@ unsafe extern "C" fn read_a_font_def(
     (*dev_font).checksum = tt_get_unsigned_quad(vf_handle);
     (*dev_font).size = tt_get_positive_quad(
         vf_handle,
-        b"VF\x00" as *const u8 as *const libc::c_char,
-        b"font_size\x00" as *const u8 as *const libc::c_char,
+        b"VF\x00" as *const u8 as *const i8,
+        b"font_size\x00" as *const u8 as *const i8,
     );
     (*dev_font).design_size = tt_get_positive_quad(
         vf_handle,
-        b"VF\x00" as *const u8 as *const libc::c_char,
-        b"font_design_size\x00" as *const u8 as *const libc::c_char,
+        b"VF\x00" as *const u8 as *const i8,
+        b"font_design_size\x00" as *const u8 as *const i8,
     );
     dir_length = tt_get_unsigned_byte(vf_handle) as libc::c_int;
     name_length = tt_get_unsigned_byte(vf_handle) as libc::c_int;
     (*dev_font).directory = new(((dir_length + 1i32) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-        as u32) as *mut libc::c_char;
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+        as u32) as *mut i8;
     if ttstub_input_read(vf_handle, (*dev_font).directory, dir_length as size_t)
         != dir_length as libc::c_long
     {
-        _tt_abort(b"directory read failed\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"directory read failed\x00" as *const u8 as *const i8);
     }
     (*dev_font).name = new(((name_length + 1i32) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-        as u32) as *mut libc::c_char;
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+        as u32) as *mut i8;
     if ttstub_input_read(vf_handle, (*dev_font).name, name_length as size_t)
         != name_length as libc::c_long
     {
-        _tt_abort(b"directory read failed\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"directory read failed\x00" as *const u8 as *const i8);
     }
-    *(*dev_font).directory.offset(dir_length as isize) = 0i32 as libc::c_char;
-    *(*dev_font).name.offset(name_length as isize) = 0i32 as libc::c_char;
+    *(*dev_font).directory.offset(dir_length as isize) = 0i32 as i8;
+    *(*dev_font).name.offset(name_length as isize) = 0i32 as i8;
     let ref mut fresh5 = (*vf_fonts.offset(thisfont as isize)).num_dev_fonts;
     *fresh5 = (*fresh5).wrapping_add(1i32 as libc::c_uint);
     (*dev_font).tfm_id = tfm_open((*dev_font).name, 1i32);
@@ -471,8 +471,8 @@ unsafe extern "C" fn process_vf_file(
                 } else if code == 242i32 {
                     let mut pkt_len: u32 = tt_get_positive_quad(
                         vf_handle,
-                        b"VF\x00" as *const u8 as *const libc::c_char,
-                        b"pkt_len\x00" as *const u8 as *const libc::c_char,
+                        b"VF\x00" as *const u8 as *const i8,
+                        b"pkt_len\x00" as *const u8 as *const i8,
                     );
                     let mut ch_0: u32 = tt_get_unsigned_quad(vf_handle);
                     /* Skip over TFM width since we already know it */
@@ -482,18 +482,18 @@ unsafe extern "C" fn process_vf_file(
                     } else {
                         fprintf(
                             stderr,
-                            b"char=%u\n\x00" as *const u8 as *const libc::c_char,
+                            b"char=%u\n\x00" as *const u8 as *const i8,
                             ch_0,
                         );
                         _tt_abort(b"Long character (>24 bits) in VF file.\nI can\'t handle long characters!\n\x00"
-                                      as *const u8 as *const libc::c_char);
+                                      as *const u8 as *const i8);
                     }
                 } else if code == 248i32 {
                     eof = 1i32
                 } else {
                     fprintf(
                         stderr,
-                        b"Quitting on code=%d\n\x00" as *const u8 as *const libc::c_char,
+                        b"Quitting on code=%d\n\x00" as *const u8 as *const i8,
                         code,
                     );
                     eof = 1i32
@@ -513,7 +513,7 @@ the PDF file will never repeat a physical font name */
 /* Global variables such as num_vf_fonts require careful attention */
 #[no_mangle]
 pub unsafe extern "C" fn vf_locate_font(
-    mut tex_name: *const libc::c_char,
+    mut tex_name: *const i8,
     mut ptsize: spt_t,
 ) -> libc::c_int {
     let mut thisfont: libc::c_int = -1i32;
@@ -542,7 +542,7 @@ pub unsafe extern "C" fn vf_locate_font(
     if verbose as libc::c_int == 1i32 {
         fprintf(
             stderr,
-            b"(VF:%s\x00" as *const u8 as *const libc::c_char,
+            b"(VF:%s\x00" as *const u8 as *const i8,
             tex_name,
         );
     }
@@ -556,9 +556,9 @@ pub unsafe extern "C" fn vf_locate_font(
     let ref mut fresh7 = (*vf_fonts.offset(thisfont as isize)).tex_name;
     *fresh7 = new(
         (strlen(tex_name).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32,
-    ) as *mut libc::c_char;
+    ) as *mut i8;
     strcpy((*vf_fonts.offset(thisfont as isize)).tex_name, tex_name);
     (*vf_fonts.offset(thisfont as isize)).ptsize = ptsize;
     (*vf_fonts.offset(thisfont as isize)).num_chars = 0i32 as libc::c_uint;
@@ -569,7 +569,7 @@ pub unsafe extern "C" fn vf_locate_font(
     read_header(vf_handle, thisfont);
     process_vf_file(vf_handle, thisfont);
     if verbose != 0 {
-        fprintf(stderr, b")\x00" as *const u8 as *const libc::c_char);
+        fprintf(stderr, b")\x00" as *const u8 as *const i8);
     }
     ttstub_input_close(vf_handle);
     return thisfont;
@@ -586,7 +586,7 @@ unsafe extern "C" fn unsigned_byte(
     } else {
         _tt_abort(
             b"Premature end of DVI byte stream in VF font\n\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
     }
     return byte;
@@ -642,7 +642,7 @@ unsafe extern "C" fn get_pkt_signed_num(
     } else {
         _tt_abort(
             b"Premature end of DVI byte stream in VF font\n\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
     }
     return val;
@@ -698,7 +698,7 @@ unsafe extern "C" fn get_pkt_unsigned_num(
     } else {
         _tt_abort(
             b"Premature end of DVI byte stream in VF font\n\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
     }
     return val;
@@ -750,7 +750,7 @@ unsafe extern "C" fn vf_fnt(mut font_id: int32_t, mut vf_font: libc::c_int) {
     } else {
         fprintf(
             stderr,
-            b"Font_id: %d not found in VF\n\x00" as *const u8 as *const libc::c_char,
+            b"Font_id: %d not found in VF\n\x00" as *const u8 as *const i8,
             font_id,
         );
     };
@@ -779,14 +779,14 @@ unsafe extern "C" fn vf_xxx(
          * Warning message from virtual font.
          */
         if memcmp(
-            p as *mut libc::c_char as *const libc::c_void,
-            b"Warning:\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
+            p as *mut i8 as *const libc::c_void,
+            b"Warning:\x00" as *const u8 as *const i8 as *const libc::c_void,
             8i32 as u64,
         ) == 0
         {
             if verbose != 0 {
                 dpx_warning(
-                    b"VF:%s\x00" as *const u8 as *const libc::c_char,
+                    b"VF:%s\x00" as *const u8 as *const i8,
                     p.offset(8),
                 );
             }
@@ -796,7 +796,7 @@ unsafe extern "C" fn vf_xxx(
         free(buffer as *mut libc::c_void);
     } else {
         _tt_abort(
-            b"Premature end of DVI byte stream in VF font.\x00" as *const u8 as *const libc::c_char,
+            b"Premature end of DVI byte stream in VF font.\x00" as *const u8 as *const i8,
         );
     }
     *start = (*start).offset(len as isize);
@@ -823,14 +823,14 @@ pub unsafe extern "C" fn vf_set_char(mut ch: int32_t, mut vf_font: libc::c_int) 
         } {
             fprintf(
                 stderr,
-                b"\nchar=0x%x(%d)\n\x00" as *const u8 as *const libc::c_char,
+                b"\nchar=0x%x(%d)\n\x00" as *const u8 as *const i8,
                 ch,
                 ch,
             );
             fprintf(
                 stderr,
                 b"Tried to set a nonexistent character in a virtual font\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
             end = 0 as *mut u8;
             start = end
@@ -856,7 +856,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: int32_t, mut vf_font: libc::c_int) 
                 131 => {
                     _tt_abort(
                         b"Multibyte (>24 bits) character in VF packet.\nI can\'t handle this!\x00"
-                            as *const u8 as *const libc::c_char,
+                            as *const u8 as *const i8,
                     );
                 }
                 132 => {
@@ -872,7 +872,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: int32_t, mut vf_font: libc::c_int) 
                 136 => {
                     _tt_abort(
                         b"Multibyte (>24 bits) character in VF packet.\nI can\'t handle this!\x00"
-                            as *const u8 as *const libc::c_char,
+                            as *const u8 as *const i8,
                     );
                 }
                 137 => {
@@ -975,7 +975,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: int32_t, mut vf_font: libc::c_int) 
                     );
                     if len < 0i32 {
                         dpx_warning(
-                            b"VF: Special with %d bytes???\x00" as *const u8 as *const libc::c_char,
+                            b"VF: Special with %d bytes???\x00" as *const u8 as *const i8,
                             len,
                         );
                     } else {
@@ -993,12 +993,12 @@ pub unsafe extern "C" fn vf_set_char(mut ch: int32_t, mut vf_font: libc::c_int) 
                     } else {
                         fprintf(
                             stderr,
-                            b"Unexpected opcode: %d\n\x00" as *const u8 as *const libc::c_char,
+                            b"Unexpected opcode: %d\n\x00" as *const u8 as *const i8,
                             opcode as libc::c_int,
                         );
                         _tt_abort(
                             b"Unexpected opcode in vf file\n\x00" as *const u8
-                                as *const libc::c_char,
+                                as *const i8,
                         );
                     }
                 }
@@ -1008,10 +1008,10 @@ pub unsafe extern "C" fn vf_set_char(mut ch: int32_t, mut vf_font: libc::c_int) 
     } else {
         fprintf(
             stderr,
-            b"vf_set_char: font: %d\x00" as *const u8 as *const libc::c_char,
+            b"vf_set_char: font: %d\x00" as *const u8 as *const i8,
             vf_font,
         );
-        _tt_abort(b"Font not loaded\n\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"Font not loaded\n\x00" as *const u8 as *const i8);
     };
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.

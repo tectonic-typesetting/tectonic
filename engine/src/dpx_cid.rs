@@ -15,13 +15,13 @@ extern "C" {
     #[no_mangle]
     fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
     #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_remove_dict(dict: *mut pdf_obj, key: *const libc::c_char);
+    fn pdf_remove_dict(dict: *mut pdf_obj, key: *const i8);
     #[no_mangle]
-    fn pdf_name_value(object: *mut pdf_obj) -> *mut libc::c_char;
+    fn pdf_name_value(object: *mut pdf_obj) -> *mut i8;
     #[no_mangle]
-    fn pdf_new_name(name: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
     #[no_mangle]
@@ -37,31 +37,31 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_version() -> libc::c_uint;
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn strchr(_: *const libc::c_char, _: libc::c_int) -> *mut libc::c_char;
+    fn strchr(_: *const i8, _: libc::c_int) -> *mut i8;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn strcat(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strtoul(_: *const libc::c_char, _: *mut *mut libc::c_char, _: libc::c_int) -> u64;
+    fn strtoul(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> u64;
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
@@ -93,7 +93,7 @@ extern "C" {
     #[no_mangle]
     fn CIDFont_type0_open(
         font: *mut CIDFont,
-        name: *const libc::c_char,
+        name: *const i8,
         cmap_csi: *mut CIDSysInfo,
         opt: *mut cid_opt,
         expected_flag: libc::c_int,
@@ -130,7 +130,7 @@ extern "C" {
     #[no_mangle]
     fn CIDFont_type2_open(
         font: *mut CIDFont,
-        name: *const libc::c_char,
+        name: *const i8,
         cmap_csi: *mut CIDSysInfo,
         opt: *mut cid_opt,
     ) -> libc::c_int;
@@ -158,9 +158,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_message(fmt: *const libc::c_char, _: ...);
+    fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -188,8 +188,8 @@ extern "C" {
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn parse_pdf_dict(
-        pp: *mut *const libc::c_char,
-        endptr: *const libc::c_char,
+        pp: *mut *const i8,
+        endptr: *const i8,
         pf: *mut pdf_file,
     ) -> *mut pdf_obj;
 }
@@ -210,16 +210,16 @@ pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CIDSysInfo {
-    pub registry: *mut libc::c_char,
-    pub ordering: *mut libc::c_char,
+    pub registry: *mut i8,
+    pub ordering: *mut i8,
     pub supplement: libc::c_int,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CIDFont {
-    pub ident: *mut libc::c_char,
-    pub name: *mut libc::c_char,
-    pub fontname: *mut libc::c_char,
+    pub ident: *mut i8,
+    pub name: *mut i8,
+    pub fontname: *mut i8,
     pub subtype: libc::c_int,
     pub flags: libc::c_int,
     pub parent: [libc::c_int; 2],
@@ -232,7 +232,7 @@ pub struct CIDFont {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cid_opt {
-    pub name: *mut libc::c_char,
+    pub name: *mut i8,
     pub csi: *mut CIDSysInfo,
     pub index: libc::c_int,
     pub style: libc::c_int,
@@ -248,11 +248,11 @@ pub struct fontmap_opt {
     pub bold: libc::c_double,
     pub mapc: libc::c_int,
     pub flags: libc::c_int,
-    pub otl_tags: *mut libc::c_char,
-    pub tounicode: *mut libc::c_char,
+    pub otl_tags: *mut i8,
+    pub tounicode: *mut i8,
     pub cff_charsets: *mut libc::c_void,
     pub design_size: libc::c_double,
-    pub charcoll: *mut libc::c_char,
+    pub charcoll: *mut i8,
     pub index: libc::c_int,
     pub style: libc::c_int,
     pub stemv: libc::c_int,
@@ -266,8 +266,8 @@ pub struct fontmap_opt {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
-    pub registry: *const libc::c_char,
-    pub ordering: *const libc::c_char,
+    pub registry: *const i8,
+    pub ordering: *const i8,
     pub supplement: [libc::c_int; 16],
 }
 #[derive(Copy, Clone)]
@@ -348,9 +348,9 @@ pub type card8 = u8;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_2 {
-    pub fontname: *const libc::c_char,
-    pub fontdict: *const libc::c_char,
-    pub descriptor: *const libc::c_char,
+    pub fontname: *const i8,
+    pub fontdict: *const i8,
+    pub descriptor: *const i8,
 }
 /*
  * Optional supplement after alias name.
@@ -358,7 +358,7 @@ pub struct C2RustUnnamed_2 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_3 {
-    pub name: *const libc::c_char,
+    pub name: *const i8,
     pub index: libc::c_int,
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
@@ -370,18 +370,18 @@ pub struct C2RustUnnamed_3 {
  * as directory separators. */
 #[inline]
 unsafe extern "C" fn strstartswith(
-    mut s: *const libc::c_char,
-    mut prefix: *const libc::c_char,
-) -> *const libc::c_char {
+    mut s: *const i8,
+    mut prefix: *const i8,
+) -> *const i8 {
     let mut length: size_t = 0;
     length = strlen(prefix);
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const libc::c_char;
+    return 0 as *const i8;
 }
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
@@ -399,8 +399,8 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 static mut CIDFont_stdcc_def: [C2RustUnnamed_0; 7] = [
     {
         let mut init = C2RustUnnamed_0 {
-            registry: b"Adobe\x00" as *const u8 as *const libc::c_char,
-            ordering: b"UCS\x00" as *const u8 as *const libc::c_char,
+            registry: b"Adobe\x00" as *const u8 as *const i8,
+            ordering: b"UCS\x00" as *const u8 as *const i8,
             supplement: [
                 -1i32, -1i32, 0i32, 0i32, 0i32, 0i32, 0i32, 0i32, 0, 0, 0, 0, 0, 0, 0, 0,
             ],
@@ -409,8 +409,8 @@ static mut CIDFont_stdcc_def: [C2RustUnnamed_0; 7] = [
     },
     {
         let mut init = C2RustUnnamed_0 {
-            registry: b"Adobe\x00" as *const u8 as *const libc::c_char,
-            ordering: b"GB1\x00" as *const u8 as *const libc::c_char,
+            registry: b"Adobe\x00" as *const u8 as *const i8,
+            ordering: b"GB1\x00" as *const u8 as *const i8,
             supplement: [
                 -1i32, -1i32, 0i32, 2i32, 4i32, 4i32, 4i32, 4i32, 0, 0, 0, 0, 0, 0, 0, 0,
             ],
@@ -419,8 +419,8 @@ static mut CIDFont_stdcc_def: [C2RustUnnamed_0; 7] = [
     },
     {
         let mut init = C2RustUnnamed_0 {
-            registry: b"Adobe\x00" as *const u8 as *const libc::c_char,
-            ordering: b"CNS1\x00" as *const u8 as *const libc::c_char,
+            registry: b"Adobe\x00" as *const u8 as *const i8,
+            ordering: b"CNS1\x00" as *const u8 as *const i8,
             supplement: [
                 -1i32, -1i32, 0i32, 0i32, 3i32, 4i32, 4i32, 4i32, 0, 0, 0, 0, 0, 0, 0, 0,
             ],
@@ -429,8 +429,8 @@ static mut CIDFont_stdcc_def: [C2RustUnnamed_0; 7] = [
     },
     {
         let mut init = C2RustUnnamed_0 {
-            registry: b"Adobe\x00" as *const u8 as *const libc::c_char,
-            ordering: b"Japan1\x00" as *const u8 as *const libc::c_char,
+            registry: b"Adobe\x00" as *const u8 as *const i8,
+            ordering: b"Japan1\x00" as *const u8 as *const i8,
             supplement: [
                 -1i32, -1i32, 2i32, 2i32, 4i32, 5i32, 6i32, 6i32, 0, 0, 0, 0, 0, 0, 0, 0,
             ],
@@ -439,8 +439,8 @@ static mut CIDFont_stdcc_def: [C2RustUnnamed_0; 7] = [
     },
     {
         let mut init = C2RustUnnamed_0 {
-            registry: b"Adobe\x00" as *const u8 as *const libc::c_char,
-            ordering: b"Korea1\x00" as *const u8 as *const libc::c_char,
+            registry: b"Adobe\x00" as *const u8 as *const i8,
+            ordering: b"Korea1\x00" as *const u8 as *const i8,
             supplement: [
                 -1i32, -1i32, 1i32, 1i32, 2i32, 2i32, 2i32, 2i32, 0, 0, 0, 0, 0, 0, 0, 0,
             ],
@@ -449,8 +449,8 @@ static mut CIDFont_stdcc_def: [C2RustUnnamed_0; 7] = [
     },
     {
         let mut init = C2RustUnnamed_0 {
-            registry: b"Adobe\x00" as *const u8 as *const libc::c_char,
-            ordering: b"Identity\x00" as *const u8 as *const libc::c_char,
+            registry: b"Adobe\x00" as *const u8 as *const i8,
+            ordering: b"Identity\x00" as *const u8 as *const i8,
             supplement: [
                 -1i32, -1i32, 0i32, 0i32, 0i32, 0i32, 0i32, 0i32, 0, 0, 0, 0, 0, 0, 0, 0,
             ],
@@ -459,8 +459,8 @@ static mut CIDFont_stdcc_def: [C2RustUnnamed_0; 7] = [
     },
     {
         let mut init = C2RustUnnamed_0 {
-            registry: 0 as *const libc::c_char,
-            ordering: 0 as *const libc::c_char,
+            registry: 0 as *const i8,
+            ordering: 0 as *const i8,
             supplement: [
                 0i32, 0i32, 0i32, 0i32, 0i32, 0i32, 0i32, 0i32, 0, 0, 0, 0, 0, 0, 0, 0,
             ],
@@ -468,9 +468,9 @@ static mut CIDFont_stdcc_def: [C2RustUnnamed_0; 7] = [
         init
     },
 ];
-static mut registry_Adobe: [libc::c_char; 6] = [65, 100, 111, 98, 101, 0];
-static mut ordering_Identity: [libc::c_char; 9] = [73, 100, 101, 110, 116, 105, 116, 121, 0];
-static mut ordering_UCS: [libc::c_char; 4] = [85, 67, 83, 0];
+static mut registry_Adobe: [i8; 6] = [65, 100, 111, 98, 101, 0];
+static mut ordering_Identity: [i8; 9] = [73, 100, 101, 110, 116, 105, 116, 121, 0];
+static mut ordering_UCS: [i8; 4] = [85, 67, 83, 0];
 #[no_mangle]
 pub static mut CSI_IDENTITY: CIDSysInfo = unsafe {
     {
@@ -496,133 +496,133 @@ pub static mut CSI_UNICODE: CIDSysInfo = unsafe {
 static mut CIDFont_stdcc_alias: [C2RustUnnamed_3; 19] = [
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"AU\x00" as *const u8 as *const libc::c_char,
+            name: b"AU\x00" as *const u8 as *const i8,
             index: 0i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"AG1\x00" as *const u8 as *const libc::c_char,
+            name: b"AG1\x00" as *const u8 as *const i8,
             index: 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"AC1\x00" as *const u8 as *const libc::c_char,
+            name: b"AC1\x00" as *const u8 as *const i8,
             index: 2i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"AJ1\x00" as *const u8 as *const libc::c_char,
+            name: b"AJ1\x00" as *const u8 as *const i8,
             index: 3i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"AK1\x00" as *const u8 as *const libc::c_char,
+            name: b"AK1\x00" as *const u8 as *const i8,
             index: 4i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"AI\x00" as *const u8 as *const libc::c_char,
+            name: b"AI\x00" as *const u8 as *const i8,
             index: 5i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"UCS\x00" as *const u8 as *const libc::c_char,
+            name: b"UCS\x00" as *const u8 as *const i8,
             index: 0i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"GB1\x00" as *const u8 as *const libc::c_char,
+            name: b"GB1\x00" as *const u8 as *const i8,
             index: 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"CNS1\x00" as *const u8 as *const libc::c_char,
+            name: b"CNS1\x00" as *const u8 as *const i8,
             index: 2i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"Japan1\x00" as *const u8 as *const libc::c_char,
+            name: b"Japan1\x00" as *const u8 as *const i8,
             index: 3i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"Korea1\x00" as *const u8 as *const libc::c_char,
+            name: b"Korea1\x00" as *const u8 as *const i8,
             index: 4i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"Identity\x00" as *const u8 as *const libc::c_char,
+            name: b"Identity\x00" as *const u8 as *const i8,
             index: 5i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"U\x00" as *const u8 as *const libc::c_char,
+            name: b"U\x00" as *const u8 as *const i8,
             index: 0i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"G\x00" as *const u8 as *const libc::c_char,
+            name: b"G\x00" as *const u8 as *const i8,
             index: 1i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"C\x00" as *const u8 as *const libc::c_char,
+            name: b"C\x00" as *const u8 as *const i8,
             index: 2i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"J\x00" as *const u8 as *const libc::c_char,
+            name: b"J\x00" as *const u8 as *const i8,
             index: 3i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"K\x00" as *const u8 as *const libc::c_char,
+            name: b"K\x00" as *const u8 as *const i8,
             index: 4i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: b"I\x00" as *const u8 as *const libc::c_char,
+            name: b"I\x00" as *const u8 as *const i8,
             index: 5i32,
         };
         init
     },
     {
         let mut init = C2RustUnnamed_3 {
-            name: 0 as *const libc::c_char,
+            name: 0 as *const i8,
             index: 0i32,
         };
         init
@@ -641,9 +641,9 @@ unsafe extern "C" fn CIDFont_new() -> *mut CIDFont {
     font = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<CIDFont>() as u64) as u32)
         as *mut CIDFont;
-    (*font).name = 0 as *mut libc::c_char;
-    (*font).fontname = 0 as *mut libc::c_char;
-    (*font).ident = 0 as *mut libc::c_char;
+    (*font).name = 0 as *mut i8;
+    (*font).fontname = 0 as *mut i8;
+    (*font).ident = 0 as *mut i8;
     /*
      * CIDFont
      */
@@ -676,20 +676,20 @@ unsafe extern "C" fn CIDFont_release(mut font: *mut CIDFont) {
     if !font.is_null() {
         if !(*font).indirect.is_null() {
             _tt_abort(
-                b"%s: Object not flushed.\x00" as *const u8 as *const libc::c_char,
-                b"CIDFont\x00" as *const u8 as *const libc::c_char,
+                b"%s: Object not flushed.\x00" as *const u8 as *const i8,
+                b"CIDFont\x00" as *const u8 as *const i8,
             );
         }
         if !(*font).fontdict.is_null() {
             _tt_abort(
-                b"%s: Object not flushed.\x00" as *const u8 as *const libc::c_char,
-                b"CIDFont\x00" as *const u8 as *const libc::c_char,
+                b"%s: Object not flushed.\x00" as *const u8 as *const i8,
+                b"CIDFont\x00" as *const u8 as *const i8,
             );
         }
         if !(*font).descriptor.is_null() {
             _tt_abort(
-                b"%s: Object not flushed.\x00" as *const u8 as *const libc::c_char,
-                b"CIDFont\x00" as *const u8 as *const libc::c_char,
+                b"%s: Object not flushed.\x00" as *const u8 as *const i8,
+                b"CIDFont\x00" as *const u8 as *const i8,
             );
         }
         free((*font).fontname as *mut libc::c_void);
@@ -706,14 +706,14 @@ unsafe extern "C" fn CIDFont_release(mut font: *mut CIDFont) {
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn CIDFont_get_fontname(mut font: *mut CIDFont) -> *mut libc::c_char {
+pub unsafe extern "C" fn CIDFont_get_fontname(mut font: *mut CIDFont) -> *mut i8 {
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             193i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 38], &[libc::c_char; 38]>(
+            (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
                 b"char *CIDFont_get_fontname(CIDFont *)\x00",
             ))
             .as_ptr(),
@@ -722,14 +722,14 @@ pub unsafe extern "C" fn CIDFont_get_fontname(mut font: *mut CIDFont) -> *mut li
     return (*font).fontname;
 }
 #[no_mangle]
-pub unsafe extern "C" fn CIDFont_get_ident(mut font: *mut CIDFont) -> *mut libc::c_char {
+pub unsafe extern "C" fn CIDFont_get_ident(mut font: *mut CIDFont) -> *mut i8 {
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             200i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 35], &[libc::c_char; 35]>(
+            (*::std::mem::transmute::<&[u8; 35], &[i8; 35]>(
                 b"char *CIDFont_get_ident(CIDFont *)\x00",
             ))
             .as_ptr(),
@@ -743,10 +743,10 @@ pub unsafe extern "C" fn CIDFont_get_opt_index(mut font: *mut CIDFont) -> libc::
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             209i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int CIDFont_get_opt_index(CIDFont *)\x00",
             ))
             .as_ptr(),
@@ -764,10 +764,10 @@ pub unsafe extern "C" fn CIDFont_get_subtype(mut font: *mut CIDFont) -> libc::c_
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             223i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 35], &[libc::c_char; 35]>(
+            (*::std::mem::transmute::<&[u8; 35], &[i8; 35]>(
                 b"int CIDFont_get_subtype(CIDFont *)\x00",
             ))
             .as_ptr(),
@@ -780,10 +780,10 @@ pub unsafe extern "C" fn CIDFont_get_embedding(mut font: *mut CIDFont) -> libc::
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             230i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int CIDFont_get_embedding(CIDFont *)\x00",
             ))
             .as_ptr(),
@@ -796,10 +796,10 @@ pub unsafe extern "C" fn CIDFont_get_CIDSysInfo(mut font: *mut CIDFont) -> *mut 
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             237i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 46], &[libc::c_char; 46]>(
+            (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
                 b"CIDSysInfo *CIDFont_get_CIDSysInfo(CIDFont *)\x00",
             ))
             .as_ptr(),
@@ -819,10 +819,10 @@ pub unsafe extern "C" fn CIDFont_get_parent_id(
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             249i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 42], &[libc::c_char; 42]>(
+            (*::std::mem::transmute::<&[u8; 42], &[i8; 42]>(
                 b"int CIDFont_get_parent_id(CIDFont *, int)\x00",
             ))
             .as_ptr(),
@@ -830,8 +830,8 @@ pub unsafe extern "C" fn CIDFont_get_parent_id(
     }
     if wmode < 0i32 || wmode > 1i32 {
         _tt_abort(
-            b"%s: Invalid wmode value.\x00" as *const u8 as *const libc::c_char,
-            b"CIDFont\x00" as *const u8 as *const libc::c_char,
+            b"%s: Invalid wmode value.\x00" as *const u8 as *const i8,
+            b"CIDFont\x00" as *const u8 as *const i8,
         );
     }
     return (*font).parent[wmode as usize];
@@ -841,10 +841,10 @@ pub unsafe extern "C" fn CIDFont_get_resource(mut font: *mut CIDFont) -> *mut pd
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             260i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+            (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
                 b"pdf_obj *CIDFont_get_resource(CIDFont *)\x00",
             ))
             .as_ptr(),
@@ -867,10 +867,10 @@ pub unsafe extern "C" fn CIDFont_attach_parent(
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             274i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 48], &[libc::c_char; 48]>(
+            (*::std::mem::transmute::<&[u8; 48], &[i8; 48]>(
                 b"void CIDFont_attach_parent(CIDFont *, int, int)\x00",
             ))
             .as_ptr(),
@@ -878,15 +878,15 @@ pub unsafe extern "C" fn CIDFont_attach_parent(
     }
     if wmode < 0i32 || wmode > 1i32 {
         _tt_abort(
-            b"%s: Invalid wmode value.\x00" as *const u8 as *const libc::c_char,
-            b"CIDFont\x00" as *const u8 as *const libc::c_char,
+            b"%s: Invalid wmode value.\x00" as *const u8 as *const i8,
+            b"CIDFont\x00" as *const u8 as *const i8,
         );
     }
     if (*font).parent[wmode as usize] >= 0i32 {
         dpx_warning(
             b"%s: CIDFont already have a parent Type1 font.\x00" as *const u8
-                as *const libc::c_char,
-            b"CIDFont\x00" as *const u8 as *const libc::c_char,
+                as *const i8,
+            b"CIDFont\x00" as *const u8 as *const i8,
         );
     }
     (*font).parent[wmode as usize] = parent_id;
@@ -897,10 +897,10 @@ pub unsafe extern "C" fn CIDFont_is_ACCFont(mut font: *mut CIDFont) -> bool {
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             290i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 36], &[libc::c_char; 36]>(
+            (*::std::mem::transmute::<&[u8; 36], &[i8; 36]>(
                 b"_Bool CIDFont_is_ACCFont(CIDFont *)\x00",
             ))
             .as_ptr(),
@@ -908,8 +908,8 @@ pub unsafe extern "C" fn CIDFont_is_ACCFont(mut font: *mut CIDFont) -> bool {
     }
     if (*font).csi.is_null() {
         _tt_abort(
-            b"%s: CIDSystemInfo undefined.\x00" as *const u8 as *const libc::c_char,
-            b"CIDFont\x00" as *const u8 as *const libc::c_char,
+            b"%s: CIDSystemInfo undefined.\x00" as *const u8 as *const i8,
+            b"CIDFont\x00" as *const u8 as *const i8,
         );
     }
     i = 1i32;
@@ -936,10 +936,10 @@ pub unsafe extern "C" fn CIDFont_is_UCSFont(mut font: *mut CIDFont) -> bool {
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             307i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 36], &[libc::c_char; 36]>(
+            (*::std::mem::transmute::<&[u8; 36], &[i8; 36]>(
                 b"_Bool CIDFont_is_UCSFont(CIDFont *)\x00",
             ))
             .as_ptr(),
@@ -947,12 +947,12 @@ pub unsafe extern "C" fn CIDFont_is_UCSFont(mut font: *mut CIDFont) -> bool {
     }
     return streq_ptr(
         (*(*font).csi).ordering,
-        b"UCS\x00" as *const u8 as *const libc::c_char,
+        b"UCS\x00" as *const u8 as *const i8,
     ) as libc::c_int
         != 0
         || streq_ptr(
             (*(*font).csi).ordering,
-            b"UCS2\x00" as *const u8 as *const libc::c_char,
+            b"UCS2\x00" as *const u8 as *const i8,
         ) as libc::c_int
             != 0;
 }
@@ -965,10 +965,10 @@ pub unsafe extern "C" fn CIDFont_get_flag(
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             317i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int CIDFont_get_flag(CIDFont *, int)\x00",
             ))
             .as_ptr(),
@@ -986,14 +986,14 @@ unsafe extern "C" fn CIDFont_dofont(mut font: *mut CIDFont) {
     }
     if __verbose != 0 {
         dpx_message(
-            b":%s\x00" as *const u8 as *const libc::c_char,
+            b":%s\x00" as *const u8 as *const i8,
             (*font).ident,
         );
     }
     if __verbose > 1i32 {
         if !(*font).fontname.is_null() {
             dpx_message(
-                b"[%s]\x00" as *const u8 as *const libc::c_char,
+                b"[%s]\x00" as *const u8 as *const i8,
                 (*font).fontname,
             );
         }
@@ -1001,7 +1001,7 @@ unsafe extern "C" fn CIDFont_dofont(mut font: *mut CIDFont) {
     match (*font).subtype {
         1 => {
             if __verbose != 0 {
-                dpx_message(b"[CIDFontType0]\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b"[CIDFontType0]\x00" as *const u8 as *const i8);
             }
             if CIDFont_get_flag(font, 1i32 << 8i32) != 0 {
                 CIDFont_type0_t1dofont(font);
@@ -1013,14 +1013,14 @@ unsafe extern "C" fn CIDFont_dofont(mut font: *mut CIDFont) {
         }
         2 => {
             if __verbose != 0 {
-                dpx_message(b"[CIDFontType2]\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b"[CIDFontType2]\x00" as *const u8 as *const i8);
             }
             CIDFont_type2_dofont(font);
         }
         _ => {
             _tt_abort(
-                b"%s: Unknown CIDFontType %d.\x00" as *const u8 as *const libc::c_char,
-                b"CIDFont\x00" as *const u8 as *const libc::c_char,
+                b"%s: Unknown CIDFontType %d.\x00" as *const u8 as *const i8,
+                b"CIDFont\x00" as *const u8 as *const i8,
                 (*font).subtype,
             );
         }
@@ -1034,10 +1034,10 @@ pub unsafe extern "C" fn CIDFont_is_BaseFont(mut font: *mut CIDFont) -> bool {
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             363i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"_Bool CIDFont_is_BaseFont(CIDFont *)\x00",
             ))
             .as_ptr(),
@@ -1050,288 +1050,288 @@ static mut cid_basefont: [C2RustUnnamed_2; 21] = [
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"Ryumin-Light\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype/CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (Japan1) /Supplement 2 >> /DW 1000 /W [  231   632 500  8718 [500 500] ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /CapHeight 709 /Ascent 723 /Descent -241 /StemV 69 /FontBBox [-170 -331 1024 903] /ItalicAngle 0 /Flags 6 /Style << /Panose <010502020300000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"GothicBBB-Medium\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype/CIDFontType0 /CIDSystemInfo <<  /Registry (Adobe) /Ordering (Japan1) /Supplement 2 >> /DW 1000 /W [  231   632 500  8718 [500 500] ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /CapHeight 737 /Ascent 752 /Descent -271 /StemV 99 /FontBBox [-174 -268 1001 944] /ItalicAngle 0 /Flags 4 /Style << /Panose <0801020b0500000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"MHei-Medium-Acro\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype /CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (CNS1) /Supplement 0 >> /DW 1000 /W [13648 13742 500 17603 [500] ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 752 /CapHeight 737 /Descent -271 /StemV 58 /FontBBox [-45 -250 1015 887] /ItalicAngle 0 /Flags 4 /XHeight 553 /Style << /Panose <000001000600000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"MSung-Light-Acro\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype /CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (CNS1) /Supplement 0 >> /DW 1000 /W [13648 13742 500 17603 [500] ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 752 /CapHeight 737 /Descent -271 /StemV 58 /FontBBox [-160 -249 1015 888] /ItalicAngle 0 /Flags 6 /XHeight 553 /Style << /Panose <000000000400000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"STSong-Light-Acro\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype /CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (GB1) /Supplement 2 >> /DW 1000 /W [  814 939 500  7716 [500] 22355 [500 500] 22357 [500] ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 752 /CapHeight 737 /Descent -271 /StemV 58 /FontBBox [-25 -254 1000 880] /ItalicAngle 0 /Flags 6 /XHeight 599 /Style << /Panose <000000000400000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"STHeiti-Regular-Acro\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype /CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (GB1) /Supplement 1 >> /DW 1000 /W [  814 939 500  7716 [500] 22355 [500 500] 22357 [500] ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 752 /CapHeight 737 /Descent -271 /StemV 58 /FontBBox [-34 -250 1000 882] /ItalicAngle 0 /Flags 4 /XHeight 599 /Style << /Panose <000001000600000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"HeiseiKakuGo-W5-Acro\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype /CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (Japan1) /Supplement  2 >> /DW 1000 /W [  231   632 500  8718 [500 500] ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 752 /CapHeight 737 /Descent -221 /StemV 114 /FontBBox [-92 -250 1010 922] /ItalicAngle 0 /Flags 4 /XHeight 553 /Style << /Panose <0801020b0600000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"HeiseiMin-W3-Acro\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype /CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (Japan1) /Supplement 2 >> /DW 1000 /W [  231   632 500  8718 [500 500] ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 723 /CapHeight 709 /Descent -241 /StemV 69 /FontBBox [-123 -257 1001 910] /ItalicAngle 0 /Flags 6 /XHeight 450 /Style << /Panose <010502020400000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"HYGoThic-Medium-Acro\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype /CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (Korea1) /Supplement 1 >> /DW 1000 /W [   97 [500]  8094  8190 500 ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 752 /CapHeight 737 /Descent -271 /StemV 58 /FontBBox [-6 -145 1003 880] /ItalicAngle 0 /Flags 4 /XHeight 553 /Style << /Panose <000001000600000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"HYSMyeongJo-Medium-Acro\x00" as *const u8
-                                     as *const libc::c_char,
+                                     as *const i8,
                              fontdict:
                                  b"<< /Subtype /CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (Korea1) /Supplement 1 >> /DW 1000 /W [   97 [500]  8094  8190 500 ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 752 /CapHeight 737 /Descent -271 /StemV 58 /FontBBox [-0 -148 1001 880] /ItalicAngle 0 /Flags 6 /XHeight 553 /Style << /Panose <000000000600000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"MSungStd-Light-Acro\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype /CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (CNS1) /Supplement 4 >> /DW 1000 /W [13648 13742 500 17603 [500] ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 880 /CapHeight 662 /Descent -120 /StemV 54 /FontBBox [-160 -249 1015 1071] /ItalicAngle 0 /Flags 6 /Style << /Panose <000000000400000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"STSongStd-Light-Acro\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype /CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (GB1) /Supplement 4 >> /DW 1000 /W [  814 939 500  7716 [500] 22355 [500 500] 22357 [500] ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 880 /CapHeight 626 /Descent -120 /StemV 44 /FontBBox [-134 -254 1001 905] /ItalicAngle 0 /Flags 6 /Style << /Panose <000000000400000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"HYSMyeongJoStd-Medium-Acro\x00" as
-                                     *const u8 as *const libc::c_char,
+                                     *const u8 as *const i8,
                              fontdict:
                                  b"<< /Subtype /CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (Korea1) /Supplement 2 >> /DW 1000 /W [   97 [500]  8094  8190 500 ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 880 /CapHeight 720 /Descent -120 /StemV 60 /FontBBox [-28 -148 1001 880] /ItalicAngle 0 /Flags 6 /Style << /Panose <000000000600000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"AdobeMingStd-Light-Acro\x00" as *const u8
-                                     as *const libc::c_char,
+                                     as *const i8,
                              fontdict:
                                  b"<< /Subtype/CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (CNS1) /Supplement 4 >> /DW 1000 /W [13648 13742 500 17603 [500] ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 880 /Descent -120 /StemV 48 /CapHeight 731 /FontBBox [-38 -121 1002 918] /ItalicAngle 0 /Flags 6 /XHeight 466 /Style << /Panose <000002020300000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"AdobeSongStd-Light-Acro\x00" as *const u8
-                                     as *const libc::c_char,
+                                     as *const i8,
                              fontdict:
                                  b"<< /Subtype/CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (GB1) /Supplement 4 >> /DW 1000 /W [  814 939 500  7716 [500] 22355 [500 500] 22357 [500] ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 880 /Descent -120 /StemV 66 /CapHeight 626 /FontBBox [-134 -254 1001 905] /ItalicAngle 0 /Flags 6 /XHeight 416 /Style << /Panose <000002020300000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"KozMinPro-Regular-Acro\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype/CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (Japan1) /Supplement 4 >> /DW 1000 /W [  231   632 500  8718 [500 500]  9738  9757 250  9758  9778 333 12063 12087 500 ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 880 /Descent -120 /StemV 86 /CapHeight 740 /FontBBox [-195 -272 1110 1075] /ItalicAngle 0 /Flags 6 /XHeight 502 /Style << /Panose <000002020400000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"KozGoPro-Medium-Acro\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype/CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering(Japan1) /Supplement 4 >> /DW 1000 /W [  231   632 500  8718 [500 500]  9738  9757 250  9758  9778 333 12063 12087 500 ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 880 /Descent -120 /StemV 99 /CapHeight 763 /FontBBox [-149 -374 1254 1008] /ItalicAngle 0 /Flags 4 /XHeight 549 /Style << /Panose <0000020b0700000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"AdobeMyungjoStd-Medium-Acro\x00" as
-                                     *const u8 as *const libc::c_char,
+                                     *const u8 as *const i8,
                              fontdict:
                                  b"<< /Subtype/CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (Korea1) /Supplement 2 >> /DW 1000 /W [   97 [500]  8094  8190 500 ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 880 /Descent -120 /StemV 99 /CapHeight 719 /FontBBox [-28 -148 1001 880] /ItalicAngle 0 /Flags 6 /XHeight 478 /Style << /Panose <000002020600000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"KozMinProVI-Regular\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype/CIDFontType0 /CIDSystemInfo <<   /Registry (Adobe)   /Ordering (Japan1)   /Supplement 6 >> /DW 1000 /W [  231   632 500   8718 [500 500]   9738  9757 250   9758  9778 333   12063 12087 500 ]        >>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 880 /Descent -120 /StemV 86 /CapHeight 742 /FontBBox [-437 -340 1144 1317] /ItalicAngle 0 /Flags 6 /XHeight 503 /Style <<   /Panose <000002020400000000000000> >>      >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init =
              C2RustUnnamed_2{fontname:
                                  b"AdobeHeitiStd-Regular\x00" as *const u8 as
-                                     *const libc::c_char,
+                                     *const i8,
                              fontdict:
                                  b"<< /Subtype/CIDFontType0 /CIDSystemInfo << /Registry (Adobe) /Ordering (GB1) /Supplement 4 >> /DW 1000 /W [  814 939 500  7716 [500] 22355 [500 500] 22357 [500] ]>>\x00"
-                                     as *const u8 as *const libc::c_char,
+                                     as *const u8 as *const i8,
                              descriptor:
                                  b"<< /Ascent 880 /Descent -120 /StemV 66 /CapHeight 626 /FontBBox [-134 -254 1001 905] /ItalicAngle 0 /Flags 6 /XHeight 416 /Style << /Panose <000002020300000000000000> >> >>\x00"
-                                     as *const u8 as *const libc::c_char,};
+                                     as *const u8 as *const i8,};
         init
     },
     {
         let mut init = C2RustUnnamed_2 {
-            fontname: 0 as *const libc::c_char,
-            fontdict: 0 as *const libc::c_char,
-            descriptor: 0 as *const libc::c_char,
+            fontname: 0 as *const i8,
+            fontdict: 0 as *const i8,
+            descriptor: 0 as *const i8,
         };
         init
     },
 ];
 unsafe extern "C" fn CIDFont_base_open(
     mut font: *mut CIDFont,
-    mut name: *const libc::c_char,
+    mut name: *const i8,
     mut cmap_csi: *mut CIDSysInfo,
     mut opt: *mut cid_opt,
 ) -> libc::c_int {
     let mut fontdict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut descriptor: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut fontname: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut fontname: *mut i8 = 0 as *mut i8;
     let mut idx: libc::c_int = 0;
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             381i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 72], &[libc::c_char; 72]>(
+            (*::std::mem::transmute::<&[u8; 72], &[i8; 72]>(
                 b"int CIDFont_base_open(CIDFont *, const char *, CIDSysInfo *, cid_opt *)\x00",
             ))
             .as_ptr(),
@@ -1342,12 +1342,12 @@ unsafe extern "C" fn CIDFont_base_open(
         if streq_ptr(name, cid_basefont[idx as usize].fontname) as libc::c_int != 0
             || strlen(name)
                 == strlen(cid_basefont[idx as usize].fontname)
-                    .wrapping_sub(strlen(b"-Acro\x00" as *const u8 as *const libc::c_char))
+                    .wrapping_sub(strlen(b"-Acro\x00" as *const u8 as *const i8))
                 && strncmp(
                     name,
                     cid_basefont[idx as usize].fontname,
                     strlen(cid_basefont[idx as usize].fontname)
-                        .wrapping_sub(strlen(b"-Acro\x00" as *const u8 as *const libc::c_char)),
+                        .wrapping_sub(strlen(b"-Acro\x00" as *const u8 as *const i8)),
                 ) == 0
         {
             break;
@@ -1359,9 +1359,9 @@ unsafe extern "C" fn CIDFont_base_open(
     }
     fontname = new(
         (strlen(name).wrapping_add(12i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32,
-    ) as *mut libc::c_char;
+    ) as *mut i8;
     memset(
         fontname as *mut libc::c_void,
         0i32,
@@ -1370,21 +1370,21 @@ unsafe extern "C" fn CIDFont_base_open(
     strcpy(fontname, name);
     match (*opt).style {
         1 => {
-            strcat(fontname, b",Bold\x00" as *const u8 as *const libc::c_char);
+            strcat(fontname, b",Bold\x00" as *const u8 as *const i8);
         }
         2 => {
-            strcat(fontname, b",Italic\x00" as *const u8 as *const libc::c_char);
+            strcat(fontname, b",Italic\x00" as *const u8 as *const i8);
         }
         3 => {
             strcat(
                 fontname,
-                b",BoldItalic\x00" as *const u8 as *const libc::c_char,
+                b",BoldItalic\x00" as *const u8 as *const i8,
             );
         }
         _ => {}
     }
-    let mut start: *const libc::c_char = 0 as *const libc::c_char;
-    let mut end: *const libc::c_char = 0 as *const libc::c_char;
+    let mut start: *const i8 = 0 as *const i8;
+    let mut end: *const i8 = 0 as *const i8;
     start = cid_basefont[idx as usize].fontdict;
     end = start.offset(strlen(start) as isize);
     fontdict = parse_pdf_dict(&mut start, end, 0 as *mut pdf_file);
@@ -1394,10 +1394,10 @@ unsafe extern "C" fn CIDFont_base_open(
     if !fontdict.is_null() && !descriptor.is_null() {
     } else {
         __assert_fail(
-            b"fontdict && descriptor\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"fontdict && descriptor\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             421i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 72], &[libc::c_char; 72]>(
+            (*::std::mem::transmute::<&[u8; 72], &[i8; 72]>(
                 b"int CIDFont_base_open(CIDFont *, const char *, CIDSysInfo *, cid_opt *)\x00",
             ))
             .as_ptr(),
@@ -1405,21 +1405,21 @@ unsafe extern "C" fn CIDFont_base_open(
     }
     (*font).fontname = fontname;
     (*font).flags |= 1i32 << 0i32;
-    let mut registry: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut ordering: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut registry: *mut i8 = 0 as *mut i8;
+    let mut ordering: *mut i8 = 0 as *mut i8;
     let mut supplement: libc::c_int = 0;
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     tmp = pdf_lookup_dict(
         fontdict,
-        b"CIDSystemInfo\x00" as *const u8 as *const libc::c_char,
+        b"CIDSystemInfo\x00" as *const u8 as *const i8,
     );
     if !tmp.is_null() && pdf_obj_typeof(tmp) == 6i32 {
     } else {
         __assert_fail(
-            b"tmp && pdf_obj_typeof(tmp) == PDF_DICT\x00" as *const u8 as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+            b"tmp && pdf_obj_typeof(tmp) == PDF_DICT\x00" as *const u8 as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             433i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 72], &[libc::c_char; 72]>(
+            (*::std::mem::transmute::<&[u8; 72], &[i8; 72]>(
                 b"int CIDFont_base_open(CIDFont *, const char *, CIDSysInfo *, cid_opt *)\x00",
             ))
             .as_ptr(),
@@ -1427,15 +1427,15 @@ unsafe extern "C" fn CIDFont_base_open(
     }
     registry = pdf_string_value(pdf_lookup_dict(
         tmp,
-        b"Registry\x00" as *const u8 as *const libc::c_char,
-    )) as *mut libc::c_char;
+        b"Registry\x00" as *const u8 as *const i8,
+    )) as *mut i8;
     ordering = pdf_string_value(pdf_lookup_dict(
         tmp,
-        b"Ordering\x00" as *const u8 as *const libc::c_char,
-    )) as *mut libc::c_char;
+        b"Ordering\x00" as *const u8 as *const i8,
+    )) as *mut i8;
     supplement = pdf_number_value(pdf_lookup_dict(
         tmp,
-        b"Supplement\x00" as *const u8 as *const libc::c_char,
+        b"Supplement\x00" as *const u8 as *const i8,
     )) as libc::c_int;
     if !cmap_csi.is_null() {
         /* NULL for accept any */
@@ -1444,19 +1444,19 @@ unsafe extern "C" fn CIDFont_base_open(
         {
             _tt_abort(
                 b"Inconsistent CMap used for CID-keyed font %s.\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
                 cid_basefont[idx as usize].fontname,
             );
         } else {
             if supplement < (*cmap_csi).supplement {
                 dpx_warning(
                     b"CMap has higher supplement number than CIDFont: %s\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                     fontname,
                 );
                 dpx_warning(
                     b"Some chracters may not be displayed or printed.\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
             }
         }
@@ -1466,28 +1466,28 @@ unsafe extern "C" fn CIDFont_base_open(
         as u32) as *mut CIDSysInfo;
     (*(*font).csi).registry = new(
         (strlen(registry).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32,
-    ) as *mut libc::c_char;
+    ) as *mut i8;
     (*(*font).csi).ordering = new(
         (strlen(ordering).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32,
-    ) as *mut libc::c_char;
+    ) as *mut i8;
     strcpy((*(*font).csi).registry, registry);
     strcpy((*(*font).csi).ordering, ordering);
     (*(*font).csi).supplement = supplement;
     let mut tmp_0: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut type_0: *mut libc::c_char = 0 as *mut libc::c_char;
-    tmp_0 = pdf_lookup_dict(fontdict, b"Subtype\x00" as *const u8 as *const libc::c_char);
+    let mut type_0: *mut i8 = 0 as *mut i8;
+    tmp_0 = pdf_lookup_dict(fontdict, b"Subtype\x00" as *const u8 as *const i8);
     if !tmp_0.is_null() && pdf_obj_typeof(tmp_0) == 4i32 {
     } else {
         __assert_fail(
             b"tmp != NULL && pdf_obj_typeof(tmp) == PDF_NAME\x00" as *const u8
-                as *const libc::c_char,
-            b"dpx-cid.c\x00" as *const u8 as *const libc::c_char,
+                as *const i8,
+            b"dpx-cid.c\x00" as *const u8 as *const i8,
             461i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 72], &[libc::c_char; 72]>(
+            (*::std::mem::transmute::<&[u8; 72], &[i8; 72]>(
                 b"int CIDFont_base_open(CIDFont *, const char *, CIDSysInfo *, cid_opt *)\x00",
             ))
             .as_ptr(),
@@ -1496,46 +1496,46 @@ unsafe extern "C" fn CIDFont_base_open(
     type_0 = pdf_name_value(tmp_0);
     if streq_ptr(
         type_0,
-        b"CIDFontType0\x00" as *const u8 as *const libc::c_char,
+        b"CIDFontType0\x00" as *const u8 as *const i8,
     ) {
         (*font).subtype = 1i32
     } else if streq_ptr(
         type_0,
-        b"CIDFontType2\x00" as *const u8 as *const libc::c_char,
+        b"CIDFontType2\x00" as *const u8 as *const i8,
     ) {
         (*font).subtype = 2i32
     } else {
         _tt_abort(
-            b"Unknown CIDFontType \"%s\"\x00" as *const u8 as *const libc::c_char,
+            b"Unknown CIDFontType \"%s\"\x00" as *const u8 as *const i8,
             type_0,
         );
     }
     if cidoptflags & 1i32 << 1i32 != 0 {
-        if !pdf_lookup_dict(fontdict, b"W\x00" as *const u8 as *const libc::c_char).is_null() {
-            pdf_remove_dict(fontdict, b"W\x00" as *const u8 as *const libc::c_char);
+        if !pdf_lookup_dict(fontdict, b"W\x00" as *const u8 as *const i8).is_null() {
+            pdf_remove_dict(fontdict, b"W\x00" as *const u8 as *const i8);
         }
-        if !pdf_lookup_dict(fontdict, b"W2\x00" as *const u8 as *const libc::c_char).is_null() {
-            pdf_remove_dict(fontdict, b"W2\x00" as *const u8 as *const libc::c_char);
+        if !pdf_lookup_dict(fontdict, b"W2\x00" as *const u8 as *const i8).is_null() {
+            pdf_remove_dict(fontdict, b"W2\x00" as *const u8 as *const i8);
         }
     }
     pdf_add_dict(
         fontdict,
-        pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"Font\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+        pdf_new_name(b"Font\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         fontdict,
-        pdf_new_name(b"BaseFont\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"BaseFont\x00" as *const u8 as *const i8),
         pdf_new_name(fontname),
     );
     pdf_add_dict(
         descriptor,
-        pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-        pdf_new_name(b"FontDescriptor\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+        pdf_new_name(b"FontDescriptor\x00" as *const u8 as *const i8),
     );
     pdf_add_dict(
         descriptor,
-        pdf_new_name(b"FontName\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"FontName\x00" as *const u8 as *const i8),
         pdf_new_name(fontname),
     );
     (*font).fontdict = fontdict;
@@ -1547,8 +1547,8 @@ static mut __cache: *mut FontCache = 0 as *const FontCache as *mut FontCache;
 unsafe extern "C" fn CIDFont_cache_init() {
     if !__cache.is_null() {
         _tt_abort(
-            b"%s: Already initialized.\x00" as *const u8 as *const libc::c_char,
-            b"CIDFont\x00" as *const u8 as *const libc::c_char,
+            b"%s: Already initialized.\x00" as *const u8 as *const i8,
+            b"CIDFont\x00" as *const u8 as *const i8,
         );
     }
     __cache = new((1i32 as u32 as u64)
@@ -1564,14 +1564,14 @@ unsafe extern "C" fn CIDFont_cache_init() {
 pub unsafe extern "C" fn CIDFont_cache_get(mut font_id: libc::c_int) -> *mut CIDFont {
     if __cache.is_null() {
         _tt_abort(
-            b"%s: CIDFont cache not initialized.\x00" as *const u8 as *const libc::c_char,
-            b"CIDFont\x00" as *const u8 as *const libc::c_char,
+            b"%s: CIDFont cache not initialized.\x00" as *const u8 as *const i8,
+            b"CIDFont\x00" as *const u8 as *const i8,
         );
     }
     if font_id < 0i32 || font_id >= (*__cache).num {
         _tt_abort(
-            b"%s: Invalid ID %d\x00" as *const u8 as *const libc::c_char,
-            b"CIDFont\x00" as *const u8 as *const libc::c_char,
+            b"%s: Invalid ID %d\x00" as *const u8 as *const i8,
+            b"CIDFont\x00" as *const u8 as *const i8,
             font_id,
         );
     }
@@ -1582,7 +1582,7 @@ pub unsafe extern "C" fn CIDFont_cache_get(mut font_id: libc::c_int) -> *mut CID
  */
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_cache_find(
-    mut map_name: *const libc::c_char,
+    mut map_name: *const i8,
     mut cmap_csi: *mut CIDSysInfo,
     mut fmap_opt: *mut fontmap_opt,
 ) -> libc::c_int {
@@ -1602,7 +1602,7 @@ pub unsafe extern "C" fn CIDFont_cache_find(
     } else {
         1i32
     };
-    (*opt).name = 0 as *mut libc::c_char;
+    (*opt).name = 0 as *mut i8;
     (*opt).csi = get_cidsysinfo(map_name, fmap_opt);
     (*opt).stemv = (*fmap_opt).stemv;
     (*opt).cff_charsets = 0 as *mut libc::c_void;
@@ -1617,14 +1617,14 @@ pub unsafe extern "C" fn CIDFont_cache_find(
         (*(*opt).csi).registry = new((strlen((*cmap_csi).registry)
             .wrapping_add(1i32 as u64) as u32
             as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-            as u32) as *mut libc::c_char;
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+            as u32) as *mut i8;
         strcpy((*(*opt).csi).registry, (*cmap_csi).registry);
         (*(*opt).csi).ordering = new((strlen((*cmap_csi).ordering)
             .wrapping_add(1i32 as u64) as u32
             as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-            as u32) as *mut libc::c_char;
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+            as u32) as *mut i8;
         strcpy((*(*opt).csi).ordering, (*cmap_csi).ordering);
         (*(*opt).csi).supplement = (*cmap_csi).supplement
     }
@@ -1677,8 +1677,8 @@ pub unsafe extern "C" fn CIDFont_cache_find(
             || strcmp((*(*font).csi).ordering, (*cmap_csi).ordering) != 0
         {
             _tt_abort(
-                b"%s: Incompatible CMap for CIDFont \"%s\"\x00" as *const u8 as *const libc::c_char,
-                b"CIDFont\x00" as *const u8 as *const libc::c_char,
+                b"%s: Incompatible CMap for CIDFont \"%s\"\x00" as *const u8 as *const i8,
+                b"CIDFont\x00" as *const u8 as *const i8,
                 map_name,
             );
         }
@@ -1707,15 +1707,15 @@ pub unsafe extern "C" fn CIDFont_cache_find(
             }
             (*font).name = new(
                 (strlen(map_name).wrapping_add(1i32 as u64) as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+                    .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                     as u32,
-            ) as *mut libc::c_char;
+            ) as *mut i8;
             strcpy((*font).name, map_name);
             (*font).ident = new(
                 (strlen(map_name).wrapping_add(1i32 as u64) as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+                    .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                     as u32,
-            ) as *mut libc::c_char;
+            ) as *mut i8;
             strcpy((*font).ident, map_name);
             (*font).options = opt;
             let ref mut fresh0 = *(*__cache).fonts.offset(font_id as isize);
@@ -1741,14 +1741,14 @@ pub unsafe extern "C" fn CIDFont_cache_close() {
             let mut font: *mut CIDFont = 0 as *mut CIDFont;
             font = *(*__cache).fonts.offset(font_id as isize);
             if __verbose != 0 {
-                dpx_message(b"(CID\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b"(CID\x00" as *const u8 as *const i8);
             }
             CIDFont_dofont(font);
             CIDFont_flush(font);
             CIDFont_release(font);
             free(font as *mut libc::c_void);
             if __verbose != 0 {
-                dpx_message(b")\x00" as *const u8 as *const libc::c_char);
+                dpx_message(b")\x00" as *const u8 as *const i8);
             }
             font_id += 1
         }
@@ -1774,7 +1774,7 @@ unsafe extern "C" fn release_opt(mut opt: *mut cid_opt) {
     free(opt as *mut libc::c_void);
 }
 unsafe extern "C" fn get_cidsysinfo(
-    mut map_name: *const libc::c_char,
+    mut map_name: *const i8,
     mut fmap_opt: *mut fontmap_opt,
 ) -> *mut CIDSysInfo {
     let mut csi: *mut CIDSysInfo = 0 as *mut CIDSysInfo;
@@ -1799,8 +1799,8 @@ unsafe extern "C" fn get_cidsysinfo(
             (*csi).registry = new((strlen(CIDFont_stdcc_def[csi_idx as usize].registry)
                 .wrapping_add(1i32 as u64) as u32
                 as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-                as u32) as *mut libc::c_char;
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32) as *mut i8;
             strcpy(
                 (*csi).registry,
                 CIDFont_stdcc_def[csi_idx as usize].registry,
@@ -1808,8 +1808,8 @@ unsafe extern "C" fn get_cidsysinfo(
             (*csi).ordering = new((strlen(CIDFont_stdcc_def[csi_idx as usize].ordering)
                 .wrapping_add(1i32 as u64) as u32
                 as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-                as u32) as *mut libc::c_char;
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32) as *mut i8;
             strcpy(
                 (*csi).ordering,
                 CIDFont_stdcc_def[csi_idx as usize].ordering,
@@ -1817,7 +1817,7 @@ unsafe extern "C" fn get_cidsysinfo(
             if strlen((*fmap_opt).charcoll) > n {
                 (*csi).supplement = strtoul(
                     &mut *(*fmap_opt).charcoll.offset(n as isize),
-                    0 as *mut *mut libc::c_char,
+                    0 as *mut *mut i8,
                     10i32,
                 ) as libc::c_int
             } else {
@@ -1829,8 +1829,8 @@ unsafe extern "C" fn get_cidsysinfo(
         }
     }
     if csi.is_null() {
-        let mut p: *mut libc::c_char = 0 as *mut libc::c_char;
-        let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
+        let mut p: *mut i8 = 0 as *mut i8;
+        let mut q: *mut i8 = 0 as *mut i8;
         p = (*fmap_opt).charcoll;
         csi = new((1i32 as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as u64)
@@ -1840,8 +1840,8 @@ unsafe extern "C" fn get_cidsysinfo(
         if p.is_null() || *p.offset(1) as libc::c_int == '\u{0}' as i32 {
             _tt_abort(
                 b"%s: String can\'t be converted to REGISTRY-ORDERING-SUPPLEMENT: %s\x00"
-                    as *const u8 as *const libc::c_char,
-                b"CIDFont\x00" as *const u8 as *const libc::c_char,
+                    as *const u8 as *const i8,
+                b"CIDFont\x00" as *const u8 as *const i8,
                 (*fmap_opt).charcoll,
             );
         }
@@ -1850,8 +1850,8 @@ unsafe extern "C" fn get_cidsysinfo(
         if q.is_null() || *q.offset(1) as libc::c_int == '\u{0}' as i32 {
             _tt_abort(
                 b"%s: String can\'t be converted to REGISTRY-ORDERING-SUPPLEMENT: %s\x00"
-                    as *const u8 as *const libc::c_char,
-                b"CIDFont\x00" as *const u8 as *const libc::c_char,
+                    as *const u8 as *const i8,
+                b"CIDFont\x00" as *const u8 as *const i8,
                 (*fmap_opt).charcoll,
             );
         }
@@ -1863,8 +1863,8 @@ unsafe extern "C" fn get_cidsysinfo(
         {
             _tt_abort(
                 b"%s: String can\'t be converted to REGISTRY-ORDERING-SUPPLEMENT: %s\x00"
-                    as *const u8 as *const libc::c_char,
-                b"CIDFont\x00" as *const u8 as *const libc::c_char,
+                    as *const u8 as *const i8,
+                b"CIDFont\x00" as *const u8 as *const i8,
                 (*fmap_opt).charcoll,
             );
         }
@@ -1873,28 +1873,28 @@ unsafe extern "C" fn get_cidsysinfo(
             .wrapping_sub(1i32 as u64);
         (*csi).registry = new(
             (n.wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                 as u32,
-        ) as *mut libc::c_char;
+        ) as *mut i8;
         memcpy(
             (*csi).registry as *mut libc::c_void,
             (*fmap_opt).charcoll as *const libc::c_void,
             n,
         );
-        *(*csi).registry.offset(n as isize) = '\u{0}' as i32 as libc::c_char;
+        *(*csi).registry.offset(n as isize) = '\u{0}' as i32 as i8;
         m = strlen(p)
             .wrapping_sub(strlen(q))
             .wrapping_sub(1i32 as u64) as libc::c_int;
         (*csi).ordering = new(((m + 1i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-            as u32) as *mut libc::c_char;
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+            as u32) as *mut i8;
         memcpy(
             (*csi).ordering as *mut libc::c_void,
             p as *const libc::c_void,
             m as u64,
         );
-        *(*csi).ordering.offset(m as isize) = '\u{0}' as i32 as libc::c_char;
-        (*csi).supplement = strtoul(q, 0 as *mut *mut libc::c_char, 10i32) as libc::c_int;
+        *(*csi).ordering.offset(m as isize) = '\u{0}' as i32 as i8;
+        (*csi).supplement = strtoul(q, 0 as *mut *mut i8, 10i32) as libc::c_int;
         /* Check for standart character collections. */
         i = 0i32;
         while !CIDFont_stdcc_def[i as usize].ordering.is_null() {
@@ -1917,8 +1917,8 @@ unsafe extern "C" fn get_cidsysinfo(
         {
             dpx_warning(
                 b"%s: Heighest supplement number supported in PDF-1.%d for %s-%s is %d.\x00"
-                    as *const u8 as *const libc::c_char,
-                b"CIDFont\x00" as *const u8 as *const libc::c_char,
+                    as *const u8 as *const i8,
+                b"CIDFont\x00" as *const u8 as *const i8,
                 pdf_ver,
                 (*csi).registry,
                 (*csi).ordering,
@@ -1926,8 +1926,8 @@ unsafe extern "C" fn get_cidsysinfo(
             );
             dpx_warning(
                 b"%s: Some character may not shown without embedded font (--> %s).\x00" as *const u8
-                    as *const libc::c_char,
-                b"CIDFont\x00" as *const u8 as *const libc::c_char,
+                    as *const i8,
+                b"CIDFont\x00" as *const u8 as *const i8,
                 map_name,
             );
         }

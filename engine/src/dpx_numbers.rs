@@ -13,7 +13,7 @@ extern "C" {
     pub type _IO_marker;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn ttstub_input_getc(handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
@@ -29,17 +29,17 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[repr(C)]
 pub struct _IO_FILE {
     pub _flags: libc::c_int,
-    pub _IO_read_ptr: *mut libc::c_char,
-    pub _IO_read_end: *mut libc::c_char,
-    pub _IO_read_base: *mut libc::c_char,
-    pub _IO_write_base: *mut libc::c_char,
-    pub _IO_write_ptr: *mut libc::c_char,
-    pub _IO_write_end: *mut libc::c_char,
-    pub _IO_buf_base: *mut libc::c_char,
-    pub _IO_buf_end: *mut libc::c_char,
-    pub _IO_save_base: *mut libc::c_char,
-    pub _IO_backup_base: *mut libc::c_char,
-    pub _IO_save_end: *mut libc::c_char,
+    pub _IO_read_ptr: *mut i8,
+    pub _IO_read_end: *mut i8,
+    pub _IO_read_base: *mut i8,
+    pub _IO_write_base: *mut i8,
+    pub _IO_write_ptr: *mut i8,
+    pub _IO_write_end: *mut i8,
+    pub _IO_buf_base: *mut i8,
+    pub _IO_buf_end: *mut i8,
+    pub _IO_save_base: *mut i8,
+    pub _IO_backup_base: *mut i8,
+    pub _IO_save_end: *mut i8,
     pub _markers: *mut _IO_marker,
     pub _chain: *mut _IO_FILE,
     pub _fileno: libc::c_int,
@@ -47,7 +47,7 @@ pub struct _IO_FILE {
     pub _old_offset: __off_t,
     pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
-    pub _shortbuf: [libc::c_char; 1],
+    pub _shortbuf: [i8; 1],
     pub _lock: *mut libc::c_void,
     pub _offset: __off64_t,
     pub _codecvt: *mut _IO_codecvt,
@@ -56,7 +56,7 @@ pub struct _IO_FILE {
     pub _freeres_buf: *mut libc::c_void,
     pub __pad5: size_t,
     pub _mode: libc::c_int,
-    pub _unused2: [libc::c_char; 20],
+    pub _unused2: [i8; 20],
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
@@ -87,7 +87,7 @@ pub unsafe extern "C" fn get_unsigned_byte(mut file: *mut FILE) -> u8 {
     let mut ch: libc::c_int = 0;
     ch = fgetc(file);
     if ch < 0i32 {
-        _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const i8);
     }
     return ch as u8;
 }
@@ -218,13 +218,13 @@ pub unsafe extern "C" fn get_unsigned_num(mut file: *mut FILE, mut num: u8) -> u
 #[no_mangle]
 pub unsafe extern "C" fn get_positive_quad(
     mut file: *mut FILE,
-    mut type_0: *const libc::c_char,
-    mut name: *const libc::c_char,
+    mut type_0: *const i8,
+    mut name: *const i8,
 ) -> u32 {
     let mut val: int32_t = get_signed_quad(file);
     if val < 0i32 {
         _tt_abort(
-            b"Bad %s: negative %s: %d\x00" as *const u8 as *const libc::c_char,
+            b"Bad %s: negative %s: %d\x00" as *const u8 as *const i8,
             type_0,
             name,
             val,
@@ -302,7 +302,7 @@ pub unsafe extern "C" fn tt_get_unsigned_byte(mut handle: rust_input_handle_t) -
     let mut ch: libc::c_int = 0;
     ch = ttstub_input_getc(handle);
     if ch < 0i32 {
-        _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const i8);
     }
     return ch as u8;
 }
@@ -430,13 +430,13 @@ pub unsafe extern "C" fn tt_get_unsigned_num(
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_positive_quad(
     mut handle: rust_input_handle_t,
-    mut type_0: *const libc::c_char,
-    mut name: *const libc::c_char,
+    mut type_0: *const i8,
+    mut name: *const i8,
 ) -> u32 {
     let mut val: int32_t = tt_get_signed_quad(handle);
     if val < 0i32 {
         _tt_abort(
-            b"Bad %s: negative %s: %d\x00" as *const u8 as *const libc::c_char,
+            b"Bad %s: negative %s: %d\x00" as *const u8 as *const i8,
             type_0,
             name,
             val,

@@ -17,27 +17,27 @@ extern "C" {
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
     #[no_mangle]
-    fn vsprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ::std::ffi::VaList)
+    fn vsprintf(_: *mut i8, _: *const i8, _: ::std::ffi::VaList)
         -> libc::c_int;
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn atoi(__nptr: *const libc::c_char) -> libc::c_int;
+    fn atoi(__nptr: *const i8) -> libc::c_int;
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -60,7 +60,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dvi_dev_xpos() -> libc::c_double;
     #[no_mangle]
@@ -75,9 +75,9 @@ extern "C" {
      * Callers are completely responsible for doing right thing...
      */
     #[no_mangle]
-    fn pdf_doc_get_dictionary(category: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_doc_get_dictionary(category: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_doc_get_reference(category: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_doc_get_reference(category: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_doc_current_page_number() -> libc::c_int;
     #[no_mangle]
@@ -166,9 +166,9 @@ extern "C" {
     */
     /* Please remove this */
     #[no_mangle]
-    fn dump(start: *const libc::c_char, end: *const libc::c_char);
+    fn dump(start: *const i8, end: *const i8);
     #[no_mangle]
-    fn skip_white(start: *mut *const libc::c_char, end: *const libc::c_char);
+    fn skip_white(start: *mut *const i8, end: *const i8);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -191,7 +191,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn spc_color_check_special(buffer: *const libc::c_char, size: libc::c_int) -> bool;
+    fn spc_color_check_special(buffer: *const i8, size: libc::c_int) -> bool;
     #[no_mangle]
     fn spc_color_setup_handler(
         handle: *mut spc_handler,
@@ -218,7 +218,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn spc_dvipdfmx_check_special(buf: *const libc::c_char, len: libc::c_int) -> bool;
+    fn spc_dvipdfmx_check_special(buf: *const i8, len: libc::c_int) -> bool;
     #[no_mangle]
     fn spc_dvipdfmx_setup_handler(
         sph: *mut spc_handler,
@@ -255,7 +255,7 @@ extern "C" {
     #[no_mangle]
     fn spc_dvips_at_end_page() -> libc::c_int;
     #[no_mangle]
-    fn spc_dvips_check_special(buffer: *const libc::c_char, size: libc::c_int) -> bool;
+    fn spc_dvips_check_special(buffer: *const i8, size: libc::c_int) -> bool;
     #[no_mangle]
     fn spc_dvips_setup_handler(
         handle: *mut spc_handler,
@@ -292,7 +292,7 @@ extern "C" {
     #[no_mangle]
     fn spc_html_at_end_document() -> libc::c_int;
     #[no_mangle]
-    fn spc_html_check_special(buffer: *const libc::c_char, size: libc::c_int) -> bool;
+    fn spc_html_check_special(buffer: *const i8, size: libc::c_int) -> bool;
     #[no_mangle]
     fn spc_html_setup_handler(
         handle: *mut spc_handler,
@@ -321,7 +321,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn spc_misc_check_special(buffer: *const libc::c_char, size: libc::c_int) -> bool;
+    fn spc_misc_check_special(buffer: *const i8, size: libc::c_int) -> bool;
     #[no_mangle]
     fn spc_misc_setup_handler(
         handle: *mut spc_handler,
@@ -354,7 +354,7 @@ extern "C" {
     #[no_mangle]
     fn spc_pdfm_at_end_document() -> libc::c_int;
     #[no_mangle]
-    fn spc_pdfm_check_special(buffer: *const libc::c_char, size: libc::c_int) -> bool;
+    fn spc_pdfm_check_special(buffer: *const i8, size: libc::c_int) -> bool;
     #[no_mangle]
     fn spc_pdfm_setup_handler(
         handle: *mut spc_handler,
@@ -370,7 +370,7 @@ extern "C" {
     #[no_mangle]
     fn spc_tpic_at_end_document() -> libc::c_int;
     #[no_mangle]
-    fn spc_tpic_check_special(buffer: *const libc::c_char, size: libc::c_int) -> bool;
+    fn spc_tpic_check_special(buffer: *const i8, size: libc::c_int) -> bool;
     #[no_mangle]
     fn spc_tpic_setup_handler(
         handle: *mut spc_handler,
@@ -405,7 +405,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn spc_xtx_check_special(buffer: *const libc::c_char, size: libc::c_int) -> bool;
+    fn spc_xtx_check_special(buffer: *const i8, size: libc::c_int) -> bool;
     #[no_mangle]
     fn spc_xtx_setup_handler(
         handle: *mut spc_handler,
@@ -449,17 +449,17 @@ pub struct spc_env {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_arg {
-    pub curptr: *const libc::c_char,
-    pub endptr: *const libc::c_char,
-    pub base: *const libc::c_char,
-    pub command: *const libc::c_char,
+    pub curptr: *const i8,
+    pub endptr: *const i8,
+    pub base: *const i8,
+    pub command: *const i8,
 }
 pub type spc_handler_fn_ptr =
     Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
-    pub key: *const libc::c_char,
+    pub key: *const i8,
     pub exec: spc_handler_fn_ptr,
 }
 #[derive(Copy, Clone)]
@@ -482,7 +482,7 @@ pub struct ht_table {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_entry {
-    pub key: *mut libc::c_char,
+    pub key: *mut i8,
     pub keylen: libc::c_int,
     pub value: *mut libc::c_void,
     pub next: *mut ht_entry,
@@ -497,12 +497,12 @@ pub struct pdf_coord {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
-    pub key: *const libc::c_char,
+    pub key: *const i8,
     pub bodhk_func: Option<unsafe extern "C" fn() -> libc::c_int>,
     pub eodhk_func: Option<unsafe extern "C" fn() -> libc::c_int>,
     pub bophk_func: Option<unsafe extern "C" fn() -> libc::c_int>,
     pub eophk_func: Option<unsafe extern "C" fn() -> libc::c_int>,
-    pub check_func: Option<unsafe extern "C" fn(_: *const libc::c_char, _: libc::c_int) -> bool>,
+    pub check_func: Option<unsafe extern "C" fn(_: *const i8, _: libc::c_int) -> bool>,
     pub setup_func: Option<
         unsafe extern "C" fn(_: *mut spc_handler, _: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
     >,
@@ -536,15 +536,15 @@ pub unsafe extern "C" fn spc_set_verbose(mut level: libc::c_int) {
 #[no_mangle]
 pub unsafe extern "C" fn spc_warn(
     mut spe: *mut spc_env,
-    mut fmt: *const libc::c_char,
+    mut fmt: *const i8,
     mut args: ...
 ) {
     let mut ap: ::std::ffi::VaListImpl;
-    static mut buf: [libc::c_char; 1024] = [0; 1024];
+    static mut buf: [i8; 1024] = [0; 1024];
     ap = args.clone();
     vsprintf(buf.as_mut_ptr(), fmt, ap.as_va_list());
     dpx_warning(
-        b"%s\x00" as *const u8 as *const libc::c_char,
+        b"%s\x00" as *const u8 as *const i8,
         buf.as_mut_ptr(),
     );
 }
@@ -578,29 +578,29 @@ pub unsafe extern "C" fn spc_suspend_annot(mut spe: *mut spc_env) -> libc::c_int
 }
 static mut named_objects: *mut ht_table = 0 as *const ht_table as *mut ht_table;
 /* reserved keys */
-static mut _rkeys: [*const libc::c_char; 11] = [
-    b"xpos\x00" as *const u8 as *const libc::c_char,
-    b"ypos\x00" as *const u8 as *const libc::c_char,
-    b"thispage\x00" as *const u8 as *const libc::c_char,
-    b"prevpage\x00" as *const u8 as *const libc::c_char,
-    b"nextpage\x00" as *const u8 as *const libc::c_char,
-    b"resources\x00" as *const u8 as *const libc::c_char,
-    b"pages\x00" as *const u8 as *const libc::c_char,
-    b"names\x00" as *const u8 as *const libc::c_char,
-    b"catalog\x00" as *const u8 as *const libc::c_char,
-    b"docinfo\x00" as *const u8 as *const libc::c_char,
-    0 as *const libc::c_char,
+static mut _rkeys: [*const i8; 11] = [
+    b"xpos\x00" as *const u8 as *const i8,
+    b"ypos\x00" as *const u8 as *const i8,
+    b"thispage\x00" as *const u8 as *const i8,
+    b"prevpage\x00" as *const u8 as *const i8,
+    b"nextpage\x00" as *const u8 as *const i8,
+    b"resources\x00" as *const u8 as *const i8,
+    b"pages\x00" as *const u8 as *const i8,
+    b"names\x00" as *const u8 as *const i8,
+    b"catalog\x00" as *const u8 as *const i8,
+    b"docinfo\x00" as *const u8 as *const i8,
+    0 as *const i8,
 ];
 /* pageN where N is a positive integer.
  * Note that page need not exist at this time.
  */
-unsafe extern "C" fn ispageref(mut key: *const libc::c_char) -> libc::c_int {
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
-    if strlen(key) <= strlen(b"page\x00" as *const u8 as *const libc::c_char)
+unsafe extern "C" fn ispageref(mut key: *const i8) -> libc::c_int {
+    let mut p: *const i8 = 0 as *const i8;
+    if strlen(key) <= strlen(b"page\x00" as *const u8 as *const i8)
         || memcmp(
             key as *const libc::c_void,
-            b"page\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-            strlen(b"page\x00" as *const u8 as *const libc::c_char),
+            b"page\x00" as *const u8 as *const i8 as *const libc::c_void,
+            strlen(b"page\x00" as *const u8 as *const i8),
         ) != 0
     {
         return 0i32;
@@ -622,17 +622,17 @@ unsafe extern "C" fn ispageref(mut key: *const libc::c_char) -> libc::c_int {
  * The following routine returns copies, not the original object.
  */
 #[no_mangle]
-pub unsafe extern "C" fn spc_lookup_reference(mut key: *const libc::c_char) -> *mut pdf_obj {
+pub unsafe extern "C" fn spc_lookup_reference(mut key: *const i8) -> *mut pdf_obj {
     let mut value: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
     let mut k: libc::c_int = 0;
     if !named_objects.is_null() {
     } else {
         __assert_fail(
-            b"named_objects\x00" as *const u8 as *const libc::c_char,
-            b"dpx-specials.c\x00" as *const u8 as *const libc::c_char,
+            b"named_objects\x00" as *const u8 as *const i8,
+            b"dpx-specials.c\x00" as *const u8 as *const i8,
             162i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 44], &[libc::c_char; 44]>(
+            (*::std::mem::transmute::<&[u8; 44], &[i8; 44]>(
                 b"pdf_obj *spc_lookup_reference(const char *)\x00",
             ))
             .as_ptr(),
@@ -659,28 +659,28 @@ pub unsafe extern "C" fn spc_lookup_reference(mut key: *const libc::c_char) -> *
             pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
             value = pdf_new_number(floor(cp.y / 0.01f64 + 0.5f64) * 0.01f64)
         }
-        2 => value = pdf_doc_get_reference(b"@THISPAGE\x00" as *const u8 as *const libc::c_char),
-        3 => value = pdf_doc_get_reference(b"@PREVPAGE\x00" as *const u8 as *const libc::c_char),
-        4 => value = pdf_doc_get_reference(b"@NEXTPAGE\x00" as *const u8 as *const libc::c_char),
+        2 => value = pdf_doc_get_reference(b"@THISPAGE\x00" as *const u8 as *const i8),
+        3 => value = pdf_doc_get_reference(b"@PREVPAGE\x00" as *const u8 as *const i8),
+        4 => value = pdf_doc_get_reference(b"@NEXTPAGE\x00" as *const u8 as *const i8),
         6 => {
             value = pdf_ref_obj(pdf_doc_get_dictionary(
-                b"Pages\x00" as *const u8 as *const libc::c_char,
+                b"Pages\x00" as *const u8 as *const i8,
             ))
         }
         7 => {
             value = pdf_ref_obj(pdf_doc_get_dictionary(
-                b"Names\x00" as *const u8 as *const libc::c_char,
+                b"Names\x00" as *const u8 as *const i8,
             ))
         }
         5 => value = pdf_ref_obj(pdf_doc_current_page_resources()),
         8 => {
             value = pdf_ref_obj(pdf_doc_get_dictionary(
-                b"Catalog\x00" as *const u8 as *const libc::c_char,
+                b"Catalog\x00" as *const u8 as *const i8,
             ))
         }
         9 => {
             value = pdf_ref_obj(pdf_doc_get_dictionary(
-                b"Info\x00" as *const u8 as *const libc::c_char,
+                b"Info\x00" as *const u8 as *const i8,
             ))
         }
         _ => {
@@ -697,24 +697,24 @@ pub unsafe extern "C" fn spc_lookup_reference(mut key: *const libc::c_char) -> *
     }
     if value.is_null() {
         _tt_abort(
-            b"Object reference %s not exist.\x00" as *const u8 as *const libc::c_char,
+            b"Object reference %s not exist.\x00" as *const u8 as *const i8,
             key,
         );
     }
     return value;
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_lookup_object(mut key: *const libc::c_char) -> *mut pdf_obj {
+pub unsafe extern "C" fn spc_lookup_object(mut key: *const i8) -> *mut pdf_obj {
     let mut value: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
     let mut k: libc::c_int = 0;
     if !named_objects.is_null() {
     } else {
         __assert_fail(
-            b"named_objects\x00" as *const u8 as *const libc::c_char,
-            b"dpx-specials.c\x00" as *const u8 as *const libc::c_char,
+            b"named_objects\x00" as *const u8 as *const i8,
+            b"dpx-specials.c\x00" as *const u8 as *const i8,
             227i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 41], &[libc::c_char; 41]>(
+            (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
                 b"pdf_obj *spc_lookup_object(const char *)\x00",
             ))
             .as_ptr(),
@@ -740,12 +740,12 @@ pub unsafe extern "C" fn spc_lookup_object(mut key: *const libc::c_char) -> *mut
             pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
             value = pdf_new_number(floor(cp.y / 0.01f64 + 0.5f64) * 0.01f64)
         }
-        2 => value = pdf_doc_get_dictionary(b"@THISPAGE\x00" as *const u8 as *const libc::c_char),
-        6 => value = pdf_doc_get_dictionary(b"Pages\x00" as *const u8 as *const libc::c_char),
-        7 => value = pdf_doc_get_dictionary(b"Names\x00" as *const u8 as *const libc::c_char),
+        2 => value = pdf_doc_get_dictionary(b"@THISPAGE\x00" as *const u8 as *const i8),
+        6 => value = pdf_doc_get_dictionary(b"Pages\x00" as *const u8 as *const i8),
+        7 => value = pdf_doc_get_dictionary(b"Names\x00" as *const u8 as *const i8),
         5 => value = pdf_doc_current_page_resources(),
-        8 => value = pdf_doc_get_dictionary(b"Catalog\x00" as *const u8 as *const libc::c_char),
-        9 => value = pdf_doc_get_dictionary(b"Info\x00" as *const u8 as *const libc::c_char),
+        8 => value = pdf_doc_get_dictionary(b"Catalog\x00" as *const u8 as *const i8),
+        9 => value = pdf_doc_get_dictionary(b"Info\x00" as *const u8 as *const i8),
         _ => {
             value = pdf_names_lookup_object(
                 named_objects,
@@ -762,14 +762,14 @@ pub unsafe extern "C" fn spc_lookup_object(mut key: *const libc::c_char) -> *mut
     return value; /* _FIXME_ */
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_push_object(mut key: *const libc::c_char, mut value: *mut pdf_obj) {
+pub unsafe extern "C" fn spc_push_object(mut key: *const i8, mut value: *mut pdf_obj) {
     if !named_objects.is_null() {
     } else {
         __assert_fail(
-            b"named_objects\x00" as *const u8 as *const libc::c_char,
-            b"dpx-specials.c\x00" as *const u8 as *const libc::c_char,
+            b"named_objects\x00" as *const u8 as *const i8,
+            b"dpx-specials.c\x00" as *const u8 as *const i8,
             279i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 46], &[libc::c_char; 46]>(
+            (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
                 b"void spc_push_object(const char *, pdf_obj *)\x00",
             ))
             .as_ptr(),
@@ -786,7 +786,7 @@ pub unsafe extern "C" fn spc_push_object(mut key: *const libc::c_char, mut value
     );
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_flush_object(mut key: *const libc::c_char) {
+pub unsafe extern "C" fn spc_flush_object(mut key: *const i8) {
     pdf_names_close_object(
         named_objects,
         key as *const libc::c_void,
@@ -805,10 +805,10 @@ unsafe extern "C" fn spc_handler_unknown(
     if !spe.is_null() && !args.is_null() {
     } else {
         __assert_fail(
-            b"spe && args\x00" as *const u8 as *const libc::c_char,
-            b"dpx-specials.c\x00" as *const u8 as *const libc::c_char,
+            b"spe && args\x00" as *const u8 as *const i8,
+            b"dpx-specials.c\x00" as *const u8 as *const i8,
             305i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 60], &[libc::c_char; 60]>(
+            (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_unknown(struct spc_env *, struct spc_arg *)\x00",
             ))
             .as_ptr(),
@@ -821,13 +821,13 @@ unsafe extern "C" fn init_special(
     mut special: *mut spc_handler,
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-    mut p: *const libc::c_char,
+    mut p: *const i8,
     mut size: u32,
     mut x_user: libc::c_double,
     mut y_user: libc::c_double,
     mut mag: libc::c_double,
 ) {
-    (*special).key = 0 as *const libc::c_char;
+    (*special).key = 0 as *const i8;
     (*special).exec = ::std::mem::transmute::<
         Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int>,
         spc_handler_fn_ptr,
@@ -842,16 +842,16 @@ unsafe extern "C" fn init_special(
     (*args).curptr = p;
     (*args).endptr = (*args).curptr.offset(size as isize);
     (*args).base = (*args).curptr;
-    (*args).command = 0 as *const libc::c_char;
+    (*args).command = 0 as *const i8;
 }
 unsafe extern "C" fn check_garbage(mut args: *mut spc_arg) {
     if !args.is_null() {
     } else {
         __assert_fail(
-            b"args\x00" as *const u8 as *const libc::c_char,
-            b"dpx-specials.c\x00" as *const u8 as *const libc::c_char,
+            b"args\x00" as *const u8 as *const i8,
+            b"dpx-specials.c\x00" as *const u8 as *const i8,
             339i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"void check_garbage(struct spc_arg *)\x00",
             ))
             .as_ptr(),
@@ -863,7 +863,7 @@ unsafe extern "C" fn check_garbage(mut args: *mut spc_arg) {
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr < (*args).endptr {
         dpx_warning(
-            b"Unparsed material at end of special ignored.\x00" as *const u8 as *const libc::c_char,
+            b"Unparsed material at end of special ignored.\x00" as *const u8 as *const i8,
         );
         dump((*args).curptr, (*args).endptr);
     };
@@ -872,7 +872,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
     [
         {
             let mut init = C2RustUnnamed_0 {
-                key: b"pdf:\x00" as *const u8 as *const libc::c_char,
+                key: b"pdf:\x00" as *const u8 as *const i8,
                 bodhk_func: Some(
                     spc_pdfm_at_begin_document as unsafe extern "C" fn() -> libc::c_int,
                 ),
@@ -881,7 +881,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
                 eophk_func: None,
                 check_func: Some(
                     spc_pdfm_check_special
-                        as unsafe extern "C" fn(_: *const libc::c_char, _: libc::c_int) -> bool,
+                        as unsafe extern "C" fn(_: *const i8, _: libc::c_int) -> bool,
                 ),
                 setup_func: Some(
                     spc_pdfm_setup_handler
@@ -896,14 +896,14 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
         },
         {
             let mut init = C2RustUnnamed_0 {
-                key: b"x:\x00" as *const u8 as *const libc::c_char,
+                key: b"x:\x00" as *const u8 as *const i8,
                 bodhk_func: None,
                 eodhk_func: None,
                 bophk_func: None,
                 eophk_func: None,
                 check_func: Some(
                     spc_xtx_check_special
-                        as unsafe extern "C" fn(_: *const libc::c_char, _: libc::c_int) -> bool,
+                        as unsafe extern "C" fn(_: *const i8, _: libc::c_int) -> bool,
                 ),
                 setup_func: Some(
                     spc_xtx_setup_handler
@@ -918,14 +918,14 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
         },
         {
             let mut init = C2RustUnnamed_0 {
-                key: b"dvipdfmx:\x00" as *const u8 as *const libc::c_char,
+                key: b"dvipdfmx:\x00" as *const u8 as *const i8,
                 bodhk_func: None,
                 eodhk_func: None,
                 bophk_func: None,
                 eophk_func: None,
                 check_func: Some(
                     spc_dvipdfmx_check_special
-                        as unsafe extern "C" fn(_: *const libc::c_char, _: libc::c_int) -> bool,
+                        as unsafe extern "C" fn(_: *const i8, _: libc::c_int) -> bool,
                 ),
                 setup_func: Some(
                     spc_dvipdfmx_setup_handler
@@ -940,7 +940,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
         },
         {
             let mut init = C2RustUnnamed_0 {
-                key: b"ps:\x00" as *const u8 as *const libc::c_char,
+                key: b"ps:\x00" as *const u8 as *const i8,
                 bodhk_func: Some(
                     spc_dvips_at_begin_document as unsafe extern "C" fn() -> libc::c_int,
                 ),
@@ -951,7 +951,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
                 eophk_func: Some(spc_dvips_at_end_page as unsafe extern "C" fn() -> libc::c_int),
                 check_func: Some(
                     spc_dvips_check_special
-                        as unsafe extern "C" fn(_: *const libc::c_char, _: libc::c_int) -> bool,
+                        as unsafe extern "C" fn(_: *const i8, _: libc::c_int) -> bool,
                 ),
                 setup_func: Some(
                     spc_dvips_setup_handler
@@ -966,14 +966,14 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
         },
         {
             let mut init = C2RustUnnamed_0 {
-                key: b"color\x00" as *const u8 as *const libc::c_char,
+                key: b"color\x00" as *const u8 as *const i8,
                 bodhk_func: None,
                 eodhk_func: None,
                 bophk_func: None,
                 eophk_func: None,
                 check_func: Some(
                     spc_color_check_special
-                        as unsafe extern "C" fn(_: *const libc::c_char, _: libc::c_int) -> bool,
+                        as unsafe extern "C" fn(_: *const i8, _: libc::c_int) -> bool,
                 ),
                 setup_func: Some(
                     spc_color_setup_handler
@@ -988,7 +988,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
         },
         {
             let mut init = C2RustUnnamed_0 {
-                key: b"tpic\x00" as *const u8 as *const libc::c_char,
+                key: b"tpic\x00" as *const u8 as *const i8,
                 bodhk_func: Some(
                     spc_tpic_at_begin_document as unsafe extern "C" fn() -> libc::c_int,
                 ),
@@ -997,7 +997,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
                 eophk_func: Some(spc_tpic_at_end_page as unsafe extern "C" fn() -> libc::c_int),
                 check_func: Some(
                     spc_tpic_check_special
-                        as unsafe extern "C" fn(_: *const libc::c_char, _: libc::c_int) -> bool,
+                        as unsafe extern "C" fn(_: *const i8, _: libc::c_int) -> bool,
                 ),
                 setup_func: Some(
                     spc_tpic_setup_handler
@@ -1012,7 +1012,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
         },
         {
             let mut init = C2RustUnnamed_0 {
-                key: b"html:\x00" as *const u8 as *const libc::c_char,
+                key: b"html:\x00" as *const u8 as *const i8,
                 bodhk_func: Some(
                     spc_html_at_begin_document as unsafe extern "C" fn() -> libc::c_int,
                 ),
@@ -1021,7 +1021,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
                 eophk_func: Some(spc_html_at_end_page as unsafe extern "C" fn() -> libc::c_int),
                 check_func: Some(
                     spc_html_check_special
-                        as unsafe extern "C" fn(_: *const libc::c_char, _: libc::c_int) -> bool,
+                        as unsafe extern "C" fn(_: *const i8, _: libc::c_int) -> bool,
                 ),
                 setup_func: Some(
                     spc_html_setup_handler
@@ -1036,14 +1036,14 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
         },
         {
             let mut init = C2RustUnnamed_0 {
-                key: b"unknown\x00" as *const u8 as *const libc::c_char,
+                key: b"unknown\x00" as *const u8 as *const i8,
                 bodhk_func: None,
                 eodhk_func: None,
                 bophk_func: None,
                 eophk_func: None,
                 check_func: Some(
                     spc_misc_check_special
-                        as unsafe extern "C" fn(_: *const libc::c_char, _: libc::c_int) -> bool,
+                        as unsafe extern "C" fn(_: *const i8, _: libc::c_int) -> bool,
                 ),
                 setup_func: Some(
                     spc_misc_setup_handler
@@ -1058,7 +1058,7 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
         },
         {
             let mut init = C2RustUnnamed_0 {
-                key: 0 as *const libc::c_char,
+                key: 0 as *const i8,
                 bodhk_func: None,
                 eodhk_func: None,
                 bophk_func: None,
@@ -1107,10 +1107,10 @@ pub unsafe extern "C" fn spc_exec_at_begin_document() -> libc::c_int {
     if named_objects.is_null() {
     } else {
         __assert_fail(
-            b"!named_objects\x00" as *const u8 as *const libc::c_char,
-            b"dpx-specials.c\x00" as *const u8 as *const libc::c_char,
+            b"!named_objects\x00" as *const u8 as *const i8,
+            b"dpx-specials.c\x00" as *const u8 as *const i8,
             474i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 37], &[libc::c_char; 37]>(
+            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int spc_exec_at_begin_document(void)\x00",
             ))
             .as_ptr(),
@@ -1147,12 +1147,12 @@ pub unsafe extern "C" fn spc_exec_at_end_document() -> libc::c_int {
     return error;
 }
 unsafe extern "C" fn print_error(
-    mut name: *const libc::c_char,
+    mut name: *const i8,
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
 ) {
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
-    let mut ebuf: [libc::c_char; 64] = [0; 64];
+    let mut p: *const i8 = 0 as *const i8;
+    let mut ebuf: [i8; 64] = [0; 64];
     let mut i: libc::c_int = 0;
     let mut pg: libc::c_int = (*spe).pg;
     let mut c: pdf_coord = pdf_coord { x: 0., y: 0. };
@@ -1161,13 +1161,13 @@ unsafe extern "C" fn print_error(
     pdf_dev_transform(&mut c, 0 as *const pdf_tmatrix);
     if !(*ap).command.is_null() && !name.is_null() {
         dpx_warning(
-            b"Interpreting special command %s (%s) failed.\x00" as *const u8 as *const libc::c_char,
+            b"Interpreting special command %s (%s) failed.\x00" as *const u8 as *const i8,
             (*ap).command,
             name,
         );
         dpx_warning(
             b">> at page=\"%d\" position=\"(%g, %g)\" (in PDF)\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
             pg,
             c.x,
             c.y,
@@ -1189,13 +1189,13 @@ unsafe extern "C" fn print_error(
             }
             i += sprintf(
                 ebuf.as_mut_ptr().offset(i as isize),
-                b"\\x%02x\x00" as *const u8 as *const libc::c_char,
+                b"\\x%02x\x00" as *const u8 as *const i8,
                 *p as u8 as libc::c_int,
             )
         }
         p = p.offset(1)
     }
-    ebuf[i as usize] = '\u{0}' as i32 as libc::c_char;
+    ebuf[i as usize] = '\u{0}' as i32 as i8;
     if (*ap).curptr < (*ap).endptr {
         loop {
             let fresh1 = i;
@@ -1203,11 +1203,11 @@ unsafe extern "C" fn print_error(
             if !(fresh1 > 60i32) {
                 break;
             }
-            ebuf[i as usize] = '.' as i32 as libc::c_char
+            ebuf[i as usize] = '.' as i32 as i8
         }
     }
     dpx_warning(
-        b">> xxx \"%s\"\x00" as *const u8 as *const libc::c_char,
+        b">> xxx \"%s\"\x00" as *const u8 as *const i8,
         ebuf.as_mut_ptr(),
     );
     if (*ap).curptr < (*ap).endptr {
@@ -1228,13 +1228,13 @@ unsafe extern "C" fn print_error(
                 }
                 i += sprintf(
                     ebuf.as_mut_ptr().offset(i as isize),
-                    b"\\x%02x\x00" as *const u8 as *const libc::c_char,
+                    b"\\x%02x\x00" as *const u8 as *const i8,
                     *p as u8 as libc::c_int,
                 )
             }
             p = p.offset(1)
         }
-        ebuf[i as usize] = '\u{0}' as i32 as libc::c_char;
+        ebuf[i as usize] = '\u{0}' as i32 as i8;
         if (*ap).curptr < (*ap).endptr {
             loop {
                 let fresh3 = i;
@@ -1242,12 +1242,12 @@ unsafe extern "C" fn print_error(
                 if !(fresh3 > 60i32) {
                     break;
                 }
-                ebuf[i as usize] = '.' as i32 as libc::c_char
+                ebuf[i as usize] = '.' as i32 as i8
             }
         }
         dpx_warning(
             b">> Reading special command stopped around >>%s<<\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
             ebuf.as_mut_ptr(),
         );
         (*ap).curptr = (*ap).endptr
@@ -1280,7 +1280,7 @@ unsafe extern "C" fn print_error(
  */
 #[no_mangle]
 pub unsafe extern "C" fn spc_exec_special(
-    mut buffer: *const libc::c_char,
+    mut buffer: *const i8,
     mut size: int32_t,
     mut x_user: libc::c_double,
     mut y_user: libc::c_double,
@@ -1296,13 +1296,13 @@ pub unsafe extern "C" fn spc_exec_special(
         pg: 0,
     };
     let mut args: spc_arg = spc_arg {
-        curptr: 0 as *const libc::c_char,
-        endptr: 0 as *const libc::c_char,
-        base: 0 as *const libc::c_char,
-        command: 0 as *const libc::c_char,
+        curptr: 0 as *const i8,
+        endptr: 0 as *const i8,
+        base: 0 as *const i8,
+        command: 0 as *const i8,
     };
     let mut special: spc_handler = spc_handler {
-        key: 0 as *const libc::c_char,
+        key: 0 as *const i8,
         exec: None,
     };
     if verbose > 3i32 {

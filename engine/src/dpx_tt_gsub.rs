@@ -30,29 +30,29 @@ extern "C" {
     pub type otl_opt;
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: u64)
-        -> *mut libc::c_char;
+    fn strncpy(_: *mut i8, _: *const i8, _: u64)
+        -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn strchr(_: *const libc::c_char, _: libc::c_int) -> *mut libc::c_char;
+    fn strchr(_: *const i8, _: libc::c_int) -> *mut i8;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn ttstub_input_seek(
         handle: rust_input_handle_t,
@@ -64,9 +64,9 @@ extern "C" {
     #[no_mangle]
     fn otl_release_opt(opt: *mut otl_opt);
     #[no_mangle]
-    fn otl_parse_optstring(opt: *mut otl_opt, optstr: *const libc::c_char) -> libc::c_int;
+    fn otl_parse_optstring(opt: *mut otl_opt, optstr: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn otl_match_optrule(opt: *mut otl_opt, tag: *const libc::c_char) -> libc::c_int;
+    fn otl_match_optrule(opt: *mut otl_opt, tag: *const i8) -> libc::c_int;
     #[no_mangle]
     fn tt_get_signed_byte(handle: rust_input_handle_t) -> libc::c_schar;
     #[no_mangle]
@@ -76,11 +76,11 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const libc::c_char) -> SFNT_ULONG;
+    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
     #[no_mangle]
-    fn dpx_message(fmt: *const libc::c_char, _: ...);
+    fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -119,11 +119,11 @@ pub type Fixed = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table {
-    pub tag: [libc::c_char; 4],
+    pub tag: [i8; 4],
     pub check_sum: SFNT_ULONG,
     pub offset: SFNT_ULONG,
     pub length: SFNT_ULONG,
-    pub data: *mut libc::c_char,
+    pub data: *mut i8,
     /* table data */
 }
 #[derive(Copy, Clone)]
@@ -135,7 +135,7 @@ pub struct sfnt_table_directory {
     pub entry_selector: USHORT,
     pub range_shift: USHORT,
     pub num_kept_tables: USHORT,
-    pub flags: *mut libc::c_char,
+    pub flags: *mut i8,
     pub tables: *mut sfnt_table,
 }
 /* sfnt resource */
@@ -159,9 +159,9 @@ pub struct otl_gsub {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct otl_gsub_tab {
-    pub script: *mut libc::c_char,
-    pub language: *mut libc::c_char,
-    pub feature: *mut libc::c_char,
+    pub script: *mut i8,
+    pub language: *mut i8,
+    pub feature: *mut i8,
     pub num_subtables: libc::c_int,
     pub subtables: *mut otl_gsub_subtab,
 }
@@ -251,7 +251,7 @@ pub struct gsub_entry {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct clt_record {
-    pub tag: [libc::c_char; 5],
+    pub tag: [i8; 5],
     pub offset: Offset,
 }
 pub type Offset = USHORT;
@@ -314,7 +314,7 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
@@ -333,10 +333,10 @@ unsafe extern "C" fn clt_read_record(
     if !rec.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"rec && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"rec && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             71i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 49], &[libc::c_char; 49]>(
+            (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int clt_read_record(struct clt_record *, sfnt *)\x00",
             ))
             .as_ptr(),
@@ -344,10 +344,10 @@ unsafe extern "C" fn clt_read_record(
     }
     i = 0i32;
     while i < 4i32 {
-        (*rec).tag[i as usize] = tt_get_signed_byte((*sfont).handle) as libc::c_char;
+        (*rec).tag[i as usize] = tt_get_signed_byte((*sfont).handle) as i8;
         i += 1
     }
-    (*rec).tag[4] = '\u{0}' as i32 as libc::c_char;
+    (*rec).tag[4] = '\u{0}' as i32 as i8;
     (*rec).offset = tt_get_unsigned_pair((*sfont).handle);
     return 6i32;
 }
@@ -355,10 +355,10 @@ unsafe extern "C" fn clt_read_range(mut rec: *mut clt_range, mut sfont: *mut sfn
     if !rec.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"rec && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"rec && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             85i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 47], &[libc::c_char; 47]>(
+            (*::std::mem::transmute::<&[u8; 47], &[i8; 47]>(
                 b"int clt_read_range(struct clt_range *, sfnt *)\x00",
             ))
             .as_ptr(),
@@ -378,10 +378,10 @@ unsafe extern "C" fn clt_read_record_list(
     if !list.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"list && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"list && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             117i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 59], &[libc::c_char; 59]>(
+            (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int clt_read_record_list(struct clt_record_list *, sfnt *)\x00",
             ))
             .as_ptr(),
@@ -417,10 +417,10 @@ unsafe extern "C" fn clt_read_number_list(
     if !list.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"list && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"list && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             148i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 59], &[libc::c_char; 59]>(
+            (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int clt_read_number_list(struct clt_number_list *, sfnt *)\x00",
             ))
             .as_ptr(),
@@ -455,10 +455,10 @@ unsafe extern "C" fn clt_read_script_table(
     if !tab.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"tab && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"tab && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             283i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+            (*::std::mem::transmute::<&[u8; 61], &[i8; 61]>(
                 b"int clt_read_script_table(struct clt_script_table *, sfnt *)\x00",
             ))
             .as_ptr(),
@@ -482,10 +482,10 @@ unsafe extern "C" fn clt_read_langsys_table(
     if !tab.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"tab && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"tab && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             314i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 63], &[libc::c_char; 63]>(
+            (*::std::mem::transmute::<&[u8; 63], &[i8; 63]>(
                 b"int clt_read_langsys_table(struct clt_langsys_table *, sfnt *)\x00",
             ))
             .as_ptr(),
@@ -510,10 +510,10 @@ unsafe extern "C" fn clt_read_feature_table(
     if !tab.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"tab && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"tab && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             344i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 63], &[libc::c_char; 63]>(
+            (*::std::mem::transmute::<&[u8; 63], &[i8; 63]>(
                 b"int clt_read_feature_table(struct clt_feature_table *, sfnt *)\x00",
             ))
             .as_ptr(),
@@ -537,10 +537,10 @@ unsafe extern "C" fn clt_read_lookup_table(
     if !tab.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"tab && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"tab && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             377i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+            (*::std::mem::transmute::<&[u8; 61], &[i8; 61]>(
                 b"int clt_read_lookup_table(struct clt_lookup_table *, sfnt *)\x00",
             ))
             .as_ptr(),
@@ -566,10 +566,10 @@ unsafe extern "C" fn clt_read_coverage(
     if !cov.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"cov && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"cov && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             399i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 53], &[libc::c_char; 53]>(
+            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                 b"int clt_read_coverage(struct clt_coverage *, sfnt *)\x00",
             ))
             .as_ptr(),
@@ -611,7 +611,7 @@ unsafe extern "C" fn clt_read_coverage(
             (*cov).list = 0 as *mut GlyphID
         }
         _ => {
-            _tt_abort(b"Unknown coverage format\x00" as *const u8 as *const libc::c_char);
+            _tt_abort(b"Unknown coverage format\x00" as *const u8 as *const i8);
         }
     }
     return len;
@@ -622,7 +622,7 @@ unsafe extern "C" fn clt_release_coverage(mut cov: *mut clt_coverage) {
             1 => (*cov).list = mfree((*cov).list as *mut libc::c_void) as *mut GlyphID,
             2 => (*cov).range = mfree((*cov).range as *mut libc::c_void) as *mut clt_range,
             _ => {
-                _tt_abort(b"Unknown coverage format\x00" as *const u8 as *const libc::c_char);
+                _tt_abort(b"Unknown coverage format\x00" as *const u8 as *const i8);
             }
         }
     }
@@ -636,10 +636,10 @@ unsafe extern "C" fn clt_lookup_coverage(
     if !cov.is_null() {
     } else {
         __assert_fail(
-            b"cov\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"cov\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             460i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 55], &[libc::c_char; 55]>(
+            (*::std::mem::transmute::<&[u8; 55], &[i8; 55]>(
                 b"int clt_lookup_coverage(struct clt_coverage *, USHORT)\x00",
             ))
             .as_ptr(),
@@ -673,7 +673,7 @@ unsafe extern "C" fn clt_lookup_coverage(
             }
         }
         _ => {
-            _tt_abort(b"Unknown coverage format\x00" as *const u8 as *const libc::c_char);
+            _tt_abort(b"Unknown coverage format\x00" as *const u8 as *const i8);
         }
     }
     return -1i32;
@@ -688,10 +688,10 @@ unsafe extern "C" fn otl_gsub_read_single(
     if !subtab.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"subtab && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"subtab && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             496i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 59], &[libc::c_char; 59]>(
+            (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int otl_gsub_read_single(struct otl_gsub_subtab *, sfnt *)\x00",
             ))
             .as_ptr(),
@@ -747,7 +747,7 @@ unsafe extern "C" fn otl_gsub_read_single(
         );
         len += clt_read_coverage(&mut (*data_0).coverage, sfont)
     } else {
-        _tt_abort(b"unexpected SubstFormat\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"unexpected SubstFormat\x00" as *const u8 as *const i8);
     }
     return len;
 }
@@ -768,10 +768,10 @@ unsafe extern "C" fn otl_gsub_read_alternate(
     if !subtab.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"subtab && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"subtab && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             555i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 62], &[libc::c_char; 62]>(
+            (*::std::mem::transmute::<&[u8; 62], &[i8; 62]>(
                 b"int otl_gsub_read_alternate(struct otl_gsub_subtab *, sfnt *)\x00",
             ))
             .as_ptr(),
@@ -782,7 +782,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
     (*subtab).SubstFormat = tt_get_unsigned_pair((*sfont).handle);
     if (*subtab).SubstFormat as libc::c_int != 1i32 {
         dpx_warning(
-            b"Unknown GSUB SubstFormat for Alternate: %u\x00" as *const u8 as *const libc::c_char,
+            b"Unknown GSUB SubstFormat for Alternate: %u\x00" as *const u8 as *const i8,
             (*subtab).SubstFormat as libc::c_int,
         );
         return -1i32;
@@ -858,10 +858,10 @@ unsafe extern "C" fn otl_gsub_read_ligature(
     if !subtab.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"subtab && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"subtab && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             622i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 61], &[libc::c_char; 61]>(
+            (*::std::mem::transmute::<&[u8; 61], &[i8; 61]>(
                 b"int otl_gsub_read_ligature(struct otl_gsub_subtab *, sfnt *)\x00",
             ))
             .as_ptr(),
@@ -872,7 +872,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
     (*subtab).SubstFormat = tt_get_unsigned_pair((*sfont).handle);
     if (*subtab).SubstFormat as libc::c_int != 1i32 {
         dpx_warning(
-            b"Unknown GSUB SubstFormat for Ligature: %u\x00" as *const u8 as *const libc::c_char,
+            b"Unknown GSUB SubstFormat for Ligature: %u\x00" as *const u8 as *const i8,
             (*subtab).SubstFormat as libc::c_int,
         );
         return -1i32;
@@ -992,7 +992,7 @@ unsafe extern "C" fn otl_gsub_release_single(mut subtab: *mut otl_gsub_subtab) {
             _ => {
                 _tt_abort(
                     b"Unknown format for single substitution\x00" as *const u8
-                        as *const libc::c_char,
+                        as *const i8,
                 );
             }
         }
@@ -1058,10 +1058,10 @@ unsafe extern "C" fn otl_gsub_read_header(
     if !head.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"head && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"head && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             787i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 59], &[libc::c_char; 59]>(
+            (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int otl_gsub_read_header(struct otl_gsub_header *, sfnt *)\x00",
             ))
             .as_ptr(),
@@ -1108,16 +1108,16 @@ unsafe extern "C" fn otl_gsub_read_feat(
     if !gsub.is_null() && !sfont.is_null() {
     } else {
         __assert_fail(
-            b"gsub && sfont\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"gsub && sfont\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             830i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 54], &[libc::c_char; 54]>(
+            (*::std::mem::transmute::<&[u8; 54], &[i8; 54]>(
                 b"int otl_gsub_read_feat(struct otl_gsub_tab *, sfnt *)\x00",
             ))
             .as_ptr(),
         );
     }
-    gsub_offset = sfnt_find_table_pos(sfont, b"GSUB\x00" as *const u8 as *const libc::c_char);
+    gsub_offset = sfnt_find_table_pos(sfont, b"GSUB\x00" as *const u8 as *const i8);
     if gsub_offset == 0i32 as libc::c_uint {
         return -1i32;
     }
@@ -1161,7 +1161,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                 );
             ttstub_input_seek((*sfont).handle, offset as ssize_t, 0i32);
             clt_read_script_table(&mut script_tab, sfont);
-            if otl_match_optrule(language, b"dflt\x00" as *const u8 as *const libc::c_char) != 0
+            if otl_match_optrule(language, b"dflt\x00" as *const u8 as *const i8) != 0
                 && script_tab.DefaultLangSys as libc::c_int != 0i32
             {
                 let mut langsys_tab: clt_langsys_table = clt_langsys_table {
@@ -1175,7 +1175,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                 if verbose > 0i32 {
                     dpx_message(
                         b"otl_gsub>> OTL script-language enabled: %c%c%c%c.dflt\n\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                         (*script_list.record.offset(script_idx as isize)).tag[0] as libc::c_int,
                         (*script_list.record.offset(script_idx as isize)).tag[1] as libc::c_int,
                         (*script_list.record.offset(script_idx as isize)).tag[2] as libc::c_int,
@@ -1188,7 +1188,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                     0i32,
                 );
                 clt_read_langsys_table(&mut langsys_tab, sfont);
-                if otl_match_optrule(feature, b"____\x00" as *const u8 as *const libc::c_char) != 0
+                if otl_match_optrule(feature, b"____\x00" as *const u8 as *const i8) != 0
                     && langsys_tab.ReqFeatureIndex as libc::c_int != 0xffffi32
                 {
                     feat_bits[(langsys_tab.ReqFeatureIndex as libc::c_int / 8i32) as usize] =
@@ -1231,7 +1231,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                     if verbose > 0i32 {
                         dpx_message(
                             b"otl_gsub>> OTL script-language enabled: %c%c%c%c.%c%c%c%c\n\x00"
-                                as *const u8 as *const libc::c_char,
+                                as *const u8 as *const i8,
                             (*script_list.record.offset(script_idx as isize)).tag[0] as libc::c_int,
                             (*script_list.record.offset(script_idx as isize)).tag[1] as libc::c_int,
                             (*script_list.record.offset(script_idx as isize)).tag[2] as libc::c_int,
@@ -1248,7 +1248,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                         0i32,
                     );
                     clt_read_langsys_table(&mut langsys_tab_0, sfont);
-                    if otl_match_optrule(feature, b"____\x00" as *const u8 as *const libc::c_char)
+                    if otl_match_optrule(feature, b"____\x00" as *const u8 as *const i8)
                         != 0
                         || langsys_tab_0.ReqFeatureIndex as libc::c_int != 0xffffi32
                     {
@@ -1293,7 +1293,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
     ttstub_input_seek((*sfont).handle, offset as ssize_t, 0i32);
     clt_read_number_list(&mut lookup_list, sfont);
     if verbose > 0i32 {
-        dpx_message(b"otl_gsub>> Reading OTL feature(s):\x00" as *const u8 as *const libc::c_char);
+        dpx_message(b"otl_gsub>> Reading OTL feature(s):\x00" as *const u8 as *const i8);
     }
     feat_idx = 0i32;
     while feat_idx < feature_list.count as libc::c_int {
@@ -1316,7 +1316,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
             let mut i: libc::c_int = 0;
             if verbose > 0i32 {
                 dpx_message(
-                    b" %c%c%c%c\x00" as *const u8 as *const libc::c_char,
+                    b" %c%c%c%c\x00" as *const u8 as *const i8,
                     (*feature_list.record.offset(feat_idx as isize)).tag[0] as libc::c_int,
                     (*feature_list.record.offset(feat_idx as isize)).tag[1] as libc::c_int,
                     (*feature_list.record.offset(feat_idx as isize)).tag[2] as libc::c_int,
@@ -1331,7 +1331,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
             ttstub_input_seek((*sfont).handle, offset as ssize_t, 0i32);
             clt_read_feature_table(&mut feature_table, sfont);
             if feature_table.FeatureParams as libc::c_int != 0i32 {
-                _tt_abort(b"unrecognized FeatureParams\x00" as *const u8 as *const libc::c_char);
+                _tt_abort(b"unrecognized FeatureParams\x00" as *const u8 as *const i8);
             }
             i = 0i32;
             while i < feature_table.LookupListIndex.count as libc::c_int {
@@ -1349,7 +1349,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                 let mut n_st: libc::c_int = 0;
                 ll_idx = *feature_table.LookupListIndex.value.offset(i as isize) as libc::c_int;
                 if ll_idx >= lookup_list.count as libc::c_int {
-                    _tt_abort(b"invalid Lookup index.\x00" as *const u8 as *const libc::c_char);
+                    _tt_abort(b"invalid Lookup index.\x00" as *const u8 as *const i8);
                 }
                 offset = gsub_offset
                     .wrapping_add(head.LookupList as libc::c_uint)
@@ -1364,7 +1364,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                     if verbose > 0i32 {
                         dpx_warning(
                             b"Skipping unsupported GSUB subtable: LookupType=%d\x00" as *const u8
-                                as *const libc::c_char,
+                                as *const i8,
                             lookup_table.LookupType as libc::c_int,
                         );
                     }
@@ -1401,12 +1401,12 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                 if r <= 0i32 {
                                     dpx_warning(
                                         b"Reading GSUB subtable (single) failed...\x00" as *const u8
-                                            as *const libc::c_char,
+                                            as *const i8,
                                     );
                                 } else {
                                     if verbose > 0i32 {
                                         dpx_message(
-                                            b"(single)\x00" as *const u8 as *const libc::c_char,
+                                            b"(single)\x00" as *const u8 as *const i8,
                                         );
                                     }
                                     n_st += 1
@@ -1422,12 +1422,12 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                     dpx_warning(
                                         b"Reading GSUB subtable (alternate) failed...\x00"
                                             as *const u8
-                                            as *const libc::c_char,
+                                            as *const i8,
                                     );
                                 } else {
                                     if verbose > 0i32 {
                                         dpx_message(
-                                            b"(alternate)\x00" as *const u8 as *const libc::c_char,
+                                            b"(alternate)\x00" as *const u8 as *const i8,
                                         );
                                     }
                                     n_st += 1
@@ -1443,12 +1443,12 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                     dpx_warning(
                                         b"Reading GSUB subtable (ligature) failed...\x00"
                                             as *const u8
-                                            as *const libc::c_char,
+                                            as *const i8,
                                     );
                                 } else {
                                     if verbose > 0i32 {
                                         dpx_message(
-                                            b"(ligature)\x00" as *const u8 as *const libc::c_char,
+                                            b"(ligature)\x00" as *const u8 as *const i8,
                                         );
                                     }
                                     n_st += 1
@@ -1479,12 +1479,12 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                                 dpx_warning(b"Reading GSUB subtable (ext:single) failed...\x00"
                                                                 as *const u8
                                                                 as
-                                                                *const libc::c_char);
+                                                                *const i8);
                                             } else {
                                                 if verbose > 0i32 {
                                                     dpx_message(
                                                         b"(ext:single)\x00" as *const u8
-                                                            as *const libc::c_char,
+                                                            as *const i8,
                                                     );
                                                 }
                                                 n_st += 1
@@ -1501,12 +1501,12 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                                 dpx_warning(b"Reading GSUB subtable (alternate) failed...\x00"
                                                                 as *const u8
                                                                 as
-                                                                *const libc::c_char);
+                                                                *const i8);
                                             } else {
                                                 if verbose > 0i32 {
                                                     dpx_message(
                                                         b"(alternate)\x00" as *const u8
-                                                            as *const libc::c_char,
+                                                            as *const i8,
                                                     );
                                                 }
                                                 n_st += 1
@@ -1523,12 +1523,12 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                                 dpx_warning(b"Reading GSUB subtable (ext:ligature) failed...\x00"
                                                                 as *const u8
                                                                 as
-                                                                *const libc::c_char);
+                                                                *const i8);
                                             } else {
                                                 if verbose > 0i32 {
                                                     dpx_message(
                                                         b"(ext:ligature)\x00" as *const u8
-                                                            as *const libc::c_char,
+                                                            as *const i8,
                                                     );
                                                 }
                                                 n_st += 1
@@ -1552,9 +1552,9 @@ unsafe extern "C" fn otl_gsub_read_feat(
         feat_idx += 1
     }
     if verbose > 0i32 {
-        dpx_message(b"\n\x00" as *const u8 as *const libc::c_char);
+        dpx_message(b"\n\x00" as *const u8 as *const i8);
         dpx_message(
-            b"otl_gsub>> %d subtable(s) read.\n\x00" as *const u8 as *const libc::c_char,
+            b"otl_gsub>> %d subtable(s) read.\n\x00" as *const u8 as *const i8,
             num_subtabs as libc::c_int,
         );
     }
@@ -1580,10 +1580,10 @@ unsafe extern "C" fn otl_gsub_apply_single(
     if !subtab.is_null() && !gid.is_null() {
     } else {
         __assert_fail(
-            b"subtab && gid\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"subtab && gid\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             1145i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 62], &[libc::c_char; 62]>(
+            (*::std::mem::transmute::<&[u8; 62], &[i8; 62]>(
                 b"int otl_gsub_apply_single(struct otl_gsub_subtab *, USHORT *)\x00",
             ))
             .as_ptr(),
@@ -1617,10 +1617,10 @@ unsafe extern "C" fn otl_gsub_apply_alternate(
     if !subtab.is_null() && !gid.is_null() {
     } else {
         __assert_fail(
-            b"subtab && gid\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"subtab && gid\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             1177i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 73], &[libc::c_char; 73]>(
+            (*::std::mem::transmute::<&[u8; 73], &[i8; 73]>(
                 b"int otl_gsub_apply_alternate(struct otl_gsub_subtab *, USHORT, USHORT *)\x00",
             ))
             .as_ptr(),
@@ -1677,11 +1677,11 @@ unsafe extern "C" fn otl_gsub_apply_ligature(
     if !subtab.is_null() && !gid_out.is_null() {
     } else {
         __assert_fail(b"subtab && gid_out\x00" as *const u8 as
-                          *const libc::c_char,
+                          *const i8,
                       b"dpx-tt_gsub.c\x00" as *const u8 as
-                          *const libc::c_char, 1226i32 as libc::c_uint,
+                          *const i8, 1226i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 82],
-                                                &[libc::c_char; 82]>(b"int otl_gsub_apply_ligature(struct otl_gsub_subtab *, USHORT *, USHORT, USHORT *)\x00")).as_ptr());
+                                                &[i8; 82]>(b"int otl_gsub_apply_ligature(struct otl_gsub_subtab *, USHORT *, USHORT, USHORT *)\x00")).as_ptr());
     }
     if gid_in.is_null() || (num_gids as libc::c_int) < 1i32 {
         return -1i32;
@@ -1738,16 +1738,16 @@ unsafe extern "C" fn clear_chain(mut gsub_list: *mut otl_gsub) {
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_add_feat(
     mut gsub_list: *mut otl_gsub,
-    mut script: *const libc::c_char,
-    mut language: *const libc::c_char,
-    mut feature: *const libc::c_char,
+    mut script: *const i8,
+    mut language: *const i8,
+    mut feature: *const i8,
     mut sfont: *mut sfnt,
 ) -> libc::c_int {
     let mut retval: libc::c_int = -1i32;
     let mut i: libc::c_int = 0;
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;
     if (*gsub_list).num_gsubs > 32i32 {
-        _tt_abort(b"Too many GSUB features...\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"Too many GSUB features...\x00" as *const u8 as *const i8);
     }
     i = 0i32;
     while i < (*gsub_list).num_gsubs {
@@ -1764,26 +1764,26 @@ pub unsafe extern "C" fn otl_gsub_add_feat(
     gsub = &mut *(*gsub_list).gsubs.as_mut_ptr().offset(i as isize) as *mut otl_gsub_tab;
     (*gsub).script = new(
         (strlen(script).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32,
-    ) as *mut libc::c_char;
+    ) as *mut i8;
     strcpy((*gsub).script, script);
     (*gsub).language = new(
         (strlen(language).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32,
-    ) as *mut libc::c_char;
+    ) as *mut i8;
     strcpy((*gsub).language, language);
     (*gsub).feature = new(
         (strlen(feature).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32,
-    ) as *mut libc::c_char;
+    ) as *mut i8;
     strcpy((*gsub).feature, feature);
     if verbose > 0i32 {
-        dpx_message(b"\n\x00" as *const u8 as *const libc::c_char);
+        dpx_message(b"\n\x00" as *const u8 as *const i8);
         dpx_message(
-            b"otl_gsub>> Reading \"%s.%s.%s\"...\n\x00" as *const u8 as *const libc::c_char,
+            b"otl_gsub>> Reading \"%s.%s.%s\"...\n\x00" as *const u8 as *const i8,
             script,
             language,
             feature,
@@ -1795,7 +1795,7 @@ pub unsafe extern "C" fn otl_gsub_add_feat(
         (*gsub_list).num_gsubs += 1
     } else {
         if verbose > 0i32 {
-            dpx_message(b"otl_gsub>> Failed\n\x00" as *const u8 as *const libc::c_char);
+            dpx_message(b"otl_gsub>> Failed\n\x00" as *const u8 as *const i8);
         }
         free((*gsub).script as *mut libc::c_void);
         free((*gsub).language as *mut libc::c_void);
@@ -1804,21 +1804,21 @@ pub unsafe extern "C" fn otl_gsub_add_feat(
     return retval;
 }
 unsafe extern "C" fn scan_otl_tag(
-    mut otl_tags: *const libc::c_char,
-    mut endptr: *const libc::c_char,
-    mut script: *mut libc::c_char,
-    mut language: *mut libc::c_char,
-    mut feature: *mut libc::c_char,
+    mut otl_tags: *const i8,
+    mut endptr: *const i8,
+    mut script: *mut i8,
+    mut language: *mut i8,
+    mut feature: *mut i8,
 ) -> libc::c_int {
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
-    let mut period: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
+    let mut period: *const i8 = 0 as *const i8;
     if !script.is_null() && !language.is_null() && !feature.is_null() {
     } else {
         __assert_fail(
-            b"script && language && feature\x00" as *const u8 as *const libc::c_char,
-            b"dpx-tt_gsub.c\x00" as *const u8 as *const libc::c_char,
+            b"script && language && feature\x00" as *const u8 as *const i8,
+            b"dpx-tt_gsub.c\x00" as *const u8 as *const i8,
             1357i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 69], &[libc::c_char; 69]>(
+            (*::std::mem::transmute::<&[u8; 69], &[i8; 69]>(
                 b"int scan_otl_tag(const char *, const char *, char *, char *, char *)\x00",
             ))
             .as_ptr(),
@@ -1832,19 +1832,19 @@ unsafe extern "C" fn scan_otl_tag(
         ' ' as i32,
         4i32 as u64,
     );
-    *script.offset(4) = 0i32 as libc::c_char;
+    *script.offset(4) = 0i32 as i8;
     memset(
         language as *mut libc::c_void,
         ' ' as i32,
         4i32 as u64,
     );
-    *language.offset(4) = 0i32 as libc::c_char;
+    *language.offset(4) = 0i32 as i8;
     memset(
         feature as *mut libc::c_void,
         ' ' as i32,
         4i32 as u64,
     );
-    *feature.offset(4) = 0i32 as libc::c_char;
+    *feature.offset(4) = 0i32 as i8;
     /* First parse otl_tags variable */
     p = otl_tags;
     period = strchr(p, '.' as i32);
@@ -1858,7 +1858,7 @@ unsafe extern "C" fn scan_otl_tag(
             );
         } else {
             dpx_warning(
-                b"Invalid OTL script tag found: %s\x00" as *const u8 as *const libc::c_char,
+                b"Invalid OTL script tag found: %s\x00" as *const u8 as *const i8,
                 p,
             );
             return -1i32;
@@ -1875,7 +1875,7 @@ unsafe extern "C" fn scan_otl_tag(
                 );
             } else {
                 dpx_warning(
-                    b"Invalid OTL lanuage tag found: %s\x00" as *const u8 as *const libc::c_char,
+                    b"Invalid OTL lanuage tag found: %s\x00" as *const u8 as *const i8,
                     p,
                 );
                 return -1i32;
@@ -1883,8 +1883,8 @@ unsafe extern "C" fn scan_otl_tag(
             p = period.offset(1)
         }
     } else {
-        strcpy(script, b"*\x00" as *const u8 as *const libc::c_char);
-        strcpy(language, b"*\x00" as *const u8 as *const libc::c_char);
+        strcpy(script, b"*\x00" as *const u8 as *const i8);
+        strcpy(language, b"*\x00" as *const u8 as *const i8);
     }
     /* Finally feature */
     if p.offset(4) <= endptr {
@@ -1895,7 +1895,7 @@ unsafe extern "C" fn scan_otl_tag(
         );
         p = endptr
     } else {
-        dpx_warning(b"No valid OTL feature tag specified.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"No valid OTL feature tag specified.\x00" as *const u8 as *const i8);
         return -1i32;
     }
     return 0i32;
@@ -1929,7 +1929,7 @@ pub unsafe extern "C" fn otl_gsub_release(mut gsub_list: *mut otl_gsub) {
                     otl_gsub_release_ligature(subtab);
                 }
                 _ => {
-                    _tt_abort(b"???\x00" as *const u8 as *const libc::c_char);
+                    _tt_abort(b"???\x00" as *const u8 as *const i8);
                 }
             }
             j += 1
@@ -1955,7 +1955,7 @@ pub unsafe extern "C" fn otl_gsub_apply(
     }
     i = (*gsub_list).select;
     if i < 0i32 || i >= (*gsub_list).num_gsubs {
-        _tt_abort(b"GSUB not selected...\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"GSUB not selected...\x00" as *const u8 as *const i8);
     }
     gsub = &mut *(*gsub_list).gsubs.as_mut_ptr().offset(i as isize) as *mut otl_gsub_tab;
     j = 0i32;
@@ -1985,7 +1985,7 @@ pub unsafe extern "C" fn otl_gsub_apply_alt(
     }
     i = (*gsub_list).select;
     if i < 0i32 || i >= (*gsub_list).num_gsubs {
-        _tt_abort(b"GSUB not selected...\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"GSUB not selected...\x00" as *const u8 as *const i8);
     }
     gsub = &mut *(*gsub_list).gsubs.as_mut_ptr().offset(i as isize) as *mut otl_gsub_tab;
     j = 0i32;
@@ -2016,7 +2016,7 @@ pub unsafe extern "C" fn otl_gsub_apply_lig(
     }
     i = (*gsub_list).select;
     if i < 0i32 || i >= (*gsub_list).num_gsubs {
-        _tt_abort(b"GSUB not selected...\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"GSUB not selected...\x00" as *const u8 as *const i8);
     }
     gsub = &mut *(*gsub_list).gsubs.as_mut_ptr().offset(i as isize) as *mut otl_gsub_tab;
     j = 0i32;
@@ -2032,9 +2032,9 @@ pub unsafe extern "C" fn otl_gsub_apply_lig(
 }
 unsafe extern "C" fn gsub_find(
     mut gsub_list: *mut otl_gsub,
-    mut script: *const libc::c_char,
-    mut language: *const libc::c_char,
-    mut feature: *const libc::c_char,
+    mut script: *const i8,
+    mut language: *const i8,
+    mut feature: *const i8,
 ) -> libc::c_int {
     let mut i: libc::c_int = 0;
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;
@@ -2054,9 +2054,9 @@ unsafe extern "C" fn gsub_find(
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_select(
     mut gsub_list: *mut otl_gsub,
-    mut script: *const libc::c_char,
-    mut language: *const libc::c_char,
-    mut feature: *const libc::c_char,
+    mut script: *const i8,
+    mut language: *const i8,
+    mut feature: *const i8,
 ) -> libc::c_int {
     (*gsub_list).select = gsub_find(gsub_list, script, language, feature);
     return (*gsub_list).select;
@@ -2064,15 +2064,15 @@ pub unsafe extern "C" fn otl_gsub_select(
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_set_chain(
     mut gsub_list: *mut otl_gsub,
-    mut otl_tags: *const libc::c_char,
+    mut otl_tags: *const i8,
 ) -> libc::c_int {
     let mut prev: *mut gsub_entry = 0 as *mut gsub_entry;
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
-    let mut nextptr: *const libc::c_char = 0 as *const libc::c_char;
-    let mut endptr: *const libc::c_char = 0 as *const libc::c_char;
-    let mut script: [libc::c_char; 5] = [0; 5];
-    let mut language: [libc::c_char; 5] = [0; 5];
-    let mut feature: [libc::c_char; 5] = [0; 5];
+    let mut p: *const i8 = 0 as *const i8;
+    let mut nextptr: *const i8 = 0 as *const i8;
+    let mut endptr: *const i8 = 0 as *const i8;
+    let mut script: [i8; 5] = [0; 5];
+    let mut language: [i8; 5] = [0; 5];
+    let mut feature: [i8; 5] = [0; 5];
     let mut idx: libc::c_int = 0;
     clear_chain(gsub_list);
     endptr = otl_tags.offset(strlen(otl_tags) as isize);
@@ -2122,15 +2122,15 @@ pub unsafe extern "C" fn otl_gsub_set_chain(
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_add_feat_list(
     mut gsub_list: *mut otl_gsub,
-    mut otl_tags: *const libc::c_char,
+    mut otl_tags: *const i8,
     mut sfont: *mut sfnt,
 ) -> libc::c_int {
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
-    let mut nextptr: *const libc::c_char = 0 as *const libc::c_char;
-    let mut endptr: *const libc::c_char = 0 as *const libc::c_char;
-    let mut script: [libc::c_char; 5] = [0; 5];
-    let mut language: [libc::c_char; 5] = [0; 5];
-    let mut feature: [libc::c_char; 5] = [0; 5];
+    let mut p: *const i8 = 0 as *const i8;
+    let mut nextptr: *const i8 = 0 as *const i8;
+    let mut endptr: *const i8 = 0 as *const i8;
+    let mut script: [i8; 5] = [0; 5];
+    let mut language: [i8; 5] = [0; 5];
+    let mut feature: [i8; 5] = [0; 5];
     let mut idx: libc::c_int = 0;
     if gsub_list.is_null() || otl_tags.is_null() || sfont.is_null() {
         return -1i32;

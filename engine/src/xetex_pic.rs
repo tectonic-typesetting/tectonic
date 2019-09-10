@@ -19,10 +19,10 @@ extern "C" {
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn ttstub_input_open(
-        path: *const libc::c_char,
+        path: *const i8,
         format: tt_input_format_type,
         is_gz: libc::c_int,
     ) -> rust_input_handle_t;
@@ -33,13 +33,13 @@ extern "C" {
        Licensed under the MIT License.
     */
     #[no_mangle]
-    fn xstrdup(s: *const libc::c_char) -> *mut libc::c_char;
+    fn xstrdup(s: *const i8) -> *mut i8;
     #[no_mangle]
-    static mut name_of_file: *mut libc::c_char;
+    static mut name_of_file: *mut i8;
     #[no_mangle]
     static mut file_line_error_style_p: libc::c_int;
     #[no_mangle]
-    static mut help_line: [*const libc::c_char; 6];
+    static mut help_line: [*const i8; 6];
     #[no_mangle]
     static mut help_ptr: u8;
     #[no_mangle]
@@ -55,7 +55,7 @@ extern "C" {
     #[no_mangle]
     static mut cur_ext: str_number;
     #[no_mangle]
-    fn scan_keyword(s: *const libc::c_char) -> bool;
+    fn scan_keyword(s: *const i8) -> bool;
     #[no_mangle]
     fn scan_int();
     #[no_mangle]
@@ -74,9 +74,9 @@ extern "C" {
     #[no_mangle]
     fn print(s: int32_t);
     #[no_mangle]
-    fn print_cstr(s: *const libc::c_char);
+    fn print_cstr(s: *const i8);
     #[no_mangle]
-    fn print_nl_cstr(s: *const libc::c_char);
+    fn print_nl_cstr(s: *const i8);
     /* ***************************************************************************\
      Part of the XeTeX typesetting system
      Copyright (c) 1994-2008 by SIL International
@@ -202,7 +202,7 @@ extern "C" {
         resources_p: *mut *mut pdf_obj,
     ) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_open(ident: *const libc::c_char, handle: rust_input_handle_t) -> *mut pdf_file;
+    fn pdf_open(ident: *const i8, handle: rust_input_handle_t) -> *mut pdf_file;
     #[no_mangle]
     fn pdf_close(pf: *mut pdf_file);
     #[no_mangle]
@@ -451,7 +451,7 @@ pub unsafe extern "C" fn count_pdf_file_pages() -> libc::c_int {
     return pages;
 }
 unsafe extern "C" fn pdf_get_rect(
-    mut filename: *mut libc::c_char,
+    mut filename: *mut i8,
     mut handle: rust_input_handle_t,
     mut page_num: libc::c_int,
     mut pdf_box: libc::c_int,
@@ -596,7 +596,7 @@ unsafe extern "C" fn get_image_size_in_inches(
   return bounds (tex points) in *bounds
 */
 unsafe extern "C" fn find_pic_file(
-    mut path: *mut *mut libc::c_char,
+    mut path: *mut *mut i8,
     mut bounds: *mut real_rect,
     mut pdfBoxType: libc::c_int,
     mut page: libc::c_int,
@@ -692,7 +692,7 @@ unsafe extern "C" fn transform_concat(mut t1: *mut transform_t, mut t2: *const t
 }
 #[no_mangle]
 pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
-    let mut pic_path: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut pic_path: *mut i8 = 0 as *mut i8;
     let mut bounds: real_rect = real_rect {
         x: 0.,
         y: 0.,
@@ -732,20 +732,20 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
     pdf_box_type = 0i32;
     page = 0i32;
     if is_pdf {
-        if scan_keyword(b"page\x00" as *const u8 as *const libc::c_char) {
+        if scan_keyword(b"page\x00" as *const u8 as *const i8) {
             scan_int();
             page = cur_val
         }
         pdf_box_type = 6i32;
-        if scan_keyword(b"crop\x00" as *const u8 as *const libc::c_char) {
+        if scan_keyword(b"crop\x00" as *const u8 as *const i8) {
             pdf_box_type = 1i32
-        } else if scan_keyword(b"media\x00" as *const u8 as *const libc::c_char) {
+        } else if scan_keyword(b"media\x00" as *const u8 as *const i8) {
             pdf_box_type = 2i32
-        } else if scan_keyword(b"bleed\x00" as *const u8 as *const libc::c_char) {
+        } else if scan_keyword(b"bleed\x00" as *const u8 as *const i8) {
             pdf_box_type = 3i32
-        } else if scan_keyword(b"trim\x00" as *const u8 as *const libc::c_char) {
+        } else if scan_keyword(b"trim\x00" as *const u8 as *const i8) {
             pdf_box_type = 4i32
-        } else if scan_keyword(b"art\x00" as *const u8 as *const libc::c_char) {
+        } else if scan_keyword(b"art\x00" as *const u8 as *const i8) {
             pdf_box_type = 5i32
         }
     }
@@ -767,7 +767,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
     make_identity(&mut t);
     check_keywords = 1i32 != 0;
     while check_keywords {
-        if scan_keyword(b"scaled\x00" as *const u8 as *const libc::c_char) {
+        if scan_keyword(b"scaled\x00" as *const u8 as *const i8) {
             scan_int();
             if x_size_req == 0.0f64 && y_size_req == 0.0f64 {
                 make_scale(
@@ -790,7 +790,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 }
                 transform_concat(&mut t, &mut t2);
             }
-        } else if scan_keyword(b"xscaled\x00" as *const u8 as *const libc::c_char) {
+        } else if scan_keyword(b"xscaled\x00" as *const u8 as *const i8) {
             scan_int();
             if x_size_req == 0.0f64 && y_size_req == 0.0f64 {
                 make_scale(&mut t2, cur_val as libc::c_double / 1000.0f64, 1.0f64);
@@ -809,7 +809,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 }
                 transform_concat(&mut t, &mut t2);
             }
-        } else if scan_keyword(b"yscaled\x00" as *const u8 as *const libc::c_char) {
+        } else if scan_keyword(b"yscaled\x00" as *const u8 as *const i8) {
             scan_int();
             if x_size_req == 0.0f64 && y_size_req == 0.0f64 {
                 make_scale(&mut t2, 1.0f64, cur_val as libc::c_double / 1000.0f64);
@@ -828,47 +828,47 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 }
                 transform_concat(&mut t, &mut t2);
             }
-        } else if scan_keyword(b"width\x00" as *const u8 as *const libc::c_char) {
+        } else if scan_keyword(b"width\x00" as *const u8 as *const i8) {
             scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
             if cur_val <= 0i32 {
                 if file_line_error_style_p != 0 {
                     print_file_line();
                 } else {
-                    print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                    print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
-                print_cstr(b"Improper image \x00" as *const u8 as *const libc::c_char);
-                print_cstr(b"size (\x00" as *const u8 as *const libc::c_char);
+                print_cstr(b"Improper image \x00" as *const u8 as *const i8);
+                print_cstr(b"size (\x00" as *const u8 as *const i8);
                 print_scaled(cur_val);
-                print_cstr(b"pt) will be ignored\x00" as *const u8 as *const libc::c_char);
+                print_cstr(b"pt) will be ignored\x00" as *const u8 as *const i8);
                 help_ptr = 2i32 as u8;
                 help_line[1] = b"I can\'t scale images to zero or negative sizes,\x00" as *const u8
-                    as *const libc::c_char;
-                help_line[0] = b"so I\'m ignoring this.\x00" as *const u8 as *const libc::c_char;
+                    as *const i8;
+                help_line[0] = b"so I\'m ignoring this.\x00" as *const u8 as *const i8;
                 error();
             } else {
                 x_size_req = Fix2D(cur_val)
             }
-        } else if scan_keyword(b"height\x00" as *const u8 as *const libc::c_char) {
+        } else if scan_keyword(b"height\x00" as *const u8 as *const i8) {
             scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
             if cur_val <= 0i32 {
                 if file_line_error_style_p != 0 {
                     print_file_line();
                 } else {
-                    print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+                    print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
-                print_cstr(b"Improper image \x00" as *const u8 as *const libc::c_char);
-                print_cstr(b"size (\x00" as *const u8 as *const libc::c_char);
+                print_cstr(b"Improper image \x00" as *const u8 as *const i8);
+                print_cstr(b"size (\x00" as *const u8 as *const i8);
                 print_scaled(cur_val);
-                print_cstr(b"pt) will be ignored\x00" as *const u8 as *const libc::c_char);
+                print_cstr(b"pt) will be ignored\x00" as *const u8 as *const i8);
                 help_ptr = 2i32 as u8;
                 help_line[1] = b"I can\'t scale images to zero or negative sizes,\x00" as *const u8
-                    as *const libc::c_char;
-                help_line[0] = b"so I\'m ignoring this.\x00" as *const u8 as *const libc::c_char;
+                    as *const i8;
+                help_line[0] = b"so I\'m ignoring this.\x00" as *const u8 as *const i8;
                 error();
             } else {
                 y_size_req = Fix2D(cur_val)
             }
-        } else if scan_keyword(b"rotated\x00" as *const u8 as *const libc::c_char) {
+        } else if scan_keyword(b"rotated\x00" as *const u8 as *const i8) {
             scan_decimal();
             if x_size_req != 0.0f64 || y_size_req != 0.0f64 {
                 xmin = 1000000.0f64;
@@ -1128,24 +1128,24 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
-            print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
+            print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
         print_cstr(
-            b"Unable to load picture or PDF file \'\x00" as *const u8 as *const libc::c_char,
+            b"Unable to load picture or PDF file \'\x00" as *const u8 as *const i8,
         );
         print_file_name(cur_name, cur_area, cur_ext);
         print('\'' as i32);
         if result == -43i32 {
             help_ptr = 2i32 as u8;
             help_line[1] = b"The requested image couldn\'t be read because\x00" as *const u8
-                as *const libc::c_char;
-            help_line[0] = b"the file was not found.\x00" as *const u8 as *const libc::c_char
+                as *const i8;
+            help_line[0] = b"the file was not found.\x00" as *const u8 as *const i8
         } else {
             help_ptr = 2i32 as u8;
             help_line[1] = b"The requested image couldn\'t be read because\x00" as *const u8
-                as *const libc::c_char;
+                as *const i8;
             help_line[0] =
-                b"it was not a recognized image format.\x00" as *const u8 as *const libc::c_char
+                b"it was not a recognized image format.\x00" as *const u8 as *const i8
         }
         error();
     };

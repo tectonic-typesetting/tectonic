@@ -35,10 +35,10 @@ extern "C" {
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
@@ -47,15 +47,15 @@ extern "C" {
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: u64)
-        -> *mut libc::c_char;
+    fn strncpy(_: *mut i8, _: *const i8, _: u64)
+        -> *mut i8;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn ttstub_input_open(
-        path: *const libc::c_char,
+        path: *const i8,
         format: tt_input_format_type,
         is_gz: libc::c_int,
     ) -> rust_input_handle_t;
@@ -66,7 +66,7 @@ extern "C" {
     #[no_mangle]
     fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
     #[no_mangle]
-    fn spc_warn(spe: *mut spc_env, fmt: *const libc::c_char, _: ...);
+    fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
     fn pdf_dev_put_image(
         xobj_id: libc::c_int,
@@ -77,13 +77,13 @@ extern "C" {
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* Please use different interface than findresource...
      * This is not intended to be used for specifying page number and others.
      * Only pdf:image special in spc_pdfm.c want optinal dict!
      */
     #[no_mangle]
-    fn pdf_ximage_findresource(ident: *const libc::c_char, options: load_options) -> libc::c_int;
+    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -109,8 +109,8 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn mps_exec_inline(
-        buffer: *mut *const libc::c_char,
-        endptr: *const libc::c_char,
+        buffer: *mut *const i8,
+        endptr: *const i8,
         x_user: libc::c_double,
         y_user: libc::c_double,
     ) -> libc::c_int;
@@ -133,7 +133,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_grestore_to(depth: libc::c_int);
     #[no_mangle]
-    fn skip_white(start: *mut *const libc::c_char, end: *const libc::c_char);
+    fn skip_white(start: *mut *const i8, end: *const i8);
     #[no_mangle]
     fn spc_util_read_dimtrns(
         spe: *mut spc_env,
@@ -218,17 +218,17 @@ pub struct spc_env {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_arg {
-    pub curptr: *const libc::c_char,
-    pub endptr: *const libc::c_char,
-    pub base: *const libc::c_char,
-    pub command: *const libc::c_char,
+    pub curptr: *const i8,
+    pub endptr: *const i8,
+    pub base: *const i8,
+    pub command: *const i8,
 }
 pub type spc_handler_fn_ptr =
     Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
-    pub key: *const libc::c_char,
+    pub key: *const i8,
     pub exec: spc_handler_fn_ptr,
 }
 #[derive(Copy, Clone)]
@@ -273,15 +273,15 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 }
 #[inline]
 unsafe extern "C" fn strstartswith(
-    mut s: *const libc::c_char,
-    mut prefix: *const libc::c_char,
-) -> *const libc::c_char {
+    mut s: *const i8,
+    mut prefix: *const i8,
+) -> *const i8 {
     let mut length: size_t = 0;
     length = strlen(prefix);
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const libc::c_char;
+    return 0 as *const i8;
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -308,14 +308,14 @@ static mut block_pending: libc::c_int = 0i32;
 static mut pending_x: libc::c_double = 0.0f64;
 static mut pending_y: libc::c_double = 0.0f64;
 static mut position_set: libc::c_int = 0i32;
-static mut ps_headers: *mut *mut libc::c_char =
-    0 as *const *mut libc::c_char as *mut *mut libc::c_char;
+static mut ps_headers: *mut *mut i8 =
+    0 as *const *mut i8 as *mut *mut i8;
 static mut num_ps_headers: libc::c_int = 0i32;
 unsafe extern "C" fn spc_handler_ps_header(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> libc::c_int {
-    let mut pro: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut pro: *mut i8 = 0 as *mut i8;
     let mut ps_header: *mut rust_input_handle_t = 0 as *mut rust_input_handle_t;
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr.offset(1) >= (*args).endptr
@@ -323,7 +323,7 @@ unsafe extern "C" fn spc_handler_ps_header(
     {
         spc_warn(
             spe,
-            b"No filename specified for PSfile special.\x00" as *const u8 as *const libc::c_char,
+            b"No filename specified for PSfile special.\x00" as *const u8 as *const i8,
         );
         return -1i32;
     }
@@ -331,19 +331,19 @@ unsafe extern "C" fn spc_handler_ps_header(
     pro = xmalloc(
         ((*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long + 1i32 as libc::c_long)
             as size_t,
-    ) as *mut libc::c_char;
+    ) as *mut i8;
     strncpy(
         pro,
         (*args).curptr,
         (*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as u64,
     );
     *pro.offset((*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as isize) =
-        0i32 as libc::c_char;
+        0i32 as i8;
     ps_header = ttstub_input_open(pro, TTIF_TEX_PS_HEADER, 0i32) as *mut rust_input_handle_t;
     if ps_header.is_null() {
         spc_warn(
             spe,
-            b"PS header %s not found.\x00" as *const u8 as *const libc::c_char,
+            b"PS header %s not found.\x00" as *const u8 as *const i8,
             pro,
         );
         free(pro as *mut libc::c_void);
@@ -353,9 +353,9 @@ unsafe extern "C" fn spc_handler_ps_header(
     if num_ps_headers & 0xfi32 == 0 {
         ps_headers = xrealloc(
             ps_headers as *mut libc::c_void,
-            (::std::mem::size_of::<*mut libc::c_char>() as u64)
+            (::std::mem::size_of::<*mut i8>() as u64)
                 .wrapping_mul((num_ps_headers + 16i32) as u64),
-        ) as *mut *mut libc::c_char
+        ) as *mut *mut i8
     }
     let fresh0 = num_ps_headers;
     num_ps_headers = num_ps_headers + 1;
@@ -365,23 +365,23 @@ unsafe extern "C" fn spc_handler_ps_header(
     return 0i32;
 }
 unsafe extern "C" fn parse_filename(
-    mut pp: *mut *const libc::c_char,
-    mut endptr: *const libc::c_char,
-) -> *mut libc::c_char {
-    let mut r: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut q: *const libc::c_char = 0 as *const libc::c_char;
-    let mut p: *const libc::c_char = *pp;
-    let mut qchar: libc::c_char = 0;
+    mut pp: *mut *const i8,
+    mut endptr: *const i8,
+) -> *mut i8 {
+    let mut r: *mut i8 = 0 as *mut i8;
+    let mut q: *const i8 = 0 as *const i8;
+    let mut p: *const i8 = *pp;
+    let mut qchar: i8 = 0;
     let mut n: libc::c_int = 0;
     if p.is_null() || p >= endptr {
-        return 0 as *mut libc::c_char;
+        return 0 as *mut i8;
     } else {
         if *p as libc::c_int == '\"' as i32 || *p as libc::c_int == '\'' as i32 {
             let fresh2 = p;
             p = p.offset(1);
             qchar = *fresh2
         } else {
-            qchar = ' ' as i32 as libc::c_char
+            qchar = ' ' as i32 as i8
         }
     }
     n = 0i32;
@@ -393,22 +393,22 @@ unsafe extern "C" fn parse_filename(
     }
     if qchar as libc::c_int != ' ' as i32 {
         if *p as libc::c_int != qchar as libc::c_int {
-            return 0 as *mut libc::c_char;
+            return 0 as *mut i8;
         }
         p = p.offset(1)
     }
     if q.is_null() || n == 0i32 {
-        return 0 as *mut libc::c_char;
+        return 0 as *mut i8;
     }
     r = new(((n + 1i32) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
-        as u32) as *mut libc::c_char;
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+        as u32) as *mut i8;
     memcpy(
         r as *mut libc::c_void,
         q as *const libc::c_void,
         n as u64,
     );
-    *r.offset(n as isize) = '\u{0}' as i32 as libc::c_char;
+    *r.offset(n as isize) = '\u{0}' as i32 as i8;
     *pp = p;
     return r;
 }
@@ -418,7 +418,7 @@ unsafe extern "C" fn spc_handler_ps_file(
     mut args: *mut spc_arg,
 ) -> libc::c_int {
     let mut form_id: libc::c_int = 0;
-    let mut filename: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut filename: *mut i8 = 0 as *mut i8;
     let mut ti: transform_info = transform_info {
         width: 0.,
         height: 0.,
@@ -450,10 +450,10 @@ unsafe extern "C" fn spc_handler_ps_file(
     if !spe.is_null() && !args.is_null() {
     } else {
         __assert_fail(
-            b"spe && args\x00" as *const u8 as *const libc::c_char,
-            b"dpx-spc_dvips.c\x00" as *const u8 as *const libc::c_char,
+            b"spe && args\x00" as *const u8 as *const i8,
+            b"dpx-spc_dvips.c\x00" as *const u8 as *const i8,
             140i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 60], &[libc::c_char; 60]>(
+            (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_ps_file(struct spc_env *, struct spc_arg *)\x00",
             ))
             .as_ptr(),
@@ -465,7 +465,7 @@ unsafe extern "C" fn spc_handler_ps_file(
     {
         spc_warn(
             spe,
-            b"No filename specified for PSfile special.\x00" as *const u8 as *const libc::c_char,
+            b"No filename specified for PSfile special.\x00" as *const u8 as *const i8,
         );
         return -1i32;
     }
@@ -474,7 +474,7 @@ unsafe extern "C" fn spc_handler_ps_file(
     if filename.is_null() {
         spc_warn(
             spe,
-            b"No filename specified for PSfile special.\x00" as *const u8 as *const libc::c_char,
+            b"No filename specified for PSfile special.\x00" as *const u8 as *const i8,
         );
         return -1i32;
     }
@@ -487,7 +487,7 @@ unsafe extern "C" fn spc_handler_ps_file(
     if form_id < 0i32 {
         spc_warn(
             spe,
-            b"Failed to read image file: %s\x00" as *const u8 as *const libc::c_char,
+            b"Failed to read image file: %s\x00" as *const u8 as *const i8,
             filename,
         );
         free(filename as *mut libc::c_void);
@@ -504,7 +504,7 @@ unsafe extern "C" fn spc_handler_ps_plotfile(
 ) -> libc::c_int {
     let mut error: libc::c_int = 0i32; /* xscale = 1.0, yscale = -1.0 */
     let mut form_id: libc::c_int = 0;
-    let mut filename: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut filename: *mut i8 = 0 as *mut i8;
     let mut p: transform_info = transform_info {
         width: 0.,
         height: 0.,
@@ -536,10 +536,10 @@ unsafe extern "C" fn spc_handler_ps_plotfile(
     if !spe.is_null() && !args.is_null() {
     } else {
         __assert_fail(
-            b"spe && args\x00" as *const u8 as *const libc::c_char,
-            b"dpx-spc_dvips.c\x00" as *const u8 as *const libc::c_char,
+            b"spe && args\x00" as *const u8 as *const i8,
+            b"dpx-spc_dvips.c\x00" as *const u8 as *const i8,
             185i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 64], &[libc::c_char; 64]>(
+            (*::std::mem::transmute::<&[u8; 64], &[i8; 64]>(
                 b"int spc_handler_ps_plotfile(struct spc_env *, struct spc_arg *)\x00",
             ))
             .as_ptr(),
@@ -548,14 +548,14 @@ unsafe extern "C" fn spc_handler_ps_plotfile(
     spc_warn(
         spe,
         b"\"ps: plotfile\" found (not properly implemented)\x00" as *const u8
-            as *const libc::c_char,
+            as *const i8,
     );
     skip_white(&mut (*args).curptr, (*args).endptr);
     filename = parse_filename(&mut (*args).curptr, (*args).endptr);
     if filename.is_null() {
         spc_warn(
             spe,
-            b"Expecting filename but not found...\x00" as *const u8 as *const libc::c_char,
+            b"Expecting filename but not found...\x00" as *const u8 as *const i8,
         );
         return -1i32;
     }
@@ -563,7 +563,7 @@ unsafe extern "C" fn spc_handler_ps_plotfile(
     if form_id < 0i32 {
         spc_warn(
             spe,
-            b"Could not open PS file: %s\x00" as *const u8 as *const libc::c_char,
+            b"Could not open PS file: %s\x00" as *const u8 as *const i8,
             filename,
         );
         error = -1i32
@@ -592,10 +592,10 @@ unsafe extern "C" fn spc_handler_ps_literal(
     if !spe.is_null() && !args.is_null() && (*args).curptr <= (*args).endptr {
     } else {
         __assert_fail(
-            b"spe && args && args->curptr <= args->endptr\x00" as *const u8 as *const libc::c_char,
-            b"dpx-spc_dvips.c\x00" as *const u8 as *const libc::c_char,
+            b"spe && args && args->curptr <= args->endptr\x00" as *const u8 as *const i8,
+            b"dpx-spc_dvips.c\x00" as *const u8 as *const i8,
             218i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 63], &[libc::c_char; 63]>(
+            (*::std::mem::transmute::<&[u8; 63], &[i8; 63]>(
                 b"int spc_handler_ps_literal(struct spc_env *, struct spc_arg *)\x00",
             ))
             .as_ptr(),
@@ -603,11 +603,11 @@ unsafe extern "C" fn spc_handler_ps_literal(
     }
     if (*args)
         .curptr
-        .offset(strlen(b":[begin]\x00" as *const u8 as *const libc::c_char) as isize)
+        .offset(strlen(b":[begin]\x00" as *const u8 as *const i8) as isize)
         <= (*args).endptr
         && !strstartswith(
             (*args).curptr,
-            b":[begin]\x00" as *const u8 as *const libc::c_char,
+            b":[begin]\x00" as *const u8 as *const i8,
         )
         .is_null()
     {
@@ -619,21 +619,21 @@ unsafe extern "C" fn spc_handler_ps_literal(
         y_user = pending_y;
         (*args).curptr = (*args)
             .curptr
-            .offset(strlen(b":[begin]\x00" as *const u8 as *const libc::c_char) as isize)
+            .offset(strlen(b":[begin]\x00" as *const u8 as *const i8) as isize)
     } else if (*args)
         .curptr
-        .offset(strlen(b":[end]\x00" as *const u8 as *const libc::c_char) as isize)
+        .offset(strlen(b":[end]\x00" as *const u8 as *const i8) as isize)
         <= (*args).endptr
         && !strstartswith(
             (*args).curptr,
-            b":[end]\x00" as *const u8 as *const libc::c_char,
+            b":[end]\x00" as *const u8 as *const i8,
         )
         .is_null()
     {
         if block_pending <= 0i32 {
             spc_warn(
                 spe,
-                b"No corresponding ::[begin] found.\x00" as *const u8 as *const libc::c_char,
+                b"No corresponding ::[begin] found.\x00" as *const u8 as *const i8,
             );
             return -1i32;
         }
@@ -643,7 +643,7 @@ unsafe extern "C" fn spc_handler_ps_literal(
         y_user = pending_y;
         (*args).curptr = (*args)
             .curptr
-            .offset(strlen(b":[end]\x00" as *const u8 as *const libc::c_char) as isize)
+            .offset(strlen(b":[end]\x00" as *const u8 as *const i8) as isize)
     } else if (*args).curptr < (*args).endptr
         && *(*args).curptr.offset(0) as libc::c_int == ':' as i32
     {
@@ -674,21 +674,21 @@ unsafe extern "C" fn spc_handler_ps_literal(
             spc_warn(
                 spe,
                 b"Interpreting PS code failed!!! Output might be broken!!!\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
             pdf_dev_grestore_to(gs_depth);
         } else if st_depth != mps_stack_depth() {
             spc_warn(
                 spe,
                 b"Stack not empty after execution of inline PostScript code.\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
             spc_warn(spe,
                      b">> Your macro package makes some assumption on internal behaviour of DVI drivers.\x00"
-                         as *const u8 as *const libc::c_char);
+                         as *const u8 as *const i8);
             spc_warn(
                 spe,
-                b">> It may not compatible with dvipdfmx.\x00" as *const u8 as *const libc::c_char,
+                b">> It may not compatible with dvipdfmx.\x00" as *const u8 as *const i8,
             );
         }
     }
@@ -699,7 +699,7 @@ unsafe extern "C" fn spc_handler_ps_trickscmd(
     mut args: *mut spc_arg,
 ) -> libc::c_int {
     dpx_warning(
-        b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const libc::c_char,
+        b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const i8,
     );
     (*args).curptr = (*args).endptr;
     return -1i32;
@@ -709,7 +709,7 @@ unsafe extern "C" fn spc_handler_ps_tricksobj(
     mut args: *mut spc_arg,
 ) -> libc::c_int {
     dpx_warning(
-        b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const libc::c_char,
+        b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const i8,
     );
     (*args).curptr = (*args).endptr;
     return -1i32;
@@ -724,10 +724,10 @@ unsafe extern "C" fn spc_handler_ps_default(
     if !spe.is_null() && !args.is_null() {
     } else {
         __assert_fail(
-            b"spe && args\x00" as *const u8 as *const libc::c_char,
-            b"dpx-spc_dvips.c\x00" as *const u8 as *const libc::c_char,
+            b"spe && args\x00" as *const u8 as *const i8,
+            b"dpx-spc_dvips.c\x00" as *const u8 as *const i8,
             291i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 63], &[libc::c_char; 63]>(
+            (*::std::mem::transmute::<&[u8; 63], &[i8; 63]>(
                 b"int spc_handler_ps_default(struct spc_env *, struct spc_arg *)\x00",
             ))
             .as_ptr(),
@@ -764,22 +764,22 @@ unsafe extern "C" fn spc_handler_ps_default(
         spc_warn(
             spe,
             b"Interpreting PS code failed!!! Output might be broken!!!\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
     } else if st_depth != mps_stack_depth() {
         spc_warn(
             spe,
             b"Stack not empty after execution of inline PostScript code.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
         spc_warn(
             spe,
             b">> Your macro package makes some assumption on internal behaviour of DVI drivers.\x00"
-                as *const u8 as *const libc::c_char,
+                as *const u8 as *const i8,
         );
         spc_warn(
             spe,
-            b">> It may not compatible with dvipdfmx.\x00" as *const u8 as *const libc::c_char,
+            b">> It may not compatible with dvipdfmx.\x00" as *const u8 as *const i8,
         );
     }
     pdf_dev_grestore_to(gs_depth);
@@ -790,7 +790,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
     [
         {
             let mut init = spc_handler {
-                key: b"header\x00" as *const u8 as *const libc::c_char,
+                key: b"header\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_header
                         as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
@@ -800,7 +800,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
         },
         {
             let mut init = spc_handler {
-                key: b"PSfile\x00" as *const u8 as *const libc::c_char,
+                key: b"PSfile\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_file
                         as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
@@ -810,7 +810,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
         },
         {
             let mut init = spc_handler {
-                key: b"psfile\x00" as *const u8 as *const libc::c_char,
+                key: b"psfile\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_file
                         as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
@@ -820,7 +820,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
         },
         {
             let mut init = spc_handler {
-                key: b"ps: plotfile \x00" as *const u8 as *const libc::c_char,
+                key: b"ps: plotfile \x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_plotfile
                         as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
@@ -830,7 +830,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
         },
         {
             let mut init = spc_handler {
-                key: b"PS: plotfile \x00" as *const u8 as *const libc::c_char,
+                key: b"PS: plotfile \x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_plotfile
                         as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
@@ -840,7 +840,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
         },
         {
             let mut init = spc_handler {
-                key: b"PS:\x00" as *const u8 as *const libc::c_char,
+                key: b"PS:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_literal
                         as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
@@ -850,7 +850,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
         },
         {
             let mut init = spc_handler {
-                key: b"ps:\x00" as *const u8 as *const libc::c_char,
+                key: b"ps:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_literal
                         as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
@@ -860,7 +860,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
         },
         {
             let mut init = spc_handler {
-                key: b"PST:\x00" as *const u8 as *const libc::c_char,
+                key: b"PST:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_trickscmd
                         as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
@@ -870,7 +870,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
         },
         {
             let mut init = spc_handler {
-                key: b"pst:\x00" as *const u8 as *const libc::c_char,
+                key: b"pst:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_tricksobj
                         as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
@@ -880,7 +880,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
         },
         {
             let mut init = spc_handler {
-                key: b"\" \x00" as *const u8 as *const libc::c_char,
+                key: b"\" \x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_ps_default
                         as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
@@ -902,7 +902,7 @@ pub unsafe extern "C" fn spc_dvips_at_end_document() -> libc::c_int {
             num_ps_headers -= 1;
             free(*ps_headers.offset(num_ps_headers as isize) as *mut libc::c_void);
         }
-        ps_headers = mfree(ps_headers as *mut libc::c_void) as *mut *mut libc::c_char
+        ps_headers = mfree(ps_headers as *mut libc::c_void) as *mut *mut i8
     }
     return 0i32;
 }
@@ -918,11 +918,11 @@ pub unsafe extern "C" fn spc_dvips_at_end_page() -> libc::c_int {
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_dvips_check_special(
-    mut buf: *const libc::c_char,
+    mut buf: *const i8,
     mut len: libc::c_int,
 ) -> bool {
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
-    let mut endptr: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
+    let mut endptr: *const i8 = 0 as *const i8;
     let mut i: size_t = 0;
     p = buf;
     endptr = p.offset(len as isize);
@@ -976,17 +976,17 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> libc::c_int {
-    let mut key: *const libc::c_char = 0 as *const libc::c_char;
+    let mut key: *const i8 = 0 as *const i8;
     let mut keylen: libc::c_int = 0;
     let mut i: size_t = 0;
     if !handle.is_null() && !spe.is_null() && !args.is_null() {
     } else {
         __assert_fail(b"handle && spe && args\x00" as *const u8 as
-                          *const libc::c_char,
+                          *const i8,
                       b"dpx-spc_dvips.c\x00" as *const u8 as
-                          *const libc::c_char, 402i32 as libc::c_uint,
+                          *const i8, 402i32 as libc::c_uint,
                       (*::std::mem::transmute::<&[u8; 86],
-                                                &[libc::c_char; 86]>(b"int spc_dvips_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
+                                                &[i8; 86]>(b"int spc_dvips_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }
     skip_white(&mut (*args).curptr, (*args).endptr);
     key = (*args).curptr;
@@ -1004,17 +1004,17 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
         (*args).curptr = (*args).curptr.offset(1);
         if (*args)
             .curptr
-            .offset(strlen(b" plotfile \x00" as *const u8 as *const libc::c_char) as isize)
+            .offset(strlen(b" plotfile \x00" as *const u8 as *const i8) as isize)
             <= (*args).endptr
             && !strstartswith(
                 (*args).curptr,
-                b" plotfile \x00" as *const u8 as *const libc::c_char,
+                b" plotfile \x00" as *const u8 as *const i8,
             )
             .is_null()
         {
             (*args).curptr = (*args)
                 .curptr
-                .offset(strlen(b" plotfile \x00" as *const u8 as *const libc::c_char) as isize)
+                .offset(strlen(b" plotfile \x00" as *const u8 as *const i8) as isize)
         }
     } else if (*args).curptr.offset(1) < (*args).endptr
         && *(*args).curptr.offset(0) as libc::c_int == '\"' as i32
@@ -1026,7 +1026,7 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
     if keylen < 1i32 {
         spc_warn(
             spe,
-            b"Not ps: special???\x00" as *const u8 as *const libc::c_char,
+            b"Not ps: special???\x00" as *const u8 as *const i8,
         );
         return -1i32;
     }
@@ -1040,7 +1040,7 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
         {
             skip_white(&mut (*args).curptr, (*args).endptr);
             (*args).command = dvips_handlers[i as usize].key;
-            (*handle).key = b"ps:\x00" as *const u8 as *const libc::c_char;
+            (*handle).key = b"ps:\x00" as *const u8 as *const i8;
             (*handle).exec = dvips_handlers[i as usize].exec;
             return 0i32;
         }

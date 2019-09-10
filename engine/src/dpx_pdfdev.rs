@@ -18,26 +18,26 @@ extern "C" {
     fn round(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
         __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
     fn abs(_: libc::c_int) -> libc::c_int;
     #[no_mangle]
     fn labs(_: libc::c_long) -> libc::c_long;
     #[no_mangle]
-    fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
+    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> u64;
+    fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
@@ -50,7 +50,7 @@ extern "C" {
     fn pdf_color_get_current(sc: *mut *mut pdf_color, fc: *mut *mut pdf_color);
     #[no_mangle]
     fn pdfobj_escape_str(
-        buffer: *mut libc::c_char,
+        buffer: *mut i8,
         size: size_t,
         s: *const u8,
         len: size_t,
@@ -79,7 +79,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    static mut work_buffer: [libc::c_char; 0];
+    static mut work_buffer: [i8; 0];
     #[no_mangle]
     fn CMap_decode(
         cmap: *mut CMap,
@@ -91,7 +91,7 @@ extern "C" {
     #[no_mangle]
     fn CMap_cache_get(id: libc::c_int) -> *mut CMap;
     #[no_mangle]
-    fn pdf_lookup_fontmap_record(kp: *const libc::c_char) -> *mut fontmap_rec;
+    fn pdf_lookup_fontmap_record(kp: *const i8) -> *mut fontmap_rec;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -114,9 +114,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_message(fmt: *const libc::c_char, _: ...);
+    fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* allow other modules (pdfdev) to ask whether we're collecting box areas */
     #[no_mangle]
     fn dvi_is_tracking_boxes() -> bool;
@@ -146,11 +146,11 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const libc::c_char, length: libc::c_uint);
+    fn pdf_doc_add_page_content(buffer: *const i8, length: libc::c_uint);
     #[no_mangle]
     fn pdf_doc_add_page_resource(
-        category: *const libc::c_char,
-        resource_name: *const libc::c_char,
+        category: *const i8,
+        resource_name: *const i8,
         resources: *mut pdf_obj,
     );
     #[no_mangle]
@@ -204,7 +204,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_grestore_to(depth: libc::c_int);
     #[no_mangle]
-    fn pdf_dev_set_color(color: *const pdf_color, mask: libc::c_char, force: libc::c_int);
+    fn pdf_dev_set_color(color: *const pdf_color, mask: i8, force: libc::c_int);
     /* font_name is used when mrec is NULL.
      * font_scale (point size) used by PK font.
      * It might be necessary if dvipdfmx supports font format with
@@ -212,7 +212,7 @@ extern "C" {
      */
     #[no_mangle]
     fn pdf_font_findresource(
-        font_name: *const libc::c_char,
+        font_name: *const i8,
         font_scale: libc::c_double,
         mrec: *mut fontmap_rec,
     ) -> libc::c_int;
@@ -221,13 +221,13 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_font_reference(font_id: libc::c_int) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_get_font_usedchars(font_id: libc::c_int) -> *mut libc::c_char;
+    fn pdf_get_font_usedchars(font_id: libc::c_int) -> *mut i8;
     #[no_mangle]
     fn pdf_get_font_encoding(font_id: libc::c_int) -> libc::c_int;
     #[no_mangle]
     fn pdf_get_font_wmode(font_id: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn pdf_ximage_get_resname(xobj_id: libc::c_int) -> *mut libc::c_char;
+    fn pdf_ximage_get_resname(xobj_id: libc::c_int) -> *mut i8;
     #[no_mangle]
     fn pdf_ximage_get_reference(xobj_id: libc::c_int) -> *mut pdf_obj;
     #[no_mangle]
@@ -266,7 +266,7 @@ pub type size_t = u64;
 #[repr(C)]
 pub struct pdf_color {
     pub num_components: libc::c_int,
-    pub spot_color_name: *mut libc::c_char,
+    pub spot_color_name: *mut i8,
     pub values: [libc::c_double; 4],
 }
 pub type spt_t = libc::c_int;
@@ -307,15 +307,15 @@ pub struct transform_info {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct dev_font {
-    pub short_name: [libc::c_char; 7],
+    pub short_name: [i8; 7],
     pub used_on_this_page: libc::c_int,
-    pub tex_name: *mut libc::c_char,
+    pub tex_name: *mut i8,
     pub sptsize: spt_t,
     pub font_id: libc::c_int,
     pub enc_id: libc::c_int,
     pub real_font_index: libc::c_int,
     pub resource: *mut pdf_obj,
-    pub used_chars: *mut libc::c_char,
+    pub used_chars: *mut i8,
     pub format: libc::c_int,
     pub wmode: libc::c_int,
     pub extend: libc::c_double,
@@ -398,7 +398,7 @@ pub struct C2RustUnnamed_3 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CMap {
-    pub name: *mut libc::c_char,
+    pub name: *mut i8,
     pub type_0: libc::c_int,
     pub wmode: libc::c_int,
     pub CSI: *mut CIDSysInfo,
@@ -476,8 +476,8 @@ pub struct rangeDef {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CIDSysInfo {
-    pub registry: *mut libc::c_char,
-    pub ordering: *mut libc::c_char,
+    pub registry: *mut i8,
+    pub ordering: *mut i8,
     pub supplement: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -488,11 +488,11 @@ pub struct fontmap_opt {
     pub bold: libc::c_double,
     pub mapc: libc::c_int,
     pub flags: libc::c_int,
-    pub otl_tags: *mut libc::c_char,
-    pub tounicode: *mut libc::c_char,
+    pub otl_tags: *mut i8,
+    pub tounicode: *mut i8,
     pub cff_charsets: *mut libc::c_void,
     pub design_size: libc::c_double,
-    pub charcoll: *mut libc::c_char,
+    pub charcoll: *mut i8,
     pub index: libc::c_int,
     pub style: libc::c_int,
     pub stemv: libc::c_int,
@@ -500,17 +500,17 @@ pub struct fontmap_opt {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_rec {
-    pub map_name: *mut libc::c_char,
-    pub font_name: *mut libc::c_char,
-    pub enc_name: *mut libc::c_char,
+    pub map_name: *mut i8,
+    pub font_name: *mut i8,
+    pub enc_name: *mut i8,
     pub charmap: C2RustUnnamed_6,
     pub opt: fontmap_opt,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_6 {
-    pub sfd_name: *mut libc::c_char,
-    pub subfont_id: *mut libc::c_char,
+    pub sfd_name: *mut i8,
+    pub subfont_id: *mut i8,
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -520,7 +520,7 @@ pub struct C2RustUnnamed_6 {
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
@@ -593,14 +593,14 @@ static mut ten_pow_inv: [libc::c_double; 10] = [
     0.00000001f64,
     0.000000001f64,
 ];
-unsafe extern "C" fn p_itoa(mut value: libc::c_int, mut buf: *mut libc::c_char) -> libc::c_uint {
+unsafe extern "C" fn p_itoa(mut value: libc::c_int, mut buf: *mut i8) -> libc::c_uint {
     let mut sign: libc::c_uint = 0;
     let mut ndigits: libc::c_uint = 0;
-    let mut p: *mut libc::c_char = buf;
+    let mut p: *mut i8 = buf;
     if value < 0i32 {
         let fresh0 = p;
         p = p.offset(1);
-        *fresh0 = '-' as i32 as libc::c_char;
+        *fresh0 = '-' as i32 as i8;
         value = -value;
         sign = 1i32 as libc::c_uint
     } else {
@@ -612,7 +612,7 @@ unsafe extern "C" fn p_itoa(mut value: libc::c_int, mut buf: *mut libc::c_char) 
     {
         let fresh1 = ndigits;
         ndigits = ndigits.wrapping_add(1);
-        *p.offset(fresh1 as isize) = (value % 10i32 + '0' as i32) as libc::c_char;
+        *p.offset(fresh1 as isize) = (value % 10i32 + '0' as i32) as i8;
         value /= 10i32;
         if !(value != 0i32) {
             break;
@@ -622,13 +622,13 @@ unsafe extern "C" fn p_itoa(mut value: libc::c_int, mut buf: *mut libc::c_char) 
     let mut i: libc::c_uint = 0;
     i = 0i32 as libc::c_uint;
     while i < ndigits.wrapping_div(2i32 as libc::c_uint) {
-        let mut tmp: libc::c_char = *p.offset(i as isize);
+        let mut tmp: i8 = *p.offset(i as isize);
         *p.offset(i as isize) =
             *p.offset(ndigits.wrapping_sub(i).wrapping_sub(1i32 as libc::c_uint) as isize);
         *p.offset(ndigits.wrapping_sub(i).wrapping_sub(1i32 as libc::c_uint) as isize) = tmp;
         i = i.wrapping_add(1)
     }
-    *p.offset(ndigits as isize) = '\u{0}' as i32 as libc::c_char;
+    *p.offset(ndigits as isize) = '\u{0}' as i32 as i8;
     return if sign != 0 {
         ndigits.wrapping_add(1i32 as libc::c_uint)
     } else {
@@ -641,7 +641,7 @@ unsafe extern "C" fn p_itoa(mut value: libc::c_int, mut buf: *mut libc::c_char) 
 unsafe extern "C" fn p_dtoa(
     mut value: libc::c_double,
     mut prec: libc::c_int,
-    mut buf: *mut libc::c_char,
+    mut buf: *mut i8,
 ) -> libc::c_int {
     let p: [int32_t; 10] = [
         1i32,
@@ -658,13 +658,13 @@ unsafe extern "C" fn p_dtoa(
     let mut i: libc::c_double = 0.;
     let mut f: libc::c_double = 0.;
     let mut g: int32_t = 0;
-    let mut c: *mut libc::c_char = buf;
+    let mut c: *mut i8 = buf;
     let mut n: libc::c_int = 0;
     if value < 0i32 as libc::c_double {
         value = -value;
         let fresh2 = c;
         c = c.offset(1);
-        *fresh2 = '-' as i32 as libc::c_char;
+        *fresh2 = '-' as i32 as i8;
         n = 1i32
     } else {
         n = 0i32
@@ -676,26 +676,26 @@ unsafe extern "C" fn p_dtoa(
         i += 1i32 as libc::c_double
     }
     if i != 0. {
-        let mut m: libc::c_int = sprintf(c, b"%.0f\x00" as *const u8 as *const libc::c_char, i);
+        let mut m: libc::c_int = sprintf(c, b"%.0f\x00" as *const u8 as *const i8, i);
         c = c.offset(m as isize);
         n += m
     } else if g == 0i32 {
         c = buf;
-        *c = '0' as i32 as libc::c_char;
+        *c = '0' as i32 as i8;
         n = 1i32
     }
     if g != 0 {
         let mut j: libc::c_int = prec;
         let fresh3 = c;
         c = c.offset(1);
-        *fresh3 = '.' as i32 as libc::c_char;
+        *fresh3 = '.' as i32 as i8;
         loop {
             let fresh4 = j;
             j = j - 1;
             if !(fresh4 != 0) {
                 break;
             }
-            *c.offset(j as isize) = (g % 10i32 + '0' as i32) as libc::c_char;
+            *c.offset(j as isize) = (g % 10i32 + '0' as i32) as i8;
             g /= 10i32
         }
         c = c.offset((prec - 1i32) as isize);
@@ -706,11 +706,11 @@ unsafe extern "C" fn p_dtoa(
         }
     }
     c = c.offset(1);
-    *c = 0i32 as libc::c_char;
+    *c = 0i32 as i8;
     return n;
 }
 unsafe extern "C" fn dev_sprint_bp(
-    mut buf: *mut libc::c_char,
+    mut buf: *mut i8,
     mut value: spt_t,
     mut error: *mut spt_t,
 ) -> libc::c_int {
@@ -728,7 +728,7 @@ unsafe extern "C" fn dev_sprint_bp(
 /* They are affected by precision (set at device initialization). */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_sprint_matrix(
-    mut buf: *mut libc::c_char,
+    mut buf: *mut i8,
     mut M: *const pdf_tmatrix,
 ) -> libc::c_int {
     let mut len: libc::c_int = 0; /* xxx_sprint_xxx NULL terminates strings. */
@@ -745,81 +745,81 @@ pub unsafe extern "C" fn pdf_sprint_matrix(
     len = p_dtoa((*M).a, prec2, buf); /* xxx_sprint_xxx NULL terminates strings. */
     let fresh5 = len; /* xxx_sprint_xxx NULL terminates strings. */
     len = len + 1;
-    *buf.offset(fresh5 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh5 as isize) = ' ' as i32 as i8;
     len += p_dtoa((*M).b, prec2, buf.offset(len as isize));
     let fresh6 = len;
     len = len + 1;
-    *buf.offset(fresh6 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh6 as isize) = ' ' as i32 as i8;
     len += p_dtoa((*M).c, prec2, buf.offset(len as isize));
     let fresh7 = len;
     len = len + 1;
-    *buf.offset(fresh7 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh7 as isize) = ' ' as i32 as i8;
     len += p_dtoa((*M).d, prec2, buf.offset(len as isize));
     let fresh8 = len;
     len = len + 1;
-    *buf.offset(fresh8 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh8 as isize) = ' ' as i32 as i8;
     len += p_dtoa((*M).e, prec0, buf.offset(len as isize));
     let fresh9 = len;
     len = len + 1;
-    *buf.offset(fresh9 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh9 as isize) = ' ' as i32 as i8;
     len += p_dtoa((*M).f, prec0, buf.offset(len as isize));
-    *buf.offset(len as isize) = '\u{0}' as i32 as libc::c_char;
+    *buf.offset(len as isize) = '\u{0}' as i32 as i8;
     return len;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_sprint_rect(
-    mut buf: *mut libc::c_char,
+    mut buf: *mut i8,
     mut rect: *const pdf_rect,
 ) -> libc::c_int {
     let mut len: libc::c_int = 0;
     len = p_dtoa((*rect).llx, dev_unit.precision, buf);
     let fresh10 = len;
     len = len + 1;
-    *buf.offset(fresh10 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh10 as isize) = ' ' as i32 as i8;
     len += p_dtoa((*rect).lly, dev_unit.precision, buf.offset(len as isize));
     let fresh11 = len;
     len = len + 1;
-    *buf.offset(fresh11 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh11 as isize) = ' ' as i32 as i8;
     len += p_dtoa((*rect).urx, dev_unit.precision, buf.offset(len as isize));
     let fresh12 = len;
     len = len + 1;
-    *buf.offset(fresh12 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh12 as isize) = ' ' as i32 as i8;
     len += p_dtoa((*rect).ury, dev_unit.precision, buf.offset(len as isize));
-    *buf.offset(len as isize) = '\u{0}' as i32 as libc::c_char;
+    *buf.offset(len as isize) = '\u{0}' as i32 as i8;
     return len;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_sprint_coord(
-    mut buf: *mut libc::c_char,
+    mut buf: *mut i8,
     mut p: *const pdf_coord,
 ) -> libc::c_int {
     let mut len: libc::c_int = 0;
     len = p_dtoa((*p).x, dev_unit.precision, buf);
     let fresh13 = len;
     len = len + 1;
-    *buf.offset(fresh13 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh13 as isize) = ' ' as i32 as i8;
     len += p_dtoa((*p).y, dev_unit.precision, buf.offset(len as isize));
-    *buf.offset(len as isize) = '\u{0}' as i32 as libc::c_char;
+    *buf.offset(len as isize) = '\u{0}' as i32 as i8;
     return len;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_sprint_length(
-    mut buf: *mut libc::c_char,
+    mut buf: *mut i8,
     mut value: libc::c_double,
 ) -> libc::c_int {
     let mut len: libc::c_int = 0;
     len = p_dtoa(value, dev_unit.precision, buf);
-    *buf.offset(len as isize) = '\u{0}' as i32 as libc::c_char;
+    *buf.offset(len as isize) = '\u{0}' as i32 as i8;
     return len;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_sprint_number(
-    mut buf: *mut libc::c_char,
+    mut buf: *mut i8,
     mut value: libc::c_double,
 ) -> libc::c_int {
     let mut len: libc::c_int = 0;
     len = p_dtoa(value, 8i32, buf);
-    *buf.offset(len as isize) = '\u{0}' as i32 as libc::c_char;
+    *buf.offset(len as isize) = '\u{0}' as i32 as i8;
     return len;
 }
 static mut dev_param: C2RustUnnamed_3 = {
@@ -830,7 +830,7 @@ static mut dev_param: C2RustUnnamed_3 = {
     init
 };
 static mut motion_state: libc::c_int = 1i32;
-static mut format_buffer: [libc::c_char; 4096] = [0; 4096];
+static mut format_buffer: [i8; 4096] = [0; 4096];
 static mut text_state: C2RustUnnamed_1 = {
     let mut init = C2RustUnnamed_1 {
         font_id: -1i32,
@@ -925,17 +925,17 @@ unsafe extern "C" fn dev_set_text_matrix(
     tm.f = ypos as libc::c_double * dev_unit.dvi2pts;
     let fresh14 = len;
     len = len + 1;
-    format_buffer[fresh14 as usize] = ' ' as i32 as libc::c_char;
+    format_buffer[fresh14 as usize] = ' ' as i32 as i8;
     len += pdf_sprint_matrix(format_buffer.as_mut_ptr().offset(len as isize), &mut tm);
     let fresh15 = len;
     len = len + 1;
-    format_buffer[fresh15 as usize] = ' ' as i32 as libc::c_char;
+    format_buffer[fresh15 as usize] = ' ' as i32 as i8;
     let fresh16 = len;
     len = len + 1;
-    format_buffer[fresh16 as usize] = 'T' as i32 as libc::c_char;
+    format_buffer[fresh16 as usize] = 'T' as i32 as i8;
     let fresh17 = len;
     len = len + 1;
-    format_buffer[fresh17 as usize] = 'm' as i32 as libc::c_char;
+    format_buffer[fresh17 as usize] = 'm' as i32 as i8;
     pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as libc::c_uint);
     text_state.ref_x = xpos;
     text_state.ref_y = ypos;
@@ -952,7 +952,7 @@ unsafe extern "C" fn reset_text_state() {
      * We need to reset the line matrix to handle slanted fonts.
      */
     pdf_doc_add_page_content(
-        b" BT\x00" as *const u8 as *const libc::c_char,
+        b" BT\x00" as *const u8 as *const i8,
         3i32 as libc::c_uint,
     ); /* op: BT */
     /*
@@ -983,9 +983,9 @@ unsafe extern "C" fn text_mode() {
         3 => {
             pdf_doc_add_page_content(
                 if text_state.is_mb != 0 {
-                    b">]TJ\x00" as *const u8 as *const libc::c_char
+                    b">]TJ\x00" as *const u8 as *const i8
                 } else {
-                    b")]TJ\x00" as *const u8 as *const libc::c_char
+                    b")]TJ\x00" as *const u8 as *const i8
                 },
                 4i32 as libc::c_uint,
             );
@@ -1005,9 +1005,9 @@ pub unsafe extern "C" fn graphics_mode() {
         3 => {
             pdf_doc_add_page_content(
                 if text_state.is_mb != 0 {
-                    b">]TJ\x00" as *const u8 as *const libc::c_char
+                    b">]TJ\x00" as *const u8 as *const i8
                 } else {
-                    b")]TJ\x00" as *const u8 as *const libc::c_char
+                    b")]TJ\x00" as *const u8 as *const i8
                 },
                 4i32 as libc::c_uint,
             );
@@ -1025,7 +1025,7 @@ pub unsafe extern "C" fn graphics_mode() {
         /* continue */
         {
             pdf_doc_add_page_content(
-                b" ET\x00" as *const u8 as *const libc::c_char,
+                b" ET\x00" as *const u8 as *const i8,
                 3i32 as libc::c_uint,
             ); /* op: ET */
             text_state.force_reset = 0i32;
@@ -1109,7 +1109,7 @@ unsafe extern "C" fn start_string(
              */
             let fresh18 = len;
             len = len + 1;
-            format_buffer[fresh18 as usize] = ' ' as i32 as libc::c_char;
+            format_buffer[fresh18 as usize] = ' ' as i32 as i8;
             len += dev_sprint_bp(
                 format_buffer.as_mut_ptr().offset(len as isize),
                 desired_delx,
@@ -1117,7 +1117,7 @@ unsafe extern "C" fn start_string(
             );
             let fresh19 = len;
             len = len + 1;
-            format_buffer[fresh19 as usize] = ' ' as i32 as libc::c_char;
+            format_buffer[fresh19 as usize] = ' ' as i32 as i8;
             len += dev_sprint_bp(
                 format_buffer.as_mut_ptr().offset(len as isize),
                 desired_dely,
@@ -1140,7 +1140,7 @@ unsafe extern "C" fn start_string(
              */
             let fresh20 = len;
             len = len + 1;
-            format_buffer[fresh20 as usize] = ' ' as i32 as libc::c_char;
+            format_buffer[fresh20 as usize] = ' ' as i32 as i8;
             len += dev_sprint_bp(
                 format_buffer.as_mut_ptr().offset(len as isize),
                 desired_delx,
@@ -1148,7 +1148,7 @@ unsafe extern "C" fn start_string(
             );
             let fresh21 = len;
             len = len + 1;
-            format_buffer[fresh21 as usize] = ' ' as i32 as libc::c_char;
+            format_buffer[fresh21 as usize] = ' ' as i32 as i8;
             len += dev_sprint_bp(
                 format_buffer.as_mut_ptr().offset(len as isize),
                 desired_dely,
@@ -1167,7 +1167,7 @@ unsafe extern "C" fn start_string(
             desired_dely = dely;
             let fresh22 = len;
             len = len + 1;
-            format_buffer[fresh22 as usize] = ' ' as i32 as libc::c_char;
+            format_buffer[fresh22 as usize] = ' ' as i32 as i8;
             len += dev_sprint_bp(
                 format_buffer.as_mut_ptr().offset(len as isize),
                 desired_delx,
@@ -1175,7 +1175,7 @@ unsafe extern "C" fn start_string(
             );
             let fresh23 = len;
             len = len + 1;
-            format_buffer[fresh23 as usize] = ' ' as i32 as libc::c_char;
+            format_buffer[fresh23 as usize] = ' ' as i32 as i8;
             len += dev_sprint_bp(
                 format_buffer.as_mut_ptr().offset(len as isize),
                 desired_dely,
@@ -1193,7 +1193,7 @@ unsafe extern "C" fn start_string(
                 ((dely as libc::c_double + delx as libc::c_double * slant) / extend) as spt_t;
             let fresh24 = len;
             len = len + 1;
-            format_buffer[fresh24 as usize] = ' ' as i32 as libc::c_char;
+            format_buffer[fresh24 as usize] = ' ' as i32 as i8;
             len += dev_sprint_bp(
                 format_buffer.as_mut_ptr().offset(len as isize),
                 desired_delx,
@@ -1201,7 +1201,7 @@ unsafe extern "C" fn start_string(
             );
             let fresh25 = len;
             len = len + 1;
-            format_buffer[fresh25 as usize] = ' ' as i32 as libc::c_char;
+            format_buffer[fresh25 as usize] = ' ' as i32 as i8;
             len += dev_sprint_bp(
                 format_buffer.as_mut_ptr().offset(len as isize),
                 desired_dely,
@@ -1220,7 +1220,7 @@ unsafe extern "C" fn start_string(
             desired_dely = -delx;
             let fresh26 = len;
             len = len + 1;
-            format_buffer[fresh26 as usize] = ' ' as i32 as libc::c_char;
+            format_buffer[fresh26 as usize] = ' ' as i32 as i8;
             len += dev_sprint_bp(
                 format_buffer.as_mut_ptr().offset(len as isize),
                 desired_delx,
@@ -1228,7 +1228,7 @@ unsafe extern "C" fn start_string(
             );
             let fresh27 = len;
             len = len + 1;
-            format_buffer[fresh27 as usize] = ' ' as i32 as libc::c_char;
+            format_buffer[fresh27 as usize] = ' ' as i32 as i8;
             len += dev_sprint_bp(
                 format_buffer.as_mut_ptr().offset(len as isize),
                 desired_dely,
@@ -1248,7 +1248,7 @@ unsafe extern "C" fn start_string(
                 -(((dely as libc::c_double + delx as libc::c_double * slant) / extend) as spt_t);
             let fresh28 = len;
             len = len + 1;
-            format_buffer[fresh28 as usize] = ' ' as i32 as libc::c_char;
+            format_buffer[fresh28 as usize] = ' ' as i32 as i8;
             len += dev_sprint_bp(
                 format_buffer.as_mut_ptr().offset(len as isize),
                 desired_delx,
@@ -1256,7 +1256,7 @@ unsafe extern "C" fn start_string(
             );
             let fresh29 = len;
             len = len + 1;
-            format_buffer[fresh29 as usize] = ' ' as i32 as libc::c_char;
+            format_buffer[fresh29 as usize] = ' ' as i32 as i8;
             len += dev_sprint_bp(
                 format_buffer.as_mut_ptr().offset(len as isize),
                 desired_dely,
@@ -1274,9 +1274,9 @@ unsafe extern "C" fn start_string(
      */
     pdf_doc_add_page_content(
         if text_state.is_mb != 0 {
-            b" Td[<\x00" as *const u8 as *const libc::c_char
+            b" Td[<\x00" as *const u8 as *const i8
         } else {
-            b" Td[(\x00" as *const u8 as *const libc::c_char
+            b" Td[(\x00" as *const u8 as *const i8
         },
         5i32 as libc::c_uint,
     ); /* op: Td */
@@ -1313,9 +1313,9 @@ unsafe extern "C" fn string_mode(
                 dev_set_text_matrix(xpos, ypos, slant, extend, rotate); /* op: */
                 pdf_doc_add_page_content(
                     if text_state.is_mb != 0 {
-                        b"[<\x00" as *const u8 as *const libc::c_char
+                        b"[<\x00" as *const u8 as *const i8
                     } else {
-                        b"[(\x00" as *const u8 as *const libc::c_char
+                        b"[(\x00" as *const u8 as *const i8
                     },
                     2i32 as libc::c_uint,
                 );
@@ -1353,10 +1353,10 @@ unsafe extern "C" fn dev_set_font(mut font_id: libc::c_int) -> libc::c_int {
     if !font.is_null() {
     } else {
         __assert_fail(
-            b"font\x00" as *const u8 as *const libc::c_char,
-            b"dpx-pdfdev.c\x00" as *const u8 as *const libc::c_char,
+            b"font\x00" as *const u8 as *const i8,
+            b"dpx-pdfdev.c\x00" as *const u8 as *const i8,
             847i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 22], &[libc::c_char; 22]>(
+            (*::std::mem::transmute::<&[u8; 22], &[i8; 22]>(
                 b"int dev_set_font(int)\x00",
             ))
             .as_ptr(),
@@ -1394,7 +1394,7 @@ unsafe extern "C" fn dev_set_font(mut font_id: libc::c_int) -> libc::c_int {
     }
     if (*real_font).used_on_this_page == 0 {
         pdf_doc_add_page_resource(
-            b"Font\x00" as *const u8 as *const libc::c_char,
+            b"Font\x00" as *const u8 as *const i8,
             (*real_font).short_name.as_mut_ptr(),
             pdf_link_obj((*real_font).resource),
         );
@@ -1403,12 +1403,12 @@ unsafe extern "C" fn dev_set_font(mut font_id: libc::c_int) -> libc::c_int {
     font_scale = (*font).sptsize as libc::c_double * dev_unit.dvi2pts;
     len = sprintf(
         format_buffer.as_mut_ptr(),
-        b" /%s\x00" as *const u8 as *const libc::c_char,
+        b" /%s\x00" as *const u8 as *const i8,
         (*real_font).short_name.as_mut_ptr(),
     );
     let fresh30 = len;
     len = len + 1;
-    format_buffer[fresh30 as usize] = ' ' as i32 as libc::c_char;
+    format_buffer[fresh30 as usize] = ' ' as i32 as i8;
     len += p_dtoa(
         font_scale,
         if dev_unit.precision + 1i32 < 8i32 {
@@ -1420,24 +1420,24 @@ unsafe extern "C" fn dev_set_font(mut font_id: libc::c_int) -> libc::c_int {
     );
     let fresh31 = len;
     len = len + 1;
-    format_buffer[fresh31 as usize] = ' ' as i32 as libc::c_char;
+    format_buffer[fresh31 as usize] = ' ' as i32 as i8;
     let fresh32 = len;
     len = len + 1;
-    format_buffer[fresh32 as usize] = 'T' as i32 as libc::c_char;
+    format_buffer[fresh32 as usize] = 'T' as i32 as i8;
     let fresh33 = len;
     len = len + 1;
-    format_buffer[fresh33 as usize] = 'f' as i32 as libc::c_char;
+    format_buffer[fresh33 as usize] = 'f' as i32 as i8;
     pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as libc::c_uint);
     if (*font).bold > 0.0f64 || (*font).bold != text_state.bold_param {
         if (*font).bold <= 0.0f64 {
             len = sprintf(
                 format_buffer.as_mut_ptr(),
-                b" 0 Tr\x00" as *const u8 as *const libc::c_char,
+                b" 0 Tr\x00" as *const u8 as *const i8,
             )
         } else {
             len = sprintf(
                 format_buffer.as_mut_ptr(),
-                b" 2 Tr %.6f w\x00" as *const u8 as *const libc::c_char,
+                b" 2 Tr %.6f w\x00" as *const u8 as *const i8,
                 (*font).bold,
             )
         }
@@ -1502,7 +1502,7 @@ unsafe extern "C" fn handle_multibyte_string(
         /* UCS-4 */
         if ctype == 1i32 {
             if length.wrapping_mul(4i32 as u64) >= 4096i32 as u64 {
-                dpx_warning(b"Too long string...\x00" as *const u8 as *const libc::c_char);
+                dpx_warning(b"Too long string...\x00" as *const u8 as *const i8);
                 return -1i32;
             }
             i = 0i32 as size_t;
@@ -1527,7 +1527,7 @@ unsafe extern "C" fn handle_multibyte_string(
         } else if ctype == 2i32 {
             let mut len: size_t = 0i32 as size_t;
             if length.wrapping_mul(2i32 as u64) >= 4096i32 as u64 {
-                dpx_warning(b"Too long string...\x00" as *const u8 as *const libc::c_char);
+                dpx_warning(b"Too long string...\x00" as *const u8 as *const i8);
                 return -1i32;
             }
             i = 0i32 as size_t;
@@ -1544,7 +1544,7 @@ unsafe extern "C" fn handle_multibyte_string(
                     {
                         dpx_warning(
                             b"Invalid surrogate p[%zu]=%02X...\x00" as *const u8
-                                as *const libc::c_char,
+                                as *const i8,
                             i,
                             *p.offset(i as isize) as libc::c_int,
                         );
@@ -1580,7 +1580,7 @@ unsafe extern "C" fn handle_multibyte_string(
          * Translate single-byte chars to double byte code space.
          */
         if length.wrapping_mul(2i32 as u64) >= 4096i32 as u64 {
-            dpx_warning(b"Too long string...\x00" as *const u8 as *const libc::c_char);
+            dpx_warning(b"Too long string...\x00" as *const u8 as *const i8);
             return -1i32;
         }
         i = 0i32 as size_t;
@@ -1621,7 +1621,7 @@ unsafe extern "C" fn handle_multibyte_string(
         if inbytesleft != 0i32 as u64 {
             dpx_warning(
                 b"CMap conversion failed. (%zu bytes remains)\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
                 inbytesleft,
             );
             return -1i32;
@@ -1705,7 +1705,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
     let mut text_yorigin: spt_t = 0;
     if font_id < 0i32 || font_id >= num_dev_fonts {
         _tt_abort(
-            b"Invalid font: %d (%d)\x00" as *const u8 as *const libc::c_char,
+            b"Invalid font: %d (%d)\x00" as *const u8 as *const i8,
             font_id,
             num_dev_fonts,
         );
@@ -1719,7 +1719,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
         &mut *dev_fonts.offset(text_state.font_id as isize) as *mut dev_font
     };
     if font.is_null() {
-        _tt_abort(b"Currentfont not set.\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"Currentfont not set.\x00" as *const u8 as *const i8);
     }
     if (*font).real_font_index >= 0i32 {
         real_font = &mut *dev_fonts.offset((*font).real_font_index as isize) as *mut dev_font
@@ -1733,7 +1733,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
     if (*font).format == 3i32 {
         if handle_multibyte_string(font, &mut str_ptr, &mut length, ctype) < 0i32 {
             _tt_abort(
-                b"Error in converting input string...\x00" as *const u8 as *const libc::c_char,
+                b"Error in converting input string...\x00" as *const u8 as *const i8,
             );
         }
         if !(*real_font).used_chars.is_null() {
@@ -1747,7 +1747,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
                     .used_chars
                     .offset((cid as libc::c_int / 8i32) as isize);
                 *fresh38 = (*fresh38 as libc::c_int | 1i32 << 7i32 - cid as libc::c_int % 8i32)
-                    as libc::c_char;
+                    as i8;
                 i = (i as u64).wrapping_add(2i32 as u64) as size_t as size_t
             }
         }
@@ -1756,7 +1756,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
         while i < length {
             *(*real_font)
                 .used_chars
-                .offset(*str_ptr.offset(i as isize) as isize) = 1i32 as libc::c_char;
+                .offset(*str_ptr.offset(i as isize) as isize) = 1i32 as i8;
             i = i.wrapping_add(1)
         }
     }
@@ -1839,7 +1839,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
             '>' as i32
         } else {
             ')' as i32
-        }) as libc::c_char;
+        }) as i8;
         if (*font).wmode != 0 {
             len = (len as u64)
                 .wrapping_add(
@@ -1857,7 +1857,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
             '<' as i32
         } else {
             '(' as i32
-        }) as libc::c_char;
+        }) as i8;
         pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as libc::c_uint);
         len = 0i32 as size_t
     }
@@ -1865,7 +1865,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
         if (4096i32 as u64).wrapping_sub(len)
             < (2i32 as u64).wrapping_mul(length)
         {
-            _tt_abort(b"Buffer overflow...\x00" as *const u8 as *const libc::c_char);
+            _tt_abort(b"Buffer overflow...\x00" as *const u8 as *const i8);
         }
         i = 0i32 as size_t;
         while i < length {
@@ -1879,14 +1879,14 @@ pub unsafe extern "C" fn pdf_dev_set_string(
                 first + 'W' as i32
             } else {
                 first + '0' as i32
-            }) as libc::c_char;
+            }) as i8;
             let fresh42 = len;
             len = len.wrapping_add(1);
             format_buffer[fresh42 as usize] = (if second >= 10i32 {
                 second + 'W' as i32
             } else {
                 second + '0' as i32
-            }) as libc::c_char;
+            }) as i8;
             i = i.wrapping_add(1)
         }
     } else {
@@ -1910,7 +1910,7 @@ pub unsafe extern "C" fn pdf_init_device(
     if precision < 0i32 || precision > 8i32 {
         dpx_warning(
             b"Number of decimal digits out of range [0-%d].\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
             8i32,
         );
     }
@@ -1951,7 +1951,7 @@ pub unsafe extern "C" fn pdf_close_device() {
             free((*dev_fonts.offset(i as isize)).tex_name as *mut libc::c_void);
             pdf_release_obj((*dev_fonts.offset(i as isize)).resource);
             let ref mut fresh43 = (*dev_fonts.offset(i as isize)).tex_name;
-            *fresh43 = 0 as *mut libc::c_char;
+            *fresh43 = 0 as *mut i8;
             let ref mut fresh44 = (*dev_fonts.offset(i as isize)).resource;
             *fresh44 = 0 as *mut pdf_obj;
             let ref mut fresh45 = (*dev_fonts.offset(i as isize)).cff_charsets;
@@ -1990,8 +1990,8 @@ pub unsafe extern "C" fn pdf_dev_reset_color(mut force: libc::c_int) {
     let mut sc: *mut pdf_color = 0 as *mut pdf_color;
     let mut fc: *mut pdf_color = 0 as *mut pdf_color;
     pdf_color_get_current(&mut sc, &mut fc);
-    pdf_dev_set_color(sc, 0i32 as libc::c_char, force);
-    pdf_dev_set_color(fc, 0x20i32 as libc::c_char, force);
+    pdf_dev_set_color(sc, 0i32 as i8, force);
+    pdf_dev_set_color(fc, 0x20i32 as i8, force);
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_bop(mut M: *const pdf_tmatrix) {
@@ -2009,7 +2009,7 @@ pub unsafe extern "C" fn pdf_dev_eop() {
     depth = pdf_dev_current_depth();
     if depth != 1i32 {
         dpx_warning(
-            b"Unbalenced q/Q nesting...: %d\x00" as *const u8 as *const libc::c_char,
+            b"Unbalenced q/Q nesting...: %d\x00" as *const u8 as *const i8,
             depth,
         );
         pdf_dev_grestore_to(0i32);
@@ -2017,74 +2017,74 @@ pub unsafe extern "C" fn pdf_dev_eop() {
         pdf_dev_grestore();
     };
 }
-unsafe extern "C" fn print_fontmap(mut font_name: *const libc::c_char, mut mrec: *mut fontmap_rec) {
+unsafe extern "C" fn print_fontmap(mut font_name: *const i8, mut mrec: *mut fontmap_rec) {
     if mrec.is_null() {
         return;
     }
-    dpx_message(b"\n\x00" as *const u8 as *const libc::c_char);
+    dpx_message(b"\n\x00" as *const u8 as *const i8);
     dpx_message(
-        b"fontmap: %s -> %s\x00" as *const u8 as *const libc::c_char,
+        b"fontmap: %s -> %s\x00" as *const u8 as *const i8,
         font_name,
         (*mrec).font_name,
     );
     if !(*mrec).enc_name.is_null() {
         dpx_message(
-            b"(%s)\x00" as *const u8 as *const libc::c_char,
+            b"(%s)\x00" as *const u8 as *const i8,
             (*mrec).enc_name,
         );
     }
     if (*mrec).opt.extend != 1.0f64 {
         dpx_message(
-            b"[extend:%g]\x00" as *const u8 as *const libc::c_char,
+            b"[extend:%g]\x00" as *const u8 as *const i8,
             (*mrec).opt.extend,
         );
     }
     if (*mrec).opt.slant != 0.0f64 {
         dpx_message(
-            b"[slant:%g]\x00" as *const u8 as *const libc::c_char,
+            b"[slant:%g]\x00" as *const u8 as *const i8,
             (*mrec).opt.slant,
         );
     }
     if (*mrec).opt.bold != 0.0f64 {
         dpx_message(
-            b"[bold:%g]\x00" as *const u8 as *const libc::c_char,
+            b"[bold:%g]\x00" as *const u8 as *const i8,
             (*mrec).opt.bold,
         );
     }
     if (*mrec).opt.flags & 1i32 << 1i32 != 0 {
-        dpx_message(b"[noemb]\x00" as *const u8 as *const libc::c_char);
+        dpx_message(b"[noemb]\x00" as *const u8 as *const i8);
     }
     if (*mrec).opt.mapc >= 0i32 {
         dpx_message(
-            b"[map:<%02x>]\x00" as *const u8 as *const libc::c_char,
+            b"[map:<%02x>]\x00" as *const u8 as *const i8,
             (*mrec).opt.mapc,
         );
     }
     if !(*mrec).opt.charcoll.is_null() {
         dpx_message(
-            b"[csi:%s]\x00" as *const u8 as *const libc::c_char,
+            b"[csi:%s]\x00" as *const u8 as *const i8,
             (*mrec).opt.charcoll,
         );
     }
     if (*mrec).opt.index != 0 {
         dpx_message(
-            b"[index:%d]\x00" as *const u8 as *const libc::c_char,
+            b"[index:%d]\x00" as *const u8 as *const i8,
             (*mrec).opt.index,
         );
     }
     match (*mrec).opt.style {
         1 => {
-            dpx_message(b"[style:bold]\x00" as *const u8 as *const libc::c_char);
+            dpx_message(b"[style:bold]\x00" as *const u8 as *const i8);
         }
         2 => {
-            dpx_message(b"[style:italic]\x00" as *const u8 as *const libc::c_char);
+            dpx_message(b"[style:italic]\x00" as *const u8 as *const i8);
         }
         3 => {
-            dpx_message(b"[style:bolditalic]\x00" as *const u8 as *const libc::c_char);
+            dpx_message(b"[style:bolditalic]\x00" as *const u8 as *const i8);
         }
         _ => {}
     }
-    dpx_message(b"\n\x00" as *const u8 as *const libc::c_char);
+    dpx_message(b"\n\x00" as *const u8 as *const i8);
 }
 /* _FIXME_
  * Font is identified with font_name and point_size as in DVI here.
@@ -2094,7 +2094,7 @@ unsafe extern "C" fn print_fontmap(mut font_name: *const libc::c_char, mut mrec:
  */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_locate_font(
-    mut font_name: *const libc::c_char,
+    mut font_name: *const i8,
     mut ptsize: spt_t,
 ) -> libc::c_int {
     let mut i: libc::c_int = 0; /* found a dev_font that matches the request */
@@ -2106,7 +2106,7 @@ pub unsafe extern "C" fn pdf_dev_locate_font(
     if ptsize == 0i32 {
         _tt_abort(
             b"pdf_dev_locate_font() called with the zero ptsize.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
     }
     i = 0i32;
@@ -2158,7 +2158,7 @@ pub unsafe extern "C" fn pdf_dev_locate_font(
         ); /* Don't ref obj until font is actually used. */
     } else {
         (*font).real_font_index = -1i32;
-        (*font).short_name[0] = 'F' as i32 as libc::c_char;
+        (*font).short_name[0] = 'F' as i32 as i8;
         p_itoa(
             num_phys_fonts + 1i32,
             &mut *(*font).short_name.as_mut_ptr().offset(1),
@@ -2168,9 +2168,9 @@ pub unsafe extern "C" fn pdf_dev_locate_font(
     (*font).used_on_this_page = 0i32;
     (*font).tex_name = new(
         (strlen(font_name).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32,
-    ) as *mut libc::c_char;
+    ) as *mut i8;
     strcpy((*font).tex_name, font_name);
     (*font).sptsize = ptsize;
     match pdf_get_font_subtype((*font).font_id) {
@@ -2181,7 +2181,7 @@ pub unsafe extern "C" fn pdf_dev_locate_font(
     (*font).wmode = pdf_get_font_wmode((*font).font_id);
     (*font).enc_id = pdf_get_font_encoding((*font).font_id);
     (*font).resource = 0 as *mut pdf_obj;
-    (*font).used_chars = 0 as *mut libc::c_char;
+    (*font).used_chars = 0 as *mut i8;
     (*font).extend = 1.0f64;
     (*font).slant = 0.0f64;
     (*font).bold = 0.0f64;
@@ -2200,7 +2200,7 @@ pub unsafe extern "C" fn pdf_dev_locate_font(
         }
         if streq_ptr(
             (*mrec).enc_name,
-            b"unicode\x00" as *const u8 as *const libc::c_char,
+            b"unicode\x00" as *const u8 as *const i8,
         ) {
             (*font).is_unicode = 1i32;
             if (*mrec).opt.mapc >= 0i32 {
@@ -2220,7 +2220,7 @@ pub unsafe extern "C" fn pdf_dev_locate_font(
 }
 /* This does not remember current stroking width. */
 unsafe extern "C" fn dev_sprint_line(
-    mut buf: *mut libc::c_char,
+    mut buf: *mut i8,
     mut width: spt_t,
     mut p0_x: spt_t,
     mut p0_y: spt_t,
@@ -2241,44 +2241,44 @@ unsafe extern "C" fn dev_sprint_line(
     );
     let fresh47 = len;
     len = len + 1;
-    *buf.offset(fresh47 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh47 as isize) = ' ' as i32 as i8;
     let fresh48 = len;
     len = len + 1;
-    *buf.offset(fresh48 as isize) = 'w' as i32 as libc::c_char;
+    *buf.offset(fresh48 as isize) = 'w' as i32 as i8;
     let fresh49 = len;
     len = len + 1;
-    *buf.offset(fresh49 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh49 as isize) = ' ' as i32 as i8;
     len += dev_sprint_bp(buf.offset(len as isize), p0_x, 0 as *mut spt_t);
     let fresh50 = len;
     len = len + 1;
-    *buf.offset(fresh50 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh50 as isize) = ' ' as i32 as i8;
     len += dev_sprint_bp(buf.offset(len as isize), p0_y, 0 as *mut spt_t);
     let fresh51 = len;
     len = len + 1;
-    *buf.offset(fresh51 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh51 as isize) = ' ' as i32 as i8;
     let fresh52 = len;
     len = len + 1;
-    *buf.offset(fresh52 as isize) = 'm' as i32 as libc::c_char;
+    *buf.offset(fresh52 as isize) = 'm' as i32 as i8;
     let fresh53 = len;
     len = len + 1;
-    *buf.offset(fresh53 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh53 as isize) = ' ' as i32 as i8;
     len += dev_sprint_bp(buf.offset(len as isize), p1_x, 0 as *mut spt_t);
     let fresh54 = len;
     len = len + 1;
-    *buf.offset(fresh54 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh54 as isize) = ' ' as i32 as i8;
     len += dev_sprint_bp(buf.offset(len as isize), p1_y, 0 as *mut spt_t);
     let fresh55 = len;
     len = len + 1;
-    *buf.offset(fresh55 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh55 as isize) = ' ' as i32 as i8;
     let fresh56 = len;
     len = len + 1;
-    *buf.offset(fresh56 as isize) = 'l' as i32 as libc::c_char;
+    *buf.offset(fresh56 as isize) = 'l' as i32 as i8;
     let fresh57 = len;
     len = len + 1;
-    *buf.offset(fresh57 as isize) = ' ' as i32 as libc::c_char;
+    *buf.offset(fresh57 as isize) = ' ' as i32 as i8;
     let fresh58 = len;
     len = len + 1;
-    *buf.offset(fresh58 as isize) = 'S' as i32 as libc::c_char;
+    *buf.offset(fresh58 as isize) = 'S' as i32 as i8;
     return len;
 }
 #[no_mangle]
@@ -2299,13 +2299,13 @@ pub unsafe extern "C" fn pdf_dev_set_rule(
     graphics_mode();
     let fresh59 = len;
     len = len + 1;
-    format_buffer[fresh59 as usize] = ' ' as i32 as libc::c_char;
+    format_buffer[fresh59 as usize] = ' ' as i32 as i8;
     let fresh60 = len;
     len = len + 1;
-    format_buffer[fresh60 as usize] = 'q' as i32 as libc::c_char;
+    format_buffer[fresh60 as usize] = 'q' as i32 as i8;
     let fresh61 = len;
     len = len + 1;
-    format_buffer[fresh61 as usize] = ' ' as i32 as libc::c_char;
+    format_buffer[fresh61 as usize] = ' ' as i32 as i8;
     /* Don't use too thick line. */
     width_in_bp =
         (if width < height { width } else { height }) as libc::c_double * dev_unit.dvi2pts;
@@ -2323,19 +2323,19 @@ pub unsafe extern "C" fn pdf_dev_set_rule(
         len += pdf_sprint_rect(format_buffer.as_mut_ptr().offset(len as isize), &mut rect);
         let fresh62 = len;
         len = len + 1;
-        format_buffer[fresh62 as usize] = ' ' as i32 as libc::c_char;
+        format_buffer[fresh62 as usize] = ' ' as i32 as i8;
         let fresh63 = len;
         len = len + 1;
-        format_buffer[fresh63 as usize] = 'r' as i32 as libc::c_char;
+        format_buffer[fresh63 as usize] = 'r' as i32 as i8;
         let fresh64 = len;
         len = len + 1;
-        format_buffer[fresh64 as usize] = 'e' as i32 as libc::c_char;
+        format_buffer[fresh64 as usize] = 'e' as i32 as i8;
         let fresh65 = len;
         len = len + 1;
-        format_buffer[fresh65 as usize] = ' ' as i32 as libc::c_char;
+        format_buffer[fresh65 as usize] = ' ' as i32 as i8;
         let fresh66 = len;
         len = len + 1;
-        format_buffer[fresh66 as usize] = 'f' as i32 as libc::c_char
+        format_buffer[fresh66 as usize] = 'f' as i32 as i8
     } else if width > height {
         /* NOTE:
          *  A line width of 0 denotes the thinnest line that can be rendered at
@@ -2344,12 +2344,12 @@ pub unsafe extern "C" fn pdf_dev_set_rule(
          */
         if height < dev_unit.min_bp_val {
             dpx_warning(
-                b"Too thin line: height=%d (%g bp)\x00" as *const u8 as *const libc::c_char,
+                b"Too thin line: height=%d (%g bp)\x00" as *const u8 as *const i8,
                 height,
                 width_in_bp,
             );
             dpx_warning(
-                b"Please consider using \"-d\" option.\x00" as *const u8 as *const libc::c_char,
+                b"Please consider using \"-d\" option.\x00" as *const u8 as *const i8,
             );
         }
         len += dev_sprint_line(
@@ -2363,12 +2363,12 @@ pub unsafe extern "C" fn pdf_dev_set_rule(
     } else {
         if width < dev_unit.min_bp_val {
             dpx_warning(
-                b"Too thin line: width=%d (%g bp)\x00" as *const u8 as *const libc::c_char,
+                b"Too thin line: width=%d (%g bp)\x00" as *const u8 as *const i8,
                 width,
                 width_in_bp,
             );
             dpx_warning(
-                b"Please consider using \"-d\" option.\x00" as *const u8 as *const libc::c_char,
+                b"Please consider using \"-d\" option.\x00" as *const u8 as *const i8,
             );
         }
         len += dev_sprint_line(
@@ -2382,10 +2382,10 @@ pub unsafe extern "C" fn pdf_dev_set_rule(
     }
     let fresh67 = len;
     len = len + 1;
-    format_buffer[fresh67 as usize] = ' ' as i32 as libc::c_char;
+    format_buffer[fresh67 as usize] = ' ' as i32 as i8;
     let fresh68 = len;
     len = len + 1;
-    format_buffer[fresh68 as usize] = 'Q' as i32 as libc::c_char;
+    format_buffer[fresh68 as usize] = 'Q' as i32 as i8;
     pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as libc::c_uint);
     /* op: q re f Q */
 }
@@ -2529,7 +2529,7 @@ pub unsafe extern "C" fn pdf_dev_get_param(mut param_type: libc::c_int) -> libc:
         2 => value = dev_param.colormode,
         _ => {
             _tt_abort(
-                b"Unknown device parameter: %d\x00" as *const u8 as *const libc::c_char,
+                b"Unknown device parameter: %d\x00" as *const u8 as *const i8,
                 param_type,
             );
         }
@@ -2545,7 +2545,7 @@ pub unsafe extern "C" fn pdf_dev_set_param(mut param_type: libc::c_int, mut valu
         2 => dev_param.colormode = value,
         _ => {
             _tt_abort(
-                b"Unknown device parameter: %d\x00" as *const u8 as *const libc::c_char,
+                b"Unknown device parameter: %d\x00" as *const u8 as *const i8,
                 param_type,
             );
         }
@@ -2558,7 +2558,7 @@ pub unsafe extern "C" fn pdf_dev_put_image(
     mut ref_x: libc::c_double,
     mut ref_y: libc::c_double,
 ) -> libc::c_int {
-    let mut res_name: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut res_name: *mut i8 = 0 as *mut i8;
     let mut M: pdf_tmatrix = pdf_tmatrix {
         a: 0.,
         b: 0.,
@@ -2629,13 +2629,13 @@ pub unsafe extern "C" fn pdf_dev_put_image(
     res_name = pdf_ximage_get_resname(id);
     len = sprintf(
         work_buffer.as_mut_ptr(),
-        b" /%s Do\x00" as *const u8 as *const libc::c_char,
+        b" /%s Do\x00" as *const u8 as *const i8,
         res_name,
     );
     pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as libc::c_uint);
     pdf_dev_grestore();
     pdf_doc_add_page_resource(
-        b"XObject\x00" as *const u8 as *const libc::c_char,
+        b"XObject\x00" as *const u8 as *const i8,
         res_name,
         pdf_ximage_get_reference(id),
     );
@@ -2756,12 +2756,12 @@ pub unsafe extern "C" fn pdf_dev_begin_actualtext(
     graphics_mode();
     len = sprintf(
         work_buffer.as_mut_ptr(),
-        b"\n/Span<</ActualText(\x00" as *const u8 as *const libc::c_char,
+        b"\n/Span<</ActualText(\x00" as *const u8 as *const i8,
     );
     if pdf_doc_enc == 0 {
         len += sprintf(
             work_buffer.as_mut_ptr().offset(len as isize),
-            b"\xfe\xff\x00" as *const u8 as *const libc::c_char,
+            b"\xfe\xff\x00" as *const u8 as *const i8,
         )
     }
     pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as libc::c_uint);
@@ -2785,19 +2785,19 @@ pub unsafe extern "C" fn pdf_dev_begin_actualtext(
             {
                 len += sprintf(
                     work_buffer.as_mut_ptr().offset(len as isize),
-                    b"\\%c\x00" as *const u8 as *const libc::c_char,
+                    b"\\%c\x00" as *const u8 as *const i8,
                     c as libc::c_int,
                 )
             } else if (c as libc::c_int) < ' ' as i32 {
                 len += sprintf(
                     work_buffer.as_mut_ptr().offset(len as isize),
-                    b"\\%03o\x00" as *const u8 as *const libc::c_char,
+                    b"\\%03o\x00" as *const u8 as *const i8,
                     c as libc::c_int,
                 )
             } else {
                 len += sprintf(
                     work_buffer.as_mut_ptr().offset(len as isize),
-                    b"%c\x00" as *const u8 as *const libc::c_char,
+                    b"%c\x00" as *const u8 as *const i8,
                     c as libc::c_int,
                 )
             }
@@ -2808,7 +2808,7 @@ pub unsafe extern "C" fn pdf_dev_begin_actualtext(
     }
     len = sprintf(
         work_buffer.as_mut_ptr(),
-        b")>>BDC\x00" as *const u8 as *const libc::c_char,
+        b")>>BDC\x00" as *const u8 as *const i8,
     );
     pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as libc::c_uint);
 }
@@ -2868,7 +2868,7 @@ pub unsafe extern "C" fn pdf_dev_begin_actualtext(
 pub unsafe extern "C" fn pdf_dev_end_actualtext() {
     graphics_mode();
     pdf_doc_add_page_content(
-        b" EMC\x00" as *const u8 as *const libc::c_char,
+        b" EMC\x00" as *const u8 as *const i8,
         4i32 as libc::c_uint,
     );
 }
