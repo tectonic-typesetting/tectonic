@@ -30,7 +30,7 @@ extern "C" {
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const i8,
@@ -98,7 +98,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -921,29 +921,29 @@ unsafe extern "C" fn add_TTCIDHMetrics(
     let mut prev: libc::c_int = 0i32;
     let mut w_array: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut an_array: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut dw: libc::c_double = 0.;
+    let mut dw: f64 = 0.;
     let mut empty: libc::c_int = 1i32;
     w_array = pdf_new_array();
     if (*g).dw as libc::c_int != 0i32 && (*g).dw as libc::c_int <= (*g).emsize as libc::c_int {
         dw = floor(
-            1000.0f64 * (*g).dw as libc::c_int as libc::c_double
-                / (*g).emsize as libc::c_int as libc::c_double
-                / 1i32 as libc::c_double
+            1000.0f64 * (*g).dw as libc::c_int as f64
+                / (*g).emsize as libc::c_int as f64
+                / 1i32 as f64
                 + 0.5f64,
-        ) * 1i32 as libc::c_double
+        ) * 1i32 as f64
     } else {
         dw = floor(
-            1000.0f64 * (*(*g).gd.offset(0)).advw as libc::c_int as libc::c_double
-                / (*g).emsize as libc::c_int as libc::c_double
-                / 1i32 as libc::c_double
+            1000.0f64 * (*(*g).gd.offset(0)).advw as libc::c_int as f64
+                / (*g).emsize as libc::c_int as f64
+                / 1i32 as f64
                 + 0.5f64,
-        ) * 1i32 as libc::c_double
+        ) * 1i32 as f64
     }
     cid = 0i32;
     while cid <= last_cid as libc::c_int {
         let mut idx: USHORT = 0;
         let mut gid: USHORT = 0;
-        let mut width: libc::c_double = 0.;
+        let mut width: f64 = 0.;
         if !(*used_chars.offset((cid / 8i32) as isize) as libc::c_int & 1i32 << 7i32 - cid % 8i32
             == 0)
         {
@@ -957,14 +957,14 @@ unsafe extern "C" fn add_TTCIDHMetrics(
             if !(cid != 0i32 && idx as libc::c_int == 0i32) {
                 width = floor(
                     1000.0f64
-                        * (*(*g).gd.offset(idx as isize)).advw as libc::c_int as libc::c_double
-                        / (*g).emsize as libc::c_int as libc::c_double
-                        / 1i32 as libc::c_double
+                        * (*(*g).gd.offset(idx as isize)).advw as libc::c_int as f64
+                        / (*g).emsize as libc::c_int as f64
+                        / 1i32 as f64
                         + 0.5f64,
-                ) * 1i32 as libc::c_double;
+                ) * 1i32 as f64;
                 if width == dw {
                     if !an_array.is_null() {
-                        pdf_add_array(w_array, pdf_new_number(start as libc::c_double));
+                        pdf_add_array(w_array, pdf_new_number(start as f64));
                         pdf_add_array(w_array, an_array);
                         an_array = 0 as *mut pdf_obj;
                         empty = 0i32
@@ -972,7 +972,7 @@ unsafe extern "C" fn add_TTCIDHMetrics(
                 } else {
                     if cid != prev + 1i32 {
                         if !an_array.is_null() {
-                            pdf_add_array(w_array, pdf_new_number(start as libc::c_double));
+                            pdf_add_array(w_array, pdf_new_number(start as f64));
                             pdf_add_array(w_array, an_array);
                             an_array = 0 as *mut pdf_obj;
                             empty = 0i32
@@ -990,7 +990,7 @@ unsafe extern "C" fn add_TTCIDHMetrics(
         cid += 1
     }
     if !an_array.is_null() {
-        pdf_add_array(w_array, pdf_new_number(start as libc::c_double));
+        pdf_add_array(w_array, pdf_new_number(start as f64));
         pdf_add_array(w_array, an_array);
         empty = 0i32
     }
@@ -1017,30 +1017,30 @@ unsafe extern "C" fn add_TTCIDVMetrics(
     let mut w2_array: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut an_array: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut cid: libc::c_int = 0;
-    let mut defaultVertOriginY: libc::c_double = 0.;
-    let mut defaultAdvanceHeight: libc::c_double = 0.;
+    let mut defaultVertOriginY: f64 = 0.;
+    let mut defaultAdvanceHeight: f64 = 0.;
     let mut empty: libc::c_int = 1i32;
     defaultVertOriginY = floor(
         1000.0f64
             * ((*g).default_advh as libc::c_int - (*g).default_tsb as libc::c_int)
-                as libc::c_double
-            / (*g).emsize as libc::c_int as libc::c_double
-            / 1i32 as libc::c_double
+                as f64
+            / (*g).emsize as libc::c_int as f64
+            / 1i32 as f64
             + 0.5f64,
-    ) * 1i32 as libc::c_double;
+    ) * 1i32 as f64;
     defaultAdvanceHeight = floor(
-        1000.0f64 * (*g).default_advh as libc::c_int as libc::c_double
-            / (*g).emsize as libc::c_int as libc::c_double
-            / 1i32 as libc::c_double
+        1000.0f64 * (*g).default_advh as libc::c_int as f64
+            / (*g).emsize as libc::c_int as f64
+            / 1i32 as f64
             + 0.5f64,
-    ) * 1i32 as libc::c_double;
+    ) * 1i32 as f64;
     w2_array = pdf_new_array();
     cid = 0i32;
     while cid <= last_cid as libc::c_int {
         let mut idx: USHORT = 0;
-        let mut vertOriginX: libc::c_double = 0.;
-        let mut vertOriginY: libc::c_double = 0.;
-        let mut advanceHeight: libc::c_double = 0.;
+        let mut vertOriginX: f64 = 0.;
+        let mut vertOriginY: f64 = 0.;
+        let mut advanceHeight: f64 = 0.;
         if !(*used_chars.offset((cid / 8i32) as isize) as libc::c_int & 1i32 << 7i32 - cid % 8i32
             == 0)
         {
@@ -1048,29 +1048,29 @@ unsafe extern "C" fn add_TTCIDVMetrics(
             if !(cid != 0i32 && idx as libc::c_int == 0i32) {
                 advanceHeight = floor(
                     1000.0f64
-                        * (*(*g).gd.offset(idx as isize)).advh as libc::c_int as libc::c_double
-                        / (*g).emsize as libc::c_int as libc::c_double
-                        / 1i32 as libc::c_double
+                        * (*(*g).gd.offset(idx as isize)).advh as libc::c_int as f64
+                        / (*g).emsize as libc::c_int as f64
+                        / 1i32 as f64
                         + 0.5f64,
-                ) * 1i32 as libc::c_double;
+                ) * 1i32 as f64;
                 vertOriginX = floor(
                     1000.0f64
                         * (0.5f64
                             * (*(*g).gd.offset(idx as isize)).advw as libc::c_int
-                                as libc::c_double)
-                        / (*g).emsize as libc::c_int as libc::c_double
-                        / 1i32 as libc::c_double
+                                as f64)
+                        / (*g).emsize as libc::c_int as f64
+                        / 1i32 as f64
                         + 0.5f64,
-                ) * 1i32 as libc::c_double;
+                ) * 1i32 as f64;
                 vertOriginY = floor(
                     1000.0f64
                         * ((*(*g).gd.offset(idx as isize)).tsb as libc::c_int
                             + (*(*g).gd.offset(idx as isize)).ury as libc::c_int)
-                            as libc::c_double
-                        / (*g).emsize as libc::c_int as libc::c_double
-                        / 1i32 as libc::c_double
+                            as f64
+                        / (*g).emsize as libc::c_int as f64
+                        / 1i32 as f64
                         + 0.5f64,
-                ) * 1i32 as libc::c_double;
+                ) * 1i32 as f64;
                 /*
                  * c_first c_last w1_y v_x v_y
                  * This form may hit Acrobat's implementation limit of array element size,
@@ -1078,8 +1078,8 @@ unsafe extern "C" fn add_TTCIDVMetrics(
                  * Maybe GS's bug?
                  */
                 if vertOriginY != defaultVertOriginY || advanceHeight != defaultAdvanceHeight {
-                    pdf_add_array(w2_array, pdf_new_number(cid as libc::c_double));
-                    pdf_add_array(w2_array, pdf_new_number(cid as libc::c_double));
+                    pdf_add_array(w2_array, pdf_new_number(cid as f64));
+                    pdf_add_array(w2_array, pdf_new_number(cid as f64));
                     pdf_add_array(w2_array, pdf_new_number(-advanceHeight));
                     pdf_add_array(w2_array, pdf_new_number(vertOriginX));
                     pdf_add_array(w2_array, pdf_new_number(vertOriginY));
@@ -1089,8 +1089,8 @@ unsafe extern "C" fn add_TTCIDVMetrics(
         }
         cid += 1
     }
-    if defaultVertOriginY != 880i32 as libc::c_double
-        || defaultAdvanceHeight != 1000i32 as libc::c_double
+    if defaultVertOriginY != 880i32 as f64
+        || defaultAdvanceHeight != 1000i32 as f64
     {
         an_array = pdf_new_array();
         pdf_add_array(an_array, pdf_new_number(defaultVertOriginY));
@@ -1310,7 +1310,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     pdf_add_dict(
         tmp,
         pdf_new_name(b"Supplement\x00" as *const u8 as *const i8),
-        pdf_new_number((*(*font).csi).supplement as libc::c_double),
+        pdf_new_number((*(*font).csi).supplement as f64),
     );
     pdf_add_dict(
         (*font).fontdict,

@@ -76,7 +76,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_set_string(object: *mut pdf_obj, str: *mut u8, length: size_t);
     #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> libc::c_double;
+    fn pdf_number_value(number: *mut pdf_obj) -> f64;
     #[no_mangle]
     fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
@@ -239,15 +239,15 @@ extern "C" {
     fn pdf_dev_put_image(
         xobj_id: libc::c_int,
         p: *mut transform_info,
-        ref_x: libc::c_double,
-        ref_y: libc::c_double,
+        ref_x: f64,
+        ref_y: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_reset_color(force: libc::c_int);
     #[no_mangle]
-    fn pdf_dev_get_coord(xpos: *mut libc::c_double, ypos: *mut libc::c_double);
+    fn pdf_dev_get_coord(xpos: *mut f64, ypos: *mut f64);
     #[no_mangle]
-    fn pdf_dev_push_coord(xpos: libc::c_double, ypos: libc::c_double);
+    fn pdf_dev_push_coord(xpos: f64, ypos: f64);
     #[no_mangle]
     fn pdf_dev_pop_coord();
     /* They just return PDF dictionary object.
@@ -296,8 +296,8 @@ extern "C" {
     #[no_mangle]
     fn pdf_doc_begin_grabbing(
         ident: *const i8,
-        ref_x: libc::c_double,
-        ref_y: libc::c_double,
+        ref_x: f64,
+        ref_y: f64,
         cropbox: *const pdf_rect,
     ) -> libc::c_int;
     #[no_mangle]
@@ -464,9 +464,9 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_env {
-    pub x_user: libc::c_double,
-    pub y_user: libc::c_double,
-    pub mag: libc::c_double,
+    pub x_user: f64,
+    pub y_user: f64,
+    pub mag: f64,
     pub pg: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -522,19 +522,19 @@ pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> (
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
     pub num_components: libc::c_int,
     pub spot_color_name: *mut i8,
-    pub values: [libc::c_double; 4],
+    pub values: [f64; 4],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -548,15 +548,15 @@ pub struct fontmap_rec {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_opt {
-    pub slant: libc::c_double,
-    pub extend: libc::c_double,
-    pub bold: libc::c_double,
+    pub slant: f64,
+    pub extend: f64,
+    pub bold: f64,
     pub mapc: libc::c_int,
     pub flags: libc::c_int,
     pub otl_tags: *mut i8,
     pub tounicode: *mut i8,
     pub cff_charsets: *mut libc::c_void,
-    pub design_size: libc::c_double,
+    pub design_size: f64,
     pub charcoll: *mut i8,
     pub index: libc::c_int,
     pub style: libc::c_int,
@@ -571,9 +571,9 @@ pub struct C2RustUnnamed {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct transform_info {
-    pub width: libc::c_double,
-    pub height: libc::c_double,
-    pub depth: libc::c_double,
+    pub width: f64,
+    pub height: f64,
+    pub depth: f64,
     pub matrix: pdf_tmatrix,
     pub bbox: pdf_rect,
     pub flags: libc::c_int,
@@ -581,10 +581,10 @@ pub struct transform_info {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -683,8 +683,8 @@ pub struct CIDSysInfo {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_coord {
-    pub x: libc::c_double,
-    pub y: libc::c_double,
+    pub x: f64,
+    pub y: f64,
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -2445,8 +2445,8 @@ unsafe extern "C" fn spc_handler_pdfm_bcontent(
         e: 0.,
         f: 0.,
     };
-    let mut xpos: libc::c_double = 0.;
-    let mut ypos: libc::c_double = 0.;
+    let mut xpos: f64 = 0.;
+    let mut ypos: f64 = 0.;
     pdf_dev_gsave();
     pdf_dev_get_coord(&mut xpos, &mut ypos);
     M.a = 1.0f64;

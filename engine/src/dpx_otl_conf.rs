@@ -56,7 +56,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_null() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     #[no_mangle]
@@ -250,7 +250,7 @@ unsafe extern "C" fn parse_uc_coverage(
                             glyphname,
                         );
                     }
-                    pdf_add_array(value, pdf_new_number(ucv as libc::c_double));
+                    pdf_add_array(value, pdf_new_number(ucv as f64));
                     free(glyphname as *mut libc::c_void);
                     *pp = (*pp).offset(1);
                     skip_white(pp, endptr);
@@ -267,7 +267,7 @@ unsafe extern "C" fn parse_uc_coverage(
                             glyphname,
                         );
                     }
-                    pdf_add_array(value, pdf_new_number(ucv as libc::c_double));
+                    pdf_add_array(value, pdf_new_number(ucv as f64));
                     free(glyphname as *mut libc::c_void);
                 } else {
                     if agl_get_unicodes(glyphname, &mut ucv, 1i32) != 1i32 {
@@ -276,7 +276,7 @@ unsafe extern "C" fn parse_uc_coverage(
                             glyphname,
                         );
                     }
-                    value = pdf_new_number(ucv as libc::c_double);
+                    value = pdf_new_number(ucv as f64);
                     free(glyphname as *mut libc::c_void);
                 }
                 pdf_add_array(coverage, value);
@@ -335,7 +335,7 @@ unsafe extern "C" fn add_rule(
         while i < n_unicodes {
             pdf_add_array(
                 glyph1,
-                pdf_new_number(unicodes[i as usize] as libc::c_double),
+                pdf_new_number(unicodes[i as usize] as f64),
             );
             if verbose > 0i32 {
                 if unicodes[i as usize] < 0x10000i32 {
@@ -405,7 +405,7 @@ unsafe extern "C" fn add_rule(
         while i < n_unicodes {
             pdf_add_array(
                 glyph2,
-                pdf_new_number(unicodes[i as usize] as libc::c_double),
+                pdf_new_number(unicodes[i as usize] as f64),
             );
             if verbose > 0i32 {
                 if unicodes[i as usize] < 0x10000i32 {
@@ -681,7 +681,7 @@ unsafe extern "C" fn parse_block(
                         subst,
                     );
                 }
-                pdf_add_array(subst, pdf_new_number(*token.offset(0) as libc::c_double));
+                pdf_add_array(subst, pdf_new_number(*token.offset(0) as f64));
                 pdf_add_array(subst, rule_block);
             } else if *token.offset(0) as libc::c_int == '@' as i32 {
                 let mut coverage: *mut pdf_obj = 0 as *mut pdf_obj;

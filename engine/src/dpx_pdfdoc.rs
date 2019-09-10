@@ -57,7 +57,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_color_set_verbose(level: libc::c_int);
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const i8,
@@ -124,9 +124,9 @@ extern "C" {
     #[no_mangle]
     fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> libc::c_double;
+    fn pdf_number_value(number: *mut pdf_obj) -> f64;
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     #[no_mangle]
@@ -224,9 +224,9 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_eop();
     #[no_mangle]
-    fn pdf_dev_get_coord(xpos: *mut libc::c_double, ypos: *mut libc::c_double);
+    fn pdf_dev_get_coord(xpos: *mut f64, ypos: *mut f64);
     #[no_mangle]
-    fn pdf_color_graycolor(color: *mut pdf_color, g: libc::c_double) -> libc::c_int;
+    fn pdf_color_graycolor(color: *mut pdf_color, g: f64) -> libc::c_int;
     #[no_mangle]
     fn pdf_color_copycolor(color1: *mut pdf_color, color2: *const pdf_color);
     #[no_mangle]
@@ -364,10 +364,10 @@ extern "C" {
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_dev_rectfill(
-        x: libc::c_double,
-        y: libc::c_double,
-        w: libc::c_double,
-        h: libc::c_double,
+        x: f64,
+        y: f64,
+        w: f64,
+        h: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_gsave() -> libc::c_int;
@@ -519,25 +519,25 @@ pub struct tm {
 pub struct pdf_color {
     pub num_components: libc::c_int,
     pub spot_color_name: *mut i8,
-    pub values: [libc::c_double; 4],
+    pub values: [f64; 4],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -602,8 +602,8 @@ pub struct pdf_page {
     pub page_obj: *mut pdf_obj,
     pub page_ref: *mut pdf_obj,
     pub flags: libc::c_int,
-    pub ref_x: libc::c_double,
-    pub ref_y: libc::c_double,
+    pub ref_x: f64,
+    pub ref_y: f64,
     pub cropbox: pdf_rect,
     pub resources: *mut pdf_obj,
     pub background: *mut pdf_obj,
@@ -630,7 +630,7 @@ pub struct pdf_doc {
 #[repr(C)]
 pub struct C2RustUnnamed {
     pub outline_open_depth: libc::c_int,
-    pub annot_grow: libc::c_double,
+    pub annot_grow: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -1391,7 +1391,7 @@ unsafe extern "C" fn build_page_tree(
     pdf_add_dict(
         self_0,
         pdf_new_name(b"Count\x00" as *const u8 as *const i8),
-        pdf_new_number(num_pages as libc::c_double),
+        pdf_new_number(num_pages as f64),
     );
     if !parent_ref.is_null() {
         pdf_add_dict(
@@ -1452,8 +1452,8 @@ unsafe extern "C" fn build_page_tree(
 }
 unsafe extern "C" fn pdf_doc_init_page_tree(
     mut p: *mut pdf_doc,
-    mut media_width: libc::c_double,
-    mut media_height: libc::c_double,
+    mut media_width: f64,
+    mut media_height: f64,
 ) {
     /*
      * Create empty page tree.
@@ -1952,7 +1952,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                         current_block = 13014351284863956202;
                                         break;
                                     }
-                                    let mut x: libc::c_double = 0.;
+                                    let mut x: f64 = 0.;
                                     let mut tmp_1: *mut pdf_obj =
                                         pdf_deref_obj(pdf_get_array(box_0, i_0));
                                     if !(!tmp_1.is_null() && pdf_obj_typeof(tmp_1) == 2i32) {
@@ -1985,7 +1985,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                                     current_block = 10570719081292997246;
                                                     break;
                                                 }
-                                                let mut x_0: libc::c_double = 0.;
+                                                let mut x_0: f64 = 0.;
                                                 let mut tmp_2: *mut pdf_obj =
                                                     pdf_deref_obj(pdf_get_array(medbox, i_0));
                                                 if !(!tmp_2.is_null()
@@ -2038,9 +2038,9 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                                 if !rotate.is_null()
                                                     && pdf_obj_typeof(rotate) == 2i32
                                                 {
-                                                    let mut deg: libc::c_double =
+                                                    let mut deg: f64 =
                                                         pdf_number_value(rotate);
-                                                    if deg - deg as libc::c_int as libc::c_double
+                                                    if deg - deg as libc::c_int as f64
                                                         != 0.0f64
                                                     {
                                                         dpx_warning(b"Invalid value specified for /Rotate: %f\x00"
@@ -2052,7 +2052,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                                     } else if deg != 0.0f64 {
                                                         let mut rot: libc::c_int =
                                                             deg as libc::c_int;
-                                                        if (rot % 90i32) as libc::c_double != 0.0f64
+                                                        if (rot % 90i32) as f64 != 0.0f64
                                                         {
                                                             dpx_warning(b"Invalid value specified for /Rotate: %f\x00"
                                                                             as
@@ -2068,12 +2068,12 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                                             match rot {
                                                                 90 => {
                                                                     (*matrix).d =
-                                                                        0i32 as libc::c_double;
+                                                                        0i32 as f64;
                                                                     (*matrix).a = (*matrix).d;
                                                                     (*matrix).b =
-                                                                        -1i32 as libc::c_double;
+                                                                        -1i32 as f64;
                                                                     (*matrix).c =
-                                                                        1i32 as libc::c_double;
+                                                                        1i32 as f64;
                                                                     (*matrix).e =
                                                                         (*bbox).llx - (*bbox).lly;
                                                                     (*matrix).f =
@@ -2081,10 +2081,10 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                                                 }
                                                                 180 => {
                                                                     (*matrix).d =
-                                                                        -1i32 as libc::c_double;
+                                                                        -1i32 as f64;
                                                                     (*matrix).a = (*matrix).d;
                                                                     (*matrix).c =
-                                                                        0i32 as libc::c_double;
+                                                                        0i32 as f64;
                                                                     (*matrix).b = (*matrix).c;
                                                                     (*matrix).e =
                                                                         (*bbox).llx + (*bbox).urx;
@@ -2093,12 +2093,12 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                                                 }
                                                                 270 => {
                                                                     (*matrix).d =
-                                                                        0i32 as libc::c_double;
+                                                                        0i32 as f64;
                                                                     (*matrix).a = (*matrix).d;
                                                                     (*matrix).b =
-                                                                        1i32 as libc::c_double;
+                                                                        1i32 as f64;
                                                                     (*matrix).c =
-                                                                        -1i32 as libc::c_double;
+                                                                        -1i32 as f64;
                                                                     (*matrix).e =
                                                                         (*bbox).llx + (*bbox).ury;
                                                                     (*matrix).f =
@@ -2224,14 +2224,14 @@ unsafe extern "C" fn flush_bookmarks(
                 pdf_add_dict(
                     (*item).dict,
                     pdf_new_name(b"Count\x00" as *const u8 as *const i8),
-                    pdf_new_number(count as libc::c_double),
+                    pdf_new_number(count as f64),
                 );
                 retval += count
             } else {
                 pdf_add_dict(
                     (*item).dict,
                     pdf_new_name(b"Count\x00" as *const u8 as *const i8),
-                    pdf_new_number(-count as libc::c_double),
+                    pdf_new_number(-count as f64),
                 );
             }
         }
@@ -2445,7 +2445,7 @@ unsafe extern "C" fn pdf_doc_close_bookmarks(mut p: *mut pdf_doc) {
         pdf_add_dict(
             bm_root,
             pdf_new_name(b"Count\x00" as *const u8 as *const i8),
-            pdf_new_number(count as libc::c_double),
+            pdf_new_number(count as f64),
         );
         pdf_add_dict(
             catalog,
@@ -2827,9 +2827,9 @@ pub unsafe extern "C" fn pdf_doc_add_annot(
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut page: *mut pdf_page = 0 as *mut pdf_page;
     let mut rect_array: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut annot_grow: libc::c_double = (*p).opt.annot_grow;
-    let mut xpos: libc::c_double = 0.;
-    let mut ypos: libc::c_double = 0.;
+    let mut annot_grow: f64 = (*p).opt.annot_grow;
+    let mut xpos: f64 = 0.;
+    let mut ypos: f64 = 0.;
     let mut annbox: pdf_rect = pdf_rect {
         llx: 0.,
         lly: 0.,
@@ -3649,9 +3649,9 @@ unsafe extern "C" fn doc_fill_page_background(mut p: *mut pdf_doc) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_begin_page(
-    mut scale: libc::c_double,
-    mut x_origin: libc::c_double,
-    mut y_origin: libc::c_double,
+    mut scale: f64,
+    mut x_origin: f64,
+    mut y_origin: f64,
 ) {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut M: pdf_tmatrix = pdf_tmatrix {
@@ -3709,9 +3709,9 @@ pub unsafe extern "C" fn pdf_open_document(
     mut filename: *const i8,
     mut enable_encrypt: bool,
     mut enable_object_stream: bool,
-    mut media_width: libc::c_double,
-    mut media_height: libc::c_double,
-    mut annot_grow_amount: libc::c_double,
+    mut media_width: f64,
+    mut media_height: f64,
+    mut annot_grow_amount: f64,
     mut bookmark_open_depth: libc::c_int,
     mut check_gotos: libc::c_int,
 ) {
@@ -3913,8 +3913,8 @@ unsafe extern "C" fn pdf_doc_make_xform(
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_begin_grabbing(
     mut ident: *const i8,
-    mut ref_x: libc::c_double,
-    mut ref_y: libc::c_double,
+    mut ref_x: f64,
+    mut ref_y: f64,
     mut cropbox: *const pdf_rect,
 ) -> libc::c_int {
     let mut xobj_id: libc::c_int = -1i32;

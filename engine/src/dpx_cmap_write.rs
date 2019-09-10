@@ -35,7 +35,7 @@ extern "C" {
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     /* Name does not include the / */
@@ -636,7 +636,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
         pdf_add_dict(
             csi_dict,
             pdf_new_name(b"Supplement\x00" as *const u8 as *const i8),
-            pdf_new_number((*csi).supplement as libc::c_double),
+            pdf_new_number((*csi).supplement as f64),
         );
         pdf_add_dict(
             stream_dict,
@@ -657,7 +657,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
             pdf_add_dict(
                 stream_dict,
                 pdf_new_name(b"WMode\x00" as *const u8 as *const i8),
-                pdf_new_number((*cmap).wmode as libc::c_double),
+                pdf_new_number((*cmap).wmode as f64),
             );
         }
     }

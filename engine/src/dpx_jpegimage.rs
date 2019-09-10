@@ -60,7 +60,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
@@ -98,7 +98,7 @@ extern "C" {
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -140,8 +140,8 @@ pub struct ximage_info {
     pub bits_per_component: libc::c_int,
     pub num_components: libc::c_int,
     pub min_dpi: libc::c_int,
-    pub xdensity: libc::c_double,
-    pub ydensity: libc::c_double,
+    pub xdensity: f64,
+    pub ydensity: f64,
 }
 pub type pdf_ximage = pdf_ximage_;
 pub const JM_SOI: JPEG_marker = 216;
@@ -152,8 +152,8 @@ pub struct JPEG_info {
     pub width: u16,
     pub bits_per_component: u8,
     pub num_components: u8,
-    pub xdpi: libc::c_double,
-    pub ydpi: libc::c_double,
+    pub xdpi: f64,
+    pub ydpi: f64,
     pub flags: libc::c_int,
     pub num_appn: libc::c_int,
     pub max_appn: libc::c_int,
@@ -453,8 +453,8 @@ pub unsafe extern "C" fn jpeg_include_image(
 }
 unsafe extern "C" fn jpeg_get_density(
     mut j_info: *mut JPEG_info,
-    mut xdensity: *mut libc::c_double,
-    mut ydensity: *mut libc::c_double,
+    mut xdensity: *mut f64,
+    mut ydensity: *mut f64,
 ) {
     /*
      * j_info->xdpi and j_info->ydpi are determined in most cases
@@ -739,14 +739,14 @@ unsafe extern "C" fn read_APP1_Exif(
     let mut value: libc::c_int = 0;
     let mut num: libc::c_int = 0i32;
     let mut den: libc::c_int = 0i32;
-    let mut xres: libc::c_double = 0.0f64;
-    let mut yres: libc::c_double = 0.0f64;
-    let mut res_unit: libc::c_double = 1.0f64;
+    let mut xres: f64 = 0.0f64;
+    let mut yres: f64 = 0.0f64;
+    let mut res_unit: f64 = 1.0f64;
     let mut xres_ms: libc::c_uint = 0i32 as libc::c_uint;
     let mut yres_ms: libc::c_uint = 0i32 as libc::c_uint;
-    let mut res_unit_ms: libc::c_double = 0.0f64;
-    let mut exifxdpi: libc::c_double = 0.0f64;
-    let mut exifydpi: libc::c_double = 0.0f64;
+    let mut res_unit_ms: f64 = 0.0f64;
+    let mut exifxdpi: f64 = 0.0f64;
+    let mut exifydpi: f64 = 0.0f64;
     let mut r: ssize_t = 0;
     buffer = xmalloc(length) as *mut u8;
     r = ttstub_input_read(handle, buffer as *mut i8, length);
@@ -830,13 +830,13 @@ unsafe extern "C" fn read_APP1_Exif(
                             match tag {
                                 282 => {
                                     if den != 0i32 {
-                                        xres = (num / den) as libc::c_double
+                                        xres = (num / den) as f64
                                     }
                                     continue;
                                 }
                                 283 => {
                                     if den != 0i32 {
-                                        yres = (num / den) as libc::c_double
+                                        yres = (num / den) as f64
                                     }
                                     continue;
                                 }
@@ -925,8 +925,8 @@ unsafe extern "C" fn read_APP1_Exif(
                                     && yres_ms > 0i32 as libc::c_uint
                                     && res_unit_ms > 0.0f64
                                 {
-                                    exifxdpi = xres_ms as libc::c_double * res_unit_ms;
-                                    exifydpi = yres_ms as libc::c_double * res_unit_ms
+                                    exifxdpi = xres_ms as f64 * res_unit_ms;
+                                    exifydpi = yres_ms as f64 * res_unit_ms
                                 } else {
                                     exifxdpi = 72.0f64 * res_unit;
                                     exifydpi = 72.0f64 * res_unit
@@ -936,10 +936,10 @@ unsafe extern "C" fn read_APP1_Exif(
                                     (*info).xdpi = exifxdpi;
                                     (*info).ydpi = exifydpi
                                 } else {
-                                    let mut xxx1: libc::c_double = floor(exifxdpi + 0.5f64);
-                                    let mut xxx2: libc::c_double = floor((*info).xdpi + 0.5f64);
-                                    let mut yyy1: libc::c_double = floor(exifydpi + 0.5f64);
-                                    let mut yyy2: libc::c_double = floor((*info).ydpi + 0.5f64);
+                                    let mut xxx1: f64 = floor(exifxdpi + 0.5f64);
+                                    let mut xxx2: f64 = floor((*info).xdpi + 0.5f64);
+                                    let mut yyy1: f64 = floor(exifydpi + 0.5f64);
+                                    let mut yyy2: f64 = floor((*info).ydpi + 0.5f64);
                                     if xxx1 != xxx2 || yyy1 != yyy2 {
                                         dpx_warning(b"JPEG: Inconsistent resolution may have been specified in Exif and JFIF: %gx%g - %gx%g\x00"
                                                         as *const u8 as
@@ -998,13 +998,13 @@ unsafe extern "C" fn read_APP0_JFIF(
     );
     match (*app_data).units as libc::c_int {
         1 => {
-            (*j_info).xdpi = (*app_data).Xdensity as libc::c_double;
-            (*j_info).ydpi = (*app_data).Ydensity as libc::c_double
+            (*j_info).xdpi = (*app_data).Xdensity as f64;
+            (*j_info).ydpi = (*app_data).Ydensity as f64
         }
         2 => {
             /* density is in pixels per cm */
-            (*j_info).xdpi = (*app_data).Xdensity as libc::c_int as libc::c_double * 2.54f64;
-            (*j_info).ydpi = (*app_data).Ydensity as libc::c_int as libc::c_double * 2.54f64
+            (*j_info).xdpi = (*app_data).Xdensity as libc::c_int as f64 * 2.54f64;
+            (*j_info).ydpi = (*app_data).Ydensity as libc::c_int as f64 * 2.54f64
         }
         _ => {
             /* FIXME: not sure what to do with this.... */
@@ -1435,8 +1435,8 @@ pub unsafe extern "C" fn jpeg_get_bbox(
     mut handle: rust_input_handle_t,
     mut width: *mut libc::c_uint,
     mut height: *mut libc::c_uint,
-    mut xdensity: *mut libc::c_double,
-    mut ydensity: *mut libc::c_double,
+    mut xdensity: *mut f64,
+    mut ydensity: *mut f64,
 ) -> libc::c_int {
     let mut j_info: JPEG_info = JPEG_info {
         height: 0,

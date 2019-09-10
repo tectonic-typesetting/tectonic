@@ -128,7 +128,7 @@ extern "C" {
         dict: *mut cff_dict,
         key: *const i8,
         idx: libc::c_int,
-        value: libc::c_double,
+        value: f64,
     );
     #[no_mangle]
     fn cff_dict_add(dict: *mut cff_dict, key: *const i8, count: libc::c_int);
@@ -189,7 +189,7 @@ extern "C" {
     #[no_mangle]
     fn pst_getIV(obj: *mut pst_obj) -> libc::c_int;
     #[no_mangle]
-    fn pst_getRV(obj: *mut pst_obj) -> libc::c_double;
+    fn pst_getRV(obj: *mut pst_obj) -> f64;
     #[no_mangle]
     fn pst_getSV(obj: *mut pst_obj) -> *mut u8;
     #[no_mangle]
@@ -258,7 +258,7 @@ pub struct cff_dict_entry {
     pub id: libc::c_int,
     pub key: *const i8,
     pub count: libc::c_int,
-    pub values: *mut libc::c_double,
+    pub values: *mut f64,
     /* values                                  */
 }
 #[derive(Copy, Clone)]
@@ -521,7 +521,7 @@ unsafe extern "C" fn parse_svalue(
 unsafe extern "C" fn parse_bvalue(
     mut start: *mut *mut u8,
     mut end: *mut u8,
-    mut value: *mut libc::c_double,
+    mut value: *mut f64,
 ) -> libc::c_int {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
     tok = pst_get_token(start, end);
@@ -529,7 +529,7 @@ unsafe extern "C" fn parse_bvalue(
         return -1i32;
     } else {
         if pst_type_of(tok) == 1i32 {
-            *value = pst_getIV(tok) as libc::c_double
+            *value = pst_getIV(tok) as f64
         } else {
             if !tok.is_null() {
                 pst_release_obj(tok);
@@ -547,7 +547,7 @@ unsafe extern "C" fn parse_bvalue(
 unsafe extern "C" fn parse_nvalue(
     mut start: *mut *mut u8,
     mut end: *mut u8,
-    mut value: *mut libc::c_double,
+    mut value: *mut f64,
     mut max: libc::c_int,
 ) -> libc::c_int {
     let mut argn: libc::c_int = 0i32;
@@ -2190,7 +2190,7 @@ unsafe extern "C" fn parse_part2(
     mut mode: libc::c_int,
 ) -> libc::c_int {
     let mut key: *mut i8 = 0 as *mut i8;
-    let mut argv: [libc::c_double; 127] = [0.; 127];
+    let mut argv: [f64; 127] = [0.; 127];
     let mut argn: libc::c_int = 0;
     let mut lenIV: libc::c_int = 4i32;
     while *start < end && {
@@ -2315,13 +2315,13 @@ unsafe extern "C" fn parse_part2(
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
-            if argv[0] != 0i32 as libc::c_double {
+            if argv[0] != 0i32 as f64 {
                 cff_dict_add(*(*font).private.offset(0), key, 1i32);
                 cff_dict_set(
                     *(*font).private.offset(0),
                     key,
                     0i32,
-                    1i32 as libc::c_double,
+                    1i32 as f64,
                 );
             }
         }
@@ -2340,7 +2340,7 @@ unsafe extern "C" fn parse_part1(
 ) -> libc::c_int {
     let mut key: *mut i8 = 0 as *mut i8;
     let mut strval: *mut i8 = 0 as *mut i8;
-    let mut argv: [libc::c_double; 127] = [0.; 127];
+    let mut argv: [f64; 127] = [0.; 127];
     let mut argn: libc::c_int = 0;
     /*
      * We skip PostScript code inserted before the beginning of
@@ -2526,7 +2526,7 @@ unsafe extern "C" fn parse_part1(
              * We don't care about duplicate strings here since
              * later a subset font of this font will be generated.
              */
-            cff_dict_set((*font).topdict, key, 0i32, sid as libc::c_double); /* No Global Subr */
+            cff_dict_set((*font).topdict, key, 0i32, sid as f64); /* No Global Subr */
             free(strval as *mut libc::c_void);
         } else if streq_ptr(key, b"IsFixedPitch\x00" as *const u8 as *const i8) {
             argn = parse_bvalue(start, end, &mut *argv.as_mut_ptr().offset(0));
@@ -2545,7 +2545,7 @@ unsafe extern "C" fn parse_part1(
                     *(*font).private.offset(0),
                     key,
                     0i32,
-                    1i32 as libc::c_double,
+                    1i32 as f64,
                 );
             }
         }

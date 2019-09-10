@@ -71,8 +71,8 @@ extern "C" {
     fn pdf_dev_put_image(
         xobj_id: libc::c_int,
         p: *mut transform_info,
-        ref_x: libc::c_double,
-        ref_y: libc::c_double,
+        ref_x: f64,
+        ref_y: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
@@ -111,8 +111,8 @@ extern "C" {
     fn mps_exec_inline(
         buffer: *mut *const i8,
         endptr: *const i8,
-        x_user: libc::c_double,
-        y_user: libc::c_double,
+        x_user: f64,
+        y_user: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn mps_stack_depth() -> libc::c_int;
@@ -209,9 +209,9 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_env {
-    pub x_user: libc::c_double,
-    pub y_user: libc::c_double,
-    pub mag: libc::c_double,
+    pub x_user: f64,
+    pub y_user: f64,
+    pub mag: f64,
     pub pg: libc::c_int,
     /* current page in PDF */
 }
@@ -234,19 +234,19 @@ pub struct spc_handler {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct transform_info {
-    pub width: libc::c_double,
-    pub height: libc::c_double,
-    pub depth: libc::c_double,
+    pub width: f64,
+    pub height: f64,
+    pub depth: f64,
     pub matrix: pdf_tmatrix,
     pub bbox: pdf_rect,
     pub flags: libc::c_int,
@@ -254,10 +254,10 @@ pub struct transform_info {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -305,8 +305,8 @@ unsafe extern "C" fn strstartswith(
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 static mut block_pending: libc::c_int = 0i32;
-static mut pending_x: libc::c_double = 0.0f64;
-static mut pending_y: libc::c_double = 0.0f64;
+static mut pending_x: f64 = 0.0f64;
+static mut pending_y: f64 = 0.0f64;
 static mut position_set: libc::c_int = 0i32;
 static mut ps_headers: *mut *mut i8 =
     0 as *const *mut i8 as *mut *mut i8;
@@ -573,8 +573,8 @@ unsafe extern "C" fn spc_handler_ps_plotfile(
         pdf_dev_put_image(
             form_id,
             &mut p,
-            0i32 as libc::c_double,
-            0i32 as libc::c_double,
+            0i32 as f64,
+            0i32 as f64,
         );
     }
     free(filename as *mut libc::c_void);
@@ -587,8 +587,8 @@ unsafe extern "C" fn spc_handler_ps_literal(
     let mut error: libc::c_int = 0i32;
     let mut st_depth: libc::c_int = 0;
     let mut gs_depth: libc::c_int = 0;
-    let mut x_user: libc::c_double = 0.;
-    let mut y_user: libc::c_double = 0.;
+    let mut x_user: f64 = 0.;
+    let mut y_user: f64 = 0.;
     if !spe.is_null() && !args.is_null() && (*args).curptr <= (*args).endptr {
     } else {
         __assert_fail(

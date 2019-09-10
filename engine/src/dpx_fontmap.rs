@@ -17,7 +17,7 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn atof(__nptr: *const i8) -> libc::c_double;
+    fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
     fn atoi(__nptr: *const i8) -> libc::c_int;
     #[no_mangle]
@@ -224,15 +224,15 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_opt {
-    pub slant: libc::c_double,
-    pub extend: libc::c_double,
-    pub bold: libc::c_double,
+    pub slant: f64,
+    pub extend: f64,
+    pub bold: f64,
     pub mapc: libc::c_int,
     pub flags: libc::c_int,
     pub otl_tags: *mut i8,
     pub tounicode: *mut i8,
     pub cff_charsets: *mut libc::c_void,
-    pub design_size: libc::c_double,
+    pub design_size: f64,
     pub charcoll: *mut i8,
     pub index: libc::c_int,
     pub style: libc::c_int,
@@ -1805,9 +1805,9 @@ pub unsafe extern "C" fn pdf_insert_native_fontmap_record(
     }
     fill_in_defaults(mrec, fontmap_key);
     free(fontmap_key as *mut libc::c_void);
-    (*mrec).opt.extend = extend as libc::c_double / 65536.0f64;
-    (*mrec).opt.slant = slant as libc::c_double / 65536.0f64;
-    (*mrec).opt.bold = embolden as libc::c_double / 65536.0f64;
+    (*mrec).opt.extend = extend as f64 / 65536.0f64;
+    (*mrec).opt.slant = slant as f64 / 65536.0f64;
+    (*mrec).opt.bold = embolden as f64 / 65536.0f64;
     ret = pdf_insert_fontmap_record((*mrec).map_name, mrec);
     pdf_clear_fontmap_record(mrec);
     free(mrec as *mut libc::c_void);

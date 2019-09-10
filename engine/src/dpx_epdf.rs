@@ -15,7 +15,7 @@ extern "C" {
     pub type pdf_file;
     pub type pdf_ximage_;
     #[no_mangle]
-    fn strtod(_: *const i8, _: *mut *mut i8) -> libc::c_double;
+    fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
@@ -65,7 +65,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_array() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> libc::c_double;
+    fn pdf_number_value(number: *mut pdf_obj) -> f64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -86,7 +86,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_boolean_value(object: *mut pdf_obj) -> i8;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
@@ -106,40 +106,40 @@ extern "C" {
     fn pdf_dev_currentmatrix(M: *mut pdf_tmatrix) -> libc::c_int;
     /* Path Construction */
     #[no_mangle]
-    fn pdf_dev_moveto(x: libc::c_double, y: libc::c_double) -> libc::c_int;
+    fn pdf_dev_moveto(x: f64, y: f64) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_closepath() -> libc::c_int;
     #[no_mangle]
-    fn pdf_dev_lineto(x0: libc::c_double, y0: libc::c_double) -> libc::c_int;
+    fn pdf_dev_lineto(x0: f64, y0: f64) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_curveto(
-        x0: libc::c_double,
-        y0: libc::c_double,
-        x1: libc::c_double,
-        y1: libc::c_double,
-        x2: libc::c_double,
-        y2: libc::c_double,
+        x0: f64,
+        y0: f64,
+        x1: f64,
+        y1: f64,
+        x2: f64,
+        y2: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_vcurveto(
-        x0: libc::c_double,
-        y0: libc::c_double,
-        x1: libc::c_double,
-        y1: libc::c_double,
+        x0: f64,
+        y0: f64,
+        x1: f64,
+        y1: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_ycurveto(
-        x0: libc::c_double,
-        y0: libc::c_double,
-        x1: libc::c_double,
-        y1: libc::c_double,
+        x0: f64,
+        y0: f64,
+        x1: f64,
+        y1: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_rectadd(
-        x: libc::c_double,
-        y: libc::c_double,
-        w: libc::c_double,
-        h: libc::c_double,
+        x: f64,
+        y: f64,
+        w: f64,
+        h: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_flushpath(p_op: i8, fill_rule: libc::c_int) -> libc::c_int;
@@ -213,26 +213,26 @@ pub type FILE = _IO_FILE;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_coord {
-    pub x: libc::c_double,
-    pub y: libc::c_double,
+    pub x: f64,
+    pub y: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -1210,8 +1210,8 @@ static mut pdf_operators: [operator; 39] = [
 pub unsafe extern "C" fn pdf_copy_clip(
     mut image_file: *mut FILE,
     mut pageNo: libc::c_int,
-    mut x_user: libc::c_double,
-    mut y_user: libc::c_double,
+    mut x_user: f64,
+    mut y_user: f64,
 ) -> libc::c_int {
     let mut page_tree: *mut pdf_obj = 0 as *mut pdf_obj; /* silence uninitialized warning */
     let mut contents: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -1229,7 +1229,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
         e: 0.,
         f: 0.,
     };
-    let mut stack: [libc::c_double; 6] = [0.; 6];
+    let mut stack: [f64; 6] = [0.; 6];
     let mut pf: *mut pdf_file = 0 as *mut pdf_file;
     pf = pdf_open(0 as *const i8, image_file as rust_input_handle_t);
     if pf.is_null() {
@@ -1293,7 +1293,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
             /* Ignore, but put a dummy value on the stack (in case of d operator) */
             parse_pdf_array(&mut clip_path, end_path, pf);
             top += 1;
-            stack[top as usize] = 0i32 as libc::c_double
+            stack[top as usize] = 0i32 as f64
         } else if *clip_path as libc::c_int == '/' as i32 {
             if strncmp(
                 b"/DeviceGray\x00" as *const u8 as *const i8,
@@ -1422,10 +1422,10 @@ pub unsafe extern "C" fn pdf_copy_clip(
                     let fresh5 = top;
                     top = top - 1;
                     T.a = stack[fresh5 as usize];
-                    let mut _tmp_a: libc::c_double = 0.;
-                    let mut _tmp_b: libc::c_double = 0.;
-                    let mut _tmp_c: libc::c_double = 0.;
-                    let mut _tmp_d: libc::c_double = 0.;
+                    let mut _tmp_a: f64 = 0.;
+                    let mut _tmp_b: f64 = 0.;
+                    let mut _tmp_c: f64 = 0.;
+                    let mut _tmp_d: f64 = 0.;
                     _tmp_a = M.a;
                     _tmp_b = M.b;
                     _tmp_c = M.c;
@@ -1457,7 +1457,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
                     let fresh9 = top;
                     top = top - 1;
                     p0.x = stack[fresh9 as usize];
-                    if M.b == 0i32 as libc::c_double && M.c == 0i32 as libc::c_double {
+                    if M.b == 0i32 as f64 && M.c == 0i32 as f64 {
                         let mut M0: pdf_tmatrix = pdf_tmatrix {
                             a: 0.,
                             b: 0.,
@@ -1470,8 +1470,8 @@ pub unsafe extern "C" fn pdf_copy_clip(
                         M0.b = M.b;
                         M0.c = M.c;
                         M0.d = M.d;
-                        M0.e = 0i32 as libc::c_double;
-                        M0.f = 0i32 as libc::c_double;
+                        M0.e = 0i32 as f64;
+                        M0.f = 0i32 as f64;
                         pdf_dev_transform(&mut p0, &mut M);
                         pdf_dev_transform(&mut p1, &mut M0);
                         pdf_dev_rectadd(p0.x, p0.y, p1.x, p1.y);

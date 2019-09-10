@@ -9,13 +9,13 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn atof(__nptr: *const i8) -> libc::c_double;
+    fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn cos(_: libc::c_double) -> libc::c_double;
+    fn cos(_: f64) -> f64;
     #[no_mangle]
-    fn sin(_: libc::c_double) -> libc::c_double;
+    fn sin(_: f64) -> f64;
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
@@ -24,24 +24,24 @@ extern "C" {
     fn pdf_color_spotcolor(
         color: *mut pdf_color,
         color_name: *mut i8,
-        c: libc::c_double,
+        c: f64,
     ) -> libc::c_int;
     #[no_mangle]
-    fn pdf_color_graycolor(color: *mut pdf_color, g: libc::c_double) -> libc::c_int;
+    fn pdf_color_graycolor(color: *mut pdf_color, g: f64) -> libc::c_int;
     #[no_mangle]
     fn pdf_color_cmykcolor(
         color: *mut pdf_color,
-        c: libc::c_double,
-        m: libc::c_double,
-        y: libc::c_double,
-        k: libc::c_double,
+        c: f64,
+        m: f64,
+        y: f64,
+        k: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn pdf_color_rgbcolor(
         color: *mut pdf_color,
-        r: libc::c_double,
-        g: libc::c_double,
-        b: libc::c_double,
+        r: f64,
+        g: f64,
+        b: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn strcasecmp(_: *const i8, _: *const i8) -> libc::c_int;
@@ -91,32 +91,32 @@ pub const _ISupper: C2RustUnnamed = 256;
 pub struct pdf_color {
     pub num_components: libc::c_int,
     pub spot_color_name: *mut i8,
-    pub values: [libc::c_double; 4],
+    pub values: [f64; 4],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct transform_info {
-    pub width: libc::c_double,
-    pub height: libc::c_double,
-    pub depth: libc::c_double,
+    pub width: f64,
+    pub height: f64,
+    pub depth: f64,
     pub matrix: pdf_tmatrix,
     pub bbox: pdf_rect,
     pub flags: libc::c_int,
@@ -124,9 +124,9 @@ pub struct transform_info {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_env {
-    pub x_user: libc::c_double,
-    pub y_user: libc::c_double,
-    pub mag: libc::c_double,
+    pub x_user: f64,
+    pub y_user: f64,
+    pub mag: f64,
     pub pg: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -196,7 +196,7 @@ unsafe extern "C" fn skip_blank(mut pp: *mut *const i8, mut endptr: *const i8) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_util_read_numbers(
-    mut values: *mut libc::c_double,
+    mut values: *mut f64,
     mut num_values: libc::c_int,
     mut args: *mut spc_arg,
 ) -> libc::c_int {
@@ -218,13 +218,13 @@ pub unsafe extern "C" fn spc_util_read_numbers(
 }
 unsafe extern "C" fn rgb_color_from_hsv(
     mut color: *mut pdf_color,
-    mut h: libc::c_double,
-    mut s: libc::c_double,
-    mut v: libc::c_double,
+    mut h: f64,
+    mut s: f64,
+    mut v: f64,
 ) {
-    let mut r: libc::c_double = 0.;
-    let mut g: libc::c_double = 0.;
-    let mut b: libc::c_double = 0.;
+    let mut r: f64 = 0.;
+    let mut g: f64 = 0.;
+    let mut b: f64 = 0.;
     if !color.is_null() {
     } else {
         __assert_fail(
@@ -241,18 +241,18 @@ unsafe extern "C" fn rgb_color_from_hsv(
     g = b;
     r = g;
     if s != 0.0f64 {
-        let mut h6: libc::c_double = 0.;
-        let mut f: libc::c_double = 0.;
-        let mut v1: libc::c_double = 0.;
-        let mut v2: libc::c_double = 0.;
-        let mut v3: libc::c_double = 0.;
+        let mut h6: f64 = 0.;
+        let mut f: f64 = 0.;
+        let mut v1: f64 = 0.;
+        let mut v2: f64 = 0.;
+        let mut v3: f64 = 0.;
         let mut i: libc::c_int = 0;
-        h6 = h * 6i32 as libc::c_double;
+        h6 = h * 6i32 as f64;
         i = h6 as libc::c_int;
-        f = h6 - i as libc::c_double;
-        v1 = v * (1i32 as libc::c_double - s);
-        v2 = v * (1i32 as libc::c_double - s * f);
-        v3 = v * (1i32 as libc::c_double - s * (1i32 as libc::c_double - f));
+        f = h6 - i as f64;
+        v1 = v * (1i32 as f64 - s);
+        v2 = v * (1i32 as f64 - s * f);
+        v3 = v * (1i32 as f64 - s * (1i32 as f64 - f));
         match i {
             0 => {
                 r = v;
@@ -300,7 +300,7 @@ unsafe extern "C" fn spc_read_color_color(
     mut ap: *mut spc_arg,
 ) -> libc::c_int {
     let mut q: *mut i8 = 0 as *mut i8;
-    let mut cv: [libc::c_double; 4] = [0.; 4];
+    let mut cv: [f64; 4] = [0.; 4];
     let mut nc: libc::c_int = 0;
     let mut error: libc::c_int = 0i32;
     q = parse_c_ident(&mut (*ap).curptr, (*ap).endptr);
@@ -421,7 +421,7 @@ unsafe extern "C" fn spc_read_color_pdf(
     mut colorspec: *mut pdf_color,
     mut ap: *mut spc_arg,
 ) -> libc::c_int {
-    let mut cv: [libc::c_double; 4] = [0.; 4]; /* at most four */
+    let mut cv: [f64; 4] = [0.; 4]; /* at most four */
     let mut nc: libc::c_int = 0;
     let mut isarry: libc::c_int = 0i32;
     let mut error: libc::c_int = 0i32;
@@ -541,12 +541,12 @@ pub unsafe extern "C" fn spc_util_read_pdfcolor(
 /* XXX: there are four quasi-redundant versions of this; grp for K_UNIT__PT */
 unsafe extern "C" fn spc_util_read_length(
     mut spe: *mut spc_env,
-    mut vp: *mut libc::c_double,
+    mut vp: *mut f64,
     mut ap: *mut spc_arg,
 ) -> libc::c_int {
     let mut q: *mut i8 = 0 as *mut i8; /* inverse magnify */
-    let mut v: libc::c_double = 0.;
-    let mut u: libc::c_double = 1.0f64;
+    let mut v: f64 = 0.;
+    let mut u: f64 = 1.0f64;
     let mut ukeys: [*const i8; 10] = [
         b"pt\x00" as *const u8 as *const i8,
         b"in\x00" as *const u8 as *const i8,
@@ -605,7 +605,7 @@ unsafe extern "C" fn spc_util_read_length(
                 5 => u *= 12.0f64 * 72.0f64 / 72.27f64,
                 6 => u *= 1238.0f64 / 1157.0f64 * 72.0f64 / 72.27f64,
                 7 => u *= 12.0f64 * 1238.0f64 / 1157.0f64 * 72.0f64 / 72.27f64,
-                8 => u *= 72.0f64 / (72.27f64 * 65536i32 as libc::c_double),
+                8 => u *= 72.0f64 / (72.27f64 * 65536i32 as f64),
                 _ => {
                     spc_warn(
                         spe,
@@ -634,14 +634,14 @@ unsafe extern "C" fn spc_util_read_length(
  */
 unsafe extern "C" fn make_transmatrix(
     mut M: *mut pdf_tmatrix,
-    mut xoffset: libc::c_double,
-    mut yoffset: libc::c_double,
-    mut xscale: libc::c_double,
-    mut yscale: libc::c_double,
-    mut rotate: libc::c_double,
+    mut xoffset: f64,
+    mut yoffset: f64,
+    mut xscale: f64,
+    mut yscale: f64,
+    mut rotate: f64,
 ) {
-    let mut c: libc::c_double = 0.;
-    let mut s: libc::c_double = 0.;
+    let mut c: f64 = 0.;
+    let mut s: f64 = 0.;
     c = cos(rotate);
     s = sin(rotate);
     (*M).a = xscale * c;
@@ -673,11 +673,11 @@ unsafe extern "C" fn spc_read_dimtrns_dvips(
         b"rhi\x00" as *const u8 as *const i8,
         0 as *const i8,
     ];
-    let mut xoffset: libc::c_double = 0.;
-    let mut yoffset: libc::c_double = 0.;
-    let mut xscale: libc::c_double = 0.;
-    let mut yscale: libc::c_double = 0.;
-    let mut rotate: libc::c_double = 0.;
+    let mut xoffset: f64 = 0.;
+    let mut yoffset: f64 = 0.;
+    let mut xscale: f64 = 0.;
+    let mut yscale: f64 = 0.;
+    let mut rotate: f64 = 0.;
     let mut error: libc::c_int = 0i32;
     rotate = 0.0f64;
     yoffset = rotate;
@@ -833,9 +833,9 @@ unsafe extern "C" fn spc_read_dimtrns_pdfm(
         b"hide\x00" as *const u8 as *const i8,
         0 as *const i8,
     ];
-    let mut xscale: libc::c_double = 0.;
-    let mut yscale: libc::c_double = 0.;
-    let mut rotate: libc::c_double = 0.;
+    let mut xscale: f64 = 0.;
+    let mut yscale: f64 = 0.;
+    let mut rotate: f64 = 0.;
     let mut error: libc::c_int = 0i32;
     has_matrix = 0i32;
     has_rotate = has_matrix;
@@ -916,7 +916,7 @@ unsafe extern "C" fn spc_read_dimtrns_pdfm(
                 }
             }
             7 => {
-                let mut v: [libc::c_double; 4] = [0.; 4];
+                let mut v: [f64; 4] = [0.; 4];
                 if spc_util_read_numbers(v.as_mut_ptr(), 4i32, ap) != 4i32 {
                     error = -1i32
                 } else {
@@ -928,7 +928,7 @@ unsafe extern "C" fn spc_read_dimtrns_pdfm(
                 }
             }
             8 => {
-                let mut v_0: [libc::c_double; 6] = [0.; 6];
+                let mut v_0: [f64; 6] = [0.; 6];
                 if spc_util_read_numbers(v_0.as_mut_ptr(), 6i32, ap) != 6i32 {
                     error = -1i32
                 } else {
@@ -1080,9 +1080,9 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
         b"pagebox\x00" as *const u8 as *const i8,
         0 as *const i8,
     ];
-    let mut xscale: libc::c_double = 0.;
-    let mut yscale: libc::c_double = 0.;
-    let mut rotate: libc::c_double = 0.;
+    let mut xscale: f64 = 0.;
+    let mut yscale: f64 = 0.;
+    let mut rotate: f64 = 0.;
     let mut error: libc::c_int = 0i32;
     has_matrix = 0i32;
     has_rotate = has_matrix;
@@ -1163,7 +1163,7 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
                 }
             }
             7 => {
-                let mut v: [libc::c_double; 4] = [0.; 4];
+                let mut v: [f64; 4] = [0.; 4];
                 if spc_util_read_numbers(v.as_mut_ptr(), 4i32, ap) != 4i32 {
                     error = -1i32
                 } else {
@@ -1175,7 +1175,7 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
                 }
             }
             8 => {
-                let mut v_0: [libc::c_double; 6] = [0.; 6];
+                let mut v_0: [f64; 6] = [0.; 6];
                 if spc_util_read_numbers(v_0.as_mut_ptr(), 6i32, ap) != 6i32 {
                     error = -1i32
                 } else {
@@ -1202,7 +1202,7 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
                 }
             }
             11 => {
-                let mut page: libc::c_double = 0.;
+                let mut page: f64 = 0.;
                 if !page_no.is_null() && spc_util_read_numbers(&mut page, 1i32, ap) == 1i32 {
                     *page_no = page as libc::c_int
                 } else {

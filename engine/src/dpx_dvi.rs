@@ -45,7 +45,7 @@ extern "C" {
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn atof(__nptr: *const i8) -> libc::c_double;
+    fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
     fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> i64;
     #[no_mangle]
@@ -119,15 +119,15 @@ extern "C" {
     #[no_mangle]
     fn pdf_obj_typeof(object: *mut pdf_obj) -> libc::c_int;
     #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> libc::c_double;
+    fn pdf_number_value(number: *mut pdf_obj) -> f64;
     #[no_mangle]
     fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_color_rgbcolor(
         color: *mut pdf_color,
-        r: libc::c_double,
-        g: libc::c_double,
-        b: libc::c_double,
+        r: f64,
+        g: f64,
+        b: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn pdf_color_push(sc: *mut pdf_color, fc: *mut pdf_color);
@@ -185,9 +185,9 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_end_actualtext();
     #[no_mangle]
-    static mut paper_width: libc::c_double;
+    static mut paper_width: f64;
     #[no_mangle]
-    static mut paper_height: libc::c_double;
+    static mut paper_height: f64;
     #[no_mangle]
     static mut landscape_mode: libc::c_int;
     #[no_mangle]
@@ -197,7 +197,7 @@ extern "C" {
         dict: *mut cff_dict,
         key: *const i8,
         idx: libc::c_int,
-    ) -> libc::c_double;
+    ) -> f64;
     #[no_mangle]
     fn cff_dict_known(dict: *mut cff_dict, key: *const i8) -> libc::c_int;
     #[no_mangle]
@@ -272,9 +272,9 @@ extern "C" {
     /* Page */
     #[no_mangle]
     fn pdf_doc_begin_page(
-        scale: libc::c_double,
-        x_origin: libc::c_double,
-        y_origin: libc::c_double,
+        scale: f64,
+        x_origin: f64,
+        y_origin: f64,
     );
     #[no_mangle]
     fn pdf_doc_end_page();
@@ -336,9 +336,9 @@ extern "C" {
     fn spc_exec_special(
         p: *const i8,
         size: i32,
-        x_user: libc::c_double,
-        y_user: libc::c_double,
-        mag: libc::c_double,
+        x_user: f64,
+        y_user: f64,
+        mag: f64,
     ) -> libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -589,7 +589,7 @@ pub type fixword = i32;
 pub struct pdf_color {
     pub num_components: libc::c_int,
     pub spot_color_name: *mut i8,
-    pub values: [libc::c_double; 4],
+    pub values: [f64; 4],
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -616,10 +616,10 @@ pub type spt_t = libc::c_int;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 /*
  * The section below this line deals with the actual processing of the
@@ -672,9 +672,9 @@ pub struct loaded_font {
     pub cffont: *mut cff_font,
     pub numGlyphs: libc::c_uint,
     pub layout_dir: libc::c_int,
-    pub extend: libc::c_float,
-    pub slant: libc::c_float,
-    pub embolden: libc::c_float,
+    pub extend: f32,
+    pub slant: f32,
+    pub embolden: f32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -728,7 +728,7 @@ pub struct cff_dict_entry {
     pub id: libc::c_int,
     pub key: *const i8,
     pub count: libc::c_int,
-    pub values: *mut libc::c_double,
+    pub values: *mut f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -826,15 +826,15 @@ pub struct fontmap_rec {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_opt {
-    pub slant: libc::c_double,
-    pub extend: libc::c_double,
-    pub bold: libc::c_double,
+    pub slant: f64,
+    pub extend: f64,
+    pub bold: f64,
     pub mapc: libc::c_int,
     pub flags: libc::c_int,
     pub otl_tags: *mut i8,
     pub tounicode: *mut i8,
     pub cff_charsets: *mut libc::c_void,
-    pub design_size: libc::c_double,
+    pub design_size: f64,
     pub charcoll: *mut i8,
     pub index: libc::c_int,
     pub style: libc::c_int,
@@ -868,26 +868,26 @@ pub struct dvi_lr {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_3 {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct t1_ginfo {
     pub use_seac: libc::c_int,
-    pub wx: libc::c_double,
-    pub wy: libc::c_double,
+    pub wx: f64,
+    pub wy: f64,
     pub bbox: C2RustUnnamed_3,
     pub seac: C2RustUnnamed_4,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_4 {
-    pub asb: libc::c_double,
-    pub adx: libc::c_double,
-    pub ady: libc::c_double,
+    pub asb: f64,
+    pub adx: f64,
+    pub ady: f64,
     pub bchar: card8,
     pub achar: card8,
 }
@@ -1344,10 +1344,10 @@ static mut dvi_info: dvi_header = {
     };
     init
 };
-static mut dev_origin_x: libc::c_double = 72.0f64;
-static mut dev_origin_y: libc::c_double = 770.0f64;
+static mut dev_origin_x: f64 = 72.0f64;
+static mut dev_origin_y: f64 = 770.0f64;
 #[no_mangle]
-pub unsafe extern "C" fn get_origin(mut x: libc::c_int) -> libc::c_double {
+pub unsafe extern "C" fn get_origin(mut x: libc::c_int) -> f64 {
     return if x != 0 { dev_origin_x } else { dev_origin_y };
 }
 static mut lr_state: dvi_lr = dvi_lr {
@@ -1723,15 +1723,15 @@ unsafe extern "C" fn get_page_info(mut post_location: i32) {
     }
 }
 /* Following are computed "constants" used for unit conversion */
-static mut dvi2pts: libc::c_double = 1.52018f64;
-static mut total_mag: libc::c_double = 1.0f64;
+static mut dvi2pts: f64 = 1.52018f64;
+static mut total_mag: f64 = 1.0f64;
 #[no_mangle]
-pub unsafe extern "C" fn dvi_tell_mag() -> libc::c_double {
+pub unsafe extern "C" fn dvi_tell_mag() -> f64 {
     return total_mag; /* unused */
 }
-unsafe extern "C" fn do_scales(mut mag: libc::c_double) {
-    total_mag = dvi_info.mag as libc::c_double / 1000.0f64 * mag; /* 1.0 */
-    dvi2pts = dvi_info.unit_num as libc::c_double / dvi_info.unit_den as libc::c_double; /* font name length */
+unsafe extern "C" fn do_scales(mut mag: f64) {
+    total_mag = dvi_info.mag as f64 / 1000.0f64 * mag; /* 1.0 */
+    dvi2pts = dvi_info.unit_num as f64 / dvi_info.unit_den as f64; /* font name length */
     dvi2pts *= 72.0f64 / 254000.0f64; /* hard-code as 10pt for now, not used anyway */
 }
 unsafe extern "C" fn get_dvi_info(mut post_location: i32) {
@@ -1949,10 +1949,10 @@ unsafe extern "C" fn get_dvi_fonts(mut post_location: i32) {
             );
             dpx_message(
                 b"size=%5.2fpt (scaled %4.1f%%)\x00" as *const u8 as *const i8,
-                (*def_fonts.offset(i as isize)).point_size as libc::c_double * dvi2pts,
+                (*def_fonts.offset(i as isize)).point_size as f64 * dvi2pts,
                 100.0f64
-                    * ((*def_fonts.offset(i as isize)).point_size as libc::c_double
-                        / (*def_fonts.offset(i as isize)).design_size as libc::c_double),
+                    * ((*def_fonts.offset(i as isize)).point_size as f64
+                        / (*def_fonts.offset(i as isize)).design_size as f64),
             );
             dpx_message(b"\n\x00" as *const u8 as *const i8);
             i = i.wrapping_add(1)
@@ -2069,14 +2069,14 @@ pub unsafe extern "C" fn dvi_is_tracking_boxes() -> bool {
  */
 #[no_mangle]
 pub unsafe extern "C" fn dvi_do_special(mut buffer: *const libc::c_void, mut size: i32) {
-    let mut x_user: libc::c_double = 0.; /* VF or device font ID */
-    let mut y_user: libc::c_double = 0.;
-    let mut mag: libc::c_double = 0.;
+    let mut x_user: f64 = 0.; /* VF or device font ID */
+    let mut y_user: f64 = 0.;
+    let mut mag: f64 = 0.;
     let mut p: *const i8 = 0 as *const i8;
     graphics_mode();
     p = buffer as *const i8;
-    x_user = dvi_state.h as libc::c_double * dvi2pts;
-    y_user = -dvi_state.v as libc::c_double * dvi2pts;
+    x_user = dvi_state.h as f64 * dvi2pts;
+    y_user = -dvi_state.v as f64 * dvi2pts;
     mag = dvi_tell_mag();
     if spc_exec_special(p, size, x_user, y_user, mag) < 0i32 {
         if verbose != 0 {
@@ -2085,7 +2085,7 @@ pub unsafe extern "C" fn dvi_do_special(mut buffer: *const libc::c_void, mut siz
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn dvi_unit_size() -> libc::c_double {
+pub unsafe extern "C" fn dvi_unit_size() -> f64 {
     return dvi2pts;
 }
 #[no_mangle]
@@ -2102,7 +2102,7 @@ pub unsafe extern "C" fn dvi_locate_font(
         dpx_message(
             b"<%s@%.2fpt\x00" as *const u8 as *const i8,
             tfm_name,
-            ptsize as libc::c_double * dvi2pts,
+            ptsize as f64 * dvi2pts,
         );
     }
     need_more_fonts(1i32 as libc::c_uint);
@@ -2296,7 +2296,7 @@ unsafe extern "C" fn dvi_locate_native_font(
         dpx_message(
             b"<%s@%.2fpt\x00" as *const u8 as *const i8,
             filename,
-            ptsize as libc::c_double * dvi2pts,
+            ptsize as f64 * dvi2pts,
         );
     }
     handle = dpx_open_dfont_file(filename);
@@ -2457,21 +2457,21 @@ unsafe extern "C" fn dvi_locate_native_font(
         ttstub_input_close(handle);
     }
     (*loaded_fonts.offset(cur_id as isize)).layout_dir = layout_dir;
-    (*loaded_fonts.offset(cur_id as isize)).extend = (*mrec).opt.extend as libc::c_float;
-    (*loaded_fonts.offset(cur_id as isize)).slant = (*mrec).opt.slant as libc::c_float;
-    (*loaded_fonts.offset(cur_id as isize)).embolden = (*mrec).opt.bold as libc::c_float;
+    (*loaded_fonts.offset(cur_id as isize)).extend = (*mrec).opt.extend as f32;
+    (*loaded_fonts.offset(cur_id as isize)).slant = (*mrec).opt.slant as f32;
+    (*loaded_fonts.offset(cur_id as isize)).embolden = (*mrec).opt.bold as f32;
     if verbose != 0 {
         dpx_message(b">\x00" as *const u8 as *const i8);
     }
     return cur_id;
 }
 #[no_mangle]
-pub unsafe extern "C" fn dvi_dev_xpos() -> libc::c_double {
-    return dvi_state.h as libc::c_double * dvi2pts;
+pub unsafe extern "C" fn dvi_dev_xpos() -> f64 {
+    return dvi_state.h as f64 * dvi2pts;
 }
 #[no_mangle]
-pub unsafe extern "C" fn dvi_dev_ypos() -> libc::c_double {
-    return -(dvi_state.v as libc::c_double * dvi2pts);
+pub unsafe extern "C" fn dvi_dev_ypos() -> f64 {
+    return -(dvi_state.v as f64 * dvi2pts);
 }
 unsafe extern "C" fn do_moveto(mut x: i32, mut y: i32) {
     dvi_state.h = x;
@@ -3109,14 +3109,14 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: libc::c_int) {
         pdf_color_rgbcolor(
             &mut color,
             (((*font).rgba_color >> 24i32) as u8 as libc::c_int & 0xffi32)
-                as libc::c_double
-                / 255i32 as libc::c_double,
+                as f64
+                / 255i32 as f64,
             (((*font).rgba_color >> 16i32) as u8 as libc::c_int & 0xffi32)
-                as libc::c_double
-                / 255i32 as libc::c_double,
+                as f64
+                / 255i32 as f64,
             (((*font).rgba_color >> 8i32) as u8 as libc::c_int & 0xffi32)
-                as libc::c_double
-                / 255i32 as libc::c_double,
+                as f64
+                / 255i32 as f64,
         );
         pdf_color_push(&mut color, &mut color);
     }
@@ -3125,8 +3125,8 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: libc::c_int) {
         glyph_id = get_buffered_unsigned_pair();
         if glyph_id < (*font).numGlyphs {
             let mut advance: libc::c_uint = 0;
-            let mut ascent: libc::c_double = (*font).ascent as libc::c_double;
-            let mut descent: libc::c_double = (*font).descent as libc::c_double;
+            let mut ascent: f64 = (*font).ascent as f64;
+            let mut descent: f64 = (*font).descent as f64;
             if !(*font).cffont.is_null() {
                 let mut cstrings: *mut cff_index = (*(*font).cffont).cstrings;
                 let mut gm: t1_ginfo = t1_ginfo {
@@ -3175,9 +3175,9 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: libc::c_int) {
             } else {
                 advance = (*(*font).hvmt.offset(glyph_id as isize)).advance as libc::c_uint
             }
-            glyph_width = ((*font).size as libc::c_double * advance as libc::c_double
-                / (*font).unitsPerEm as libc::c_double) as spt_t;
-            glyph_width = (glyph_width as libc::c_float * (*font).extend) as spt_t;
+            glyph_width = ((*font).size as f64 * advance as f64
+                / (*font).unitsPerEm as f64) as spt_t;
+            glyph_width = (glyph_width as f32 * (*font).extend) as spt_t;
             if dvi_is_tracking_boxes() {
                 let mut rect: pdf_rect = pdf_rect {
                     llx: 0.,
@@ -3185,10 +3185,10 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: libc::c_int) {
                     urx: 0.,
                     ury: 0.,
                 };
-                height = ((*font).size as libc::c_double * ascent
-                    / (*font).unitsPerEm as libc::c_double) as spt_t;
-                depth = ((*font).size as libc::c_double * -descent
-                    / (*font).unitsPerEm as libc::c_double) as spt_t;
+                height = ((*font).size as f64 * ascent
+                    / (*font).unitsPerEm as f64) as spt_t;
+                depth = ((*font).size as f64 * -descent
+                    / (*font).unitsPerEm as f64) as spt_t;
                 pdf_dev_set_rect(
                     &mut rect,
                     dvi_state.h + *xloc.offset(i as isize),
@@ -3278,9 +3278,9 @@ unsafe extern "C" fn check_postamble() {
  */
 #[no_mangle]
 pub unsafe extern "C" fn dvi_do_page(
-    mut page_paper_height: libc::c_double,
-    mut hmargin: libc::c_double,
-    mut vmargin: libc::c_double,
+    mut page_paper_height: f64,
+    mut hmargin: f64,
+    mut vmargin: f64,
 ) {
     let mut opcode: u8 = 0;
     /* before this is called, we have scanned the page for papersize specials
@@ -3521,8 +3521,8 @@ pub unsafe extern "C" fn dvi_do_page(
 #[no_mangle]
 pub unsafe extern "C" fn dvi_init(
     mut dvi_filename: *const i8,
-    mut mag: libc::c_double,
-) -> libc::c_double {
+    mut mag: f64,
+) -> f64 {
     let mut post_location: i32 = 0;
     if dvi_filename.is_null() {
         _tt_abort(b"filename must be specified\x00" as *const u8 as *const i8);
@@ -3640,15 +3640,15 @@ pub unsafe extern "C" fn dvi_vf_finish() {
  */
 /* XXX: there are four quasi-redundant versions of this; grp for K_UNIT__PT */
 unsafe extern "C" fn read_length(
-    mut vp: *mut libc::c_double,
-    mut mag: libc::c_double,
+    mut vp: *mut f64,
+    mut mag: f64,
     mut pp: *mut *const i8,
     mut endptr: *const i8,
 ) -> libc::c_int {
     let mut q: *mut i8 = 0 as *mut i8; /* remember this for free, because q may be advanced */
     let mut p: *const i8 = *pp; /* inverse magnify */
-    let mut v: libc::c_double = 0.;
-    let mut u: libc::c_double = 1.0f64;
+    let mut v: f64 = 0.;
+    let mut u: f64 = 1.0f64;
     let mut _ukeys: [*const i8; 10] = [
         b"pt\x00" as *const u8 as *const i8,
         b"in\x00" as *const u8 as *const i8,
@@ -3706,7 +3706,7 @@ unsafe extern "C" fn read_length(
                 5 => u *= 12.0f64 * 72.0f64 / 72.27f64,
                 6 => u *= 1238.0f64 / 1157.0f64 * 72.0f64 / 72.27f64,
                 7 => u *= 12.0f64 * 1238.0f64 / 1157.0f64 * 72.0f64 / 72.27f64,
-                8 => u *= 72.0f64 / (72.27f64 * 65536i32 as libc::c_double),
+                8 => u *= 72.0f64 / (72.27f64 * 65536i32 as f64),
                 _ => {
                     dpx_warning(
                         b"Unknown unit of measure: %s\x00" as *const u8 as *const i8,
@@ -3728,10 +3728,10 @@ unsafe extern "C" fn read_length(
     return error;
 }
 unsafe extern "C" fn scan_special(
-    mut wd: *mut libc::c_double,
-    mut ht: *mut libc::c_double,
-    mut xo: *mut libc::c_double,
-    mut yo: *mut libc::c_double,
+    mut wd: *mut f64,
+    mut ht: *mut f64,
+    mut xo: *mut f64,
+    mut yo: *mut f64,
     mut lm: *mut libc::c_int,
     mut majorversion: *mut libc::c_int,
     mut minorversion: *mut libc::c_int,
@@ -3749,7 +3749,7 @@ unsafe extern "C" fn scan_special(
     let mut ns_pdf: libc::c_int = 0i32;
     let mut ns_dvipdfmx: libc::c_int = 0i32;
     let mut error: libc::c_int = 0i32;
-    let mut tmp: libc::c_double = 0.;
+    let mut tmp: f64 = 0.;
     endptr = p.offset(size as isize);
     skip_white(&mut p, endptr);
     q = parse_c_ident(&mut p, endptr);
@@ -3837,7 +3837,7 @@ unsafe extern "C" fn scan_special(
             }
             error = read_length(&mut tmp, 1.0f64, &mut p, endptr);
             if error == 0 {
-                let mut tmp1: libc::c_double = 0.;
+                let mut tmp1: f64 = 0.;
                 skip_white(&mut p, endptr);
                 if p < endptr && *p as libc::c_int == ',' as i32 {
                     p = p.offset(1);
@@ -3974,10 +3974,10 @@ static mut buffered_page: libc::c_int = -1i32;
 #[no_mangle]
 pub unsafe extern "C" fn dvi_scan_specials(
     mut page_no: libc::c_int,
-    mut page_width: *mut libc::c_double,
-    mut page_height: *mut libc::c_double,
-    mut x_offset: *mut libc::c_double,
-    mut y_offset: *mut libc::c_double,
+    mut page_width: *mut f64,
+    mut page_height: *mut f64,
+    mut x_offset: *mut f64,
+    mut y_offset: *mut f64,
     mut landscape: *mut libc::c_int,
     mut majorversion: *mut libc::c_int,
     mut minorversion: *mut libc::c_int,

@@ -245,7 +245,7 @@ extern "C" {
     #[no_mangle]
     fn overflow(s: *const i8, n: i32) -> !;
     #[no_mangle]
-    fn tex_round(_: libc::c_double) -> i32;
+    fn tex_round(_: f64) -> i32;
     #[no_mangle]
     fn print_scaled(s: scaled_t);
     #[no_mangle]
@@ -402,7 +402,7 @@ pub type b16x4 = b16x4_le_t;
 pub union memory_word {
     pub b32: b32x2,
     pub b16: b16x4,
-    pub gr: libc::c_double,
+    pub gr: f64,
     pub ptr: *mut libc::c_void,
 }
 /* ## THE ORIGINAL SITUATION (archived for posterity)
@@ -1727,8 +1727,8 @@ unsafe extern "C" fn hlist_out() {
     let mut r: i32 = 0;
     let mut k: i32 = 0;
     let mut j: i32 = 0;
-    let mut glue_temp: libc::c_double = 0.;
-    let mut cur_glue: libc::c_double = 0.;
+    let mut glue_temp: f64 = 0.;
+    let mut cur_glue: f64 = 0.;
     let mut cur_g: scaled_t = 0;
     let mut c: u16 = 0;
     let mut f: internal_font_number = 0;
@@ -1935,7 +1935,7 @@ unsafe extern "C" fn hlist_out() {
                                             k += tex_round(
                                                 (*mem.offset((this_box + 6i32) as isize)).gr
                                                     * (*mem.offset((g + 2i32) as isize)).b32.s1
-                                                        as libc::c_double,
+                                                        as f64,
                                             )
                                         }
                                     } else if (*mem.offset(g as isize)).b16.s0 as libc::c_int
@@ -1944,7 +1944,7 @@ unsafe extern "C" fn hlist_out() {
                                         k -= tex_round(
                                             (*mem.offset((this_box + 6i32) as isize)).gr
                                                 * (*mem.offset((g + 3i32) as isize)).b32.s1
-                                                    as libc::c_double,
+                                                    as f64,
                                         )
                                     }
                                 }
@@ -2367,7 +2367,7 @@ unsafe extern "C" fn hlist_out() {
                                         cur_glue +=
                                             (*mem.offset((g + 2i32) as
                                                              isize)).b32.s1 as
-                                                libc::c_double;
+                                                f64;
                                         glue_temp =
                                             (*mem.offset((this_box + 6i32) as
                                                              isize)).gr *
@@ -2386,7 +2386,7 @@ unsafe extern "C" fn hlist_out() {
                                     cur_glue -=
                                         (*mem.offset((g + 3i32) as
                                                          isize)).b32.s1 as
-                                            libc::c_double;
+                                            f64;
                                     glue_temp =
                                         (*mem.offset((this_box + 6i32) as
                                                          isize)).gr *
@@ -2732,8 +2732,8 @@ unsafe extern "C" fn vlist_out() {
     let mut lx: scaled_t = 0;
     let mut outer_doing_leaders: bool = false;
     let mut edge: scaled_t = 0;
-    let mut glue_temp: libc::c_double = 0.;
-    let mut cur_glue: libc::c_double = 0.;
+    let mut glue_temp: f64 = 0.;
+    let mut cur_glue: f64 = 0.;
     let mut cur_g: scaled_t = 0;
     let mut upwards: bool = false;
     let mut f: internal_font_number = 0;
@@ -2898,7 +2898,7 @@ unsafe extern "C" fn vlist_out() {
                                 == g_order as libc::c_int
                             {
                                 cur_glue +=
-                                    (*mem.offset((g + 2i32) as isize)).b32.s1 as libc::c_double;
+                                    (*mem.offset((g + 2i32) as isize)).b32.s1 as f64;
                                 glue_temp = (*mem.offset((this_box + 6i32) as isize)).gr * cur_glue;
                                 if glue_temp > 1000000000.0f64 {
                                     glue_temp = 1000000000.0f64
@@ -2910,7 +2910,7 @@ unsafe extern "C" fn vlist_out() {
                         } else if (*mem.offset(g as isize)).b16.s0 as libc::c_int
                             == g_order as libc::c_int
                         {
-                            cur_glue -= (*mem.offset((g + 3i32) as isize)).b32.s1 as libc::c_double;
+                            cur_glue -= (*mem.offset((g + 3i32) as isize)).b32.s1 as f64;
                             glue_temp = (*mem.offset((this_box + 6i32) as isize)).gr * cur_glue;
                             if glue_temp > 1000000000.0f64 {
                                 glue_temp = 1000000000.0f64
@@ -3084,7 +3084,7 @@ unsafe extern "C" fn reverse(
     mut this_box: i32,
     mut t: i32,
     mut cur_g: *mut scaled_t,
-    mut cur_glue: *mut libc::c_double,
+    mut cur_glue: *mut f64,
 ) -> i32 {
     let mut current_block: u64;
     let mut l: i32 = 0;
@@ -3092,7 +3092,7 @@ unsafe extern "C" fn reverse(
     let mut q: i32 = 0;
     let mut g_order: glue_ord = 0;
     let mut g_sign: u8 = 0;
-    let mut glue_temp: libc::c_double = 0.;
+    let mut glue_temp: f64 = 0.;
     let mut m: i32 = 0;
     let mut n: i32 = 0;
     let mut c: u16 = 0;
@@ -3168,7 +3168,7 @@ unsafe extern "C" fn reverse(
                                     {
                                         *cur_glue = *cur_glue
                                             + (*mem.offset((g + 2i32) as isize)).b32.s1
-                                                as libc::c_double;
+                                                as f64;
                                         glue_temp = (*mem.offset((this_box + 6i32) as isize)).gr
                                             * *cur_glue;
                                         if glue_temp > 1000000000.0f64 {
@@ -3183,7 +3183,7 @@ unsafe extern "C" fn reverse(
                                 {
                                     *cur_glue = *cur_glue
                                         - (*mem.offset((g + 3i32) as isize)).b32.s1
-                                            as libc::c_double;
+                                            as f64;
                                     glue_temp =
                                         (*mem.offset((this_box + 6i32) as isize)).gr * *cur_glue;
                                     if glue_temp > 1000000000.0f64 {

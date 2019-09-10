@@ -32,7 +32,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     /* Name does not include the / */
@@ -142,8 +142,8 @@ pub struct ximage_info {
     pub bits_per_component: libc::c_int,
     pub num_components: libc::c_int,
     pub min_dpi: libc::c_int,
-    pub xdensity: libc::c_double,
-    pub ydensity: libc::c_double,
+    pub xdensity: f64,
+    pub ydensity: f64,
 }
 pub type pdf_ximage = pdf_ximage_;
 #[derive(Copy, Clone)]
@@ -180,16 +180,16 @@ pub unsafe extern "C" fn check_for_bmp(mut handle: rust_input_handle_t) -> libc:
     return 1i32;
 }
 unsafe extern "C" fn get_density(
-    mut xdensity: *mut libc::c_double,
-    mut ydensity: *mut libc::c_double,
+    mut xdensity: *mut f64,
+    mut ydensity: *mut f64,
     mut hdr: *mut hdr_info,
 ) {
     if (*hdr).x_pix_per_meter > 0i32 as libc::c_uint
         && (*hdr).y_pix_per_meter > 0i32 as libc::c_uint
     {
         /* 0 for undefined. FIXME */
-        *xdensity = 72.0f64 / ((*hdr).x_pix_per_meter as libc::c_double * 0.0254f64);
-        *ydensity = 72.0f64 / ((*hdr).y_pix_per_meter as libc::c_double * 0.0254f64)
+        *xdensity = 72.0f64 / ((*hdr).x_pix_per_meter as f64 * 0.0254f64);
+        *ydensity = 72.0f64 / ((*hdr).y_pix_per_meter as f64 * 0.0254f64)
     } else {
         *xdensity = 1.0f64;
         *ydensity = 1.0f64
@@ -200,8 +200,8 @@ pub unsafe extern "C" fn bmp_get_bbox(
     mut handle: rust_input_handle_t,
     mut width: *mut libc::c_uint,
     mut height: *mut libc::c_uint,
-    mut xdensity: *mut libc::c_double,
-    mut ydensity: *mut libc::c_double,
+    mut xdensity: *mut f64,
+    mut ydensity: *mut f64,
 ) -> libc::c_int {
     let mut r: libc::c_int = 0;
     let mut hdr: hdr_info = {
@@ -387,7 +387,7 @@ pub unsafe extern "C" fn bmp_include_image(
         );
         pdf_add_array(
             colorspace,
-            pdf_new_number((num_palette - 1i32) as libc::c_double),
+            pdf_new_number((num_palette - 1i32) as f64),
         );
         pdf_add_array(colorspace, lookup);
     } else {

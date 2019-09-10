@@ -11,9 +11,9 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
@@ -62,9 +62,9 @@ extern "C" {
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dvi_dev_xpos() -> libc::c_double;
+    fn dvi_dev_xpos() -> f64;
     #[no_mangle]
-    fn dvi_dev_ypos() -> libc::c_double;
+    fn dvi_dev_ypos() -> f64;
     #[no_mangle]
     fn dvi_untag_depth();
     #[no_mangle]
@@ -439,9 +439,9 @@ pub type va_list = __builtin_va_list;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_env {
-    pub x_user: libc::c_double,
-    pub y_user: libc::c_double,
-    pub mag: libc::c_double,
+    pub x_user: f64,
+    pub y_user: f64,
+    pub mag: f64,
     pub pg: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -463,12 +463,12 @@ pub struct spc_handler {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -489,8 +489,8 @@ pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> (
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_coord {
-    pub x: libc::c_double,
-    pub y: libc::c_double,
+    pub x: f64,
+    pub y: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -821,9 +821,9 @@ unsafe extern "C" fn init_special(
     mut args: *mut spc_arg,
     mut p: *const i8,
     mut size: u32,
-    mut x_user: libc::c_double,
-    mut y_user: libc::c_double,
-    mut mag: libc::c_double,
+    mut x_user: f64,
+    mut y_user: f64,
+    mut mag: f64,
 ) {
     (*special).key = 0 as *const i8;
     (*special).exec = ::std::mem::transmute::<
@@ -1280,9 +1280,9 @@ unsafe extern "C" fn print_error(
 pub unsafe extern "C" fn spc_exec_special(
     mut buffer: *const i8,
     mut size: i32,
-    mut x_user: libc::c_double,
-    mut y_user: libc::c_double,
-    mut mag: libc::c_double,
+    mut x_user: f64,
+    mut y_user: f64,
+    mut mag: f64,
 ) -> libc::c_int {
     let mut error: libc::c_int = -1i32;
     let mut i: libc::c_int = 0;

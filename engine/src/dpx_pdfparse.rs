@@ -10,7 +10,7 @@ extern "C" {
     pub type pdf_obj;
     pub type pdf_file;
     #[no_mangle]
-    fn pow(_: libc::c_double, _: libc::c_double) -> libc::c_double;
+    fn pow(_: f64, _: f64) -> f64;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const i8,
@@ -43,9 +43,9 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_boolean(value: i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> libc::c_double;
+    fn pdf_number_value(number: *mut pdf_obj) -> f64;
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     #[no_mangle]
@@ -391,7 +391,7 @@ pub unsafe extern "C" fn parse_pdf_number(
     mut endptr: *const i8,
 ) -> *mut pdf_obj {
     let mut p: *const i8 = 0 as *const i8;
-    let mut v: libc::c_double = 0.0f64;
+    let mut v: f64 = 0.0f64;
     let mut nddigits: libc::c_int = 0i32;
     let mut sign: libc::c_int = 1i32;
     let mut has_dot: libc::c_int = 0i32;
@@ -460,12 +460,12 @@ pub unsafe extern "C" fn parse_pdf_number(
             != 0
         {
             if has_dot != 0 {
-                v += (*p.offset(0) as libc::c_int - '0' as i32) as libc::c_double
-                    / pow(10i32 as libc::c_double, (nddigits + 1i32) as libc::c_double);
+                v += (*p.offset(0) as libc::c_int - '0' as i32) as f64
+                    / pow(10i32 as f64, (nddigits + 1i32) as f64);
                 nddigits += 1
             } else {
-                v = v * 10.0f64 + *p.offset(0) as libc::c_int as libc::c_double
-                    - '0' as i32 as libc::c_double
+                v = v * 10.0f64 + *p.offset(0) as libc::c_int as f64
+                    - '0' as i32 as f64
             }
         } else {
             dpx_warning(
@@ -476,7 +476,7 @@ pub unsafe extern "C" fn parse_pdf_number(
         p = p.offset(1)
     }
     *pp = p;
-    return pdf_new_number(sign as libc::c_double * v);
+    return pdf_new_number(sign as f64 * v);
 }
 /*
  * PDF Name:

@@ -68,9 +68,9 @@ pub const _ISupper: C2RustUnnamed = 256;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_env {
-    pub x_user: libc::c_double,
-    pub y_user: libc::c_double,
-    pub mag: libc::c_double,
+    pub x_user: f64,
+    pub y_user: f64,
+    pub mag: f64,
     pub pg: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -94,7 +94,7 @@ pub struct spc_handler {
 pub struct pdf_color {
     pub num_components: libc::c_int,
     pub spot_color_name: *mut i8,
-    pub values: [libc::c_double; 4],
+    pub values: [f64; 4],
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project

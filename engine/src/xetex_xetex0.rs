@@ -10,7 +10,7 @@ extern crate libc;
 extern "C" {
     pub type XeTeXLayoutEngine_rec;
     #[no_mangle]
-    fn fabs(_: libc::c_double) -> libc::c_double;
+    fn fabs(_: f64) -> f64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -856,7 +856,7 @@ extern "C" {
     #[no_mangle]
     fn print_file_name(n: i32, a: i32, e: i32);
     #[no_mangle]
-    fn tex_round(_: libc::c_double) -> i32;
+    fn tex_round(_: f64) -> i32;
     #[no_mangle]
     fn print_current_string();
     #[no_mangle]
@@ -1081,7 +1081,7 @@ pub type b16x4 = b16x4_le_t;
 pub union memory_word {
     pub b32: b32x2,
     pub b16: b16x4,
-    pub gr: libc::c_double,
+    pub gr: f64,
     pub ptr: *mut libc::c_void,
 }
 /* ## THE ORIGINAL SITUATION (archived for posterity)
@@ -2157,7 +2157,7 @@ pub unsafe extern "C" fn print_skip_param(mut n: i32) {
 pub unsafe extern "C" fn show_node_list(mut p: i32) {
     let mut n: i32 = 0;
     let mut i: i32 = 0;
-    let mut g: libc::c_double = 0.;
+    let mut g: f64 = 0.;
     if cur_length() > depth_threshold {
         if p > -0xfffffffi32 {
             print_cstr(b" []\x00" as *const u8 as *const i8);
@@ -2240,7 +2240,7 @@ pub unsafe extern "C" fn show_node_list(mut p: i32) {
                                 );
                             } else {
                                 print_glue(
-                                    tex_round(65536 as libc::c_double * g),
+                                    tex_round(65536 as f64 * g),
                                     (*mem.offset((p + 5i32) as isize)).b16.s0 as i32,
                                     0 as *const i8,
                                 );
@@ -20815,7 +20815,7 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
         (*mem.offset((r + 5i32) as isize)).b16.s1 = 1i32 as u16;
         if total_stretch[o as usize] != 0i32 {
             (*mem.offset((r + 6i32) as isize)).gr =
-                x as libc::c_double / total_stretch[o as usize] as libc::c_double
+                x as f64 / total_stretch[o as usize] as f64
         } else {
             (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
             (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
@@ -20887,7 +20887,7 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
         (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as u16;
         if total_shrink[o as usize] != 0i32 {
             (*mem.offset((r + 6i32) as isize)).gr =
-                -x as libc::c_double / total_shrink[o as usize] as libc::c_double
+                -x as f64 / total_shrink[o as usize] as f64
         } else {
             (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
             (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
@@ -21391,7 +21391,7 @@ pub unsafe extern "C" fn vpackage(
             (*mem.offset((r + 5i32) as isize)).b16.s1 = 1i32 as u16;
             if total_stretch[o as usize] != 0i32 {
                 (*mem.offset((r + 6i32) as isize)).gr =
-                    x as libc::c_double / total_stretch[o as usize] as libc::c_double
+                    x as f64 / total_stretch[o as usize] as f64
             } else {
                 (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
@@ -21463,7 +21463,7 @@ pub unsafe extern "C" fn vpackage(
             (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as u16;
             if total_shrink[o as usize] != 0i32 {
                 (*mem.offset((r + 6i32) as isize)).gr =
-                    -x as libc::c_double / total_shrink[o as usize] as libc::c_double
+                    -x as f64 / total_shrink[o as usize] as f64
             } else {
                 (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
@@ -22757,7 +22757,7 @@ pub unsafe extern "C" fn fin_align() {
                                 t = t + tex_round(
                                     (*mem.offset((p + 6i32) as isize)).gr
                                         * (*mem.offset((v + 2i32) as isize)).b32.s1
-                                            as libc::c_double,
+                                            as f64,
                                 )
                             }
                         } else if (*mem.offset((p + 5i32) as isize)).b16.s1 as libc::c_int == 2i32 {
@@ -22767,7 +22767,7 @@ pub unsafe extern "C" fn fin_align() {
                                 t = t - tex_round(
                                     (*mem.offset((p + 6i32) as isize)).gr
                                         * (*mem.offset((v + 3i32) as isize)).b32.s1
-                                            as libc::c_double,
+                                            as f64,
                                 )
                             }
                         }
@@ -22801,8 +22801,8 @@ pub unsafe extern "C" fn fin_align() {
                             } else {
                                 (*mem.offset((r + 6i32) as isize)).gr = (t
                                     - (*mem.offset((r + 1i32) as isize)).b32.s1)
-                                    as libc::c_double
-                                    / (*mem.offset((r + 6i32) as isize)).b32.s1 as libc::c_double
+                                    as f64
+                                    / (*mem.offset((r + 6i32) as isize)).b32.s1 as f64
                             }
                         } else {
                             (*mem.offset((r + 5i32) as isize)).b16.s0 =
@@ -22819,9 +22819,9 @@ pub unsafe extern "C" fn fin_align() {
                             } else {
                                 (*mem.offset((r + 6i32) as isize)).gr =
                                     ((*mem.offset((r + 1i32) as isize)).b32.s1 - t)
-                                        as libc::c_double
+                                        as f64
                                         / (*mem.offset((r + 4i32) as isize)).b32.s1
-                                            as libc::c_double
+                                            as f64
                             }
                         }
                         (*mem.offset((r + 1i32) as isize)).b32.s1 = w;
@@ -22840,8 +22840,8 @@ pub unsafe extern "C" fn fin_align() {
                             } else {
                                 (*mem.offset((r + 6i32) as isize)).gr = (t
                                     - (*mem.offset((r + 3i32) as isize)).b32.s1)
-                                    as libc::c_double
-                                    / (*mem.offset((r + 6i32) as isize)).b32.s1 as libc::c_double
+                                    as f64
+                                    / (*mem.offset((r + 6i32) as isize)).b32.s1 as f64
                             }
                         } else {
                             (*mem.offset((r + 5i32) as isize)).b16.s0 =
@@ -22858,9 +22858,9 @@ pub unsafe extern "C" fn fin_align() {
                             } else {
                                 (*mem.offset((r + 6i32) as isize)).gr =
                                     ((*mem.offset((r + 3i32) as isize)).b32.s1 - t)
-                                        as libc::c_double
+                                        as f64
                                         / (*mem.offset((r + 4i32) as isize)).b32.s1
-                                            as libc::c_double
+                                            as f64
                             }
                         }
                         (*mem.offset((r + 3i32) as isize)).b32.s1 = w;
@@ -26428,8 +26428,8 @@ pub unsafe extern "C" fn build_discretionary() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn make_accent() {
-    let mut s: libc::c_double = 0.;
-    let mut t: libc::c_double = 0.;
+    let mut s: f64 = 0.;
+    let mut t: f64 = 0.;
     let mut p: i32 = 0;
     let mut q: i32 = 0;
     let mut r: i32 = 0;
@@ -26475,7 +26475,7 @@ pub unsafe extern "C" fn make_accent() {
             .s1;
         s = (*font_info.offset((1i32 + *param_base.offset(f as isize)) as isize))
             .b32
-            .s1 as libc::c_double
+            .s1 as f64
             / 65536.0f64;
         if *font_area.offset(f as isize) as libc::c_uint == 0xffffu32
             || *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
@@ -26536,7 +26536,7 @@ pub unsafe extern "C" fn make_accent() {
             /*1160: */
             t = (*font_info.offset((1i32 + *param_base.offset(f as isize)) as isize))
                 .b32
-                .s1 as libc::c_double
+                .s1 as f64
                 / 65536.0f64;
             if *font_area.offset(f as isize) as libc::c_uint == 0xffffu32
                 || *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
@@ -26569,13 +26569,13 @@ pub unsafe extern "C" fn make_accent() {
                 && a == 0i32
             {
                 delta = tex_round(
-                    (w - lsb + rsb) as libc::c_double / 2.0f64 + h as libc::c_double * t
-                        - x as libc::c_double * s,
+                    (w - lsb + rsb) as f64 / 2.0f64 + h as f64 * t
+                        - x as f64 * s,
                 )
             } else {
                 delta = tex_round(
-                    (w - a) as libc::c_double / 2.0f64 + h as libc::c_double * t
-                        - x as libc::c_double * s,
+                    (w - a) as f64 / 2.0f64 + h as f64 * t
+                        - x as f64 * s,
                 )
             }
             r = new_kern(delta);

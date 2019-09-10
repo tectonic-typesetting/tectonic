@@ -47,8 +47,8 @@ extern "C" {
     fn pdf_dev_put_image(
         xobj_id: libc::c_int,
         p: *mut transform_info,
-        ref_x: libc::c_double,
-        ref_y: libc::c_double,
+        ref_x: f64,
+        ref_y: f64,
     ) -> libc::c_int;
     /* Please use different interface than findresource...
      * This is not intended to be used for specifying page number and others.
@@ -112,9 +112,9 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_env {
-    pub x_user: libc::c_double,
-    pub y_user: libc::c_double,
-    pub mag: libc::c_double,
+    pub x_user: f64,
+    pub y_user: f64,
+    pub mag: f64,
     pub pg: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -136,9 +136,9 @@ pub struct spc_handler {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct transform_info {
-    pub width: libc::c_double,
-    pub height: libc::c_double,
-    pub depth: libc::c_double,
+    pub width: f64,
+    pub height: f64,
+    pub depth: f64,
     pub matrix: pdf_tmatrix,
     pub bbox: pdf_rect,
     pub flags: libc::c_int,
@@ -146,20 +146,20 @@ pub struct transform_info {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -265,8 +265,8 @@ unsafe extern "C" fn spc_handler_postscriptbox(
     if sscanf(
         buf.as_mut_ptr(),
         b"{%lfpt}{%lfpt}{%255[^}]}\x00" as *const u8 as *const i8,
-        &mut ti.width as *mut libc::c_double,
-        &mut ti.height as *mut libc::c_double,
+        &mut ti.width as *mut f64,
+        &mut ti.height as *mut f64,
         filename.as_mut_ptr(),
     ) != 3i32
     {

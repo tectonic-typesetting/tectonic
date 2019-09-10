@@ -33,7 +33,7 @@ extern "C" {
     /* A deeper object hierarchy will be considered as (illegal) loop. */
     pub type pdf_obj;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -50,7 +50,7 @@ extern "C" {
         whence: libc::c_int,
     ) -> size_t;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     /* Name does not include the / */
@@ -404,11 +404,11 @@ pub unsafe extern "C" fn tt_get_fontdesc(
             pdf_new_name(b"Ascent\x00" as *const u8 as *const i8),
             pdf_new_number(
                 floor(
-                    1000.0f64 * (*os2).sTypoAscender as libc::c_int as libc::c_double
-                        / (*head).unitsPerEm as libc::c_int as libc::c_double
-                        / 1i32 as libc::c_double
+                    1000.0f64 * (*os2).sTypoAscender as libc::c_int as f64
+                        / (*head).unitsPerEm as libc::c_int as f64
+                        / 1i32 as f64
                         + 0.5f64,
-                ) * 1i32 as libc::c_double,
+                ) * 1i32 as f64,
             ),
         );
         pdf_add_dict(
@@ -416,23 +416,23 @@ pub unsafe extern "C" fn tt_get_fontdesc(
             pdf_new_name(b"Descent\x00" as *const u8 as *const i8),
             pdf_new_number(
                 floor(
-                    1000.0f64 * (*os2).sTypoDescender as libc::c_int as libc::c_double
-                        / (*head).unitsPerEm as libc::c_int as libc::c_double
-                        / 1i32 as libc::c_double
+                    1000.0f64 * (*os2).sTypoDescender as libc::c_int as f64
+                        / (*head).unitsPerEm as libc::c_int as f64
+                        / 1i32 as f64
                         + 0.5f64,
-                ) * 1i32 as libc::c_double,
+                ) * 1i32 as f64,
             ),
         );
         if stemv < 0i32 {
             /* if not given by the option '-v' */
-            stemv = ((*os2).usWeightClass as libc::c_int as libc::c_double / 65.0f64
-                * ((*os2).usWeightClass as libc::c_int as libc::c_double / 65.0f64)
-                + 50i32 as libc::c_double) as libc::c_int
+            stemv = ((*os2).usWeightClass as libc::c_int as f64 / 65.0f64
+                * ((*os2).usWeightClass as libc::c_int as f64 / 65.0f64)
+                + 50i32 as f64) as libc::c_int
         } /* arbitrary */
         pdf_add_dict(
             descriptor,
             pdf_new_name(b"StemV\x00" as *const u8 as *const i8),
-            pdf_new_number(stemv as libc::c_double),
+            pdf_new_number(stemv as f64),
         );
         if (*os2).version as libc::c_int == 0x2i32 {
             pdf_add_dict(
@@ -440,11 +440,11 @@ pub unsafe extern "C" fn tt_get_fontdesc(
                 pdf_new_name(b"CapHeight\x00" as *const u8 as *const i8),
                 pdf_new_number(
                     floor(
-                        1000.0f64 * (*os2).sCapHeight as libc::c_int as libc::c_double
-                            / (*head).unitsPerEm as libc::c_int as libc::c_double
-                            / 1i32 as libc::c_double
+                        1000.0f64 * (*os2).sCapHeight as libc::c_int as f64
+                            / (*head).unitsPerEm as libc::c_int as f64
+                            / 1i32 as f64
                             + 0.5f64,
-                    ) * 1i32 as libc::c_double,
+                    ) * 1i32 as f64,
                 ),
             );
             /* optional */
@@ -453,11 +453,11 @@ pub unsafe extern "C" fn tt_get_fontdesc(
                 pdf_new_name(b"XHeight\x00" as *const u8 as *const i8),
                 pdf_new_number(
                     floor(
-                        1000.0f64 * (*os2).sxHeight as libc::c_int as libc::c_double
-                            / (*head).unitsPerEm as libc::c_int as libc::c_double
-                            / 1i32 as libc::c_double
+                        1000.0f64 * (*os2).sxHeight as libc::c_int as f64
+                            / (*head).unitsPerEm as libc::c_int as f64
+                            / 1i32 as f64
                             + 0.5f64,
-                    ) * 1i32 as libc::c_double,
+                    ) * 1i32 as f64,
                 ),
             );
         } else {
@@ -466,11 +466,11 @@ pub unsafe extern "C" fn tt_get_fontdesc(
                 pdf_new_name(b"CapHeight\x00" as *const u8 as *const i8),
                 pdf_new_number(
                     floor(
-                        1000.0f64 * (*os2).sTypoAscender as libc::c_int as libc::c_double
-                            / (*head).unitsPerEm as libc::c_int as libc::c_double
-                            / 1i32 as libc::c_double
+                        1000.0f64 * (*os2).sTypoAscender as libc::c_int as f64
+                            / (*head).unitsPerEm as libc::c_int as f64
+                            / 1i32 as f64
                             + 0.5f64,
-                    ) * 1i32 as libc::c_double,
+                    ) * 1i32 as f64,
                 ),
             );
         }
@@ -481,11 +481,11 @@ pub unsafe extern "C" fn tt_get_fontdesc(
                 pdf_new_name(b"AvgWidth\x00" as *const u8 as *const i8),
                 pdf_new_number(
                     floor(
-                        1000.0f64 * (*os2).xAvgCharWidth as libc::c_int as libc::c_double
-                            / (*head).unitsPerEm as libc::c_int as libc::c_double
-                            / 1i32 as libc::c_double
+                        1000.0f64 * (*os2).xAvgCharWidth as libc::c_int as f64
+                            / (*head).unitsPerEm as libc::c_int as f64
+                            / 1i32 as f64
                             + 0.5f64,
-                    ) * 1i32 as libc::c_double,
+                    ) * 1i32 as f64,
                 ),
             );
         }
@@ -496,44 +496,44 @@ pub unsafe extern "C" fn tt_get_fontdesc(
         bbox,
         pdf_new_number(
             floor(
-                1000.0f64 * (*head).xMin as libc::c_int as libc::c_double
-                    / (*head).unitsPerEm as libc::c_int as libc::c_double
-                    / 1i32 as libc::c_double
+                1000.0f64 * (*head).xMin as libc::c_int as f64
+                    / (*head).unitsPerEm as libc::c_int as f64
+                    / 1i32 as f64
                     + 0.5f64,
-            ) * 1i32 as libc::c_double,
+            ) * 1i32 as f64,
         ),
     );
     pdf_add_array(
         bbox,
         pdf_new_number(
             floor(
-                1000.0f64 * (*head).yMin as libc::c_int as libc::c_double
-                    / (*head).unitsPerEm as libc::c_int as libc::c_double
-                    / 1i32 as libc::c_double
+                1000.0f64 * (*head).yMin as libc::c_int as f64
+                    / (*head).unitsPerEm as libc::c_int as f64
+                    / 1i32 as f64
                     + 0.5f64,
-            ) * 1i32 as libc::c_double,
+            ) * 1i32 as f64,
         ),
     );
     pdf_add_array(
         bbox,
         pdf_new_number(
             floor(
-                1000.0f64 * (*head).xMax as libc::c_int as libc::c_double
-                    / (*head).unitsPerEm as libc::c_int as libc::c_double
-                    / 1i32 as libc::c_double
+                1000.0f64 * (*head).xMax as libc::c_int as f64
+                    / (*head).unitsPerEm as libc::c_int as f64
+                    / 1i32 as f64
                     + 0.5f64,
-            ) * 1i32 as libc::c_double,
+            ) * 1i32 as f64,
         ),
     );
     pdf_add_array(
         bbox,
         pdf_new_number(
             floor(
-                1000.0f64 * (*head).yMax as libc::c_int as libc::c_double
-                    / (*head).unitsPerEm as libc::c_int as libc::c_double
-                    / 1i32 as libc::c_double
+                1000.0f64 * (*head).yMax as libc::c_int as f64
+                    / (*head).unitsPerEm as libc::c_int as f64
+                    / 1i32 as f64
                     + 0.5f64,
-            ) * 1i32 as libc::c_double,
+            ) * 1i32 as f64,
         ),
     );
     pdf_add_dict(
@@ -546,14 +546,14 @@ pub unsafe extern "C" fn tt_get_fontdesc(
         descriptor,
         pdf_new_name(b"ItalicAngle\x00" as *const u8 as *const i8),
         pdf_new_number(
-            ((*post).italicAngle as i64 % 0x10000) as libc::c_double
-                / 0x10000i64 as libc::c_double
-                + ((*post).italicAngle as i64 / 0x10000) as libc::c_double
+            ((*post).italicAngle as i64 % 0x10000) as f64
+                / 0x10000i64 as f64
+                + ((*post).italicAngle as i64 / 0x10000) as f64
                 - (if (*post).italicAngle as i64 / 0x10000 > 0x7fff {
                     0x10000
                 } else {
                     0i32 as i64
-                }) as libc::c_double,
+                }) as f64,
         ),
     );
     /* Flags */
@@ -577,7 +577,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
     pdf_add_dict(
         descriptor,
         pdf_new_name(b"Flags\x00" as *const u8 as *const i8),
-        pdf_new_number(flag as libc::c_double),
+        pdf_new_number(flag as f64),
     );
     /* insert panose if you want */
     if type_0 == 0i32 && !os2.is_null() {

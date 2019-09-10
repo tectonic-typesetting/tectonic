@@ -307,7 +307,7 @@ extern "C" {
     #[no_mangle]
     fn half(x: i32) -> i32;
     #[no_mangle]
-    fn tex_round(_: libc::c_double) -> i32;
+    fn tex_round(_: f64) -> i32;
     #[no_mangle]
     fn build_page();
     #[no_mangle]
@@ -391,7 +391,7 @@ pub type b16x4 = b16x4_le_t;
 pub union memory_word {
     pub b32: b32x2,
     pub b16: b16x4,
-    pub gr: libc::c_double,
+    pub gr: f64,
     pub ptr: *mut libc::c_void,
 }
 pub type group_code = u8;
@@ -5703,16 +5703,16 @@ unsafe extern "C" fn make_op(mut q: i32) -> scaled_t {
                 let mut current_block_41: u64;
                 if (cur_style as libc::c_int) < 2i32 {
                     h1 = get_ot_math_constant(cur_f, 3i32);
-                    if (h1 as libc::c_double)
+                    if (h1 as f64)
                         < (((*mem.offset((p + 3i32) as isize)).b32.s1
                             + (*mem.offset((p + 2i32) as isize)).b32.s1)
-                            * 5i32) as libc::c_double
-                            / 4i32 as libc::c_double
+                            * 5i32) as f64
+                            / 4i32 as f64
                     {
                         h1 = ((((*mem.offset((p + 3i32) as isize)).b32.s1
                             + (*mem.offset((p + 2i32) as isize)).b32.s1)
-                            * 5i32) as libc::c_double
-                            / 4i32 as libc::c_double) as scaled_t
+                            * 5i32) as f64
+                            / 4i32 as f64) as scaled_t
                     }
                     c = (*mem.offset((p + 4i32) as isize)).b16.s1;
                     n = 0i32;
@@ -7758,13 +7758,13 @@ unsafe extern "C" fn build_opentype_assembly(
         }
         (*mem.offset((b + 5i32) as isize)).b16.s0 = 0i32 as u16;
         (*mem.offset((b + 5i32) as isize)).b16.s1 = 1i32 as u16;
-        (*mem.offset((b + 6i32) as isize)).gr = o as libc::c_double / str as libc::c_double;
+        (*mem.offset((b + 6i32) as isize)).gr = o as f64 / str as f64;
         if horiz {
             (*mem.offset((b + 1i32) as isize)).b32.s1 =
-                nat + tex_round(str as libc::c_double * (*mem.offset((b + 6i32) as isize)).gr)
+                nat + tex_round(str as f64 * (*mem.offset((b + 6i32) as isize)).gr)
         } else {
             (*mem.offset((b + 3i32) as isize)).b32.s1 =
-                nat + tex_round(str as libc::c_double * (*mem.offset((b + 6i32) as isize)).gr)
+                nat + tex_round(str as f64 * (*mem.offset((b + 6i32) as isize)).gr)
         }
     } else if horiz {
         (*mem.offset((b + 1i32) as isize)).b32.s1 = nat

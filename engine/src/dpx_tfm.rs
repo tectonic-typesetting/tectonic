@@ -1266,8 +1266,8 @@ pub unsafe extern "C" fn tfm_get_fw_depth(mut font_id: libc::c_int, mut ch: i32)
 pub unsafe extern "C" fn tfm_get_width(
     mut font_id: libc::c_int,
     mut ch: i32,
-) -> libc::c_double {
-    return tfm_get_fw_width(font_id, ch) as libc::c_double / (1i32 << 20i32) as libc::c_double;
+) -> f64 {
+    return tfm_get_fw_width(font_id, ch) as f64 / (1i32 << 20i32) as f64;
 }
 /* tfm_string_xxx() do not work for OFM... */
 #[no_mangle]
@@ -1292,15 +1292,15 @@ pub unsafe extern "C" fn tfm_string_width(
     return result;
 }
 #[no_mangle]
-pub unsafe extern "C" fn tfm_get_design_size(mut font_id: libc::c_int) -> libc::c_double {
+pub unsafe extern "C" fn tfm_get_design_size(mut font_id: libc::c_int) -> f64 {
     if font_id < 0i32 || font_id as libc::c_uint >= numfms {
         _tt_abort(
             b"TFM: Invalid TFM ID: %d\x00" as *const u8 as *const i8,
             font_id,
         );
     }
-    return (*fms.offset(font_id as isize)).designsize as libc::c_double
-        / (1i32 << 20i32) as libc::c_double
+    return (*fms.offset(font_id as isize)).designsize as f64
+        / (1i32 << 20i32) as f64
         * (72.0f64 / 72.27f64);
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.

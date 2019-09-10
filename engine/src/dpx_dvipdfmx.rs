@@ -9,7 +9,7 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn atof(__nptr: *const i8) -> libc::c_double;
+    fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
     fn atoi(__nptr: *const i8) -> libc::c_int;
     #[no_mangle]
@@ -162,9 +162,9 @@ extern "C" {
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dvi_init(dvi_filename: *const i8, mag_0: libc::c_double) -> libc::c_double;
+    fn dvi_init(dvi_filename: *const i8, mag_0: f64) -> f64;
     #[no_mangle]
-    fn pdf_init_device(unit_conv: libc::c_double, precision: libc::c_int, is_bw: libc::c_int);
+    fn pdf_init_device(unit_conv: f64, precision: libc::c_int, is_bw: libc::c_int);
     #[no_mangle]
     fn pdf_close_device();
     #[no_mangle]
@@ -177,17 +177,17 @@ extern "C" {
     fn dvi_npages() -> libc::c_uint;
     #[no_mangle]
     fn dvi_do_page(
-        paper_height_0: libc::c_double,
-        x_offset_0: libc::c_double,
-        y_offset_0: libc::c_double,
+        paper_height_0: f64,
+        x_offset_0: f64,
+        y_offset_0: f64,
     );
     #[no_mangle]
     fn dvi_scan_specials(
         page_no: libc::c_int,
-        width: *mut libc::c_double,
-        height: *mut libc::c_double,
-        x_offset_0: *mut libc::c_double,
-        y_offset_0: *mut libc::c_double,
+        width: *mut f64,
+        height: *mut f64,
+        x_offset_0: *mut f64,
+        y_offset_0: *mut f64,
         landscape: *mut libc::c_int,
         majorversion: *mut libc::c_int,
         minorversion: *mut libc::c_int,
@@ -250,9 +250,9 @@ extern "C" {
         filename: *const i8,
         enable_encrypt: bool,
         enable_object_stream: bool,
-        media_width: libc::c_double,
-        media_height: libc::c_double,
-        annot_grow_amount: libc::c_double,
+        media_width: f64,
+        media_height: f64,
+        annot_grow_amount: f64,
         bookmark_open_depth: libc::c_int,
         check_gotos: libc::c_int,
     );
@@ -435,10 +435,10 @@ pub struct page_range {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 /* This is DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
 
@@ -465,17 +465,17 @@ pub struct pdf_rect {
 #[repr(C)]
 pub struct paper {
     pub name: *const i8,
-    pub pswidth: libc::c_double,
-    pub psheight: libc::c_double,
+    pub pswidth: f64,
+    pub psheight: f64,
 }
 #[no_mangle]
 pub static mut is_xdv: libc::c_int = 0i32;
 #[no_mangle]
 pub static mut translate_origin: libc::c_int = 0i32;
 static mut ignore_colors: i8 = 0i32 as i8;
-static mut annot_grow: libc::c_double = 0.0f64;
+static mut annot_grow: f64 = 0.0f64;
 static mut bookmark_open: libc::c_int = 0i32;
-static mut mag: libc::c_double = 1.0f64;
+static mut mag: f64 = 1.0f64;
 static mut font_dpi: libc::c_int = 600i32;
 /*
  * Precision is essentially limited to 0.01pt.
@@ -493,11 +493,11 @@ static mut key_bits: libc::c_int = 40i32;
 static mut permission: i32 = 0x3ci32;
 /* Page device */
 #[no_mangle]
-pub static mut paper_width: libc::c_double = 595.0f64;
+pub static mut paper_width: f64 = 595.0f64;
 #[no_mangle]
-pub static mut paper_height: libc::c_double = 842.0f64;
-static mut x_offset: libc::c_double = 72.0f64;
-static mut y_offset: libc::c_double = 72.0f64;
+pub static mut paper_height: f64 = 842.0f64;
+static mut x_offset: f64 = 72.0f64;
+static mut y_offset: f64 = 72.0f64;
 #[no_mangle]
 pub static mut landscape_mode: libc::c_int = 0i32;
 #[no_mangle]
@@ -505,14 +505,14 @@ pub static mut always_embed: libc::c_int = 0i32;
 /* always embed fonts, regardless of licensing flags */
 /* XXX: there are four quasi-redundant versions of this; grp for K_UNIT__PT */
 unsafe extern "C" fn read_length(
-    mut vp: *mut libc::c_double,
+    mut vp: *mut f64,
     mut pp: *mut *const i8,
     mut endptr: *const i8,
 ) -> libc::c_int {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = *pp;
-    let mut v: libc::c_double = 0.;
-    let mut u: libc::c_double = 1.0f64;
+    let mut v: f64 = 0.;
+    let mut u: f64 = 1.0f64;
     let mut _ukeys: [*const i8; 10] = [
         b"pt\x00" as *const u8 as *const i8,
         b"in\x00" as *const u8 as *const i8,
@@ -569,7 +569,7 @@ unsafe extern "C" fn read_length(
                 5 => u *= 12.0f64 * 72.0f64 / 72.27f64,
                 6 => u *= 1238.0f64 / 1157.0f64 * 72.0f64 / 72.27f64,
                 7 => u *= 12.0f64 * 1238.0f64 / 1157.0f64 * 72.0f64 / 72.27f64,
-                8 => u *= 72.0f64 / (72.27f64 * 65536i32 as libc::c_double),
+                8 => u *= 72.0f64 / (72.27f64 * 65536i32 as f64),
                 _ => {
                     dpx_warning(
                         b"Unknown unit of measure: %s\x00" as *const u8 as *const i8,
@@ -752,10 +752,10 @@ unsafe extern "C" fn do_dvi_pages(
     let mut step: libc::c_int = 0;
     let mut page_count: libc::c_uint = 0;
     let mut i: libc::c_uint = 0;
-    let mut page_width: libc::c_double = 0.;
-    let mut page_height: libc::c_double = 0.;
-    let mut init_paper_width: libc::c_double = 0.;
-    let mut init_paper_height: libc::c_double = 0.;
+    let mut page_width: f64 = 0.;
+    let mut page_height: f64 = 0.;
+    let mut init_paper_width: f64 = 0.;
+    let mut init_paper_height: f64 = 0.;
     let mut mediabox: pdf_rect = pdf_rect {
         llx: 0.,
         lly: 0.,
@@ -789,10 +789,10 @@ unsafe extern "C" fn do_dvi_pages(
         page_no = (*page_ranges.offset(i as isize)).first;
         while dvi_npages() != 0 {
             if (page_no as libc::c_uint) < dvi_npages() {
-                let mut w: libc::c_double = 0.;
-                let mut h: libc::c_double = 0.;
-                let mut xo: libc::c_double = 0.;
-                let mut yo: libc::c_double = 0.;
+                let mut w: f64 = 0.;
+                let mut h: f64 = 0.;
+                let mut xo: f64 = 0.;
+                let mut yo: f64 = 0.;
                 let mut lm: libc::c_int = 0;
                 dpx_message(
                     b"[%d\x00" as *const u8 as *const i8,
@@ -822,7 +822,7 @@ unsafe extern "C" fn do_dvi_pages(
                     0 as *mut i8,
                 );
                 if lm != landscape_mode {
-                    let mut _tmp: libc::c_double = w;
+                    let mut _tmp: f64 = w;
                     w = h;
                     h = _tmp;
                     landscape_mode = lm
@@ -900,7 +900,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
     mut verbose: libc::c_uint,
 ) -> libc::c_int {
     let mut enable_object_stream: bool = 1i32 != 0; /* This must come before parsing options... */
-    let mut dvi2pts: libc::c_double = 0.;
+    let mut dvi2pts: f64 = 0.;
     let mut num_page_ranges: libc::c_uint = 0i32 as libc::c_uint;
     let mut page_ranges: *mut PageRange = 0 as *mut PageRange;
     if !pdf_filename.is_null() {
@@ -955,7 +955,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
      * code bits. */
     pdf_set_version(5i32 as libc::c_uint); /* last page */
     select_paper(b"letter\x00" as *const u8 as *const i8);
-    annot_grow = 0i32 as libc::c_double;
+    annot_grow = 0i32 as f64;
     bookmark_open = 0i32;
     key_bits = 40i32;
     permission = 0x3ci32;
@@ -1046,7 +1046,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
         );
     }
     if landscape_mode != 0 {
-        let mut _tmp: libc::c_double = paper_width;
+        let mut _tmp: f64 = paper_width;
         paper_width = paper_height;
         paper_height = _tmp
     }

@@ -48,7 +48,7 @@ extern "C" {
         dict: *mut cff_dict,
         key: *const i8,
         idx: libc::c_int,
-    ) -> libc::c_double;
+    ) -> f64;
     #[no_mangle]
     fn cff_dict_known(dict: *mut cff_dict, key: *const i8) -> libc::c_int;
     /* decode/encode DICT */
@@ -166,7 +166,7 @@ pub struct cff_dict_entry {
     pub id: libc::c_int,
     pub key: *const i8,
     pub count: libc::c_int,
-    pub values: *mut libc::c_double,
+    pub values: *mut f64,
     /* values                                  */
 }
 #[derive(Copy, Clone)]
@@ -803,7 +803,7 @@ pub unsafe extern "C" fn cff_open(
             (*cff).topdict,
             b"CharstringType\x00" as *const u8 as *const i8,
             0i32,
-        ) != 2i32 as libc::c_double
+        ) != 2i32 as f64
     {
         dpx_warning(
             b"Only Type 2 Charstrings supported...\x00" as *const u8 as *const i8,
@@ -2637,7 +2637,7 @@ pub unsafe extern "C" fn cff_read_subrs(mut cff: *mut cff_font) -> libc::c_int {
                     b"Private\x00" as *const u8 as *const i8,
                     1i32,
                 ) as libc::c_int;
-                offset = (offset as libc::c_double
+                offset = (offset as f64
                     + cff_dict_get(
                         *(*cff).private.offset(i as isize),
                         b"Subrs\x00" as *const u8 as *const i8,
@@ -2668,7 +2668,7 @@ pub unsafe extern "C" fn cff_read_subrs(mut cff: *mut cff_font) -> libc::c_int {
             b"Private\x00" as *const u8 as *const i8,
             1i32,
         ) as libc::c_int;
-        offset = (offset as libc::c_double
+        offset = (offset as f64
             + cff_dict_get(
                 *(*cff).private.offset(0),
                 b"Subrs\x00" as *const u8 as *const i8,

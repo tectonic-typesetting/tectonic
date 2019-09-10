@@ -223,15 +223,15 @@ pub struct Type0Font {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_opt {
-    pub slant: libc::c_double,
-    pub extend: libc::c_double,
-    pub bold: libc::c_double,
+    pub slant: f64,
+    pub extend: f64,
+    pub bold: f64,
     pub mapc: libc::c_int,
     pub flags: libc::c_int,
     pub otl_tags: *mut i8,
     pub tounicode: *mut i8,
     pub cff_charsets: *mut libc::c_void,
-    pub design_size: libc::c_double,
+    pub design_size: f64,
     pub charcoll: *mut i8,
     pub index: libc::c_int,
     pub style: libc::c_int,

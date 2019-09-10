@@ -34,9 +34,9 @@ extern "C" {
     pub type pdf_obj;
     pub type pdf_font;
     #[no_mangle]
-    fn fabs(_: libc::c_double) -> libc::c_double;
+    fn fabs(_: f64) -> f64;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const i8,
@@ -74,7 +74,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     /* Name does not include the / */
@@ -265,14 +265,14 @@ extern "C" {
         dict: *mut cff_dict,
         key: *const i8,
         idx: libc::c_int,
-        value: libc::c_double,
+        value: f64,
     );
     #[no_mangle]
     fn cff_dict_get(
         dict: *mut cff_dict,
         key: *const i8,
         idx: libc::c_int,
-    ) -> libc::c_double;
+    ) -> f64;
     #[no_mangle]
     fn cff_dict_add(dict: *mut cff_dict, key: *const i8, count: libc::c_int);
     #[no_mangle]
@@ -291,8 +291,8 @@ extern "C" {
         srclen: libc::c_int,
         gsubr: *mut cff_index,
         subr: *mut cff_index,
-        default_width: libc::c_double,
-        nominal_width: libc::c_double,
+        default_width: f64,
+        nominal_width: f64,
         ginfo: *mut cs_ginfo,
     ) -> libc::c_int;
     #[no_mangle]
@@ -372,7 +372,7 @@ extern "C" {
     #[no_mangle]
     fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn tfm_get_width(font_id: libc::c_int, ch: i32) -> libc::c_double;
+    fn tfm_get_width(font_id: libc::c_int, ch: i32) -> f64;
     /* FontDescriptor */
     #[no_mangle]
     fn tt_get_fontdesc(
@@ -572,7 +572,7 @@ pub struct cff_dict_entry {
     pub id: libc::c_int,
     pub key: *const i8,
     pub count: libc::c_int,
-    pub values: *mut libc::c_double,
+    pub values: *mut f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -605,27 +605,27 @@ pub struct cff_header {
 #[repr(C)]
 pub struct cs_ginfo {
     pub flags: libc::c_int,
-    pub wx: libc::c_double,
-    pub wy: libc::c_double,
+    pub wx: f64,
+    pub wy: f64,
     pub bbox: C2RustUnnamed_3,
     pub seac: C2RustUnnamed_2,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_2 {
-    pub asb: libc::c_double,
-    pub adx: libc::c_double,
-    pub ady: libc::c_double,
+    pub asb: f64,
+    pub adx: f64,
+    pub ady: f64,
     pub bchar: card8,
     pub achar: card8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_3 {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -791,7 +791,7 @@ pub unsafe extern "C" fn pdf_font_open_type1c(mut font: *mut pdf_font) -> libc::
 unsafe extern "C" fn add_SimpleMetrics(
     mut font: *mut pdf_font,
     mut cffont: *mut cff_font,
-    mut widths: *mut libc::c_double,
+    mut widths: *mut f64,
     mut num_glyphs: card16,
 ) {
     let mut fontdict: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -801,7 +801,7 @@ unsafe extern "C" fn add_SimpleMetrics(
     let mut tfm_id: libc::c_int = 0;
     let mut usedchars: *mut i8 = 0 as *mut i8;
     let mut tmp_array: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut scaling: libc::c_double = 0.;
+    let mut scaling: f64 = 0.;
     fontdict = pdf_font_get_resource(font);
     usedchars = pdf_font_get_usedchars(font);
     /* The widhts array in the font dictionary must be given relative
@@ -813,14 +813,14 @@ unsafe extern "C" fn add_SimpleMetrics(
         b"FontMatrix\x00" as *const u8 as *const i8,
     ) != 0
     {
-        scaling = 1000i32 as libc::c_double
+        scaling = 1000i32 as f64
             * cff_dict_get(
                 (*cffont).topdict,
                 b"FontMatrix\x00" as *const u8 as *const i8,
                 0i32,
             )
     } else {
-        scaling = 1i32 as libc::c_double
+        scaling = 1i32 as f64
     }
     tmp_array = pdf_new_array();
     if num_glyphs as libc::c_int <= 1i32 {
@@ -851,12 +851,12 @@ unsafe extern "C" fn add_SimpleMetrics(
         code = firstchar;
         while code <= lastchar {
             if *usedchars.offset(code as isize) != 0 {
-                let mut width: libc::c_double = 0.;
+                let mut width: f64 = 0.;
                 if tfm_id < 0i32 {
                     /* tfm is not found */
                     width = scaling * *widths.offset(code as isize)
                 } else {
-                    let mut diff: libc::c_double = 0.;
+                    let mut diff: f64 = 0.;
                     width = 1000.0f64 * tfm_get_width(tfm_id, code);
                     diff = width - scaling * *widths.offset(code as isize);
                     if fabs(diff) > 1.0f64 {
@@ -893,12 +893,12 @@ unsafe extern "C" fn add_SimpleMetrics(
     pdf_add_dict(
         fontdict,
         pdf_new_name(b"FirstChar\x00" as *const u8 as *const i8),
-        pdf_new_number(firstchar as libc::c_double),
+        pdf_new_number(firstchar as f64),
     );
     pdf_add_dict(
         fontdict,
         pdf_new_name(b"LastChar\x00" as *const u8 as *const i8),
-        pdf_new_number(lastchar as libc::c_double),
+        pdf_new_number(lastchar as f64),
     );
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -974,10 +974,10 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> libc::
             achar: 0,
         },
     };
-    let mut nominal_width: libc::c_double = 0.;
-    let mut default_width: libc::c_double = 0.;
-    let mut notdef_width: libc::c_double = 0.;
-    let mut widths: [libc::c_double; 256] = [0.; 256];
+    let mut nominal_width: f64 = 0.;
+    let mut default_width: f64 = 0.;
+    let mut notdef_width: f64 = 0.;
+    let mut widths: [f64; 256] = [0.; 256];
     let mut verbose: libc::c_int = 0;
     if !font.is_null() {
     } else {
@@ -1178,7 +1178,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> libc::
             b"StdVW\x00" as *const u8 as *const i8,
         ) != 0
     {
-        let mut stemv: libc::c_double = 0.;
+        let mut stemv: f64 = 0.;
         stemv = cff_dict_get(
             *(*cffont).private.offset(0),
             b"StdVW\x00" as *const u8 as *const i8,
@@ -1615,7 +1615,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> libc::
         (*cffont).topdict,
         b"Encoding\x00" as *const u8 as *const i8,
         0i32,
-        offset as libc::c_double,
+        offset as f64,
     );
     offset += cff_pack_encoding(
         cffont,
@@ -1627,7 +1627,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> libc::
         (*cffont).topdict,
         b"charset\x00" as *const u8 as *const i8,
         0i32,
-        offset as libc::c_double,
+        offset as f64,
     );
     offset += cff_pack_charsets(
         cffont,
@@ -1639,7 +1639,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> libc::
         (*cffont).topdict,
         b"CharStrings\x00" as *const u8 as *const i8,
         0i32,
-        offset as libc::c_double,
+        offset as f64,
     );
     offset += cff_pack_index(
         charstrings,
@@ -1652,7 +1652,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> libc::
         (*cffont).topdict,
         b"Private\x00" as *const u8 as *const i8,
         1i32,
-        offset as libc::c_double,
+        offset as f64,
     );
     if !(*(*cffont).private.offset(0)).is_null() && private_size > 0i32 {
         private_size = cff_dict_pack(
@@ -1665,7 +1665,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> libc::
         (*cffont).topdict,
         b"Private\x00" as *const u8 as *const i8,
         0i32,
-        private_size as libc::c_double,
+        private_size as f64,
     );
     offset += private_size;
     /* Finally Top DICT */

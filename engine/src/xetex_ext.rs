@@ -92,8 +92,8 @@ extern "C" {
     #[no_mangle]
     fn getAscentAndDescent(
         engine: XeTeXLayoutEngine,
-        ascent: *mut libc::c_float,
-        descent: *mut libc::c_float,
+        ascent: *mut f32,
+        descent: *mut f32,
     );
     #[no_mangle]
     fn setFontLayoutDir(font: XeTeXFont, vertical: libc::c_int);
@@ -107,18 +107,18 @@ extern "C" {
         rightToLeft: bool,
     ) -> libc::c_int;
     #[no_mangle]
-    fn getPointSize(engine: XeTeXLayoutEngine) -> libc::c_float;
+    fn getPointSize(engine: XeTeXLayoutEngine) -> f32;
     #[no_mangle]
     fn getGlyphPositions(engine: XeTeXLayoutEngine, positions: *mut FloatPoint);
     #[no_mangle]
-    fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *mut libc::c_float);
+    fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *mut f32);
     #[no_mangle]
     fn getGlyphs(engine: XeTeXLayoutEngine, glyphs: *mut u32);
     #[no_mangle]
     fn findFontByName(
         name: *const i8,
         var: *mut i8,
-        size: libc::c_double,
+        size: f64,
     ) -> PlatformFontRef;
     #[no_mangle]
     fn getReqEngine() -> i8;
@@ -129,7 +129,7 @@ extern "C" {
     #[no_mangle]
     fn getFontFilename(engine: XeTeXLayoutEngine, index: *mut u32) -> *mut i8;
     #[no_mangle]
-    fn getDesignSize(font: XeTeXFont) -> libc::c_double;
+    fn getDesignSize(font: XeTeXFont) -> f64;
     #[no_mangle]
     fn deleteFont(font: XeTeXFont);
     #[no_mangle]
@@ -154,7 +154,7 @@ extern "C" {
         index: libc::c_uint,
     ) -> hb_tag_t;
     #[no_mangle]
-    fn getGlyphWidth(font: XeTeXFont, gid: u32) -> libc::c_float;
+    fn getGlyphWidth(font: XeTeXFont, gid: u32) -> f32;
     #[no_mangle]
     fn createFontFromFile(
         filename: *const i8,
@@ -164,15 +164,15 @@ extern "C" {
     #[no_mangle]
     fn getCapAndXHeight(
         engine: XeTeXLayoutEngine,
-        capheight: *mut libc::c_float,
-        xheight: *mut libc::c_float,
+        capheight: *mut f32,
+        xheight: *mut f32,
     );
     #[no_mangle]
-    fn getEmboldenFactor(engine: XeTeXLayoutEngine) -> libc::c_float;
+    fn getEmboldenFactor(engine: XeTeXLayoutEngine) -> f32;
     #[no_mangle]
-    fn getSlantFactor(engine: XeTeXLayoutEngine) -> libc::c_float;
+    fn getSlantFactor(engine: XeTeXLayoutEngine) -> f32;
     #[no_mangle]
-    fn getExtendFactor(engine: XeTeXLayoutEngine) -> libc::c_float;
+    fn getExtendFactor(engine: XeTeXLayoutEngine) -> f32;
     #[no_mangle]
     fn getFontRef(engine: XeTeXLayoutEngine) -> PlatformFontRef;
     #[no_mangle]
@@ -189,9 +189,9 @@ extern "C" {
         nFeatures: libc::c_int,
         shapers: *mut *mut i8,
         rgbValue: u32,
-        extend: libc::c_float,
-        slant: libc::c_float,
-        embolden: libc::c_float,
+        extend: f32,
+        slant: f32,
+        embolden: f32,
     ) -> XeTeXLayoutEngine;
     /* graphite interface functions... */
     #[no_mangle]
@@ -219,23 +219,23 @@ extern "C" {
     #[no_mangle]
     fn mapCharToGlyph(engine: XeTeXLayoutEngine, charCode: u32) -> u32;
     #[no_mangle]
-    fn getGlyphItalCorr(engine: XeTeXLayoutEngine, glyphID: u32) -> libc::c_float;
+    fn getGlyphItalCorr(engine: XeTeXLayoutEngine, glyphID: u32) -> f32;
     #[no_mangle]
     fn getGlyphSidebearings(
         engine: XeTeXLayoutEngine,
         glyphID: u32,
-        lsb: *mut libc::c_float,
-        rsb: *mut libc::c_float,
+        lsb: *mut f32,
+        rsb: *mut f32,
     );
     #[no_mangle]
     fn getGlyphHeightDepth(
         engine: XeTeXLayoutEngine,
         glyphID: u32,
-        height: *mut libc::c_float,
-        depth: *mut libc::c_float,
+        height: *mut f32,
+        depth: *mut f32,
     );
     #[no_mangle]
-    fn getGlyphWidthFromEngine(engine: XeTeXLayoutEngine, glyphID: u32) -> libc::c_float;
+    fn getGlyphWidthFromEngine(engine: XeTeXLayoutEngine, glyphID: u32) -> f32;
     #[no_mangle]
     fn getGlyphBounds(engine: XeTeXLayoutEngine, glyphID: u32, bbox: *mut GlyphBBox);
     #[no_mangle]
@@ -428,16 +428,16 @@ pub type CFDictionaryRef = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct FloatPoint {
-    pub x: libc::c_float,
-    pub y: libc::c_float,
+    pub x: f32,
+    pub y: f32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct GlyphBBox {
-    pub xMin: libc::c_float,
-    pub yMin: libc::c_float,
-    pub xMax: libc::c_float,
-    pub yMax: libc::c_float,
+    pub xMin: f32,
+    pub yMin: f32,
+    pub xMax: f32,
+    pub yMax: f32,
 }
 pub type PlatformFontRef = *mut FcPattern;
 pub type XeTeXFont = *mut XeTeXFont_rec;
@@ -586,7 +586,7 @@ pub struct b32x2_le_t {
 pub union memory_word {
     pub b32: b32x2,
     pub b16: b16x4,
-    pub gr: libc::c_double,
+    pub gr: f64,
     pub ptr: *mut libc::c_void,
 }
 pub type b16x4 = b16x4_le_t;
@@ -1026,9 +1026,9 @@ pub unsafe extern "C" fn apply_tfm_font_mapping(
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn read_double(mut s: *mut *const i8) -> libc::c_double {
+pub unsafe extern "C" fn read_double(mut s: *mut *const i8) -> f64 {
     let mut neg: libc::c_int = 0i32;
-    let mut val: libc::c_double = 0.0f64;
+    let mut val: f64 = 0.0f64;
     let mut cp: *const i8 = *s;
     while *cp as libc::c_int == ' ' as i32 || *cp as libc::c_int == '\t' as i32 {
         cp = cp.offset(1)
@@ -1040,14 +1040,14 @@ pub unsafe extern "C" fn read_double(mut s: *mut *const i8) -> libc::c_double {
         cp = cp.offset(1)
     }
     while *cp as libc::c_int >= '0' as i32 && *cp as libc::c_int <= '9' as i32 {
-        val = val * 10.0f64 + *cp as libc::c_int as libc::c_double - '0' as i32 as libc::c_double;
+        val = val * 10.0f64 + *cp as libc::c_int as f64 - '0' as i32 as f64;
         cp = cp.offset(1)
     }
     if *cp as libc::c_int == '.' as i32 {
-        let mut dec: libc::c_double = 10.0f64;
+        let mut dec: f64 = 10.0f64;
         cp = cp.offset(1);
         while *cp as libc::c_int >= '0' as i32 && *cp as libc::c_int <= '9' as i32 {
-            val = val + (*cp as libc::c_int - '0' as i32) as libc::c_double / dec;
+            val = val + (*cp as libc::c_int - '0' as i32) as f64 / dec;
             cp = cp.offset(1);
             dec = dec * 10.0f64
         }
@@ -1155,10 +1155,10 @@ pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> libc::c_uint {
 pub unsafe extern "C" fn readCommonFeatures(
     mut feat: *const i8,
     mut end: *const i8,
-    mut extend: *mut libc::c_float,
-    mut slant: *mut libc::c_float,
-    mut embolden: *mut libc::c_float,
-    mut letterspace: *mut libc::c_float,
+    mut extend: *mut f32,
+    mut slant: *mut f32,
+    mut embolden: *mut f32,
+    mut letterspace: *mut f32,
     mut rgbValue: *mut u32,
 ) -> libc::c_int
 // returns 1 to go to next_option, -1 for bad_option, 0 to continue
@@ -1178,7 +1178,7 @@ pub unsafe extern "C" fn readCommonFeatures(
             return -1i32;
         }
         sep = sep.offset(1);
-        *extend = read_double(&mut sep) as libc::c_float;
+        *extend = read_double(&mut sep) as f32;
         return 1i32;
     }
     sep = strstartswith(feat, b"slant\x00" as *const u8 as *const i8);
@@ -1187,7 +1187,7 @@ pub unsafe extern "C" fn readCommonFeatures(
             return -1i32;
         }
         sep = sep.offset(1);
-        *slant = read_double(&mut sep) as libc::c_float;
+        *slant = read_double(&mut sep) as f32;
         return 1i32;
     }
     sep = strstartswith(feat, b"embolden\x00" as *const u8 as *const i8);
@@ -1196,7 +1196,7 @@ pub unsafe extern "C" fn readCommonFeatures(
             return -1i32;
         }
         sep = sep.offset(1);
-        *embolden = read_double(&mut sep) as libc::c_float;
+        *embolden = read_double(&mut sep) as f32;
         return 1i32;
     }
     sep = strstartswith(feat, b"letterspace\x00" as *const u8 as *const i8);
@@ -1205,7 +1205,7 @@ pub unsafe extern "C" fn readCommonFeatures(
             return -1i32;
         }
         sep = sep.offset(1);
-        *letterspace = read_double(&mut sep) as libc::c_float;
+        *letterspace = read_double(&mut sep) as f32;
         return 1i32;
     }
     sep = strstartswith(feat, b"color\x00" as *const u8 as *const i8);
@@ -1292,10 +1292,10 @@ unsafe extern "C" fn loadOTfont(
     let mut cp3: *const i8 = 0 as *const i8;
     let mut tag: hb_tag_t = 0;
     let mut rgbValue: u32 = 0xffi32 as u32;
-    let mut extend: libc::c_float = 1.0f64 as libc::c_float;
-    let mut slant: libc::c_float = 0.0f64 as libc::c_float;
-    let mut embolden: libc::c_float = 0.0f64 as libc::c_float;
-    let mut letterspace: libc::c_float = 0.0f64 as libc::c_float;
+    let mut extend: f32 = 1.0f64 as f32;
+    let mut slant: f32 = 0.0f64 as f32;
+    let mut embolden: f32 = 0.0f64 as f32;
+    let mut letterspace: f32 = 0.0f64 as f32;
     let mut i: libc::c_int = 0;
     let mut reqEngine: i8 = getReqEngine();
     if reqEngine as libc::c_int == 'O' as i32 || reqEngine as libc::c_int == 'G' as i32 {
@@ -1575,12 +1575,12 @@ unsafe extern "C" fn loadOTfont(
         let ref mut fresh11 = *shapers.offset(nShapers as isize);
         *fresh11 = 0 as *mut i8
     }
-    if embolden as libc::c_double != 0.0f64 {
-        embolden = (embolden as libc::c_double * Fix2D(scaled_size) / 100.0f64) as libc::c_float
+    if embolden as f64 != 0.0f64 {
+        embolden = (embolden as f64 * Fix2D(scaled_size) / 100.0f64) as f32
     }
-    if letterspace as libc::c_double != 0.0f64 {
+    if letterspace as f64 != 0.0f64 {
         loaded_font_letter_space =
-            (letterspace as libc::c_double / 100.0f64 * scaled_size as libc::c_double) as scaled_t
+            (letterspace as f64 / 100.0f64 * scaled_size as f64) as scaled_t
     }
     if loaded_font_flags as libc::c_int & 0x1i32 == 0i32 {
         rgbValue = 0xffi32 as u32
@@ -1834,26 +1834,26 @@ pub unsafe extern "C" fn ot_get_font_metrics(
     mut slant: *mut scaled_t,
 ) {
     let mut engine: XeTeXLayoutEngine = pEngine as XeTeXLayoutEngine;
-    let mut a: libc::c_float = 0.;
-    let mut d: libc::c_float = 0.;
+    let mut a: f32 = 0.;
+    let mut d: f32 = 0.;
     getAscentAndDescent(engine, &mut a, &mut d);
-    *ascent = D2Fix(a as libc::c_double);
-    *descent = D2Fix(d as libc::c_double);
+    *ascent = D2Fix(a as f64);
+    *descent = D2Fix(d as f64);
     *slant = D2Fix(
-        Fix2D(getSlant(getFont(engine))) * getExtendFactor(engine) as libc::c_double
-            + getSlantFactor(engine) as libc::c_double,
+        Fix2D(getSlant(getFont(engine))) * getExtendFactor(engine) as f64
+            + getSlantFactor(engine) as f64,
     );
     /* get cap and x height from OS/2 table */
     getCapAndXHeight(engine, &mut a, &mut d);
-    *capheight = D2Fix(a as libc::c_double);
-    *xheight = D2Fix(d as libc::c_double);
+    *capheight = D2Fix(a as f64);
+    *xheight = D2Fix(d as f64);
     /* fallback in case the font does not have OS/2 table */
     if *xheight == 0i32 {
         let mut glyphID: libc::c_int =
             mapCharToGlyph(engine, 'x' as i32 as u32) as libc::c_int;
         if glyphID != 0i32 {
             getGlyphHeightDepth(engine, glyphID as u32, &mut a, &mut d);
-            *xheight = D2Fix(a as libc::c_double)
+            *xheight = D2Fix(a as f64)
         } else {
             *xheight = *ascent / 2i32
             /* arbitrary figure if there's no 'x' in the font */
@@ -1864,7 +1864,7 @@ pub unsafe extern "C" fn ot_get_font_metrics(
             mapCharToGlyph(engine, 'X' as i32 as u32) as libc::c_int;
         if glyphID_0 != 0i32 {
             getGlyphHeightDepth(engine, glyphID_0 as u32, &mut a, &mut d);
-            *capheight = D2Fix(a as libc::c_double)
+            *capheight = D2Fix(a as f64)
         } else {
             *capheight = *ascent
             /* arbitrary figure if there's no 'X' in the font */
@@ -2104,9 +2104,9 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> libc::c_int {
     let mut fontDefLength: libc::c_int = 0;
     let mut cp: *mut i8 = 0 as *mut i8;
     /* PlatformFontRef fontRef = 0; */
-    let mut extend: libc::c_float = 1.0f64 as libc::c_float;
-    let mut slant: libc::c_float = 0.0f64 as libc::c_float;
-    let mut embolden: libc::c_float = 0.0f64 as libc::c_float;
+    let mut extend: f32 = 1.0f64 as f32;
+    let mut slant: f32 = 0.0f64 as f32;
+    let mut embolden: f32 = 0.0f64 as f32;
     if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
         let mut engine: XeTeXLayoutEngine = 0 as *mut XeTeXLayoutEngine_rec;
         engine = *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine;
@@ -2132,7 +2132,7 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> libc::c_int {
         extend = getExtendFactor(engine);
         slant = getSlantFactor(engine);
         embolden = getEmboldenFactor(engine);
-        size = D2Fix(getPointSize(engine) as libc::c_double)
+        size = D2Fix(getPointSize(engine) as f64)
     } else {
         _tt_abort(
             b"bad native font flag in `make_font_def`\x00" as *const u8 as *const i8,
@@ -2151,15 +2151,15 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> libc::c_int {
         fontDefLength += 4i32; /* 32-bit RGBA value */
         flags = (flags as libc::c_int | 0x200i32) as u16
     }
-    if extend as libc::c_double != 1.0f64 {
+    if extend as f64 != 1.0f64 {
         fontDefLength += 4i32;
         flags = (flags as libc::c_int | 0x1000i32) as u16
     }
-    if slant as libc::c_double != 0.0f64 {
+    if slant as f64 != 0.0f64 {
         fontDefLength += 4i32;
         flags = (flags as libc::c_int | 0x2000i32) as u16
     }
-    if embolden as libc::c_double != 0.0f64 {
+    if embolden as f64 != 0.0f64 {
         fontDefLength += 4i32;
         flags = (flags as libc::c_int | 0x4000i32) as u16
     }
@@ -2188,17 +2188,17 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> libc::c_int {
         cp = cp.offset(4)
     }
     if flags as libc::c_int & 0x1000i32 != 0 {
-        let mut f_0: Fixed = D2Fix(extend as libc::c_double);
+        let mut f_0: Fixed = D2Fix(extend as f64);
         *(cp as *mut u32) = SWAP32(f_0 as u32);
         cp = cp.offset(4)
     }
     if flags as libc::c_int & 0x2000i32 != 0 {
-        let mut f_1: Fixed = D2Fix(slant as libc::c_double);
+        let mut f_1: Fixed = D2Fix(slant as f64);
         *(cp as *mut u32) = SWAP32(f_1 as u32);
         cp = cp.offset(4)
     }
     if flags as libc::c_int & 0x4000i32 != 0 {
-        let mut f_2: Fixed = D2Fix(embolden as libc::c_double);
+        let mut f_2: Fixed = D2Fix(embolden as f64);
         *(cp as *mut u32) = SWAP32(f_2 as u32);
         cp = cp.offset(4)
     }
@@ -2280,8 +2280,8 @@ pub unsafe extern "C" fn get_native_char_height_depth(
     mut height: *mut scaled_t,
     mut depth: *mut scaled_t,
 ) {
-    let mut ht: libc::c_float = 0.0f64 as libc::c_float;
-    let mut dp: libc::c_float = 0.0f64 as libc::c_float;
+    let mut ht: f32 = 0.0f64 as f32;
+    let mut dp: f32 = 0.0f64 as f32;
     let mut fuzz: Fixed = 0;
     if *font_area.offset(font as isize) as libc::c_uint == 0xfffeu32 {
         let mut engine: XeTeXLayoutEngine =
@@ -2294,8 +2294,8 @@ pub unsafe extern "C" fn get_native_char_height_depth(
                 as *const i8,
         );
     }
-    *height = D2Fix(ht as libc::c_double);
-    *depth = D2Fix(dp as libc::c_double);
+    *height = D2Fix(ht as f64);
+    *depth = D2Fix(dp as f64);
     /* snap to "known" zones for baseline, x-height, cap-height if within 4% of em-size */
     fuzz = (*font_info.offset((6i32 + *param_base.offset(font as isize)) as isize))
         .b32
@@ -2339,8 +2339,8 @@ pub unsafe extern "C" fn get_native_char_sidebearings(
     mut lsb: *mut scaled_t,
     mut rsb: *mut scaled_t,
 ) {
-    let mut l: libc::c_float = 0.;
-    let mut r: libc::c_float = 0.;
+    let mut l: f32 = 0.;
+    let mut r: f32 = 0.;
     if *font_area.offset(font as isize) as libc::c_uint == 0xfffeu32 {
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine;
@@ -2352,8 +2352,8 @@ pub unsafe extern "C" fn get_native_char_sidebearings(
                 as *const i8,
         );
     }
-    *lsb = D2Fix(l as libc::c_double);
-    *rsb = D2Fix(r as libc::c_double);
+    *lsb = D2Fix(l as f64);
+    *rsb = D2Fix(r as f64);
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_glyph_bounds(
@@ -2362,8 +2362,8 @@ pub unsafe extern "C" fn get_glyph_bounds(
     mut gid: i32,
 ) -> scaled_t {
     /* edge codes 1,2,3,4 => L T R B */
-    let mut a: libc::c_float = 0.;
-    let mut b: libc::c_float = 0.;
+    let mut a: f32 = 0.;
+    let mut b: f32 = 0.;
     if *font_area.offset(font as isize) as libc::c_uint == 0xfffeu32 {
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine;
@@ -2377,7 +2377,7 @@ pub unsafe extern "C" fn get_glyph_bounds(
             b"bad native font flag in `get_glyph_bounds`\x00" as *const u8 as *const i8,
         );
     }
-    return D2Fix((if edge <= 2i32 { a } else { b }) as libc::c_double);
+    return D2Fix((if edge <= 2i32 { a } else { b }) as f64);
 }
 #[no_mangle]
 pub unsafe extern "C" fn getnativecharic(mut f: i32, mut c: i32) -> scaled_t {
@@ -2398,7 +2398,7 @@ pub unsafe extern "C" fn getnativecharwd(mut f: i32, mut c: i32) -> scaled_t {
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine;
         let mut gid: libc::c_int = mapCharToGlyph(engine, c as u32) as libc::c_int;
-        wd = D2Fix(getGlyphWidthFromEngine(engine, gid as u32) as libc::c_double)
+        wd = D2Fix(getGlyphWidthFromEngine(engine, gid as u32) as f64)
     } else {
         _tt_abort(
             b"bad native font flag in `get_native_char_wd`\x00" as *const u8 as *const i8,
@@ -2431,7 +2431,7 @@ pub unsafe extern "C" fn store_justified_native_glyphs(mut pNode: *mut libc::c_v
     measure_native_node(node as *mut libc::c_void, 0i32);
     if (*node.offset(1)).b32.s1 != savedWidth {
         /* see how much adjustment is needed overall */
-        let mut justAmount: libc::c_double = Fix2D(savedWidth - (*node.offset(1)).b32.s1);
+        let mut justAmount: f64 = Fix2D(savedWidth - (*node.offset(1)).b32.s1);
         /* apply justification to spaces (or if there are none, distribute it to all glyphs as a last resort) */
         let mut locations: *mut FixedPoint = (*node.offset(5)).ptr as *mut FixedPoint;
         let mut glyphIDs: *mut u16 =
@@ -2448,7 +2448,7 @@ pub unsafe extern "C" fn store_justified_native_glyphs(mut pNode: *mut libc::c_v
             i += 1
         }
         if spaceCount > 0i32 {
-            let mut adjustment: libc::c_double = 0i32 as libc::c_double;
+            let mut adjustment: f64 = 0i32 as f64;
             let mut spaceIndex: libc::c_int = 0i32;
             i = 0i32;
             while i < glyphCount {
@@ -2457,7 +2457,7 @@ pub unsafe extern "C" fn store_justified_native_glyphs(mut pNode: *mut libc::c_v
                 if *glyphIDs.offset(i as isize) as libc::c_int == spaceGlyph {
                     spaceIndex += 1;
                     adjustment =
-                        justAmount * spaceIndex as libc::c_double / spaceCount as libc::c_double
+                        justAmount * spaceIndex as f64 / spaceCount as f64
                 }
                 i += 1
             }
@@ -2466,7 +2466,7 @@ pub unsafe extern "C" fn store_justified_native_glyphs(mut pNode: *mut libc::c_v
             while i < glyphCount {
                 (*locations.offset(i as isize)).x = D2Fix(
                     Fix2D((*locations.offset(i as isize)).x)
-                        + justAmount * i as libc::c_double / (glyphCount - 1i32) as libc::c_double,
+                        + justAmount * i as f64 / (glyphCount - 1i32) as f64,
                 );
                 i += 1
             }
@@ -2495,7 +2495,7 @@ pub unsafe extern "C" fn measure_native_node(
         let mut dir: icu::UBiDiDirection = icu::UBIDI_LTR;
         let mut glyph_info: *mut libc::c_void = 0 as *mut libc::c_void;
         static mut positions: *mut FloatPoint = 0 as *const FloatPoint as *mut FloatPoint;
-        static mut advances: *mut libc::c_float = 0 as *const libc::c_float as *mut libc::c_float;
+        static mut advances: *mut f32 = 0 as *const f32 as *mut f32;
         static mut glyphs: *mut u32 = 0 as *const u32 as *mut u32;
         let mut pBiDi: *mut icu::UBiDi = icu::ubidi_open();
         let mut errorCode: icu::UErrorCode = icu::U_ZERO_ERROR;
@@ -2514,7 +2514,7 @@ pub unsafe extern "C" fn measure_native_node(
                bothered to deal with the memory reallocation headache of doing it differently
             */
             let mut nRuns: libc::c_int = icu::ubidi_countRuns(pBiDi, &mut errorCode);
-            let mut width: libc::c_double = 0i32 as libc::c_double;
+            let mut width: f64 = 0i32 as f64;
             let mut i: libc::c_int = 0;
             let mut runIndex: libc::c_int = 0;
             let mut logicalStart: i32 = 0;
@@ -2533,8 +2533,8 @@ pub unsafe extern "C" fn measure_native_node(
                 runIndex += 1
             }
             if totalGlyphCount > 0i32 {
-                let mut x: libc::c_double = 0.;
-                let mut y: libc::c_double = 0.;
+                let mut x: f64 = 0.;
+                let mut y: f64 = 0.;
                 glyph_info = xcalloc(totalGlyphCount as size_t, 10i32 as size_t);
                 locations = glyph_info as *mut FixedPoint;
                 glyphIDs = locations.offset(totalGlyphCount as isize) as *mut u16;
@@ -2567,8 +2567,8 @@ pub unsafe extern "C" fn measure_native_node(
                     ) as *mut FloatPoint;
                     advances = xcalloc(
                         nGlyphs as size_t,
-                        ::std::mem::size_of::<libc::c_float>() as u64,
-                    ) as *mut libc::c_float;
+                        ::std::mem::size_of::<f32>() as u64,
+                    ) as *mut f32;
                     getGlyphs(engine, glyphs);
                     getGlyphAdvances(engine, advances);
                     getGlyphPositions(engine, positions);
@@ -2577,16 +2577,16 @@ pub unsafe extern "C" fn measure_native_node(
                         *glyphIDs.offset(totalGlyphCount as isize) =
                             *glyphs.offset(i as isize) as u16;
                         (*locations.offset(totalGlyphCount as isize)).x =
-                            D2Fix((*positions.offset(i as isize)).x as libc::c_double + x);
+                            D2Fix((*positions.offset(i as isize)).x as f64 + x);
                         (*locations.offset(totalGlyphCount as isize)).y =
-                            D2Fix((*positions.offset(i as isize)).y as libc::c_double + y);
+                            D2Fix((*positions.offset(i as isize)).y as f64 + y);
                         *glyphAdvances.offset(totalGlyphCount as isize) =
-                            D2Fix(*advances.offset(i as isize) as libc::c_double);
+                            D2Fix(*advances.offset(i as isize) as f64);
                         totalGlyphCount += 1;
                         i += 1
                     }
-                    x += (*positions.offset(nGlyphs as isize)).x as libc::c_double;
-                    y += (*positions.offset(nGlyphs as isize)).y as libc::c_double;
+                    x += (*positions.offset(nGlyphs as isize)).x as f64;
+                    y += (*positions.offset(nGlyphs as isize)).y as f64;
                     free(glyphs as *mut libc::c_void);
                     free(positions as *mut libc::c_void);
                     free(advances as *mut libc::c_void);
@@ -2599,7 +2599,7 @@ pub unsafe extern "C" fn measure_native_node(
             let ref mut fresh29 = (*node.offset(5)).ptr;
             *fresh29 = glyph_info
         } else {
-            let mut width_0: libc::c_double = 0i32 as libc::c_double;
+            let mut width_0: f64 = 0i32 as f64;
             totalGlyphCount = layoutChars(
                 engine,
                 txtPtr,
@@ -2618,8 +2618,8 @@ pub unsafe extern "C" fn measure_native_node(
             ) as *mut FloatPoint;
             advances = xcalloc(
                 totalGlyphCount as size_t,
-                ::std::mem::size_of::<libc::c_float>() as u64,
-            ) as *mut libc::c_float;
+                ::std::mem::size_of::<f32>() as u64,
+            ) as *mut f32;
             getGlyphs(engine, glyphs);
             getGlyphAdvances(engine, advances);
             getGlyphPositions(engine, positions);
@@ -2636,14 +2636,14 @@ pub unsafe extern "C" fn measure_native_node(
                 while i_0 < totalGlyphCount {
                     *glyphIDs.offset(i_0 as isize) = *glyphs.offset(i_0 as isize) as u16;
                     *glyphAdvances.offset(i_0 as isize) =
-                        D2Fix(*advances.offset(i_0 as isize) as libc::c_double);
+                        D2Fix(*advances.offset(i_0 as isize) as f64);
                     (*locations.offset(i_0 as isize)).x =
-                        D2Fix((*positions.offset(i_0 as isize)).x as libc::c_double);
+                        D2Fix((*positions.offset(i_0 as isize)).x as f64);
                     (*locations.offset(i_0 as isize)).y =
-                        D2Fix((*positions.offset(i_0 as isize)).y as libc::c_double);
+                        D2Fix((*positions.offset(i_0 as isize)).y as f64);
                     i_0 += 1
                 }
-                width_0 = (*positions.offset(totalGlyphCount as isize)).x as libc::c_double
+                width_0 = (*positions.offset(totalGlyphCount as isize)).x as f64
             }
             (*node.offset(1)).b32.s1 = D2Fix(width_0);
             (*node.offset(4)).b16.s0 = totalGlyphCount as u16;
@@ -2692,15 +2692,15 @@ pub unsafe extern "C" fn measure_native_node(
         let mut locations_0: *mut FixedPoint = (*node.offset(5)).ptr as *mut FixedPoint; /* NB negative is upwards in locations[].y! */
         let mut glyphIDs_0: *mut u16 =
             locations_0.offset((*node.offset(4)).b16.s0 as libc::c_int as isize) as *mut u16;
-        let mut yMin: libc::c_float = 65536.0f64 as libc::c_float;
-        let mut yMax: libc::c_float = -65536.0f64 as libc::c_float;
+        let mut yMin: f32 = 65536.0f64 as f32;
+        let mut yMax: f32 = -65536.0f64 as f32;
         let mut i_2: libc::c_int = 0;
         i_2 = 0i32;
         while i_2 < (*node.offset(4)).b16.s0 as libc::c_int {
-            let mut ht: libc::c_float = 0.;
-            let mut dp: libc::c_float = 0.;
-            let mut y_0: libc::c_float =
-                Fix2D(-(*locations_0.offset(i_2 as isize)).y) as libc::c_float;
+            let mut ht: f32 = 0.;
+            let mut dp: f32 = 0.;
+            let mut y_0: f32 =
+                Fix2D(-(*locations_0.offset(i_2 as isize)).y) as f32;
             let mut bbox: GlyphBBox = GlyphBBox {
                 xMin: 0.,
                 yMin: 0.,
@@ -2729,8 +2729,8 @@ pub unsafe extern "C" fn measure_native_node(
             }
             i_2 += 1
         }
-        (*node.offset(3)).b32.s1 = D2Fix(yMax as libc::c_double);
-        (*node.offset(2)).b32.s1 = -D2Fix(yMin as libc::c_double)
+        (*node.offset(3)).b32.s1 = D2Fix(yMax as f64);
+        (*node.offset(2)).b32.s1 = -D2Fix(yMin as f64)
     };
 }
 #[no_mangle]
@@ -2745,7 +2745,7 @@ pub unsafe extern "C" fn real_get_native_italic_correction(mut pNode: *mut libc:
             return D2Fix(getGlyphItalCorr(
                 *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine,
                 *glyphIDs.offset(n.wrapping_sub(1i32 as libc::c_uint) as isize) as u32,
-            ) as libc::c_double)
+            ) as f64)
                 + *font_letter_space.offset(f as isize);
         }
     }
@@ -2762,7 +2762,7 @@ pub unsafe extern "C" fn real_get_native_glyph_italic_correction(
         return D2Fix(getGlyphItalCorr(
             *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine,
             gid as u32,
-        ) as libc::c_double);
+        ) as f64);
     }
     return 0i32;
     /* can't actually happen */
@@ -2775,14 +2775,14 @@ pub unsafe extern "C" fn measure_native_glyph(
     let mut node: *mut memory_word = pNode as *mut memory_word;
     let mut gid: u16 = (*node.offset(4)).b16.s1;
     let mut f: libc::c_uint = (*node.offset(4)).b16.s2 as libc::c_uint;
-    let mut ht: libc::c_float = 0.0f64 as libc::c_float;
-    let mut dp: libc::c_float = 0.0f64 as libc::c_float;
+    let mut ht: f32 = 0.0f64 as f32;
+    let mut dp: f32 = 0.0f64 as f32;
     if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine;
         let mut fontInst: XeTeXFont = getFont(engine);
         (*node.offset(1)).b32.s1 =
-            D2Fix(getGlyphWidth(fontInst, gid as u32) as libc::c_double);
+            D2Fix(getGlyphWidth(fontInst, gid as u32) as f64);
         if use_glyph_metrics != 0 {
             getGlyphHeightDepth(engine, gid as u32, &mut ht, &mut dp);
         }
@@ -2793,8 +2793,8 @@ pub unsafe extern "C" fn measure_native_glyph(
         );
     }
     if use_glyph_metrics != 0 {
-        (*node.offset(3)).b32.s1 = D2Fix(ht as libc::c_double);
-        (*node.offset(2)).b32.s1 = D2Fix(dp as libc::c_double)
+        (*node.offset(3)).b32.s1 = D2Fix(ht as f64);
+        (*node.offset(2)).b32.s1 = D2Fix(dp as f64)
     } else {
         (*node.offset(3)).b32.s1 = *height_base.offset(f as isize);
         (*node.offset(2)).b32.s1 = *depth_base.offset(f as isize)
@@ -2845,13 +2845,13 @@ pub unsafe extern "C" fn get_font_char_range(mut font: i32, mut first: libc::c_i
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn D2Fix(mut d: libc::c_double) -> Fixed {
+pub unsafe extern "C" fn D2Fix(mut d: f64) -> Fixed {
     let mut rval: Fixed = (d * 65536.0f64 + 0.5f64) as libc::c_int;
     return rval;
 }
 #[no_mangle]
-pub unsafe extern "C" fn Fix2D(mut f: Fixed) -> libc::c_double {
-    let mut rval: libc::c_double = f as libc::c_double / 65536.0f64;
+pub unsafe extern "C" fn Fix2D(mut f: Fixed) -> f64 {
+    let mut rval: f64 = f as f64 / 65536.0f64;
     return rval;
 }
 /* the metrics params here are really TeX 'scaled' (or MacOS 'Fixed') values, but that typedef isn't available every place this is included */

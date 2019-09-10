@@ -35,7 +35,7 @@ extern "C" {
     pub type pdf_font;
     pub type otl_gsub;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn atoi(__nptr: *const i8) -> libc::c_int;
     #[no_mangle]
@@ -95,7 +95,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     /* Name does not include the / */
     #[no_mangle]
     fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
@@ -213,7 +213,7 @@ extern "C" {
     #[no_mangle]
     fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn tfm_get_width(font_id: libc::c_int, ch: i32) -> libc::c_double;
+    fn tfm_get_width(font_id: libc::c_int, ch: i32) -> f64;
     /* TTC (TrueType Collection) */
     #[no_mangle]
     fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: libc::c_int) -> SFNT_ULONG;
@@ -821,7 +821,7 @@ static mut required_table: [C2RustUnnamed; 13] = [
         init
     },
 ];
-unsafe extern "C" fn do_widths(mut font: *mut pdf_font, mut widths: *mut libc::c_double) {
+unsafe extern "C" fn do_widths(mut font: *mut pdf_font, mut widths: *mut f64) {
     let mut fontdict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut tmparray: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut code: libc::c_int = 0;
@@ -855,7 +855,7 @@ unsafe extern "C" fn do_widths(mut font: *mut pdf_font, mut widths: *mut libc::c
     code = firstchar;
     while code <= lastchar {
         if *usedchars.offset(code as isize) != 0 {
-            let mut width: libc::c_double = 0.;
+            let mut width: f64 = 0.;
             if tfm_id < 0i32 {
                 /* tfm is not found */
                 width = *widths.offset(code as isize)
@@ -882,12 +882,12 @@ unsafe extern "C" fn do_widths(mut font: *mut pdf_font, mut widths: *mut libc::c
     pdf_add_dict(
         fontdict,
         pdf_new_name(b"FirstChar\x00" as *const u8 as *const i8),
-        pdf_new_number(firstchar as libc::c_double),
+        pdf_new_number(firstchar as f64),
     );
     pdf_add_dict(
         fontdict,
         pdf_new_name(b"LastChar\x00" as *const u8 as *const i8),
-        pdf_new_number(lastchar as libc::c_double),
+        pdf_new_number(lastchar as f64),
     );
 }
 static mut verbose: libc::c_int = 0i32;
@@ -911,7 +911,7 @@ unsafe extern "C" fn do_builtin_encoding(
     let mut idx: USHORT = 0;
     let mut code: libc::c_int = 0;
     let mut count: libc::c_int = 0;
-    let mut widths: [libc::c_double; 256] = [0.; 256];
+    let mut widths: [f64; 256] = [0.; 256];
     ttcm = tt_cmap_read(sfont, 1u32 as USHORT, 0u32 as USHORT);
     if ttcm.is_null() {
         dpx_warning(
@@ -1006,11 +1006,11 @@ unsafe extern "C" fn do_builtin_encoding(
             );
             widths[code as usize] = floor(
                 1000.0f64
-                    * (*(*glyphs).gd.offset(idx as isize)).advw as libc::c_int as libc::c_double
-                    / (*glyphs).emsize as libc::c_int as libc::c_double
-                    / 1i32 as libc::c_double
+                    * (*(*glyphs).gd.offset(idx as isize)).advw as libc::c_int as f64
+                    / (*glyphs).emsize as libc::c_int as f64
+                    / 1i32 as f64
                     + 0.5f64,
-            ) * 1i32 as libc::c_double
+            ) * 1i32 as f64
         } else {
             widths[code as usize] = 0.0f64
         }
@@ -1648,7 +1648,7 @@ unsafe extern "C" fn do_custom_encoding(
     let mut cmap_table: *mut i8 = 0 as *mut i8;
     let mut code: libc::c_int = 0;
     let mut count: libc::c_int = 0;
-    let mut widths: [libc::c_double; 256] = [0.; 256];
+    let mut widths: [f64; 256] = [0.; 256];
     let mut gm: glyph_mapper = glyph_mapper {
         codetogid: 0 as *mut tt_cmap,
         gsub: 0 as *mut otl_gsub,
@@ -1790,11 +1790,11 @@ unsafe extern "C" fn do_custom_encoding(
             );
             widths[code as usize] = floor(
                 1000.0f64
-                    * (*(*glyphs).gd.offset(idx as isize)).advw as libc::c_int as libc::c_double
-                    / (*glyphs).emsize as libc::c_int as libc::c_double
-                    / 1i32 as libc::c_double
+                    * (*(*glyphs).gd.offset(idx as isize)).advw as libc::c_int as f64
+                    / (*glyphs).emsize as libc::c_int as f64
+                    / 1i32 as f64
                     + 0.5f64,
-            ) * 1i32 as libc::c_double
+            ) * 1i32 as f64
         } else {
             widths[code as usize] = 0.0f64
         }

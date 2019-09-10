@@ -377,15 +377,15 @@ pub type time_t = __time_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_opt {
-    pub slant: libc::c_double,
-    pub extend: libc::c_double,
-    pub bold: libc::c_double,
+    pub slant: f64,
+    pub extend: f64,
+    pub bold: f64,
     pub mapc: libc::c_int,
     pub flags: libc::c_int,
     pub otl_tags: *mut i8,
     pub tounicode: *mut i8,
     pub cff_charsets: *mut libc::c_void,
-    pub design_size: libc::c_double,
+    pub design_size: f64,
     pub charcoll: *mut i8,
     pub index: libc::c_int,
     pub style: libc::c_int,
@@ -423,8 +423,8 @@ pub struct pdf_font {
     pub descriptor: *mut pdf_obj,
     pub usedchars: *mut i8,
     pub flags: libc::c_int,
-    pub point_size: libc::c_double,
-    pub design_size: libc::c_double,
+    pub point_size: f64,
+    pub design_size: f64,
     /* _PDFFONT_H_ */
 }
 #[derive(Copy, Clone)]
@@ -663,8 +663,8 @@ unsafe extern "C" fn pdf_init_font_struct(mut font: *mut pdf_font) {
     (*font).reference = 0 as *mut pdf_obj;
     (*font).resource = 0 as *mut pdf_obj;
     (*font).descriptor = 0 as *mut pdf_obj;
-    (*font).point_size = 0i32 as libc::c_double;
-    (*font).design_size = 0i32 as libc::c_double;
+    (*font).point_size = 0i32 as f64;
+    (*font).design_size = 0i32 as f64;
     (*font).usedchars = 0 as *mut i8;
     (*font).flags = 0i32;
 }
@@ -1111,7 +1111,7 @@ pub unsafe extern "C" fn pdf_close_fonts() {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_findresource(
     mut tex_name: *const i8,
-    mut font_scale: libc::c_double,
+    mut font_scale: f64,
     mut mrec: *mut fontmap_rec,
 ) -> libc::c_int {
     let mut font_id: libc::c_int = -1i32;
@@ -1631,8 +1631,8 @@ pub unsafe extern "C" fn pdf_font_get_flag(
 pub unsafe extern "C" fn pdf_font_get_param(
     mut font: *mut pdf_font,
     mut param_type: libc::c_int,
-) -> libc::c_double {
-    let mut param: libc::c_double = 0.0f64;
+) -> f64 {
+    let mut param: f64 = 0.0f64;
     if !font.is_null() {
     } else {
         __assert_fail(

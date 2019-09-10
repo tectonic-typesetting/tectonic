@@ -37,7 +37,7 @@ extern "C" {
     pub type pdf_obj;
     pub type pdf_ximage_;
     #[no_mangle]
-    fn pow(_: libc::c_double, _: libc::c_double) -> libc::c_double;
+    fn pow(_: f64, _: f64) -> f64;
     #[no_mangle]
     fn pdf_ximage_set_image(
         ximage: *mut pdf_ximage,
@@ -101,7 +101,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_version() -> libc::c_uint;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     /* Name does not include the / */
     #[no_mangle]
     fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
@@ -176,8 +176,8 @@ pub struct ximage_info {
     pub bits_per_component: libc::c_int,
     pub num_components: libc::c_int,
     pub min_dpi: libc::c_int,
-    pub xdensity: libc::c_double,
-    pub ydensity: libc::c_double,
+    pub xdensity: f64,
+    pub ydensity: f64,
 }
 pub type pdf_ximage = pdf_ximage_;
 /* Label */
@@ -276,12 +276,12 @@ unsafe extern "C" fn read_res__data(
     VR_E = get_unsigned_byte(fp);
     HR_E = get_unsigned_byte(fp);
     (*info).xdensity = 72.0f64
-        / (HR_N as libc::c_double / HR_D as libc::c_double
-            * pow(10.0f64, HR_E as libc::c_double)
+        / (HR_N as f64 / HR_D as f64
+            * pow(10.0f64, HR_E as f64)
             * 0.0254f64);
     (*info).ydensity = 72.0f64
-        / (VR_N as libc::c_double / VR_D as libc::c_double
-            * pow(10.0f64, VR_E as libc::c_double)
+        / (VR_N as f64 / VR_D as f64
+            * pow(10.0f64, VR_E as f64)
             * 0.0254f64);
 }
 unsafe extern "C" fn scan_res_(
@@ -596,7 +596,7 @@ pub unsafe extern "C" fn jp2_include_image(
         pdf_add_dict(
             stream_dict,
             pdf_new_name(b"SMaskInData\x00" as *const u8 as *const i8),
-            pdf_new_number(1i32 as libc::c_double),
+            pdf_new_number(1i32 as f64),
         );
     }
     /* Read whole file */
@@ -651,8 +651,8 @@ pub unsafe extern "C" fn jp2_get_bbox(
     mut fp: *mut FILE,
     mut width: *mut libc::c_int,
     mut height: *mut libc::c_int,
-    mut xdensity: *mut libc::c_double,
-    mut ydensity: *mut libc::c_double,
+    mut xdensity: *mut f64,
+    mut ydensity: *mut f64,
 ) -> libc::c_int {
     let mut r: libc::c_int = 0;
     let mut smask: libc::c_int = 0i32;

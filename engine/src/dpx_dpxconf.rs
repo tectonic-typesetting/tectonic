@@ -25,8 +25,8 @@ pub type size_t = u64;
 #[repr(C)]
 pub struct paper {
     pub name: *const i8,
-    pub pswidth: libc::c_double,
-    pub psheight: libc::c_double,
+    pub pswidth: f64,
+    pub psheight: f64,
 }
 pub type FILE = _IO_FILE;
 #[derive(Copy, Clone)]
@@ -264,8 +264,8 @@ pub static mut paperspecs: [paper; 22] = [
     {
         let mut init = paper {
             name: 0 as *const i8,
-            pswidth: 0i32 as libc::c_double,
-            psheight: 0i32 as libc::c_double,
+            pswidth: 0i32 as f64,
+            psheight: 0i32 as f64,
         };
         init
     },
@@ -342,8 +342,8 @@ pub unsafe extern "C" fn dumppaperinfo() {
         })
         .is_null()
     {
-        let mut wd: libc::c_double = 0.;
-        let mut ht: libc::c_double = 0.;
+        let mut wd: f64 = 0.;
+        let mut ht: f64 = 0.;
         wd = if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
             (*ppinfo).pswidth
         } else {

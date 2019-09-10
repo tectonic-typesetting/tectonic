@@ -20,7 +20,7 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn strtod(_: *const i8, _: *mut *mut i8) -> libc::c_double;
+    fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
     #[no_mangle]
     fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> i64;
     #[no_mangle]
@@ -102,7 +102,7 @@ pub struct pst_name {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pst_real {
-    pub value: libc::c_double,
+    pub value: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -278,8 +278,8 @@ pub unsafe extern "C" fn pst_getIV(mut obj: *mut pst_obj) -> libc::c_int {
     return iv;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pst_getRV(mut obj: *mut pst_obj) -> libc::c_double {
-    let mut rv: libc::c_double = 0.0f64;
+pub unsafe extern "C" fn pst_getRV(mut obj: *mut pst_obj) -> f64 {
+    let mut rv: f64 = 0.0f64;
     if !obj.is_null() {
     } else {
         __assert_fail(
@@ -467,7 +467,7 @@ unsafe extern "C" fn pst_boolean_IV(mut obj: *mut pst_boolean) -> libc::c_int {
     }
     return (*obj).value as libc::c_int;
 }
-unsafe extern "C" fn pst_boolean_RV(mut obj: *mut pst_boolean) -> libc::c_double {
+unsafe extern "C" fn pst_boolean_RV(mut obj: *mut pst_boolean) -> f64 {
     if !obj.is_null() {
     } else {
         __assert_fail(
@@ -480,7 +480,7 @@ unsafe extern "C" fn pst_boolean_RV(mut obj: *mut pst_boolean) -> libc::c_double
             .as_ptr(),
         );
     }
-    return (*obj).value as libc::c_double;
+    return (*obj).value as f64;
 }
 unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut u8 {
     let mut str: *mut u8 = 0 as *mut u8;
@@ -690,7 +690,7 @@ unsafe extern "C" fn pst_integer_IV(mut obj: *mut pst_integer) -> libc::c_int {
     }
     return (*obj).value;
 }
-unsafe extern "C" fn pst_integer_RV(mut obj: *mut pst_integer) -> libc::c_double {
+unsafe extern "C" fn pst_integer_RV(mut obj: *mut pst_integer) -> f64 {
     if !obj.is_null() {
     } else {
         __assert_fail(
@@ -703,7 +703,7 @@ unsafe extern "C" fn pst_integer_RV(mut obj: *mut pst_integer) -> libc::c_double
             .as_ptr(),
         );
     }
-    return (*obj).value as libc::c_double;
+    return (*obj).value as f64;
 }
 unsafe extern "C" fn pst_integer_SV(mut obj: *mut pst_integer) -> *mut u8 {
     let mut value: *mut i8 = 0 as *mut i8;
@@ -753,7 +753,7 @@ unsafe extern "C" fn pst_integer_length() -> libc::c_uint {
     );
 }
 /* REAL */
-unsafe extern "C" fn pst_real_new(mut value: libc::c_double) -> *mut pst_real {
+unsafe extern "C" fn pst_real_new(mut value: f64) -> *mut pst_real {
     let mut obj: *mut pst_real = 0 as *mut pst_real;
     obj = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<pst_real>() as u64) as u32)
@@ -791,7 +791,7 @@ unsafe extern "C" fn pst_real_IV(mut obj: *mut pst_real) -> libc::c_int {
     }
     return (*obj).value as libc::c_int;
 }
-unsafe extern "C" fn pst_real_RV(mut obj: *mut pst_real) -> libc::c_double {
+unsafe extern "C" fn pst_real_RV(mut obj: *mut pst_real) -> f64 {
     if !obj.is_null() {
     } else {
         __assert_fail(
@@ -846,7 +846,7 @@ unsafe extern "C" fn pst_real_data_ptr(mut obj: *mut pst_real) -> *mut libc::c_v
             .as_ptr(),
         );
     }
-    return &mut (*obj).value as *mut libc::c_double as *mut libc::c_void;
+    return &mut (*obj).value as *mut f64 as *mut libc::c_void;
 }
 unsafe extern "C" fn pst_real_length() -> libc::c_uint {
     _tt_abort(
@@ -862,7 +862,7 @@ pub unsafe extern "C" fn pst_parse_number(
 ) -> *mut pst_obj {
     let mut cur: *mut u8 = 0 as *mut u8;
     let mut lval: libc::c_int = 0;
-    let mut dval: libc::c_double = 0.;
+    let mut dval: f64 = 0.;
     *__errno_location() = 0i32;
     lval = strtol(
         *inbuf as *mut i8,
@@ -1103,7 +1103,7 @@ unsafe extern "C" fn pst_name_IV() -> libc::c_int {
         b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
     );
 }
-unsafe extern "C" fn pst_name_RV() -> libc::c_double {
+unsafe extern "C" fn pst_name_RV() -> f64 {
     _tt_abort(
         b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
     );
@@ -1469,11 +1469,11 @@ unsafe extern "C" fn pst_string_parse_hex(
 unsafe extern "C" fn pst_string_IV(mut obj: *mut pst_string) -> libc::c_int {
     return pst_string_RV(obj) as libc::c_int;
 }
-unsafe extern "C" fn pst_string_RV(mut obj: *mut pst_string) -> libc::c_double {
+unsafe extern "C" fn pst_string_RV(mut obj: *mut pst_string) -> f64 {
     let mut nobj: *mut pst_obj = 0 as *mut pst_obj;
     let mut p: *mut u8 = 0 as *mut u8;
     let mut end: *mut u8 = 0 as *mut u8;
-    let mut rv: libc::c_double = 0.;
+    let mut rv: f64 = 0.;
     if !obj.is_null() {
     } else {
         __assert_fail(

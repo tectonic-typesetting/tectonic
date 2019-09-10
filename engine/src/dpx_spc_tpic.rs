@@ -38,7 +38,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_boolean(value: i8) -> *mut pdf_obj;
     #[no_mangle]
@@ -60,7 +60,7 @@ extern "C" {
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn atof(__nptr: *const i8) -> libc::c_double;
+    fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const i8,
@@ -71,11 +71,11 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn fabs(_: libc::c_double) -> libc::c_double;
+    fn fabs(_: f64) -> f64;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
-    fn round(_: libc::c_double) -> libc::c_double;
+    fn round(_: f64) -> f64;
     #[no_mangle]
     fn parse_float_decimal(
         pp: *mut *const i8,
@@ -117,7 +117,7 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_color_brighten_color(dst: *mut pdf_color, src: *const pdf_color, f: libc::c_double);
+    fn pdf_color_brighten_color(dst: *mut pdf_color, src: *const pdf_color, f: f64);
     #[no_mangle]
     fn pdf_color_get_current(sc: *mut *mut pdf_color, fc: *mut *mut pdf_color);
     /* The following two routines are NOT WORKING.
@@ -125,7 +125,7 @@ extern "C" {
      */
     /* Always returns 1.0, please rename this. */
     #[no_mangle]
-    fn pdf_dev_scale() -> libc::c_double;
+    fn pdf_dev_scale() -> f64;
     #[no_mangle]
     fn pdf_doc_current_page_resources() -> *mut pdf_obj;
     #[no_mangle]
@@ -137,9 +137,9 @@ extern "C" {
         resources: *mut pdf_obj,
     );
     #[no_mangle]
-    fn pdf_dev_setlinewidth(width: libc::c_double) -> libc::c_int;
+    fn pdf_dev_setlinewidth(width: f64) -> libc::c_int;
     #[no_mangle]
-    fn pdf_dev_setmiterlimit(mlimit: libc::c_double) -> libc::c_int;
+    fn pdf_dev_setmiterlimit(mlimit: f64) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_setlinecap(style: libc::c_int) -> libc::c_int;
     #[no_mangle]
@@ -147,14 +147,14 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_setdash(
         count: libc::c_int,
-        pattern: *mut libc::c_double,
-        offset: libc::c_double,
+        pattern: *mut f64,
+        offset: f64,
     ) -> libc::c_int;
     /* Path Construction */
     #[no_mangle]
-    fn pdf_dev_moveto(x: libc::c_double, y: libc::c_double) -> libc::c_int;
+    fn pdf_dev_moveto(x: f64, y: f64) -> libc::c_int;
     #[no_mangle]
-    fn pdf_dev_lineto(x0: libc::c_double, y0: libc::c_double) -> libc::c_int;
+    fn pdf_dev_lineto(x0: f64, y0: f64) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_newpath() -> libc::c_int;
     #[no_mangle]
@@ -168,23 +168,23 @@ extern "C" {
     /* extension */
     #[no_mangle]
     fn pdf_dev_arcx(
-        c_x: libc::c_double,
-        c_y: libc::c_double,
-        r_x: libc::c_double,
-        r_y: libc::c_double,
-        a_0: libc::c_double,
-        a_1: libc::c_double,
+        c_x: f64,
+        c_y: f64,
+        r_x: f64,
+        r_y: f64,
+        a_0: f64,
+        a_1: f64,
         a_d: libc::c_int,
-        xar: libc::c_double,
+        xar: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_bspline(
-        x0: libc::c_double,
-        y0: libc::c_double,
-        x1: libc::c_double,
-        y1: libc::c_double,
-        x2: libc::c_double,
-        y2: libc::c_double,
+        x0: f64,
+        y0: f64,
+        x1: f64,
+        y1: f64,
+        x2: f64,
+        y2: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_set_color(color: *const pdf_color, mask: i8, force: libc::c_int);
@@ -211,9 +211,9 @@ pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_env {
-    pub x_user: libc::c_double,
-    pub y_user: libc::c_double,
-    pub mag: libc::c_double,
+    pub x_user: f64,
+    pub y_user: f64,
+    pub mag: f64,
     pub pg: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -241,9 +241,9 @@ pub struct C2RustUnnamed_0 {
 #[repr(C)]
 pub struct spc_tpic_ {
     pub mode: C2RustUnnamed_0,
-    pub pen_size: libc::c_double,
+    pub pen_size: f64,
     pub fill_shape: bool,
-    pub fill_color: libc::c_double,
+    pub fill_color: f64,
     pub points: *mut pdf_coord,
     pub num_points: libc::c_int,
     pub max_points: libc::c_int,
@@ -251,25 +251,25 @@ pub struct spc_tpic_ {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_coord {
-    pub x: libc::c_double,
-    pub y: libc::c_double,
+    pub x: f64,
+    pub y: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
     pub num_components: libc::c_int,
     pub spot_color_name: *mut i8,
-    pub values: [libc::c_double; 4],
+    pub values: [f64; 4],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[inline]
 unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
@@ -319,7 +319,7 @@ unsafe extern "C" fn tpic__clear(mut tp: *mut spc_tpic_) {
     (*tp).fill_shape = 0i32 != 0;
     (*tp).fill_color = 0.0f64;
 }
-unsafe extern "C" fn create_xgstate(mut a: libc::c_double, mut f_ais: libc::c_int) -> *mut pdf_obj
+unsafe extern "C" fn create_xgstate(mut a: f64, mut f_ais: libc::c_int) -> *mut pdf_obj
 /* alpha is shape */ {
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj; /* dash pattern */
     dict = pdf_new_dict();
@@ -360,19 +360,19 @@ unsafe extern "C" fn check_resourcestatus(
     }
     return 0i32;
 }
-unsafe extern "C" fn set_linestyle(mut pn: libc::c_double, mut da: libc::c_double) -> libc::c_int {
-    let mut dp: [libc::c_double; 2] = [0.; 2];
+unsafe extern "C" fn set_linestyle(mut pn: f64, mut da: f64) -> libc::c_int {
+    let mut dp: [f64; 2] = [0.; 2];
     pdf_dev_setlinejoin(1i32);
     pdf_dev_setmiterlimit(1.4f64);
     pdf_dev_setlinewidth(pn);
     if da > 0.0f64 {
         dp[0] = da * 72.0f64;
-        pdf_dev_setdash(1i32, dp.as_mut_ptr(), 0i32 as libc::c_double);
+        pdf_dev_setdash(1i32, dp.as_mut_ptr(), 0i32 as f64);
         pdf_dev_setlinecap(0i32);
     } else if da < 0.0f64 {
         dp[0] = pn;
         dp[1] = -da * 72.0f64;
-        pdf_dev_setdash(2i32, dp.as_mut_ptr(), 0i32 as libc::c_double);
+        pdf_dev_setdash(2i32, dp.as_mut_ptr(), 0i32 as f64);
         pdf_dev_setlinecap(1i32);
     } else {
         pdf_dev_setlinecap(0i32);
@@ -380,8 +380,8 @@ unsafe extern "C" fn set_linestyle(mut pn: libc::c_double, mut da: libc::c_doubl
     return 0i32;
 }
 unsafe extern "C" fn set_fillstyle(
-    mut g: libc::c_double,
-    mut a: libc::c_double,
+    mut g: f64,
+    mut a: f64,
     mut f_ais: libc::c_int,
 ) -> libc::c_int {
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -402,7 +402,7 @@ unsafe extern "C" fn set_fillstyle(
         ) == 0
         {
             dict = create_xgstate(
-                floor(0.01f64 * alp as libc::c_double / 0.01f64 + 0.5f64) * 0.01f64,
+                floor(0.01f64 * alp as f64 / 0.01f64 + 0.5f64) * 0.01f64,
                 f_ais,
             );
             pdf_doc_add_page_resource(
@@ -437,8 +437,8 @@ unsafe extern "C" fn set_styles(
     mut c: *const pdf_coord,
     mut f_fs: bool,
     mut f_vp: bool,
-    mut pn: libc::c_double,
-    mut da: libc::c_double,
+    mut pn: f64,
+    mut da: f64,
 ) {
     let mut M: pdf_tmatrix = pdf_tmatrix {
         a: 0.,
@@ -459,8 +459,8 @@ unsafe extern "C" fn set_styles(
         set_linestyle(pn, da);
     }
     if f_fs {
-        let mut g: libc::c_double = 0.;
-        let mut a: libc::c_double = 0.;
+        let mut g: f64 = 0.;
+        let mut a: f64 = 0.;
         let mut f_ais: libc::c_int = 0;
         if (*tp).mode.fill == 0i32 || (*tp).fill_color == 0. {
             g = 1.0f64 - (*tp).fill_color;
@@ -492,9 +492,9 @@ unsafe extern "C" fn tpic__polyline(
     mut tp: *mut spc_tpic_,
     mut c: *const pdf_coord,
     mut f_vp: bool,
-    mut da: libc::c_double,
+    mut da: f64,
 ) -> libc::c_int {
-    let mut pn: libc::c_double = (*tp).pen_size;
+    let mut pn: f64 = (*tp).pen_size;
     let mut f_fs: bool = (*tp).fill_shape;
     let mut i: libc::c_int = 0;
     let mut error: libc::c_int = 0i32;
@@ -558,10 +558,10 @@ unsafe extern "C" fn tpic__spline(
     mut tp: *mut spc_tpic_,
     mut c: *const pdf_coord,
     mut f_vp: bool,
-    mut da: libc::c_double,
+    mut da: f64,
 ) -> libc::c_int {
-    let mut v: [libc::c_double; 6] = [0.; 6];
-    let mut pn: libc::c_double = (*tp).pen_size;
+    let mut v: [f64; 6] = [0.; 6];
+    let mut pn: f64 = (*tp).pen_size;
     let mut f_fs: bool = (*tp).fill_shape;
     let mut i: libc::c_int = 0;
     let mut error: libc::c_int = 0i32;
@@ -620,13 +620,13 @@ unsafe extern "C" fn tpic__arc(
     mut tp: *mut spc_tpic_,
     mut c: *const pdf_coord,
     mut f_vp: bool,
-    mut da: libc::c_double,
-    mut v: *mut libc::c_double,
+    mut da: f64,
+    mut v: *mut f64,
 ) -> libc::c_int
 /* 6 numbers */ {
-    let mut pn: libc::c_double = (*tp).pen_size;
+    let mut pn: f64 = (*tp).pen_size;
     let mut f_fs: bool = (*tp).fill_shape;
-    f_fs = if round(fabs(*v.offset(4) - *v.offset(5)) + 0.5f64) >= 360i32 as libc::c_double {
+    f_fs = if round(fabs(*v.offset(4) - *v.offset(5)) + 0.5f64) >= 360i32 as f64 {
         f_fs as libc::c_int
     } else {
         0i32
@@ -715,7 +715,7 @@ unsafe extern "C" fn spc_handler_tpic_pa(
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut i: libc::c_int = 0;
-    let mut v: [libc::c_double; 2] = [0.; 2];
+    let mut v: [f64; 2] = [0.; 2];
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
     } else {
         __assert_fail(
@@ -832,7 +832,7 @@ unsafe extern "C" fn spc_handler_tpic_da(
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
-    let mut da: libc::c_double = 0.0f64;
+    let mut da: f64 = 0.0f64;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
     let mut pg: libc::c_int = 0;
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
@@ -870,7 +870,7 @@ unsafe extern "C" fn spc_handler_tpic_dt(
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
-    let mut da: libc::c_double = 0.0f64;
+    let mut da: f64 = 0.0f64;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
     let mut pg: libc::c_int = 0;
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
@@ -908,7 +908,7 @@ unsafe extern "C" fn spc_handler_tpic_sp(
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
-    let mut da: libc::c_double = 0.0f64;
+    let mut da: f64 = 0.0f64;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
     let mut pg: libc::c_int = 0;
     if !spe.is_null() && !ap.is_null() && !tp.is_null() {
@@ -945,7 +945,7 @@ unsafe extern "C" fn spc_handler_tpic_ar(
 ) -> libc::c_int
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
-    let mut v: [libc::c_double; 6] = [0.; 6];
+    let mut v: [f64; 6] = [0.; 6];
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
     let mut pg: libc::c_int = 0;
     let mut q: *mut i8 = 0 as *mut i8;
@@ -1000,7 +1000,7 @@ unsafe extern "C" fn spc_handler_tpic_ia(
 ) -> libc::c_int
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
-    let mut v: [libc::c_double; 6] = [0.; 6];
+    let mut v: [f64; 6] = [0.; 6];
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
     let mut pg: libc::c_int = 0;
     let mut q: *mut i8 = 0 as *mut i8;
@@ -1073,7 +1073,7 @@ unsafe extern "C" fn spc_handler_tpic_sh(
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     q = parse_float_decimal(&mut (*ap).curptr, (*ap).endptr);
     if !q.is_null() {
-        let mut g: libc::c_double = atof(q);
+        let mut g: f64 = atof(q);
         free(q as *mut libc::c_void);
         if g >= 0.0f64 && g <= 1.0f64 {
             (*tp).fill_color = g

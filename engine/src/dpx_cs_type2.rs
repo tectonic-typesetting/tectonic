@@ -9,11 +9,11 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn sqrt(_: libc::c_double) -> libc::c_double;
+    fn sqrt(_: f64) -> f64;
     #[no_mangle]
-    fn fabs(_: libc::c_double) -> libc::c_double;
+    fn fabs(_: f64) -> f64;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
         -> *mut libc::c_void;
@@ -38,27 +38,27 @@ pub struct cff_index {
 #[repr(C)]
 pub struct cs_ginfo {
     pub flags: libc::c_int,
-    pub wx: libc::c_double,
-    pub wy: libc::c_double,
+    pub wx: f64,
+    pub wy: f64,
     pub bbox: C2RustUnnamed_0,
     pub seac: C2RustUnnamed,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
-    pub asb: libc::c_double,
-    pub adx: libc::c_double,
-    pub ady: libc::c_double,
+    pub asb: f64,
+    pub adx: f64,
+    pub ady: f64,
     pub bchar: card8,
     pub achar: card8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 static mut status: libc::c_int = -1i32;
 /* hintmask and cntrmask need number of stem zones */
@@ -68,11 +68,11 @@ static mut phase: libc::c_int = 0i32;
 static mut nest: libc::c_int = 0i32;
 /* advance width */
 static mut have_width: libc::c_int = 0i32;
-static mut width: libc::c_double = 0.0f64;
+static mut width: f64 = 0.0f64;
 /* Operand stack and Transient array */
 static mut stack_top: libc::c_int = 0i32;
-static mut arg_stack: [libc::c_double; 48] = [0.; 48];
-static mut trn_array: [libc::c_double; 32] = [0.; 32];
+static mut arg_stack: [f64; 48] = [0.; 48];
+static mut trn_array: [f64; 32] = [0.; 32];
 /*
  * clear_stack() put all operands sotred in operand stack to dest.
  */
@@ -80,13 +80,13 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
     let mut i: libc::c_int = 0;
     i = 0i32;
     while i < stack_top {
-        let mut value: libc::c_double = 0.;
+        let mut value: f64 = 0.;
         let mut ivalue: libc::c_int = 0;
         value = arg_stack[i as usize];
         /* Nearest integer value */
         ivalue = floor(value + 0.5f64) as libc::c_int;
-        if value >= 0x8000i64 as libc::c_double
-            || value <= (-0x8000 - 1 as i64) as libc::c_double
+        if value >= 0x8000i64 as f64
+            || value <= (-0x8000 - 1 as i64) as f64
         {
             /*
              * This number cannot be represented as a single operand.
@@ -98,7 +98,7 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                 b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
             );
         } else {
-            if fabs(value - ivalue as libc::c_double) > 3.0e-5f64 {
+            if fabs(value - ivalue as f64) > 3.0e-5f64 {
                 /* 16.16-bit signed fixed value  */
                 if limit < (*dest).offset(5) {
                     status = -3i32;
@@ -115,7 +115,7 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                 let fresh2 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh2 = (ivalue & 0xffi32) as card8;
-                ivalue = ((value - ivalue as libc::c_double) * 0x10000i64 as libc::c_double)
+                ivalue = ((value - ivalue as f64) * 0x10000i64 as f64)
                     as libc::c_int;
                 let fresh3 = *dest;
                 *dest = (*dest).offset(1);
@@ -569,7 +569,7 @@ unsafe extern "C" fn do_operator2(
                 status = -2i32;
                 return;
             }
-            let mut save: libc::c_double = arg_stack[(stack_top - 2i32) as usize];
+            let mut save: f64 = arg_stack[(stack_top - 2i32) as usize];
             arg_stack[(stack_top - 2i32) as usize] = arg_stack[(stack_top - 1i32) as usize];
             arg_stack[(stack_top - 1i32) as usize] = save
         }
@@ -614,7 +614,7 @@ unsafe extern "C" fn do_operator2(
                     if !(fresh21 > 0i32) {
                         break;
                     }
-                    let mut save_0: libc::c_double = arg_stack[(stack_top - 1i32) as usize];
+                    let mut save_0: f64 = arg_stack[(stack_top - 1i32) as usize];
                     let mut i: libc::c_int = stack_top - 1i32;
                     while i > stack_top - N {
                         arg_stack[i as usize] = arg_stack[(i - 1i32) as usize];
@@ -630,7 +630,7 @@ unsafe extern "C" fn do_operator2(
                     if !(fresh22 > 0i32) {
                         break;
                     }
-                    let mut save_1: libc::c_double = arg_stack[(stack_top - N) as usize];
+                    let mut save_1: f64 = arg_stack[(stack_top - N) as usize];
                     let mut i_0: libc::c_int = stack_top - N;
                     while i_0 < stack_top - 1i32 {
                         arg_stack[i_0 as usize] = arg_stack[(i_0 + 1i32) as usize];
@@ -719,14 +719,14 @@ unsafe extern "C" fn get_integer(mut data: *mut *mut card8, mut endptr: *mut car
     }
     let fresh24 = stack_top;
     stack_top = stack_top + 1;
-    arg_stack[fresh24 as usize] = result as libc::c_double;
+    arg_stack[fresh24 as usize] = result as f64;
 }
 /*
  * Signed 16.16-bits fixed number for Type 2 charstring encoding
  */
 unsafe extern "C" fn get_fixed(mut data: *mut *mut card8, mut endptr: *mut card8) {
     let mut ivalue: libc::c_int = 0;
-    let mut rvalue: libc::c_double = 0.;
+    let mut rvalue: f64 = 0.;
     *data = (*data).offset(1);
     if endptr < (*data).offset(4) {
         status = -1i32;
@@ -737,9 +737,9 @@ unsafe extern "C" fn get_fixed(mut data: *mut *mut card8, mut endptr: *mut card8
         ivalue as i64 - 0x10000
     } else {
         ivalue as i64
-    }) as libc::c_double;
+    }) as f64;
     ivalue = *(*data).offset(2) as libc::c_int * 0x100i32 + *(*data).offset(3) as libc::c_int;
-    rvalue += ivalue as libc::c_double / 0x10000i64 as libc::c_double;
+    rvalue += ivalue as f64 / 0x10000i64 as f64;
     if 48i32 < stack_top + 1i32 {
         status = -2i32;
         return;
@@ -954,8 +954,8 @@ pub unsafe extern "C" fn cs_copy_charstring(
     mut srclen: libc::c_int,
     mut gsubr: *mut cff_index,
     mut subr: *mut cff_index,
-    mut default_width: libc::c_double,
-    mut nominal_width: libc::c_double,
+    mut default_width: f64,
+    mut nominal_width: f64,
     mut ginfo: *mut cs_ginfo,
 ) -> libc::c_int {
     let mut save: *mut card8 = dst;

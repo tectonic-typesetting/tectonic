@@ -9,9 +9,9 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn fabs(_: libc::c_double) -> libc::c_double;
+    fn fabs(_: f64) -> f64;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const i8,
@@ -95,27 +95,27 @@ pub struct cff_index {
 #[repr(C)]
 pub struct t1_ginfo {
     pub use_seac: libc::c_int,
-    pub wx: libc::c_double,
-    pub wy: libc::c_double,
+    pub wx: f64,
+    pub wy: f64,
     pub bbox: C2RustUnnamed_0,
     pub seac: C2RustUnnamed,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
-    pub asb: libc::c_double,
-    pub adx: libc::c_double,
-    pub ady: libc::c_double,
+    pub asb: f64,
+    pub adx: f64,
+    pub ady: f64,
     pub bchar: card8,
     pub achar: card8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -134,7 +134,7 @@ pub struct t1_chardesc {
 pub struct t1_cpath {
     pub type_0: libc::c_int,
     pub num_args: libc::c_int,
-    pub args: [libc::c_double; 48],
+    pub args: [f64; 48],
     pub next: *mut t1_cpath,
 }
 #[derive(Copy, Clone)]
@@ -142,39 +142,39 @@ pub struct t1_cpath {
 pub struct t1_stem {
     pub id: libc::c_int,
     pub dir: libc::c_int,
-    pub pos: libc::c_double,
-    pub del: libc::c_double,
+    pub pos: f64,
+    pub del: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_1 {
-    pub asb: libc::c_double,
-    pub adx: libc::c_double,
-    pub ady: libc::c_double,
+    pub asb: f64,
+    pub adx: f64,
+    pub ady: f64,
     pub bchar: card8,
     pub achar: card8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_2 {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_3 {
-    pub sbx: libc::c_double,
-    pub sby: libc::c_double,
-    pub wx: libc::c_double,
-    pub wy: libc::c_double,
+    pub sbx: f64,
+    pub sby: f64,
+    pub wx: f64,
+    pub wy: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct t1_stemgroup {
     pub num_stems: libc::c_int,
-    pub stems: [libc::c_double; 96],
+    pub stems: [f64; 96],
 }
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project
@@ -191,8 +191,8 @@ static mut nest: libc::c_int = -1i32;
 static mut cs_stack_top: libc::c_int = 0i32;
 static mut ps_stack_top: libc::c_int = 0i32;
 /* [vh]stem support require one more stack size. */
-static mut cs_arg_stack: [libc::c_double; 49] = [0.; 49];
-static mut ps_arg_stack: [libc::c_double; 194] = [0.; 194];
+static mut cs_arg_stack: [f64; 49] = [0.; 49];
+static mut ps_arg_stack: [f64; 194] = [0.; 194];
 /*
  * Stem:
  *
@@ -248,8 +248,8 @@ unsafe extern "C" fn get_stem(mut cd: *mut t1_chardesc, mut stem_id: libc::c_int
 }
 unsafe extern "C" fn add_stem(
     mut cd: *mut t1_chardesc,
-    mut pos: libc::c_double,
-    mut del: libc::c_double,
+    mut pos: f64,
+    mut del: f64,
     mut dir: libc::c_int,
 ) -> libc::c_int {
     let mut i: libc::c_int = 0;
@@ -293,8 +293,8 @@ unsafe extern "C" fn add_stem(
     return (*cd).stems[i as usize].id;
 }
 unsafe extern "C" fn copy_args(
-    mut args1: *mut libc::c_double,
-    mut args2: *mut libc::c_double,
+    mut args1: *mut f64,
+    mut args2: *mut f64,
     mut count: libc::c_int,
 ) {
     loop {
@@ -318,7 +318,7 @@ unsafe extern "C" fn copy_args(
 unsafe extern "C" fn add_charpath(
     mut cd: *mut t1_chardesc,
     mut type_0: libc::c_int,
-    mut argv: *mut libc::c_double,
+    mut argv: *mut f64,
     mut argn: libc::c_int,
 ) {
     let mut p: *mut t1_cpath = 0 as *mut t1_cpath;
@@ -445,10 +445,10 @@ unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc, mut data: *mut *mut 
             }
             cs_stack_top -= 1;
             (*cd).sbw.wx = cs_arg_stack[cs_stack_top as usize];
-            (*cd).sbw.wy = 0i32 as libc::c_double;
+            (*cd).sbw.wy = 0i32 as f64;
             cs_stack_top -= 1;
             (*cd).sbw.sbx = cs_arg_stack[cs_stack_top as usize];
-            (*cd).sbw.sby = 0i32 as libc::c_double;
+            (*cd).sbw.sby = 0i32 as f64;
             cs_stack_top = 0i32
         }
         1 | 3 => {
@@ -475,7 +475,7 @@ unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc, mut data: *mut *mut 
             /* Put stem_id onto the stack... */
             let fresh2 = cs_stack_top;
             cs_stack_top = cs_stack_top + 1;
-            cs_arg_stack[fresh2 as usize] = stem_id as libc::c_double;
+            cs_arg_stack[fresh2 as usize] = stem_id as f64;
             add_charpath(
                 cd,
                 -1i32,
@@ -761,8 +761,8 @@ unsafe extern "C" fn do_othersubr13(mut cd: *mut t1_chardesc) {
     let mut num_vgroups: libc::c_int = 0;
     let mut n: libc::c_int = 0;
     let mut stem_id: libc::c_int = 0;
-    let mut pos: libc::c_double = 0.;
-    let mut del: libc::c_double = 0.;
+    let mut pos: f64 = 0.;
+    let mut del: f64 = 0.;
     /* After #12 callothersubr or hsbw or sbw. */
     if phase != 0i32 {
         status = -1i32;
@@ -794,7 +794,7 @@ unsafe extern "C" fn do_othersubr13(mut cd: *mut t1_chardesc) {
             0i32,
         );
         stemgroups[n as usize].stems[stemgroups[n as usize].num_stems as usize] =
-            stem_id as libc::c_double;
+            stem_id as f64;
         stemgroups[n as usize].num_stems += 1i32;
         pos += del;
         if del < 0.0f64 {
@@ -827,7 +827,7 @@ unsafe extern "C" fn do_othersubr13(mut cd: *mut t1_chardesc) {
             1i32,
         );
         stemgroups[n as usize].stems[stemgroups[n as usize].num_stems as usize] =
-            stem_id as libc::c_double;
+            stem_id as f64;
         stemgroups[n as usize].num_stems += 1i32;
         pos += del;
         if del < 0.0f64 {
@@ -978,7 +978,7 @@ unsafe extern "C" fn do_operator2(
                 /* Put stem_id onto the stack... */
                 let fresh6 = cs_stack_top;
                 cs_stack_top = cs_stack_top + 1;
-                cs_arg_stack[fresh6 as usize] = stem_id as libc::c_double;
+                cs_arg_stack[fresh6 as usize] = stem_id as f64;
                 add_charpath(
                     cd,
                     -1i32,
@@ -1073,7 +1073,7 @@ unsafe extern "C" fn do_operator2(
  */
 /* Type 2 5-bytes encoding used. */
 unsafe extern "C" fn put_numbers(
-    mut argv: *mut libc::c_double,
+    mut argv: *mut f64,
     mut argn: libc::c_int,
     mut dest: *mut *mut card8,
     mut limit: *mut card8,
@@ -1081,13 +1081,13 @@ unsafe extern "C" fn put_numbers(
     let mut i: libc::c_int = 0;
     i = 0i32;
     while i < argn {
-        let mut value: libc::c_double = 0.;
+        let mut value: f64 = 0.;
         let mut ivalue: libc::c_int = 0;
         value = *argv.offset(i as isize);
         /* Nearest integer value */
         ivalue = floor(value + 0.5f64) as libc::c_int;
-        if value >= 0x8000i64 as libc::c_double
-            || value <= (-0x8000 - 1i32 as i64) as libc::c_double
+        if value >= 0x8000i64 as f64
+            || value <= (-0x8000 - 1i32 as i64) as f64
         {
             /*
              * This number cannot be represented as a single operand.
@@ -1097,7 +1097,7 @@ unsafe extern "C" fn put_numbers(
                 b"Argument value too large. (This is bug)\x00" as *const u8 as *const i8,
             );
         } else {
-            if fabs(value - ivalue as libc::c_double) > 3.0e-5f64 {
+            if fabs(value - ivalue as f64) > 3.0e-5f64 {
                 /* 16.16-bit signed fixed value  */
                 if limit < (*dest).offset(5) {
                     status = -3i32;
@@ -1114,7 +1114,7 @@ unsafe extern "C" fn put_numbers(
                 let fresh10 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh10 = (ivalue & 0xffi32) as card8;
-                ivalue = ((value - ivalue as libc::c_double) * 0x10000i64 as libc::c_double)
+                ivalue = ((value - ivalue as f64) * 0x10000i64 as f64)
                     as libc::c_int;
                 let fresh11 = *dest;
                 *dest = (*dest).offset(1);
@@ -1229,7 +1229,7 @@ unsafe extern "C" fn get_integer(mut data: *mut *mut card8, mut endptr: *mut car
     }
     let fresh21 = cs_stack_top;
     cs_stack_top = cs_stack_top + 1;
-    cs_arg_stack[fresh21 as usize] = result as libc::c_double;
+    cs_arg_stack[fresh21 as usize] = result as f64;
 }
 /* Type 1 */
 unsafe extern "C" fn get_longint(mut data: *mut *mut card8, mut endptr: *mut card8) {
@@ -1257,7 +1257,7 @@ unsafe extern "C" fn get_longint(mut data: *mut *mut card8, mut endptr: *mut car
     }
     let fresh22 = cs_stack_top;
     cs_stack_top = cs_stack_top + 1;
-    cs_arg_stack[fresh22 as usize] = result as libc::c_double;
+    cs_arg_stack[fresh22 as usize] = result as f64;
 }
 /*
  * TODO:
@@ -1351,8 +1351,8 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
     let mut cur: *mut t1_cpath = 0 as *mut t1_cpath;
     let mut prev: *mut t1_cpath = 0 as *mut t1_cpath;
     let mut next: *mut t1_cpath = 0 as *mut t1_cpath;
-    let mut x: libc::c_double = 0.;
-    let mut y: libc::c_double = 0.;
+    let mut x: f64 = 0.;
+    let mut y: f64 = 0.;
     if (*cd).charpath.is_null() {
         return;
     }
@@ -1705,7 +1705,7 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
                     } else if (*cur).args[5] == 0.0f64
                         && (*cur).args[7] == 0.0f64
                         && (*cur).args[1] + (*cur).args[3] + (*cur).args[9] + (*cur).args[11]
-                            == 0i32 as libc::c_double
+                            == 0i32 as f64
                     {
                         /* cur->args[0] = cur->args[0];  dx1 */
                         /* cur->args[1] = cur->args[1];  dy1 */
@@ -1825,8 +1825,8 @@ pub unsafe extern "C" fn t1char_get_metrics(
  */
 unsafe extern "C" fn t1char_encode_charpath(
     mut cd: *mut t1_chardesc,
-    mut default_width: libc::c_double,
-    mut nominal_width: libc::c_double,
+    mut default_width: f64,
+    mut nominal_width: f64,
     mut dst: *mut card8,
     mut endptr: *mut card8,
 ) -> libc::c_int {
@@ -1855,7 +1855,7 @@ unsafe extern "C" fn t1char_encode_charpath(
      * Advance Width
      */
     if (*cd).sbw.wx != default_width {
-        let mut wx: libc::c_double = (*cd).sbw.wx - nominal_width;
+        let mut wx: f64 = (*cd).sbw.wx - nominal_width;
         put_numbers(&mut wx, 1i32, &mut dst, endptr);
         if status != 0i32 {
             _tt_abort(
@@ -1871,7 +1871,7 @@ unsafe extern "C" fn t1char_encode_charpath(
     let mut num_vstems: libc::c_int = 0i32;
     let mut i: libc::c_int = 0;
     let mut reset: libc::c_int = 1i32;
-    let mut stem: [libc::c_double; 2] = [0.; 2];
+    let mut stem: [f64; 2] = [0.; 2];
     i = 0i32;
     while i < (*cd).num_stems && (*cd).stems[i as usize].dir == 0i32 {
         num_hstems += 1;
@@ -2118,11 +2118,11 @@ unsafe extern "C" fn t1char_encode_charpath(
      * (adx ady bchar achar) endchar
      */
     if (*cd).flags & 1i32 << 2i32 != 0 {
-        let mut seac: [libc::c_double; 4] = [0.; 4];
+        let mut seac: [f64; 4] = [0.; 4];
         seac[0] = (*cd).seac.adx;
         seac[1] = (*cd).seac.ady;
-        seac[2] = (*cd).seac.bchar as libc::c_double;
-        seac[3] = (*cd).seac.achar as libc::c_double;
+        seac[2] = (*cd).seac.bchar as f64;
+        seac[3] = (*cd).seac.achar as f64;
         put_numbers(seac.as_mut_ptr(), 4i32, &mut dst, endptr);
         if status != 0i32 {
             _tt_abort(
@@ -2153,8 +2153,8 @@ pub unsafe extern "C" fn t1char_convert_charstring(
     mut src: *mut card8,
     mut srclen: libc::c_int,
     mut subrs: *mut cff_index,
-    mut default_width: libc::c_double,
-    mut nominal_width: libc::c_double,
+    mut default_width: f64,
+    mut nominal_width: f64,
     mut ginfo: *mut t1_ginfo,
 ) -> libc::c_int {
     let mut length: libc::c_int = 0;

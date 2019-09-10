@@ -16,7 +16,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_font_set_fontname(font: *mut pdf_font, fontname: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn pdf_font_get_param(font: *mut pdf_font, type_0: libc::c_int) -> libc::c_double;
+    fn pdf_font_get_param(font: *mut pdf_font, type_0: libc::c_int) -> f64;
     #[no_mangle]
     fn pdf_font_get_encoding(font: *mut pdf_font) -> libc::c_int;
     #[no_mangle]
@@ -46,7 +46,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
@@ -80,7 +80,7 @@ extern "C" {
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -157,7 +157,7 @@ extern "C" {
     #[no_mangle]
     static mut work_buffer: [i8; 0];
     #[no_mangle]
-    fn pdf_sprint_number(buf: *mut i8, value: libc::c_double) -> libc::c_int;
+    fn pdf_sprint_number(buf: *mut i8, value: f64) -> libc::c_int;
     #[no_mangle]
     fn pdf_encoding_used_by_type3(enc_id: libc::c_int);
     /* WARNING:
@@ -171,7 +171,7 @@ extern "C" {
     fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
     /* From TFM header */
     #[no_mangle]
-    fn tfm_get_design_size(font_id: libc::c_int) -> libc::c_double;
+    fn tfm_get_design_size(font_id: libc::c_int) -> f64;
 }
 pub type __off_t = i64;
 pub type __off64_t = i64;
@@ -214,10 +214,10 @@ pub type FILE = _IO_FILE;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -248,11 +248,11 @@ pub unsafe extern "C" fn PKFont_set_dpi(mut dpi: libc::c_int) {
 /* (Only) This requires TFM to get design size... */
 unsafe extern "C" fn truedpi(
     mut ident: *const i8,
-    mut point_size: libc::c_double,
+    mut point_size: f64,
     mut bdpi: libc::c_uint,
 ) -> libc::c_uint {
     let mut dpi: libc::c_uint = bdpi;
-    let mut design_size: libc::c_double = 0.;
+    let mut design_size: f64 = 0.;
     let mut tfm_id: libc::c_int = 0;
     tfm_id = tfm_open(ident, 0i32);
     if tfm_id < 0i32 {
@@ -265,7 +265,7 @@ unsafe extern "C" fn truedpi(
             ident,
         );
     } else {
-        dpi = (floor(base_dpi as libc::c_double * point_size / design_size / 1.0f64 + 0.5f64)
+        dpi = (floor(base_dpi as f64 * point_size / design_size / 1.0f64 + 0.5f64)
             * 1.0f64) as libc::c_uint
     }
     return dpi;
@@ -288,7 +288,7 @@ unsafe extern "C" fn dpx_open_pk_font_at(
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_open_pkfont(mut font: *mut pdf_font) -> libc::c_int {
     let mut ident: *mut i8 = 0 as *mut i8;
-    let mut point_size: libc::c_double = 0.;
+    let mut point_size: f64 = 0.;
     let mut encoding_id: libc::c_int = 0;
     let mut dpi: libc::c_uint = 0;
     let mut fp: *mut FILE = 0 as *mut FILE;
@@ -776,7 +776,7 @@ unsafe extern "C" fn read_pk_char_header(
 /* CCITT Group 4 filter may reduce file size. */
 unsafe extern "C" fn create_pk_CharProc_stream(
     mut pkh: *mut pk_header_,
-    mut chrwid: libc::c_double,
+    mut chrwid: f64,
     mut pkt_ptr: *mut u8,
     mut pkt_len: u32,
 ) -> *mut pdf_obj {
@@ -900,8 +900,8 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     let mut ident: *mut i8 = 0 as *mut i8;
     let mut dpi: libc::c_uint = 0;
     let mut fp: *mut FILE = 0 as *mut FILE;
-    let mut point_size: libc::c_double = 0.;
-    let mut pix2charu: libc::c_double = 0.;
+    let mut point_size: f64 = 0.;
+    let mut pix2charu: f64 = 0.;
     let mut opcode: libc::c_int = 0;
     let mut code: libc::c_int = 0;
     let mut firstchar: libc::c_int = 0;
@@ -911,7 +911,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     let mut procset: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut encoding: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut tmp_array: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut widths: [libc::c_double; 256] = [0.; 256];
+    let mut widths: [f64; 256] = [0.; 256];
     let mut bbox: pdf_rect = pdf_rect {
         llx: 0.,
         lly: 0.,
@@ -968,7 +968,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
      * There seems to be problems in "scaled" bitmap glyph
      * rendering in several viewers.
      */
-    pix2charu = 72.0f64 * 1000.0f64 / base_dpi as libc::c_double / point_size; /* A command byte */
+    pix2charu = 72.0f64 * 1000.0f64 / base_dpi as f64 / point_size; /* A command byte */
     bbox.lly = ::std::f64::INFINITY;
     bbox.llx = bbox.lly;
     bbox.ury = -::std::f64::INFINITY;
@@ -1015,37 +1015,37 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                 let mut charproc: *mut pdf_obj = 0 as *mut pdf_obj;
                 let mut pkt_ptr: *mut u8 = 0 as *mut u8;
                 let mut bytesread: size_t = 0;
-                let mut charwidth: libc::c_double = 0.;
+                let mut charwidth: f64 = 0.;
                 /* Charwidth in PDF units */
                 charwidth = floor(
-                    1000.0f64 * pkh.wd as libc::c_double
-                        / ((1i32 << 20i32) as libc::c_double * pix2charu)
+                    1000.0f64 * pkh.wd as f64
+                        / ((1i32 << 20i32) as f64 * pix2charu)
                         / 0.1f64
                         + 0.5f64,
                 ) * 0.1f64;
                 widths[(pkh.chrcode & 0xffi32) as usize] = charwidth;
                 /* Update font BBox info */
-                bbox.llx = if bbox.llx < -pkh.bm_hoff as libc::c_double {
+                bbox.llx = if bbox.llx < -pkh.bm_hoff as f64 {
                     bbox.llx
                 } else {
-                    -pkh.bm_hoff as libc::c_double
+                    -pkh.bm_hoff as f64
                 };
-                bbox.lly = if bbox.lly < pkh.bm_voff as libc::c_double - pkh.bm_ht as libc::c_double
+                bbox.lly = if bbox.lly < pkh.bm_voff as f64 - pkh.bm_ht as f64
                 {
                     bbox.lly
                 } else {
-                    pkh.bm_voff as libc::c_double - pkh.bm_ht as libc::c_double
+                    pkh.bm_voff as f64 - pkh.bm_ht as f64
                 };
-                bbox.urx = if bbox.urx > pkh.bm_wd as libc::c_double - pkh.bm_hoff as libc::c_double
+                bbox.urx = if bbox.urx > pkh.bm_wd as f64 - pkh.bm_hoff as f64
                 {
                     bbox.urx
                 } else {
-                    pkh.bm_wd as libc::c_double - pkh.bm_hoff as libc::c_double
+                    pkh.bm_wd as f64 - pkh.bm_hoff as f64
                 };
-                bbox.ury = if bbox.ury > pkh.bm_voff as libc::c_double {
+                bbox.ury = if bbox.ury > pkh.bm_voff as f64 {
                     bbox.ury
                 } else {
-                    pkh.bm_voff as libc::c_double
+                    pkh.bm_voff as f64
                 };
                 pkt_ptr = new((pkh.pkt_len as u64)
                     .wrapping_mul(::std::mem::size_of::<u8>() as u64)
@@ -1192,7 +1192,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                 lastchar = code
             }
             if code != prev + 1i32 {
-                pdf_add_array(tmp_array, pdf_new_number(code as libc::c_double));
+                pdf_add_array(tmp_array, pdf_new_number(code as f64));
             }
             if encoding_id >= 0i32 && !enc_vec.is_null() {
                 charname_0 = *enc_vec.offset(code as u8 as isize);
@@ -1270,7 +1270,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
         if *usedchars.offset(code as isize) != 0 {
             pdf_add_array(tmp_array, pdf_new_number(widths[code as usize]));
         } else {
-            pdf_add_array(tmp_array, pdf_new_number(0i32 as libc::c_double));
+            pdf_add_array(tmp_array, pdf_new_number(0i32 as f64));
         }
         code += 1
     }
@@ -1296,12 +1296,12 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     pdf_add_dict(
         fontdict,
         pdf_new_name(b"FirstChar\x00" as *const u8 as *const i8),
-        pdf_new_number(firstchar as libc::c_double),
+        pdf_new_number(firstchar as f64),
     );
     pdf_add_dict(
         fontdict,
         pdf_new_name(b"LastChar\x00" as *const u8 as *const i8),
-        pdf_new_number(lastchar as libc::c_double),
+        pdf_new_number(lastchar as f64),
     );
     return 0i32;
 }

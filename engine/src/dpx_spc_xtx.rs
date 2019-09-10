@@ -8,11 +8,11 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn cos(_: libc::c_double) -> libc::c_double;
+    fn cos(_: f64) -> f64;
     #[no_mangle]
-    fn sin(_: libc::c_double) -> libc::c_double;
+    fn sin(_: f64) -> f64;
     #[no_mangle]
-    fn fabs(_: libc::c_double) -> libc::c_double;
+    fn fabs(_: f64) -> f64;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const i8,
@@ -119,7 +119,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_grestore() -> libc::c_int;
     #[no_mangle]
-    fn pdf_dev_set_fixed_point(x: libc::c_double, y: libc::c_double);
+    fn pdf_dev_set_fixed_point(x: f64, y: f64);
     #[no_mangle]
     fn pdf_dev_get_fixed_point(p: *mut pdf_coord);
     #[no_mangle]
@@ -166,7 +166,7 @@ extern "C" {
     ) -> libc::c_int;
     #[no_mangle]
     fn spc_util_read_numbers(
-        values: *mut libc::c_double,
+        values: *mut f64,
         num_values: libc::c_int,
         args: *mut spc_arg,
     ) -> libc::c_int;
@@ -196,9 +196,9 @@ pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_env {
-    pub x_user: libc::c_double,
-    pub y_user: libc::c_double,
-    pub mag: libc::c_double,
+    pub x_user: f64,
+    pub y_user: f64,
+    pub mag: f64,
     pub pg: libc::c_int,
     /* current page in PDF */
 }
@@ -230,15 +230,15 @@ pub struct fontmap_rec {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_opt {
-    pub slant: libc::c_double,
-    pub extend: libc::c_double,
-    pub bold: libc::c_double,
+    pub slant: f64,
+    pub extend: f64,
+    pub bold: f64,
     pub mapc: libc::c_int,
     pub flags: libc::c_int,
     pub otl_tags: *mut i8,
     pub tounicode: *mut i8,
     pub cff_charsets: *mut libc::c_void,
-    pub design_size: libc::c_double,
+    pub design_size: f64,
     pub charcoll: *mut i8,
     pub index: libc::c_int,
     pub style: libc::c_int,
@@ -253,25 +253,25 @@ pub struct C2RustUnnamed {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_coord {
-    pub x: libc::c_double,
-    pub y: libc::c_double,
+    pub x: f64,
+    pub y: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
     pub num_components: libc::c_int,
     pub spot_color_name: *mut i8,
-    pub values: [libc::c_double; 4],
+    pub values: [f64; 4],
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -317,23 +317,23 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 */
 #[no_mangle]
 pub unsafe extern "C" fn spc_handler_xtx_do_transform(
-    mut x_user: libc::c_double,
-    mut y_user: libc::c_double,
-    mut a: libc::c_double,
-    mut b: libc::c_double,
-    mut c: libc::c_double,
-    mut d: libc::c_double,
-    mut e: libc::c_double,
-    mut f: libc::c_double,
+    mut x_user: f64,
+    mut y_user: f64,
+    mut a: f64,
+    mut b: f64,
+    mut c: f64,
+    mut d: f64,
+    mut e: f64,
+    mut f: f64,
 ) -> libc::c_int {
     let mut M: pdf_tmatrix = {
         let mut init = pdf_tmatrix {
-            a: 0i32 as libc::c_double,
-            b: 0i32 as libc::c_double,
-            c: 0i32 as libc::c_double,
-            d: 0i32 as libc::c_double,
-            e: 0i32 as libc::c_double,
-            f: 0i32 as libc::c_double,
+            a: 0i32 as f64,
+            b: 0i32 as f64,
+            c: 0i32 as f64,
+            d: 0i32 as f64,
+            e: 0i32 as f64,
+            f: 0i32 as f64,
         };
         init
     };
@@ -354,7 +354,7 @@ unsafe extern "C" fn spc_handler_xtx_scale(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> libc::c_int {
-    let mut values: [libc::c_double; 2] = [0.; 2];
+    let mut values: [f64; 2] = [0.; 2];
     if spc_util_read_numbers(&mut *values.as_mut_ptr().offset(0), 2i32, args) < 2i32 {
         return -1i32;
     }
@@ -363,11 +363,11 @@ unsafe extern "C" fn spc_handler_xtx_scale(
         (*spe).x_user,
         (*spe).y_user,
         values[0],
-        0i32 as libc::c_double,
-        0i32 as libc::c_double,
+        0i32 as f64,
+        0i32 as f64,
         values[1],
-        0i32 as libc::c_double,
-        0i32 as libc::c_double,
+        0i32 as f64,
+        0i32 as f64,
     );
 }
 /* Scaling without gsave/grestore. */
@@ -377,7 +377,7 @@ unsafe extern "C" fn spc_handler_xtx_bscale(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> libc::c_int {
-    let mut values: [libc::c_double; 2] = [0.; 2];
+    let mut values: [f64; 2] = [0.; 2];
     scaleFactorCount += 1;
     if scaleFactorCount & 0xfi32 == 0 {
         scaleFactors = xrealloc(
@@ -392,18 +392,18 @@ unsafe extern "C" fn spc_handler_xtx_bscale(
     if fabs(values[0]) < 1.0e-7f64 || fabs(values[1]) < 1.0e-7f64 {
         return -1i32;
     }
-    (*scaleFactors.offset(scaleFactorCount as isize)).x = 1i32 as libc::c_double / values[0];
-    (*scaleFactors.offset(scaleFactorCount as isize)).y = 1i32 as libc::c_double / values[1];
+    (*scaleFactors.offset(scaleFactorCount as isize)).x = 1i32 as f64 / values[0];
+    (*scaleFactors.offset(scaleFactorCount as isize)).y = 1i32 as f64 / values[1];
     (*args).curptr = (*args).endptr;
     return spc_handler_xtx_do_transform(
         (*spe).x_user,
         (*spe).y_user,
         values[0],
-        0i32 as libc::c_double,
-        0i32 as libc::c_double,
+        0i32 as f64,
+        0i32 as f64,
         values[1],
-        0i32 as libc::c_double,
-        0i32 as libc::c_double,
+        0i32 as f64,
+        0i32 as f64,
     );
 }
 unsafe extern "C" fn spc_handler_xtx_escale(
@@ -418,18 +418,18 @@ unsafe extern "C" fn spc_handler_xtx_escale(
         (*spe).x_user,
         (*spe).y_user,
         factor.x,
-        0i32 as libc::c_double,
-        0i32 as libc::c_double,
+        0i32 as f64,
+        0i32 as f64,
         factor.y,
-        0i32 as libc::c_double,
-        0i32 as libc::c_double,
+        0i32 as f64,
+        0i32 as f64,
     );
 }
 unsafe extern "C" fn spc_handler_xtx_rotate(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> libc::c_int {
-    let mut value: libc::c_double = 0.;
+    let mut value: f64 = 0.;
     if spc_util_read_numbers(&mut value, 1i32, args) < 1i32 {
         return -1i32;
     }
@@ -437,12 +437,12 @@ unsafe extern "C" fn spc_handler_xtx_rotate(
     return spc_handler_xtx_do_transform(
         (*spe).x_user,
         (*spe).y_user,
-        cos(value * 3.14159265358979323846f64 / 180i32 as libc::c_double),
-        sin(value * 3.14159265358979323846f64 / 180i32 as libc::c_double),
-        -sin(value * 3.14159265358979323846f64 / 180i32 as libc::c_double),
-        cos(value * 3.14159265358979323846f64 / 180i32 as libc::c_double),
-        0i32 as libc::c_double,
-        0i32 as libc::c_double,
+        cos(value * 3.14159265358979323846f64 / 180i32 as f64),
+        sin(value * 3.14159265358979323846f64 / 180i32 as f64),
+        -sin(value * 3.14159265358979323846f64 / 180i32 as f64),
+        cos(value * 3.14159265358979323846f64 / 180i32 as f64),
+        0i32 as f64,
+        0i32 as f64,
     );
 }
 #[no_mangle]
@@ -666,7 +666,7 @@ unsafe extern "C" fn spc_handler_xtx_renderingmode(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> libc::c_int {
-    let mut value: libc::c_double = 0.;
+    let mut value: f64 = 0.;
     if spc_util_read_numbers(&mut value, 1i32, args) < 1i32 {
         return -1i32;
     }

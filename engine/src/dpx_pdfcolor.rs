@@ -29,7 +29,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
@@ -62,7 +62,7 @@ extern "C" {
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
@@ -124,7 +124,7 @@ pub type size_t = u64;
 pub struct pdf_color {
     pub num_components: libc::c_int,
     pub spot_color_name: *mut i8,
-    pub values: [libc::c_double; 4],
+    pub values: [f64; 4],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -270,9 +270,9 @@ pub unsafe extern "C" fn pdf_color_type(mut color: *const pdf_color) -> libc::c_
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_rgbcolor(
     mut color: *mut pdf_color,
-    mut r: libc::c_double,
-    mut g: libc::c_double,
-    mut b: libc::c_double,
+    mut r: f64,
+    mut g: f64,
+    mut b: f64,
 ) -> libc::c_int {
     if !color.is_null() {
     } else {
@@ -317,10 +317,10 @@ pub unsafe extern "C" fn pdf_color_rgbcolor(
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_cmykcolor(
     mut color: *mut pdf_color,
-    mut c: libc::c_double,
-    mut m: libc::c_double,
-    mut y: libc::c_double,
-    mut k: libc::c_double,
+    mut c: f64,
+    mut m: f64,
+    mut y: f64,
+    mut k: f64,
 ) -> libc::c_int {
     if !color.is_null() {
     } else {
@@ -373,7 +373,7 @@ pub unsafe extern "C" fn pdf_color_cmykcolor(
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_graycolor(
     mut color: *mut pdf_color,
-    mut g: libc::c_double,
+    mut g: f64,
 ) -> libc::c_int {
     if !color.is_null() {
     } else {
@@ -403,7 +403,7 @@ pub unsafe extern "C" fn pdf_color_graycolor(
 pub unsafe extern "C" fn pdf_color_spotcolor(
     mut color: *mut pdf_color,
     mut name: *mut i8,
-    mut c: libc::c_double,
+    mut c: f64,
 ) -> libc::c_int {
     if !color.is_null() {
     } else {
@@ -458,7 +458,7 @@ pub unsafe extern "C" fn pdf_color_copycolor(
 pub unsafe extern "C" fn pdf_color_brighten_color(
     mut dst: *mut pdf_color,
     mut src: *const pdf_color,
-    mut f: libc::c_double,
+    mut f: f64,
 ) {
     if !dst.is_null() && !src.is_null() {
     } else {
@@ -475,8 +475,8 @@ pub unsafe extern "C" fn pdf_color_brighten_color(
     if f == 1.0f64 {
         pdf_color_graycolor(dst, 1.0f64);
     } else {
-        let mut f0: libc::c_double = 0.;
-        let mut f1: libc::c_double = 0.;
+        let mut f0: f64 = 0.;
+        let mut f1: f64 = 0.;
         let mut n: libc::c_int = 0;
         (*dst).num_components = (*src).num_components;
         n = (*dst).num_components;
@@ -495,7 +495,7 @@ pub unsafe extern "C" fn pdf_color_brighten_color(
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_is_white(mut color: *const pdf_color) -> bool {
     let mut n: libc::c_int = 0;
-    let mut f: libc::c_double = 0.;
+    let mut f: f64 = 0.;
     if !color.is_null() {
     } else {
         __assert_fail(
@@ -1694,9 +1694,9 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
     dpx_message(b"pdf_color>> Illuminant (XYZ):\t\x00" as *const u8 as *const i8);
     dpx_message(
         b"%.3f %.3f %.3f\n\x00" as *const u8 as *const i8,
-        (*icch).illuminant.X as libc::c_double / 0x10000i32 as libc::c_double,
-        (*icch).illuminant.Y as libc::c_double / 0x10000i32 as libc::c_double,
-        (*icch).illuminant.Z as libc::c_double / 0x10000i32 as libc::c_double,
+        (*icch).illuminant.X as f64 / 0x10000i32 as f64,
+        (*icch).illuminant.Y as f64 / 0x10000i32 as f64,
+        (*icch).illuminant.Z as f64 / 0x10000i32 as f64,
     );
     dpx_message(b"pdf_color>> Checksum:\t\x00" as *const u8 as *const i8);
     if memcmp(
@@ -1896,7 +1896,7 @@ pub unsafe extern "C" fn iccp_load_profile(
     pdf_add_dict(
         stream_dict,
         pdf_new_name(b"N\x00" as *const u8 as *const i8),
-        pdf_new_number(get_num_components_iccbased(cdata) as libc::c_double),
+        pdf_new_number(get_num_components_iccbased(cdata) as f64),
     );
     pdf_add_stream(stream, profile, proflen);
     pdf_release_obj(stream);

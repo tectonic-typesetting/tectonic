@@ -11,9 +11,9 @@ extern "C" {
     pub type pdf_file;
     pub type pdf_obj;
     #[no_mangle]
-    fn cos(_: libc::c_double) -> libc::c_double;
+    fn cos(_: f64) -> f64;
     #[no_mangle]
-    fn sin(_: libc::c_double) -> libc::c_double;
+    fn sin(_: f64) -> f64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -119,7 +119,7 @@ extern "C" {
     /* For Unicode encoding form interpretation... */
     /* single-purpose metrics accessors */
     #[no_mangle]
-    fn Fix2D(f: Fixed) -> libc::c_double;
+    fn Fix2D(f: Fixed) -> f64;
     #[no_mangle]
     fn print_file_name(n: i32, a: i32, e: i32);
     #[no_mangle]
@@ -127,7 +127,7 @@ extern "C" {
     #[no_mangle]
     fn print_scaled(s: scaled_t);
     #[no_mangle]
-    fn D2Fix(d: libc::c_double) -> Fixed;
+    fn D2Fix(d: f64) -> Fixed;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -151,18 +151,18 @@ extern "C" {
     */
     #[no_mangle]
     fn min4(
-        v1: libc::c_double,
-        v2: libc::c_double,
-        v3: libc::c_double,
-        v4: libc::c_double,
-    ) -> libc::c_double;
+        v1: f64,
+        v2: f64,
+        v3: f64,
+        v4: f64,
+    ) -> f64;
     #[no_mangle]
     fn max4(
-        v1: libc::c_double,
-        v2: libc::c_double,
-        v3: libc::c_double,
-        v4: libc::c_double,
-    ) -> libc::c_double;
+        v1: f64,
+        v2: f64,
+        v3: f64,
+        v4: f64,
+    ) -> f64;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -214,8 +214,8 @@ extern "C" {
         handle: rust_input_handle_t,
         width: *mut u32,
         height: *mut u32,
-        xdensity: *mut libc::c_double,
-        ydensity: *mut libc::c_double,
+        xdensity: *mut f64,
+        ydensity: *mut f64,
     ) -> libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -245,8 +245,8 @@ extern "C" {
         handle: rust_input_handle_t,
         width: *mut libc::c_uint,
         height: *mut libc::c_uint,
-        xdensity: *mut libc::c_double,
-        ydensity: *mut libc::c_double,
+        xdensity: *mut f64,
+        ydensity: *mut f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn check_for_bmp(handle: rust_input_handle_t) -> libc::c_int;
@@ -255,8 +255,8 @@ extern "C" {
         handle: rust_input_handle_t,
         width: *mut libc::c_uint,
         height: *mut libc::c_uint,
-        xdensity: *mut libc::c_double,
-        ydensity: *mut libc::c_double,
+        xdensity: *mut f64,
+        ydensity: *mut f64,
     ) -> libc::c_int;
 }
 /* The weird enum values are historical and could be rationalized. But it is
@@ -345,7 +345,7 @@ pub type b16x4 = b16x4_le_t;
 pub union memory_word {
     pub b32: b32x2,
     pub b16: b16x4,
-    pub gr: libc::c_double,
+    pub gr: f64,
     pub ptr: *mut libc::c_void,
 }
 #[derive(Copy, Clone)]
@@ -362,40 +362,40 @@ pub struct list_state_record {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct transform_t {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub x: libc::c_double,
-    pub y: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub x: f64,
+    pub y: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct real_point {
-    pub x: libc::c_float,
-    pub y: libc::c_float,
+    pub x: f32,
+    pub y: f32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct real_rect {
-    pub x: libc::c_float,
-    pub y: libc::c_float,
-    pub wd: libc::c_float,
-    pub ht: libc::c_float,
+    pub x: f32,
+    pub y: f32,
+    pub wd: f32,
+    pub ht: f32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_coord {
-    pub x: libc::c_double,
-    pub y: libc::c_double,
+    pub x: f64,
+    pub y: f64,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -421,12 +421,12 @@ pub struct pdf_coord {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[no_mangle]
 pub unsafe extern "C" fn count_pdf_file_pages() -> libc::c_int {
@@ -535,22 +535,22 @@ unsafe extern "C" fn pdf_get_rect(
     bbox.lly = min4(p1.y, p2.y, p3.y, p4.y);
     bbox.urx = max4(p1.x, p2.x, p3.x, p4.x);
     bbox.ury = max4(p1.y, p2.y, p3.y, p4.y);
-    (*box_0).x = (72.27f64 / 72i32 as libc::c_double * bbox.llx) as libc::c_float;
-    (*box_0).y = (72.27f64 / 72i32 as libc::c_double * bbox.lly) as libc::c_float;
-    (*box_0).wd = (72.27f64 / 72i32 as libc::c_double * (bbox.urx - bbox.llx)) as libc::c_float;
-    (*box_0).ht = (72.27f64 / 72i32 as libc::c_double * (bbox.ury - bbox.lly)) as libc::c_float;
+    (*box_0).x = (72.27f64 / 72i32 as f64 * bbox.llx) as f32;
+    (*box_0).y = (72.27f64 / 72i32 as f64 * bbox.lly) as f32;
+    (*box_0).wd = (72.27f64 / 72i32 as f64 * (bbox.urx - bbox.llx)) as f32;
+    (*box_0).ht = (72.27f64 / 72i32 as f64 * (bbox.ury - bbox.lly)) as f32;
     return 0i32;
 }
 unsafe extern "C" fn get_image_size_in_inches(
     mut handle: rust_input_handle_t,
-    mut width: *mut libc::c_float,
-    mut height: *mut libc::c_float,
+    mut width: *mut f32,
+    mut height: *mut f32,
 ) -> libc::c_int {
     let mut err: libc::c_int = 1i32;
     let mut width_pix: libc::c_uint = 0;
     let mut height_pix: libc::c_uint = 0;
-    let mut xdensity: libc::c_double = 0.;
-    let mut ydensity: libc::c_double = 0.;
+    let mut xdensity: f64 = 0.;
+    let mut ydensity: f64 = 0.;
     if check_for_jpeg(handle) != 0 {
         err = jpeg_get_bbox(
             handle,
@@ -577,13 +577,13 @@ unsafe extern "C" fn get_image_size_in_inches(
         )
     }
     if err != 0 {
-        *width = -1i32 as libc::c_float;
-        *height = -1i32 as libc::c_float;
+        *width = -1i32 as f32;
+        *height = -1i32 as f32;
         return err;
     }
     /* xdvipdfmx defines density = 72 / dpi, so ... */
-    *width = (width_pix as libc::c_double * xdensity / 72i32 as libc::c_double) as libc::c_float;
-    *height = (height_pix as libc::c_double * ydensity / 72i32 as libc::c_double) as libc::c_float;
+    *width = (width_pix as f64 * xdensity / 72i32 as f64) as f32;
+    *height = (height_pix as f64 * ydensity / 72i32 as f64) as f32;
     return 0i32;
 }
 /*
@@ -602,7 +602,7 @@ unsafe extern "C" fn find_pic_file(
     let mut err: libc::c_int = -1i32;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     handle = ttstub_input_open(name_of_file, TTIF_PICT, 0i32);
-    (*bounds).ht = 0.0f64 as libc::c_float;
+    (*bounds).ht = 0.0f64 as f32;
     (*bounds).wd = (*bounds).ht;
     (*bounds).y = (*bounds).wd;
     (*bounds).x = (*bounds).y;
@@ -614,8 +614,8 @@ unsafe extern "C" fn find_pic_file(
         err = pdf_get_rect(name_of_file, handle, page, pdfBoxType, bounds)
     } else {
         err = get_image_size_in_inches(handle, &mut (*bounds).wd, &mut (*bounds).ht);
-        (*bounds).wd = ((*bounds).wd as libc::c_double * 72.27f64) as libc::c_float;
-        (*bounds).ht = ((*bounds).ht as libc::c_double * 72.27f64) as libc::c_float
+        (*bounds).wd = ((*bounds).wd as f64 * 72.27f64) as f32;
+        (*bounds).ht = ((*bounds).ht as f64 * 72.27f64) as f32
     }
     if err == 0i32 {
         *path = xstrdup(name_of_file)
@@ -625,10 +625,10 @@ unsafe extern "C" fn find_pic_file(
 }
 unsafe extern "C" fn transform_point(mut p: *mut real_point, mut t: *const transform_t) {
     let mut r: real_point = real_point { x: 0., y: 0. };
-    r.x = ((*t).a * (*p).x as libc::c_double + (*t).c * (*p).y as libc::c_double + (*t).x)
-        as libc::c_float;
-    r.y = ((*t).b * (*p).x as libc::c_double + (*t).d * (*p).y as libc::c_double + (*t).y)
-        as libc::c_float;
+    r.x = ((*t).a * (*p).x as f64 + (*t).c * (*p).y as f64 + (*t).x)
+        as f32;
+    r.y = ((*t).b * (*p).x as f64 + (*t).d * (*p).y as f64 + (*t).y)
+        as f32;
     *p = r;
 }
 unsafe extern "C" fn make_identity(mut t: *mut transform_t) {
@@ -641,8 +641,8 @@ unsafe extern "C" fn make_identity(mut t: *mut transform_t) {
 }
 unsafe extern "C" fn make_scale(
     mut t: *mut transform_t,
-    mut xscale: libc::c_double,
-    mut yscale: libc::c_double,
+    mut xscale: f64,
+    mut yscale: f64,
 ) {
     (*t).a = xscale;
     (*t).b = 0.0f64;
@@ -653,8 +653,8 @@ unsafe extern "C" fn make_scale(
 }
 unsafe extern "C" fn make_translation(
     mut t: *mut transform_t,
-    mut dx: libc::c_double,
-    mut dy: libc::c_double,
+    mut dx: f64,
+    mut dy: f64,
 ) {
     (*t).a = 1.0f64;
     (*t).b = 0.0f64;
@@ -663,7 +663,7 @@ unsafe extern "C" fn make_translation(
     (*t).x = dx;
     (*t).y = dy;
 }
-unsafe extern "C" fn make_rotation(mut t: *mut transform_t, mut a: libc::c_double) {
+unsafe extern "C" fn make_rotation(mut t: *mut transform_t, mut a: f64) {
     (*t).a = cos(a);
     (*t).b = sin(a);
     (*t).c = -sin(a);
@@ -714,13 +714,13 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         y: 0.,
     };
     let mut corners: [real_point; 4] = [real_point { x: 0., y: 0. }; 4];
-    let mut x_size_req: libc::c_double = 0.;
-    let mut y_size_req: libc::c_double = 0.;
+    let mut x_size_req: f64 = 0.;
+    let mut y_size_req: f64 = 0.;
     let mut check_keywords: bool = false;
-    let mut xmin: libc::c_double = 0.;
-    let mut xmax: libc::c_double = 0.;
-    let mut ymin: libc::c_double = 0.;
-    let mut ymax: libc::c_double = 0.;
+    let mut xmin: f64 = 0.;
+    let mut xmax: f64 = 0.;
+    let mut ymin: f64 = 0.;
+    let mut ymax: f64 = 0.;
     let mut i: small_number = 0;
     let mut page: i32 = 0;
     let mut pdf_box_type: i32 = 0;
@@ -770,8 +770,8 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
             if x_size_req == 0.0f64 && y_size_req == 0.0f64 {
                 make_scale(
                     &mut t2,
-                    cur_val as libc::c_double / 1000.0f64,
-                    cur_val as libc::c_double / 1000.0f64,
+                    cur_val as f64 / 1000.0f64,
+                    cur_val as f64 / 1000.0f64,
                 );
                 let mut for_end: i32 = 0;
                 i = 0i32 as small_number;
@@ -791,7 +791,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         } else if scan_keyword(b"xscaled\x00" as *const u8 as *const i8) {
             scan_int();
             if x_size_req == 0.0f64 && y_size_req == 0.0f64 {
-                make_scale(&mut t2, cur_val as libc::c_double / 1000.0f64, 1.0f64);
+                make_scale(&mut t2, cur_val as f64 / 1000.0f64, 1.0f64);
                 let mut for_end_0: i32 = 0;
                 i = 0i32 as small_number;
                 for_end_0 = 3i32;
@@ -810,7 +810,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         } else if scan_keyword(b"yscaled\x00" as *const u8 as *const i8) {
             scan_int();
             if x_size_req == 0.0f64 && y_size_req == 0.0f64 {
-                make_scale(&mut t2, 1.0f64, cur_val as libc::c_double / 1000.0f64);
+                make_scale(&mut t2, 1.0f64, cur_val as f64 / 1000.0f64);
                 let mut for_end_1: i32 = 0;
                 i = 0i32 as small_number;
                 for_end_1 = 3i32;
@@ -870,7 +870,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
             scan_decimal();
             if x_size_req != 0.0f64 || y_size_req != 0.0f64 {
                 xmin = 1000000.0f64;
-                xmax = -(xmin as i32) as libc::c_double;
+                xmax = -(xmin as i32) as f64;
                 ymin = xmin;
                 ymax = xmax;
                 let mut for_end_2: i32 = 0;
@@ -878,17 +878,17 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 for_end_2 = 3i32;
                 if i as libc::c_int <= for_end_2 {
                     loop {
-                        if (corners[i as usize].x as libc::c_double) < xmin {
-                            xmin = corners[i as usize].x as libc::c_double
+                        if (corners[i as usize].x as f64) < xmin {
+                            xmin = corners[i as usize].x as f64
                         }
-                        if corners[i as usize].x as libc::c_double > xmax {
-                            xmax = corners[i as usize].x as libc::c_double
+                        if corners[i as usize].x as f64 > xmax {
+                            xmax = corners[i as usize].x as f64
                         }
-                        if (corners[i as usize].y as libc::c_double) < ymin {
-                            ymin = corners[i as usize].y as libc::c_double
+                        if (corners[i as usize].y as f64) < ymin {
+                            ymin = corners[i as usize].y as f64
                         }
-                        if corners[i as usize].y as libc::c_double > ymax {
-                            ymax = corners[i as usize].y as libc::c_double
+                        if corners[i as usize].y as f64 > ymax {
+                            ymax = corners[i as usize].y as f64
                         }
                         let fresh3 = i;
                         i = i + 1;
@@ -951,7 +951,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 }
             }
             xmin = 1000000.0f64;
-            xmax = -(xmin as i32) as libc::c_double;
+            xmax = -(xmin as i32) as f64;
             ymin = xmin;
             ymax = xmax;
             let mut for_end_5: i32 = 0;
@@ -959,17 +959,17 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
             for_end_5 = 3i32;
             if i as libc::c_int <= for_end_5 {
                 loop {
-                    if (corners[i as usize].x as libc::c_double) < xmin {
-                        xmin = corners[i as usize].x as libc::c_double
+                    if (corners[i as usize].x as f64) < xmin {
+                        xmin = corners[i as usize].x as f64
                     }
-                    if corners[i as usize].x as libc::c_double > xmax {
-                        xmax = corners[i as usize].x as libc::c_double
+                    if corners[i as usize].x as f64 > xmax {
+                        xmax = corners[i as usize].x as f64
                     }
-                    if (corners[i as usize].y as libc::c_double) < ymin {
-                        ymin = corners[i as usize].y as libc::c_double
+                    if (corners[i as usize].y as f64) < ymin {
+                        ymin = corners[i as usize].y as f64
                     }
-                    if corners[i as usize].y as libc::c_double > ymax {
-                        ymax = corners[i as usize].y as libc::c_double
+                    if corners[i as usize].y as f64 > ymax {
+                        ymax = corners[i as usize].y as f64
                     }
                     let fresh6 = i;
                     i = i + 1;
@@ -978,14 +978,14 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                     }
                 }
             }
-            corners[0].x = xmin as libc::c_float;
-            corners[0].y = ymin as libc::c_float;
-            corners[1].x = xmin as libc::c_float;
-            corners[1].y = ymax as libc::c_float;
-            corners[2].x = xmax as libc::c_float;
-            corners[2].y = ymax as libc::c_float;
-            corners[3].x = xmax as libc::c_float;
-            corners[3].y = ymin as libc::c_float;
+            corners[0].x = xmin as f32;
+            corners[0].y = ymin as f32;
+            corners[1].x = xmin as f32;
+            corners[1].y = ymax as f32;
+            corners[2].x = xmax as f32;
+            corners[2].y = ymax as f32;
+            corners[3].x = xmax as f32;
+            corners[3].y = ymin as f32;
             transform_concat(&mut t, &mut t2);
         } else {
             check_keywords = 0i32 != 0
@@ -993,7 +993,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
     }
     if x_size_req != 0.0f64 || y_size_req != 0.0f64 {
         xmin = 1000000.0f64;
-        xmax = -(xmin as i32) as libc::c_double;
+        xmax = -(xmin as i32) as f64;
         ymin = xmin;
         ymax = xmax;
         let mut for_end_6: i32 = 0;
@@ -1001,17 +1001,17 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         for_end_6 = 3i32;
         if i as libc::c_int <= for_end_6 {
             loop {
-                if (corners[i as usize].x as libc::c_double) < xmin {
-                    xmin = corners[i as usize].x as libc::c_double
+                if (corners[i as usize].x as f64) < xmin {
+                    xmin = corners[i as usize].x as f64
                 }
-                if corners[i as usize].x as libc::c_double > xmax {
-                    xmax = corners[i as usize].x as libc::c_double
+                if corners[i as usize].x as f64 > xmax {
+                    xmax = corners[i as usize].x as f64
                 }
-                if (corners[i as usize].y as libc::c_double) < ymin {
-                    ymin = corners[i as usize].y as libc::c_double
+                if (corners[i as usize].y as f64) < ymin {
+                    ymin = corners[i as usize].y as f64
                 }
-                if corners[i as usize].y as libc::c_double > ymax {
-                    ymax = corners[i as usize].y as libc::c_double
+                if corners[i as usize].y as f64 > ymax {
+                    ymax = corners[i as usize].y as f64
                 }
                 let fresh7 = i;
                 i = i + 1;
@@ -1057,7 +1057,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         transform_concat(&mut t, &mut t2);
     }
     xmin = 1000000.0f64;
-    xmax = -(xmin as i32) as libc::c_double;
+    xmax = -(xmin as i32) as f64;
     ymin = xmin;
     ymax = xmax;
     let mut for_end_8: i32 = 0;
@@ -1065,17 +1065,17 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
     for_end_8 = 3i32;
     if i as libc::c_int <= for_end_8 {
         loop {
-            if (corners[i as usize].x as libc::c_double) < xmin {
-                xmin = corners[i as usize].x as libc::c_double
+            if (corners[i as usize].x as f64) < xmin {
+                xmin = corners[i as usize].x as f64
             }
-            if corners[i as usize].x as libc::c_double > xmax {
-                xmax = corners[i as usize].x as libc::c_double
+            if corners[i as usize].x as f64 > xmax {
+                xmax = corners[i as usize].x as f64
             }
-            if (corners[i as usize].y as libc::c_double) < ymin {
-                ymin = corners[i as usize].y as libc::c_double
+            if (corners[i as usize].y as f64) < ymin {
+                ymin = corners[i as usize].y as f64
             }
-            if corners[i as usize].y as libc::c_double > ymax {
-                ymax = corners[i as usize].y as libc::c_double
+            if corners[i as usize].y as f64 > ymax {
+                ymax = corners[i as usize].y as f64
             }
             let fresh9 = i;
             i = i + 1;
@@ -1086,8 +1086,8 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
     }
     make_translation(
         &mut t2,
-        (-(xmin as i32) * 72i32) as libc::c_double / 72.27f64,
-        (-(ymin as i32) * 72i32) as libc::c_double / 72.27f64,
+        (-(xmin as i32) * 72i32) as f64 / 72.27f64,
+        (-(ymin as i32) * 72i32) as f64 / 72.27f64,
     );
     transform_concat(&mut t, &mut t2);
     if result == 0i32 {

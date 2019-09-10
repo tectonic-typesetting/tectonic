@@ -18,7 +18,7 @@ pub type scaled_t = i32;
    Licensed under the MIT License.
 */
 #[no_mangle]
-pub unsafe extern "C" fn tex_round(mut r: libc::c_double) -> i32 {
+pub unsafe extern "C" fn tex_round(mut r: f64) -> i32 {
     /* We must reproduce very particular rounding semantics to pass the TRIP
      * test. Specifically, values within the 32-bit range of TeX integers are
      * rounded to the nearest integer with half-integral values going away

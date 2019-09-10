@@ -117,7 +117,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_version() -> libc::c_uint;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     /* Name does not include the / */
@@ -1397,12 +1397,12 @@ pub unsafe extern "C" fn pdf_encrypt_obj() -> *mut pdf_obj {
     pdf_add_dict(
         doc_encrypt,
         pdf_new_name(b"V\x00" as *const u8 as *const i8),
-        pdf_new_number((*p).V as libc::c_double),
+        pdf_new_number((*p).V as f64),
     );
     pdf_add_dict(
         doc_encrypt,
         pdf_new_name(b"Length\x00" as *const u8 as *const i8),
-        pdf_new_number(((*p).key_size * 8i32) as libc::c_double),
+        pdf_new_number(((*p).key_size * 8i32) as f64),
     );
     if (*p).V >= 4i32 {
         let mut CF: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -1426,7 +1426,7 @@ pub unsafe extern "C" fn pdf_encrypt_obj() -> *mut pdf_obj {
         pdf_add_dict(
             StdCF,
             pdf_new_name(b"Length\x00" as *const u8 as *const i8),
-            pdf_new_number((*p).key_size as libc::c_double),
+            pdf_new_number((*p).key_size as f64),
         );
         pdf_add_dict(
             CF,
@@ -1452,7 +1452,7 @@ pub unsafe extern "C" fn pdf_encrypt_obj() -> *mut pdf_obj {
     pdf_add_dict(
         doc_encrypt,
         pdf_new_name(b"R\x00" as *const u8 as *const i8),
-        pdf_new_number((*p).R as libc::c_double),
+        pdf_new_number((*p).R as f64),
     );
     if (*p).V < 5i32 {
         pdf_add_dict(
@@ -1480,7 +1480,7 @@ pub unsafe extern "C" fn pdf_encrypt_obj() -> *mut pdf_obj {
     pdf_add_dict(
         doc_encrypt,
         pdf_new_name(b"P\x00" as *const u8 as *const i8),
-        pdf_new_number((*p).P as libc::c_double),
+        pdf_new_number((*p).P as f64),
     );
     if (*p).V == 5i32 {
         let mut perms: [u8; 16] = [0; 16];
@@ -1544,7 +1544,7 @@ pub unsafe extern "C" fn pdf_encrypt_obj() -> *mut pdf_obj {
         pdf_add_dict(
             adbe,
             pdf_new_name(b"ExtensionLevel\x00" as *const u8 as *const i8),
-            pdf_new_number((if (*p).R == 5i32 { 3i32 } else { 8i32 }) as libc::c_double),
+            pdf_new_number((if (*p).R == 5i32 { 3i32 } else { 8i32 }) as f64),
         );
         pdf_add_dict(
             ext,

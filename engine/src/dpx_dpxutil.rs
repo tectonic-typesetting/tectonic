@@ -130,12 +130,12 @@ pub unsafe extern "C" fn xtoi(mut c: i8) -> libc::c_int {
 }
 #[no_mangle]
 pub unsafe extern "C" fn min4(
-    mut x1: libc::c_double,
-    mut x2: libc::c_double,
-    mut x3: libc::c_double,
-    mut x4: libc::c_double,
-) -> libc::c_double {
-    let mut v: libc::c_double = x1;
+    mut x1: f64,
+    mut x2: f64,
+    mut x3: f64,
+    mut x4: f64,
+) -> f64 {
+    let mut v: f64 = x1;
     if x2 < v {
         v = x2
     }
@@ -149,12 +149,12 @@ pub unsafe extern "C" fn min4(
 }
 #[no_mangle]
 pub unsafe extern "C" fn max4(
-    mut x1: libc::c_double,
-    mut x2: libc::c_double,
-    mut x3: libc::c_double,
-    mut x4: libc::c_double,
-) -> libc::c_double {
-    let mut v: libc::c_double = x1;
+    mut x1: f64,
+    mut x2: f64,
+    mut x3: f64,
+    mut x4: f64,
+) -> f64 {
+    let mut v: f64 = x1;
     if x2 > v {
         v = x2
     }

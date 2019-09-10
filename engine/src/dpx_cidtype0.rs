@@ -32,7 +32,7 @@ extern "C" {
     #[no_mangle]
     fn Type0Font_set_ToUnicode(font: *mut Type0Font, cmap_ref: *mut pdf_obj);
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const i8,
@@ -85,7 +85,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     /* Name does not include the / */
@@ -235,14 +235,14 @@ extern "C" {
         dict: *mut cff_dict,
         key: *const i8,
         idx: libc::c_int,
-        value: libc::c_double,
+        value: f64,
     );
     #[no_mangle]
     fn cff_dict_get(
         dict: *mut cff_dict,
         key: *const i8,
         idx: libc::c_int,
-    ) -> libc::c_double;
+    ) -> f64;
     #[no_mangle]
     fn cff_dict_add(dict: *mut cff_dict, key: *const i8, count: libc::c_int);
     #[no_mangle]
@@ -323,8 +323,8 @@ extern "C" {
         srclen: libc::c_int,
         gsubr: *mut cff_index,
         subr: *mut cff_index,
-        default_width: libc::c_double,
-        nominal_width: libc::c_double,
+        default_width: f64,
+        nominal_width: f64,
         ginfo: *mut cs_ginfo,
     ) -> libc::c_int;
     #[no_mangle]
@@ -389,8 +389,8 @@ extern "C" {
         src: *mut card8,
         srclen: libc::c_int,
         subrs: *mut cff_index,
-        default_width: libc::c_double,
-        nominal_width: libc::c_double,
+        default_width: f64,
+        nominal_width: f64,
         ginfo: *mut t1_ginfo,
     ) -> libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -551,17 +551,17 @@ pub type USHORT = u16;
 #[repr(C)]
 pub struct cs_ginfo {
     pub flags: libc::c_int,
-    pub wx: libc::c_double,
-    pub wy: libc::c_double,
+    pub wx: f64,
+    pub wy: f64,
     pub bbox: C2RustUnnamed_0,
     pub seac: C2RustUnnamed,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
-    pub asb: libc::c_double,
-    pub adx: libc::c_double,
-    pub ady: libc::c_double,
+    pub asb: f64,
+    pub adx: f64,
+    pub ady: f64,
     pub bchar: card8,
     pub achar: card8,
 }
@@ -569,10 +569,10 @@ pub type card8 = u8;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -700,7 +700,7 @@ pub struct cff_dict_entry {
     pub id: libc::c_int,
     pub key: *const i8,
     pub count: libc::c_int,
-    pub values: *mut libc::c_double,
+    pub values: *mut f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -1039,27 +1039,27 @@ pub struct agl_name {
 #[repr(C)]
 pub struct t1_ginfo {
     pub use_seac: libc::c_int,
-    pub wx: libc::c_double,
-    pub wy: libc::c_double,
+    pub wx: f64,
+    pub wy: f64,
     pub bbox: C2RustUnnamed_7,
     pub seac: C2RustUnnamed_6,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_6 {
-    pub asb: libc::c_double,
-    pub adx: libc::c_double,
-    pub ady: libc::c_double,
+    pub asb: f64,
+    pub adx: f64,
+    pub ady: f64,
     pub bchar: card8,
     pub achar: card8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_7 {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1116,14 +1116,14 @@ unsafe extern "C" fn add_CIDHMetrics(
     let mut cid: libc::c_int = 0;
     let mut start: libc::c_int = 0i32;
     let mut prev: libc::c_int = 0i32;
-    let mut defaultAdvanceWidth: libc::c_double = 0.;
+    let mut defaultAdvanceWidth: f64 = 0.;
     let mut empty: libc::c_int = 1i32;
     defaultAdvanceWidth = floor(
-        1000.0f64 * (*hmtx.offset(0)).advance as libc::c_int as libc::c_double
-            / (*head).unitsPerEm as libc::c_int as libc::c_double
-            / 1i32 as libc::c_double
+        1000.0f64 * (*hmtx.offset(0)).advance as libc::c_int as f64
+            / (*head).unitsPerEm as libc::c_int as f64
+            / 1i32 as f64
             + 0.5f64,
-    ) * 1i32 as libc::c_double;
+    ) * 1i32 as f64;
     /*
      * We alway use format:
      *  c [w_1 w_2 ... w_n]
@@ -1132,7 +1132,7 @@ unsafe extern "C" fn add_CIDHMetrics(
     cid = 0i32;
     while cid <= last_cid as libc::c_int {
         let mut gid: USHORT = 0;
-        let mut advanceWidth: libc::c_double = 0.;
+        let mut advanceWidth: f64 = 0.;
         gid = (if !CIDToGIDMap.is_null() {
             (*CIDToGIDMap.offset((2i32 * cid) as isize) as libc::c_int) << 8i32
                 | *CIDToGIDMap.offset((2i32 * cid + 1i32) as isize) as libc::c_int
@@ -1143,21 +1143,21 @@ unsafe extern "C" fn add_CIDHMetrics(
             || cid != 0i32 && gid as libc::c_int == 0i32)
         {
             advanceWidth = floor(
-                1000.0f64 * (*hmtx.offset(gid as isize)).advance as libc::c_int as libc::c_double
-                    / (*head).unitsPerEm as libc::c_int as libc::c_double
-                    / 1i32 as libc::c_double
+                1000.0f64 * (*hmtx.offset(gid as isize)).advance as libc::c_int as f64
+                    / (*head).unitsPerEm as libc::c_int as f64
+                    / 1i32 as f64
                     + 0.5f64,
-            ) * 1i32 as libc::c_double;
+            ) * 1i32 as f64;
             if advanceWidth == defaultAdvanceWidth {
                 if !an_array.is_null() {
-                    pdf_add_array(w_array, pdf_new_number(start as libc::c_double));
+                    pdf_add_array(w_array, pdf_new_number(start as f64));
                     pdf_add_array(w_array, an_array);
                     an_array = 0 as *mut pdf_obj;
                     empty = 0i32
                 }
             } else {
                 if cid != prev + 1i32 && !an_array.is_null() {
-                    pdf_add_array(w_array, pdf_new_number(start as libc::c_double));
+                    pdf_add_array(w_array, pdf_new_number(start as f64));
                     pdf_add_array(w_array, an_array);
                     an_array = 0 as *mut pdf_obj;
                     empty = 0i32
@@ -1173,7 +1173,7 @@ unsafe extern "C" fn add_CIDHMetrics(
         cid += 1
     }
     if !an_array.is_null() {
-        pdf_add_array(w_array, pdf_new_number(start as libc::c_double));
+        pdf_add_array(w_array, pdf_new_number(start as f64));
         pdf_add_array(w_array, an_array);
         empty = 0i32
     }
@@ -1211,8 +1211,8 @@ unsafe extern "C" fn add_CIDVMetrics(
     let mut vorg: *mut tt_VORG_table = 0 as *mut tt_VORG_table;
     let mut vhea: *mut tt_vhea_table = 0 as *mut tt_vhea_table;
     let mut vmtx: *mut tt_longMetrics = 0 as *mut tt_longMetrics;
-    let mut defaultAdvanceHeight: libc::c_double = 0.;
-    let mut defaultVertOriginY: libc::c_double = 0.;
+    let mut defaultAdvanceHeight: f64 = 0.;
+    let mut defaultVertOriginY: f64 = 0.;
     let mut empty: libc::c_int = 1i32;
     /*
      * No accurate vertical metrics can be obtained by simple way if the
@@ -1225,11 +1225,11 @@ unsafe extern "C" fn add_CIDVMetrics(
     }
     vorg = tt_read_VORG_table(sfont);
     defaultVertOriginY = floor(
-        1000.0f64 * (*vorg).defaultVertOriginY as libc::c_int as libc::c_double
-            / (*head).unitsPerEm as libc::c_int as libc::c_double
-            / 1i32 as libc::c_double
+        1000.0f64 * (*vorg).defaultVertOriginY as libc::c_int as f64
+            / (*head).unitsPerEm as libc::c_int as f64
+            / 1i32 as f64
             + 0.5f64,
-    ) * 1i32 as libc::c_double;
+    ) * 1i32 as f64;
     if sfnt_find_table_pos(sfont, b"vhea\x00" as *const u8 as *const i8)
         > 0i32 as libc::c_uint
     {
@@ -1254,32 +1254,32 @@ unsafe extern "C" fn add_CIDVMetrics(
         /* OpenType font must have OS/2 table. */
         os2 = tt_read_os2__table(sfont);
         defaultVertOriginY = floor(
-            1000.0f64 * (*os2).sTypoAscender as libc::c_int as libc::c_double
-                / (*head).unitsPerEm as libc::c_int as libc::c_double
-                / 1i32 as libc::c_double
+            1000.0f64 * (*os2).sTypoAscender as libc::c_int as f64
+                / (*head).unitsPerEm as libc::c_int as f64
+                / 1i32 as f64
                 + 0.5f64,
-        ) * 1i32 as libc::c_double;
+        ) * 1i32 as f64;
         defaultAdvanceHeight = floor(
             1000.0f64
                 * ((*os2).sTypoAscender as libc::c_int - (*os2).sTypoDescender as libc::c_int)
-                    as libc::c_double
-                / (*head).unitsPerEm as libc::c_int as libc::c_double
-                / 1i32 as libc::c_double
+                    as f64
+                / (*head).unitsPerEm as libc::c_int as f64
+                / 1i32 as f64
                 + 0.5f64,
-        ) * 1i32 as libc::c_double;
+        ) * 1i32 as f64;
         free(os2 as *mut libc::c_void);
     } else {
         /* Some TrueType fonts used in Macintosh does not have OS/2 table. */
-        defaultAdvanceHeight = 1000i32 as libc::c_double
+        defaultAdvanceHeight = 1000i32 as f64
     }
     w2_array = pdf_new_array();
     cid = 0i32;
     while cid <= last_cid as libc::c_int {
         let mut i: USHORT = 0;
         let mut gid: USHORT = 0;
-        let mut advanceHeight: libc::c_double = 0.;
-        let mut vertOriginX: libc::c_double = 0.;
-        let mut vertOriginY: libc::c_double = 0.;
+        let mut advanceHeight: f64 = 0.;
+        let mut vertOriginX: f64 = 0.;
+        let mut vertOriginY: f64 = 0.;
         gid = (if !CIDToGIDMap.is_null() {
             (*CIDToGIDMap.offset((2i32 * cid) as isize) as libc::c_int) << 8i32
                 | *CIDToGIDMap.offset((2i32 * cid + 1i32) as isize) as libc::c_int
@@ -1292,22 +1292,22 @@ unsafe extern "C" fn add_CIDVMetrics(
             advanceHeight = if !vmtx.is_null() {
                 floor(
                     1000.0f64
-                        * (*vmtx.offset(gid as isize)).advance as libc::c_int as libc::c_double
-                        / (*head).unitsPerEm as libc::c_int as libc::c_double
-                        / 1i32 as libc::c_double
+                        * (*vmtx.offset(gid as isize)).advance as libc::c_int as f64
+                        / (*head).unitsPerEm as libc::c_int as f64
+                        / 1i32 as f64
                         + 0.5f64,
-                ) * 1i32 as libc::c_double
+                ) * 1i32 as f64
             } else {
                 defaultAdvanceHeight
             };
             vertOriginX = floor(
                 1000.0f64
-                    * ((*hmtx.offset(gid as isize)).advance as libc::c_int as libc::c_double
+                    * ((*hmtx.offset(gid as isize)).advance as libc::c_int as f64
                         * 0.5f64)
-                    / (*head).unitsPerEm as libc::c_int as libc::c_double
-                    / 1i32 as libc::c_double
+                    / (*head).unitsPerEm as libc::c_int as f64
+                    / 1i32 as f64
                     + 0.5f64,
-            ) * 1i32 as libc::c_double;
+            ) * 1i32 as f64;
             vertOriginY = defaultVertOriginY;
             i = 0i32 as USHORT;
             while (i as libc::c_int) < (*vorg).numVertOriginYMetrics as libc::c_int
@@ -1320,11 +1320,11 @@ unsafe extern "C" fn add_CIDVMetrics(
                     vertOriginY = floor(
                         1000.0f64
                             * (*(*vorg).vertOriginYMetrics.offset(i as isize)).vertOriginY
-                                as libc::c_int as libc::c_double
-                            / (*head).unitsPerEm as libc::c_int as libc::c_double
-                            / 1i32 as libc::c_double
+                                as libc::c_int as f64
+                            / (*head).unitsPerEm as libc::c_int as f64
+                            / 1i32 as f64
                             + 0.5f64,
-                    ) * 1i32 as libc::c_double
+                    ) * 1i32 as f64
                 }
                 i = i.wrapping_add(1)
             }
@@ -1334,8 +1334,8 @@ unsafe extern "C" fn add_CIDVMetrics(
              * AFPL GhostScript 8.11 stops with rangecheck error with this. Maybe GS's bug?
              */
             if vertOriginY != defaultVertOriginY || advanceHeight != defaultAdvanceHeight {
-                pdf_add_array(w2_array, pdf_new_number(cid as libc::c_double));
-                pdf_add_array(w2_array, pdf_new_number(cid as libc::c_double));
+                pdf_add_array(w2_array, pdf_new_number(cid as f64));
+                pdf_add_array(w2_array, pdf_new_number(cid as f64));
                 pdf_add_array(w2_array, pdf_new_number(-advanceHeight));
                 pdf_add_array(w2_array, pdf_new_number(vertOriginX));
                 pdf_add_array(w2_array, pdf_new_number(vertOriginY));
@@ -1344,8 +1344,8 @@ unsafe extern "C" fn add_CIDVMetrics(
         }
         cid += 1
     }
-    if defaultVertOriginY != 880i32 as libc::c_double
-        || defaultAdvanceHeight != 1000i32 as libc::c_double
+    if defaultVertOriginY != 880i32 as f64
+        || defaultAdvanceHeight != 1000i32 as f64
     {
         an_array = pdf_new_array();
         pdf_add_array(an_array, pdf_new_number(defaultVertOriginY));
@@ -1519,7 +1519,7 @@ unsafe extern "C" fn write_fontfile(
         (*cffont).topdict,
         b"charset\x00" as *const u8 as *const i8,
         0i32,
-        offset as libc::c_double,
+        offset as f64,
     );
     offset += cff_pack_charsets(cffont, dest.offset(offset as isize), destlen - offset);
     /* FDSelect */
@@ -1527,7 +1527,7 @@ unsafe extern "C" fn write_fontfile(
         (*cffont).topdict,
         b"FDSelect\x00" as *const u8 as *const i8,
         0i32,
-        offset as libc::c_double,
+        offset as f64,
     );
     offset += cff_pack_fdselect(cffont, dest.offset(offset as isize), destlen - offset);
     /* CharStrings */
@@ -1535,7 +1535,7 @@ unsafe extern "C" fn write_fontfile(
         (*cffont).topdict,
         b"CharStrings\x00" as *const u8 as *const i8,
         0i32,
-        offset as libc::c_double,
+        offset as f64,
     ); /* Charstrings cosumes huge memory */
     offset += cff_pack_index(
         (*cffont).cstrings,
@@ -1549,7 +1549,7 @@ unsafe extern "C" fn write_fontfile(
         (*cffont).topdict,
         b"FDArray\x00" as *const u8 as *const i8,
         0i32,
-        offset as libc::c_double,
+        offset as f64,
     );
     fdarray_offset = offset;
     offset += cff_index_size(fdarray);
@@ -1571,13 +1571,13 @@ unsafe extern "C" fn write_fontfile(
                 *(*cffont).fdarray.offset(i as isize),
                 b"Private\x00" as *const u8 as *const i8,
                 0i32,
-                size as libc::c_double,
+                size as f64,
             );
             cff_dict_set(
                 *(*cffont).fdarray.offset(i as isize),
                 b"Private\x00" as *const u8 as *const i8,
                 1i32,
-                offset as libc::c_double,
+                offset as f64,
             );
         }
         cff_dict_pack(
@@ -2046,8 +2046,8 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
                 size,
                 (*cffont).gsubr,
                 *(*cffont).subrs.offset(fd as isize),
-                0i32 as libc::c_double,
-                0i32 as libc::c_double,
+                0i32 as f64,
+                0i32 as f64,
                 0 as *mut cs_ginfo,
             );
             if cid > 0i32 && gid_org as libc::c_int > 0i32 {
@@ -2433,7 +2433,7 @@ pub unsafe extern "C" fn CIDFont_type0_open(
     pdf_add_dict(
         csi_dict,
         pdf_new_name(b"Supplement\x00" as *const u8 as *const i8),
-        pdf_new_number((*csi).supplement as libc::c_double),
+        pdf_new_number((*csi).supplement as f64),
     );
     pdf_add_dict(
         (*font).fontdict,
@@ -2444,7 +2444,7 @@ pub unsafe extern "C" fn CIDFont_type0_open(
         pdf_add_dict(
             (*font).fontdict,
             pdf_new_name(b"DW\x00" as *const u8 as *const i8),
-            pdf_new_number(1000i32 as libc::c_double),
+            pdf_new_number(1000i32 as f64),
         );
         /* not sure */
     }
@@ -2473,8 +2473,8 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
     let mut i: libc::c_int = 0;
     let mut cid: libc::c_int = 0;
     let mut used_chars: *mut i8 = 0 as *mut i8;
-    let mut default_width: libc::c_double = 0.;
-    let mut nominal_width: libc::c_double = 0.;
+    let mut default_width: f64 = 0.;
+    let mut nominal_width: f64 = 0.;
     let mut error: CIDType0Error = CID_OPEN_ERROR_NO_ERROR;
     let mut info: CIDType0Info = CIDType0Info {
         handle: 0 as *mut libc::c_void,
@@ -2516,7 +2516,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
             b"StdVW\x00" as *const u8 as *const i8,
         ) != 0
     {
-        let mut stemv: libc::c_double = 0.;
+        let mut stemv: f64 = 0.;
         stemv = cff_dict_get(
             *(*cffont).private.offset(0),
             b"StdVW\x00" as *const u8 as *const i8,
@@ -2624,7 +2624,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
         (*cffont).topdict,
         b"CIDCount\x00" as *const u8 as *const i8,
         0i32,
-        (last_cid as libc::c_int + 1i32) as libc::c_double,
+        (last_cid as libc::c_int + 1i32) as f64,
     );
     (*cffont).fdarray = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as u64)
@@ -2640,7 +2640,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
         *(*cffont).fdarray.offset(0),
         b"FontName\x00" as *const u8 as *const i8,
         0i32,
-        cff_add_string(cffont, (*font).fontname.offset(7), 1i32) as libc::c_double,
+        cff_add_string(cffont, (*font).fontname.offset(7), 1i32) as f64,
     );
     cff_dict_add(
         *(*cffont).fdarray.offset(0),
@@ -2823,13 +2823,13 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
         (*cffont).topdict,
         b"ROS\x00" as *const u8 as *const i8,
         0i32,
-        cff_get_sid(cffont, b"Adobe\x00" as *const u8 as *const i8) as libc::c_double,
+        cff_get_sid(cffont, b"Adobe\x00" as *const u8 as *const i8) as f64,
     );
     cff_dict_set(
         (*cffont).topdict,
         b"ROS\x00" as *const u8 as *const i8,
         1i32,
-        cff_get_sid(cffont, b"Identity\x00" as *const u8 as *const i8) as libc::c_double,
+        cff_get_sid(cffont, b"Identity\x00" as *const u8 as *const i8) as f64,
     );
     cff_dict_set(
         (*cffont).topdict,
@@ -3147,13 +3147,13 @@ unsafe extern "C" fn create_ToUnicode_stream(
 /* Force bold at small text sizes */
 /* pdf_font --> CIDFont */
 unsafe extern "C" fn get_font_attr(mut font: *mut CIDFont, mut cffont: *mut cff_font) {
-    let mut capheight: libc::c_double = 0.;
-    let mut ascent: libc::c_double = 0.;
-    let mut descent: libc::c_double = 0.;
-    let mut italicangle: libc::c_double = 0.;
-    let mut stemv: libc::c_double = 0.;
-    let mut defaultwidth: libc::c_double = 0.;
-    let mut nominalwidth: libc::c_double = 0.;
+    let mut capheight: f64 = 0.;
+    let mut ascent: f64 = 0.;
+    let mut descent: f64 = 0.;
+    let mut italicangle: f64 = 0.;
+    let mut stemv: f64 = 0.;
+    let mut defaultwidth: f64 = 0.;
+    let mut nominalwidth: f64 = 0.;
     let mut flags: libc::c_int = 0i32;
     let mut gid: libc::c_int = 0;
     let mut i: libc::c_int = 0;
@@ -3431,19 +3431,19 @@ unsafe extern "C" fn get_font_attr(mut font: *mut CIDFont, mut cffont: *mut cff_
     pdf_add_dict(
         (*font).descriptor,
         pdf_new_name(b"Flags\x00" as *const u8 as *const i8),
-        pdf_new_number(flags as libc::c_double),
+        pdf_new_number(flags as f64),
     );
 }
 unsafe extern "C" fn add_metrics(
     mut font: *mut CIDFont,
     mut cffont: *mut cff_font,
     mut CIDToGIDMap: *mut u8,
-    mut widths: *mut libc::c_double,
-    mut default_width: libc::c_double,
+    mut widths: *mut f64,
+    mut default_width: f64,
     mut last_cid: CID,
 ) {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut val: libc::c_double = 0.;
+    let mut val: f64 = 0.;
     let mut cid: card16 = 0;
     let mut gid: card16 = 0;
     let mut used_chars: *mut i8 = 0 as *mut i8;
@@ -3508,8 +3508,8 @@ unsafe extern "C" fn add_metrics(
                 | *CIDToGIDMap.offset((2i32 * cid as libc::c_int + 1i32) as isize) as libc::c_int)
                 as card16;
             if *widths.offset(gid as isize) != default_width {
-                pdf_add_array(tmp, pdf_new_number(cid as libc::c_double));
-                pdf_add_array(tmp, pdf_new_number(cid as libc::c_double));
+                pdf_add_array(tmp, pdf_new_number(cid as f64));
+                pdf_add_array(tmp, pdf_new_number(cid as f64));
                 pdf_add_array(
                     tmp,
                     pdf_new_number(floor(*widths.offset(gid as isize) / 1.0f64 + 0.5f64) * 1.0f64),
@@ -3555,8 +3555,8 @@ unsafe extern "C" fn add_metrics(
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
     let mut cffont: *mut cff_font = 0 as *mut cff_font;
-    let mut defaultwidth: libc::c_double = 0.;
-    let mut nominalwidth: libc::c_double = 0.;
+    let mut defaultwidth: f64 = 0.;
+    let mut nominalwidth: f64 = 0.;
     let mut num_glyphs: libc::c_int = 0i32;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut i: libc::c_int = 0;
@@ -3746,7 +3746,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
         (*cffont).topdict,
         b"CIDCount\x00" as *const u8 as *const i8,
         0i32,
-        (last_cid as libc::c_int + 1i32) as libc::c_double,
+        (last_cid as libc::c_int + 1i32) as f64,
     );
     (*cffont).fdarray = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as u64)
@@ -3762,7 +3762,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
         *(*cffont).fdarray.offset(0),
         b"FontName\x00" as *const u8 as *const i8,
         0i32,
-        cff_add_string(cffont, (*font).fontname.offset(7), 1i32) as libc::c_double,
+        cff_add_string(cffont, (*font).fontname.offset(7), 1i32) as f64,
     );
     cff_dict_add(
         *(*cffont).fdarray.offset(0),
@@ -3847,13 +3847,13 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
         },
     };
     let mut max: libc::c_int = 0i32;
-    let mut widths: *mut libc::c_double = 0 as *mut libc::c_double;
+    let mut widths: *mut f64 = 0 as *mut f64;
     let mut w_stat: [libc::c_int; 1001] = [0; 1001];
     let mut max_count: libc::c_int = 0;
     let mut dw: libc::c_int = 0;
     widths = new((num_glyphs as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_double>() as u64)
-        as u32) as *mut libc::c_double;
+        .wrapping_mul(::std::mem::size_of::<f64>() as u64)
+        as u32) as *mut f64;
     memset(
         w_stat.as_mut_ptr() as *mut libc::c_void,
         0i32,
@@ -3935,7 +3935,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
             cffont,
             CIDToGIDMap,
             widths,
-            dw as libc::c_double,
+            dw as f64,
             last_cid,
         );
     } else {
@@ -3969,13 +3969,13 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
         (*cffont).topdict,
         b"ROS\x00" as *const u8 as *const i8,
         0i32,
-        cff_get_sid(cffont, b"Adobe\x00" as *const u8 as *const i8) as libc::c_double,
+        cff_get_sid(cffont, b"Adobe\x00" as *const u8 as *const i8) as f64,
     );
     cff_dict_set(
         (*cffont).topdict,
         b"ROS\x00" as *const u8 as *const i8,
         1i32,
-        cff_get_sid(cffont, b"Identity\x00" as *const u8 as *const i8) as libc::c_double,
+        cff_get_sid(cffont, b"Identity\x00" as *const u8 as *const i8) as f64,
     );
     cff_dict_set(
         (*cffont).topdict,

@@ -12,15 +12,15 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn cos(_: libc::c_double) -> libc::c_double;
+    fn cos(_: f64) -> f64;
     #[no_mangle]
-    fn sin(_: libc::c_double) -> libc::c_double;
+    fn sin(_: f64) -> f64;
     #[no_mangle]
-    fn tan(_: libc::c_double) -> libc::c_double;
+    fn tan(_: f64) -> f64;
     #[no_mangle]
-    fn round(_: libc::c_double) -> libc::c_double;
+    fn round(_: f64) -> f64;
     #[no_mangle]
-    fn atof(__nptr: *const i8) -> libc::c_double;
+    fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const i8,
@@ -59,7 +59,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_boolean(value: i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
     #[no_mangle]
@@ -156,10 +156,10 @@ extern "C" {
     );
     #[no_mangle]
     fn pdf_dev_rectclip(
-        x: libc::c_double,
-        y: libc::c_double,
-        w: libc::c_double,
-        h: libc::c_double,
+        x: f64,
+        y: f64,
+        w: f64,
+        h: f64,
     ) -> libc::c_int;
     #[no_mangle]
     fn pdf_dev_concat(M: *const pdf_tmatrix) -> libc::c_int;
@@ -225,9 +225,9 @@ pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_env {
-    pub x_user: libc::c_double,
-    pub y_user: libc::c_double,
-    pub mag: libc::c_double,
+    pub x_user: f64,
+    pub y_user: f64,
+    pub mag: f64,
     pub pg: libc::c_int,
     /* current page in PDF */
 }
@@ -263,27 +263,27 @@ pub struct C2RustUnnamed_0 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct transform_info {
-    pub width: libc::c_double,
-    pub height: libc::c_double,
-    pub depth: libc::c_double,
+    pub width: f64,
+    pub height: f64,
+    pub depth: f64,
     pub matrix: pdf_tmatrix,
     pub bbox: pdf_rect,
     pub flags: libc::c_int,
@@ -298,8 +298,8 @@ pub struct load_options {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_coord {
-    pub x: libc::c_double,
-    pub y: libc::c_double,
+    pub x: f64,
+    pub y: f64,
 }
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
@@ -892,11 +892,11 @@ unsafe extern "C" fn spc_html__base_empty(
  * Please think about placement of images.
  */
 /* XXX: there are four quasi-redundant versions of this; grp for K_UNIT__PT */
-unsafe extern "C" fn atopt(mut a: *const i8) -> libc::c_double {
+unsafe extern "C" fn atopt(mut a: *const i8) -> f64 {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = a;
-    let mut v: libc::c_double = 0.;
-    let mut u: libc::c_double = 1.0f64;
+    let mut v: f64 = 0.;
+    let mut u: f64 = 1.0f64;
     let mut _ukeys: [*const i8; 11] = [
         b"pt\x00" as *const u8 as *const i8,
         b"in\x00" as *const u8 as *const i8,
@@ -937,7 +937,7 @@ unsafe extern "C" fn atopt(mut a: *const i8) -> libc::c_double {
             5 => u *= 12.0f64 * 72.0f64 / 72.27f64,
             6 => u *= 1238.0f64 / 1157.0f64 * 72.0f64 / 72.27f64,
             7 => u *= 12.0f64 * 1238.0f64 / 1157.0f64 * 72.0f64 / 72.27f64,
-            8 => u *= 72.0f64 / (72.27f64 * 65536i32 as libc::c_double),
+            8 => u *= 72.0f64 / (72.27f64 * 65536i32 as f64),
             9 => u *= 1.0f64,
             _ => {
                 dpx_warning(
@@ -951,7 +951,7 @@ unsafe extern "C" fn atopt(mut a: *const i8) -> libc::c_double {
     return v * u;
 }
 /* Replicated from spc_tpic */
-unsafe extern "C" fn create_xgstate(mut a: libc::c_double, mut f_ais: libc::c_int) -> *mut pdf_obj
+unsafe extern "C" fn create_xgstate(mut a: f64, mut f_ais: libc::c_int) -> *mut pdf_obj
 /* alpha is shape */ {
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
     dict = pdf_new_dict();
@@ -1029,7 +1029,7 @@ unsafe extern "C" fn spc_html__img_empty(
     };
     let mut id: libc::c_int = 0;
     let mut error: libc::c_int = 0i32;
-    let mut alpha: libc::c_double = 1.0f64;
+    let mut alpha: f64 = 1.0f64;
     /* ENABLE_HTML_SVG_OPACITY */
     let mut M: pdf_tmatrix = pdf_tmatrix {
         a: 0.,
@@ -1123,10 +1123,10 @@ unsafe extern "C" fn spc_html__img_empty(
             error = cvt_a_to_tmatrix(&mut N, p, &mut p);
             if error == 0 {
                 N.f = -N.f;
-                let mut _tmp_a: libc::c_double = 0.;
-                let mut _tmp_b: libc::c_double = 0.;
-                let mut _tmp_c: libc::c_double = 0.;
-                let mut _tmp_d: libc::c_double = 0.;
+                let mut _tmp_a: f64 = 0.;
+                let mut _tmp_b: f64 = 0.;
+                let mut _tmp_c: f64 = 0.;
+                let mut _tmp_d: f64 = 0.;
                 _tmp_a = M.a;
                 _tmp_b = M.b;
                 _tmp_c = M.c;
@@ -1206,7 +1206,7 @@ unsafe extern "C" fn spc_html__img_empty(
             ) == 0
             {
                 dict = create_xgstate(
-                    round(0.01f64 * a as libc::c_double / 0.01f64) * 0.01f64,
+                    round(0.01f64 * a as f64 / 0.01f64) * 0.01f64,
                     0i32,
                 );
                 pdf_doc_add_page_resource(
@@ -1229,10 +1229,10 @@ unsafe extern "C" fn spc_html__img_empty(
         }
         /* ENABLE_HTML_SVG_OPACITY */
         pdf_ximage_scale_image(id, &mut M1, &mut r, &mut ti); /* op: */
-        let mut _tmp_a_0: libc::c_double = 0.; /* op: */
-        let mut _tmp_b_0: libc::c_double = 0.; /* op: Do */
-        let mut _tmp_c_0: libc::c_double = 0.;
-        let mut _tmp_d_0: libc::c_double = 0.;
+        let mut _tmp_a_0: f64 = 0.; /* op: */
+        let mut _tmp_b_0: f64 = 0.; /* op: Do */
+        let mut _tmp_c_0: f64 = 0.;
+        let mut _tmp_d_0: f64 = 0.;
         _tmp_a_0 = M.a;
         _tmp_b_0 = M.b;
         _tmp_c_0 = M.c;
@@ -1353,7 +1353,7 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = ptr;
     let mut n: libc::c_int = 0;
-    let mut v: [libc::c_double; 6] = [0.; 6];
+    let mut v: [f64; 6] = [0.; 6];
     static mut _tkeys: [*const i8; 7] = [
         b"matrix\x00" as *const u8 as *const i8,
         b"translate\x00" as *const u8 as *const i8,

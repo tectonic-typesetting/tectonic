@@ -25,7 +25,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
@@ -655,7 +655,7 @@ unsafe extern "C" fn make_encoding_differences(
              * Difference found.
              */
             if skipping != 0 {
-                pdf_add_array(differences, pdf_new_number(code as libc::c_double));
+                pdf_add_array(differences, pdf_new_number(code as f64));
             }
             pdf_add_array(differences, pdf_new_name(*enc_vec.offset(code as isize)));
             skipping = 0i32;
