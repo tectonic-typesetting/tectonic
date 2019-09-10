@@ -9,13 +9,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
@@ -402,18 +395,7 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
                     );
                     return -1i32;
                 }
-                if curpos >= 0i32 && curpos <= 255i32 {
-                } else {
-                    __assert_fail(
-                        b"curpos >= 0 && curpos <= 255\x00" as *const u8 as *const i8,
-                        b"dpx-subfont.c\x00" as *const u8 as *const i8,
-                        230_u32,
-                        (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
-                            b"int read_sfd_record(struct sfd_rec_ *, const char *)\x00",
-                        ))
-                        .as_ptr(),
-                    );
-                }
+                assert!(curpos >= 0i32 && curpos <= 255i32);
                 let fresh0 = curpos;
                 curpos = curpos + 1;
                 (*rec).vector[fresh0 as usize] = c as u16;
@@ -441,18 +423,7 @@ unsafe extern "C" fn scan_sfd_file(
     let mut p: *mut i8 = 0 as *mut i8;
     let mut n: i32 = 0;
     let mut lpos: i32 = 0i32;
-    if !sfd.is_null() && !handle.is_null() {
-    } else {
-        __assert_fail(
-            b"sfd && handle\x00" as *const u8 as *const i8,
-            b"dpx-subfont.c\x00" as *const u8 as *const i8,
-            248_u32,
-            (*::std::mem::transmute::<&[u8; 61], &[i8; 61]>(
-                b"int scan_sfd_file(struct sfd_file_ *, rust_input_handle_t *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!sfd.is_null() && !handle.is_null());
     if verbose > 3i32 {
         dpx_message(
             b"\nsubfont>> Scanning SFD file \"%s\"...\n\x00" as *const u8 as *const i8,

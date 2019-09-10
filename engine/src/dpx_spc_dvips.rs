@@ -34,13 +34,6 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -413,18 +406,7 @@ unsafe extern "C" fn spc_handler_ps_file(mut spe: *mut spc_env, mut args: *mut s
         };
         init
     };
-    if !spe.is_null() && !args.is_null() {
-    } else {
-        __assert_fail(
-            b"spe && args\x00" as *const u8 as *const i8,
-            b"dpx-spc_dvips.c\x00" as *const u8 as *const i8,
-            140_u32,
-            (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
-                b"int spc_handler_ps_file(struct spc_env *, struct spc_arg *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!spe.is_null() && !args.is_null());
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr.offset(1) >= (*args).endptr || *(*args).curptr.offset(0) as i32 != '=' as i32
     {
@@ -495,18 +477,7 @@ unsafe extern "C" fn spc_handler_ps_plotfile(mut spe: *mut spc_env, mut args: *m
         };
         init
     };
-    if !spe.is_null() && !args.is_null() {
-    } else {
-        __assert_fail(
-            b"spe && args\x00" as *const u8 as *const i8,
-            b"dpx-spc_dvips.c\x00" as *const u8 as *const i8,
-            185_u32,
-            (*::std::mem::transmute::<&[u8; 64], &[i8; 64]>(
-                b"int spc_handler_ps_plotfile(struct spc_env *, struct spc_arg *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!spe.is_null() && !args.is_null());
     spc_warn(
         spe,
         b"\"ps: plotfile\" found (not properly implemented)\x00" as *const u8 as *const i8,
@@ -542,18 +513,7 @@ unsafe extern "C" fn spc_handler_ps_literal(mut spe: *mut spc_env, mut args: *mu
     let mut gs_depth: i32 = 0;
     let mut x_user: f64 = 0.;
     let mut y_user: f64 = 0.;
-    if !spe.is_null() && !args.is_null() && (*args).curptr <= (*args).endptr {
-    } else {
-        __assert_fail(
-            b"spe && args && args->curptr <= args->endptr\x00" as *const u8 as *const i8,
-            b"dpx-spc_dvips.c\x00" as *const u8 as *const i8,
-            218_u32,
-            (*::std::mem::transmute::<&[u8; 63], &[i8; 63]>(
-                b"int spc_handler_ps_literal(struct spc_env *, struct spc_arg *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!spe.is_null() && !args.is_null() && (*args).curptr <= (*args).endptr);
     if (*args)
         .curptr
         .offset(strlen(b":[begin]\x00" as *const u8 as *const i8) as isize)
@@ -657,18 +617,7 @@ unsafe extern "C" fn spc_handler_ps_default(mut spe: *mut spc_env, mut args: *mu
     let mut error: i32 = 0;
     let mut st_depth: i32 = 0;
     let mut gs_depth: i32 = 0;
-    if !spe.is_null() && !args.is_null() {
-    } else {
-        __assert_fail(
-            b"spe && args\x00" as *const u8 as *const i8,
-            b"dpx-spc_dvips.c\x00" as *const u8 as *const i8,
-            291_u32,
-            (*::std::mem::transmute::<&[u8; 63], &[i8; 63]>(
-                b"int spc_handler_ps_default(struct spc_env *, struct spc_arg *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!spe.is_null() && !args.is_null());
     pdf_dev_gsave();
     st_depth = mps_stack_depth();
     gs_depth = pdf_dev_current_depth();
@@ -912,15 +861,7 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
     let mut key: *const i8 = 0 as *const i8;
     let mut keylen: i32 = 0;
     let mut i: size_t = 0;
-    if !handle.is_null() && !spe.is_null() && !args.is_null() {
-    } else {
-        __assert_fail(b"handle && spe && args\x00" as *const u8 as
-                          *const i8,
-                      b"dpx-spc_dvips.c\x00" as *const u8 as
-                          *const i8, 402_u32,
-                      (*::std::mem::transmute::<&[u8; 86],
-                                                &[i8; 86]>(b"int spc_dvips_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
-    }
+    assert!(!handle.is_null() && !spe.is_null() && !args.is_null());
     skip_white(&mut (*args).curptr, (*args).endptr);
     key = (*args).curptr;
     while (*args).curptr < (*args).endptr

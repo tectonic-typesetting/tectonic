@@ -9,13 +9,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -174,18 +167,7 @@ pub unsafe extern "C" fn skip_white_spaces(mut s: *mut *mut u8, mut endptr: *mut
 #[no_mangle]
 pub unsafe extern "C" fn ht_init_table(mut ht: *mut ht_table, mut hval_free_fn: hval_free_func) {
     let mut i: i32 = 0;
-    if !ht.is_null() {
-    } else {
-        __assert_fail(
-            b"ht\x00" as *const u8 as *const i8,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
-            85_u32,
-            (*::std::mem::transmute::<&[u8; 54], &[i8; 54]>(
-                b"void ht_init_table(struct ht_table *, hval_free_func)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!ht.is_null());
     i = 0i32;
     while i < 503i32 {
         (*ht).table[i as usize] = 0 as *mut ht_entry;
@@ -197,18 +179,7 @@ pub unsafe extern "C" fn ht_init_table(mut ht: *mut ht_table, mut hval_free_fn: 
 #[no_mangle]
 pub unsafe extern "C" fn ht_clear_table(mut ht: *mut ht_table) {
     let mut i: i32 = 0;
-    if !ht.is_null() {
-    } else {
-        __assert_fail(
-            b"ht\x00" as *const u8 as *const i8,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
-            99_u32,
-            (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
-                b"void ht_clear_table(struct ht_table *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!ht.is_null());
     i = 0i32;
     while i < 503i32 {
         let mut hent: *mut ht_entry = 0 as *mut ht_entry;
@@ -235,18 +206,7 @@ pub unsafe extern "C" fn ht_clear_table(mut ht: *mut ht_table) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn ht_table_size(mut ht: *mut ht_table) -> i32 {
-    if !ht.is_null() {
-    } else {
-        __assert_fail(
-            b"ht\x00" as *const u8 as *const i8,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
-            126_u32,
-            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
-                b"int ht_table_size(struct ht_table *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!ht.is_null());
     return (*ht).count;
 }
 unsafe extern "C" fn get_hash(mut key: *const libc::c_void, mut keylen: i32) -> u32 {
@@ -269,18 +229,7 @@ pub unsafe extern "C" fn ht_lookup_table(
 ) -> *mut libc::c_void {
     let mut hent: *mut ht_entry = 0 as *mut ht_entry;
     let mut hkey: u32 = 0;
-    if !ht.is_null() && !key.is_null() {
-    } else {
-        __assert_fail(
-            b"ht && key\x00" as *const u8 as *const i8,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
-            150_u32,
-            (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
-                b"void *ht_lookup_table(struct ht_table *, const void *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!ht.is_null() && !key.is_null());
     hkey = get_hash(key, keylen);
     hent = (*ht).table[hkey as usize];
     while !hent.is_null() {
@@ -303,18 +252,7 @@ pub unsafe extern "C" fn ht_remove_table(
     let mut hent: *mut ht_entry = 0 as *mut ht_entry;
     let mut prev: *mut ht_entry = 0 as *mut ht_entry;
     let mut hkey: u32 = 0;
-    if !ht.is_null() && !key.is_null() {
-    } else {
-        __assert_fail(
-            b"ht && key\x00" as *const u8 as *const i8,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
-            173_u32,
-            (*::std::mem::transmute::<&[u8; 58], &[i8; 58]>(
-                b"int ht_remove_table(struct ht_table *, const void *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!ht.is_null() && !key.is_null());
     hkey = get_hash(key, keylen);
     hent = (*ht).table[hkey as usize];
     prev = 0 as *mut ht_entry;
@@ -357,18 +295,7 @@ pub unsafe extern "C" fn ht_insert_table(
     let mut hent: *mut ht_entry = 0 as *mut ht_entry;
     let mut prev: *mut ht_entry = 0 as *mut ht_entry;
     let mut hkey: u32 = 0;
-    if !ht.is_null() && !key.is_null() {
-    } else {
-        __assert_fail(
-            b"ht && key\x00" as *const u8 as *const i8,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
-            213_u32,
-            (*::std::mem::transmute::<&[u8; 67], &[i8; 67]>(
-                b"void ht_insert_table(struct ht_table *, const void *, int, void *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!ht.is_null() && !key.is_null());
     hkey = get_hash(key, keylen);
     hent = (*ht).table[hkey as usize];
     prev = 0 as *mut ht_entry;
@@ -441,18 +368,7 @@ pub unsafe extern "C" fn ht_append_table(
 #[no_mangle]
 pub unsafe extern "C" fn ht_set_iter(mut ht: *mut ht_table, mut iter: *mut ht_iter) -> i32 {
     let mut i: i32 = 0;
-    if !ht.is_null() && !iter.is_null() {
-    } else {
-        __assert_fail(
-            b"ht && iter\x00" as *const u8 as *const i8,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
-            280_u32,
-            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
-                b"int ht_set_iter(struct ht_table *, struct ht_iter *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!ht.is_null() && !iter.is_null());
     i = 0i32;
     while i < 503i32 {
         if !(*ht).table[i as usize].is_null() {
@@ -499,18 +415,7 @@ pub unsafe extern "C" fn ht_iter_getval(mut iter: *mut ht_iter) -> *mut libc::c_
 pub unsafe extern "C" fn ht_iter_next(mut iter: *mut ht_iter) -> i32 {
     let mut hent: *mut ht_entry = 0 as *mut ht_entry;
     let mut ht: *mut ht_table = 0 as *mut ht_table;
-    if !iter.is_null() {
-    } else {
-        __assert_fail(
-            b"iter\x00" as *const u8 as *const i8,
-            b"dpx-dpxutil.c\x00" as *const u8 as *const i8,
-            338_u32,
-            (*::std::mem::transmute::<&[u8; 35], &[i8; 35]>(
-                b"int ht_iter_next(struct ht_iter *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!iter.is_null());
     ht = (*iter).hash;
     hent = (*iter).curr as *mut ht_entry;
     hent = (*hent).next;

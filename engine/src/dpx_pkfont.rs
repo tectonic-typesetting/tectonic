@@ -64,13 +64,6 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
@@ -556,14 +549,7 @@ unsafe extern "C" fn pk_decode_bitmap(
         0x2u32 as u8,
         0x1u32 as u8,
     ];
-    if dyn_f == 14i32 {
-    } else {
-        __assert_fail(b"dyn_f == 14\x00" as *const u8 as *const i8,
-                      b"dpx-pkfont.c\x00" as *const u8 as *const i8,
-                      308_u32,
-                      (*::std::mem::transmute::<&[u8; 89],
-                                                &[i8; 89]>(b"int pk_decode_bitmap(pdf_obj *, uint32_t, uint32_t, int, int, unsigned char *, uint32_t)\x00")).as_ptr());
-    }
+    assert!(dyn_f == 14i32);
     if run_color != 0i32 {
         dpx_warning(b"run_color != 0 for bitmap pk data?\x00" as *const u8 as *const i8);
     } else if pl < wd.wrapping_mul(ht).wrapping_add(7_u32).wrapping_div(8_u32) {
@@ -619,18 +605,7 @@ unsafe extern "C" fn read_pk_char_header(
     mut opcode: u8,
     mut fp: *mut FILE,
 ) -> i32 {
-    if !h.is_null() {
-    } else {
-        __assert_fail(
-            b"h\x00" as *const u8 as *const i8,
-            b"dpx-pkfont.c\x00" as *const u8 as *const i8,
-            366_u32,
-            (*::std::mem::transmute::<&[u8; 68], &[i8; 68]>(
-                b"int read_pk_char_header(struct pk_header_ *, unsigned char, FILE *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!h.is_null());
     if opcode as i32 & 4i32 == 0i32 {
         /* short */
         (*h).pkt_len = ((opcode as i32 & 3i32) << 8i32 | get_unsigned_byte(fp) as i32) as u32; /* TFM width */
@@ -855,18 +830,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
         enc_vec = pdf_encoding_get_encoding(encoding_id)
     }
     /* ENABLE_GLYPHENC */
-    if !ident.is_null() && !usedchars.is_null() && point_size > 0.0f64 {
-    } else {
-        __assert_fail(
-            b"ident && usedchars && point_size > 0.0\x00" as *const u8 as *const i8,
-            b"dpx-pkfont.c\x00" as *const u8 as *const i8,
-            522_u32,
-            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
-                b"int pdf_font_load_pkfont(pdf_font *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!ident.is_null() && !usedchars.is_null() && point_size > 0.0f64);
     dpi = truedpi(ident, point_size, base_dpi);
     fp = dpx_open_pk_font_at(ident, dpi);
     if fp.is_null() {

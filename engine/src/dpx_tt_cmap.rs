@@ -34,13 +34,6 @@ extern "C" {
     pub type pdf_obj;
     pub type otl_gsub;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
@@ -1117,18 +1110,7 @@ pub unsafe extern "C" fn tt_cmap_read(
     let mut e_id: u16 = 0;
     let mut i: u16 = 0;
     let mut n_subtabs: u16 = 0;
-    if !sfont.is_null() {
-    } else {
-        __assert_fail(
-            b"sfont\x00" as *const u8 as *const i8,
-            b"dpx-tt_cmap.c\x00" as *const u8 as *const i8,
-            447_u32,
-            (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
-                b"tt_cmap *tt_cmap_read(sfnt *, USHORT, USHORT)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!sfont.is_null());
     offset = sfnt_locate_table(sfont, b"cmap\x00" as *const u8 as *const i8);
     tt_get_unsigned_pair((*sfont).handle);
     n_subtabs = tt_get_unsigned_pair((*sfont).handle);
@@ -1228,18 +1210,7 @@ pub unsafe extern "C" fn tt_cmap_release(mut cmap: *mut tt_cmap) {
 #[no_mangle]
 pub unsafe extern "C" fn tt_cmap_lookup(mut cmap: *mut tt_cmap, mut cc: u32) -> u16 {
     let mut gid: u16 = 0_u16;
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-tt_cmap.c\x00" as *const u8 as *const i8,
-            560_u32,
-            (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
-                b"USHORT tt_cmap_lookup(tt_cmap *, SFNT_ULONG)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
     if cc as i64 > 0xffff && ((*cmap).format as i32) < 12i32 {
         dpx_warning(
             b"Four bytes charcode not supported in OpenType/TrueType cmap format 0...6.\x00"
@@ -1447,18 +1418,7 @@ unsafe extern "C" fn handle_CIDFont(
     let mut charset: *mut cff_charsets = 0 as *mut cff_charsets;
     let mut map: *mut u8 = 0 as *mut u8;
     let mut maxp: *mut tt_maxp_table = 0 as *mut tt_maxp_table;
-    if !csi.is_null() {
-    } else {
-        __assert_fail(
-            b"csi\x00" as *const u8 as *const i8,
-            b"dpx-tt_cmap.c\x00" as *const u8 as *const i8,
-            728_u32,
-            (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
-                b"int handle_CIDFont(sfnt *, unsigned char **, CIDSysInfo *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!csi.is_null());
     offset = sfnt_find_table_pos(sfont, b"CFF \x00" as *const u8 as *const i8) as i32;
     if offset == 0i32 {
         (*csi).registry = 0 as *mut i8;

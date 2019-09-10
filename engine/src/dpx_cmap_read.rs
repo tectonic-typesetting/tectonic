@@ -68,13 +68,6 @@ extern "C" {
     #[no_mangle]
     fn CMap_set_name(cmap: *mut CMap, name: *const i8);
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -316,36 +309,14 @@ unsafe extern "C" fn ifreader_create(
     return reader;
 }
 unsafe extern "C" fn ifreader_destroy(mut reader: *mut ifreader) {
-    if !reader.is_null() {
-    } else {
-        __assert_fail(
-            b"reader\x00" as *const u8 as *const i8,
-            b"dpx-cmap_read.c\x00" as *const u8 as *const i8,
-            77_u32,
-            (*::std::mem::transmute::<&[u8; 34], &[i8; 34]>(
-                b"void ifreader_destroy(ifreader *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!reader.is_null());
     free((*reader).buf as *mut libc::c_void);
     free(reader as *mut libc::c_void);
 }
 unsafe extern "C" fn ifreader_read(mut reader: *mut ifreader, mut size: size_t) -> size_t {
     let mut bytesread: size_t = 0i32 as size_t;
     let mut bytesrem: size_t = 0i32 as size_t;
-    if !reader.is_null() {
-    } else {
-        __assert_fail(
-            b"reader\x00" as *const u8 as *const i8,
-            b"dpx-cmap_read.c\x00" as *const u8 as *const i8,
-            88_u32,
-            (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
-                b"size_t ifreader_read(ifreader *, size_t)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!reader.is_null());
     bytesrem = ((*reader).endptr as size_t).wrapping_sub((*reader).cursor as size_t);
     if size > (*reader).max {
         if __verbose != 0 {
@@ -1057,18 +1028,7 @@ pub unsafe extern "C" fn CMap_parse(mut cmap: *mut CMap, mut handle: rust_input_
     let mut input: *mut ifreader = 0 as *mut ifreader;
     let mut status: i32 = 0i32;
     let mut tmpint: i32 = -1i32;
-    if !cmap.is_null() && !handle.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap && handle\x00" as *const u8 as *const i8,
-            b"dpx-cmap_read.c\x00" as *const u8 as *const i8,
-            519_u32,
-            (*::std::mem::transmute::<&[u8; 44], &[i8; 44]>(
-                b"int CMap_parse(CMap *, rust_input_handle_t)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null() && !handle.is_null());
     input = ifreader_create(
         handle,
         ttstub_input_get_size(handle),

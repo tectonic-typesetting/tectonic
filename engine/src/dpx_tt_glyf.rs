@@ -9,13 +9,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
@@ -296,18 +289,7 @@ pub struct tt_vhea_table {
 }
 unsafe extern "C" fn find_empty_slot(mut g: *mut tt_glyphs) -> u16 {
     let mut gid: u16 = 0;
-    if !g.is_null() {
-    } else {
-        __assert_fail(
-            b"g\x00" as *const u8 as *const i8,
-            b"dpx-tt_glyf.c\x00" as *const u8 as *const i8,
-            47_u32,
-            (*::std::mem::transmute::<&[u8; 43], &[i8; 43]>(
-                b"USHORT find_empty_slot(struct tt_glyphs *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!g.is_null());
     gid = 0_u16;
     while (gid as i32) < 65534i32 {
         if *(*g).used_slot.offset((gid as i32 / 8i32) as isize) as i32
@@ -327,18 +309,7 @@ unsafe extern "C" fn find_empty_slot(mut g: *mut tt_glyphs) -> u16 {
 pub unsafe extern "C" fn tt_find_glyph(mut g: *mut tt_glyphs, mut gid: u16) -> u16 {
     let mut idx: u16 = 0;
     let mut new_gid: u16 = 0_u16;
-    if !g.is_null() {
-    } else {
-        __assert_fail(
-            b"g\x00" as *const u8 as *const i8,
-            b"dpx-tt_glyf.c\x00" as *const u8 as *const i8,
-            64_u32,
-            (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
-                b"USHORT tt_find_glyph(struct tt_glyphs *, USHORT)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!g.is_null());
     idx = 0_u16;
     while (idx as i32) < (*g).num_glyphs as i32 {
         if gid as i32 == (*(*g).gd.offset(idx as isize)).ogid as i32 {
@@ -353,18 +324,7 @@ pub unsafe extern "C" fn tt_find_glyph(mut g: *mut tt_glyphs, mut gid: u16) -> u
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_index(mut g: *mut tt_glyphs, mut gid: u16) -> u16 {
     let mut idx: u16 = 0;
-    if !g.is_null() {
-    } else {
-        __assert_fail(
-            b"g\x00" as *const u8 as *const i8,
-            b"dpx-tt_glyf.c\x00" as *const u8 as *const i8,
-            81_u32,
-            (*::std::mem::transmute::<&[u8; 48], &[i8; 48]>(
-                b"USHORT tt_get_index(struct tt_glyphs *, USHORT)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!g.is_null());
     idx = 0_u16;
     while (idx as i32) < (*g).num_glyphs as i32 {
         if gid as i32 == (*(*g).gd.offset(idx as isize)).gid as i32 {
@@ -383,18 +343,7 @@ pub unsafe extern "C" fn tt_add_glyph(
     mut gid: u16,
     mut new_gid: u16,
 ) -> u16 {
-    if !g.is_null() {
-    } else {
-        __assert_fail(
-            b"g\x00" as *const u8 as *const i8,
-            b"dpx-tt_glyf.c\x00" as *const u8 as *const i8,
-            96_u32,
-            (*::std::mem::transmute::<&[u8; 56], &[i8; 56]>(
-                b"USHORT tt_add_glyph(struct tt_glyphs *, USHORT, USHORT)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!g.is_null());
     if *(*g).used_slot.offset((new_gid as i32 / 8i32) as isize) as i32
         & 1i32 << 7i32 - new_gid as i32 % 8i32
         != 0
@@ -503,18 +452,7 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
     let mut offset: u32 = 0;
     let mut i: i32 = 0;
     let mut w_stat: *mut u16 = 0 as *mut u16;
-    if !g.is_null() {
-    } else {
-        __assert_fail(
-            b"g\x00" as *const u8 as *const i8,
-            b"dpx-tt_glyf.c\x00" as *const u8 as *const i8,
-            213_u32,
-            (*::std::mem::transmute::<&[u8; 48], &[i8; 48]>(
-                b"int tt_build_tables(sfnt *, struct tt_glyphs *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!g.is_null());
     if sfont.is_null() || (*sfont).handle.is_null() {
         _tt_abort(b"File not opened.\x00" as *const u8 as *const i8);
     }
@@ -1012,18 +950,7 @@ pub unsafe extern "C" fn tt_get_metrics(mut sfont: *mut sfnt, mut g: *mut tt_gly
     let mut offset: u32 = 0;
     let mut i: u32 = 0;
     let mut w_stat: *mut u16 = 0 as *mut u16;
-    if !g.is_null() {
-    } else {
-        __assert_fail(
-            b"g\x00" as *const u8 as *const i8,
-            b"dpx-tt_glyf.c\x00" as *const u8 as *const i8,
-            519_u32,
-            (*::std::mem::transmute::<&[u8; 47], &[i8; 47]>(
-                b"int tt_get_metrics(sfnt *, struct tt_glyphs *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!g.is_null());
     if sfont.is_null() || (*sfont).handle.is_null() {
         _tt_abort(b"File not opened.\x00" as *const u8 as *const i8);
     }

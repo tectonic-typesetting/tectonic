@@ -13,13 +13,6 @@ extern "C" {
     #[no_mangle]
     fn floor(_: f64) -> f64;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
@@ -250,18 +243,7 @@ unsafe extern "C" fn add_stem(
     mut dir: i32,
 ) -> i32 {
     let mut i: i32 = 0;
-    if !cd.is_null() {
-    } else {
-        __assert_fail(
-            b"cd\x00" as *const u8 as *const i8,
-            b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            290_u32,
-            (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
-                b"int add_stem(t1_chardesc *, double, double, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cd.is_null());
     pos += if dir == 0i32 {
         (*cd).sbw.sby
     } else {
@@ -315,30 +297,8 @@ unsafe extern "C" fn add_charpath(
     mut argn: i32,
 ) {
     let mut p: *mut t1_cpath = 0 as *mut t1_cpath;
-    if !cd.is_null() {
-    } else {
-        __assert_fail(
-            b"cd\x00" as *const u8 as *const i8,
-            b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            350_u32,
-            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
-                b"void add_charpath(t1_chardesc *, int, double *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
-    if argn <= 48i32 {
-    } else {
-        __assert_fail(
-            b"argn <= CS_ARG_STACK_MAX\x00" as *const u8 as *const i8,
-            b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            351_u32,
-            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
-                b"void add_charpath(t1_chardesc *, int, double *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cd.is_null());
+    assert!(argn <= 48i32);
     p = new((1_u64).wrapping_mul(::std::mem::size_of::<t1_cpath>() as u64) as u32) as *mut t1_cpath;
     (*p).type_0 = type_0;
     (*p).num_args = argn;
@@ -387,18 +347,7 @@ unsafe extern "C" fn init_charpath(mut cd: *mut t1_chardesc) {
 unsafe extern "C" fn release_charpath(mut cd: *mut t1_chardesc) {
     let mut curr: *mut t1_cpath = 0 as *mut t1_cpath;
     let mut next: *mut t1_cpath = 0 as *mut t1_cpath;
-    if !cd.is_null() {
-    } else {
-        __assert_fail(
-            b"cd\x00" as *const u8 as *const i8,
-            b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            388_u32,
-            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
-                b"void release_charpath(t1_chardesc *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cd.is_null());
     curr = (*cd).charpath;
     while !curr.is_null() {
         next = (*curr).next;
@@ -1796,18 +1745,7 @@ unsafe extern "C" fn t1char_encode_charpath(
 ) -> i32 {
     let mut save: *mut card8 = 0 as *mut card8;
     let mut curr: *mut t1_cpath = 0 as *mut t1_cpath;
-    if !cd.is_null() {
-    } else {
-        __assert_fail(
-            b"cd\x00" as *const u8 as *const i8,
-            b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            1360_u32,
-            (*::std::mem::transmute::<&[u8; 76], &[i8; 76]>(
-                b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cd.is_null());
     save = dst;
     curr = (*cd).charpath;
     status = 0i32;
@@ -1953,16 +1891,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                 while !curr.is_null() && (*curr).type_0 == -1i32 {
                     let mut stem_idx: i32 = 0;
                     stem_idx = get_stem(cd, (*curr).args[0] as i32);
-                    if stem_idx < (*cd).num_stems {
-                    } else {
-                        __assert_fail(b"stem_idx < cd->num_stems\x00" as
-                                          *const u8 as *const i8,
-                                      b"dpx-t1_char.c\x00" as *const u8 as
-                                          *const i8,
-                                      1452_u32,
-                                      (*::std::mem::transmute::<&[u8; 76],
-                                                                &[i8; 76]>(b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00")).as_ptr());
-                    }
+                    assert!(stem_idx < (*cd).num_stems);
                     hintmask[(stem_idx / 8i32) as usize] =
                         (hintmask[(stem_idx / 8i32) as usize] as i32
                             | 1i32 << 7i32 - stem_idx % 8i32) as card8;
@@ -1995,16 +1924,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                 i_0 = 0i32;
                 while i_0 < (*curr).num_args {
                     stem_idx_0 = get_stem(cd, (*curr).args[i_0 as usize] as i32);
-                    if stem_idx_0 < (*cd).num_stems {
-                    } else {
-                        __assert_fail(b"stem_idx < cd->num_stems\x00" as
-                                          *const u8 as *const i8,
-                                      b"dpx-t1_char.c\x00" as *const u8 as
-                                          *const i8,
-                                      1472_u32,
-                                      (*::std::mem::transmute::<&[u8; 76],
-                                                                &[i8; 76]>(b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00")).as_ptr());
-                    }
+                    assert!(stem_idx_0 < (*cd).num_stems);
                     cntrmask[(stem_idx_0 / 8i32) as usize] =
                         (cntrmask[(stem_idx_0 / 8i32) as usize] as i32
                             | 1i32 << 7i32 - stem_idx_0 % 8i32) as card8;

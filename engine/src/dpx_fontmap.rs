@@ -8,13 +8,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
@@ -288,18 +281,7 @@ pub unsafe extern "C" fn pdf_fontmap_set_verbose(mut level: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_init_fontmap_record(mut mrec: *mut fontmap_rec) {
-    if !mrec.is_null() {
-    } else {
-        __assert_fail(
-            b"mrec\x00" as *const u8 as *const i8,
-            b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            47_u32,
-            (*::std::mem::transmute::<&[u8; 44], &[i8; 44]>(
-                b"void pdf_init_fontmap_record(fontmap_rec *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!mrec.is_null());
     (*mrec).map_name = 0 as *mut i8;
     /* SFD char mapping */
     (*mrec).charmap.sfd_name = 0 as *mut i8;
@@ -323,18 +305,7 @@ pub unsafe extern "C" fn pdf_init_fontmap_record(mut mrec: *mut fontmap_rec) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_clear_fontmap_record(mut mrec: *mut fontmap_rec) {
-    if !mrec.is_null() {
-    } else {
-        __assert_fail(
-            b"mrec\x00" as *const u8 as *const i8,
-            b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            81_u32,
-            (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
-                b"void pdf_clear_fontmap_record(fontmap_rec *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!mrec.is_null());
     free((*mrec).map_name as *mut libc::c_void);
     free((*mrec).charmap.sfd_name as *mut libc::c_void);
     free((*mrec).charmap.subfont_id as *mut libc::c_void);
@@ -360,18 +331,7 @@ unsafe extern "C" fn pdf_copy_fontmap_record(
     mut dst: *mut fontmap_rec,
     mut src: *const fontmap_rec,
 ) {
-    if !dst.is_null() && !src.is_null() {
-    } else {
-        __assert_fail(
-            b"dst && src\x00" as *const u8 as *const i8,
-            b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            110_u32,
-            (*::std::mem::transmute::<&[u8; 65], &[i8; 65]>(
-                b"void pdf_copy_fontmap_record(fontmap_rec *, const fontmap_rec *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!dst.is_null() && !src.is_null());
     (*dst).map_name = mstrdup((*src).map_name);
     (*dst).charmap.sfd_name = mstrdup((*src).charmap.sfd_name);
     (*dst).charmap.subfont_id = mstrdup((*src).charmap.subfont_id);
@@ -482,18 +442,7 @@ unsafe extern "C" fn tt_readline(
 ) -> *mut i8 {
     let mut p: *mut i8 = 0 as *mut i8;
     let mut q: *mut i8 = 0 as *mut i8;
-    if !buf.is_null() && buf_len > 0i32 && !handle.is_null() {
-    } else {
-        __assert_fail(
-            b"buf && buf_len > 0 && handle\x00" as *const u8 as *const i8,
-            b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            199_u32,
-            (*::std::mem::transmute::<&[u8; 52], &[i8; 52]>(
-                b"char *tt_readline(char *, int, rust_input_handle_t)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!buf.is_null() && buf_len > 0i32 && !handle.is_null());
     p = tt_mfgets(buf, buf_len, handle);
     if p.is_null() {
         return 0 as *mut i8;
@@ -561,18 +510,7 @@ unsafe extern "C" fn parse_integer_value(
     let mut has_sign: i32 = 0i32;
     let mut has_prefix: i32 = 0i32;
     let mut n: i32 = 0;
-    if base == 0i32 || base >= 2i32 && base <= 36i32 {
-    } else {
-        __assert_fail(
-            b"base == 0 || (base >= 2 && base <= 36)\x00" as *const u8 as *const i8,
-            b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            256_u32,
-            (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
-                b"char *parse_integer_value(const char **, const char *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(base == 0i32 || base >= 2i32 && base <= 36i32);
     if p.is_null() || p >= endptr {
         return 0 as *mut i8;
     }
@@ -1407,18 +1345,7 @@ pub unsafe extern "C" fn pdf_read_fontmap_line(
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
-    if !mrec.is_null() {
-    } else {
-        __assert_fail(
-            b"mrec\x00" as *const u8 as *const i8,
-            b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            885_u32,
-            (*::std::mem::transmute::<&[u8; 65], &[i8; 65]>(
-                b"int pdf_read_fontmap_line(fontmap_rec *, const char *, int, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!mrec.is_null());
     p = mline;
     endptr = p.offset(mline_len as isize);
     skip_blank(&mut p, endptr);
@@ -1508,30 +1435,8 @@ pub unsafe extern "C" fn pdf_load_fontmap_file(mut filename: *const i8, mut mode
     let mut lpos: i32 = 0i32;
     let mut error: i32 = 0i32;
     let mut format: i32 = 0i32;
-    if !filename.is_null() {
-    } else {
-        __assert_fail(
-            b"filename\x00" as *const u8 as *const i8,
-            b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            969_u32,
-            (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
-                b"int pdf_load_fontmap_file(const char *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
-    if !fontmap.is_null() {
-    } else {
-        __assert_fail(
-            b"fontmap\x00" as *const u8 as *const i8,
-            b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            970_u32,
-            (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
-                b"int pdf_load_fontmap_file(const char *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!filename.is_null());
+    assert!(!fontmap.is_null());
     if verbose != 0 {
         dpx_message(b"<FONTMAP:\x00" as *const u8 as *const i8);
     }
@@ -1626,14 +1531,7 @@ pub unsafe extern "C" fn pdf_insert_native_fontmap_record(
     let mut fontmap_key: *mut i8 = 0 as *mut i8;
     let mut mrec: *mut fontmap_rec = 0 as *mut fontmap_rec;
     let mut ret: *mut fontmap_rec = 0 as *mut fontmap_rec;
-    if !path.is_null() {
-    } else {
-        __assert_fail(b"path\x00" as *const u8 as *const i8,
-                      b"dpx-fontmap.c\x00" as *const u8 as
-                          *const i8, 1046_u32,
-                      (*::std::mem::transmute::<&[u8; 90],
-                                                &[i8; 90]>(b"fontmap_rec *pdf_insert_native_fontmap_record(const char *, uint32_t, int, int, int, int)\x00")).as_ptr());
-    }
+    assert!(!path.is_null());
     fontmap_key = xmalloc(strlen(path).wrapping_add(40i32 as u64)) as *mut i8;
     sprintf(
         fontmap_key,
@@ -1800,18 +1698,7 @@ unsafe extern "C" fn strip_options(mut map_name: *const i8, mut opt: *mut fontma
     let mut next: *mut i8 = 0 as *mut i8;
     let mut have_csi: i32 = 0i32;
     let mut have_style: i32 = 0i32;
-    if !opt.is_null() {
-    } else {
-        __assert_fail(
-            b"opt\x00" as *const u8 as *const i8,
-            b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            1152_u32,
-            (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
-                b"char *strip_options(const char *, fontmap_opt *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!opt.is_null());
     p = map_name;
     font_name = 0 as *mut i8;
     (*opt).charcoll = 0 as *mut i8;

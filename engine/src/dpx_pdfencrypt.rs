@@ -10,13 +10,6 @@ extern crate libc;
 extern "C" {
     pub type pdf_obj;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn rand() -> i32;
@@ -672,15 +665,7 @@ unsafe extern "C" fn compute_hash_V5(
         SHA256_write(&mut sha, user_key, 48_u32);
     }
     SHA256_final(hash, &mut sha);
-    if R == 5i32 || R == 6i32 {
-    } else {
-        __assert_fail(b"R ==5 || R == 6\x00" as *const u8 as
-                          *const i8,
-                      b"dpx-pdfencrypt.c\x00" as *const u8 as
-                          *const i8, 307_u32,
-                      (*::std::mem::transmute::<&[u8; 103],
-                                                &[i8; 103]>(b"void compute_hash_V5(unsigned char *, const char *, const unsigned char *, const unsigned char *, int)\x00")).as_ptr());
-    }
+    assert!(R == 5i32 || R == 6i32);
     if R == 5i32 {
         return;
     }
@@ -705,15 +690,7 @@ unsafe extern "C" fn compute_hash_V5(
         K1_len = strlen(passwd)
             .wrapping_add(K_len)
             .wrapping_add((if !user_key.is_null() { 48i32 } else { 0i32 }) as u64);
-        if K1_len < 240i32 as u64 {
-        } else {
-            __assert_fail(b"K1_len < 240\x00" as *const u8 as
-                              *const i8,
-                          b"dpx-pdfencrypt.c\x00" as *const u8 as
-                              *const i8, 319_u32,
-                          (*::std::mem::transmute::<&[u8; 103],
-                                                    &[i8; 103]>(b"void compute_hash_V5(unsigned char *, const char *, const unsigned char *, const unsigned char *, int)\x00")).as_ptr());
-        }
+        assert!(K1_len < 240i32 as u64);
         memcpy(
             K1.as_mut_ptr() as *mut libc::c_void,
             passwd as *const libc::c_void,
@@ -1078,22 +1055,8 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
     let mut opasswd: [i8; 128] = [0; 128];
     let mut upasswd: [i8; 128] = [0; 128];
     let mut version: i32 = 0;
-    if !oplain.is_null() {
-    } else {
-        __assert_fail(b"oplain\x00" as *const u8 as *const i8,
-                      b"dpx-pdfencrypt.c\x00" as *const u8 as
-                          *const i8, 521_u32,
-                      (*::std::mem::transmute::<&[u8; 80],
-                                                &[i8; 80]>(b"void pdf_enc_set_passwd(unsigned int, unsigned int, const char *, const char *)\x00")).as_ptr());
-    }
-    if !uplain.is_null() {
-    } else {
-        __assert_fail(b"uplain\x00" as *const u8 as *const i8,
-                      b"dpx-pdfencrypt.c\x00" as *const u8 as
-                          *const i8, 522_u32,
-                      (*::std::mem::transmute::<&[u8; 80],
-                                                &[i8; 80]>(b"void pdf_enc_set_passwd(unsigned int, unsigned int, const char *, const char *)\x00")).as_ptr());
-    }
+    assert!(!oplain.is_null());
+    assert!(!uplain.is_null());
     version = pdf_get_version() as i32;
     (*p).key_size = bits.wrapping_div(8_u32) as i32;
     if (*p).key_size == 5i32 {

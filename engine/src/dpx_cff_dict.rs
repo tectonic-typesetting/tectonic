@@ -9,13 +9,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn __errno_location() -> *mut i32;
     #[no_mangle]
     fn fabs(_: f64) -> f64;
@@ -1380,18 +1373,7 @@ pub unsafe extern "C" fn cff_dict_get(
 ) -> f64 {
     let mut value: f64 = 0.0f64;
     let mut i: i32 = 0;
-    if !key.is_null() && !dict.is_null() {
-    } else {
-        __assert_fail(
-            b"key && dict\x00" as *const u8 as *const i8,
-            b"dpx-cff_dict.c\x00" as *const u8 as *const i8,
-            658_u32,
-            (*::std::mem::transmute::<&[u8; 51], &[i8; 51]>(
-                b"double cff_dict_get(cff_dict *, const char *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!key.is_null() && !dict.is_null());
     i = 0i32;
     while i < (*dict).count {
         if streq_ptr(key, (*(*dict).entries.offset(i as isize)).key) {
@@ -1427,18 +1409,7 @@ pub unsafe extern "C" fn cff_dict_set(
     mut value: f64,
 ) {
     let mut i: i32 = 0;
-    if !dict.is_null() && !key.is_null() {
-    } else {
-        __assert_fail(
-            b"dict && key\x00" as *const u8 as *const i8,
-            b"dpx-cff_dict.c\x00" as *const u8 as *const i8,
-            680_u32,
-            (*::std::mem::transmute::<&[u8; 57], &[i8; 57]>(
-                b"void cff_dict_set(cff_dict *, const char *, int, double)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!dict.is_null() && !key.is_null());
     i = 0i32;
     while i < (*dict).count {
         if streq_ptr(key, (*(*dict).entries.offset(i as isize)).key) {

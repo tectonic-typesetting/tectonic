@@ -12,13 +12,6 @@ extern "C" {
     #[no_mangle]
     fn pow(_: f64, _: f64) -> f64;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
@@ -1098,14 +1091,7 @@ unsafe extern "C" fn try_pdf_reference(
 ) -> *mut pdf_obj {
     let mut id: u32 = 0_u32;
     let mut gen: u16 = 0_u16;
-    if !pf.is_null() {
-    } else {
-        __assert_fail(b"pf\x00" as *const u8 as *const i8,
-                      b"dpx-pdfparse.c\x00" as *const u8 as
-                          *const i8, 883_u32,
-                      (*::std::mem::transmute::<&[u8; 82],
-                                                &[i8; 82]>(b"pdf_obj *try_pdf_reference(const char *, const char *, const char **, pdf_file *)\x00")).as_ptr());
-    }
+    assert!(!pf.is_null());
     if !endptr.is_null() {
         *endptr = start
     }

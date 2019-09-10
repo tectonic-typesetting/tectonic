@@ -10,13 +10,6 @@ extern crate libc;
 extern "C" {
     pub type pdf_obj;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -119,18 +112,7 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 pub unsafe extern "C" fn sfnt_open(mut handle: rust_input_handle_t) -> *mut sfnt {
     let mut sfont: *mut sfnt = 0 as *mut sfnt; /* typefaces position */
     let mut type_0: u32 = 0; /* resource id */
-    if !handle.is_null() {
-    } else {
-        __assert_fail(
-            b"handle\x00" as *const u8 as *const i8,
-            b"dpx-sfnt.c\x00" as *const u8 as *const i8,
-            52_u32,
-            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
-                b"sfnt *sfnt_open(rust_input_handle_t)\x00",
-            ))
-            .as_ptr(),
-        ); /* resource name position from name_list */
-    } /* resource flag (byte) + resource offset */
+    assert!(!handle.is_null());
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32); /* mbz */
     sfont =
         new((1_u32 as u64).wrapping_mul(::std::mem::size_of::<sfnt>() as u64) as u32) as *mut sfnt;
@@ -162,18 +144,7 @@ pub unsafe extern "C" fn dfont_open(mut handle: rust_input_handle_t, mut index: 
     let mut tags_num: u16 = 0;
     let mut types_num: u16 = 0;
     let mut i: u16 = 0;
-    if !handle.is_null() {
-    } else {
-        __assert_fail(
-            b"handle\x00" as *const u8 as *const i8,
-            b"dpx-sfnt.c\x00" as *const u8 as *const i8,
-            87_u32,
-            (*::std::mem::transmute::<&[u8; 43], &[i8; 43]>(
-                b"sfnt *dfont_open(rust_input_handle_t, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!handle.is_null());
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     sfont =
         new((1_u32 as u64).wrapping_mul(::std::mem::size_of::<sfnt>() as u64) as u32) as *mut sfnt;
@@ -346,18 +317,7 @@ pub unsafe extern "C" fn sfnt_set_table(
 ) {
     let mut td: *mut sfnt_table_directory = 0 as *mut sfnt_table_directory;
     let mut idx: i32 = 0;
-    if !sfont.is_null() {
-    } else {
-        __assert_fail(
-            b"sfont\x00" as *const u8 as *const i8,
-            b"dpx-sfnt.c\x00" as *const u8 as *const i8,
-            272_u32,
-            (*::std::mem::transmute::<&[u8; 62], &[i8; 62]>(
-                b"void sfnt_set_table(sfnt *, const char *, void *, SFNT_ULONG)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!sfont.is_null());
     td = (*sfont).directory;
     idx = find_table_index(td, tag);
     if idx < 0i32 {
@@ -385,18 +345,7 @@ pub unsafe extern "C" fn sfnt_find_table_len(mut sfont: *mut sfnt, mut tag: *con
     let mut length: u32 = 0;
     let mut td: *mut sfnt_table_directory = 0 as *mut sfnt_table_directory;
     let mut idx: i32 = 0;
-    if !sfont.is_null() && !tag.is_null() {
-    } else {
-        __assert_fail(
-            b"sfont && tag\x00" as *const u8 as *const i8,
-            b"dpx-sfnt.c\x00" as *const u8 as *const i8,
-            299_u32,
-            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
-                b"SFNT_ULONG sfnt_find_table_len(sfnt *, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!sfont.is_null() && !tag.is_null());
     td = (*sfont).directory;
     idx = find_table_index(td, tag);
     if idx < 0i32 {
@@ -411,18 +360,7 @@ pub unsafe extern "C" fn sfnt_find_table_pos(mut sfont: *mut sfnt, mut tag: *con
     let mut offset: u32 = 0;
     let mut td: *mut sfnt_table_directory = 0 as *mut sfnt_table_directory;
     let mut idx: i32 = 0;
-    if !sfont.is_null() && !tag.is_null() {
-    } else {
-        __assert_fail(
-            b"sfont && tag\x00" as *const u8 as *const i8,
-            b"dpx-sfnt.c\x00" as *const u8 as *const i8,
-            319_u32,
-            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
-                b"SFNT_ULONG sfnt_find_table_pos(sfnt *, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!sfont.is_null() && !tag.is_null());
     td = (*sfont).directory;
     idx = find_table_index(td, tag);
     if idx < 0i32 {
@@ -435,18 +373,7 @@ pub unsafe extern "C" fn sfnt_find_table_pos(mut sfont: *mut sfnt, mut tag: *con
 #[no_mangle]
 pub unsafe extern "C" fn sfnt_locate_table(mut sfont: *mut sfnt, mut tag: *const i8) -> u32 {
     let mut offset: u32 = 0;
-    if !sfont.is_null() && !tag.is_null() {
-    } else {
-        __assert_fail(
-            b"sfont && tag\x00" as *const u8 as *const i8,
-            b"dpx-sfnt.c\x00" as *const u8 as *const i8,
-            337_u32,
-            (*::std::mem::transmute::<&[u8; 51], &[i8; 51]>(
-                b"SFNT_ULONG sfnt_locate_table(sfnt *, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!sfont.is_null() && !tag.is_null());
     offset = sfnt_find_table_pos(sfont, tag);
     if offset == 0_u32 {
         _tt_abort(b"sfnt: table not found...\x00" as *const u8 as *const i8);
@@ -459,18 +386,7 @@ pub unsafe extern "C" fn sfnt_read_table_directory(mut sfont: *mut sfnt, mut off
     let mut td: *mut sfnt_table_directory = 0 as *mut sfnt_table_directory;
     let mut i: u32 = 0;
     let mut u_tag: u32 = 0;
-    if !sfont.is_null() {
-    } else {
-        __assert_fail(
-            b"sfont\x00" as *const u8 as *const i8,
-            b"dpx-sfnt.c\x00" as *const u8 as *const i8,
-            355_u32,
-            (*::std::mem::transmute::<&[u8; 50], &[i8; 50]>(
-                b"int sfnt_read_table_directory(sfnt *, SFNT_ULONG)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!sfont.is_null());
     if !(*sfont).directory.is_null() {
         release_directory((*sfont).directory);
     }
@@ -478,18 +394,7 @@ pub unsafe extern "C" fn sfnt_read_table_directory(mut sfont: *mut sfnt, mut off
         (1_u32 as u64).wrapping_mul(::std::mem::size_of::<sfnt_table_directory>() as u64) as u32,
     ) as *mut sfnt_table_directory;
     (*sfont).directory = td;
-    if !(*sfont).handle.is_null() {
-    } else {
-        __assert_fail(
-            b"sfont->handle\x00" as *const u8 as *const i8,
-            b"dpx-sfnt.c\x00" as *const u8 as *const i8,
-            362_u32,
-            (*::std::mem::transmute::<&[u8; 50], &[i8; 50]>(
-                b"int sfnt_read_table_directory(sfnt *, SFNT_ULONG)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!(*sfont).handle.is_null());
     ttstub_input_seek((*sfont).handle, offset as ssize_t, 0i32);
     (*td).version = tt_get_unsigned_quad((*sfont).handle);
     (*td).num_tables = tt_get_unsigned_pair((*sfont).handle);
@@ -527,18 +432,7 @@ pub unsafe extern "C" fn sfnt_require_table(
 ) -> i32 {
     let mut td: *mut sfnt_table_directory = 0 as *mut sfnt_table_directory;
     let mut idx: i32 = 0;
-    if !sfont.is_null() && !(*sfont).directory.is_null() {
-    } else {
-        __assert_fail(
-            b"sfont && sfont->directory\x00" as *const u8 as *const i8,
-            b"dpx-sfnt.c\x00" as *const u8 as *const i8,
-            399_u32,
-            (*::std::mem::transmute::<&[u8; 50], &[i8; 50]>(
-                b"int sfnt_require_table(sfnt *, const char *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!sfont.is_null() && !(*sfont).directory.is_null());
     td = (*sfont).directory;
     idx = find_table_index(td, tag);
     if idx < 0i32 {
@@ -606,18 +500,7 @@ pub unsafe extern "C" fn sfnt_create_FontFile_stream(mut sfont: *mut sfnt) -> *m
     let mut i: i32 = 0;
     let mut sr: i32 = 0;
     let mut p: *mut i8 = 0 as *mut i8;
-    if !sfont.is_null() && !(*sfont).directory.is_null() {
-    } else {
-        __assert_fail(
-            b"sfont && sfont->directory\x00" as *const u8 as *const i8,
-            b"dpx-sfnt.c\x00" as *const u8 as *const i8,
-            439_u32,
-            (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
-                b"pdf_obj *sfnt_create_FontFile_stream(sfnt *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!sfont.is_null() && !(*sfont).directory.is_null());
     stream = pdf_new_stream(1i32 << 0i32);
     td = (*sfont).directory;
     /* Header */

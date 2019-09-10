@@ -77,13 +77,6 @@ extern "C" {
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
@@ -535,18 +528,7 @@ unsafe extern "C" fn is_basefont(mut name: *const i8) -> bool {
 pub unsafe extern "C" fn pdf_font_open_type1(mut font: *mut pdf_font) -> i32 {
     let mut ident: *mut i8 = 0 as *mut i8;
     let mut fontname: [i8; 128] = [0; 128];
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-type1.c\x00" as *const u8 as *const i8,
-            85_u32,
-            (*::std::mem::transmute::<&[u8; 36], &[i8; 36]>(
-                b"int pdf_font_open_type1(pdf_font *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null());
     ident = pdf_font_get_ident(font);
     if is_basefont(ident) {
         pdf_font_set_fontname(font, ident);
@@ -1281,18 +1263,7 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
     let mut code: i32 = 0;
     let mut verbose: i32 = 0;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-type1.c\x00" as *const u8 as *const i8,
-            505_u32,
-            (*::std::mem::transmute::<&[u8; 36], &[i8; 36]>(
-                b"int pdf_font_load_type1(pdf_font *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null());
     if !pdf_font_is_in_use(font) {
         return 0i32;
     }

@@ -9,13 +9,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -323,16 +316,7 @@ pub unsafe extern "C" fn CMap_release(mut cmap: *mut CMap) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_is_Identity(mut cmap: *mut CMap) -> bool {
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            149_u32,
-            (*::std::mem::transmute::<&[u8; 31], &[i8; 31]>(b"_Bool CMap_is_Identity(CMap *)\x00"))
-                .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
     return streq_ptr((*cmap).name, b"Identity-H\x00" as *const u8 as *const i8) as i32 != 0
         || streq_ptr((*cmap).name, b"Identity-V\x00" as *const u8 as *const i8) as i32 != 0;
 }
@@ -369,18 +353,7 @@ pub unsafe extern "C" fn CMap_is_valid(mut cmap: *mut CMap) -> bool {
 #[no_mangle]
 pub unsafe extern "C" fn CMap_get_profile(mut cmap: *mut CMap, mut type_0: i32) -> i32 {
     let mut value: i32 = 0i32;
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            184_u32,
-            (*::std::mem::transmute::<&[u8; 34], &[i8; 34]>(
-                b"int CMap_get_profile(CMap *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
     match type_0 {
         0 => value = (*cmap).profile.minBytesIn as i32,
         1 => value = (*cmap).profile.maxBytesIn as i32,
@@ -500,14 +473,7 @@ pub unsafe extern "C" fn CMap_decode_char(
             }
         }
     }
-    if !(*cmap).mapTbl.is_null() {
-    } else {
-        __assert_fail(b"cmap->mapTbl\x00" as *const u8 as *const i8,
-                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
-                      276_u32,
-                      (*::std::mem::transmute::<&[u8; 92],
-                                                &[i8; 92]>(b"void CMap_decode_char(CMap *, const unsigned char **, size_t *, unsigned char **, size_t *)\x00")).as_ptr());
-    }
+    assert!(!(*cmap).mapTbl.is_null());
     t = (*cmap).mapTbl;
     while count < *inbytesleft {
         let fresh0 = p;
@@ -612,24 +578,8 @@ pub unsafe extern "C" fn CMap_decode(
     mut outbytesleft: *mut size_t,
 ) -> size_t {
     let mut count: size_t = 0;
-    if !cmap.is_null() && !inbuf.is_null() && !outbuf.is_null() {
-    } else {
-        __assert_fail(b"cmap && inbuf && outbuf\x00" as *const u8 as
-                          *const i8,
-                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
-                      344_u32,
-                      (*::std::mem::transmute::<&[u8; 89],
-                                                &[i8; 89]>(b"size_t CMap_decode(CMap *, const unsigned char **, size_t *, unsigned char **, size_t *)\x00")).as_ptr());
-    }
-    if !inbytesleft.is_null() && !outbytesleft.is_null() {
-    } else {
-        __assert_fail(b"inbytesleft && outbytesleft\x00" as *const u8 as
-                          *const i8,
-                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
-                      345_u32,
-                      (*::std::mem::transmute::<&[u8; 89],
-                                                &[i8; 89]>(b"size_t CMap_decode(CMap *, const unsigned char **, size_t *, unsigned char **, size_t *)\x00")).as_ptr());
-    }
+    assert!(!cmap.is_null() && !inbuf.is_null() && !outbuf.is_null());
+    assert!(!inbytesleft.is_null() && !outbytesleft.is_null());
     count = 0i32 as size_t;
     while *inbytesleft > 0i32 as u64 && *outbytesleft > 0i32 as u64 {
         CMap_decode_char(cmap, inbuf, inbytesleft, outbuf, outbytesleft);
@@ -651,76 +601,27 @@ pub unsafe extern "C" fn CMap_reverse_decode(mut cmap: *mut CMap, mut cid: CID) 
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_get_name(mut cmap: *mut CMap) -> *mut i8 {
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            363_u32,
-            (*::std::mem::transmute::<&[u8; 28], &[i8; 28]>(b"char *CMap_get_name(CMap *)\x00"))
-                .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
     return (*cmap).name;
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_get_type(mut cmap: *mut CMap) -> i32 {
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            370_u32,
-            (*::std::mem::transmute::<&[u8; 26], &[i8; 26]>(b"int CMap_get_type(CMap *)\x00"))
-                .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
     return (*cmap).type_0;
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_get_wmode(mut cmap: *mut CMap) -> i32 {
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            377_u32,
-            (*::std::mem::transmute::<&[u8; 27], &[i8; 27]>(b"int CMap_get_wmode(CMap *)\x00"))
-                .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
     return (*cmap).wmode;
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_get_CIDSysInfo(mut cmap: *mut CMap) -> *mut CIDSysInfo {
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            384_u32,
-            (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
-                b"CIDSysInfo *CMap_get_CIDSysInfo(CMap *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
     return (*cmap).CSI;
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_set_name(mut cmap: *mut CMap, mut name: *const i8) {
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            391_u32,
-            (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
-                b"void CMap_set_name(CMap *, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
     free((*cmap).name as *mut libc::c_void);
     (*cmap).name = new((strlen(name).wrapping_add(1i32 as u64) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
@@ -728,50 +629,17 @@ pub unsafe extern "C" fn CMap_set_name(mut cmap: *mut CMap, mut name: *const i8)
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_set_type(mut cmap: *mut CMap, mut type_0: i32) {
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            400_u32,
-            (*::std::mem::transmute::<&[u8; 32], &[i8; 32]>(
-                b"void CMap_set_type(CMap *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
     (*cmap).type_0 = type_0;
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_set_wmode(mut cmap: *mut CMap, mut wmode: i32) {
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            407_u32,
-            (*::std::mem::transmute::<&[u8; 33], &[i8; 33]>(
-                b"void CMap_set_wmode(CMap *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
     (*cmap).wmode = wmode;
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_set_CIDSysInfo(mut cmap: *mut CMap, mut csi: *const CIDSysInfo) {
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            414_u32,
-            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
-                b"void CMap_set_CIDSysInfo(CMap *, const CIDSysInfo *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
     if !(*cmap).CSI.is_null() {
         free((*(*cmap).CSI).registry as *mut libc::c_void);
         free((*(*cmap).CSI).ordering as *mut libc::c_void);
@@ -802,30 +670,8 @@ pub unsafe extern "C" fn CMap_set_CIDSysInfo(mut cmap: *mut CMap, mut csi: *cons
 #[no_mangle]
 pub unsafe extern "C" fn CMap_set_usecmap(mut cmap: *mut CMap, mut ucmap: *mut CMap) {
     let mut i: u32 = 0; /* Maybe if (!ucmap) _tt_abort() is better for this. */
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            443_u32,
-            (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
-                b"void CMap_set_usecmap(CMap *, CMap *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
-    if !ucmap.is_null() {
-    } else {
-        __assert_fail(
-            b"ucmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            444_u32,
-            (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
-                b"void CMap_set_usecmap(CMap *, CMap *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
+    assert!(!ucmap.is_null());
     if cmap == ucmap {
         _tt_abort(
             b"%s: Identical CMap object cannot be used for usecmap CMap: 0x%p=0x%p\x00" as *const u8
@@ -886,18 +732,7 @@ unsafe extern "C" fn CMap_match_codespace(
 ) -> i32 {
     let mut i: u32 = 0;
     let mut pos: u32 = 0;
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            484_u32,
-            (*::std::mem::transmute::<&[u8; 64], &[i8; 64]>(
-                b"int CMap_match_codespace(CMap *, const unsigned char *, size_t)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
     i = 0_u32;
     while i < (*cmap).codespace.num {
         let mut csr: *mut rangeDef = (*cmap).codespace.ranges.offset(i as isize);
@@ -933,15 +768,7 @@ pub unsafe extern "C" fn CMap_add_codespacerange(
 ) -> i32 {
     let mut csr: *mut rangeDef = 0 as *mut rangeDef;
     let mut i: u32 = 0;
-    if !cmap.is_null() && dim > 0i32 as u64 {
-    } else {
-        __assert_fail(b"cmap && dim > 0\x00" as *const u8 as
-                          *const i8,
-                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
-                      510_u32,
-                      (*::std::mem::transmute::<&[u8; 90],
-                                                &[i8; 90]>(b"int CMap_add_codespacerange(CMap *, const unsigned char *, const unsigned char *, size_t)\x00")).as_ptr());
-    }
+    assert!(!cmap.is_null() && dim > 0i32 as u64);
     i = 0_u32;
     while i < (*cmap).codespace.num {
         let mut j: size_t = 0;
@@ -1019,14 +846,7 @@ pub unsafe extern "C" fn CMap_add_notdefrange(
 ) -> i32 {
     let mut c: i32 = 0;
     let mut cur: *mut mapDef = 0 as *mut mapDef;
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(b"cmap\x00" as *const u8 as *const i8,
-                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
-                      564_u32,
-                      (*::std::mem::transmute::<&[u8; 92],
-                                                &[i8; 92]>(b"int CMap_add_notdefrange(CMap *, const unsigned char *, const unsigned char *, size_t, CID)\x00")).as_ptr());
-    }
+    assert!(!cmap.is_null());
     /* dst not used here */
     /* FIXME */
     if check_range(
@@ -1097,14 +917,7 @@ pub unsafe extern "C" fn CMap_add_bfrange(
     let mut last_byte: i32 = 0;
     let mut i: i32 = 0;
     let mut cur: *mut mapDef = 0 as *mut mapDef;
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(b"cmap\x00" as *const u8 as *const i8,
-                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
-                      610_u32,
-                      (*::std::mem::transmute::<&[u8; 114],
-                                                &[i8; 114]>(b"int CMap_add_bfrange(CMap *, const unsigned char *, const unsigned char *, size_t, const unsigned char *, size_t)\x00")).as_ptr());
-    }
+    assert!(!cmap.is_null());
     if check_range(cmap, srclo, srchi, srcdim, base, dstdim) < 0i32 {
         return -1i32;
     }
@@ -1183,14 +996,7 @@ pub unsafe extern "C" fn CMap_add_cidrange(
     let mut c: size_t = 0;
     let mut v: size_t = 0;
     let mut cur: *mut mapDef = 0 as *mut mapDef;
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(b"cmap\x00" as *const u8 as *const i8,
-                      b"dpx-cmap.c\x00" as *const u8 as *const i8,
-                      666_u32,
-                      (*::std::mem::transmute::<&[u8; 89],
-                                                &[i8; 89]>(b"int CMap_add_cidrange(CMap *, const unsigned char *, const unsigned char *, size_t, CID)\x00")).as_ptr());
-    }
+    assert!(!cmap.is_null());
     /* base not used here */
     if check_range(
         cmap,
@@ -1246,16 +1052,7 @@ pub unsafe extern "C" fn CMap_add_cidrange(
 }
 unsafe extern "C" fn mapDef_release(mut t: *mut mapDef) {
     let mut c: i32 = 0;
-    if !t.is_null() {
-    } else {
-        __assert_fail(
-            b"t\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            709_u32,
-            (*::std::mem::transmute::<&[u8; 30], &[i8; 30]>(b"void mapDef_release(mapDef *)\x00"))
-                .as_ptr(),
-        );
-    }
+    assert!(!t.is_null());
     c = 0i32;
     while c < 256i32 {
         if (*t.offset(c as isize)).flag & 1i32 << 4i32 != 0 {
@@ -1283,18 +1080,7 @@ unsafe extern "C" fn mapDef_new() -> *mut mapDef {
 unsafe extern "C" fn get_mem(mut cmap: *mut CMap, mut size: i32) -> *mut u8 {
     let mut map: *mut mapData = 0 as *mut mapData;
     let mut p: *mut u8 = 0 as *mut u8;
-    if !cmap.is_null() && !(*cmap).mapData.is_null() && size >= 0i32 {
-    } else {
-        __assert_fail(
-            b"cmap && cmap->mapData && size >= 0\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            739_u32,
-            (*::std::mem::transmute::<&[u8; 36], &[i8; 36]>(
-                b"unsigned char *get_mem(CMap *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null() && !(*cmap).mapData.is_null() && size >= 0i32);
     map = (*cmap).mapData;
     if (*map).pos + size >= 4096i32 {
         let mut prev: *mut mapData = map;
@@ -1317,18 +1103,7 @@ unsafe extern "C" fn locate_tbl(
 ) -> i32 {
     let mut i: i32 = 0;
     let mut c: i32 = 0;
-    if !cur.is_null() && !(*cur).is_null() {
-    } else {
-        __assert_fail(
-            b"cur && *cur\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            760_u32,
-            (*::std::mem::transmute::<&[u8; 54], &[i8; 54]>(
-                b"int locate_tbl(mapDef **, const unsigned char *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cur.is_null() && !(*cur).is_null());
     i = 0i32;
     while i < dim - 1i32 {
         c = *code.offset(i as isize) as i32;
@@ -1367,18 +1142,7 @@ unsafe extern "C" fn bytes_consumed(
     let mut pos: size_t = 0;
     let mut longest: size_t = 0i32 as size_t;
     let mut bytesconsumed: size_t = 0;
-    if !cmap.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            786_u32,
-            (*::std::mem::transmute::<&[u8; 61], &[i8; 61]>(
-                b"size_t bytes_consumed(CMap *, const unsigned char *, size_t)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cmap.is_null());
     i = 0i32 as size_t;
     while i < (*cmap).codespace.num as u64 {
         let mut csr: *mut rangeDef = (*cmap).codespace.ranges.offset(i as isize);
@@ -1535,18 +1299,7 @@ pub unsafe extern "C" fn CMap_cache_find(mut cmap_name: *const i8) -> i32 {
     if __cache.is_null() {
         CMap_cache_init();
     }
-    if !__cache.is_null() {
-    } else {
-        __assert_fail(
-            b"__cache\x00" as *const u8 as *const i8,
-            b"dpx-cmap.c\x00" as *const u8 as *const i8,
-            914_u32,
-            (*::std::mem::transmute::<&[u8; 34], &[i8; 34]>(
-                b"int CMap_cache_find(const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!__cache.is_null());
     id = 0i32;
     while id < (*__cache).num {
         let mut name: *mut i8 = 0 as *mut i8;

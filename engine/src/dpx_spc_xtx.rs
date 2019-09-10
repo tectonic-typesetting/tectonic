@@ -14,13 +14,6 @@ extern "C" {
     #[no_mangle]
     fn fabs(_: f64) -> f64;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
@@ -953,15 +946,7 @@ pub unsafe extern "C" fn spc_xtx_setup_handler(
     let mut error: i32 = -1i32;
     let mut i: u32 = 0;
     let mut q: *mut i8 = 0 as *mut i8;
-    if !sph.is_null() && !spe.is_null() && !ap.is_null() {
-    } else {
-        __assert_fail(b"sph && spe && ap\x00" as *const u8 as
-                          *const i8,
-                      b"dpx-spc_xtx.c\x00" as *const u8 as
-                          *const i8, 413_u32,
-                      (*::std::mem::transmute::<&[u8; 84],
-                                                &[i8; 84]>(b"int spc_xtx_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
-    }
+    assert!(!sph.is_null() && !spe.is_null() && !ap.is_null());
     skip_white(&mut (*ap).curptr, (*ap).endptr);
     if (*ap)
         .curptr

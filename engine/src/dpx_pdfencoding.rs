@@ -70,13 +70,6 @@ extern "C" {
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
@@ -393,18 +386,7 @@ pub unsafe extern "C" fn pdf_encoding_set_verbose(mut level: i32) {
     verbose = level as u8;
 }
 unsafe extern "C" fn pdf_init_encoding_struct(mut encoding: *mut pdf_encoding) {
-    if !encoding.is_null() {
-    } else {
-        __assert_fail(
-            b"encoding\x00" as *const u8 as *const i8,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const i8,
-            93_u32,
-            (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
-                b"void pdf_init_encoding_struct(pdf_encoding *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!encoding.is_null());
     (*encoding).ident = 0 as *mut i8;
     (*encoding).enc_name = 0 as *mut i8;
     memset(
@@ -430,30 +412,8 @@ unsafe extern "C" fn create_encoding_resource(
     mut baseenc: *mut pdf_encoding,
 ) -> *mut pdf_obj {
     let mut differences: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !encoding.is_null() {
-    } else {
-        __assert_fail(
-            b"encoding\x00" as *const u8 as *const i8,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const i8,
-            119_u32,
-            (*::std::mem::transmute::<&[u8; 66], &[i8; 66]>(
-                b"pdf_obj *create_encoding_resource(pdf_encoding *, pdf_encoding *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
-    if (*encoding).resource.is_null() {
-    } else {
-        __assert_fail(
-            b"!encoding->resource\x00" as *const u8 as *const i8,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const i8,
-            120_u32,
-            (*::std::mem::transmute::<&[u8; 66], &[i8; 66]>(
-                b"pdf_obj *create_encoding_resource(pdf_encoding *, pdf_encoding *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!encoding.is_null());
+    assert!((*encoding).resource.is_null());
     differences = make_encoding_differences(
         (*encoding).glyphs.as_mut_ptr(),
         if !baseenc.is_null() {
@@ -498,18 +458,7 @@ unsafe extern "C" fn create_encoding_resource(
     };
 }
 unsafe extern "C" fn pdf_flush_encoding(mut encoding: *mut pdf_encoding) {
-    if !encoding.is_null() {
-    } else {
-        __assert_fail(
-            b"encoding\x00" as *const u8 as *const i8,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const i8,
-            152_u32,
-            (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
-                b"void pdf_flush_encoding(pdf_encoding *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!encoding.is_null());
     if !(*encoding).resource.is_null() {
         pdf_release_obj((*encoding).resource);
         (*encoding).resource = 0 as *mut pdf_obj
@@ -521,18 +470,7 @@ unsafe extern "C" fn pdf_flush_encoding(mut encoding: *mut pdf_encoding) {
 }
 unsafe extern "C" fn pdf_clean_encoding_struct(mut encoding: *mut pdf_encoding) {
     let mut code: i32 = 0;
-    if !encoding.is_null() {
-    } else {
-        __assert_fail(
-            b"encoding\x00" as *const u8 as *const i8,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const i8,
-            171_u32,
-            (*::std::mem::transmute::<&[u8; 47], &[i8; 47]>(
-                b"void pdf_clean_encoding_struct(pdf_encoding *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!encoding.is_null());
     if !(*encoding).resource.is_null() {
         _tt_abort(b"Object not flushed.\x00" as *const u8 as *const i8);
     }
@@ -609,18 +547,7 @@ unsafe extern "C" fn make_encoding_differences(
     let mut code: i32 = 0;
     let mut count: i32 = 0i32;
     let mut skipping: i32 = 1i32;
-    if !enc_vec.is_null() {
-    } else {
-        __assert_fail(
-            b"enc_vec\x00" as *const u8 as *const i8,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const i8,
-            217_u32,
-            (*::std::mem::transmute::<&[u8; 67], &[i8; 67]>(
-                b"pdf_obj *make_encoding_differences(char **, char **, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!enc_vec.is_null());
     /*
      *  Write all entries (except .notdef) if baseenc is unknown.
      *  If is_used is given, write only used entries.
@@ -899,18 +826,7 @@ pub unsafe extern "C" fn pdf_encoding_complete() {
              */
             let mut with_base: i32 =
                 ((*encoding).flags & 1i32 << 1i32 == 0 || pdf_get_version() >= 4_u32) as i32;
-            if (*encoding).resource.is_null() {
-            } else {
-                __assert_fail(
-                    b"!encoding->resource\x00" as *const u8 as *const i8,
-                    b"dpx-pdfencoding.c\x00" as *const u8 as *const i8,
-                    451_u32,
-                    (*::std::mem::transmute::<&[u8; 33], &[i8; 33]>(
-                        b"void pdf_encoding_complete(void)\x00",
-                    ))
-                    .as_ptr(),
-                );
-            }
+            assert!((*encoding).resource.is_null());
             (*encoding).resource = create_encoding_resource(
                 encoding,
                 if with_base != 0 {
@@ -919,18 +835,7 @@ pub unsafe extern "C" fn pdf_encoding_complete() {
                     0 as *mut pdf_encoding
                 },
             );
-            if (*encoding).tounicode.is_null() {
-            } else {
-                __assert_fail(
-                    b"!encoding->tounicode\x00" as *const u8 as *const i8,
-                    b"dpx-pdfencoding.c\x00" as *const u8 as *const i8,
-                    454_u32,
-                    (*::std::mem::transmute::<&[u8; 33], &[i8; 33]>(
-                        b"void pdf_encoding_complete(void)\x00",
-                    ))
-                    .as_ptr(),
-                );
-            }
+            assert!((*encoding).tounicode.is_null());
             (*encoding).tounicode = pdf_create_ToUnicode_CMap(
                 (*encoding).enc_name,
                 (*encoding).glyphs.as_mut_ptr(),
@@ -964,18 +869,7 @@ pub unsafe extern "C" fn pdf_close_encodings() {
 pub unsafe extern "C" fn pdf_encoding_findresource(mut enc_name: *const i8) -> i32 {
     let mut enc_id: i32 = 0;
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
-    if !enc_name.is_null() {
-    } else {
-        __assert_fail(
-            b"enc_name\x00" as *const u8 as *const i8,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const i8,
-            490_u32,
-            (*::std::mem::transmute::<&[u8; 44], &[i8; 44]>(
-                b"int pdf_encoding_findresource(const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!enc_name.is_null());
     enc_id = 0i32;
     while enc_id < enc_cache.count {
         encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
@@ -1117,18 +1011,7 @@ pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
     let mut cmap_name: *mut i8 = 0 as *mut i8;
     let mut p: *mut u8 = 0 as *mut u8;
     let mut endptr: *mut u8 = 0 as *mut u8;
-    if !enc_name.is_null() && !enc_vec.is_null() {
-    } else {
-        __assert_fail(
-            b"enc_name && enc_vec\x00" as *const u8 as *const i8,
-            b"dpx-pdfencoding.c\x00" as *const u8 as *const i8,
-            629_u32,
-            (*::std::mem::transmute::<&[u8; 72], &[i8; 72]>(
-                b"pdf_obj *pdf_create_ToUnicode_CMap(const char *, char **, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!enc_name.is_null() && !enc_vec.is_null());
     cmap_name = new((strlen(enc_name)
         .wrapping_add(strlen(b"-UTF16\x00" as *const u8 as *const i8))
         .wrapping_add(1i32 as u64) as u32 as u64)

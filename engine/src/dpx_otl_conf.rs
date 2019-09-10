@@ -10,13 +10,6 @@ extern crate libc;
 extern "C" {
     pub type pdf_obj;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
@@ -736,53 +729,20 @@ pub unsafe extern "C" fn otl_find_conf(mut conf_name: *const i8) -> *mut pdf_obj
 #[no_mangle]
 pub unsafe extern "C" fn otl_conf_get_script(mut conf: *mut pdf_obj) -> *mut i8 {
     let mut script: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !conf.is_null() {
-    } else {
-        __assert_fail(
-            b"conf\x00" as *const u8 as *const i8,
-            b"dpx-otl_conf.c\x00" as *const u8 as *const i8,
-            585_u32,
-            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
-                b"char *otl_conf_get_script(pdf_obj *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!conf.is_null());
     script = pdf_lookup_dict(conf, b"script\x00" as *const u8 as *const i8);
     return pdf_string_value(script) as *mut i8;
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_conf_get_language(mut conf: *mut pdf_obj) -> *mut i8 {
     let mut language: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !conf.is_null() {
-    } else {
-        __assert_fail(
-            b"conf\x00" as *const u8 as *const i8,
-            b"dpx-otl_conf.c\x00" as *const u8 as *const i8,
-            597_u32,
-            (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
-                b"char *otl_conf_get_language(pdf_obj *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!conf.is_null());
     language = pdf_lookup_dict(conf, b"language\x00" as *const u8 as *const i8);
     return pdf_string_value(language) as *mut i8;
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_conf_get_rule(mut conf: *mut pdf_obj) -> *mut pdf_obj {
-    if !conf.is_null() {
-    } else {
-        __assert_fail(
-            b"conf\x00" as *const u8 as *const i8,
-            b"dpx-otl_conf.c\x00" as *const u8 as *const i8,
-            607_u32,
-            (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
-                b"pdf_obj *otl_conf_get_rule(pdf_obj *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!conf.is_null());
     return pdf_lookup_dict(conf, b"rule\x00" as *const u8 as *const i8);
 }
 #[no_mangle]
@@ -792,18 +752,7 @@ pub unsafe extern "C" fn otl_conf_find_opt(
 ) -> *mut pdf_obj {
     let mut opt_conf: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut options: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !conf.is_null() {
-    } else {
-        __assert_fail(
-            b"conf\x00" as *const u8 as *const i8,
-            b"dpx-otl_conf.c\x00" as *const u8 as *const i8,
-            617_u32,
-            (*::std::mem::transmute::<&[u8; 52], &[i8; 52]>(
-                b"pdf_obj *otl_conf_find_opt(pdf_obj *, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!conf.is_null());
     options = pdf_lookup_dict(conf, b"option\x00" as *const u8 as *const i8);
     if !options.is_null() && !opt_tag.is_null() {
         opt_conf = pdf_lookup_dict(options, opt_tag)

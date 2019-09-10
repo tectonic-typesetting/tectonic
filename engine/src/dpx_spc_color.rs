@@ -9,13 +9,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
@@ -247,15 +240,7 @@ pub unsafe extern "C" fn spc_color_setup_handler(
 ) -> i32 {
     let mut p: *const i8 = 0 as *const i8;
     let mut q: *mut i8 = 0 as *mut i8;
-    if !sph.is_null() && !spe.is_null() && !ap.is_null() {
-    } else {
-        __assert_fail(b"sph && spe && ap\x00" as *const u8 as
-                          *const i8,
-                      b"dpx-spc_color.c\x00" as *const u8 as
-                          *const i8, 141_u32,
-                      (*::std::mem::transmute::<&[u8; 86],
-                                                &[i8; 86]>(b"int spc_color_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
-    }
+    assert!(!sph.is_null() && !spe.is_null() && !ap.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     q = parse_c_ident(&mut (*ap).curptr, (*ap).endptr);
     if q.is_null() {

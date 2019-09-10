@@ -34,13 +34,6 @@ extern "C" {
     #[no_mangle]
     fn floor(_: f64) -> f64;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -1731,18 +1724,7 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
         sfont: 0 as *mut sfnt,
         cffont: 0 as *mut cff_font,
     };
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-cidtype0.c\x00" as *const u8 as *const i8,
-            578_u32,
-            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
-                b"void CIDFont_type0_dofont(CIDFont *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null());
     if (*font).indirect.is_null() {
         return;
     }
@@ -2032,14 +2014,7 @@ pub unsafe extern "C" fn CIDFont_type0_open(
     let mut is_cid_font: i32 = 0i32;
     let mut expect_cid_font: i32 = (expected_flag == 0i32) as i32;
     let mut expect_type1_font: i32 = expected_flag & 1i32 << 8i32;
-    if !font.is_null() {
-    } else {
-        __assert_fail(b"font\x00" as *const u8 as *const i8,
-                      b"dpx-cidtype0.c\x00" as *const u8 as
-                          *const i8, 789_u32,
-                      (*::std::mem::transmute::<&[u8; 78],
-                                                &[i8; 78]>(b"int CIDFont_type0_open(CIDFont *, const char *, CIDSysInfo *, cid_opt *, int)\x00")).as_ptr());
-    }
+    assert!(!font.is_null());
     if expect_type1_font != 0 {
         if !cmap_csi.is_null()
             && (strcmp((*cmap_csi).registry, b"Adobe\x00" as *const u8 as *const i8) != 0i32
@@ -2345,18 +2320,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
         sfont: 0 as *mut sfnt,
         cffont: 0 as *mut cff_font,
     };
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-cidtype0.c\x00" as *const u8 as *const i8,
-            1011_u32,
-            (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
-                b"void CIDFont_type0_t1cdofont(CIDFont *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null());
     if (*font).indirect.is_null() {
         return;
     }
@@ -3360,18 +3324,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
     let mut gid: card16 = 0;
     let mut cid: card16 = 0;
     let mut CIDToGIDMap: *mut u8 = 0 as *mut u8;
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-cidtype0.c\x00" as *const u8 as *const i8,
-            1659_u32,
-            (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
-                b"void CIDFont_type0_t1dofont(CIDFont *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null());
     if (*font).indirect.is_null() {
         return;
     }

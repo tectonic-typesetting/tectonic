@@ -1792,13 +1792,7 @@ unsafe extern "C" fn parse_subrs(
                     ) as *mut card8
                 }
                 if lenIV >= 0i32 {
-                    t1_decrypt(
-                        4330_u16,
-                        data.offset(offset as isize),
-                        *start,
-                        lenIV,
-                        len,
-                    );
+                    t1_decrypt(4330_u16, data.offset(offset as isize), *start, lenIV, len);
                     *offsets.offset(idx as isize) = offset;
                     let ref mut fresh16 = *lengths.offset(idx as isize);
                     *fresh16 = len - lenIV;

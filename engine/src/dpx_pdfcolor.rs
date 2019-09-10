@@ -43,13 +43,6 @@ extern "C" {
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -253,18 +246,7 @@ pub unsafe extern "C" fn pdf_color_set_verbose(mut level: i32) {
  */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_type(mut color: *const pdf_color) -> i32 {
-    if !color.is_null() {
-    } else {
-        __assert_fail(
-            b"color\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            54_u32,
-            (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
-                b"int pdf_color_type(const pdf_color *)\x00",
-            ))
-            .as_ptr(),
-        ); /* Dummy */
-    }
+    assert!(!color.is_null());
     return -(*color).num_components;
 }
 #[no_mangle]
@@ -274,18 +256,7 @@ pub unsafe extern "C" fn pdf_color_rgbcolor(
     mut g: f64,
     mut b: f64,
 ) -> i32 {
-    if !color.is_null() {
-    } else {
-        __assert_fail(
-            b"color\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            62_u32,
-            (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
-                b"int pdf_color_rgbcolor(pdf_color *, double, double, double)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!color.is_null());
     if r < 0.0f64 || r > 1.0f64 {
         dpx_warning(
             b"Invalid color value specified: red=%g\x00" as *const u8 as *const i8,
@@ -322,18 +293,7 @@ pub unsafe extern "C" fn pdf_color_cmykcolor(
     mut y: f64,
     mut k: f64,
 ) -> i32 {
-    if !color.is_null() {
-    } else {
-        __assert_fail(
-            b"color\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            91_u32,
-            (*::std::mem::transmute::<&[u8; 69], &[i8; 69]>(
-                b"int pdf_color_cmykcolor(pdf_color *, double, double, double, double)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!color.is_null());
     if c < 0.0f64 || c > 1.0f64 {
         dpx_warning(
             b"Invalid color value specified: cyan=%g\x00" as *const u8 as *const i8,
@@ -372,18 +332,7 @@ pub unsafe extern "C" fn pdf_color_cmykcolor(
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_graycolor(mut color: *mut pdf_color, mut g: f64) -> i32 {
-    if !color.is_null() {
-    } else {
-        __assert_fail(
-            b"color\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            125_u32,
-            (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
-                b"int pdf_color_graycolor(pdf_color *, double)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!color.is_null());
     if g < 0.0f64 || g > 1.0f64 {
         dpx_warning(
             b"Invalid color value specified: gray=%g\x00" as *const u8 as *const i8,
@@ -402,18 +351,7 @@ pub unsafe extern "C" fn pdf_color_spotcolor(
     mut name: *mut i8,
     mut c: f64,
 ) -> i32 {
-    if !color.is_null() {
-    } else {
-        __assert_fail(
-            b"color\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            144_u32,
-            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
-                b"int pdf_color_spotcolor(pdf_color *, char *, double)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!color.is_null());
     if c < 0.0f64 || c > 1.0f64 {
         dpx_warning(
             b"Invalid color value specified: grade=%g\x00" as *const u8 as *const i8,
@@ -432,18 +370,7 @@ pub unsafe extern "C" fn pdf_color_copycolor(
     mut color1: *mut pdf_color,
     mut color2: *const pdf_color,
 ) {
-    if !color1.is_null() && !color2.is_null() {
-    } else {
-        __assert_fail(
-            b"color1 && color2\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            165_u32,
-            (*::std::mem::transmute::<&[u8; 57], &[i8; 57]>(
-                b"void pdf_color_copycolor(pdf_color *, const pdf_color *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!color1.is_null() && !color2.is_null());
     memcpy(
         color1 as *mut libc::c_void,
         color2 as *const libc::c_void,
@@ -457,18 +384,7 @@ pub unsafe extern "C" fn pdf_color_brighten_color(
     mut src: *const pdf_color,
     mut f: f64,
 ) {
-    if !dst.is_null() && !src.is_null() {
-    } else {
-        __assert_fail(
-            b"dst && src\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            174_u32,
-            (*::std::mem::transmute::<&[u8; 70], &[i8; 70]>(
-                b"void pdf_color_brighten_color(pdf_color *, const pdf_color *, double)\x00",
-            ))
-            .as_ptr(),
-        ); /* n == 4 is CMYK, others are RGB and Gray */
-    }
+    assert!(!dst.is_null() && !src.is_null());
     if f == 1.0f64 {
         pdf_color_graycolor(dst, 1.0f64);
     } else {
@@ -493,18 +409,7 @@ pub unsafe extern "C" fn pdf_color_brighten_color(
 pub unsafe extern "C" fn pdf_color_is_white(mut color: *const pdf_color) -> bool {
     let mut n: i32 = 0;
     let mut f: f64 = 0.;
-    if !color.is_null() {
-    } else {
-        __assert_fail(
-            b"color\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            197_u32,
-            (*::std::mem::transmute::<&[u8; 44], &[i8; 44]>(
-                b"_Bool pdf_color_is_white(const pdf_color *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!color.is_null());
     n = (*color).num_components;
     match n {
         1 | 3 => {
@@ -853,18 +758,7 @@ unsafe extern "C" fn str2iccSig(mut s: *const libc::c_void) -> iccSig {
         | *p.offset(3) as i32) as iccSig;
 }
 unsafe extern "C" fn iccp_init_iccHeader(mut icch: *mut iccHeader) {
-    if !icch.is_null() {
-    } else {
-        __assert_fail(
-            b"icch\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            460_u32,
-            (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
-                b"void iccp_init_iccHeader(iccHeader *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!icch.is_null());
     (*icch).size = 0i32;
     (*icch).CMMType = 0i32 as iccSig;
     (*icch).version = 0xffffffi32;
@@ -902,18 +796,7 @@ unsafe extern "C" fn iccp_init_iccHeader(mut icch: *mut iccHeader) {
     );
 }
 unsafe extern "C" fn init_iccbased_cdata(mut cdata: *mut iccbased_cdata) {
-    if !cdata.is_null() {
-    } else {
-        __assert_fail(
-            b"cdata\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            511_u32,
-            (*::std::mem::transmute::<&[u8; 50], &[i8; 50]>(
-                b"void init_iccbased_cdata(struct iccbased_cdata *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cdata.is_null());
     (*cdata).sig =
         ('i' as i32) << 24i32 | ('c' as i32) << 16i32 | ('c' as i32) << 8i32 | 'b' as i32;
     memset(
@@ -925,40 +808,26 @@ unsafe extern "C" fn init_iccbased_cdata(mut cdata: *mut iccbased_cdata) {
     (*cdata).alternate = -1i32;
 }
 unsafe extern "C" fn release_iccbased_cdata(mut cdata: *mut iccbased_cdata) {
-    if !cdata.is_null()
-        && (*cdata).sig
-            == ('i' as i32) << 24i32 | ('c' as i32) << 16i32 | ('c' as i32) << 8i32 | 'b' as i32
-    {
-    } else {
-        __assert_fail(
-            b"check_sig(cdata, \'i\', \'c\', \'c\', \'b\')\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            524_u32,
-            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
-                b"void release_iccbased_cdata(struct iccbased_cdata *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(
+        !cdata.is_null()
+            && (*cdata).sig
+                == ('i' as i32) << 24i32
+                    | ('c' as i32) << 16i32
+                    | ('c' as i32) << 8i32
+                    | 'b' as i32
+    );
     free(cdata as *mut libc::c_void);
 }
 unsafe extern "C" fn get_num_components_iccbased(mut cdata: *const iccbased_cdata) -> i32 {
     let mut num_components: i32 = 0i32;
-    if !cdata.is_null()
-        && (*cdata).sig
-            == ('i' as i32) << 24i32 | ('c' as i32) << 16i32 | ('c' as i32) << 8i32 | 'b' as i32
-    {
-    } else {
-        __assert_fail(
-            b"check_sig(cdata, \'i\', \'c\', \'c\', \'b\')\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            534_u32,
-            (*::std::mem::transmute::<&[u8; 63], &[i8; 63]>(
-                b"int get_num_components_iccbased(const struct iccbased_cdata *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(
+        !cdata.is_null()
+            && (*cdata).sig
+                == ('i' as i32) << 24i32
+                    | ('c' as i32) << 16i32
+                    | ('c' as i32) << 8i32
+                    | 'b' as i32
+    );
     match (*cdata).colorspace {
         -3 => num_components = 3i32,
         -4 => num_components = 4i32,
@@ -975,30 +844,22 @@ unsafe extern "C" fn compare_iccbased(
     mut cdata2: *const iccbased_cdata,
 ) -> i32 {
     if !cdata1.is_null() && !cdata2.is_null() {
-        if !cdata1.is_null()
-            && (*cdata1).sig
-                == ('i' as i32) << 24i32 | ('c' as i32) << 16i32 | ('c' as i32) << 8i32 | 'b' as i32
-        {
-        } else {
-            __assert_fail(b"check_sig(cdata1, \'i\', \'c\', \'c\', \'b\')\x00"
-                              as *const u8 as *const i8,
-                          b"dpx-pdfcolor.c\x00" as *const u8 as
-                              *const i8, 560_u32,
-                          (*::std::mem::transmute::<&[u8; 111],
-                                                    &[i8; 111]>(b"int compare_iccbased(const char *, const struct iccbased_cdata *, const char *, const struct iccbased_cdata *)\x00")).as_ptr());
-        }
-        if !cdata2.is_null()
-            && (*cdata2).sig
-                == ('i' as i32) << 24i32 | ('c' as i32) << 16i32 | ('c' as i32) << 8i32 | 'b' as i32
-        {
-        } else {
-            __assert_fail(b"check_sig(cdata2, \'i\', \'c\', \'c\', \'b\')\x00"
-                              as *const u8 as *const i8,
-                          b"dpx-pdfcolor.c\x00" as *const u8 as
-                              *const i8, 561_u32,
-                          (*::std::mem::transmute::<&[u8; 111],
-                                                    &[i8; 111]>(b"int compare_iccbased(const char *, const struct iccbased_cdata *, const char *, const struct iccbased_cdata *)\x00")).as_ptr());
-        }
+        assert!(
+            !cdata1.is_null()
+                && (*cdata1).sig
+                    == ('i' as i32) << 24i32
+                        | ('c' as i32) << 16i32
+                        | ('c' as i32) << 8i32
+                        | 'b' as i32
+        );
+        assert!(
+            !cdata2.is_null()
+                && (*cdata2).sig
+                    == ('i' as i32) << 24i32
+                        | ('c' as i32) << 16i32
+                        | ('c' as i32) << 8i32
+                        | 'b' as i32
+        );
         if memcmp(
             (*cdata1).checksum.as_ptr() as *const libc::c_void,
             nullbytes16.as_mut_ptr() as *const libc::c_void,
@@ -1248,18 +1109,7 @@ unsafe extern "C" fn iccp_get_checksum(
 }
 unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *mut u8) {
     let mut i: i32 = 0;
-    if !icch.is_null() {
-    } else {
-        __assert_fail(
-            b"icch\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            778_u32,
-            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
-                b"void print_iccp_header(iccHeader *, unsigned char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!icch.is_null());
     dpx_message(b"\n\x00" as *const u8 as *const i8);
     dpx_message(b"pdf_color>> ICC Profile Info\n\x00" as *const u8 as *const i8);
     dpx_message(
@@ -1840,18 +1690,7 @@ unsafe extern "C" fn pdf_colorspace_findresource(
     /* not found */
 }
 unsafe extern "C" fn pdf_init_colorspace_struct(mut colorspace: *mut pdf_colorspace) {
-    if !colorspace.is_null() {
-    } else {
-        __assert_fail(
-            b"colorspace\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            1044_u32,
-            (*::std::mem::transmute::<&[u8; 50], &[i8; 50]>(
-                b"void pdf_init_colorspace_struct(pdf_colorspace *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!colorspace.is_null());
     (*colorspace).ident = 0 as *mut i8;
     (*colorspace).subtype = 0i32;
     (*colorspace).resource = 0 as *mut pdf_obj;
@@ -1859,18 +1698,7 @@ unsafe extern "C" fn pdf_init_colorspace_struct(mut colorspace: *mut pdf_colorsp
     (*colorspace).cdata = 0 as *mut libc::c_void;
 }
 unsafe extern "C" fn pdf_clean_colorspace_struct(mut colorspace: *mut pdf_colorspace) {
-    if !colorspace.is_null() {
-    } else {
-        __assert_fail(
-            b"colorspace\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            1059_u32,
-            (*::std::mem::transmute::<&[u8; 51], &[i8; 51]>(
-                b"void pdf_clean_colorspace_struct(pdf_colorspace *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!colorspace.is_null());
     free((*colorspace).ident as *mut libc::c_void);
     pdf_release_obj((*colorspace).resource);
     pdf_release_obj((*colorspace).reference);
@@ -1888,18 +1716,7 @@ unsafe extern "C" fn pdf_clean_colorspace_struct(mut colorspace: *mut pdf_colors
     (*colorspace).subtype = 0i32;
 }
 unsafe extern "C" fn pdf_flush_colorspace(mut colorspace: *mut pdf_colorspace) {
-    if !colorspace.is_null() {
-    } else {
-        __assert_fail(
-            b"colorspace\x00" as *const u8 as *const i8,
-            b"dpx-pdfcolor.c\x00" as *const u8 as *const i8,
-            1083_u32,
-            (*::std::mem::transmute::<&[u8; 44], &[i8; 44]>(
-                b"void pdf_flush_colorspace(pdf_colorspace *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!colorspace.is_null());
     pdf_release_obj((*colorspace).resource);
     pdf_release_obj((*colorspace).reference);
     (*colorspace).resource = 0 as *mut pdf_obj;
