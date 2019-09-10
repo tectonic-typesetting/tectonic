@@ -667,8 +667,8 @@ unsafe extern "C" fn validate_name(mut fontname: *mut i8, mut len: i32) {
 static mut known_encodings: [C2RustUnnamed_3; 11] = [
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 3u32 as u16,
-            encoding: 10u32 as u16,
+            platform: 3_u16,
+            encoding: 10_u16,
             pdfnames: [
                 b"UCSms-UCS4\x00" as *const u8 as *const i8,
                 b"UCSms-UCS2\x00" as *const u8 as *const i8,
@@ -681,8 +681,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 3u32 as u16,
-            encoding: 1u32 as u16,
+            platform: 3_u16,
+            encoding: 1_u16,
             pdfnames: [
                 b"UCSms-UCS4\x00" as *const u8 as *const i8,
                 b"UCSms-UCS2\x00" as *const u8 as *const i8,
@@ -695,8 +695,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 3u32 as u16,
-            encoding: 2u32 as u16,
+            platform: 3_u16,
+            encoding: 2_u16,
             pdfnames: [
                 b"90ms-RKSJ\x00" as *const u8 as *const i8,
                 0 as *const i8,
@@ -709,8 +709,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 3u32 as u16,
-            encoding: 3u32 as u16,
+            platform: 3_u16,
+            encoding: 3_u16,
             pdfnames: [
                 b"GBK-EUC\x00" as *const u8 as *const i8,
                 0 as *const i8,
@@ -723,8 +723,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 3u32 as u16,
-            encoding: 4u32 as u16,
+            platform: 3_u16,
+            encoding: 4_u16,
             pdfnames: [
                 b"ETen-B5\x00" as *const u8 as *const i8,
                 0 as *const i8,
@@ -737,8 +737,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 3u32 as u16,
-            encoding: 5u32 as u16,
+            platform: 3_u16,
+            encoding: 5_u16,
             pdfnames: [
                 b"KSCms-UHC\x00" as *const u8 as *const i8,
                 0 as *const i8,
@@ -751,8 +751,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 1u32 as u16,
-            encoding: 1u32 as u16,
+            platform: 1_u16,
+            encoding: 1_u16,
             pdfnames: [
                 b"90pv-RKSJ\x00" as *const u8 as *const i8,
                 0 as *const i8,
@@ -765,8 +765,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 1u32 as u16,
-            encoding: 2u32 as u16,
+            platform: 1_u16,
+            encoding: 2_u16,
             pdfnames: [
                 b"B5pc\x00" as *const u8 as *const i8,
                 0 as *const i8,
@@ -779,8 +779,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 1u32 as u16,
-            encoding: 25u32 as u16,
+            platform: 1_u16,
+            encoding: 25_u16,
             pdfnames: [
                 b"GBpc-EUC\x00" as *const u8 as *const i8,
                 0 as *const i8,
@@ -793,8 +793,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 1u32 as u16,
-            encoding: 3u32 as u16,
+            platform: 1_u16,
+            encoding: 3_u16,
             pdfnames: [
                 b"KSCpc-EUC\x00" as *const u8 as *const i8,
                 0 as *const i8,

@@ -706,11 +706,11 @@ pub unsafe extern "C" fn tt_read_os2__table(mut sfont: *mut sfnt) -> *mut tt_os2
         (*table).sTypoAscender = 880_i16;
         (*table).sTypoDescender = -120_i16;
         /* used in tt_get_fontdesc() of tt_aux.c */
-        (*table).usWeightClass = 400u32 as u16; /* Normal(Regular) */
+        (*table).usWeightClass = 400_u16; /* Normal(Regular) */
         (*table).xAvgCharWidth = 0_i16; /* ignore */
         (*table).version = 0_u16; /* TrueType rev 1.5 */
         (*table).fsType = 0_i16; /* Installable Embedding */
-        (*table).fsSelection = 0u32 as u16; /* All undefined */
+        (*table).fsSelection = 0_u16; /* All undefined */
         (*table).sFamilyClass = 0_i16; /* No Classification */
         i = 0i32;
         while i < 10i32 {
@@ -841,11 +841,11 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
     namelen = tt_get_name(sfont, dest, destlen, 1_u16, 0_u16, 0_u16, 6_u16);
     if namelen as i32 != 0i32
         || {
-            namelen = tt_get_name(sfont, dest, destlen, 3_u16, 1_u16, 0x409u32 as u16, 6_u16);
+            namelen = tt_get_name(sfont, dest, destlen, 3_u16, 1_u16, 0x409_u16, 6_u16);
             namelen as i32 != 0i32
         }
         || {
-            namelen = tt_get_name(sfont, dest, destlen, 3_u16, 5_u16, 0x412u32 as u16, 6_u16);
+            namelen = tt_get_name(sfont, dest, destlen, 3_u16, 5_u16, 0x412_u16, 6_u16);
             namelen as i32 != 0i32
         }
     {
@@ -856,7 +856,7 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
       Workaround for some bad TTfonts:
       Language ID value 0xffffu for `accept any language ID'
     */
-    namelen = tt_get_name(sfont, dest, destlen, 1_u16, 0_u16, 0xffffu32 as u16, 6_u16);
+    namelen = tt_get_name(sfont, dest, destlen, 1_u16, 0_u16, 0xffff_u16, 6_u16);
     if namelen as i32 == 0i32 {
         /*
           Finally falling back to Mac Roman name field.

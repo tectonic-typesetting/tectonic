@@ -889,7 +889,7 @@ unsafe extern "C" fn do_builtin_encoding(
     let mut code: i32 = 0;
     let mut count: i32 = 0;
     let mut widths: [f64; 256] = [0.; 256];
-    ttcm = tt_cmap_read(sfont, 1u32 as u16, 0u32 as u16);
+    ttcm = tt_cmap_read(sfont, 1_u16, 0_u16);
     if ttcm.is_null() {
         dpx_warning(
             b"Could not read Mac-Roman TrueType cmap table...\x00" as *const u8 as *const i8,
@@ -1338,7 +1338,7 @@ unsafe extern "C" fn findparanoiac(
     mut gm: *mut glyph_mapper,
 ) -> i32 {
     let mut agln: *mut agl_name = 0 as *mut agl_name;
-    let mut idx: u16 = 0u32 as u16;
+    let mut idx: u16 = 0_u16;
     let mut error: i32 = 0i32;
     agln = agl_lookup_list(glyphname);
     while !agln.is_null() && idx as i32 == 0i32 {
@@ -1519,9 +1519,9 @@ unsafe extern "C" fn resolve_glyph(
 unsafe extern "C" fn setup_glyph_mapper(mut gm: *mut glyph_mapper, mut sfont: *mut sfnt) -> i32 {
     (*gm).sfont = sfont;
     (*gm).nametogid = tt_read_post_table(sfont);
-    (*gm).codetogid = tt_cmap_read(sfont, 3u32 as u16, 10u32 as u16);
+    (*gm).codetogid = tt_cmap_read(sfont, 3_u16, 10_u16);
     if (*gm).codetogid.is_null() {
-        (*gm).codetogid = tt_cmap_read(sfont, 3u32 as u16, 1u32 as u16)
+        (*gm).codetogid = tt_cmap_read(sfont, 3_u16, 1_u16)
     }
     if (*gm).nametogid.is_null() && (*gm).codetogid.is_null() {
         return -1i32;

@@ -1793,7 +1793,7 @@ unsafe extern "C" fn parse_subrs(
                 }
                 if lenIV >= 0i32 {
                     t1_decrypt(
-                        4330u32 as u16,
+                        4330_u16,
                         data.offset(offset as isize),
                         *start,
                         lenIV,
@@ -2064,7 +2064,7 @@ unsafe extern "C" fn parse_charstrings(
                     let mut offs: i32 = if gid != 0 { offset } else { 0i32 };
                     *(*charstrings).offset.offset(gid as isize) = (offs + 1i32) as l_offset;
                     t1_decrypt(
-                        4330u32 as u16,
+                        4330_u16,
                         (*charstrings).data.offset(offs as isize),
                         *start,
                         lenIV,
@@ -2738,7 +2738,7 @@ pub unsafe extern "C" fn t1_load_font(
         free(buffer as *mut libc::c_void);
         _tt_abort(b"Reading PFB (BINARY part) file failed.\x00" as *const u8 as *const i8);
     } else {
-        t1_decrypt(55665u32 as u16, buffer, buffer, 0i32, length);
+        t1_decrypt(55665_u16, buffer, buffer, 0i32, length);
     }
     start = buffer.offset(4);
     end = buffer.offset(length as isize);
