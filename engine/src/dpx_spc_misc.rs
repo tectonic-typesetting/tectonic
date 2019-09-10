@@ -11,63 +11,63 @@ extern "C" {
     pub type pdf_obj;
     #[no_mangle]
     fn __assert_fail(
-        __assertion: *const libc::c_char,
-        __file: *const libc::c_char,
-        __line: libc::c_uint,
-        __function: *const libc::c_char,
+        __assertion: *const i8,
+        __file: *const i8,
+        __line: u32,
+        __function: *const i8,
     ) -> !;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
     fn ttstub_input_open(
-        path: *const libc::c_char,
+        path: *const i8,
         format: tt_input_format_type,
-        is_gz: libc::c_int,
+        is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> libc::c_int;
+    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    fn spc_warn(spe: *mut spc_env, fmt: *const libc::c_char, _: ...);
+    fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
-    fn sscanf(_: *const libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn sscanf(_: *const i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const i8) -> u64;
     /* Tectonic-enabled versions */
     #[no_mangle]
     fn tt_mfgets(
-        buffer: *mut libc::c_char,
-        length: libc::c_int,
+        buffer: *mut i8,
+        length: i32,
         file: rust_input_handle_t,
-    ) -> *mut libc::c_char;
+    ) -> *mut i8;
     #[no_mangle]
     fn pdf_dev_put_image(
-        xobj_id: libc::c_int,
+        xobj_id: i32,
         p: *mut transform_info,
-        ref_x: libc::c_double,
-        ref_y: libc::c_double,
-    ) -> libc::c_int;
+        ref_x: f64,
+        ref_y: f64,
+    ) -> i32;
     /* Please use different interface than findresource...
      * This is not intended to be used for specifying page number and others.
      * Only pdf:image special in spc_pdfm.c want optinal dict!
      */
     #[no_mangle]
-    fn pdf_ximage_findresource(ident: *const libc::c_char, options: load_options) -> libc::c_int;
+    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> i32;
     #[no_mangle]
     fn mps_scan_bbox(
-        pp: *mut *const libc::c_char,
-        endptr: *const libc::c_char,
+        pp: *mut *const i8,
+        endptr: *const i8,
         bbox: *mut pdf_rect,
-    ) -> libc::c_int;
+    ) -> i32;
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
     #[no_mangle]
-    fn skip_white(start: *mut *const libc::c_char, end: *const libc::c_char);
+    fn skip_white(start: *mut *const i8, end: *const i8);
 }
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -80,12 +80,12 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -112,60 +112,60 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_env {
-    pub x_user: libc::c_double,
-    pub y_user: libc::c_double,
-    pub mag: libc::c_double,
-    pub pg: libc::c_int,
+    pub x_user: f64,
+    pub y_user: f64,
+    pub mag: f64,
+    pub pg: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_arg {
-    pub curptr: *const libc::c_char,
-    pub endptr: *const libc::c_char,
-    pub base: *const libc::c_char,
-    pub command: *const libc::c_char,
+    pub curptr: *const i8,
+    pub endptr: *const i8,
+    pub base: *const i8,
+    pub command: *const i8,
 }
 pub type spc_handler_fn_ptr =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int>;
+    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
-    pub key: *const libc::c_char,
+    pub key: *const i8,
     pub exec: spc_handler_fn_ptr,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct transform_info {
-    pub width: libc::c_double,
-    pub height: libc::c_double,
-    pub depth: libc::c_double,
+    pub width: f64,
+    pub height: f64,
+    pub depth: f64,
     pub matrix: pdf_tmatrix,
     pub bbox: pdf_rect,
-    pub flags: libc::c_int,
+    pub flags: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct load_options {
-    pub page_no: libc::c_int,
-    pub bbox_type: libc::c_int,
+    pub page_no: i32,
+    pub bbox_type: i32,
     pub dict: *mut pdf_obj,
 }
 /* quasi-hack to get the primary input */
@@ -193,9 +193,9 @@ pub struct load_options {
 unsafe extern "C" fn spc_handler_postscriptbox(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
-) -> libc::c_int {
-    let mut form_id: libc::c_int = 0;
-    let mut len: libc::c_int = 0;
+) -> i32 {
+    let mut form_id: i32 = 0;
+    let mut len: i32 = 0;
     let mut ti: transform_info = transform_info {
         width: 0.,
         height: 0.,
@@ -224,16 +224,16 @@ unsafe extern "C" fn spc_handler_postscriptbox(
         };
         init
     };
-    let mut filename: [libc::c_char; 256] = [0; 256];
-    let mut buf: [libc::c_char; 512] = [0; 512];
+    let mut filename: [i8; 256] = [0; 256];
+    let mut buf: [i8; 512] = [0; 512];
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     if !spe.is_null() && !ap.is_null() {
     } else {
         __assert_fail(
-            b"spe && ap\x00" as *const u8 as *const libc::c_char,
-            b"dpx-spc_misc.c\x00" as *const u8 as *const libc::c_char,
-            51i32 as libc::c_uint,
-            (*::std::mem::transmute::<&[u8; 66], &[libc::c_char; 66]>(
+            b"spe && ap\x00" as *const u8 as *const i8,
+            b"dpx-spc_misc.c\x00" as *const u8 as *const i8,
+            51i32 as u32,
+            (*::std::mem::transmute::<&[u8; 66], &[i8; 66]>(
                 b"int spc_handler_postscriptbox(struct spc_env *, struct spc_arg *)\x00",
             ))
             .as_ptr(),
@@ -243,36 +243,36 @@ unsafe extern "C" fn spc_handler_postscriptbox(
         spc_warn(
             spe,
             b"No width/height/filename given for postscriptbox special.\x00" as *const u8
-                as *const libc::c_char,
+                as *const i8,
         );
         return -1i32;
     }
     /* input is not NULL terminated */
-    len = (*ap).endptr.wrapping_offset_from((*ap).curptr) as libc::c_long as libc::c_int;
+    len = (*ap).endptr.wrapping_offset_from((*ap).curptr) as i64 as i32;
     len = if 511i32 < len { 511i32 } else { len };
     memcpy(
         buf.as_mut_ptr() as *mut libc::c_void,
         (*ap).curptr as *const libc::c_void,
-        len as libc::c_ulong,
+        len as u64,
     );
-    buf[len as usize] = '\u{0}' as i32 as libc::c_char;
+    buf[len as usize] = '\u{0}' as i32 as i8;
     transform_info_clear(&mut ti);
     spc_warn(
         spe,
-        b"%s\x00" as *const u8 as *const libc::c_char,
+        b"%s\x00" as *const u8 as *const i8,
         buf.as_mut_ptr(),
     );
     if sscanf(
         buf.as_mut_ptr(),
-        b"{%lfpt}{%lfpt}{%255[^}]}\x00" as *const u8 as *const libc::c_char,
-        &mut ti.width as *mut libc::c_double,
-        &mut ti.height as *mut libc::c_double,
+        b"{%lfpt}{%lfpt}{%255[^}]}\x00" as *const u8 as *const i8,
+        &mut ti.width as *mut f64,
+        &mut ti.height as *mut f64,
         filename.as_mut_ptr(),
     ) != 3i32
     {
         spc_warn(
             spe,
-            b"Syntax error in postscriptbox special?\x00" as *const u8 as *const libc::c_char,
+            b"Syntax error in postscriptbox special?\x00" as *const u8 as *const i8,
         );
         return -1i32;
     }
@@ -283,14 +283,14 @@ unsafe extern "C" fn spc_handler_postscriptbox(
     if handle.is_null() {
         spc_warn(
             spe,
-            b"Could not open image file: %s\x00" as *const u8 as *const libc::c_char,
+            b"Could not open image file: %s\x00" as *const u8 as *const i8,
             filename.as_mut_ptr(),
         );
         return -1i32;
     }
     ti.flags |= 1i32 << 1i32 | 1i32 << 2i32;
     loop {
-        let mut p: *const libc::c_char = tt_mfgets(buf.as_mut_ptr(), 512i32, handle);
+        let mut p: *const i8 = tt_mfgets(buf.as_mut_ptr(), 512i32, handle);
         if p.is_null() {
             break;
         }
@@ -305,7 +305,7 @@ unsafe extern "C" fn spc_handler_postscriptbox(
     if form_id < 0i32 {
         spc_warn(
             spe,
-            b"Failed to load image file: %s\x00" as *const u8 as *const libc::c_char,
+            b"Failed to load image file: %s\x00" as *const u8 as *const i8,
             filename.as_mut_ptr(),
         );
         return -1i32;
@@ -316,7 +316,7 @@ unsafe extern "C" fn spc_handler_postscriptbox(
 unsafe extern "C" fn spc_handler_null(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
+) -> i32 {
     (*args).curptr = (*args).endptr;
     return 0i32;
 }
@@ -324,60 +324,60 @@ static mut misc_handlers: [spc_handler; 6] = unsafe {
     [
         {
             let mut init = spc_handler {
-                key: b"postscriptbox\x00" as *const u8 as *const libc::c_char,
+                key: b"postscriptbox\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_postscriptbox
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
         },
         {
             let mut init = spc_handler {
-                key: b"landscape\x00" as *const u8 as *const libc::c_char,
+                key: b"landscape\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
         },
         {
             let mut init = spc_handler {
-                key: b"papersize\x00" as *const u8 as *const libc::c_char,
+                key: b"papersize\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
         },
         {
             let mut init = spc_handler {
-                key: b"src:\x00" as *const u8 as *const libc::c_char,
+                key: b"src:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
         },
         {
             let mut init = spc_handler {
-                key: b"pos:\x00" as *const u8 as *const libc::c_char,
+                key: b"pos:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
         },
         {
             let mut init = spc_handler {
-                key: b"om:\x00" as *const u8 as *const libc::c_char,
+                key: b"om:\x00" as *const u8 as *const i8,
                 exec: Some(
                     spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> libc::c_int,
+                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
                 ),
             };
             init
@@ -386,22 +386,22 @@ static mut misc_handlers: [spc_handler; 6] = unsafe {
 };
 #[no_mangle]
 pub unsafe extern "C" fn spc_misc_check_special(
-    mut buffer: *const libc::c_char,
-    mut size: libc::c_int,
+    mut buffer: *const i8,
+    mut size: i32,
 ) -> bool {
-    let mut p: *const libc::c_char = 0 as *const libc::c_char;
-    let mut endptr: *const libc::c_char = 0 as *const libc::c_char;
+    let mut p: *const i8 = 0 as *const i8;
+    let mut endptr: *const i8 = 0 as *const i8;
     let mut i: size_t = 0;
     p = buffer;
     endptr = p.offset(size as isize);
     skip_white(&mut p, endptr);
-    size = endptr.wrapping_offset_from(p) as libc::c_long as libc::c_int;
+    size = endptr.wrapping_offset_from(p) as i64 as i32;
     i = 0i32 as size_t;
     while i
-        < (::std::mem::size_of::<[spc_handler; 6]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<spc_handler>() as libc::c_ulong)
+        < (::std::mem::size_of::<[spc_handler; 6]>() as u64)
+            .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
     {
-        if size as libc::c_ulong >= strlen(misc_handlers[i as usize].key)
+        if size as u64 >= strlen(misc_handlers[i as usize].key)
             && strncmp(
                 p,
                 misc_handlers[i as usize].key,
@@ -440,48 +440,48 @@ pub unsafe extern "C" fn spc_misc_setup_handler(
     mut handle: *mut spc_handler,
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
-) -> libc::c_int {
-    let mut key: *const libc::c_char = 0 as *const libc::c_char;
-    let mut keylen: libc::c_int = 0;
+) -> i32 {
+    let mut key: *const i8 = 0 as *const i8;
+    let mut keylen: i32 = 0;
     let mut i: size_t = 0;
     if !handle.is_null() && !spe.is_null() && !args.is_null() {
     } else {
         __assert_fail(b"handle && spe && args\x00" as *const u8 as
-                          *const libc::c_char,
+                          *const i8,
                       b"dpx-spc_misc.c\x00" as *const u8 as
-                          *const libc::c_char, 156i32 as libc::c_uint,
+                          *const i8, 156i32 as u32,
                       (*::std::mem::transmute::<&[u8; 85],
-                                                &[libc::c_char; 85]>(b"int spc_misc_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
+                                                &[i8; 85]>(b"int spc_misc_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }
     skip_white(&mut (*args).curptr, (*args).endptr);
     key = (*args).curptr;
     while (*args).curptr < (*args).endptr
         && *(*__ctype_b_loc())
-            .offset(*(*args).curptr.offset(0) as libc::c_uchar as libc::c_int as isize)
-            as libc::c_int
-            & _ISalpha as libc::c_int as libc::c_ushort as libc::c_int
+            .offset(*(*args).curptr.offset(0) as u8 as i32 as isize)
+            as i32
+            & _ISalpha as i32 as u16 as i32
             != 0
     {
         (*args).curptr = (*args).curptr.offset(1)
     }
-    if (*args).curptr < (*args).endptr && *(*args).curptr.offset(0) as libc::c_int == ':' as i32 {
+    if (*args).curptr < (*args).endptr && *(*args).curptr.offset(0) as i32 == ':' as i32 {
         (*args).curptr = (*args).curptr.offset(1)
     }
-    keylen = (*args).curptr.wrapping_offset_from(key) as libc::c_long as libc::c_int;
+    keylen = (*args).curptr.wrapping_offset_from(key) as i64 as i32;
     if keylen < 1i32 {
         return -1i32;
     }
     i = 0i32 as size_t;
     while i
-        < (::std::mem::size_of::<[spc_handler; 6]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<spc_handler>() as libc::c_ulong)
+        < (::std::mem::size_of::<[spc_handler; 6]>() as u64)
+            .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
     {
-        if keylen as libc::c_ulong == strlen(misc_handlers[i as usize].key)
-            && strncmp(key, misc_handlers[i as usize].key, keylen as libc::c_ulong) == 0
+        if keylen as u64 == strlen(misc_handlers[i as usize].key)
+            && strncmp(key, misc_handlers[i as usize].key, keylen as u64) == 0
         {
             skip_white(&mut (*args).curptr, (*args).endptr);
             (*args).command = misc_handlers[i as usize].key;
-            (*handle).key = b"???:\x00" as *const u8 as *const libc::c_char;
+            (*handle).key = b"???:\x00" as *const u8 as *const i8;
             (*handle).exec = misc_handlers[i as usize].exec;
             return 0i32;
         }

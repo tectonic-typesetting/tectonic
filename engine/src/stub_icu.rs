@@ -1,7 +1,5 @@
-pub type UChar = crate::uint16_t;
-pub type UErrorCode = libc::c_int;
-
-use crate::int32_t;
+pub type UChar = u16;
+pub type UErrorCode = i32;
 
 macro_rules! no_mangle_extern_fn {
     ($(
@@ -59,8 +57,8 @@ extern "C" {
 }
 
 
-pub type UConverterType = libc::c_int;
-pub type UBiDiLevel = crate::uint8_t;
+pub type UConverterType = i32;
+pub type UBiDiLevel = u8;
 
 pub const UCNV_NUMBER_OF_SUPPORTED_CONVERTER_TYPES: UConverterType = 34;
 pub const UCNV_COMPOUND_TEXT: UConverterType = 33;
@@ -263,13 +261,13 @@ pub const U_USING_DEFAULT_WARNING: UErrorCode = -127;
 pub const U_ERROR_WARNING_START: UErrorCode = -128;
 pub const U_USING_FALLBACK_WARNING: UErrorCode = -128;
 
-pub type UBiDiDirection = libc::c_uint;
+pub type UBiDiDirection = u32;
 pub const UBIDI_RTL: UBiDiDirection = 1;
 pub const UBIDI_NEUTRAL: UBiDiDirection = 3;
 pub const UBIDI_MIXED: UBiDiDirection = 2;
 pub const UBIDI_LTR: UBiDiDirection = 0;
 
-pub type UBreakIteratorType = libc::c_uint;
+pub type UBreakIteratorType = u32;
 pub const UBRK_COUNT: UBreakIteratorType = 5;
 pub const UBRK_TITLE: UBreakIteratorType = 4;
 pub const UBRK_SENTENCE: UBreakIteratorType = 3;
@@ -283,7 +281,7 @@ extern_and_forward_stub! {
     pub fn ubidi_setPara => tt_ubidi_setPara(
         pBiDi: *mut UBiDi,
         text: *const UChar,
-        length: int32_t,
+        length: i32,
         paraLevel: UBiDiLevel,
         embeddingLevels: *mut UBiDiLevel,
         pErrorCode: *mut UErrorCode
@@ -291,37 +289,37 @@ extern_and_forward_stub! {
     pub fn ubidi_getDirection => tt_ubidi_getDirection(pBiDi: *const UBiDi) -> UBiDiDirection;
     pub fn ubidi_getVisualRun => tt_ubidi_getVisualRun(
         pBiDi: *mut UBiDi,
-        runIndex: int32_t,
-        pLogicalStart: *mut int32_t,
-        pLength: *mut int32_t
+        runIndex: i32,
+        pLogicalStart: *mut i32,
+        pLength: *mut i32
     ) -> UBiDiDirection;
-    pub fn ubidi_countRuns => tt_ubidi_countRuns(pBiDi: *mut UBiDi, pErrorCode: *mut UErrorCode) -> int32_t;
-    pub fn ubrk_next => tt_ubrk_next(bi: *mut UBreakIterator) -> int32_t;
+    pub fn ubidi_countRuns => tt_ubidi_countRuns(pBiDi: *mut UBiDi, pErrorCode: *mut UErrorCode) -> i32;
+    pub fn ubrk_next => tt_ubrk_next(bi: *mut UBreakIterator) -> i32;
     pub fn ubrk_close => tt_ubrk_close(bi: *mut UBreakIterator) -> ();
     pub fn ubrk_open => tt_ubrk_open(
         type_0: UBreakIteratorType,
-        locale: *const libc::c_char,
+        locale: *const i8,
         text: *const UChar,
-        textLength: int32_t,
+        textLength: i32,
         status: *mut UErrorCode
     ) -> *mut UBreakIterator;
     pub fn ubrk_setText => tt_ubrk_setText(
         bi: *mut UBreakIterator,
         text: *const UChar,
-        textLength: int32_t,
+        textLength: i32,
         status: *mut UErrorCode
     ) -> ();
-    pub fn ucnv_open => tt_ucnv_open(converterName: *const libc::c_char, err: *mut UErrorCode) -> *mut UConverter;
+    pub fn ucnv_open => tt_ucnv_open(converterName: *const i8, err: *mut UErrorCode) -> *mut UConverter;
     #[no_mangle]
     pub fn ucnv_close => tt_ucnv_close(converter: *mut UConverter) -> ();
     #[no_mangle]
     pub fn ucnv_toAlgorithmic => tt_ucnv_toAlgorithmic(
         algorithmicType: UConverterType,
         cnv: *mut UConverter,
-        target: *mut libc::c_char,
-        targetCapacity: int32_t,
-        source: *const libc::c_char,
-        sourceLength: int32_t,
+        target: *mut i8,
+        targetCapacity: i32,
+        source: *const i8,
+        sourceLength: i32,
         pErrorCode: *mut UErrorCode
-    ) -> int32_t;
+    ) -> i32;
 }

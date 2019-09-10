@@ -8,17 +8,15 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
+    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn malloc(_: libc::c_ulong) -> *mut libc::c_void;
+    fn malloc(_: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn realloc(_: *mut libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn realloc(_: *mut libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
 }
-pub type __uint32_t = libc::c_uint;
-pub type uint32_t = __uint32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -41,11 +39,11 @@ pub type size_t = libc::c_ulong;
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn new(mut size: uint32_t) -> *mut libc::c_void {
+pub unsafe extern "C" fn new(mut size: u32) -> *mut libc::c_void {
     let mut result: *mut libc::c_void = malloc(size as size_t);
     if result.is_null() {
         _tt_abort(
-            b"Out of memory - asked for %u bytes\n\x00" as *const u8 as *const libc::c_char,
+            b"Out of memory - asked for %u bytes\n\x00" as *const u8 as *const i8,
             size,
         );
     }
@@ -75,13 +73,13 @@ pub unsafe extern "C" fn new(mut size: uint32_t) -> *mut libc::c_void {
 #[no_mangle]
 pub unsafe extern "C" fn renew(
     mut mem: *mut libc::c_void,
-    mut size: uint32_t,
+    mut size: u32,
 ) -> *mut libc::c_void {
     if size != 0 {
         let mut result: *mut libc::c_void = realloc(mem, size as size_t);
         if result.is_null() {
             _tt_abort(
-                b"Out of memory - asked for %u bytes\n\x00" as *const u8 as *const libc::c_char,
+                b"Out of memory - asked for %u bytes\n\x00" as *const u8 as *const i8,
                 size,
             );
         }

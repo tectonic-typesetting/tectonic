@@ -12,46 +12,46 @@ extern "C" {
     pub type _IO_codecvt;
     pub type _IO_marker;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     static mut stdout: *mut FILE;
     #[no_mangle]
-    fn fprintf(_: *mut FILE, _: *const libc::c_char, _: ...) -> libc::c_int;
+    fn fprintf(_: *mut FILE, _: *const i8, _: ...) -> i32;
 }
-pub type __off_t = libc::c_long;
-pub type __off64_t = libc::c_long;
-pub type size_t = libc::c_ulong;
+pub type __off_t = i64;
+pub type __off64_t = i64;
+pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct paper {
-    pub name: *const libc::c_char,
-    pub pswidth: libc::c_double,
-    pub psheight: libc::c_double,
+    pub name: *const i8,
+    pub pswidth: f64,
+    pub psheight: f64,
 }
 pub type FILE = _IO_FILE;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
-    pub _flags: libc::c_int,
-    pub _IO_read_ptr: *mut libc::c_char,
-    pub _IO_read_end: *mut libc::c_char,
-    pub _IO_read_base: *mut libc::c_char,
-    pub _IO_write_base: *mut libc::c_char,
-    pub _IO_write_ptr: *mut libc::c_char,
-    pub _IO_write_end: *mut libc::c_char,
-    pub _IO_buf_base: *mut libc::c_char,
-    pub _IO_buf_end: *mut libc::c_char,
-    pub _IO_save_base: *mut libc::c_char,
-    pub _IO_backup_base: *mut libc::c_char,
-    pub _IO_save_end: *mut libc::c_char,
+    pub _flags: i32,
+    pub _IO_read_ptr: *mut i8,
+    pub _IO_read_end: *mut i8,
+    pub _IO_read_base: *mut i8,
+    pub _IO_write_base: *mut i8,
+    pub _IO_write_ptr: *mut i8,
+    pub _IO_write_end: *mut i8,
+    pub _IO_buf_base: *mut i8,
+    pub _IO_buf_end: *mut i8,
+    pub _IO_save_base: *mut i8,
+    pub _IO_backup_base: *mut i8,
+    pub _IO_save_end: *mut i8,
     pub _markers: *mut _IO_marker,
     pub _chain: *mut _IO_FILE,
-    pub _fileno: libc::c_int,
-    pub _flags2: libc::c_int,
+    pub _fileno: i32,
+    pub _flags2: i32,
     pub _old_offset: __off_t,
-    pub _cur_column: libc::c_ushort,
-    pub _vtable_offset: libc::c_schar,
-    pub _shortbuf: [libc::c_char; 1],
+    pub _cur_column: u16,
+    pub _vtable_offset: i8,
+    pub _shortbuf: [i8; 1],
     pub _lock: *mut libc::c_void,
     pub _offset: __off64_t,
     pub _codecvt: *mut _IO_codecvt,
@@ -59,12 +59,12 @@ pub struct _IO_FILE {
     pub _freeres_list: *mut _IO_FILE,
     pub _freeres_buf: *mut libc::c_void,
     pub __pad5: size_t,
-    pub _mode: libc::c_int,
-    pub _unused2: [libc::c_char; 20],
+    pub _mode: i32,
+    pub _unused2: [i8; 20],
 }
 pub type _IO_lock_t = ();
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
@@ -95,7 +95,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc:
 pub static mut paperspecs: [paper; 22] = [
     {
         let mut init = paper {
-            name: b"letter\x00" as *const u8 as *const libc::c_char,
+            name: b"letter\x00" as *const u8 as *const i8,
             pswidth: 612.00f64,
             psheight: 792.00f64,
         };
@@ -103,7 +103,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"legal\x00" as *const u8 as *const libc::c_char,
+            name: b"legal\x00" as *const u8 as *const i8,
             pswidth: 612.00f64,
             psheight: 1008.00f64,
         };
@@ -111,7 +111,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"ledger\x00" as *const u8 as *const libc::c_char,
+            name: b"ledger\x00" as *const u8 as *const i8,
             pswidth: 1224.00f64,
             psheight: 792.00f64,
         };
@@ -119,7 +119,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"tabloid\x00" as *const u8 as *const libc::c_char,
+            name: b"tabloid\x00" as *const u8 as *const i8,
             pswidth: 792.00f64,
             psheight: 1224.00f64,
         };
@@ -127,7 +127,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"a6\x00" as *const u8 as *const libc::c_char,
+            name: b"a6\x00" as *const u8 as *const i8,
             pswidth: 297.638f64,
             psheight: 419.528f64,
         };
@@ -135,7 +135,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"a5\x00" as *const u8 as *const libc::c_char,
+            name: b"a5\x00" as *const u8 as *const i8,
             pswidth: 419.528f64,
             psheight: 595.276f64,
         };
@@ -143,7 +143,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"a4\x00" as *const u8 as *const libc::c_char,
+            name: b"a4\x00" as *const u8 as *const i8,
             pswidth: 595.276f64,
             psheight: 841.890f64,
         };
@@ -151,7 +151,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"a3\x00" as *const u8 as *const libc::c_char,
+            name: b"a3\x00" as *const u8 as *const i8,
             pswidth: 841.890f64,
             psheight: 1190.550f64,
         };
@@ -159,7 +159,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"b6\x00" as *const u8 as *const libc::c_char,
+            name: b"b6\x00" as *const u8 as *const i8,
             pswidth: 364.25f64,
             psheight: 515.91f64,
         };
@@ -167,7 +167,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"b5\x00" as *const u8 as *const libc::c_char,
+            name: b"b5\x00" as *const u8 as *const i8,
             pswidth: 515.91f64,
             psheight: 728.50f64,
         };
@@ -175,7 +175,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"b4\x00" as *const u8 as *const libc::c_char,
+            name: b"b4\x00" as *const u8 as *const i8,
             pswidth: 728.50f64,
             psheight: 1031.81f64,
         };
@@ -183,7 +183,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"b3\x00" as *const u8 as *const libc::c_char,
+            name: b"b3\x00" as *const u8 as *const i8,
             pswidth: 1031.81f64,
             psheight: 1457.00f64,
         };
@@ -191,7 +191,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"b5var\x00" as *const u8 as *const libc::c_char,
+            name: b"b5var\x00" as *const u8 as *const i8,
             pswidth: 515.91f64,
             psheight: 651.97f64,
         };
@@ -199,7 +199,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"jisb6\x00" as *const u8 as *const libc::c_char,
+            name: b"jisb6\x00" as *const u8 as *const i8,
             pswidth: 364.25f64,
             psheight: 515.91f64,
         };
@@ -207,7 +207,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"jisb5\x00" as *const u8 as *const libc::c_char,
+            name: b"jisb5\x00" as *const u8 as *const i8,
             pswidth: 515.91f64,
             psheight: 728.50f64,
         };
@@ -215,7 +215,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"jisb4\x00" as *const u8 as *const libc::c_char,
+            name: b"jisb4\x00" as *const u8 as *const i8,
             pswidth: 728.50f64,
             psheight: 1031.81f64,
         };
@@ -223,7 +223,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"jisb3\x00" as *const u8 as *const libc::c_char,
+            name: b"jisb3\x00" as *const u8 as *const i8,
             pswidth: 1031.81f64,
             psheight: 1457.00f64,
         };
@@ -231,7 +231,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"isob6\x00" as *const u8 as *const libc::c_char,
+            name: b"isob6\x00" as *const u8 as *const i8,
             pswidth: 354.331f64,
             psheight: 498.898f64,
         };
@@ -239,7 +239,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"isob5\x00" as *const u8 as *const libc::c_char,
+            name: b"isob5\x00" as *const u8 as *const i8,
             pswidth: 498.898f64,
             psheight: 708.661f64,
         };
@@ -247,7 +247,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"isob4\x00" as *const u8 as *const libc::c_char,
+            name: b"isob4\x00" as *const u8 as *const i8,
             pswidth: 708.661f64,
             psheight: 1000.630f64,
         };
@@ -255,7 +255,7 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: b"isob3\x00" as *const u8 as *const libc::c_char,
+            name: b"isob3\x00" as *const u8 as *const i8,
             pswidth: 1000.630f64,
             psheight: 1417.320f64,
         };
@@ -263,15 +263,15 @@ pub static mut paperspecs: [paper; 22] = [
     },
     {
         let mut init = paper {
-            name: 0 as *const libc::c_char,
-            pswidth: 0i32 as libc::c_double,
-            psheight: 0i32 as libc::c_double,
+            name: 0 as *const i8,
+            pswidth: 0i32 as f64,
+            psheight: 0i32 as f64,
         };
         init
     },
 ];
 #[no_mangle]
-pub unsafe extern "C" fn paperinfo(mut ppformat: *const libc::c_char) -> *const paper {
+pub unsafe extern "C" fn paperinfo(mut ppformat: *const i8) -> *const paper {
     let mut ppinfo: *const paper = 0 as *const paper;
     if ppformat.is_null() {
         return 0 as *const paper;
@@ -281,7 +281,7 @@ pub unsafe extern "C" fn paperinfo(mut ppformat: *const libc::c_char) -> *const 
         && !(if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
             (*ppinfo).name
         } else {
-            0 as *const libc::c_char
+            0 as *const i8
         })
         .is_null()
     {
@@ -298,7 +298,7 @@ pub unsafe extern "C" fn paperinfo(mut ppformat: *const libc::c_char) -> *const 
         && !(if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
             (*ppinfo).name
         } else {
-            0 as *const libc::c_char
+            0 as *const i8
         })
         .is_null()
     {
@@ -338,12 +338,12 @@ pub unsafe extern "C" fn dumppaperinfo() {
         && !(if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
             (*ppinfo).name
         } else {
-            0 as *const libc::c_char
+            0 as *const i8
         })
         .is_null()
     {
-        let mut wd: libc::c_double = 0.;
-        let mut ht: libc::c_double = 0.;
+        let mut wd: f64 = 0.;
+        let mut ht: f64 = 0.;
         wd = if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
             (*ppinfo).pswidth
         } else {
@@ -356,11 +356,11 @@ pub unsafe extern "C" fn dumppaperinfo() {
         };
         fprintf(
             stdout,
-            b"%s: %.2f %.2f (%.2fmm %.2fmm)\n\x00" as *const u8 as *const libc::c_char,
+            b"%s: %.2f %.2f (%.2fmm %.2fmm)\n\x00" as *const u8 as *const i8,
             if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
                 (*ppinfo).name
             } else {
-                0 as *const libc::c_char
+                0 as *const i8
             },
             wd,
             ht,

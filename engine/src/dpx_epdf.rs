@@ -15,9 +15,9 @@ extern "C" {
     pub type pdf_file;
     pub type pdf_ximage_;
     #[no_mangle]
-    fn strtod(_: *const libc::c_char, _: *mut *mut libc::c_char) -> libc::c_double;
+    fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn pdf_ximage_set_form(
         ximage: *mut pdf_ximage,
@@ -33,134 +33,134 @@ extern "C" {
     #[no_mangle]
     fn pdf_file_get_catalog(pf: *mut pdf_file) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_file_get_version(pf: *mut pdf_file) -> libc::c_uint;
+    fn pdf_file_get_version(pf: *mut pdf_file) -> u32;
     #[no_mangle]
     fn pdf_file_get_trailer(pf: *mut pdf_file) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_close(pf: *mut pdf_file);
     #[no_mangle]
-    fn pdf_open(ident: *const libc::c_char, handle: rust_input_handle_t) -> *mut pdf_file;
+    fn pdf_open(ident: *const i8, handle: rust_input_handle_t) -> *mut pdf_file;
     #[no_mangle]
     fn pdf_stream_dataptr(stream: *mut pdf_obj) -> *const libc::c_void;
     #[no_mangle]
-    fn pdf_stream_length(stream: *mut pdf_obj) -> libc::c_int;
+    fn pdf_stream_length(stream: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_concat_stream(dst: *mut pdf_obj, src: *mut pdf_obj) -> libc::c_int;
+    fn pdf_concat_stream(dst: *mut pdf_obj, src: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn pdf_new_stream(flags: libc::c_int) -> *mut pdf_obj;
+    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
+    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_dict() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_array_length(array: *mut pdf_obj) -> libc::c_uint;
+    fn pdf_array_length(array: *mut pdf_obj) -> u32;
     #[no_mangle]
-    fn pdf_get_array(array: *mut pdf_obj, idx: libc::c_int) -> *mut pdf_obj;
+    fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
     #[no_mangle]
     fn pdf_new_array() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> libc::c_double;
+    fn pdf_number_value(number: *mut pdf_obj) -> f64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: libc::c_ulong)
-        -> *mut libc::c_char;
+    fn strncpy(_: *mut i8, _: *const i8, _: u64)
+        -> *mut i8;
     #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
+    fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_get_version() -> libc::c_uint;
+    fn pdf_get_version() -> u32;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> libc::c_int;
+    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
     #[no_mangle]
-    fn pdf_boolean_value(object: *mut pdf_obj) -> libc::c_char;
+    fn pdf_boolean_value(object: *mut pdf_obj) -> i8;
     #[no_mangle]
-    fn pdf_new_number(value: libc::c_double) -> *mut pdf_obj;
+    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_new_name(name: *const libc::c_char) -> *mut pdf_obj;
+    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn dpx_warning(fmt: *const libc::c_char, _: ...);
+    fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn pdf_doc_get_page(
         pf: *mut pdf_file,
-        page_no: libc::c_int,
-        options: libc::c_int,
+        page_no: i32,
+        options: i32,
         bbox: *mut pdf_rect,
         matrix: *mut pdf_tmatrix,
         resources_p: *mut *mut pdf_obj,
     ) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const libc::c_char, length: libc::c_uint);
+    fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
     #[no_mangle]
-    fn pdf_dev_currentmatrix(M: *mut pdf_tmatrix) -> libc::c_int;
+    fn pdf_dev_currentmatrix(M: *mut pdf_tmatrix) -> i32;
     /* Path Construction */
     #[no_mangle]
-    fn pdf_dev_moveto(x: libc::c_double, y: libc::c_double) -> libc::c_int;
+    fn pdf_dev_moveto(x: f64, y: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_closepath() -> libc::c_int;
+    fn pdf_dev_closepath() -> i32;
     #[no_mangle]
-    fn pdf_dev_lineto(x0: libc::c_double, y0: libc::c_double) -> libc::c_int;
+    fn pdf_dev_lineto(x0: f64, y0: f64) -> i32;
     #[no_mangle]
     fn pdf_dev_curveto(
-        x0: libc::c_double,
-        y0: libc::c_double,
-        x1: libc::c_double,
-        y1: libc::c_double,
-        x2: libc::c_double,
-        y2: libc::c_double,
-    ) -> libc::c_int;
+        x0: f64,
+        y0: f64,
+        x1: f64,
+        y1: f64,
+        x2: f64,
+        y2: f64,
+    ) -> i32;
     #[no_mangle]
     fn pdf_dev_vcurveto(
-        x0: libc::c_double,
-        y0: libc::c_double,
-        x1: libc::c_double,
-        y1: libc::c_double,
-    ) -> libc::c_int;
+        x0: f64,
+        y0: f64,
+        x1: f64,
+        y1: f64,
+    ) -> i32;
     #[no_mangle]
     fn pdf_dev_ycurveto(
-        x0: libc::c_double,
-        y0: libc::c_double,
-        x1: libc::c_double,
-        y1: libc::c_double,
-    ) -> libc::c_int;
+        x0: f64,
+        y0: f64,
+        x1: f64,
+        y1: f64,
+    ) -> i32;
     #[no_mangle]
     fn pdf_dev_rectadd(
-        x: libc::c_double,
-        y: libc::c_double,
-        w: libc::c_double,
-        h: libc::c_double,
-    ) -> libc::c_int;
+        x: f64,
+        y: f64,
+        w: f64,
+        h: f64,
+    ) -> i32;
     #[no_mangle]
-    fn pdf_dev_flushpath(p_op: libc::c_char, fill_rule: libc::c_int) -> libc::c_int;
+    fn pdf_dev_flushpath(p_op: i8, fill_rule: i32) -> i32;
     #[no_mangle]
     fn pdf_dev_transform(p: *mut pdf_coord, M: *const pdf_tmatrix);
     #[no_mangle]
     fn pdf_invertmatrix(M: *mut pdf_tmatrix);
     #[no_mangle]
-    fn skip_white(start: *mut *const libc::c_char, end: *const libc::c_char);
+    fn skip_white(start: *mut *const i8, end: *const i8);
     #[no_mangle]
-    fn parse_ident(start: *mut *const libc::c_char, end: *const libc::c_char) -> *mut libc::c_char;
+    fn parse_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
     #[no_mangle]
     fn parse_pdf_array(
-        pp: *mut *const libc::c_char,
-        endptr: *const libc::c_char,
+        pp: *mut *const i8,
+        endptr: *const i8,
         pf: *mut pdf_file,
     ) -> *mut pdf_obj;
 }
-pub type __off_t = libc::c_long;
-pub type __off64_t = libc::c_long;
-pub type C2RustUnnamed = libc::c_uint;
+pub type __off_t = i64;
+pub type __off64_t = i64;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -173,31 +173,31 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
-    pub _flags: libc::c_int,
-    pub _IO_read_ptr: *mut libc::c_char,
-    pub _IO_read_end: *mut libc::c_char,
-    pub _IO_read_base: *mut libc::c_char,
-    pub _IO_write_base: *mut libc::c_char,
-    pub _IO_write_ptr: *mut libc::c_char,
-    pub _IO_write_end: *mut libc::c_char,
-    pub _IO_buf_base: *mut libc::c_char,
-    pub _IO_buf_end: *mut libc::c_char,
-    pub _IO_save_base: *mut libc::c_char,
-    pub _IO_backup_base: *mut libc::c_char,
-    pub _IO_save_end: *mut libc::c_char,
+    pub _flags: i32,
+    pub _IO_read_ptr: *mut i8,
+    pub _IO_read_end: *mut i8,
+    pub _IO_read_base: *mut i8,
+    pub _IO_write_base: *mut i8,
+    pub _IO_write_ptr: *mut i8,
+    pub _IO_write_end: *mut i8,
+    pub _IO_buf_base: *mut i8,
+    pub _IO_buf_end: *mut i8,
+    pub _IO_save_base: *mut i8,
+    pub _IO_backup_base: *mut i8,
+    pub _IO_save_end: *mut i8,
     pub _markers: *mut _IO_marker,
     pub _chain: *mut _IO_FILE,
-    pub _fileno: libc::c_int,
-    pub _flags2: libc::c_int,
+    pub _fileno: i32,
+    pub _flags2: i32,
     pub _old_offset: __off_t,
-    pub _cur_column: libc::c_ushort,
-    pub _vtable_offset: libc::c_schar,
-    pub _shortbuf: [libc::c_char; 1],
+    pub _cur_column: u16,
+    pub _vtable_offset: i8,
+    pub _shortbuf: [i8; 1],
     pub _lock: *mut libc::c_void,
     pub _offset: __off64_t,
     pub _codecvt: *mut _IO_codecvt,
@@ -205,47 +205,47 @@ pub struct _IO_FILE {
     pub _freeres_list: *mut _IO_FILE,
     pub _freeres_buf: *mut libc::c_void,
     pub __pad5: size_t,
-    pub _mode: libc::c_int,
-    pub _unused2: [libc::c_char; 20],
+    pub _mode: i32,
+    pub _unused2: [i8; 20],
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_tmatrix {
-    pub a: libc::c_double,
-    pub b: libc::c_double,
-    pub c: libc::c_double,
-    pub d: libc::c_double,
-    pub e: libc::c_double,
-    pub f: libc::c_double,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+    pub f: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
-    pub llx: libc::c_double,
-    pub lly: libc::c_double,
-    pub urx: libc::c_double,
-    pub ury: libc::c_double,
+    pub llx: f64,
+    pub lly: f64,
+    pub urx: f64,
+    pub ury: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_coord {
-    pub x: libc::c_double,
-    pub y: libc::c_double,
+    pub x: f64,
+    pub y: f64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct xform_info {
-    pub flags: libc::c_int,
+    pub flags: i32,
     pub bbox: pdf_rect,
     pub matrix: pdf_tmatrix,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct load_options {
-    pub page_no: libc::c_int,
-    pub bbox_type: libc::c_int,
+    pub page_no: i32,
+    pub bbox_type: i32,
     pub dict: *mut pdf_obj,
 }
 pub type pdf_ximage = pdf_ximage_;
@@ -267,10 +267,10 @@ pub const OP_SETCOLOR: C2RustUnnamed_0 = 1;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct operator {
-    pub token: *const libc::c_char,
-    pub opcode: libc::c_int,
+    pub token: *const i8,
+    pub opcode: i32,
 }
-pub type C2RustUnnamed_0 = libc::c_uint;
+pub type C2RustUnnamed_0 = u32;
 pub const OP_UNKNOWN: C2RustUnnamed_0 = 16;
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -280,7 +280,7 @@ pub const OP_UNKNOWN: C2RustUnnamed_0 = 16;
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
 #[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
+unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
@@ -366,8 +366,8 @@ unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc:
  * The number of degrees by which the page should be rotated clockwise when
  * displayed or printed. The value must be a multiple of 90. Default value: 0.
  */
-unsafe extern "C" fn rect_equal(mut rect1: *mut pdf_obj, mut rect2: *mut pdf_obj) -> libc::c_int {
-    let mut i: libc::c_int = 0;
+unsafe extern "C" fn rect_equal(mut rect1: *mut pdf_obj, mut rect2: *mut pdf_obj) -> i32 {
+    let mut i: i32 = 0;
     if rect1.is_null() || rect2.is_null() {
         return 0i32;
     }
@@ -382,7 +382,7 @@ unsafe extern "C" fn rect_equal(mut rect1: *mut pdf_obj, mut rect2: *mut pdf_obj
 }
 unsafe extern "C" fn pdf_get_page_obj(
     mut pf: *mut pdf_file,
-    mut page_no: libc::c_int,
+    mut page_no: i32,
     mut ret_bbox: *mut *mut pdf_obj,
     mut ret_resources: *mut *mut pdf_obj,
 ) -> *mut pdf_obj {
@@ -390,7 +390,7 @@ unsafe extern "C" fn pdf_get_page_obj(
     let mut bbox: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut resources: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut rotate: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut page_idx: libc::c_int = 0;
+    let mut page_idx: i32 = 0;
     /*
      * Get Page Tree.
      */
@@ -400,17 +400,17 @@ unsafe extern "C" fn pdf_get_page_obj(
     let mut markinfo: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     trailer = pdf_file_get_trailer(pf);
-    if !pdf_lookup_dict(trailer, b"Encrypt\x00" as *const u8 as *const libc::c_char).is_null() {
-        dpx_warning(b"This PDF document is encrypted.\x00" as *const u8 as *const libc::c_char);
+    if !pdf_lookup_dict(trailer, b"Encrypt\x00" as *const u8 as *const i8).is_null() {
+        dpx_warning(b"This PDF document is encrypted.\x00" as *const u8 as *const i8);
         pdf_release_obj(trailer);
         return 0 as *mut pdf_obj;
     }
     catalog = pdf_deref_obj(pdf_lookup_dict(
         trailer,
-        b"Root\x00" as *const u8 as *const libc::c_char,
+        b"Root\x00" as *const u8 as *const i8,
     ));
     if !(!catalog.is_null() && pdf_obj_typeof(catalog) == 6i32) {
-        dpx_warning(b"Can\'t read document catalog.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Can\'t read document catalog.\x00" as *const u8 as *const i8);
         pdf_release_obj(trailer);
         pdf_release_obj(catalog);
         return 0 as *mut pdf_obj;
@@ -418,40 +418,40 @@ unsafe extern "C" fn pdf_get_page_obj(
     pdf_release_obj(trailer);
     markinfo = pdf_deref_obj(pdf_lookup_dict(
         catalog,
-        b"MarkInfo\x00" as *const u8 as *const libc::c_char,
+        b"MarkInfo\x00" as *const u8 as *const i8,
     ));
     if !markinfo.is_null() {
-        tmp = pdf_lookup_dict(markinfo, b"Marked\x00" as *const u8 as *const libc::c_char);
+        tmp = pdf_lookup_dict(markinfo, b"Marked\x00" as *const u8 as *const i8);
         if !tmp.is_null()
             && pdf_obj_typeof(tmp) == 1i32
-            && pdf_boolean_value(tmp) as libc::c_int != 0
+            && pdf_boolean_value(tmp) as i32 != 0
         {
             dpx_warning(
-                b"PDF file is tagged... Ignoring tags.\x00" as *const u8 as *const libc::c_char,
+                b"PDF file is tagged... Ignoring tags.\x00" as *const u8 as *const i8,
             );
         }
         pdf_release_obj(markinfo);
     }
     page_tree = pdf_deref_obj(pdf_lookup_dict(
         catalog,
-        b"Pages\x00" as *const u8 as *const libc::c_char,
+        b"Pages\x00" as *const u8 as *const i8,
     ));
     pdf_release_obj(catalog);
     if page_tree.is_null() {
-        dpx_warning(b"Page tree not found.\x00" as *const u8 as *const libc::c_char);
+        dpx_warning(b"Page tree not found.\x00" as *const u8 as *const i8);
         return 0 as *mut pdf_obj;
     }
     /*
      * Negative page numbers are counted from the back.
      */
-    let mut count: libc::c_int = pdf_number_value(pdf_lookup_dict(
+    let mut count: i32 = pdf_number_value(pdf_lookup_dict(
         page_tree,
-        b"Count\x00" as *const u8 as *const libc::c_char,
-    )) as libc::c_int;
+        b"Count\x00" as *const u8 as *const i8,
+    )) as i32;
     page_idx = page_no + (if page_no >= 0i32 { -1i32 } else { count });
     if page_idx < 0i32 || page_idx >= count {
         dpx_warning(
-            b"Page %d does not exist.\x00" as *const u8 as *const libc::c_char,
+            b"Page %d does not exist.\x00" as *const u8 as *const i8,
             page_no,
         );
         pdf_release_obj(page_tree);
@@ -468,7 +468,7 @@ unsafe extern "C" fn pdf_get_page_obj(
     let mut tmp_0: *mut pdf_obj = 0 as *mut pdf_obj;
     tmp_0 = pdf_lookup_dict(
         page_tree,
-        b"Resources\x00" as *const u8 as *const libc::c_char,
+        b"Resources\x00" as *const u8 as *const i8,
     );
     resources = if !tmp_0.is_null() {
         pdf_deref_obj(tmp_0)
@@ -476,11 +476,11 @@ unsafe extern "C" fn pdf_get_page_obj(
         pdf_new_dict()
     };
     loop {
-        let mut kids_length: libc::c_int = 0;
-        let mut i: libc::c_int = 0;
+        let mut kids_length: i32 = 0;
+        let mut i: i32 = 0;
         tmp_0 = pdf_deref_obj(pdf_lookup_dict(
             page_tree,
-            b"MediaBox\x00" as *const u8 as *const libc::c_char,
+            b"MediaBox\x00" as *const u8 as *const i8,
         ));
         if !tmp_0.is_null() {
             pdf_release_obj(bbox);
@@ -488,7 +488,7 @@ unsafe extern "C" fn pdf_get_page_obj(
         }
         tmp_0 = pdf_deref_obj(pdf_lookup_dict(
             page_tree,
-            b"BleedBox\x00" as *const u8 as *const libc::c_char,
+            b"BleedBox\x00" as *const u8 as *const i8,
         ));
         if !tmp_0.is_null() {
             if rect_equal(tmp_0, bbox) == 0 {
@@ -500,7 +500,7 @@ unsafe extern "C" fn pdf_get_page_obj(
         }
         tmp_0 = pdf_deref_obj(pdf_lookup_dict(
             page_tree,
-            b"TrimBox\x00" as *const u8 as *const libc::c_char,
+            b"TrimBox\x00" as *const u8 as *const i8,
         ));
         if !tmp_0.is_null() {
             if rect_equal(tmp_0, bbox) == 0 {
@@ -512,7 +512,7 @@ unsafe extern "C" fn pdf_get_page_obj(
         }
         tmp_0 = pdf_deref_obj(pdf_lookup_dict(
             page_tree,
-            b"ArtBox\x00" as *const u8 as *const libc::c_char,
+            b"ArtBox\x00" as *const u8 as *const i8,
         ));
         if !tmp_0.is_null() {
             if rect_equal(tmp_0, bbox) == 0 {
@@ -524,7 +524,7 @@ unsafe extern "C" fn pdf_get_page_obj(
         }
         tmp_0 = pdf_deref_obj(pdf_lookup_dict(
             page_tree,
-            b"CropBox\x00" as *const u8 as *const libc::c_char,
+            b"CropBox\x00" as *const u8 as *const i8,
         ));
         if !tmp_0.is_null() {
             pdf_release_obj(crop_box);
@@ -532,7 +532,7 @@ unsafe extern "C" fn pdf_get_page_obj(
         }
         tmp_0 = pdf_deref_obj(pdf_lookup_dict(
             page_tree,
-            b"Rotate\x00" as *const u8 as *const libc::c_char,
+            b"Rotate\x00" as *const u8 as *const i8,
         ));
         if !tmp_0.is_null() {
             pdf_release_obj(rotate);
@@ -540,30 +540,30 @@ unsafe extern "C" fn pdf_get_page_obj(
         }
         tmp_0 = pdf_deref_obj(pdf_lookup_dict(
             page_tree,
-            b"Resources\x00" as *const u8 as *const libc::c_char,
+            b"Resources\x00" as *const u8 as *const i8,
         ));
         if !tmp_0.is_null() {
             pdf_release_obj(resources);
             resources = tmp_0
         }
-        kids_ref = pdf_lookup_dict(page_tree, b"Kids\x00" as *const u8 as *const libc::c_char);
+        kids_ref = pdf_lookup_dict(page_tree, b"Kids\x00" as *const u8 as *const i8);
         if kids_ref.is_null() {
             break;
         }
         kids = pdf_deref_obj(kids_ref);
-        kids_length = pdf_array_length(kids) as libc::c_int;
+        kids_length = pdf_array_length(kids) as i32;
         i = 0i32;
         while i < kids_length {
-            let mut count_0: libc::c_int = 0;
+            let mut count_0: i32 = 0;
             pdf_release_obj(page_tree);
             page_tree = pdf_deref_obj(pdf_get_array(kids, i));
             tmp_0 = pdf_deref_obj(pdf_lookup_dict(
                 page_tree,
-                b"Count\x00" as *const u8 as *const libc::c_char,
+                b"Count\x00" as *const u8 as *const i8,
             ));
             if !tmp_0.is_null() {
                 /* Pages object */
-                count_0 = pdf_number_value(tmp_0) as libc::c_int;
+                count_0 = pdf_number_value(tmp_0) as i32;
                 pdf_release_obj(tmp_0);
             } else {
                 /* Page object */
@@ -578,7 +578,7 @@ unsafe extern "C" fn pdf_get_page_obj(
         pdf_release_obj(kids);
         if i == kids_length {
             dpx_warning(
-                b"Page %d not found! Broken PDF file?\x00" as *const u8 as *const libc::c_char,
+                b"Page %d not found! Broken PDF file?\x00" as *const u8 as *const i8,
                 page_no,
             );
             pdf_release_obj(bbox);
@@ -595,7 +595,7 @@ unsafe extern "C" fn pdf_get_page_obj(
     }
     if bbox.is_null() {
         dpx_warning(
-            b"No BoundingBox information available.\x00" as *const u8 as *const libc::c_char,
+            b"No BoundingBox information available.\x00" as *const u8 as *const i8,
         );
         pdf_release_obj(page_tree);
         pdf_release_obj(resources);
@@ -619,7 +619,7 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
     let mut content_new: *mut pdf_obj = 0 as *mut pdf_obj;
     contents = pdf_deref_obj(pdf_lookup_dict(
         page,
-        b"Contents\x00" as *const u8 as *const libc::c_char,
+        b"Contents\x00" as *const u8 as *const i8,
     ));
     if contents.is_null() {
         return 0 as *mut pdf_obj;
@@ -634,7 +634,7 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
          * Concatenate all content streams.
          */
         let mut content_seg: *mut pdf_obj = 0 as *mut pdf_obj;
-        let mut idx: libc::c_int = 0i32;
+        let mut idx: i32 = 0i32;
         content_new = pdf_new_stream(1i32 << 0i32);
         loop {
             content_seg = pdf_deref_obj(pdf_get_array(contents, idx));
@@ -645,7 +645,7 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
                 if !(!content_seg.is_null() && pdf_obj_typeof(content_seg) == 7i32) {
                     dpx_warning(
                         b"Page content not a stream object. Broken PDF file?\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                     );
                     pdf_release_obj(content_seg);
                     pdf_release_obj(content_new);
@@ -655,7 +655,7 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
                     if pdf_concat_stream(content_new, content_seg) < 0i32 {
                         dpx_warning(
                             b"Could not handle content stream with multiple segments.\x00"
-                                as *const u8 as *const libc::c_char,
+                                as *const u8 as *const i8,
                         );
                         pdf_release_obj(content_seg);
                         pdf_release_obj(content_new);
@@ -673,7 +673,7 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
         if !(!contents.is_null() && pdf_obj_typeof(contents) == 7i32) {
             dpx_warning(
                 b"Page content not a stream object. Broken PDF file?\x00" as *const u8
-                    as *const libc::c_char,
+                    as *const i8,
             );
             pdf_release_obj(contents);
             return 0 as *mut pdf_obj;
@@ -682,7 +682,7 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
         content_new = pdf_new_stream(1i32 << 0i32);
         if pdf_concat_stream(content_new, contents) < 0i32 {
             dpx_warning(
-                b"Could not handle a content stream.\x00" as *const u8 as *const libc::c_char,
+                b"Could not handle a content stream.\x00" as *const u8 as *const i8,
             );
             pdf_release_obj(contents);
             pdf_release_obj(content_new);
@@ -698,9 +698,9 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
 pub unsafe extern "C" fn pdf_include_page(
     mut ximage: *mut pdf_ximage,
     mut handle: rust_input_handle_t,
-    mut ident: *const libc::c_char,
+    mut ident: *const i8,
     mut options: load_options,
-) -> libc::c_int {
+) -> i32 {
     let mut current_block: u64;
     let mut pf: *mut pdf_file = 0 as *mut pdf_file;
     let mut info: xform_info = xform_info {
@@ -732,7 +732,7 @@ pub unsafe extern "C" fn pdf_include_page(
     if pdf_file_get_version(pf) > pdf_get_version() {
         dpx_warning(
             b"Trying to include PDF file which has newer version number than output PDF: 1.%d.\x00"
-                as *const u8 as *const libc::c_char,
+                as *const u8 as *const i8,
             pdf_get_version(),
         );
     }
@@ -752,12 +752,12 @@ pub unsafe extern "C" fn pdf_include_page(
         catalog = pdf_file_get_catalog(pf);
         markinfo = pdf_deref_obj(pdf_lookup_dict(
             catalog,
-            b"MarkInfo\x00" as *const u8 as *const libc::c_char,
+            b"MarkInfo\x00" as *const u8 as *const i8,
         ));
         if !markinfo.is_null() {
             let mut tmp: *mut pdf_obj = pdf_deref_obj(pdf_lookup_dict(
                 markinfo,
-                b"Marked\x00" as *const u8 as *const libc::c_char,
+                b"Marked\x00" as *const u8 as *const i8,
             ));
             pdf_release_obj(markinfo);
             if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 1i32) {
@@ -767,7 +767,7 @@ pub unsafe extern "C" fn pdf_include_page(
                 if pdf_boolean_value(tmp) != 0 {
                     dpx_warning(
                         b"PDF file is tagged... Ignoring tags.\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                     );
                 }
                 pdf_release_obj(tmp);
@@ -780,7 +780,7 @@ pub unsafe extern "C" fn pdf_include_page(
             1109700713171191020 => {
                 contents = pdf_deref_obj(pdf_lookup_dict(
                     page,
-                    b"Contents\x00" as *const u8 as *const libc::c_char,
+                    b"Contents\x00" as *const u8 as *const i8,
                 ));
                 pdf_release_obj(page);
                 page = 0 as *mut pdf_obj;
@@ -806,8 +806,8 @@ pub unsafe extern "C" fn pdf_include_page(
                     /*
                      * Concatenate all content streams.
                      */
-                    let mut idx: libc::c_int = 0;
-                    let mut len: libc::c_int = pdf_array_length(contents) as libc::c_int;
+                    let mut idx: i32 = 0;
+                    let mut len: i32 = pdf_array_length(contents) as i32;
                     content_new = pdf_new_stream(1i32 << 0i32);
                     idx = 0i32;
                     loop {
@@ -846,17 +846,17 @@ pub unsafe extern "C" fn pdf_include_page(
                         contents_dict = pdf_stream_dict(contents);
                         pdf_add_dict(
                             contents_dict,
-                            pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
-                            pdf_new_name(b"XObject\x00" as *const u8 as *const libc::c_char),
+                            pdf_new_name(b"Type\x00" as *const u8 as *const i8),
+                            pdf_new_name(b"XObject\x00" as *const u8 as *const i8),
                         );
                         pdf_add_dict(
                             contents_dict,
-                            pdf_new_name(b"Subtype\x00" as *const u8 as *const libc::c_char),
-                            pdf_new_name(b"Form\x00" as *const u8 as *const libc::c_char),
+                            pdf_new_name(b"Subtype\x00" as *const u8 as *const i8),
+                            pdf_new_name(b"Form\x00" as *const u8 as *const i8),
                         );
                         pdf_add_dict(
                             contents_dict,
-                            pdf_new_name(b"FormType\x00" as *const u8 as *const libc::c_char),
+                            pdf_new_name(b"FormType\x00" as *const u8 as *const i8),
                             pdf_new_number(1.0f64),
                         );
                         bbox = pdf_new_array();
@@ -866,7 +866,7 @@ pub unsafe extern "C" fn pdf_include_page(
                         pdf_add_array(bbox, pdf_new_number(info.bbox.ury));
                         pdf_add_dict(
                             contents_dict,
-                            pdf_new_name(b"BBox\x00" as *const u8 as *const libc::c_char),
+                            pdf_new_name(b"BBox\x00" as *const u8 as *const i8),
                             bbox,
                         );
                         matrix = pdf_new_array();
@@ -878,12 +878,12 @@ pub unsafe extern "C" fn pdf_include_page(
                         pdf_add_array(matrix, pdf_new_number(info.matrix.f));
                         pdf_add_dict(
                             contents_dict,
-                            pdf_new_name(b"Matrix\x00" as *const u8 as *const libc::c_char),
+                            pdf_new_name(b"Matrix\x00" as *const u8 as *const i8),
                             matrix,
                         );
                         pdf_add_dict(
                             contents_dict,
-                            pdf_new_name(b"Resources\x00" as *const u8 as *const libc::c_char),
+                            pdf_new_name(b"Resources\x00" as *const u8 as *const i8),
                             pdf_import_object(resources),
                         );
                         pdf_release_obj(resources);
@@ -900,7 +900,7 @@ pub unsafe extern "C" fn pdf_include_page(
             _ => {}
         }
         dpx_warning(
-            b"Cannot parse document. Broken PDF file?\x00" as *const u8 as *const libc::c_char,
+            b"Cannot parse document. Broken PDF file?\x00" as *const u8 as *const i8,
         );
     }
     pdf_release_obj(resources);
@@ -913,274 +913,274 @@ pub unsafe extern "C" fn pdf_include_page(
 static mut pdf_operators: [operator; 39] = [
     {
         let mut init = operator {
-            token: b"SCN\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_SETCOLOR as libc::c_int,
+            token: b"SCN\x00" as *const u8 as *const i8,
+            opcode: OP_SETCOLOR as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"b*\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_CLOSEandCLIP as libc::c_int,
+            token: b"b*\x00" as *const u8 as *const i8,
+            opcode: OP_CLOSEandCLIP as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"B*\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_CLIP as libc::c_int,
+            token: b"B*\x00" as *const u8 as *const i8,
+            opcode: OP_CLIP as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"cm\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_CONCATMATRIX as libc::c_int,
+            token: b"cm\x00" as *const u8 as *const i8,
+            opcode: OP_CONCATMATRIX as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"CS\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_SETCOLORSPACE as libc::c_int,
+            token: b"CS\x00" as *const u8 as *const i8,
+            opcode: OP_SETCOLORSPACE as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"f*\x00" as *const u8 as *const libc::c_char,
+            token: b"f*\x00" as *const u8 as *const i8,
             opcode: 0i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"gs\x00" as *const u8 as *const libc::c_char,
+            token: b"gs\x00" as *const u8 as *const i8,
             opcode: -1i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"re\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_RECTANGLE as libc::c_int,
+            token: b"re\x00" as *const u8 as *const i8,
+            opcode: OP_RECTANGLE as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"rg\x00" as *const u8 as *const libc::c_char,
+            token: b"rg\x00" as *const u8 as *const i8,
             opcode: -3i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"RG\x00" as *const u8 as *const libc::c_char,
+            token: b"RG\x00" as *const u8 as *const i8,
             opcode: -3i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"sc\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_SETCOLOR as libc::c_int,
+            token: b"sc\x00" as *const u8 as *const i8,
+            opcode: OP_SETCOLOR as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"SC\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_SETCOLOR as libc::c_int,
+            token: b"SC\x00" as *const u8 as *const i8,
+            opcode: OP_SETCOLOR as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"W*\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_CLIP as libc::c_int,
+            token: b"W*\x00" as *const u8 as *const i8,
+            opcode: OP_CLIP as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"b\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_CLOSEandCLIP as libc::c_int,
+            token: b"b\x00" as *const u8 as *const i8,
+            opcode: OP_CLOSEandCLIP as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"B\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_CLIP as libc::c_int,
+            token: b"B\x00" as *const u8 as *const i8,
+            opcode: OP_CLIP as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"c\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_CURVETO as libc::c_int,
+            token: b"c\x00" as *const u8 as *const i8,
+            opcode: OP_CURVETO as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"d\x00" as *const u8 as *const libc::c_char,
+            token: b"d\x00" as *const u8 as *const i8,
             opcode: -2i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"f\x00" as *const u8 as *const libc::c_char,
+            token: b"f\x00" as *const u8 as *const i8,
             opcode: 0i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"F\x00" as *const u8 as *const libc::c_char,
+            token: b"F\x00" as *const u8 as *const i8,
             opcode: 0i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"g\x00" as *const u8 as *const libc::c_char,
+            token: b"g\x00" as *const u8 as *const i8,
             opcode: -1i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"G\x00" as *const u8 as *const libc::c_char,
+            token: b"G\x00" as *const u8 as *const i8,
             opcode: -1i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"h\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_CLOSEPATH as libc::c_int,
+            token: b"h\x00" as *const u8 as *const i8,
+            opcode: OP_CLOSEPATH as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"i\x00" as *const u8 as *const libc::c_char,
+            token: b"i\x00" as *const u8 as *const i8,
             opcode: -1i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"j\x00" as *const u8 as *const libc::c_char,
+            token: b"j\x00" as *const u8 as *const i8,
             opcode: -1i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"J\x00" as *const u8 as *const libc::c_char,
+            token: b"J\x00" as *const u8 as *const i8,
             opcode: -1i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"k\x00" as *const u8 as *const libc::c_char,
+            token: b"k\x00" as *const u8 as *const i8,
             opcode: -4i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"K\x00" as *const u8 as *const libc::c_char,
+            token: b"K\x00" as *const u8 as *const i8,
             opcode: -4i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"l\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_LINETO as libc::c_int,
+            token: b"l\x00" as *const u8 as *const i8,
+            opcode: OP_LINETO as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"m\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_MOVETO as libc::c_int,
+            token: b"m\x00" as *const u8 as *const i8,
+            opcode: OP_MOVETO as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"M\x00" as *const u8 as *const libc::c_char,
+            token: b"M\x00" as *const u8 as *const i8,
             opcode: -1i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"n\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_NOOP as libc::c_int,
+            token: b"n\x00" as *const u8 as *const i8,
+            opcode: OP_NOOP as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"q\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_GSAVE as libc::c_int,
+            token: b"q\x00" as *const u8 as *const i8,
+            opcode: OP_GSAVE as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"Q\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_GRESTORE as libc::c_int,
+            token: b"Q\x00" as *const u8 as *const i8,
+            opcode: OP_GRESTORE as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"s\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_CLOSEandCLIP as libc::c_int,
+            token: b"s\x00" as *const u8 as *const i8,
+            opcode: OP_CLOSEandCLIP as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"S\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_CLIP as libc::c_int,
+            token: b"S\x00" as *const u8 as *const i8,
+            opcode: OP_CLIP as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"v\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_CURVETO1 as libc::c_int,
+            token: b"v\x00" as *const u8 as *const i8,
+            opcode: OP_CURVETO1 as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"w\x00" as *const u8 as *const libc::c_char,
+            token: b"w\x00" as *const u8 as *const i8,
             opcode: -1i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"W\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_CLIP as libc::c_int,
+            token: b"W\x00" as *const u8 as *const i8,
+            opcode: OP_CLIP as i32,
         };
         init
     },
     {
         let mut init = operator {
-            token: b"y\x00" as *const u8 as *const libc::c_char,
-            opcode: OP_CURVETO2 as libc::c_int,
+            token: b"y\x00" as *const u8 as *const i8,
+            opcode: OP_CURVETO2 as i32,
         };
         init
     },
@@ -1209,18 +1209,18 @@ static mut pdf_operators: [operator; 39] = [
 #[no_mangle]
 pub unsafe extern "C" fn pdf_copy_clip(
     mut image_file: *mut FILE,
-    mut pageNo: libc::c_int,
-    mut x_user: libc::c_double,
-    mut y_user: libc::c_double,
-) -> libc::c_int {
+    mut pageNo: i32,
+    mut x_user: f64,
+    mut y_user: f64,
+) -> i32 {
     let mut page_tree: *mut pdf_obj = 0 as *mut pdf_obj; /* silence uninitialized warning */
     let mut contents: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut depth: libc::c_int = 0i32;
-    let mut top: libc::c_int = -1i32;
-    let mut clip_path: *const libc::c_char = 0 as *const libc::c_char;
-    let mut end_path: *const libc::c_char = 0 as *const libc::c_char;
-    let mut save_path: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut temp: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut depth: i32 = 0i32;
+    let mut top: i32 = -1i32;
+    let mut clip_path: *const i8 = 0 as *const i8;
+    let mut end_path: *const i8 = 0 as *const i8;
+    let mut save_path: *mut i8 = 0 as *mut i8;
+    let mut temp: *mut i8 = 0 as *mut i8;
     let mut M: pdf_tmatrix = pdf_tmatrix {
         a: 0.,
         b: 0.,
@@ -1229,9 +1229,9 @@ pub unsafe extern "C" fn pdf_copy_clip(
         e: 0.,
         f: 0.,
     };
-    let mut stack: [libc::c_double; 6] = [0.; 6];
+    let mut stack: [f64; 6] = [0.; 6];
     let mut pf: *mut pdf_file = 0 as *mut pdf_file;
-    pf = pdf_open(0 as *const libc::c_char, image_file as rust_input_handle_t);
+    pf = pdf_open(0 as *const i8, image_file as rust_input_handle_t);
     if pf.is_null() {
         return -1i32;
     }
@@ -1251,88 +1251,88 @@ pub unsafe extern "C" fn pdf_copy_clip(
         return -1i32;
     }
     pdf_doc_add_page_content(
-        b" \x00" as *const u8 as *const libc::c_char,
-        1i32 as libc::c_uint,
+        b" \x00" as *const u8 as *const i8,
+        1i32 as u32,
     );
-    save_path = xmalloc((pdf_stream_length(contents) + 1i32) as size_t) as *mut libc::c_char;
+    save_path = xmalloc((pdf_stream_length(contents) + 1i32) as size_t) as *mut i8;
     strncpy(
         save_path,
-        pdf_stream_dataptr(contents) as *const libc::c_char,
-        pdf_stream_length(contents) as libc::c_ulong,
+        pdf_stream_dataptr(contents) as *const i8,
+        pdf_stream_length(contents) as u64,
     );
     clip_path = save_path;
     end_path = clip_path.offset(pdf_stream_length(contents) as isize);
     depth = 0i32;
     while clip_path < end_path {
-        let mut color_dimen: libc::c_int = 0i32;
-        let mut token: *mut libc::c_char = 0 as *mut libc::c_char;
+        let mut color_dimen: i32 = 0i32;
+        let mut token: *mut i8 = 0 as *mut i8;
         skip_white(&mut clip_path, end_path);
         if clip_path == end_path {
             break;
         }
         if depth > 1i32 {
-            if *clip_path as libc::c_int == 'q' as i32 {
+            if *clip_path as i32 == 'q' as i32 {
                 depth += 1
             }
-            if *clip_path as libc::c_int == 'Q' as i32 {
+            if *clip_path as i32 == 'Q' as i32 {
                 depth -= 1
             }
             parse_ident(&mut clip_path, end_path);
-        } else if *clip_path as libc::c_int == '-' as i32
-            || *clip_path as libc::c_int == '+' as i32
-            || *clip_path as libc::c_int == '.' as i32
-            || *(*__ctype_b_loc()).offset(*clip_path as libc::c_uchar as libc::c_int as isize)
-                as libc::c_int
-                & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+        } else if *clip_path as i32 == '-' as i32
+            || *clip_path as i32 == '+' as i32
+            || *clip_path as i32 == '.' as i32
+            || *(*__ctype_b_loc()).offset(*clip_path as u8 as i32 as isize)
+                as i32
+                & _ISdigit as i32 as u16 as i32
                 != 0
         {
             top += 1;
             stack[top as usize] = strtod(clip_path, &mut temp);
             clip_path = temp
-        } else if *clip_path as libc::c_int == '[' as i32 {
+        } else if *clip_path as i32 == '[' as i32 {
             /* Ignore, but put a dummy value on the stack (in case of d operator) */
             parse_pdf_array(&mut clip_path, end_path, pf);
             top += 1;
-            stack[top as usize] = 0i32 as libc::c_double
-        } else if *clip_path as libc::c_int == '/' as i32 {
+            stack[top as usize] = 0i32 as f64
+        } else if *clip_path as i32 == '/' as i32 {
             if strncmp(
-                b"/DeviceGray\x00" as *const u8 as *const libc::c_char,
+                b"/DeviceGray\x00" as *const u8 as *const i8,
                 clip_path,
-                11i32 as libc::c_ulong,
+                11i32 as u64,
             ) == 0i32
                 || strncmp(
-                    b"/Indexed\x00" as *const u8 as *const libc::c_char,
+                    b"/Indexed\x00" as *const u8 as *const i8,
                     clip_path,
-                    8i32 as libc::c_ulong,
+                    8i32 as u64,
                 ) == 0i32
                 || strncmp(
-                    b"/CalGray\x00" as *const u8 as *const libc::c_char,
+                    b"/CalGray\x00" as *const u8 as *const i8,
                     clip_path,
-                    8i32 as libc::c_ulong,
+                    8i32 as u64,
                 ) == 0i32
             {
                 color_dimen = 1i32
             } else if strncmp(
-                b"/DeviceRGB\x00" as *const u8 as *const libc::c_char,
+                b"/DeviceRGB\x00" as *const u8 as *const i8,
                 clip_path,
-                10i32 as libc::c_ulong,
+                10i32 as u64,
             ) == 0i32
                 || strncmp(
-                    b"/CalRGB\x00" as *const u8 as *const libc::c_char,
+                    b"/CalRGB\x00" as *const u8 as *const i8,
                     clip_path,
-                    7i32 as libc::c_ulong,
+                    7i32 as u64,
                 ) == 0i32
                 || strncmp(
-                    b"/Lab\x00" as *const u8 as *const libc::c_char,
+                    b"/Lab\x00" as *const u8 as *const i8,
                     clip_path,
-                    4i32 as libc::c_ulong,
+                    4i32 as u64,
                 ) == 0i32
             {
                 color_dimen = 3i32
             } else if strncmp(
-                b"/DeviceCMYK\x00" as *const u8 as *const libc::c_char,
+                b"/DeviceCMYK\x00" as *const u8 as *const i8,
                 clip_path,
-                11i32 as libc::c_ulong,
+                11i32 as u64,
             ) == 0i32
             {
                 color_dimen = 4i32
@@ -1341,12 +1341,12 @@ pub unsafe extern "C" fn pdf_copy_clip(
                 parse_ident(&mut clip_path, end_path);
                 skip_white(&mut clip_path, end_path);
                 token = parse_ident(&mut clip_path, end_path);
-                if !streq_ptr(token, b"gs\x00" as *const u8 as *const libc::c_char) {
+                if !streq_ptr(token, b"gs\x00" as *const u8 as *const i8) {
                     return -1i32;
                 }
             }
         } else {
-            let mut j: libc::c_uint = 0;
+            let mut j: u32 = 0;
             let mut T: pdf_tmatrix = pdf_tmatrix {
                 a: 0.,
                 b: 0.,
@@ -1360,19 +1360,19 @@ pub unsafe extern "C" fn pdf_copy_clip(
             let mut p2: pdf_coord = pdf_coord { x: 0., y: 0. };
             let mut p3: pdf_coord = pdf_coord { x: 0., y: 0. };
             token = parse_ident(&mut clip_path, end_path);
-            j = 0i32 as libc::c_uint;
-            while (j as libc::c_ulong)
-                < (::std::mem::size_of::<[operator; 39]>() as libc::c_ulong)
-                    .wrapping_div(::std::mem::size_of::<operator>() as libc::c_ulong)
+            j = 0i32 as u32;
+            while (j as u64)
+                < (::std::mem::size_of::<[operator; 39]>() as u64)
+                    .wrapping_div(::std::mem::size_of::<operator>() as u64)
             {
                 if streq_ptr(token, pdf_operators[j as usize].token) {
                     break;
                 }
                 j = j.wrapping_add(1)
             }
-            if j as libc::c_ulong
-                == (::std::mem::size_of::<[operator; 39]>() as libc::c_ulong)
-                    .wrapping_div(::std::mem::size_of::<operator>() as libc::c_ulong)
+            if j as u64
+                == (::std::mem::size_of::<[operator; 39]>() as u64)
+                    .wrapping_div(::std::mem::size_of::<operator>() as u64)
             {
                 return -1i32;
             }
@@ -1422,10 +1422,10 @@ pub unsafe extern "C" fn pdf_copy_clip(
                     let fresh5 = top;
                     top = top - 1;
                     T.a = stack[fresh5 as usize];
-                    let mut _tmp_a: libc::c_double = 0.;
-                    let mut _tmp_b: libc::c_double = 0.;
-                    let mut _tmp_c: libc::c_double = 0.;
-                    let mut _tmp_d: libc::c_double = 0.;
+                    let mut _tmp_a: f64 = 0.;
+                    let mut _tmp_b: f64 = 0.;
+                    let mut _tmp_c: f64 = 0.;
+                    let mut _tmp_d: f64 = 0.;
                     _tmp_a = M.a;
                     _tmp_b = M.b;
                     _tmp_c = M.c;
@@ -1457,7 +1457,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
                     let fresh9 = top;
                     top = top - 1;
                     p0.x = stack[fresh9 as usize];
-                    if M.b == 0i32 as libc::c_double && M.c == 0i32 as libc::c_double {
+                    if M.b == 0i32 as f64 && M.c == 0i32 as f64 {
                         let mut M0: pdf_tmatrix = pdf_tmatrix {
                             a: 0.,
                             b: 0.,
@@ -1470,8 +1470,8 @@ pub unsafe extern "C" fn pdf_copy_clip(
                         M0.b = M.b;
                         M0.c = M.c;
                         M0.d = M.d;
-                        M0.e = 0i32 as libc::c_double;
-                        M0.f = 0i32 as libc::c_double;
+                        M0.e = 0i32 as f64;
+                        M0.f = 0i32 as f64;
                         pdf_dev_transform(&mut p0, &mut M);
                         pdf_dev_transform(&mut p1, &mut M0);
                         pdf_dev_rectadd(p0.x, p0.y, p1.x, p1.y);
@@ -1556,8 +1556,8 @@ pub unsafe extern "C" fn pdf_copy_clip(
                 }
                 11 => {
                     pdf_doc_add_page_content(
-                        b" n\x00" as *const u8 as *const libc::c_char,
-                        2i32 as libc::c_uint,
+                        b" n\x00" as *const u8 as *const i8,
+                        2i32 as u32,
                     );
                     current_block_157 = 6328367678128271922;
                 }
@@ -1615,7 +1615,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
             }
             match current_block_157 {
                 17294711039657812359 => {
-                    pdf_dev_flushpath('W' as i32 as libc::c_char, 0i32);
+                    pdf_dev_flushpath('W' as i32 as i8, 0i32);
                 }
                 _ => {}
             }
