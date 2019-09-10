@@ -1,12 +1,3 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
-
-extern crate libc;
 use libpng_sys::ffi::*;
 use std::convert::TryInto;
 
@@ -318,7 +309,7 @@ pub unsafe extern "C" fn png_include_image(
     stream_dict = pdf_stream_dict(stream);
     stream_data_ptr = new((rowbytes.wrapping_mul(height) as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
-        as uint32_t) as *mut png_byte;
+        as u32) as *mut png_byte;
     read_image_data(png, stream_data_ptr, height, rowbytes);
     /* Non-NULL intent means there is valid sRGB chunk. */
     intent = get_rendering_intent(png, png_info);
@@ -1530,8 +1521,8 @@ unsafe extern "C" fn read_image_data(
     let mut rows_p = 0 as *mut *mut png_byte;
     let mut i: png_uint_32 = 0;
     rows_p = new((height as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<png_bytep>() as libc::c_ulong)
-        as uint32_t) as *mut png_bytep;
+        .wrapping_mul(::std::mem::size_of::<png_bytep>() as libc::c_ulong) as u32)
+        as *mut png_bytep;
     i = 0i32 as png_uint_32;
     while i < height {
         let ref mut fresh1 = *rows_p.offset(i as isize);
@@ -1565,8 +1556,8 @@ unsafe extern "C" fn read_image_data(
 #[no_mangle]
 pub unsafe extern "C" fn png_get_bbox(
     mut handle: rust_input_handle_t,
-    mut width: *mut uint32_t,
-    mut height: *mut uint32_t,
+    mut width: *mut u32,
+    mut height: *mut u32,
     mut xdensity: *mut libc::c_double,
     mut ydensity: *mut libc::c_double,
 ) -> libc::c_int {
