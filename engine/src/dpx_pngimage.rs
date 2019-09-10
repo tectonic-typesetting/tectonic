@@ -1346,8 +1346,8 @@ unsafe extern "C" fn create_soft_mask(
 }
 /* bitdepth is always 8 (16 is not supported) */
 unsafe extern "C" fn strip_soft_mask(
-    mut png_ptr: *mut png_struct,
-    mut info_ptr: *mut png_info,
+    mut png: &png_struct,
+    mut png_info: &png_info,
     mut image_data_ptr: *mut png_byte,
     mut rowbytes_ptr: *mut png_uint_32,
     mut width: png_uint_32,
@@ -1359,8 +1359,8 @@ unsafe extern "C" fn strip_soft_mask(
     let mut bpc: png_byte = 0;
     let mut smask_data_ptr: png_bytep = 0 as *mut png_byte;
     let mut i: png_uint_32 = 0;
-    color_type = png_get_color_type(png_ptr.as_ref().unwrap(), info_ptr.as_ref().unwrap());
-    bpc = png_get_bit_depth(png_ptr.as_ref().unwrap(), info_ptr.as_ref().unwrap());
+    color_type = png_get_color_type(png, png_info);
+    bpc = png_get_bit_depth(png, png_info);
     if color_type as libc::c_int & 2i32 != 0 {
         let mut bps: libc::c_int = if bpc as libc::c_int == 8i32 {
             4i32
@@ -1522,7 +1522,7 @@ unsafe extern "C" fn strip_soft_mask(
 }
 /* Read image body */
 unsafe extern "C" fn read_image_data(
-    mut png_ptr: png_structp,
+    mut png: &mut png_struct,
     mut dest_ptr: png_bytep,
     mut height: png_uint_32,
     mut rowbytes: png_uint_32,
@@ -1538,7 +1538,7 @@ unsafe extern "C" fn read_image_data(
         *fresh1 = dest_ptr.offset(rowbytes.wrapping_mul(i) as isize);
         i = i.wrapping_add(1)
     }
-    png_read_image(png_ptr.as_mut().unwrap(), rows_p);
+    png_read_image(png, rows_p);
     free(rows_p as *mut libc::c_void);
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
