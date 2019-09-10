@@ -137,7 +137,7 @@ extern "C" {
        mostly unsigned (u32) and occasionally signed (int32_t).
     */
     #[no_mangle]
-    fn get_unsigned_byte(_: *mut FILE) -> libc::c_uchar;
+    fn get_unsigned_byte(_: *mut FILE) -> u8;
     #[no_mangle]
     fn skip_bytes(_: libc::c_uint, _: *mut FILE);
     #[no_mangle]
@@ -151,7 +151,7 @@ extern "C" {
     #[no_mangle]
     fn get_signed_quad(_: *mut FILE) -> int32_t;
     #[no_mangle]
-    fn get_unsigned_num(_: *mut FILE, _: libc::c_uchar) -> u32;
+    fn get_unsigned_num(_: *mut FILE, _: u8) -> u32;
     #[no_mangle]
     fn get_positive_quad(_: *mut FILE, _: *const libc::c_char, _: *const libc::c_char) -> u32;
     #[no_mangle]
@@ -329,19 +329,19 @@ pub unsafe extern "C" fn pdf_font_open_pkfont(mut font: *mut pdf_font) -> libc::
  * Optimizing those codes doesn't improve things.
  */
 unsafe extern "C" fn fill_black_run(
-    mut dp: *mut libc::c_uchar,
+    mut dp: *mut u8,
     mut left: u32,
     mut run_count: u32,
 ) -> u32 {
-    static mut mask: [libc::c_uchar; 8] = [
-        127u32 as libc::c_uchar,
-        191u32 as libc::c_uchar,
-        223u32 as libc::c_uchar,
-        239u32 as libc::c_uchar,
-        247u32 as libc::c_uchar,
-        251u32 as libc::c_uchar,
-        253u32 as libc::c_uchar,
-        254u32 as libc::c_uchar,
+    static mut mask: [u8; 8] = [
+        127u32 as u8,
+        191u32 as u8,
+        223u32 as u8,
+        239u32 as u8,
+        247u32 as u8,
+        251u32 as u8,
+        253u32 as u8,
+        254u32 as u8,
     ];
     let mut right: u32 = left
         .wrapping_add(run_count)
@@ -350,7 +350,7 @@ unsafe extern "C" fn fill_black_run(
         let ref mut fresh0 = *dp.offset(left.wrapping_div(8i32 as libc::c_uint) as isize);
         *fresh0 = (*fresh0 as libc::c_int
             & mask[left.wrapping_rem(8i32 as libc::c_uint) as usize] as libc::c_int)
-            as libc::c_uchar;
+            as u8;
         left = left.wrapping_add(1)
     }
     return run_count;
@@ -362,7 +362,7 @@ unsafe extern "C" fn fill_white_run(mut run_count: u32) -> u32 {
 unsafe extern "C" fn pk_packed_num(
     mut np: *mut u32,
     mut dyn_f: libc::c_int,
-    mut dp: *mut libc::c_uchar,
+    mut dp: *mut u8,
     mut pl: u32,
 ) -> u32 {
     let mut nmbr: u32 = 0i32 as u32;
@@ -460,7 +460,7 @@ unsafe extern "C" fn pk_packed_num(
     return nmbr;
 }
 unsafe extern "C" fn send_out(
-    mut rowptr: *mut libc::c_uchar,
+    mut rowptr: *mut u8,
     mut rowbytes: u32,
     mut stream: *mut pdf_obj,
 ) {
@@ -472,10 +472,10 @@ unsafe extern "C" fn pk_decode_packed(
     mut ht: u32,
     mut dyn_f: libc::c_int,
     mut run_color: libc::c_int,
-    mut dp: *mut libc::c_uchar,
+    mut dp: *mut u8,
     mut pl: u32,
 ) -> libc::c_int {
-    let mut rowptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut rowptr: *mut u8 = 0 as *mut u8;
     let mut rowbytes: u32 = 0;
     let mut i: u32 = 0;
     let mut np: u32 = 0i32 as u32;
@@ -485,8 +485,8 @@ unsafe extern "C" fn pk_decode_packed(
         .wrapping_add(7i32 as libc::c_uint)
         .wrapping_div(8i32 as libc::c_uint);
     rowptr = new((rowbytes as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+        as u32) as *mut u8;
     /* repeat count is applied to the *current* row.
      * "run" can span across rows.
      * If there are non-zero repeat count and if run
@@ -601,23 +601,23 @@ unsafe extern "C" fn pk_decode_bitmap(
     mut ht: u32,
     mut dyn_f: libc::c_int,
     mut run_color: libc::c_int,
-    mut dp: *mut libc::c_uchar,
+    mut dp: *mut u8,
     mut pl: u32,
 ) -> libc::c_int {
-    let mut rowptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut c: libc::c_uchar = 0;
+    let mut rowptr: *mut u8 = 0 as *mut u8;
+    let mut c: u8 = 0;
     let mut i: u32 = 0;
     let mut j: u32 = 0;
     let mut rowbytes: u32 = 0;
-    static mut mask: [libc::c_uchar; 8] = [
-        0x80u32 as libc::c_uchar,
-        0x40u32 as libc::c_uchar,
-        0x20u32 as libc::c_uchar,
-        0x10u32 as libc::c_uchar,
-        0x8u32 as libc::c_uchar,
-        0x4u32 as libc::c_uchar,
-        0x2u32 as libc::c_uchar,
-        0x1u32 as libc::c_uchar,
+    static mut mask: [u8; 8] = [
+        0x80u32 as u8,
+        0x40u32 as u8,
+        0x20u32 as u8,
+        0x10u32 as u8,
+        0x8u32 as u8,
+        0x4u32 as u8,
+        0x2u32 as u8,
+        0x1u32 as u8,
     ];
     if dyn_f == 14i32 {
     } else {
@@ -648,8 +648,8 @@ unsafe extern "C" fn pk_decode_bitmap(
         .wrapping_add(7i32 as libc::c_uint)
         .wrapping_div(8i32 as libc::c_uint);
     rowptr = new((rowbytes as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+        as u32) as *mut u8;
     memset(rowptr as *mut libc::c_void, 0i32, rowbytes as u64);
     /* Flip. PK bitmap is not byte aligned for each rows. */
     i = 0i32 as u32; /* flip bit */
@@ -657,12 +657,12 @@ unsafe extern "C" fn pk_decode_bitmap(
     while i < ht.wrapping_mul(wd) {
         c = (*dp.offset(i.wrapping_div(8i32 as libc::c_uint) as isize) as libc::c_int
             & mask[i.wrapping_rem(8i32 as libc::c_uint) as usize] as libc::c_int)
-            as libc::c_uchar;
+            as u8;
         if c as libc::c_int == 0i32 {
             let ref mut fresh2 = *rowptr.offset(j.wrapping_div(8i32 as libc::c_uint) as isize);
             *fresh2 = (*fresh2 as libc::c_int
                 | mask[i.wrapping_rem(8i32 as libc::c_uint) as usize] as libc::c_int)
-                as libc::c_uchar
+                as u8
         }
         j = j.wrapping_add(1);
         if j == wd {
@@ -691,7 +691,7 @@ unsafe extern "C" fn do_preamble(mut fp: *mut FILE) {
 }
 unsafe extern "C" fn read_pk_char_header(
     mut h: *mut pk_header_,
-    mut opcode: libc::c_uchar,
+    mut opcode: u8,
     mut fp: *mut FILE,
 ) -> libc::c_int {
     if !h.is_null() {
@@ -779,7 +779,7 @@ unsafe extern "C" fn read_pk_char_header(
 unsafe extern "C" fn create_pk_CharProc_stream(
     mut pkh: *mut pk_header_,
     mut chrwid: libc::c_double,
-    mut pkt_ptr: *mut libc::c_uchar,
+    mut pkt_ptr: *mut u8,
     mut pkt_len: u32,
 ) -> *mut pdf_obj {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj; /* charproc */
@@ -994,7 +994,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                 dyn_f: 0,
                 run_color: 0,
             };
-            error = read_pk_char_header(&mut pkh, opcode as libc::c_uchar, fp);
+            error = read_pk_char_header(&mut pkh, opcode as u8, fp);
             if error != 0 {
                 _tt_abort(
                     b"Error in reading PK character header.\x00" as *const u8
@@ -1015,7 +1015,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
             } else {
                 let mut charname: *mut libc::c_char = 0 as *mut libc::c_char;
                 let mut charproc: *mut pdf_obj = 0 as *mut pdf_obj;
-                let mut pkt_ptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+                let mut pkt_ptr: *mut u8 = 0 as *mut u8;
                 let mut bytesread: size_t = 0;
                 let mut charwidth: libc::c_double = 0.;
                 /* Charwidth in PDF units */
@@ -1050,8 +1050,8 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                     pkh.bm_voff as libc::c_double
                 };
                 pkt_ptr = new((pkh.pkt_len as u64)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-                    as u32) as *mut libc::c_uchar;
+                    .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+                    as u32) as *mut u8;
                 bytesread = fread(
                     pkt_ptr as *mut libc::c_void,
                     1i32 as u64,
@@ -1088,7 +1088,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                         sprintf(
                             charname,
                             b"x%02X\x00" as *const u8 as *const libc::c_char,
-                            pkh.chrcode as libc::c_uchar as libc::c_int,
+                            pkh.chrcode as u8 as libc::c_int,
                         );
                     }
                 } else {
@@ -1097,7 +1097,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                     sprintf(
                         charname,
                         b"x%02X\x00" as *const u8 as *const libc::c_char,
-                        pkh.chrcode as libc::c_uchar as libc::c_int,
+                        pkh.chrcode as u8 as libc::c_int,
                     );
                 }
                 pdf_add_dict(charprocs, pdf_new_name(charname), pdf_ref_obj(charproc));
@@ -1108,7 +1108,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
             match opcode {
                 240 | 241 | 242 | 243 => {
                     let mut len: int32_t =
-                        get_unsigned_num(fp, (opcode - 240i32) as libc::c_uchar) as int32_t;
+                        get_unsigned_num(fp, (opcode - 240i32) as u8) as int32_t;
                     if len < 0i32 {
                         dpx_warning(
                             b"PK: Special with %d bytes???\x00" as *const u8 as *const libc::c_char,
@@ -1197,13 +1197,13 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                 pdf_add_array(tmp_array, pdf_new_number(code as libc::c_double));
             }
             if encoding_id >= 0i32 && !enc_vec.is_null() {
-                charname_0 = *enc_vec.offset(code as libc::c_uchar as isize);
+                charname_0 = *enc_vec.offset(code as u8 as isize);
                 if charname_0.is_null() {
                     charname_0 = work_buffer.as_mut_ptr();
                     sprintf(
                         charname_0,
                         b"x%02X\x00" as *const u8 as *const libc::c_char,
-                        code as libc::c_uchar as libc::c_int,
+                        code as u8 as libc::c_int,
                     );
                 }
             } else {
@@ -1212,7 +1212,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                 sprintf(
                     charname_0,
                     b"x%02X\x00" as *const u8 as *const libc::c_char,
-                    code as libc::c_uchar as libc::c_int,
+                    code as u8 as libc::c_int,
                 );
             }
             pdf_add_array(tmp_array, pdf_new_name(charname_0));

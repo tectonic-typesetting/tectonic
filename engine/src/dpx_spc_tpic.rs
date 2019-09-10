@@ -291,7 +291,7 @@ unsafe extern "C" fn skip_blank(mut pp: *mut *const libc::c_char, mut endptr: *c
     let mut p: *const libc::c_char = *pp;
     while p < endptr
         && (*p as libc::c_int & !0x7fi32 == 0i32
-            && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
                 & _ISblank as libc::c_int as libc::c_ushort as libc::c_int
                 != 0)

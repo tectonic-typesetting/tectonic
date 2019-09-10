@@ -91,9 +91,9 @@ extern "C" {
     fn cff_add_string(cff: *mut cff_font, str: *const libc::c_char, unique: libc::c_int) -> s_SID;
 }
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type card8 = libc::c_uchar;
+pub type card8 = u8;
 pub type card16 = libc::c_ushort;
-pub type c_offsize = libc::c_uchar;
+pub type c_offsize = u8;
 pub type l_offset = u32;
 pub type s_SID = libc::c_ushort;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -1121,20 +1121,20 @@ unsafe extern "C" fn pack_real(
     );
     i = 0i32;
     while buffer[i as usize] as libc::c_int != '\u{0}' as i32 {
-        let mut ch: libc::c_uchar = 0i32 as libc::c_uchar;
+        let mut ch: u8 = 0i32 as u8;
         if buffer[i as usize] as libc::c_int == '.' as i32 {
-            ch = 0xai32 as libc::c_uchar
+            ch = 0xai32 as u8
         } else if buffer[i as usize] as libc::c_int >= '0' as i32
             && buffer[i as usize] as libc::c_int <= '9' as i32
         {
-            ch = (buffer[i as usize] as libc::c_int - '0' as i32) as libc::c_uchar
+            ch = (buffer[i as usize] as libc::c_int - '0' as i32) as u8
         } else if buffer[i as usize] as libc::c_int == 'e' as i32 {
             i += 1;
             ch = (if buffer[i as usize] as libc::c_int == '-' as i32 {
                 0xci32
             } else {
                 0xbi32
-            }) as libc::c_uchar
+            }) as u8
         } else {
             _tt_abort(
                 b"%s: Invalid character.\x00" as *const u8 as *const libc::c_char,

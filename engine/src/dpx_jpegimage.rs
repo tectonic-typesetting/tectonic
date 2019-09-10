@@ -72,7 +72,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> libc::c_ushort;
     #[no_mangle]
-    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> libc::c_uchar;
+    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
@@ -127,9 +127,7 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
-pub type __uint8_t = libc::c_uchar;
 pub type __ssize_t = libc::c_long;
-pub type uint8_t = __uint8_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -152,8 +150,8 @@ pub const JM_SOI: JPEG_marker = 216;
 pub struct JPEG_info {
     pub height: u16,
     pub width: u16,
-    pub bits_per_component: uint8_t,
-    pub num_components: uint8_t,
+    pub bits_per_component: u8,
+    pub num_components: u8,
     pub xdpi: libc::c_double,
     pub ydpi: libc::c_double,
     pub flags: libc::c_int,
@@ -214,7 +212,7 @@ pub const JM_SOF0: JPEG_marker = 192;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct JPEG_APPn_XMP {
-    pub packet: *mut libc::c_uchar,
+    pub packet: *mut u8,
     pub length: size_t,
 }
 #[derive(Copy, Clone)]
@@ -223,27 +221,27 @@ pub struct JPEG_APPn_Adobe {
     pub version: u16,
     pub flag0: u16,
     pub flag1: u16,
-    pub transform: uint8_t,
+    pub transform: u8,
     /* color transform code */
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct JPEG_APPn_ICC {
-    pub seq_id: uint8_t,
-    pub num_chunks: uint8_t,
-    pub chunk: *mut libc::c_uchar,
+    pub seq_id: u8,
+    pub num_chunks: u8,
+    pub chunk: *mut u8,
     pub length: size_t,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct JPEG_APPn_JFIF {
     pub version: u16,
-    pub units: uint8_t,
+    pub units: u8,
     pub Xdensity: u16,
     pub Ydensity: u16,
-    pub Xthumbnail: uint8_t,
-    pub Ythumbnail: uint8_t,
-    pub thumbnail: *mut libc::c_uchar,
+    pub Xthumbnail: u8,
+    pub Ythumbnail: u8,
+    pub thumbnail: *mut u8,
     /* Thumbnail data. */
 }
 /* tectonic/core-memory.h: basic dynamic memory helpers
@@ -257,7 +255,7 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 }
 #[no_mangle]
 pub unsafe extern "C" fn check_for_jpeg(mut handle: rust_input_handle_t) -> libc::c_int {
-    let mut jpeg_sig: [libc::c_uchar; 2] = [0; 2];
+    let mut jpeg_sig: [u8; 2] = [0; 2];
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     if ttstub_input_read(
         handle,
@@ -475,8 +473,8 @@ unsafe extern "C" fn jpeg_get_density(
 unsafe extern "C" fn JPEG_info_init(mut j_info: *mut JPEG_info) {
     (*j_info).width = 0i32 as u16;
     (*j_info).height = 0i32 as u16;
-    (*j_info).bits_per_component = 0i32 as uint8_t;
-    (*j_info).num_components = 0i32 as uint8_t;
+    (*j_info).bits_per_component = 0i32 as u8;
+    (*j_info).num_components = 0i32 as u8;
     (*j_info).xdpi = 0.0f64;
     (*j_info).ydpi = 0.0f64;
     (*j_info).flags = 0i32;
@@ -499,14 +497,14 @@ unsafe extern "C" fn JPEG_release_APPn_data(
     {
         let mut data: *mut JPEG_APPn_JFIF = 0 as *mut JPEG_APPn_JFIF;
         data = app_data as *mut JPEG_APPn_JFIF;
-        (*data).thumbnail = mfree((*data).thumbnail as *mut libc::c_void) as *mut libc::c_uchar;
+        (*data).thumbnail = mfree((*data).thumbnail as *mut libc::c_void) as *mut u8;
         free(data as *mut libc::c_void);
     } else if marker as libc::c_uint == JM_APP2 as libc::c_int as libc::c_uint
         && app_sig as libc::c_uint == JS_APPn_ICC as libc::c_int as libc::c_uint
     {
         let mut data_0: *mut JPEG_APPn_ICC = 0 as *mut JPEG_APPn_ICC;
         data_0 = app_data as *mut JPEG_APPn_ICC;
-        (*data_0).chunk = mfree((*data_0).chunk as *mut libc::c_void) as *mut libc::c_uchar;
+        (*data_0).chunk = mfree((*data_0).chunk as *mut libc::c_void) as *mut u8;
         free(data_0 as *mut libc::c_void);
     } else if marker as libc::c_uint == JM_APP14 as libc::c_int as libc::c_uint
         && app_sig as libc::c_uint == JS_APPn_ADOBE as libc::c_int as libc::c_uint
@@ -695,12 +693,12 @@ unsafe extern "C" fn read_APP14_Adobe(
     return 7i32 as libc::c_ushort;
 }
 unsafe extern "C" fn read_exif_bytes(
-    mut pp: *mut *mut libc::c_uchar,
+    mut pp: *mut *mut u8,
     mut n: libc::c_int,
     mut endian: libc::c_int,
 ) -> libc::c_int {
     let mut rval: libc::c_int = 0i32;
-    let mut p: *mut libc::c_uchar = *pp;
+    let mut p: *mut u8 = *pp;
     let mut i: libc::c_int = 0;
     match endian {
         0 => {
@@ -728,11 +726,11 @@ unsafe extern "C" fn read_APP1_Exif(
     mut length: size_t,
 ) -> size_t {
     let mut current_block: u64;
-    let mut buffer: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut endptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut rp: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut tiff_header: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut buffer: *mut u8 = 0 as *mut u8;
+    let mut endptr: *mut u8 = 0 as *mut u8;
+    let mut p: *mut u8 = 0 as *mut u8;
+    let mut rp: *mut u8 = 0 as *mut u8;
+    let mut tiff_header: *mut u8 = 0 as *mut u8;
     let mut bigendian: libc::c_char = 0;
     let mut i: libc::c_int = 0;
     let mut num_fields: libc::c_int = 0;
@@ -750,7 +748,7 @@ unsafe extern "C" fn read_APP1_Exif(
     let mut exifxdpi: libc::c_double = 0.0f64;
     let mut exifydpi: libc::c_double = 0.0f64;
     let mut r: ssize_t = 0;
-    buffer = xmalloc(length) as *mut libc::c_uchar;
+    buffer = xmalloc(length) as *mut u8;
     r = ttstub_input_read(handle, buffer as *mut libc::c_char, length);
     if !(r < 0i32 as libc::c_long || r as size_t != length) {
         p = buffer;
@@ -982,15 +980,15 @@ unsafe extern "C" fn read_APP0_JFIF(
         * (*app_data).Ythumbnail as libc::c_int) as size_t;
     if thumb_data_len > 0i32 as u64 {
         (*app_data).thumbnail = new((thumb_data_len as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-            as u32) as *mut libc::c_uchar;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+            as u32) as *mut u8;
         ttstub_input_read(
             handle,
             (*app_data).thumbnail as *mut libc::c_char,
             thumb_data_len,
         );
     } else {
-        (*app_data).thumbnail = 0 as *mut libc::c_uchar
+        (*app_data).thumbnail = 0 as *mut u8
     }
     add_APPn_marker(
         j_info,
@@ -1043,8 +1041,8 @@ unsafe extern "C" fn read_APP1_XMP(
         as u32) as *mut JPEG_APPn_XMP;
     (*app_data).length = length;
     (*app_data).packet = new(((*app_data).length as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+        as u32) as *mut u8;
     ttstub_input_read(
         handle,
         (*app_data).packet as *mut libc::c_char,
@@ -1071,8 +1069,8 @@ unsafe extern "C" fn read_APP2_ICC(
     (*app_data).num_chunks = tt_get_unsigned_byte(handle);
     (*app_data).length = length.wrapping_sub(2i32 as u64);
     (*app_data).chunk = new(((*app_data).length as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+        as u32) as *mut u8;
     ttstub_input_read(
         handle,
         (*app_data).chunk as *mut libc::c_char,

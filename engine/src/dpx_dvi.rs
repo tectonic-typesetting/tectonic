@@ -97,7 +97,7 @@ extern "C" {
     #[no_mangle]
     fn tt_skip_bytes(n: libc::c_uint, handle: rust_input_handle_t);
     #[no_mangle]
-    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> libc::c_uchar;
+    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
     fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> libc::c_ushort;
     #[no_mangle]
@@ -105,7 +105,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_signed_quad(handle: rust_input_handle_t) -> int32_t;
     #[no_mangle]
-    fn tt_get_unsigned_num(handle: rust_input_handle_t, num: libc::c_uchar) -> u32;
+    fn tt_get_unsigned_num(handle: rust_input_handle_t, num: u8) -> u32;
     #[no_mangle]
     fn tt_get_positive_quad(
         handle: rust_input_handle_t,
@@ -362,7 +362,7 @@ extern "C" {
     #[no_mangle]
     fn subfont_set_verbose(level: libc::c_int);
     #[no_mangle]
-    fn lookup_sfd_record(rec_id: libc::c_int, code: libc::c_uchar) -> libc::c_ushort;
+    fn lookup_sfd_record(rec_id: libc::c_int, code: u8) -> libc::c_ushort;
     #[no_mangle]
     fn sfd_load_record(
         sfd_name: *const libc::c_char,
@@ -711,9 +711,9 @@ pub struct cff_index {
     pub offset: *mut l_offset,
     pub data: *mut card8,
 }
-pub type card8 = libc::c_uchar;
+pub type card8 = u8;
 pub type l_offset = u32;
-pub type c_offsize = libc::c_uchar;
+pub type c_offsize = u8;
 pub type card16 = libc::c_ushort;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -985,7 +985,7 @@ pub type FWord = libc::c_short;
 */
 /* Acoid conflict with CHAR ... from <winnt.h>.  */
 /* Data Types as described in Apple's TTRefMan */
-pub type BYTE = libc::c_uchar;
+pub type BYTE = u8;
 pub type Fixed = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -1383,7 +1383,7 @@ static mut compute_boxes: libc::c_int = 0i32;
 static mut link_annot: libc::c_int = 1i32;
 static mut verbose: libc::c_int = 0i32;
 /* 64K should be plenty for most pages */
-static mut dvi_page_buffer: *mut libc::c_uchar = 0 as *const libc::c_uchar as *mut libc::c_uchar;
+static mut dvi_page_buffer: *mut u8 = 0 as *const u8 as *mut u8;
 static mut dvi_page_buf_size: libc::c_uint = 0;
 static mut dvi_page_buf_index: libc::c_uint = 0;
 /* functions to read numbers from the dvi file and store them in dvi_page_buffer */
@@ -1398,13 +1398,13 @@ unsafe extern "C" fn get_and_buffer_unsigned_byte(mut handle: rust_input_handle_
         dvi_page_buffer = renew(
             dvi_page_buffer as *mut libc::c_void,
             (dvi_page_buf_size as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
+                .wrapping_mul(::std::mem::size_of::<u8>() as u64)
                 as u32,
-        ) as *mut libc::c_uchar
+        ) as *mut u8
     }
     let fresh0 = dvi_page_buf_index;
     dvi_page_buf_index = dvi_page_buf_index.wrapping_add(1);
-    *dvi_page_buffer.offset(fresh0 as isize) = ch as libc::c_uchar;
+    *dvi_page_buffer.offset(fresh0 as isize) = ch as u8;
     return ch;
 }
 unsafe extern "C" fn get_and_buffer_unsigned_pair(mut handle: rust_input_handle_t) -> libc::c_uint {
@@ -1423,9 +1423,9 @@ unsafe extern "C" fn get_and_buffer_bytes(
         dvi_page_buffer = renew(
             dvi_page_buffer as *mut libc::c_void,
             (dvi_page_buf_size as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
+                .wrapping_mul(::std::mem::size_of::<u8>() as u64)
                 as u32,
-        ) as *mut libc::c_uchar
+        ) as *mut u8
     }
     if ttstub_input_read(
         handle,
@@ -1470,7 +1470,7 @@ unsafe extern "C" fn get_buffered_signed_quad() -> int32_t {
     }
     return quad;
 }
-unsafe extern "C" fn get_buffered_signed_num(mut num: libc::c_uchar) -> int32_t {
+unsafe extern "C" fn get_buffered_signed_num(mut num: u8) -> int32_t {
     let fresh6 = dvi_page_buf_index;
     dvi_page_buf_index = dvi_page_buf_index.wrapping_add(1);
     let mut quad: int32_t = *dvi_page_buffer.offset(fresh6 as isize) as int32_t;
@@ -1514,7 +1514,7 @@ unsafe extern "C" fn get_buffered_signed_num(mut num: libc::c_uchar) -> int32_t 
     }
     return quad;
 }
-unsafe extern "C" fn get_buffered_unsigned_num(mut num: libc::c_uchar) -> int32_t {
+unsafe extern "C" fn get_buffered_unsigned_num(mut num: u8) -> int32_t {
     let fresh10 = dvi_page_buf_index;
     dvi_page_buf_index = dvi_page_buf_index.wrapping_add(1);
     let mut quad: int32_t = *dvi_page_buffer.offset(fresh10 as isize) as int32_t;
@@ -1920,7 +1920,7 @@ unsafe extern "C" fn get_dvi_fonts(mut post_location: int32_t) {
             243 | 244 | 245 | 246 => {
                 read_font_record(tt_get_unsigned_num(
                     dvi_handle,
-                    (code - 243i32) as libc::c_uchar,
+                    (code - 243i32) as u8,
                 ));
             }
             252 => {
@@ -2517,7 +2517,7 @@ pub unsafe extern "C" fn dvi_set(mut ch: int32_t) {
     let mut width: spt_t = 0;
     let mut height: spt_t = 0;
     let mut depth: spt_t = 0;
-    let mut wbuf: [libc::c_uchar; 4] = [0; 4];
+    let mut wbuf: [u8; 4] = [0; 4];
     if current_font < 0i32 {
         _tt_abort(b"No font selected!\x00" as *const u8 as *const libc::c_char);
     }
@@ -2544,11 +2544,11 @@ pub unsafe extern "C" fn dvi_set(mut ch: int32_t) {
             if ch > 65535i32 {
                 /* _FIXME_ */
                 wbuf[0] = (0xd800i32 + (ch - 0x10000i32 >> 10i32 & 0x3ffi32) >> 8i32 & 0xffi32)
-                    as libc::c_uchar;
+                    as u8;
                 wbuf[1] =
-                    (0xd800i32 + (ch - 0x10000i32 >> 10i32 & 0x3ffi32) & 0xffi32) as libc::c_uchar;
-                wbuf[2] = (0xdc00i32 + (ch & 0x3ffi32) >> 8i32 & 0xffi32) as libc::c_uchar;
-                wbuf[3] = (0xdc00i32 + (ch & 0x3ffi32) & 0xffi32) as libc::c_uchar;
+                    (0xd800i32 + (ch - 0x10000i32 >> 10i32 & 0x3ffi32) & 0xffi32) as u8;
+                wbuf[2] = (0xdc00i32 + (ch & 0x3ffi32) >> 8i32 & 0xffi32) as u8;
+                wbuf[3] = (0xdc00i32 + (ch & 0x3ffi32) & 0xffi32) as u8;
                 pdf_dev_set_string(
                     dvi_state.h,
                     -dvi_state.v,
@@ -2560,8 +2560,8 @@ pub unsafe extern "C" fn dvi_set(mut ch: int32_t) {
                 );
             } else if ch > 255i32 {
                 /* _FIXME_ */
-                wbuf[0] = (ch >> 8i32 & 0xffi32) as libc::c_uchar; /* push/pop invoked */
-                wbuf[1] = (ch & 0xffi32) as libc::c_uchar;
+                wbuf[0] = (ch >> 8i32 & 0xffi32) as u8; /* push/pop invoked */
+                wbuf[1] = (ch & 0xffi32) as u8;
                 pdf_dev_set_string(
                     dvi_state.h,
                     -dvi_state.v,
@@ -2573,9 +2573,9 @@ pub unsafe extern "C" fn dvi_set(mut ch: int32_t) {
                 );
             } else if (*font).subfont_id >= 0i32 {
                 let mut uch: libc::c_ushort =
-                    lookup_sfd_record((*font).subfont_id, ch as libc::c_uchar);
-                wbuf[0] = (uch as libc::c_int >> 8i32 & 0xffi32) as libc::c_uchar;
-                wbuf[1] = (uch as libc::c_int & 0xffi32) as libc::c_uchar;
+                    lookup_sfd_record((*font).subfont_id, ch as u8);
+                wbuf[0] = (uch as libc::c_int >> 8i32 & 0xffi32) as u8;
+                wbuf[1] = (uch as libc::c_int & 0xffi32) as u8;
                 pdf_dev_set_string(
                     dvi_state.h,
                     -dvi_state.v,
@@ -2586,7 +2586,7 @@ pub unsafe extern "C" fn dvi_set(mut ch: int32_t) {
                     2i32,
                 );
             } else {
-                wbuf[0] = ch as libc::c_uchar;
+                wbuf[0] = ch as u8;
                 pdf_dev_set_string(
                     dvi_state.h,
                     -dvi_state.v,
@@ -2627,7 +2627,7 @@ pub unsafe extern "C" fn dvi_put(mut ch: int32_t) {
     let mut width: spt_t = 0;
     let mut height: spt_t = 0;
     let mut depth: spt_t = 0;
-    let mut wbuf: [libc::c_uchar; 4] = [0; 4];
+    let mut wbuf: [u8; 4] = [0; 4];
     if current_font < 0i32 {
         _tt_abort(b"No font selected!\x00" as *const u8 as *const libc::c_char);
     }
@@ -2642,11 +2642,11 @@ pub unsafe extern "C" fn dvi_put(mut ch: int32_t) {
             if ch > 65535i32 {
                 /* _FIXME_ */
                 wbuf[0] = (0xd800i32 + (ch - 0x10000i32 >> 10i32 & 0x3ffi32) >> 8i32 & 0xffi32)
-                    as libc::c_uchar;
+                    as u8;
                 wbuf[1] =
-                    (0xd800i32 + (ch - 0x10000i32 >> 10i32 & 0x3ffi32) & 0xffi32) as libc::c_uchar;
-                wbuf[2] = (0xdc00i32 + (ch & 0x3ffi32) >> 8i32 & 0xffi32) as libc::c_uchar;
-                wbuf[3] = (0xdc00i32 + (ch & 0x3ffi32) & 0xffi32) as libc::c_uchar;
+                    (0xd800i32 + (ch - 0x10000i32 >> 10i32 & 0x3ffi32) & 0xffi32) as u8;
+                wbuf[2] = (0xdc00i32 + (ch & 0x3ffi32) >> 8i32 & 0xffi32) as u8;
+                wbuf[3] = (0xdc00i32 + (ch & 0x3ffi32) & 0xffi32) as u8;
                 pdf_dev_set_string(
                     dvi_state.h,
                     -dvi_state.v,
@@ -2658,8 +2658,8 @@ pub unsafe extern "C" fn dvi_put(mut ch: int32_t) {
                 );
             } else if ch > 255i32 {
                 /* _FIXME_ */
-                wbuf[0] = (ch >> 8i32 & 0xffi32) as libc::c_uchar;
-                wbuf[1] = (ch & 0xffi32) as libc::c_uchar;
+                wbuf[0] = (ch >> 8i32 & 0xffi32) as u8;
+                wbuf[1] = (ch & 0xffi32) as u8;
                 pdf_dev_set_string(
                     dvi_state.h,
                     -dvi_state.v,
@@ -2671,9 +2671,9 @@ pub unsafe extern "C" fn dvi_put(mut ch: int32_t) {
                 );
             } else if (*font).subfont_id >= 0i32 {
                 let mut uch: libc::c_uint = 0;
-                uch = lookup_sfd_record((*font).subfont_id, ch as libc::c_uchar) as libc::c_uint;
-                wbuf[0] = (uch >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_uchar;
-                wbuf[1] = (uch & 0xffi32 as libc::c_uint) as libc::c_uchar;
+                uch = lookup_sfd_record((*font).subfont_id, ch as u8) as libc::c_uint;
+                wbuf[0] = (uch >> 8i32 & 0xffi32 as libc::c_uint) as u8;
+                wbuf[1] = (uch & 0xffi32 as libc::c_uint) as u8;
                 pdf_dev_set_string(
                     dvi_state.h,
                     -dvi_state.v,
@@ -2684,7 +2684,7 @@ pub unsafe extern "C" fn dvi_put(mut ch: int32_t) {
                     2i32,
                 );
             } else {
-                wbuf[0] = ch as libc::c_uchar;
+                wbuf[0] = ch as u8;
                 pdf_dev_set_string(
                     dvi_state.h,
                     -dvi_state.v,
@@ -2735,7 +2735,7 @@ pub unsafe extern "C" fn dvi_rule(mut width: int32_t, mut height: int32_t) {
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn dvi_dirchg(mut dir: libc::c_uchar) {
+pub unsafe extern "C" fn dvi_dirchg(mut dir: u8) {
     if verbose != 0 {
         fprintf(
             stderr,
@@ -3046,7 +3046,7 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: libc::c_int) {
     let mut xloc: *mut spt_t = 0 as *mut spt_t;
     let mut yloc: *mut spt_t = 0 as *mut spt_t;
     let mut glyph_width: spt_t = 0i32;
-    let mut wbuf: [libc::c_uchar; 2] = [0; 2];
+    let mut wbuf: [u8; 2] = [0; 2];
     let mut i: libc::c_uint = 0;
     let mut glyph_id: libc::c_uint = 0;
     let mut slen: libc::c_uint = 0i32 as libc::c_uint;
@@ -3108,13 +3108,13 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: libc::c_int) {
         };
         pdf_color_rgbcolor(
             &mut color,
-            (((*font).rgba_color >> 24i32) as libc::c_uchar as libc::c_int & 0xffi32)
+            (((*font).rgba_color >> 24i32) as u8 as libc::c_int & 0xffi32)
                 as libc::c_double
                 / 255i32 as libc::c_double,
-            (((*font).rgba_color >> 16i32) as libc::c_uchar as libc::c_int & 0xffi32)
+            (((*font).rgba_color >> 16i32) as u8 as libc::c_int & 0xffi32)
                 as libc::c_double
                 / 255i32 as libc::c_double,
-            (((*font).rgba_color >> 8i32) as libc::c_uchar as libc::c_int & 0xffi32)
+            (((*font).rgba_color >> 8i32) as u8 as libc::c_int & 0xffi32)
                 as libc::c_double
                 / 255i32 as libc::c_double,
         );
@@ -3200,8 +3200,8 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: libc::c_int) {
                 pdf_doc_expand_box(&mut rect);
             }
         }
-        wbuf[0] = (glyph_id >> 8i32) as libc::c_uchar;
-        wbuf[1] = (glyph_id & 0xffi32 as libc::c_uint) as libc::c_uchar;
+        wbuf[0] = (glyph_id >> 8i32) as u8;
+        wbuf[1] = (glyph_id & 0xffi32 as libc::c_uint) as u8;
         pdf_dev_set_string(
             dvi_state.h + *xloc.offset(i as isize),
             -dvi_state.v - *yloc.offset(i as isize),
@@ -3282,7 +3282,7 @@ pub unsafe extern "C" fn dvi_do_page(
     mut hmargin: libc::c_double,
     mut vmargin: libc::c_double,
 ) {
-    let mut opcode: libc::c_uchar = 0;
+    let mut opcode: u8 = 0;
     /* before this is called, we have scanned the page for papersize specials
     and the complete DVI data is now in dvi_page_buffer */
     dvi_page_buf_index = 0i32 as libc::c_uint;
@@ -3291,7 +3291,7 @@ pub unsafe extern "C" fn dvi_do_page(
     dev_origin_y = page_paper_height - vmargin;
     dvi_stack_depth = 0i32;
     loop {
-        opcode = get_buffered_unsigned_byte() as libc::c_uchar;
+        opcode = get_buffered_unsigned_byte() as u8;
         if opcode as libc::c_int <= 127i32 {
             dvi_set(opcode as int32_t);
         } else if opcode as libc::c_int >= 171i32 && opcode as libc::c_int <= 234i32 {
@@ -3301,7 +3301,7 @@ pub unsafe extern "C" fn dvi_do_page(
             match opcode as libc::c_int {
                 128 | 129 | 130 => {
                     dvi_set(get_buffered_unsigned_num(
-                        (opcode as libc::c_int - 128i32) as libc::c_uchar,
+                        (opcode as libc::c_int - 128i32) as u8,
                     ));
                     current_block_59 = 6471821049853688503;
                 }
@@ -3317,7 +3317,7 @@ pub unsafe extern "C" fn dvi_do_page(
                 }
                 133 | 134 | 135 => {
                     dvi_put(get_buffered_unsigned_num(
-                        (opcode as libc::c_int - 133i32) as libc::c_uchar,
+                        (opcode as libc::c_int - 133i32) as u8,
                     ));
                     current_block_59 = 6471821049853688503;
                 }
@@ -3377,7 +3377,7 @@ pub unsafe extern "C" fn dvi_do_page(
                 }
                 143 | 144 | 145 | 146 => {
                     dvi_right(get_buffered_signed_num(
-                        (opcode as libc::c_int - 143i32) as libc::c_uchar,
+                        (opcode as libc::c_int - 143i32) as u8,
                     ));
                     current_block_59 = 6471821049853688503;
                 }
@@ -3387,7 +3387,7 @@ pub unsafe extern "C" fn dvi_do_page(
                 }
                 148 | 149 | 150 | 151 => {
                     dvi_w(get_buffered_signed_num(
-                        (opcode as libc::c_int - 148i32) as libc::c_uchar,
+                        (opcode as libc::c_int - 148i32) as u8,
                     ));
                     current_block_59 = 6471821049853688503;
                 }
@@ -3397,13 +3397,13 @@ pub unsafe extern "C" fn dvi_do_page(
                 }
                 153 | 154 | 155 | 156 => {
                     dvi_x(get_buffered_signed_num(
-                        (opcode as libc::c_int - 153i32) as libc::c_uchar,
+                        (opcode as libc::c_int - 153i32) as u8,
                     ));
                     current_block_59 = 6471821049853688503;
                 }
                 157 | 158 | 159 | 160 => {
                     dvi_down(get_buffered_signed_num(
-                        (opcode as libc::c_int - 157i32) as libc::c_uchar,
+                        (opcode as libc::c_int - 157i32) as u8,
                     ));
                     current_block_59 = 6471821049853688503;
                 }
@@ -3413,7 +3413,7 @@ pub unsafe extern "C" fn dvi_do_page(
                 }
                 162 | 163 | 164 | 165 => {
                     dvi_y(get_buffered_signed_num(
-                        (opcode as libc::c_int - 162i32) as libc::c_uchar,
+                        (opcode as libc::c_int - 162i32) as u8,
                     ));
                     current_block_59 = 6471821049853688503;
                 }
@@ -3423,20 +3423,20 @@ pub unsafe extern "C" fn dvi_do_page(
                 }
                 167 | 168 | 169 | 170 => {
                     dvi_z(get_buffered_signed_num(
-                        (opcode as libc::c_int - 167i32) as libc::c_uchar,
+                        (opcode as libc::c_int - 167i32) as u8,
                     ));
                     current_block_59 = 6471821049853688503;
                 }
                 235 | 236 | 237 | 238 => {
                     do_fnt(get_buffered_unsigned_num(
-                        (opcode as libc::c_int - 235i32) as libc::c_uchar,
+                        (opcode as libc::c_int - 235i32) as u8,
                     ) as u32);
                     current_block_59 = 6471821049853688503;
                 }
                 239 | 240 | 241 | 242 => {
                     /* Specials */
                     let mut size: int32_t = get_buffered_unsigned_num(
-                        (opcode as libc::c_int - 239i32) as libc::c_uchar,
+                        (opcode as libc::c_int - 239i32) as u8,
                     );
                     if size < 0i32 {
                         dpx_warning(
@@ -3546,8 +3546,8 @@ pub unsafe extern "C" fn dvi_init(
     clear_state();
     dvi_page_buf_size = 0x10000u32;
     dvi_page_buffer = new((dvi_page_buf_size as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+        as u32) as *mut u8;
     return dvi2pts;
 }
 #[no_mangle]
@@ -3594,7 +3594,7 @@ pub unsafe extern "C" fn dvi_close() {
     vf_close_all_fonts();
     tfm_close_all();
     if !dvi_page_buffer.is_null() {
-        dvi_page_buffer = mfree(dvi_page_buffer as *mut libc::c_void) as *mut libc::c_uchar;
+        dvi_page_buffer = mfree(dvi_page_buffer as *mut libc::c_void) as *mut u8;
         dvi_page_buf_size = 0i32 as libc::c_uint
     };
 }
@@ -3988,7 +3988,7 @@ pub unsafe extern "C" fn dvi_scan_specials(
     mut user_pw: *mut libc::c_char,
 ) {
     let mut offset: u32 = 0; /* because dvipdfmx wants to scan first page twice! */
-    let mut opcode: libc::c_uchar = 0;
+    let mut opcode: u8 = 0;
     let mut len: libc::c_uint = 0;
     if page_no == buffered_page || num_pages == 0i32 as libc::c_uint {
         return;
@@ -4006,7 +4006,7 @@ pub unsafe extern "C" fn dvi_scan_specials(
         ttstub_input_seek(dvi_handle, offset as ssize_t, 0i32);
     }
     loop {
-        opcode = get_and_buffer_unsigned_byte(dvi_handle) as libc::c_uchar;
+        opcode = get_and_buffer_unsigned_byte(dvi_handle) as u8;
         if !(opcode as libc::c_int != 140i32) {
             break;
         }
@@ -4070,9 +4070,9 @@ pub unsafe extern "C" fn dvi_scan_specials(
                 dvi_page_buffer = renew(
                     dvi_page_buffer as *mut libc::c_void,
                     (dvi_page_buf_size as u64)
-                        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
+                        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
                         as u32,
-                ) as *mut libc::c_uchar
+                ) as *mut u8
             }
             if ttstub_input_read(
                 dvi_handle,
@@ -4141,7 +4141,7 @@ pub unsafe extern "C" fn dvi_scan_specials(
                 243 | 244 | 245 | 246 => {
                     do_fntdef(tt_get_unsigned_num(
                         dvi_handle,
-                        (opcode as libc::c_int - 243i32) as libc::c_uchar,
+                        (opcode as libc::c_int - 243i32) as u8,
                     ));
                     current_block_50 = 6033931424626438518;
                 }

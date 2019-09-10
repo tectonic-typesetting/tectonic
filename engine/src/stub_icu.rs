@@ -60,7 +60,7 @@ extern "C" {
 
 
 pub type UConverterType = libc::c_int;
-pub type UBiDiLevel = crate::uint8_t;
+pub type UBiDiLevel = u8;
 
 pub const UCNV_NUMBER_OF_SUPPORTED_CONVERTER_TYPES: UConverterType = 34;
 pub const UCNV_COMPOUND_TEXT: UConverterType = 33;

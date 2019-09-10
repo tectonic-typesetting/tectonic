@@ -23,7 +23,7 @@ extern "C" {
         len: size_t,
     ) -> ssize_t;
     #[no_mangle]
-    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> libc::c_uchar;
+    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
     fn tt_get_signed_byte(handle: rust_input_handle_t) -> libc::c_schar;
     #[no_mangle]
@@ -72,7 +72,7 @@ pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type BYTE = libc::c_uchar;
+pub type BYTE = u8;
 pub type SFNT_CHAR = libc::c_schar;
 pub type USHORT = libc::c_ushort;
 pub type SHORT = libc::c_short;
@@ -858,7 +858,7 @@ unsafe extern "C" fn tt_get_name(
             );
             ttstub_input_read(
                 (*sfont).handle,
-                dest as *mut libc::c_uchar as *mut libc::c_char,
+                dest as *mut u8 as *mut libc::c_char,
                 length as size_t,
             );
             *dest.offset(length as isize) = '\u{0}' as i32 as libc::c_char;

@@ -24,7 +24,7 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
-    fn skip_white_spaces(s: *mut *mut libc::c_uchar, endptr: *mut libc::c_uchar);
+    fn skip_white_spaces(s: *mut *mut u8, endptr: *mut u8);
     #[no_mangle]
     fn pst_new_obj(type_0: pst_type, data: *mut libc::c_void) -> *mut pst_obj;
     #[no_mangle]
@@ -74,25 +74,25 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn pst_parse_null(inbuf: *mut *mut libc::c_uchar, inbufend: *mut libc::c_uchar)
+    fn pst_parse_null(inbuf: *mut *mut u8, inbufend: *mut u8)
         -> *mut pst_obj;
     #[no_mangle]
     fn pst_parse_boolean(
-        inbuf: *mut *mut libc::c_uchar,
-        inbufend: *mut libc::c_uchar,
+        inbuf: *mut *mut u8,
+        inbufend: *mut u8,
     ) -> *mut pst_obj;
     #[no_mangle]
-    fn pst_parse_name(inbuf: *mut *mut libc::c_uchar, inbufend: *mut libc::c_uchar)
+    fn pst_parse_name(inbuf: *mut *mut u8, inbufend: *mut u8)
         -> *mut pst_obj;
     #[no_mangle]
     fn pst_parse_number(
-        inbuf: *mut *mut libc::c_uchar,
-        inbufend: *mut libc::c_uchar,
+        inbuf: *mut *mut u8,
+        inbufend: *mut u8,
     ) -> *mut pst_obj;
     #[no_mangle]
     fn pst_parse_string(
-        inbuf: *mut *mut libc::c_uchar,
-        inbufend: *mut libc::c_uchar,
+        inbuf: *mut *mut u8,
+        inbufend: *mut u8,
     ) -> *mut pst_obj;
 }
 pub type C2RustUnnamed = libc::c_uint;
@@ -131,11 +131,11 @@ pub type pst_type = libc::c_int;
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 unsafe extern "C" fn pst_parse_any(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
 ) -> *mut pst_obj {
-    let mut data: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut cur: *mut libc::c_uchar = *inbuf;
+    let mut data: *mut u8 = 0 as *mut u8;
+    let mut cur: *mut u8 = *inbuf;
     let mut len: libc::c_uint = 0;
     while cur < inbufend
         && !(cur == inbufend
@@ -160,20 +160,20 @@ unsafe extern "C" fn pst_parse_any(
     }
     len = cur.wrapping_offset_from(*inbuf) as libc::c_long as libc::c_uint;
     data = new((len.wrapping_add(1i32 as libc::c_uint) as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+        as u32) as *mut u8;
     memcpy(
         data as *mut libc::c_void,
         *inbuf as *const libc::c_void,
         len as u64,
     );
-    *data.offset(len as isize) = '\u{0}' as i32 as libc::c_uchar;
+    *data.offset(len as isize) = '\u{0}' as i32 as u8;
     *inbuf = cur;
     return pst_new_obj(-1i32, data as *mut libc::c_void);
 }
 unsafe extern "C" fn skip_line(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
 ) {
     while *inbuf < inbufend
         && **inbuf as libc::c_int != '\n' as i32
@@ -189,8 +189,8 @@ unsafe extern "C" fn skip_line(
     };
 }
 unsafe extern "C" fn skip_comments(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
 ) {
     while *inbuf < inbufend && **inbuf as libc::c_int == '%' as i32 {
         skip_line(inbuf, inbufend);
@@ -221,11 +221,11 @@ unsafe extern "C" fn skip_comments(
 /* NOTE: the input buffer must be null-terminated, i.e., *inbufend == 0 */
 #[no_mangle]
 pub unsafe extern "C" fn pst_get_token(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
 ) -> *mut pst_obj {
     let mut obj: *mut pst_obj = 0 as *mut pst_obj;
-    let mut c: libc::c_uchar = 0;
+    let mut c: u8 = 0;
     if *inbuf <= inbufend && *inbufend == 0 {
     } else {
         __assert_fail(

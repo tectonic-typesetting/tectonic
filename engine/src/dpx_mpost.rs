@@ -400,7 +400,7 @@ extern "C" {
         pf: *mut pdf_file,
     ) -> *mut pdf_obj;
     #[no_mangle]
-    fn lookup_sfd_record(rec_id: libc::c_int, code: libc::c_uchar) -> libc::c_ushort;
+    fn lookup_sfd_record(rec_id: libc::c_int, code: u8) -> libc::c_ushort;
     #[no_mangle]
     fn sfd_load_record(
         sfd_name: *const libc::c_char,
@@ -413,7 +413,7 @@ extern "C" {
     #[no_mangle]
     fn tfm_string_width(
         font_id: libc::c_int,
-        s: *const libc::c_uchar,
+        s: *const u8,
         len: libc::c_uint,
     ) -> fixword;
     #[no_mangle]
@@ -2592,7 +2592,7 @@ pub unsafe extern "C" fn mps_scan_bbox(
     let mut i: libc::c_int = 0;
     /* skip_white() skips lines starting '%'... */
     while *pp < endptr
-        && *(*__ctype_b_loc()).offset(**pp as libc::c_uchar as libc::c_int as isize) as libc::c_int
+        && *(*__ctype_b_loc()).offset(**pp as u8 as libc::c_int as isize) as libc::c_int
             & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
             != 0
     {
@@ -2643,7 +2643,7 @@ pub unsafe extern "C" fn mps_scan_bbox(
         }
         pdfparse_skip_line(pp, endptr);
         while *pp < endptr
-            && *(*__ctype_b_loc()).offset(**pp as libc::c_uchar as libc::c_int as isize)
+            && *(*__ctype_b_loc()).offset(**pp as u8 as libc::c_int as isize)
                 as libc::c_int
                 & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
                 != 0
@@ -3538,7 +3538,7 @@ unsafe extern "C" fn do_show() -> libc::c_int {
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
     let mut text_str: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut length: libc::c_int = 0;
-    let mut strptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut strptr: *mut u8 = 0 as *mut u8;
     let mut text_width: libc::c_double = 0.;
     font = if currentfont < 0i32 {
         0 as *mut mp_font
@@ -3565,7 +3565,7 @@ unsafe extern "C" fn do_show() -> libc::c_int {
         pdf_release_obj(text_str);
         return 1i32;
     }
-    strptr = pdf_string_value(text_str) as *mut libc::c_uchar;
+    strptr = pdf_string_value(text_str) as *mut u8;
     length = pdf_string_length(text_str) as libc::c_int;
     if (*font).tfm_id < 0i32 {
         dpx_warning(
@@ -3577,17 +3577,17 @@ unsafe extern "C" fn do_show() -> libc::c_int {
     text_width = 0.0f64;
     if (*font).subfont_id >= 0i32 {
         let mut uch: libc::c_ushort = 0;
-        let mut ustr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+        let mut ustr: *mut u8 = 0 as *mut u8;
         let mut i: libc::c_int = 0;
         ustr = new(((length * 2i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-            as u32) as *mut libc::c_uchar;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+            as u32) as *mut u8;
         i = 0i32;
         while i < length {
             uch = lookup_sfd_record((*font).subfont_id, *strptr.offset(i as isize));
-            *ustr.offset((2i32 * i) as isize) = (uch as libc::c_int >> 8i32) as libc::c_uchar;
+            *ustr.offset((2i32 * i) as isize) = (uch as libc::c_int >> 8i32) as u8;
             *ustr.offset((2i32 * i + 1i32) as isize) =
-                (uch as libc::c_int & 0xffi32) as libc::c_uchar;
+                (uch as libc::c_int & 0xffi32) as u8;
             if (*font).tfm_id >= 0i32 {
                 text_width += tfm_get_width((*font).tfm_id, *strptr.offset(i as isize) as int32_t)
             }
@@ -4428,7 +4428,7 @@ unsafe extern "C" fn mp_parse_body(
     let mut error: libc::c_int = 0i32;
     skip_white(start, end);
     while *start < end && error == 0 {
-        if *(*__ctype_b_loc()).offset(**start as libc::c_uchar as libc::c_int as isize)
+        if *(*__ctype_b_loc()).offset(**start as u8 as libc::c_int as isize)
             as libc::c_int
             & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
             != 0
@@ -4446,7 +4446,7 @@ unsafe extern "C" fn mp_parse_body(
                     *next as libc::c_int,
                 )
                 .is_null()
-                && *(*__ctype_b_loc()).offset(*next as libc::c_uchar as libc::c_int as isize)
+                && *(*__ctype_b_loc()).offset(*next as u8 as libc::c_int as isize)
                     as libc::c_int
                     & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
                     == 0

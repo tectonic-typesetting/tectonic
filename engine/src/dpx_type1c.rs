@@ -397,9 +397,9 @@ pub struct cff_index {
     pub offset: *mut l_offset,
     pub data: *mut card8,
 }
-pub type card8 = libc::c_uchar;
+pub type card8 = u8;
 pub type l_offset = u32;
-pub type c_offsize = libc::c_uchar;
+pub type c_offsize = u8;
 pub type card16 = libc::c_ushort;
 #[derive(Copy, Clone)]
 #[repr(C)]

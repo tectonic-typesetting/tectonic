@@ -37,7 +37,6 @@ extern "C" {
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
 }
-pub type uint8_t = u8;
 pub type size_t = u64;
 /* This is DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
 
@@ -67,7 +66,7 @@ pub struct MD5_CONTEXT {
     pub C: u32,
     pub D: u32,
     pub nblocks: size_t,
-    pub buf: [libc::c_uchar; 64],
+    pub buf: [u8; 64],
     pub count: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -82,7 +81,7 @@ pub struct SHA256_CONTEXT {
     pub h6: u32,
     pub h7: u32,
     pub nblocks: size_t,
-    pub buf: [libc::c_uchar; 64],
+    pub buf: [u8; 64],
     pub count: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -102,7 +101,7 @@ pub struct SHA512_STATE {
 pub struct SHA512_CONTEXT {
     pub state: SHA512_STATE,
     pub nblocks: size_t,
-    pub buf: [libc::c_uchar; 128],
+    pub buf: [u8; 128],
     pub count: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -110,14 +109,14 @@ pub struct SHA512_CONTEXT {
 pub struct ARC4_CONTEXT {
     pub idx_i: libc::c_int,
     pub idx_j: libc::c_int,
-    pub sbox: [libc::c_uchar; 256],
+    pub sbox: [u8; 256],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct AES_CONTEXT {
     pub nrounds: libc::c_int,
     pub rk: [u32; 60],
-    pub iv: [libc::c_uchar; 16],
+    pub iv: [u8; 16],
 }
 /* This is DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
 
@@ -192,7 +191,7 @@ pub unsafe extern "C" fn MD5_init(mut ctx: *mut MD5_CONTEXT) {
  * (as found in Colin Plumbs public domain implementation). */
 /* #define FF(b, c, d) ((b & c) | (~b & d)) */
 /* transform n*64 bytes */
-unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const libc::c_uchar) {
+unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     let mut correct_words: [u32; 16] = [0; 16];
     let mut A: u32 = (*ctx).A;
     let mut B: u32 = (*ctx).B;
@@ -705,7 +704,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const libc:
 #[no_mangle]
 pub unsafe extern "C" fn MD5_write(
     mut hd: *mut MD5_CONTEXT,
-    mut inbuf: *const libc::c_uchar,
+    mut inbuf: *const u8,
     mut inlen: libc::c_uint,
 ) {
     if (*hd).count == 64i32 {
@@ -732,7 +731,7 @@ pub unsafe extern "C" fn MD5_write(
             (*hd).buf[fresh17 as usize] = *fresh16;
             inlen = inlen.wrapping_sub(1)
         }
-        MD5_write(hd, 0 as *const libc::c_uchar, 0i32 as libc::c_uint);
+        MD5_write(hd, 0 as *const u8, 0i32 as libc::c_uint);
         if inlen == 0 {
             return;
         }
@@ -764,12 +763,12 @@ pub unsafe extern "C" fn MD5_write(
  * The handle is prepared for a new MD5 cycle.
  * Returns 16 bytes representing the digest. */
 #[no_mangle]
-pub unsafe extern "C" fn MD5_final(mut outbuf: *mut libc::c_uchar, mut hd: *mut MD5_CONTEXT) {
+pub unsafe extern "C" fn MD5_final(mut outbuf: *mut u8, mut hd: *mut MD5_CONTEXT) {
     let mut t: u32 = 0; /* flush */
     let mut msb: u32 = 0;
     let mut lsb: u32 = 0;
-    let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    MD5_write(hd, 0 as *const libc::c_uchar, 0i32 as libc::c_uint);
+    let mut p: *mut u8 = 0 as *mut u8;
+    MD5_write(hd, 0 as *const u8, 0i32 as libc::c_uint);
     t = (*hd).nblocks as u32;
     /* multiply by 64 to make a byte count */
     lsb = t << 6i32;
@@ -789,24 +788,24 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut libc::c_uchar, mut hd: *mut 
         /* enough room */
         let fresh20 = (*hd).count; /* pad */
         (*hd).count = (*hd).count + 1;
-        (*hd).buf[fresh20 as usize] = 0x80i32 as libc::c_uchar;
+        (*hd).buf[fresh20 as usize] = 0x80i32 as u8;
         while (*hd).count < 56i32 {
             let fresh21 = (*hd).count;
             (*hd).count = (*hd).count + 1;
-            (*hd).buf[fresh21 as usize] = 0i32 as libc::c_uchar
+            (*hd).buf[fresh21 as usize] = 0i32 as u8
         }
     /* pad */
     } else {
         let fresh22 = (*hd).count; /* pad character */
         (*hd).count = (*hd).count + 1;
-        (*hd).buf[fresh22 as usize] = 0x80i32 as libc::c_uchar;
+        (*hd).buf[fresh22 as usize] = 0x80i32 as u8;
         while (*hd).count < 64i32 {
             let fresh23 = (*hd).count;
             (*hd).count = (*hd).count + 1;
-            (*hd).buf[fresh23 as usize] = 0i32 as libc::c_uchar
+            (*hd).buf[fresh23 as usize] = 0i32 as u8
         }
         /* fill next block with zeroes */
-        MD5_write(hd, 0 as *const libc::c_uchar, 0i32 as libc::c_uint); /* flush */
+        MD5_write(hd, 0 as *const u8, 0i32 as libc::c_uint); /* flush */
         memset(
             (*hd).buf.as_mut_ptr() as *mut libc::c_void,
             0i32,
@@ -814,14 +813,14 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut libc::c_uchar, mut hd: *mut 
         );
     }
     /* append the 64 bit count */
-    (*hd).buf[56] = (lsb & 0xffi32 as libc::c_uint) as libc::c_uchar; /* p = hd->buf; */
-    (*hd).buf[57] = (lsb >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_uchar;
-    (*hd).buf[58] = (lsb >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_uchar;
-    (*hd).buf[59] = (lsb >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_uchar;
-    (*hd).buf[60] = (msb & 0xffi32 as libc::c_uint) as libc::c_uchar;
-    (*hd).buf[61] = (msb >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_uchar;
-    (*hd).buf[62] = (msb >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_uchar;
-    (*hd).buf[63] = (msb >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_uchar;
+    (*hd).buf[56] = (lsb & 0xffi32 as libc::c_uint) as u8; /* p = hd->buf; */
+    (*hd).buf[57] = (lsb >> 8i32 & 0xffi32 as libc::c_uint) as u8;
+    (*hd).buf[58] = (lsb >> 16i32 & 0xffi32 as libc::c_uint) as u8;
+    (*hd).buf[59] = (lsb >> 24i32 & 0xffi32 as libc::c_uint) as u8;
+    (*hd).buf[60] = (msb & 0xffi32 as libc::c_uint) as u8;
+    (*hd).buf[61] = (msb >> 8i32 & 0xffi32 as libc::c_uint) as u8;
+    (*hd).buf[62] = (msb >> 16i32 & 0xffi32 as libc::c_uint) as u8;
+    (*hd).buf[63] = (msb >> 24i32 & 0xffi32 as libc::c_uint) as u8;
     transform(hd, (*hd).buf.as_mut_ptr());
     _gcry_burn_stack(
         (80i32 as u64).wrapping_add(
@@ -873,21 +872,21 @@ unsafe extern "C" fn _gcry_bswap64(mut x: u64) -> u64 {
 }
 /* Endian dependent byte swap operations.  */
 unsafe extern "C" fn buf_get_be32(mut _buf: *const libc::c_void) -> u32 {
-    let mut in_0: *const uint8_t = _buf as *const uint8_t;
+    let mut in_0: *const u8 = _buf as *const u8;
     return (*in_0.offset(0) as u32) << 24i32
         | (*in_0.offset(1) as u32) << 16i32
         | (*in_0.offset(2) as u32) << 8i32
         | *in_0.offset(3) as u32;
 }
 unsafe extern "C" fn buf_put_be32(mut _buf: *mut libc::c_void, mut val: u32) {
-    let mut out: *mut uint8_t = _buf as *mut uint8_t;
-    *out.offset(0) = (val >> 24i32) as uint8_t;
-    *out.offset(1) = (val >> 16i32) as uint8_t;
-    *out.offset(2) = (val >> 8i32) as uint8_t;
-    *out.offset(3) = val as uint8_t;
+    let mut out: *mut u8 = _buf as *mut u8;
+    *out.offset(0) = (val >> 24i32) as u8;
+    *out.offset(1) = (val >> 16i32) as u8;
+    *out.offset(2) = (val >> 8i32) as u8;
+    *out.offset(3) = val as u8;
 }
 unsafe extern "C" fn buf_get_be64(mut _buf: *const libc::c_void) -> u64 {
-    let mut in_0: *const uint8_t = _buf as *const uint8_t;
+    let mut in_0: *const u8 = _buf as *const u8;
     return (*in_0.offset(0) as u64) << 56i32
         | (*in_0.offset(1) as u64) << 48i32
         | (*in_0.offset(2) as u64) << 40i32
@@ -898,15 +897,15 @@ unsafe extern "C" fn buf_get_be64(mut _buf: *const libc::c_void) -> u64 {
         | *in_0.offset(7) as u64;
 }
 unsafe extern "C" fn buf_put_be64(mut _buf: *mut libc::c_void, mut val: u64) {
-    let mut out: *mut uint8_t = _buf as *mut uint8_t;
-    *out.offset(0) = (val >> 56i32) as uint8_t;
-    *out.offset(1) = (val >> 48i32) as uint8_t;
-    *out.offset(2) = (val >> 40i32) as uint8_t;
-    *out.offset(3) = (val >> 32i32) as uint8_t;
-    *out.offset(4) = (val >> 24i32) as uint8_t;
-    *out.offset(5) = (val >> 16i32) as uint8_t;
-    *out.offset(6) = (val >> 8i32) as uint8_t;
-    *out.offset(7) = val as uint8_t;
+    let mut out: *mut u8 = _buf as *mut u8;
+    *out.offset(0) = (val >> 56i32) as u8;
+    *out.offset(1) = (val >> 48i32) as u8;
+    *out.offset(2) = (val >> 40i32) as u8;
+    *out.offset(3) = (val >> 32i32) as u8;
+    *out.offset(4) = (val >> 24i32) as u8;
+    *out.offset(5) = (val >> 16i32) as u8;
+    *out.offset(6) = (val >> 8i32) as u8;
+    *out.offset(7) = val as u8;
 }
 #[no_mangle]
 pub unsafe extern "C" fn SHA256_init(mut hd: *mut SHA256_CONTEXT) {
@@ -928,7 +927,7 @@ Transform the message X which consists of 16 32-bit-words. See FIPS
 /* (4.7) */
 unsafe extern "C" fn _SHA256_transform(
     mut hd: *mut SHA256_CONTEXT,
-    mut data: *const libc::c_uchar,
+    mut data: *const u8,
 ) -> libc::c_uint {
     static mut K: [u32; 64] = [
         0x428a2f98i32 as u32,
@@ -1175,7 +1174,7 @@ unsafe extern "C" fn _SHA256_transform(
 #[no_mangle]
 pub unsafe extern "C" fn SHA256_write(
     mut hd: *mut SHA256_CONTEXT,
-    mut inbuf: *const libc::c_uchar,
+    mut inbuf: *const u8,
     mut inlen: libc::c_uint,
 ) {
     let mut stack_burn: libc::c_uint = 0i32 as libc::c_uint;
@@ -1198,7 +1197,7 @@ pub unsafe extern "C" fn SHA256_write(
             (*hd).buf[fresh25 as usize] = *fresh24;
             inlen = inlen.wrapping_sub(1)
         }
-        SHA256_write(hd, 0 as *const libc::c_uchar, 0i32 as libc::c_uint);
+        SHA256_write(hd, 0 as *const u8, 0i32 as libc::c_uint);
         if inlen == 0 {
             return;
         }
@@ -1226,13 +1225,13 @@ digest.  The handle is prepared for a new cycle, but adding bytes
 to the handle will the destroy the returned buffer.  Returns: 32
 bytes with the message the digest.  */
 #[no_mangle]
-pub unsafe extern "C" fn SHA256_final(mut outbuf: *mut libc::c_uchar, mut hd: *mut SHA256_CONTEXT) {
+pub unsafe extern "C" fn SHA256_final(mut outbuf: *mut u8, mut hd: *mut SHA256_CONTEXT) {
     let mut t: u32 = 0;
     let mut msb: u32 = 0;
     let mut lsb: u32 = 0;
-    let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut p: *mut u8 = 0 as *mut u8;
     let mut burn: libc::c_uint = 0;
-    SHA256_write(hd, 0 as *const libc::c_uchar, 0i32 as libc::c_uint);
+    SHA256_write(hd, 0 as *const u8, 0i32 as libc::c_uint);
     /* flush */
     t = (*hd).nblocks as u32;
     /* multiply by 64 to make a byte count */
@@ -1253,24 +1252,24 @@ pub unsafe extern "C" fn SHA256_final(mut outbuf: *mut libc::c_uchar, mut hd: *m
         /* enough room */
         let fresh28 = (*hd).count; /* pad */
         (*hd).count = (*hd).count + 1;
-        (*hd).buf[fresh28 as usize] = 0x80i32 as libc::c_uchar;
+        (*hd).buf[fresh28 as usize] = 0x80i32 as u8;
         while (*hd).count < 56i32 {
             let fresh29 = (*hd).count;
             (*hd).count = (*hd).count + 1;
-            (*hd).buf[fresh29 as usize] = 0i32 as libc::c_uchar
+            (*hd).buf[fresh29 as usize] = 0i32 as u8
         }
     /* pad */
     } else {
         /* need one extra block */
         let fresh30 = (*hd).count; /* pad character */
         (*hd).count = (*hd).count + 1;
-        (*hd).buf[fresh30 as usize] = 0x80i32 as libc::c_uchar;
+        (*hd).buf[fresh30 as usize] = 0x80i32 as u8;
         while (*hd).count < 64i32 {
             let fresh31 = (*hd).count;
             (*hd).count = (*hd).count + 1;
-            (*hd).buf[fresh31 as usize] = 0i32 as libc::c_uchar
+            (*hd).buf[fresh31 as usize] = 0i32 as u8
         }
-        SHA256_write(hd, 0 as *const libc::c_uchar, 0i32 as libc::c_uint);
+        SHA256_write(hd, 0 as *const u8, 0i32 as libc::c_uint);
         /* fill next block with zeroes */
         memset(
             (*hd).buf.as_mut_ptr() as *mut libc::c_void,
@@ -1437,7 +1436,7 @@ static mut k: [u64; 80] = [
  */
 unsafe extern "C" fn __transform(
     mut hd: *mut SHA512_STATE,
-    mut data: *const libc::c_uchar,
+    mut data: *const u8,
 ) -> libc::c_uint {
     let mut a: u64 = 0;
     let mut b: u64 = 0;
@@ -2161,7 +2160,7 @@ unsafe extern "C" fn __transform(
 }
 unsafe extern "C" fn _SHA512_transform(
     mut ctx: *mut SHA512_CONTEXT,
-    mut data: *const libc::c_uchar,
+    mut data: *const u8,
 ) -> libc::c_uint {
     return (__transform(&mut (*ctx).state, data) as u64).wrapping_add(
         (3i32 as u64)
@@ -2178,7 +2177,7 @@ unsafe extern "C" fn _SHA512_transform(
 #[no_mangle]
 pub unsafe extern "C" fn SHA512_write(
     mut hd: *mut SHA512_CONTEXT,
-    mut inbuf: *const libc::c_uchar,
+    mut inbuf: *const u8,
     mut inlen: libc::c_uint,
 ) {
     let mut stack_burn: libc::c_uint = 0i32 as libc::c_uint;
@@ -2201,7 +2200,7 @@ pub unsafe extern "C" fn SHA512_write(
             (*hd).buf[fresh33 as usize] = *fresh32;
             inlen = inlen.wrapping_sub(1)
         }
-        SHA512_write(hd, 0 as *const libc::c_uchar, 0i32 as libc::c_uint);
+        SHA512_write(hd, 0 as *const u8, 0i32 as libc::c_uint);
         if inlen == 0 {
             return;
         }
@@ -2224,13 +2223,13 @@ pub unsafe extern "C" fn SHA512_write(
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn SHA512_final(mut outbuf: *mut libc::c_uchar, mut hd: *mut SHA512_CONTEXT) {
+pub unsafe extern "C" fn SHA512_final(mut outbuf: *mut u8, mut hd: *mut SHA512_CONTEXT) {
     let mut stack_burn_depth: libc::c_uint = 0;
     let mut t: u64 = 0;
     let mut msb: u64 = 0;
     let mut lsb: u64 = 0;
-    let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    SHA512_write(hd, 0 as *const libc::c_uchar, 0i32 as libc::c_uint);
+    let mut p: *mut u8 = 0 as *mut u8;
+    SHA512_write(hd, 0 as *const u8, 0i32 as libc::c_uint);
     /* flush */
     t = (*hd).nblocks;
     /* multiply by 128 to make a byte count */
@@ -2251,24 +2250,24 @@ pub unsafe extern "C" fn SHA512_final(mut outbuf: *mut libc::c_uchar, mut hd: *m
         /* enough room */
         let fresh36 = (*hd).count; /* pad */
         (*hd).count = (*hd).count + 1;
-        (*hd).buf[fresh36 as usize] = 0x80i32 as libc::c_uchar;
+        (*hd).buf[fresh36 as usize] = 0x80i32 as u8;
         while (*hd).count < 112i32 {
             let fresh37 = (*hd).count;
             (*hd).count = (*hd).count + 1;
-            (*hd).buf[fresh37 as usize] = 0i32 as libc::c_uchar
+            (*hd).buf[fresh37 as usize] = 0i32 as u8
         }
     /* pad */
     } else {
         /* need one extra block */
         let fresh38 = (*hd).count; /* pad character */
         (*hd).count = (*hd).count + 1;
-        (*hd).buf[fresh38 as usize] = 0x80i32 as libc::c_uchar;
+        (*hd).buf[fresh38 as usize] = 0x80i32 as u8;
         while (*hd).count < 128i32 {
             let fresh39 = (*hd).count;
             (*hd).count = (*hd).count + 1;
-            (*hd).buf[fresh39 as usize] = 0i32 as libc::c_uchar
+            (*hd).buf[fresh39 as usize] = 0i32 as u8
         }
-        SHA512_write(hd, 0 as *const libc::c_uchar, 0i32 as libc::c_uint);
+        SHA512_write(hd, 0 as *const u8, 0i32 as libc::c_uint);
         /* fill next block with zeroes */
         memset(
             (*hd).buf.as_mut_ptr() as *mut libc::c_void,
@@ -2329,13 +2328,13 @@ pub unsafe extern "C" fn SHA512_final(mut outbuf: *mut libc::c_uchar, mut hd: *m
  */
 unsafe extern "C" fn do_encrypt_stream(
     mut ctx: *mut ARC4_CONTEXT,
-    mut outbuf: *mut libc::c_uchar,
-    mut inbuf: *const libc::c_uchar,
+    mut outbuf: *mut u8,
+    mut inbuf: *const u8,
     mut len: libc::c_uint,
 ) {
     let mut i: libc::c_int = (*ctx).idx_i; /* and seems to be faster than mod */
     let mut j: libc::c_int = (*ctx).idx_j;
-    let mut sbox: *mut libc::c_uchar = (*ctx).sbox.as_mut_ptr();
+    let mut sbox: *mut u8 = (*ctx).sbox.as_mut_ptr();
     let mut t: libc::c_int = 0;
     loop {
         let fresh40 = len;
@@ -2349,7 +2348,7 @@ unsafe extern "C" fn do_encrypt_stream(
         j &= 255i32;
         t = *sbox.offset(i as isize) as libc::c_int;
         *sbox.offset(i as isize) = *sbox.offset(j as isize);
-        *sbox.offset(j as isize) = t as libc::c_uchar;
+        *sbox.offset(j as isize) = t as u8;
         let fresh41 = inbuf;
         inbuf = inbuf.offset(1);
         let fresh42 = outbuf;
@@ -2358,7 +2357,7 @@ unsafe extern "C" fn do_encrypt_stream(
             ^ *sbox.offset(
                 (*sbox.offset(i as isize) as libc::c_int + *sbox.offset(j as isize) as libc::c_int
                     & 255i32) as isize,
-            ) as libc::c_int) as libc::c_uchar
+            ) as libc::c_int) as u8
     }
     (*ctx).idx_i = i;
     (*ctx).idx_j = j;
@@ -2367,25 +2366,25 @@ unsafe extern "C" fn do_encrypt_stream(
 pub unsafe extern "C" fn ARC4(
     mut ctx: *mut ARC4_CONTEXT,
     mut len: libc::c_uint,
-    mut inbuf: *const libc::c_uchar,
-    mut outbuf: *mut libc::c_uchar,
+    mut inbuf: *const u8,
+    mut outbuf: *mut u8,
 ) {
     do_encrypt_stream(ctx, outbuf, inbuf, len);
     _gcry_burn_stack(64i32);
 }
 unsafe extern "C" fn do_arcfour_setkey(
     mut ctx: *mut ARC4_CONTEXT,
-    mut key: *const libc::c_uchar,
+    mut key: *const u8,
     mut keylen: libc::c_uint,
 ) {
     let mut i: libc::c_int = 0;
     let mut j: libc::c_int = 0;
-    let mut karr: [libc::c_uchar; 256] = [0; 256];
+    let mut karr: [u8; 256] = [0; 256];
     (*ctx).idx_j = 0i32;
     (*ctx).idx_i = (*ctx).idx_j;
     i = 0i32;
     while i < 256i32 {
-        (*ctx).sbox[i as usize] = i as libc::c_uchar;
+        (*ctx).sbox[i as usize] = i as u8;
         i += 1
     }
     i = 0i32;
@@ -2400,7 +2399,7 @@ unsafe extern "C" fn do_arcfour_setkey(
         j = (j + (*ctx).sbox[i as usize] as libc::c_int + karr[i as usize] as libc::c_int) % 256i32;
         t = (*ctx).sbox[i as usize] as libc::c_int;
         (*ctx).sbox[i as usize] = (*ctx).sbox[j as usize];
-        (*ctx).sbox[j as usize] = t as libc::c_uchar;
+        (*ctx).sbox[j as usize] = t as u8;
         i += 1
     }
     memset(
@@ -2413,18 +2412,18 @@ unsafe extern "C" fn do_arcfour_setkey(
 pub unsafe extern "C" fn ARC4_set_key(
     mut ctx: *mut ARC4_CONTEXT,
     mut keylen: libc::c_uint,
-    mut key: *const libc::c_uchar,
+    mut key: *const u8,
 ) {
     do_arcfour_setkey(ctx, key, keylen);
     _gcry_burn_stack(300i32);
 }
 #[no_mangle]
 pub unsafe extern "C" fn AES_ecb_encrypt(
-    mut key: *const libc::c_uchar,
+    mut key: *const u8,
     mut key_len: size_t,
-    mut plain: *const libc::c_uchar,
+    mut plain: *const u8,
     mut plain_len: size_t,
-    mut cipher: *mut *mut libc::c_uchar,
+    mut cipher: *mut *mut u8,
     mut cipher_len: *mut size_t,
 ) {
     let mut ctx: *mut AES_CONTEXT = 0 as *mut AES_CONTEXT;
@@ -2433,14 +2432,14 @@ pub unsafe extern "C" fn AES_ecb_encrypt(
         rk: [0; 60],
         iv: [0; 16],
     };
-    let mut inptr: *const libc::c_uchar = 0 as *const libc::c_uchar;
-    let mut outptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut inptr: *const u8 = 0 as *const u8;
+    let mut outptr: *mut u8 = 0 as *mut u8;
     let mut len: size_t = 0;
     ctx = &mut aes;
     *cipher_len = plain_len;
     *cipher = new((*cipher_len as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+        as u32) as *mut u8;
     (*ctx).nrounds = rijndaelSetupEncrypt(
         (*ctx).rk.as_mut_ptr(),
         key,
@@ -2456,7 +2455,7 @@ pub unsafe extern "C" fn AES_ecb_encrypt(
         len = (len as u64).wrapping_sub(16i32 as u64) as size_t as size_t
     }
     if len > 0i32 as u64 {
-        let mut block: [libc::c_uchar; 16] = [0; 16];
+        let mut block: [u8; 16] = [0; 16];
         memcpy(
             block.as_mut_ptr() as *mut libc::c_void,
             inptr as *const libc::c_void,
@@ -2465,7 +2464,7 @@ pub unsafe extern "C" fn AES_ecb_encrypt(
         rijndaelEncrypt(
             (*ctx).rk.as_mut_ptr(),
             (*ctx).nrounds,
-            block.as_mut_ptr() as *const uint8_t,
+            block.as_mut_ptr() as *const u8,
             outptr,
         );
         inptr = inptr.offset(len as isize);
@@ -2476,13 +2475,13 @@ pub unsafe extern "C" fn AES_ecb_encrypt(
 /* NULL iv means here "use random IV". */
 #[no_mangle]
 pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
-    mut key: *const libc::c_uchar,
+    mut key: *const u8,
     mut key_len: size_t,
-    mut iv: *const libc::c_uchar,
+    mut iv: *const u8,
     mut padding: libc::c_int,
-    mut plain: *const libc::c_uchar,
+    mut plain: *const u8,
     mut plain_len: size_t,
-    mut cipher: *mut *mut libc::c_uchar,
+    mut cipher: *mut *mut u8,
     mut cipher_len: *mut size_t,
 ) {
     let mut ctx: *mut AES_CONTEXT = 0 as *mut AES_CONTEXT;
@@ -2491,9 +2490,9 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
         rk: [0; 60],
         iv: [0; 16],
     };
-    let mut inptr: *const libc::c_uchar = 0 as *const libc::c_uchar;
-    let mut outptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut block: [libc::c_uchar; 16] = [0; 16];
+    let mut inptr: *const u8 = 0 as *const u8;
+    let mut outptr: *mut u8 = 0 as *mut u8;
+    let mut block: [u8; 16] = [0; 16];
     let mut len: size_t = 0;
     let mut i: size_t = 0;
     let mut padbytes: libc::c_int = 0;
@@ -2507,7 +2506,7 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
     } else {
         i = 0i32 as size_t;
         while i < 16i32 as u64 {
-            (*ctx).iv[i as usize] = (rand() % 256i32) as libc::c_uchar;
+            (*ctx).iv[i as usize] = (rand() % 256i32) as u8;
             i = i.wrapping_add(1)
         }
     }
@@ -2528,8 +2527,8 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
         .wrapping_add((if !iv.is_null() { 0i32 } else { 16i32 }) as u64)
         .wrapping_add(padbytes as u64);
     *cipher = new((*cipher_len as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+        as u32) as *mut u8;
     (*ctx).nrounds = rijndaelSetupEncrypt(
         (*ctx).rk.as_mut_ptr(),
         key,
@@ -2551,13 +2550,13 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
         while i < 16i32 as u64 {
             block[i as usize] = (*inptr.offset(i as isize) as libc::c_int
                 ^ (*ctx).iv[i as usize] as libc::c_int)
-                as libc::c_uchar;
+                as u8;
             i = i.wrapping_add(1)
         }
         rijndaelEncrypt(
             (*ctx).rk.as_mut_ptr(),
             (*ctx).nrounds,
-            block.as_mut_ptr() as *const uint8_t,
+            block.as_mut_ptr() as *const u8,
             outptr,
         );
         memcpy(
@@ -2574,18 +2573,18 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
         while i < len {
             block[i as usize] = (*inptr.offset(i as isize) as libc::c_int
                 ^ (*ctx).iv[i as usize] as libc::c_int)
-                as libc::c_uchar;
+                as u8;
             i = i.wrapping_add(1)
         }
         i = len;
         while i < 16i32 as u64 {
-            block[i as usize] = (padbytes ^ (*ctx).iv[i as usize] as libc::c_int) as libc::c_uchar;
+            block[i as usize] = (padbytes ^ (*ctx).iv[i as usize] as libc::c_int) as u8;
             i = i.wrapping_add(1)
         }
         rijndaelEncrypt(
             (*ctx).rk.as_mut_ptr(),
             (*ctx).nrounds,
-            block.as_mut_ptr() as *const uint8_t,
+            block.as_mut_ptr() as *const u8,
             outptr,
         );
         memcpy(
@@ -3914,7 +3913,7 @@ static mut rcon: [u32; 10] = [
  */
 unsafe extern "C" fn rijndaelSetupEncrypt(
     mut rk: *mut u32,
-    mut key: *const uint8_t,
+    mut key: *const u8,
     mut keybits: libc::c_int,
 ) -> libc::c_int {
     let mut i: libc::c_uint = 0i32 as libc::c_uint;
@@ -4029,8 +4028,8 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
 unsafe extern "C" fn rijndaelEncrypt(
     mut rk: *const u32,
     mut nrounds: libc::c_int,
-    mut plaintext: *const uint8_t,
-    mut ciphertext: *mut uint8_t,
+    mut plaintext: *const u8,
+    mut ciphertext: *mut u8,
 ) {
     let mut s0: u32 = 0;
     let mut s1: u32 = 0;
@@ -4354,35 +4353,35 @@ unsafe extern "C" fn rijndaelEncrypt(
         ^ Te4[(t2 >> 8i32 & 0xffi32 as libc::c_uint) as usize] & 0xff00i32 as libc::c_uint
         ^ Te4[(t3 & 0xffi32 as libc::c_uint) as usize] & 0xffi32 as libc::c_uint
         ^ *rk.offset(0);
-    *ciphertext.offset(0) = (s0 >> 24i32) as uint8_t;
-    *ciphertext.offset(1) = (s0 >> 16i32) as uint8_t;
-    *ciphertext.offset(2) = (s0 >> 8i32) as uint8_t;
-    *ciphertext.offset(3) = s0 as uint8_t;
+    *ciphertext.offset(0) = (s0 >> 24i32) as u8;
+    *ciphertext.offset(1) = (s0 >> 16i32) as u8;
+    *ciphertext.offset(2) = (s0 >> 8i32) as u8;
+    *ciphertext.offset(3) = s0 as u8;
     s1 = Te4[(t1 >> 24i32) as usize] & 0xff000000u32
         ^ Te4[(t2 >> 16i32 & 0xffi32 as libc::c_uint) as usize] & 0xff0000i32 as libc::c_uint
         ^ Te4[(t3 >> 8i32 & 0xffi32 as libc::c_uint) as usize] & 0xff00i32 as libc::c_uint
         ^ Te4[(t0 & 0xffi32 as libc::c_uint) as usize] & 0xffi32 as libc::c_uint
         ^ *rk.offset(1);
-    *ciphertext.offset(4).offset(0) = (s1 >> 24i32) as uint8_t;
-    *ciphertext.offset(4).offset(1) = (s1 >> 16i32) as uint8_t;
-    *ciphertext.offset(4).offset(2) = (s1 >> 8i32) as uint8_t;
-    *ciphertext.offset(4).offset(3) = s1 as uint8_t;
+    *ciphertext.offset(4).offset(0) = (s1 >> 24i32) as u8;
+    *ciphertext.offset(4).offset(1) = (s1 >> 16i32) as u8;
+    *ciphertext.offset(4).offset(2) = (s1 >> 8i32) as u8;
+    *ciphertext.offset(4).offset(3) = s1 as u8;
     s2 = Te4[(t2 >> 24i32) as usize] & 0xff000000u32
         ^ Te4[(t3 >> 16i32 & 0xffi32 as libc::c_uint) as usize] & 0xff0000i32 as libc::c_uint
         ^ Te4[(t0 >> 8i32 & 0xffi32 as libc::c_uint) as usize] & 0xff00i32 as libc::c_uint
         ^ Te4[(t1 & 0xffi32 as libc::c_uint) as usize] & 0xffi32 as libc::c_uint
         ^ *rk.offset(2);
-    *ciphertext.offset(8).offset(0) = (s2 >> 24i32) as uint8_t;
-    *ciphertext.offset(8).offset(1) = (s2 >> 16i32) as uint8_t;
-    *ciphertext.offset(8).offset(2) = (s2 >> 8i32) as uint8_t;
-    *ciphertext.offset(8).offset(3) = s2 as uint8_t;
+    *ciphertext.offset(8).offset(0) = (s2 >> 24i32) as u8;
+    *ciphertext.offset(8).offset(1) = (s2 >> 16i32) as u8;
+    *ciphertext.offset(8).offset(2) = (s2 >> 8i32) as u8;
+    *ciphertext.offset(8).offset(3) = s2 as u8;
     s3 = Te4[(t3 >> 24i32) as usize] & 0xff000000u32
         ^ Te4[(t0 >> 16i32 & 0xffi32 as libc::c_uint) as usize] & 0xff0000i32 as libc::c_uint
         ^ Te4[(t1 >> 8i32 & 0xffi32 as libc::c_uint) as usize] & 0xff00i32 as libc::c_uint
         ^ Te4[(t2 & 0xffi32 as libc::c_uint) as usize] & 0xffi32 as libc::c_uint
         ^ *rk.offset(3);
-    *ciphertext.offset(12).offset(0) = (s3 >> 24i32) as uint8_t;
-    *ciphertext.offset(12).offset(1) = (s3 >> 16i32) as uint8_t;
-    *ciphertext.offset(12).offset(2) = (s3 >> 8i32) as uint8_t;
-    *ciphertext.offset(12).offset(3) = s3 as uint8_t;
+    *ciphertext.offset(12).offset(0) = (s3 >> 24i32) as u8;
+    *ciphertext.offset(12).offset(1) = (s3 >> 16i32) as u8;
+    *ciphertext.offset(12).offset(2) = (s3 >> 8i32) as u8;
+    *ciphertext.offset(12).offset(3) = s3 as u8;
 }

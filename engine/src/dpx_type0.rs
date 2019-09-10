@@ -277,7 +277,7 @@ pub struct C2RustUnnamed {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mapData {
-    pub data: *mut libc::c_uchar,
+    pub data: *mut u8,
     pub prev: *mut mapData,
     pub pos: libc::c_int,
 }
@@ -286,7 +286,7 @@ pub struct mapData {
 pub struct mapDef {
     pub flag: libc::c_int,
     pub len: size_t,
-    pub code: *mut libc::c_uchar,
+    pub code: *mut u8,
     pub next: *mut mapDef,
 }
 #[derive(Copy, Clone)]
@@ -300,8 +300,8 @@ pub struct C2RustUnnamed_0 {
 #[repr(C)]
 pub struct rangeDef {
     pub dim: size_t,
-    pub codeLo: *mut libc::c_uchar,
-    pub codeHi: *mut libc::c_uchar,
+    pub codeLo: *mut u8,
+    pub codeHi: *mut u8,
 }
 #[inline]
 unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {

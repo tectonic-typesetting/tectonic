@@ -94,7 +94,7 @@ pub type __ssize_t = libc::c_long;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type BYTE = libc::c_uchar;
+pub type BYTE = u8;
 pub type SFNT_CHAR = libc::c_schar;
 pub type USHORT = libc::c_ushort;
 pub type SHORT = libc::c_short;
@@ -583,9 +583,9 @@ pub unsafe extern "C" fn tt_get_fontdesc(
     if type_0 == 0i32 && !os2.is_null() {
         /* cid-keyed font - add panose */
         let mut styledict: *mut pdf_obj = 0 as *mut pdf_obj;
-        let mut panose: [libc::c_uchar; 12] = [0; 12];
-        panose[0] = ((*os2).sFamilyClass as libc::c_int >> 8i32) as libc::c_uchar;
-        panose[1] = ((*os2).sFamilyClass as libc::c_int & 0xffi32) as libc::c_uchar;
+        let mut panose: [u8; 12] = [0; 12];
+        panose[0] = ((*os2).sFamilyClass as libc::c_int >> 8i32) as u8;
+        panose[1] = ((*os2).sFamilyClass as libc::c_int & 0xffi32) as u8;
         memcpy(
             panose.as_mut_ptr().offset(2) as *mut libc::c_void,
             (*os2).panose.as_mut_ptr() as *const libc::c_void,

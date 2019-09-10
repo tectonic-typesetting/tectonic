@@ -168,8 +168,8 @@ pub unsafe extern "C" fn max4(
 }
 #[no_mangle]
 pub unsafe extern "C" fn skip_white_spaces(
-    mut s: *mut *mut libc::c_uchar,
-    mut endptr: *mut libc::c_uchar,
+    mut s: *mut *mut u8,
+    mut endptr: *mut u8,
 ) {
     while *s < endptr {
         if !(**s as libc::c_int == ' ' as i32
@@ -638,14 +638,14 @@ unsafe extern "C" fn read_c_escchar(
             p = p.offset(1);
             while i_0 < 2i32
                 && p < endptr
-                && *(*__ctype_b_loc()).offset(*p.offset(0) as libc::c_uchar as libc::c_int as isize)
+                && *(*__ctype_b_loc()).offset(*p.offset(0) as u8 as libc::c_int as isize)
                     as libc::c_int
                     & _ISxdigit as libc::c_int as libc::c_ushort as libc::c_int
                     != 0
             {
                 c = (c << 4i32)
                     + (if *(*__ctype_b_loc())
-                        .offset(*p.offset(0) as libc::c_uchar as libc::c_int as isize)
+                        .offset(*p.offset(0) as u8 as libc::c_int as isize)
                         as libc::c_int
                         & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
                         != 0
@@ -653,7 +653,7 @@ unsafe extern "C" fn read_c_escchar(
                         *p.offset(0) as libc::c_int - '0' as i32
                     } else {
                         (if *(*__ctype_b_loc())
-                            .offset(*p.offset(0) as libc::c_uchar as libc::c_int as isize)
+                            .offset(*p.offset(0) as u8 as libc::c_int as isize)
                             as libc::c_int
                             & _ISlower as libc::c_int as libc::c_ushort as libc::c_int
                             != 0

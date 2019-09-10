@@ -34,7 +34,7 @@ extern "C" {
     #[no_mangle]
     fn xstrdup(s: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> libc::c_uchar;
+    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
     fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> libc::c_ushort;
     #[no_mangle]
@@ -92,7 +92,7 @@ pub type __ssize_t = libc::c_long;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type BYTE = libc::c_uchar;
+pub type BYTE = u8;
 pub type USHORT = libc::c_ushort;
 pub type SHORT = libc::c_short;
 pub type SFNT_ULONG = u32;

@@ -156,8 +156,8 @@ pub struct CIDSysInfo {
 #[repr(C)]
 pub struct rangeDef {
     pub dim: size_t,
-    pub codeLo: *mut libc::c_uchar,
-    pub codeHi: *mut libc::c_uchar,
+    pub codeLo: *mut u8,
+    pub codeHi: *mut u8,
     /* Upper bounds of valid input code */
 }
 #[derive(Copy, Clone)]
@@ -165,14 +165,14 @@ pub struct rangeDef {
 pub struct mapDef {
     pub flag: libc::c_int,
     pub len: size_t,
-    pub code: *mut libc::c_uchar,
+    pub code: *mut u8,
     pub next: *mut mapDef,
     /* Next Subtbl for LOOKUP_CONTINUE */
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mapData {
-    pub data: *mut libc::c_uchar,
+    pub data: *mut u8,
     pub prev: *mut mapData,
     pub pos: libc::c_int,
     /* Position of next free data segment */
@@ -291,7 +291,7 @@ unsafe extern "C" fn block_count(mut mtab: *mut mapDef, mut c: libc::c_int) -> s
     return count;
 }
 unsafe extern "C" fn sputx(
-    mut c: libc::c_uchar,
+    mut c: u8,
     mut s: *mut *mut libc::c_char,
     mut end: *mut libc::c_char,
 ) -> libc::c_int {
@@ -316,7 +316,7 @@ unsafe extern "C" fn sputx(
 unsafe extern "C" fn write_map(
     mut mtab: *mut mapDef,
     mut count: size_t,
-    mut codestr: *mut libc::c_uchar,
+    mut codestr: *mut u8,
     mut depth: size_t,
     mut wbuf: *mut sbuf,
     mut stream: *mut pdf_obj,
@@ -330,7 +330,7 @@ unsafe extern "C" fn write_map(
     let mut num_blocks: size_t = 0i32 as size_t;
     c = 0i32 as size_t;
     while c < 256i32 as u64 {
-        *codestr.offset(depth as isize) = (c & 0xffi32 as u64) as libc::c_uchar;
+        *codestr.offset(depth as isize) = (c & 0xffi32 as u64) as u8;
         if (*mtab.offset(c as isize)).flag & 1i32 << 4i32 != 0 {
             mtab1 = (*mtab.offset(c as isize)).next;
             count = write_map(
@@ -497,7 +497,7 @@ unsafe extern "C" fn write_map(
                 );
                 j = j.wrapping_add(1)
             }
-            sputx(c as libc::c_uchar, &mut (*wbuf).curptr, (*wbuf).limptr);
+            sputx(c as u8, &mut (*wbuf).curptr, (*wbuf).limptr);
             let fresh7 = (*wbuf).curptr;
             (*wbuf).curptr = (*wbuf).curptr.offset(1);
             *fresh7 = '>' as i32 as libc::c_char;
@@ -517,7 +517,7 @@ unsafe extern "C" fn write_map(
                 j = j.wrapping_add(1)
             }
             sputx(
-                c.wrapping_add(blocks[i as usize].count as u64) as libc::c_uchar,
+                c.wrapping_add(blocks[i as usize].count as u64) as u8,
                 &mut (*wbuf).curptr,
                 (*wbuf).limptr,
             );
@@ -593,7 +593,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
         limptr: 0 as *mut libc::c_char,
     };
     let mut ranges: *mut rangeDef = 0 as *mut rangeDef;
-    let mut codestr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut codestr: *mut u8 = 0 as *mut u8;
     let mut i: size_t = 0;
     let mut j: size_t = 0;
     let mut count: size_t = 0i32 as size_t;
@@ -671,8 +671,8 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     codestr = new(((*cmap).profile.maxBytesIn as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+        as u32) as *mut u8;
     memset(
         codestr as *mut libc::c_void,
         0i32,

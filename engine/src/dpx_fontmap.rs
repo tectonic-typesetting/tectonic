@@ -562,7 +562,7 @@ unsafe extern "C" fn skip_blank(mut pp: *mut *const libc::c_char, mut endptr: *c
     }
     while p < endptr
         && (*p as libc::c_int & !0x7fi32 == 0i32
-            && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
                 & _ISblank as libc::c_int as libc::c_ushort as libc::c_int
                 != 0)
@@ -586,7 +586,7 @@ unsafe extern "C" fn parse_string_value(
     } else {
         n = 0i32 as libc::c_uint;
         while p < endptr
-            && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
                 & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
                 == 0
@@ -981,7 +981,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                     } else {
                         if p < endptr
                             && *(*__ctype_b_loc())
-                                .offset(*p as libc::c_uchar as libc::c_int as isize)
+                                .offset(*p as u8 as libc::c_int as isize)
                                 as libc::c_int
                                 & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
                                 == 0
@@ -1607,7 +1607,7 @@ pub unsafe extern "C" fn is_pdfm_mapline(mut mline: *const libc::c_char) -> libc
         n = n.wrapping_add(1);
         while p < endptr
             && !(*p as libc::c_int & !0x7fi32 == 0i32
-                && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                     as libc::c_int
                     & _ISblank as libc::c_int as libc::c_ushort as libc::c_int
                     != 0)
@@ -1965,7 +1965,7 @@ unsafe extern "C" fn strip_options(
     (*opt).style = 0i32;
     (*opt).flags = 0i32;
     if *p as libc::c_int == ':' as i32
-        && *(*__ctype_b_loc()).offset(*p.offset(1) as libc::c_uchar as libc::c_int as isize)
+        && *(*__ctype_b_loc()).offset(*p.offset(1) as u8 as libc::c_int as isize)
             as libc::c_int
             & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
             != 0

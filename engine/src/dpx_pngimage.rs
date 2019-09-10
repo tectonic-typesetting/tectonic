@@ -295,7 +295,7 @@ pub struct ximage_info {
     pub ydensity: libc::c_double,
 }
 pub type pdf_ximage = pdf_ximage_;
-pub type png_byte = libc::c_uchar;
+pub type png_byte = u8;
 pub type png_infopp = *mut *mut png_info;
 pub type png_info = png_info_def;
 pub type png_infop = *mut png_info;
@@ -355,18 +355,18 @@ pub type png_rw_ptr = Option<unsafe extern "C" fn(_: png_structp, _: png_bytep, 
 pub type png_const_bytep = *const png_byte;
 #[no_mangle]
 pub unsafe extern "C" fn check_for_png(mut handle: rust_input_handle_t) -> libc::c_int {
-    let mut sigbytes: [libc::c_uchar; 8] = [0; 8];
+    let mut sigbytes: [u8; 8] = [0; 8];
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     if ttstub_input_read(
         handle,
         sigbytes.as_mut_ptr() as *mut libc::c_char,
-        ::std::mem::size_of::<[libc::c_uchar; 8]>() as u64,
+        ::std::mem::size_of::<[u8; 8]>() as u64,
     ) as u64
-        != ::std::mem::size_of::<[libc::c_uchar; 8]>() as u64
+        != ::std::mem::size_of::<[u8; 8]>() as u64
         || png_sig_cmp(
             sigbytes.as_mut_ptr() as png_const_bytep,
             0i32 as size_t,
-            ::std::mem::size_of::<[libc::c_uchar; 8]>() as u64,
+            ::std::mem::size_of::<[u8; 8]>() as u64,
         ) != 0
     {
         return 0i32;

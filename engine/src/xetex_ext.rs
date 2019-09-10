@@ -370,12 +370,10 @@ extern "C" {
     #[no_mangle]
     fn xn_over_d(x: scaled_t, n: int32_t, d: int32_t) -> scaled_t;
 }
-pub type __uint8_t = libc::c_uchar;
 pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint8_t = __uint8_t;
 pub type uint16_t = __uint16_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -447,7 +445,7 @@ pub type PlatformFontRef = *mut FcPattern;
 pub type XeTeXFont = *mut XeTeXFont_rec;
 pub type XeTeXLayoutEngine = *mut XeTeXLayoutEngine_rec;
 pub type Byte = UInt8;
-pub type UInt8 = libc::c_uchar;
+pub type UInt8 = u8;
 /*------------------------------------------------------------------------
 Copyright (C) 2002-2014 SIL International. All rights reserved.
 
@@ -871,7 +869,7 @@ pub unsafe extern "C" fn get_encoding_mode_and_info(mut info: *mut int32_t) -> l
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn print_utf8_str(mut str: *const libc::c_uchar, mut len: libc::c_int) {
+pub unsafe extern "C" fn print_utf8_str(mut str: *const u8, mut len: libc::c_int) {
     loop {
         let fresh1 = len;
         len = len - 1;
@@ -2017,7 +2015,7 @@ pub unsafe extern "C" fn gr_font_get_named_1(
 static mut xdvBufSize: libc::c_int = 0i32;
 #[no_mangle]
 pub unsafe extern "C" fn makeXDVGlyphArrayData(mut pNode: *mut libc::c_void) -> libc::c_int {
-    let mut cp: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut cp: *mut u8 = 0 as *mut u8;
     let mut glyphIDs: *mut uint16_t = 0 as *mut uint16_t;
     let mut p: *mut memory_word = pNode as *mut memory_word;
     let mut glyph_info: *mut libc::c_void = 0 as *mut libc::c_void;
@@ -2033,54 +2031,54 @@ pub unsafe extern "C" fn makeXDVGlyphArrayData(mut pNode: *mut libc::c_void) -> 
     glyph_info = (*p.offset(5)).ptr;
     locations = glyph_info as *mut FixedPoint;
     glyphIDs = locations.offset(glyphCount as libc::c_int as isize) as *mut uint16_t;
-    cp = xdv_buffer as *mut libc::c_uchar;
+    cp = xdv_buffer as *mut u8;
     width = (*p.offset(1)).b32.s1;
     let fresh13 = cp;
     cp = cp.offset(1);
-    *fresh13 = (width >> 24i32 & 0xffi32) as libc::c_uchar;
+    *fresh13 = (width >> 24i32 & 0xffi32) as u8;
     let fresh14 = cp;
     cp = cp.offset(1);
-    *fresh14 = (width >> 16i32 & 0xffi32) as libc::c_uchar;
+    *fresh14 = (width >> 16i32 & 0xffi32) as u8;
     let fresh15 = cp;
     cp = cp.offset(1);
-    *fresh15 = (width >> 8i32 & 0xffi32) as libc::c_uchar;
+    *fresh15 = (width >> 8i32 & 0xffi32) as u8;
     let fresh16 = cp;
     cp = cp.offset(1);
-    *fresh16 = (width & 0xffi32) as libc::c_uchar;
+    *fresh16 = (width & 0xffi32) as u8;
     let fresh17 = cp;
     cp = cp.offset(1);
-    *fresh17 = (glyphCount as libc::c_int >> 8i32 & 0xffi32) as libc::c_uchar;
+    *fresh17 = (glyphCount as libc::c_int >> 8i32 & 0xffi32) as u8;
     let fresh18 = cp;
     cp = cp.offset(1);
-    *fresh18 = (glyphCount as libc::c_int & 0xffi32) as libc::c_uchar;
+    *fresh18 = (glyphCount as libc::c_int & 0xffi32) as u8;
     i = 0i32;
     while i < glyphCount as libc::c_int {
         let mut x: Fixed = (*locations.offset(i as isize)).x;
         let mut y: Fixed = (*locations.offset(i as isize)).y;
         let fresh19 = cp;
         cp = cp.offset(1);
-        *fresh19 = (x >> 24i32 & 0xffi32) as libc::c_uchar;
+        *fresh19 = (x >> 24i32 & 0xffi32) as u8;
         let fresh20 = cp;
         cp = cp.offset(1);
-        *fresh20 = (x >> 16i32 & 0xffi32) as libc::c_uchar;
+        *fresh20 = (x >> 16i32 & 0xffi32) as u8;
         let fresh21 = cp;
         cp = cp.offset(1);
-        *fresh21 = (x >> 8i32 & 0xffi32) as libc::c_uchar;
+        *fresh21 = (x >> 8i32 & 0xffi32) as u8;
         let fresh22 = cp;
         cp = cp.offset(1);
-        *fresh22 = (x & 0xffi32) as libc::c_uchar;
+        *fresh22 = (x & 0xffi32) as u8;
         let fresh23 = cp;
         cp = cp.offset(1);
-        *fresh23 = (y >> 24i32 & 0xffi32) as libc::c_uchar;
+        *fresh23 = (y >> 24i32 & 0xffi32) as u8;
         let fresh24 = cp;
         cp = cp.offset(1);
-        *fresh24 = (y >> 16i32 & 0xffi32) as libc::c_uchar;
+        *fresh24 = (y >> 16i32 & 0xffi32) as u8;
         let fresh25 = cp;
         cp = cp.offset(1);
-        *fresh25 = (y >> 8i32 & 0xffi32) as libc::c_uchar;
+        *fresh25 = (y >> 8i32 & 0xffi32) as u8;
         let fresh26 = cp;
         cp = cp.offset(1);
-        *fresh26 = (y & 0xffi32) as libc::c_uchar;
+        *fresh26 = (y & 0xffi32) as u8;
         i += 1
     }
     i = 0i32;
@@ -2088,10 +2086,10 @@ pub unsafe extern "C" fn makeXDVGlyphArrayData(mut pNode: *mut libc::c_void) -> 
         let mut g: uint16_t = *glyphIDs.offset(i as isize);
         let fresh27 = cp;
         cp = cp.offset(1);
-        *fresh27 = (g as libc::c_int >> 8i32 & 0xffi32) as libc::c_uchar;
+        *fresh27 = (g as libc::c_int >> 8i32 & 0xffi32) as u8;
         let fresh28 = cp;
         cp = cp.offset(1);
-        *fresh28 = (g as libc::c_int & 0xffi32) as libc::c_uchar;
+        *fresh28 = (g as libc::c_int & 0xffi32) as u8;
         i += 1
     }
     return (cp as *mut libc::c_char).wrapping_offset_from(xdv_buffer) as libc::c_long
@@ -2104,7 +2102,7 @@ pub unsafe extern "C" fn make_font_def(mut f: int32_t) -> libc::c_int {
     let mut size: Fixed = 0;
     let mut filename: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut index: u32 = 0;
-    let mut filenameLen: uint8_t = 0;
+    let mut filenameLen: u8 = 0;
     let mut fontDefLength: libc::c_int = 0;
     let mut cp: *mut libc::c_char = 0 as *mut libc::c_char;
     /* PlatformFontRef fontRef = 0; */
@@ -2142,7 +2140,7 @@ pub unsafe extern "C" fn make_font_def(mut f: int32_t) -> libc::c_int {
             b"bad native font flag in `make_font_def`\x00" as *const u8 as *const libc::c_char,
         );
     }
-    filenameLen = strlen(filename) as uint8_t;
+    filenameLen = strlen(filename) as u8;
     /* parameters after internal font ID:
     //  size[4]
     //  flags[2]
@@ -2177,7 +2175,7 @@ pub unsafe extern "C" fn make_font_def(mut f: int32_t) -> libc::c_int {
     cp = cp.offset(4);
     *(cp as *mut uint16_t) = SWAP16(flags);
     cp = cp.offset(2);
-    *(cp as *mut uint8_t) = filenameLen;
+    *(cp as *mut u8) = filenameLen;
     cp = cp.offset(1);
     memcpy(
         cp as *mut libc::c_void,

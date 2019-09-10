@@ -128,7 +128,7 @@ pub type rust_output_handle_t = *mut libc::c_void;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type str_number = int32_t;
 /*22: */
-pub type ASCII_code = libc::c_uchar;
+pub type ASCII_code = u8;
 pub type pool_pointer = int32_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -148,16 +148,16 @@ pub struct peekable_input_t {
     pub saw_eof: bool,
 }
 pub type buf_pointer = int32_t;
-pub type lex_type = libc::c_uchar;
+pub type lex_type = u8;
 pub type buf_type = *mut ASCII_code;
 pub type hash_loc = int32_t;
-pub type fn_class = libc::c_uchar;
-pub type str_ilk = libc::c_uchar;
+pub type fn_class = u8;
+pub type str_ilk = u8;
 pub type hash_pointer = int32_t;
-pub type id_type = libc::c_uchar;
+pub type id_type = u8;
 pub type cite_number = int32_t;
 pub type str_ent_loc = int32_t;
-pub type stk_type = libc::c_uchar;
+pub type stk_type = u8;
 pub type lit_stk_loc = int32_t;
 pub type int_ent_loc = int32_t;
 pub type field_loc = int32_t;
@@ -165,7 +165,7 @@ pub type wiz_fn_loc = int32_t;
 pub type hash_ptr2 = int32_t;
 pub type fn_def_loc = int32_t;
 pub type aux_number = int32_t;
-pub type pds_len = libc::c_uchar;
+pub type pds_len = u8;
 pub type pds_type = *const libc::c_char;
 pub type blt_in_range = int32_t;
 unsafe extern "C" fn peekable_open(
@@ -275,7 +275,7 @@ static mut end_of_def: int32_t = 0;
 static mut undefined: int32_t = 0;
 static mut bad: int32_t = 0;
 /*fatal_message */
-static mut history: libc::c_uchar = 0;
+static mut history: u8 = 0;
 static mut err_count: int32_t = 0;
 static mut lex_class: [lex_type; 256] = [0; 256];
 static mut id_class: [id_type; 256] = [0; 256];
@@ -317,7 +317,7 @@ static mut command_num: int32_t = 0;
 static mut buf_ptr1: buf_pointer = 0;
 static mut buf_ptr2: buf_pointer = 0;
 /*white_adjacent */
-static mut scan_result: libc::c_uchar = 0;
+static mut scan_result: u8 = 0;
 static mut token_value: int32_t = 0;
 static mut aux_name_length: int32_t = 0;
 static mut aux_file: [*mut peekable_input_t; 21] =
@@ -505,7 +505,7 @@ static mut comma1: buf_pointer = 0;
 static mut comma2: buf_pointer = 0;
 static mut num_text_chars: buf_pointer = 0;
 /*bad_conversion */
-static mut conversion_type: libc::c_uchar = 0;
+static mut conversion_type: u8 = 0;
 static mut prev_colon: bool = false;
 static mut verbose: libc::c_int = 0;
 static mut min_crossrefs: int32_t = 0;
@@ -572,20 +572,20 @@ unsafe extern "C" fn mark_warning() {
     if history as libc::c_int == HISTORY_WARNING_ISSUED as libc::c_int {
         err_count += 1
     } else if history as libc::c_int == HISTORY_SPOTLESS as libc::c_int {
-        history = HISTORY_WARNING_ISSUED as libc::c_int as libc::c_uchar;
+        history = HISTORY_WARNING_ISSUED as libc::c_int as u8;
         err_count = 1i32
     };
 }
 unsafe extern "C" fn mark_error() {
     if (history as libc::c_int) < HISTORY_ERROR_ISSUED as libc::c_int {
-        history = HISTORY_ERROR_ISSUED as libc::c_int as libc::c_uchar;
+        history = HISTORY_ERROR_ISSUED as libc::c_int as u8;
         err_count = 1i32
     } else {
         err_count += 1
     };
 }
 unsafe extern "C" fn mark_fatal() {
-    history = HISTORY_FATAL_ERROR as libc::c_int as libc::c_uchar;
+    history = HISTORY_FATAL_ERROR as libc::c_int as u8;
 }
 unsafe extern "C" fn print_overflow() {
     puts_log(b"Sorry---you\'ve exceeded BibTeX\'s \x00" as *const u8 as *const libc::c_char);
@@ -1456,7 +1456,7 @@ unsafe extern "C" fn pre_define(mut pds: pds_type, mut len: pds_len, mut ilk: st
     if i as libc::c_int <= for_end {
         loop {
             *buffer.offset(i as isize) =
-                *pds.offset((i as libc::c_int - 1i32) as isize) as libc::c_uchar;
+                *pds.offset((i as libc::c_int - 1i32) as isize) as u8;
             let fresh6 = i;
             i = i.wrapping_add(1);
             if !((fresh6 as libc::c_int) < for_end) {
@@ -2277,19 +2277,19 @@ unsafe extern "C" fn scan_identifier(
         }
     } /*id_null */
     if buf_ptr2 - buf_ptr1 == 0i32 {
-        scan_result = 0i32 as libc::c_uchar
+        scan_result = 0i32 as u8
     } else if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as libc::c_int == 1i32
         || buf_ptr2 == last
     {
-        scan_result = 3i32 as libc::c_uchar
+        scan_result = 3i32 as u8
     } else if *buffer.offset(buf_ptr2 as isize) as libc::c_int == char1 as libc::c_int
         || *buffer.offset(buf_ptr2 as isize) as libc::c_int == char2 as libc::c_int
         || *buffer.offset(buf_ptr2 as isize) as libc::c_int == char3 as libc::c_int
     {
         /*white_adjacent */
-        scan_result = 1i32 as libc::c_uchar
+        scan_result = 1i32 as u8
     } else {
-        scan_result = 2i32 as libc::c_uchar
+        scan_result = 2i32 as u8
     }; /*specified_char_adjacent */
     /*other_char_adjacent */
 }
@@ -2306,14 +2306,14 @@ unsafe extern "C" fn scan_nonneg_integer() -> bool {
     return buf_ptr2 - buf_ptr1 != 0i32;
 }
 unsafe extern "C" fn scan_integer() -> bool {
-    let mut sign_length: libc::c_uchar = 0;
+    let mut sign_length: u8 = 0;
     buf_ptr1 = buf_ptr2;
     if *buffer.offset(buf_ptr2 as isize) as libc::c_int == 45i32 {
         /*minus_sign */
-        sign_length = 1i32 as libc::c_uchar;
+        sign_length = 1i32 as u8;
         buf_ptr2 = buf_ptr2 + 1i32
     } else {
-        sign_length = 0i32 as libc::c_uchar
+        sign_length = 0i32 as u8
     }
     token_value = 0i32;
     while buf_ptr2 < last
@@ -4276,19 +4276,19 @@ unsafe extern "C" fn x_change_case() {
         push_lit_stk(s_null, 1i32 as stk_type); /*all_lowers */
     } else {
         match *str_pool.offset(*str_start.offset(pop_lit1 as isize) as isize) as libc::c_int {
-            116 | 84 => conversion_type = 0i32 as libc::c_uchar,
-            108 | 76 => conversion_type = 1i32 as libc::c_uchar,
-            117 | 85 => conversion_type = 2i32 as libc::c_uchar,
+            116 | 84 => conversion_type = 0i32 as u8,
+            108 | 76 => conversion_type = 1i32 as u8,
+            117 | 85 => conversion_type = 2i32 as u8,
             _ => {
                 /*all_uppers */
-                conversion_type = 3i32 as libc::c_uchar
+                conversion_type = 3i32 as u8
             }
         } /*bad_conversion */
         if *str_start.offset((pop_lit1 + 1i32) as isize) - *str_start.offset(pop_lit1 as isize)
             != 1i32
             || conversion_type as libc::c_int == 3i32
         {
-            conversion_type = 3i32 as libc::c_uchar; /*bad_conversion */
+            conversion_type = 3i32 as u8; /*bad_conversion */
             print_a_pool_str(pop_lit1);
             puts_log(
                 b" is an illegal case-conversion string\x00" as *const u8 as *const libc::c_char,
@@ -13482,7 +13482,7 @@ unsafe extern "C" fn initialize(mut aux_file_name: *const libc::c_char) -> libc:
     if bad != 0 {
         return 1i32;
     }
-    history = HISTORY_SPOTLESS as libc::c_int as libc::c_uchar;
+    history = HISTORY_SPOTLESS as libc::c_int as u8;
     i = 0i32;
     while i <= 127i32 {
         lex_class[i as usize] = 5i32 as lex_type;

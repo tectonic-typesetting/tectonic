@@ -30,7 +30,7 @@ extern "C" {
     #[no_mangle]
     fn xtoi(c: libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn skip_white_spaces(s: *mut *mut libc::c_uchar, endptr: *mut libc::c_uchar);
+    fn skip_white_spaces(s: *mut *mut u8, endptr: *mut u8);
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -92,7 +92,7 @@ pub type pst_type = libc::c_int;
 #[repr(C)]
 pub struct pst_string {
     pub length: libc::c_uint,
-    pub value: *mut libc::c_uchar,
+    pub value: *mut u8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -321,8 +321,8 @@ pub unsafe extern "C" fn pst_getRV(mut obj: *mut pst_obj) -> libc::c_double {
 }
 /* Length can be obtained by pst_length_of(). */
 #[no_mangle]
-pub unsafe extern "C" fn pst_getSV(mut obj: *mut pst_obj) -> *mut libc::c_uchar {
-    let mut sv: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+pub unsafe extern "C" fn pst_getSV(mut obj: *mut pst_obj) -> *mut u8 {
+    let mut sv: *mut u8 = 0 as *mut u8;
     if !obj.is_null() {
     } else {
         __assert_fail(
@@ -352,12 +352,12 @@ pub unsafe extern "C" fn pst_getSV(mut obj: *mut pst_obj) -> *mut libc::c_uchar 
             len = strlen((*obj).data as *mut libc::c_char) as libc::c_int;
             if len > 0i32 {
                 sv = new(((len + 1i32) as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-                    as u32) as *mut libc::c_uchar;
+                    .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+                    as u32) as *mut u8;
                 memcpy(sv as *mut libc::c_void, (*obj).data, len as u64);
-                *sv.offset(len as isize) = '\u{0}' as i32 as libc::c_uchar
+                *sv.offset(len as isize) = '\u{0}' as i32 as u8
             } else {
-                sv = 0 as *mut libc::c_uchar
+                sv = 0 as *mut u8
             }
         }
         _ => {
@@ -482,8 +482,8 @@ unsafe extern "C" fn pst_boolean_RV(mut obj: *mut pst_boolean) -> libc::c_double
     }
     return (*obj).value as libc::c_double;
 }
-unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut libc::c_uchar {
-    let mut str: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut u8 {
+    let mut str: *mut u8 = 0 as *mut u8;
     if !obj.is_null() {
     } else {
         __assert_fail(
@@ -498,24 +498,24 @@ unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut libc::c_u
     }
     if (*obj).value != 0 {
         str = new((5i32 as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-            as u32) as *mut libc::c_uchar;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+            as u32) as *mut u8;
         memcpy(
             str as *mut libc::c_void,
             b"true\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
             4i32 as u64,
         );
-        *str.offset(4) = '\u{0}' as i32 as libc::c_uchar
+        *str.offset(4) = '\u{0}' as i32 as u8
     } else {
         str = new((6i32 as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-            as u32) as *mut libc::c_uchar;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+            as u32) as *mut u8;
         memcpy(
             str as *mut libc::c_void,
             b"false\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
             5i32 as u64,
         );
-        *str.offset(5) = '\u{0}' as i32 as libc::c_uchar
+        *str.offset(5) = '\u{0}' as i32 as u8
     }
     return str;
 }
@@ -541,8 +541,8 @@ unsafe extern "C" fn pst_boolean_data_ptr(mut obj: *mut pst_boolean) -> *mut lib
 }
 #[no_mangle]
 pub unsafe extern "C" fn pst_parse_boolean(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
 ) -> *mut pst_obj {
     if (*inbuf).offset(4) <= inbufend
         && memcmp(
@@ -609,8 +609,8 @@ pub unsafe extern "C" fn pst_parse_boolean(
 /* NULL */
 #[no_mangle]
 pub unsafe extern "C" fn pst_parse_null(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
 ) -> *mut pst_obj {
     if (*inbuf).offset(4) <= inbufend
         && memcmp(
@@ -705,7 +705,7 @@ unsafe extern "C" fn pst_integer_RV(mut obj: *mut pst_integer) -> libc::c_double
     }
     return (*obj).value as libc::c_double;
 }
-unsafe extern "C" fn pst_integer_SV(mut obj: *mut pst_integer) -> *mut libc::c_uchar {
+unsafe extern "C" fn pst_integer_SV(mut obj: *mut pst_integer) -> *mut u8 {
     let mut value: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut len: libc::c_int = 0;
     let mut fmt_buf: [libc::c_char; 15] = [0; 15];
@@ -730,7 +730,7 @@ unsafe extern "C" fn pst_integer_SV(mut obj: *mut pst_integer) -> *mut libc::c_u
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     strcpy(value, fmt_buf.as_mut_ptr());
-    return value as *mut libc::c_uchar;
+    return value as *mut u8;
 }
 unsafe extern "C" fn pst_integer_data_ptr(mut obj: *mut pst_integer) -> *mut libc::c_void {
     if !obj.is_null() {
@@ -806,7 +806,7 @@ unsafe extern "C" fn pst_real_RV(mut obj: *mut pst_real) -> libc::c_double {
     }
     return (*obj).value;
 }
-unsafe extern "C" fn pst_real_SV(mut obj: *mut pst_real) -> *mut libc::c_uchar {
+unsafe extern "C" fn pst_real_SV(mut obj: *mut pst_real) -> *mut u8 {
     let mut value: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut len: libc::c_int = 0;
     let mut fmt_buf: [libc::c_char; 15] = [0; 15];
@@ -831,7 +831,7 @@ unsafe extern "C" fn pst_real_SV(mut obj: *mut pst_real) -> *mut libc::c_uchar {
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     strcpy(value, fmt_buf.as_mut_ptr());
-    return value as *mut libc::c_uchar;
+    return value as *mut u8;
 }
 unsafe extern "C" fn pst_real_data_ptr(mut obj: *mut pst_real) -> *mut libc::c_void {
     if !obj.is_null() {
@@ -857,16 +857,16 @@ unsafe extern "C" fn pst_real_length() -> libc::c_uint {
 /* leading white-space is ignored */
 #[no_mangle]
 pub unsafe extern "C" fn pst_parse_number(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
 ) -> *mut pst_obj {
-    let mut cur: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut cur: *mut u8 = 0 as *mut u8;
     let mut lval: libc::c_int = 0;
     let mut dval: libc::c_double = 0.;
     *__errno_location() = 0i32;
     lval = strtol(
         *inbuf as *mut libc::c_char,
-        &mut cur as *mut *mut libc::c_uchar as *mut libc::c_void as *mut *mut libc::c_char,
+        &mut cur as *mut *mut u8 as *mut libc::c_void as *mut *mut libc::c_char,
         10i32,
     ) as libc::c_int;
     if *__errno_location() != 0
@@ -878,7 +878,7 @@ pub unsafe extern "C" fn pst_parse_number(
         *__errno_location() = 0i32;
         dval = strtod(
             *inbuf as *mut libc::c_char,
-            &mut cur as *mut *mut libc::c_uchar as *mut libc::c_void as *mut *mut libc::c_char,
+            &mut cur as *mut *mut u8 as *mut libc::c_void as *mut *mut libc::c_char,
         );
         if *__errno_location() == 0
             && (cur == inbufend
@@ -943,7 +943,7 @@ pub unsafe extern "C" fn pst_parse_number(
             *__errno_location() = 0i32;
             lval = strtol(
                 cur as *mut libc::c_char,
-                &mut cur as *mut *mut libc::c_uchar as *mut libc::c_void as *mut *mut libc::c_char,
+                &mut cur as *mut *mut u8 as *mut libc::c_void as *mut *mut libc::c_char,
                 lval,
             ) as libc::c_int;
             if *__errno_location() == 0
@@ -1007,7 +1007,7 @@ unsafe extern "C" fn pst_name_release(mut obj: *mut pst_name) {
     free((*obj).value as *mut libc::c_void);
     free(obj as *mut libc::c_void);
 }
-unsafe extern "C" fn getxpair(mut s: *mut *mut libc::c_uchar) -> libc::c_int {
+unsafe extern "C" fn getxpair(mut s: *mut *mut u8) -> libc::c_int {
     let mut hi: libc::c_int = 0;
     let mut lo: libc::c_int = 0;
     hi = xtoi(**s as libc::c_char);
@@ -1024,14 +1024,14 @@ unsafe extern "C" fn getxpair(mut s: *mut *mut libc::c_uchar) -> libc::c_int {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pst_parse_name(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
 ) -> *mut pst_obj
 /* / is required */ {
-    let mut wbuf: [libc::c_uchar; 128] = [0; 128];
-    let mut c: libc::c_uchar = 0;
-    let mut p: *mut libc::c_uchar = wbuf.as_mut_ptr();
-    let mut cur: *mut libc::c_uchar = *inbuf;
+    let mut wbuf: [u8; 128] = [0; 128];
+    let mut c: u8 = 0;
+    let mut p: *mut u8 = wbuf.as_mut_ptr();
+    let mut cur: *mut u8 = *inbuf;
     let mut len: libc::c_int = 0i32;
     if *cur as libc::c_int != '/' as i32 {
         return 0 as *mut pst_obj;
@@ -1074,7 +1074,7 @@ pub unsafe extern "C" fn pst_parse_name(
                     );
                     continue;
                 } else {
-                    c = val as libc::c_uchar
+                    c = val as u8
                 }
             }
         }
@@ -1085,7 +1085,7 @@ pub unsafe extern "C" fn pst_parse_name(
         }
         len += 1
     }
-    *p = '\u{0}' as i32 as libc::c_uchar;
+    *p = '\u{0}' as i32 as u8;
     if len > 127i32 {
         dpx_warning(
             b"String too long for name object. Output will be truncated.\x00" as *const u8
@@ -1108,7 +1108,7 @@ unsafe extern "C" fn pst_name_RV() -> libc::c_double {
         b"Operation not defined for this type of object.\x00" as *const u8 as *const libc::c_char,
     );
 }
-unsafe extern "C" fn pst_name_SV(mut obj: *mut pst_name) -> *mut libc::c_uchar {
+unsafe extern "C" fn pst_name_SV(mut obj: *mut pst_name) -> *mut u8 {
     let mut value: *mut libc::c_char = 0 as *mut libc::c_char;
     value = new(
         (strlen((*obj).value).wrapping_add(1i32 as u64) as u32 as u64)
@@ -1116,7 +1116,7 @@ unsafe extern "C" fn pst_name_SV(mut obj: *mut pst_name) -> *mut libc::c_uchar {
             as u32,
     ) as *mut libc::c_char;
     strcpy(value, (*obj).value);
-    return value as *mut libc::c_uchar;
+    return value as *mut u8;
 }
 unsafe extern "C" fn pst_name_data_ptr(mut obj: *mut pst_name) -> *mut libc::c_void {
     if !obj.is_null() {
@@ -1153,7 +1153,7 @@ unsafe extern "C" fn pst_name_length(mut obj: *mut pst_name) -> libc::c_uint {
  * TODO: ascii85 string <~ .... ~>
  */
 unsafe extern "C" fn pst_string_new(
-    mut str: *mut libc::c_uchar,
+    mut str: *mut u8,
     mut len: libc::c_uint,
 ) -> *mut pst_string {
     let mut obj: *mut pst_string = 0 as *mut pst_string;
@@ -1161,11 +1161,11 @@ unsafe extern "C" fn pst_string_new(
         .wrapping_mul(::std::mem::size_of::<pst_string>() as u64)
         as u32) as *mut pst_string;
     (*obj).length = len;
-    (*obj).value = 0 as *mut libc::c_uchar;
+    (*obj).value = 0 as *mut u8;
     if len > 0i32 as libc::c_uint {
         (*obj).value = new((len as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-            as u32) as *mut libc::c_uchar;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+            as u32) as *mut u8;
         if !str.is_null() {
             memcpy(
                 (*obj).value as *mut libc::c_void,
@@ -1215,8 +1215,8 @@ unsafe extern "C" fn pst_string_release(mut obj: *mut pst_string) {
 */
 #[no_mangle]
 pub unsafe extern "C" fn pst_parse_string(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
 ) -> *mut pst_obj {
     if (*inbuf).offset(2) >= inbufend {
         return 0 as *mut pst_obj;
@@ -1247,11 +1247,11 @@ pub unsafe extern "C" fn pst_parse_string(
 }
 /* Overflowed value is set to invalid char.  */
 unsafe extern "C" fn ostrtouc(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
-    mut valid: *mut libc::c_uchar,
-) -> libc::c_uchar {
-    let mut cur: *mut libc::c_uchar = *inbuf;
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
+    mut valid: *mut u8,
+) -> u8 {
+    let mut cur: *mut u8 = *inbuf;
     let mut val: libc::c_uint = 0i32 as libc::c_uint;
     while cur < inbufend
         && cur < (*inbuf).offset(3)
@@ -1261,22 +1261,22 @@ unsafe extern "C" fn ostrtouc(
         cur = cur.offset(1)
     }
     if val > 255i32 as libc::c_uint || cur == *inbuf {
-        *valid = 0i32 as libc::c_uchar
+        *valid = 0i32 as u8
     } else {
-        *valid = 1i32 as libc::c_uchar
+        *valid = 1i32 as u8
     }
     *inbuf = cur;
-    return val as libc::c_uchar;
+    return val as u8;
 }
 unsafe extern "C" fn esctouc(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
-    mut valid: *mut libc::c_uchar,
-) -> libc::c_uchar {
-    let mut unescaped: libc::c_uchar = 0;
-    let mut escaped: libc::c_uchar = 0;
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
+    mut valid: *mut u8,
+) -> u8 {
+    let mut unescaped: u8 = 0;
+    let mut escaped: u8 = 0;
     escaped = **inbuf;
-    *valid = 1i32 as libc::c_uchar;
+    *valid = 1i32 as u8;
     match escaped as libc::c_int {
         92 | 41 | 40 => {
             /* Backslash, unbalanced paranthes */
@@ -1285,23 +1285,23 @@ unsafe extern "C" fn esctouc(
         }
         110 => {
             /* Other escaped char */
-            unescaped = '\n' as i32 as libc::c_uchar;
+            unescaped = '\n' as i32 as u8;
             *inbuf = (*inbuf).offset(1)
         }
         114 => {
-            unescaped = '\r' as i32 as libc::c_uchar;
+            unescaped = '\r' as i32 as u8;
             *inbuf = (*inbuf).offset(1)
         }
         116 => {
-            unescaped = '\t' as i32 as libc::c_uchar;
+            unescaped = '\t' as i32 as u8;
             *inbuf = (*inbuf).offset(1)
         }
         98 => {
-            unescaped = '\u{8}' as i32 as libc::c_uchar;
+            unescaped = '\u{8}' as i32 as u8;
             *inbuf = (*inbuf).offset(1)
         }
         102 => {
-            unescaped = '\u{c}' as i32 as libc::c_uchar;
+            unescaped = '\u{c}' as i32 as u8;
             *inbuf = (*inbuf).offset(1)
         }
         13 => {
@@ -1309,8 +1309,8 @@ unsafe extern "C" fn esctouc(
              * An end-of-line marker preceeded by backslash is not part of a
              * literal string
              */
-            unescaped = 0i32 as libc::c_uchar;
-            *valid = 0i32 as libc::c_uchar;
+            unescaped = 0i32 as u8;
+            *valid = 0i32 as u8;
             *inbuf = (*inbuf).offset(
                 (if *inbuf < inbufend.offset(-1)
                     && *(*inbuf).offset(1) as libc::c_int == '\n' as i32
@@ -1322,8 +1322,8 @@ unsafe extern "C" fn esctouc(
             )
         }
         10 => {
-            unescaped = 0i32 as libc::c_uchar;
-            *valid = 0i32 as libc::c_uchar;
+            unescaped = 0i32 as u8;
+            *valid = 0i32 as u8;
             *inbuf = (*inbuf).offset(1)
         }
         _ => {
@@ -1335,12 +1335,12 @@ unsafe extern "C" fn esctouc(
 }
 /* STRING */
 unsafe extern "C" fn pst_string_parse_literal(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
 ) -> *mut pst_string {
-    let mut wbuf: [libc::c_uchar; 4096] = [0; 4096];
-    let mut cur: *mut libc::c_uchar = *inbuf;
-    let mut c: libc::c_uchar = 0i32 as libc::c_uchar;
+    let mut wbuf: [u8; 4096] = [0; 4096];
+    let mut cur: *mut u8 = *inbuf;
+    let mut c: u8 = 0i32 as u8;
     let mut len: libc::c_int = 0i32;
     let mut balance: libc::c_int = 1i32;
     if cur.offset(2) > inbufend || *cur as libc::c_int != '(' as i32 {
@@ -1353,8 +1353,8 @@ unsafe extern "C" fn pst_string_parse_literal(
         c = *fresh2;
         match c as libc::c_int {
             92 => {
-                let mut unescaped: libc::c_uchar = 0;
-                let mut valid: libc::c_uchar = 0;
+                let mut unescaped: u8 = 0;
+                let mut valid: u8 = 0;
                 unescaped = esctouc(&mut cur, inbufend, &mut valid);
                 if valid != 0 {
                     let fresh3 = len;
@@ -1366,14 +1366,14 @@ unsafe extern "C" fn pst_string_parse_literal(
                 balance += 1;
                 let fresh4 = len;
                 len = len + 1;
-                wbuf[fresh4 as usize] = '(' as i32 as libc::c_uchar
+                wbuf[fresh4 as usize] = '(' as i32 as u8
             }
             41 => {
                 balance -= 1;
                 if balance > 0i32 {
                     let fresh5 = len;
                     len = len + 1;
-                    wbuf[fresh5 as usize] = ')' as i32 as libc::c_uchar
+                    wbuf[fresh5 as usize] = ')' as i32 as u8
                 }
             }
             13 => {
@@ -1386,7 +1386,7 @@ unsafe extern "C" fn pst_string_parse_literal(
                 }
                 let fresh6 = len;
                 len = len + 1;
-                wbuf[fresh6 as usize] = '\n' as i32 as libc::c_uchar
+                wbuf[fresh6 as usize] = '\n' as i32 as u8
             }
             _ => {
                 let fresh7 = len;
@@ -1402,11 +1402,11 @@ unsafe extern "C" fn pst_string_parse_literal(
     return pst_string_new(wbuf.as_mut_ptr(), len as libc::c_uint);
 }
 unsafe extern "C" fn pst_string_parse_hex(
-    mut inbuf: *mut *mut libc::c_uchar,
-    mut inbufend: *mut libc::c_uchar,
+    mut inbuf: *mut *mut u8,
+    mut inbufend: *mut u8,
 ) -> *mut pst_string {
-    let mut wbuf: [libc::c_uchar; 4096] = [0; 4096];
-    let mut cur: *mut libc::c_uchar = *inbuf;
+    let mut wbuf: [u8; 4096] = [0; 4096];
+    let mut cur: *mut u8 = *inbuf;
     let mut len: libc::c_uint = 0i32 as libc::c_uint;
     if cur.offset(2) > inbufend
         || *cur as libc::c_int != '<' as i32
@@ -1456,7 +1456,7 @@ unsafe extern "C" fn pst_string_parse_hex(
         }
         let fresh10 = len;
         len = len.wrapping_add(1);
-        wbuf[fresh10 as usize] = (hi << 4i32 | lo) as libc::c_uchar
+        wbuf[fresh10 as usize] = (hi << 4i32 | lo) as u8
     }
     let fresh11 = cur;
     cur = cur.offset(1);
@@ -1471,8 +1471,8 @@ unsafe extern "C" fn pst_string_IV(mut obj: *mut pst_string) -> libc::c_int {
 }
 unsafe extern "C" fn pst_string_RV(mut obj: *mut pst_string) -> libc::c_double {
     let mut nobj: *mut pst_obj = 0 as *mut pst_obj;
-    let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut end: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut p: *mut u8 = 0 as *mut u8;
+    let mut end: *mut u8 = 0 as *mut u8;
     let mut rv: libc::c_double = 0.;
     if !obj.is_null() {
     } else {
@@ -1498,8 +1498,8 @@ unsafe extern "C" fn pst_string_RV(mut obj: *mut pst_string) -> libc::c_double {
     pst_release_obj(nobj);
     return rv;
 }
-unsafe extern "C" fn pst_string_SV(mut obj: *mut pst_string) -> *mut libc::c_uchar {
-    let mut str: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+unsafe extern "C" fn pst_string_SV(mut obj: *mut pst_string) -> *mut u8 {
+    let mut str: *mut u8 = 0 as *mut u8;
     if !obj.is_null() {
     } else {
         __assert_fail(
@@ -1514,15 +1514,15 @@ unsafe extern "C" fn pst_string_SV(mut obj: *mut pst_string) -> *mut libc::c_uch
     }
     str = new(
         ((*obj).length.wrapping_add(1i32 as libc::c_uint) as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32,
-    ) as *mut libc::c_uchar;
+    ) as *mut u8;
     memcpy(
         str as *mut libc::c_void,
         (*obj).value as *const libc::c_void,
         (*obj).length as u64,
     );
-    *str.offset((*obj).length as isize) = '\u{0}' as i32 as libc::c_uchar;
+    *str.offset((*obj).length as isize) = '\u{0}' as i32 as u8;
     return str;
 }
 unsafe extern "C" fn pst_string_data_ptr(mut obj: *mut pst_string) -> *mut libc::c_void {

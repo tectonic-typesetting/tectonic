@@ -91,7 +91,7 @@ pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type BYTE = libc::c_uchar;
+pub type BYTE = u8;
 pub type USHORT = libc::c_ushort;
 pub type SFNT_ULONG = u32;
 pub type SFNT_LONG = int32_t;
@@ -602,13 +602,8 @@ pub unsafe extern "C" fn sfnt_require_table(
  *   To compute:  first set it to 0, sum the entire font as ULONG,
  *   then store 0xB1B0AFBA - sum.
  */
-static mut wbuf: [libc::c_uchar; 1024] = [0; 1024];
-static mut padbytes: [libc::c_uchar; 4] = [
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-];
+static mut wbuf: [u8; 1024] = [0; 1024];
+static mut padbytes: [u8; 4] = [0; 4];
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

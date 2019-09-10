@@ -28,7 +28,7 @@ extern "C" {
         len: size_t,
     ) -> ssize_t;
     #[no_mangle]
-    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> libc::c_uchar;
+    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
@@ -163,7 +163,7 @@ pub struct hdr_info {
 }
 #[no_mangle]
 pub unsafe extern "C" fn check_for_bmp(mut handle: rust_input_handle_t) -> libc::c_int {
-    let mut sigbytes: [libc::c_uchar; 2] = [0; 2];
+    let mut sigbytes: [u8; 2] = [0; 2];
     if handle.is_null() {
         return 0i32;
     }
@@ -171,9 +171,9 @@ pub unsafe extern "C" fn check_for_bmp(mut handle: rust_input_handle_t) -> libc:
     if ttstub_input_read(
         handle,
         sigbytes.as_mut_ptr() as *mut libc::c_char,
-        ::std::mem::size_of::<[libc::c_uchar; 2]>() as u64,
+        ::std::mem::size_of::<[u8; 2]>() as u64,
     ) as u64
-        != ::std::mem::size_of::<[libc::c_uchar; 2]>() as u64
+        != ::std::mem::size_of::<[u8; 2]>() as u64
         || sigbytes[0] as libc::c_int != 'B' as i32
         || sigbytes[1] as libc::c_int != 'M' as i32
     {
@@ -350,11 +350,11 @@ pub unsafe extern "C" fn bmp_include_image(
     /* Color space: Indexed or DeviceRGB */
     if (hdr.bit_count as libc::c_int) < 24i32 {
         let mut lookup: *mut pdf_obj = 0 as *mut pdf_obj;
-        let mut palette: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-        let mut bgrq: [libc::c_uchar; 4] = [0; 4];
+        let mut palette: *mut u8 = 0 as *mut u8;
+        let mut bgrq: [u8; 4] = [0; 4];
         palette = new(((num_palette * 3i32 + 1i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-            as u32) as *mut libc::c_uchar;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+            as u32) as *mut u8;
         i = 0i32;
         while i < num_palette {
             if ttstub_input_read(
@@ -403,8 +403,8 @@ pub unsafe extern "C" fn bmp_include_image(
     /* Raster data of BMP is four-byte aligned. */
     let mut rowbytes: libc::c_int = 0;
     let mut n: libc::c_int = 0;
-    let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut stream_data_ptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut p: *mut u8 = 0 as *mut u8;
+    let mut stream_data_ptr: *mut u8 = 0 as *mut u8;
     rowbytes = (info.width * hdr.bit_count as libc::c_int + 7i32) / 8i32;
     ttstub_input_seek(handle, hdr.offset as ssize_t, 0i32);
     if hdr.compression == 0i32 {
@@ -418,9 +418,9 @@ pub unsafe extern "C" fn bmp_include_image(
         dib_rowbytes = rowbytes + padding;
         stream_data_ptr = new(
             ((rowbytes * info.height + padding) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
+                .wrapping_mul(::std::mem::size_of::<u8>() as u64)
                 as u32,
-        ) as *mut libc::c_uchar;
+        ) as *mut u8;
         n = 0i32;
         while n < info.height {
             p = stream_data_ptr.offset((n * rowbytes) as isize);
@@ -438,8 +438,8 @@ pub unsafe extern "C" fn bmp_include_image(
         }
     } else if hdr.compression == 1i32 {
         stream_data_ptr = new(((rowbytes * info.height) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-            as u32) as *mut libc::c_uchar;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+            as u32) as *mut u8;
         if read_raster_rle8(stream_data_ptr, info.width, info.height, handle) < 0i32 {
             dpx_warning(
                 b"Reading BMP raster data failed...\x00" as *const u8 as *const libc::c_char,
@@ -450,8 +450,8 @@ pub unsafe extern "C" fn bmp_include_image(
         }
     } else if hdr.compression == 2i32 {
         stream_data_ptr = new(((rowbytes * info.height) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-            as u32) as *mut libc::c_uchar;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+            as u32) as *mut u8;
         if read_raster_rle4(stream_data_ptr, info.width, info.height, handle) < 0i32 {
             dpx_warning(
                 b"Reading BMP raster data failed...\x00" as *const u8 as *const libc::c_char,
@@ -473,7 +473,7 @@ pub unsafe extern "C" fn bmp_include_image(
     if hdr.bit_count as libc::c_int == 24i32 {
         n = 0i32;
         while n < info.width * info.height * 3i32 {
-            let mut g: libc::c_uchar = 0;
+            let mut g: u8 = 0;
             g = *stream_data_ptr.offset(n as isize);
             *stream_data_ptr.offset(n as isize) = *stream_data_ptr.offset((n + 2i32) as isize);
             *stream_data_ptr.offset((n + 2i32) as isize) = g;
@@ -519,8 +519,8 @@ unsafe extern "C" fn read_header(
     mut handle: rust_input_handle_t,
     mut hdr: *mut hdr_info,
 ) -> libc::c_int {
-    let mut buf: [libc::c_uchar; 142] = [0; 142];
-    let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut buf: [u8; 142] = [0; 142];
+    let mut p: *mut u8 = 0 as *mut u8;
     p = buf.as_mut_ptr();
     if ttstub_input_read(
         handle,
@@ -648,15 +648,15 @@ unsafe extern "C" fn read_header(
     return 0i32;
 }
 unsafe extern "C" fn read_raster_rle8(
-    mut data_ptr: *mut libc::c_uchar,
+    mut data_ptr: *mut u8,
     mut width: libc::c_int,
     mut height: libc::c_int,
     mut handle: rust_input_handle_t,
 ) -> libc::c_int {
     let mut count: libc::c_int = 0i32;
-    let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut b0: libc::c_uchar = 0;
-    let mut b1: libc::c_uchar = 0;
+    let mut p: *mut u8 = 0 as *mut u8;
+    let mut b0: u8 = 0;
+    let mut b1: u8 = 0;
     let mut h: libc::c_int = 0;
     let mut v: libc::c_int = 0;
     let mut rowbytes: libc::c_int = 0;
@@ -748,16 +748,16 @@ unsafe extern "C" fn read_raster_rle8(
     return count;
 }
 unsafe extern "C" fn read_raster_rle4(
-    mut data_ptr: *mut libc::c_uchar,
+    mut data_ptr: *mut u8,
     mut width: libc::c_int,
     mut height: libc::c_int,
     mut handle: rust_input_handle_t,
 ) -> libc::c_int {
     let mut count: libc::c_int = 0i32;
-    let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut b0: libc::c_uchar = 0;
-    let mut b1: libc::c_uchar = 0;
-    let mut b: libc::c_uchar = 0;
+    let mut p: *mut u8 = 0 as *mut u8;
+    let mut b0: u8 = 0;
+    let mut b1: u8 = 0;
+    let mut b: u8 = 0;
     let mut h: libc::c_int = 0;
     let mut v: libc::c_int = 0;
     let mut rowbytes: libc::c_int = 0;
@@ -817,8 +817,8 @@ unsafe extern "C" fn read_raster_rle4(
                                 p = p.offset(1);
                                 *fresh0 = (*fresh0 as libc::c_int
                                     | b as libc::c_int >> 4i32 & 0xfi32)
-                                    as libc::c_uchar;
-                                *p = ((b as libc::c_int) << 4i32 & 0xf0i32) as libc::c_uchar;
+                                    as u8;
+                                *p = ((b as libc::c_int) << 4i32 & 0xf0i32) as u8;
                                 i += 1
                             }
                         } else if ttstub_input_read(
@@ -845,10 +845,10 @@ unsafe extern "C" fn read_raster_rle4(
                 if h % 2i32 != 0 {
                     let fresh1 = p;
                     p = p.offset(1);
-                    *fresh1 = (b1 as libc::c_int >> 4i32 & 0xfi32) as libc::c_uchar;
+                    *fresh1 = (b1 as libc::c_int >> 4i32 & 0xfi32) as u8;
                     b1 = ((b1 as libc::c_int) << 4i32 & 0xf0i32
                         | b1 as libc::c_int >> 4i32 & 0xfi32)
-                        as libc::c_uchar;
+                        as u8;
                     b0 = b0.wrapping_sub(1);
                     h += 1
                 }
@@ -861,7 +861,7 @@ unsafe extern "C" fn read_raster_rle4(
                 h += b0 as libc::c_int;
                 if h % 2i32 != 0 {
                     let ref mut fresh2 = *p.offset((nbytes - 1i32) as isize);
-                    *fresh2 = (*fresh2 as libc::c_int & 0xf0i32) as libc::c_uchar
+                    *fresh2 = (*fresh2 as libc::c_int & 0xf0i32) as u8
                 }
             }
         }

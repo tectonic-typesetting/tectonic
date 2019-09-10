@@ -1176,7 +1176,7 @@ unsafe extern "C" fn print_error(
     i = 0i32;
     p = (*ap).base;
     while i < 63i32 && p < (*ap).endptr {
-        if *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize) as libc::c_int
+        if *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
             & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
             != 0
         {
@@ -1190,7 +1190,7 @@ unsafe extern "C" fn print_error(
             i += sprintf(
                 ebuf.as_mut_ptr().offset(i as isize),
                 b"\\x%02x\x00" as *const u8 as *const libc::c_char,
-                *p as libc::c_uchar as libc::c_int,
+                *p as u8 as libc::c_int,
             )
         }
         p = p.offset(1)
@@ -1214,7 +1214,7 @@ unsafe extern "C" fn print_error(
         i = 0i32;
         p = (*ap).curptr;
         while i < 63i32 && p < (*ap).endptr {
-            if *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+            if *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
                 & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
                 != 0
@@ -1229,7 +1229,7 @@ unsafe extern "C" fn print_error(
                 i += sprintf(
                     ebuf.as_mut_ptr().offset(i as isize),
                     b"\\x%02x\x00" as *const u8 as *const libc::c_char,
-                    *p as libc::c_uchar as libc::c_int,
+                    *p as u8 as libc::c_int,
                 )
             }
             p = p.offset(1)

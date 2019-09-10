@@ -83,13 +83,13 @@ pub type fixword = int32_t;
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn get_unsigned_byte(mut file: *mut FILE) -> libc::c_uchar {
+pub unsafe extern "C" fn get_unsigned_byte(mut file: *mut FILE) -> u8 {
     let mut ch: libc::c_int = 0;
     ch = fgetc(file);
     if ch < 0i32 {
         _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const libc::c_char);
     }
-    return ch as libc::c_uchar;
+    return ch as u8;
 }
 #[no_mangle]
 pub unsafe extern "C" fn skip_bytes(mut n: libc::c_uint, mut file: *mut FILE) {
@@ -119,7 +119,7 @@ pub unsafe extern "C" fn get_unsigned_pair(mut file: *mut FILE) -> libc::c_ushor
     return pair;
 }
 #[no_mangle]
-pub unsafe extern "C" fn sget_unsigned_pair(mut s: *mut libc::c_uchar) -> libc::c_ushort {
+pub unsafe extern "C" fn sget_unsigned_pair(mut s: *mut u8) -> libc::c_ushort {
     let fresh1 = s;
     s = s.offset(1);
     let mut pair: libc::c_ushort = *fresh1 as libc::c_ushort;
@@ -180,7 +180,7 @@ pub unsafe extern "C" fn get_unsigned_quad(mut file: *mut FILE) -> u32 {
     return quad;
 }
 #[no_mangle]
-pub unsafe extern "C" fn get_unsigned_num(mut file: *mut FILE, mut num: libc::c_uchar) -> u32 {
+pub unsafe extern "C" fn get_unsigned_num(mut file: *mut FILE, mut num: u8) -> u32 {
     let mut val = get_unsigned_byte(file) as u32;
     let mut current_block_4: u64;
     match num as libc::c_int {
@@ -298,13 +298,13 @@ pub unsafe extern "C" fn tt_skip_bytes(mut n: libc::c_uint, mut handle: rust_inp
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn tt_get_unsigned_byte(mut handle: rust_input_handle_t) -> libc::c_uchar {
+pub unsafe extern "C" fn tt_get_unsigned_byte(mut handle: rust_input_handle_t) -> u8 {
     let mut ch: libc::c_int = 0;
     ch = ttstub_input_getc(handle);
     if ch < 0i32 {
         _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const libc::c_char);
     }
-    return ch as libc::c_uchar;
+    return ch as u8;
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_signed_byte(mut handle: rust_input_handle_t) -> libc::c_schar {
@@ -354,7 +354,7 @@ pub unsafe extern "C" fn tt_get_signed_quad(mut handle: rust_input_handle_t) -> 
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_unsigned_num(
     mut handle: rust_input_handle_t,
-    mut num: libc::c_uchar,
+    mut num: u8,
 ) -> u32 {
     let mut val: u32 = tt_get_unsigned_byte(handle) as u32;
     let mut current_block_4: u64;

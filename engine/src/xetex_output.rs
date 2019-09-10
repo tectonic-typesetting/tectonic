@@ -40,7 +40,7 @@ extern "C" {
     #[no_mangle]
     static mut selector: selector_t;
     #[no_mangle]
-    static mut dig: [libc::c_uchar; 23];
+    static mut dig: [u8; 23];
     #[no_mangle]
     static mut tally: int32_t;
     #[no_mangle]
@@ -92,7 +92,7 @@ pub const SELECTOR_FILE_0: selector_t = 0;
 /*11:*/
 /*18: */
 pub type UTF16_code = libc::c_ushort;
-pub type eight_bits = libc::c_uchar;
+pub type eight_bits = u8;
 pub type pool_pointer = int32_t;
 pub type str_number = int32_t;
 pub type packed_UTF16_code = libc::c_ushort;
@@ -615,7 +615,7 @@ unsafe extern "C" fn print_the_digs(mut k: eight_bits) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_int(mut n: int32_t) {
-    let mut k: libc::c_uchar = 0i32 as libc::c_uchar;
+    let mut k: u8 = 0i32 as u8;
     let mut m: int32_t = 0;
     if n < 0i32 {
         print_char('-' as i32);
@@ -625,17 +625,17 @@ pub unsafe extern "C" fn print_int(mut n: int32_t) {
             m = -1i32 - n;
             n = m / 10i32;
             m = m % 10i32 + 1i32;
-            k = 1i32 as libc::c_uchar;
+            k = 1i32 as u8;
             if m < 10i32 {
-                dig[0] = m as libc::c_uchar
+                dig[0] = m as u8
             } else {
-                dig[0] = 0i32 as libc::c_uchar;
+                dig[0] = 0i32 as u8;
                 n += 1
             }
         }
     }
     loop {
-        dig[k as usize] = (n % 10i32) as libc::c_uchar;
+        dig[k as usize] = (n % 10i32) as u8;
         n = n / 10i32;
         k = k.wrapping_add(1);
         if n == 0i32 {
@@ -976,10 +976,10 @@ pub unsafe extern "C" fn print_two(mut n: int32_t) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_hex(mut n: int32_t) {
-    let mut k: libc::c_uchar = 0i32 as libc::c_uchar;
+    let mut k: u8 = 0i32 as u8;
     print_char('\"' as i32);
     loop {
-        dig[k as usize] = (n % 16i32) as libc::c_uchar;
+        dig[k as usize] = (n % 16i32) as u8;
         n = n / 16i32;
         k = k.wrapping_add(1);
         if !(n != 0i32) {
@@ -994,8 +994,8 @@ pub unsafe extern "C" fn print_roman_int(mut n: int32_t) {
     let mut v: int32_t = 0;
     let mut roman_data: *const libc::c_char =
         b"m2d5c2l5x2v5i\x00" as *const u8 as *const libc::c_char;
-    let mut j: libc::c_uchar = 0i32 as libc::c_uchar;
-    let mut k: libc::c_uchar = 0i32 as libc::c_uchar;
+    let mut j: u8 = 0i32 as u8;
+    let mut k: u8 = 0i32 as u8;
     v = 1000i32;
     loop {
         while n >= v {
@@ -1005,11 +1005,11 @@ pub unsafe extern "C" fn print_roman_int(mut n: int32_t) {
         if n <= 0i32 {
             return;
         }
-        k = (j as libc::c_int + 2i32) as libc::c_uchar;
+        k = (j as libc::c_int + 2i32) as u8;
         u = v
             / (*roman_data.offset((k as libc::c_int - 1i32) as isize) as libc::c_int - '0' as i32);
         if *roman_data.offset((k as libc::c_int - 1i32) as isize) as libc::c_int == '2' as i32 {
-            k = (k as libc::c_int + 2i32) as libc::c_uchar;
+            k = (k as libc::c_int + 2i32) as u8;
             u = u
                 / (*roman_data.offset((k as libc::c_int - 1i32) as isize) as libc::c_int
                     - '0' as i32)
@@ -1018,7 +1018,7 @@ pub unsafe extern "C" fn print_roman_int(mut n: int32_t) {
             print_char(*roman_data.offset(k as isize) as int32_t);
             n = n + u
         } else {
-            j = (j as libc::c_int + 2i32) as libc::c_uchar;
+            j = (j as libc::c_int + 2i32) as u8;
             v = v
                 / (*roman_data.offset((j as libc::c_int - 1i32) as isize) as libc::c_int
                     - '0' as i32)

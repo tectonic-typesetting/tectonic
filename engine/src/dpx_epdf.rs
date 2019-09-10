@@ -1281,7 +1281,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
         } else if *clip_path as libc::c_int == '-' as i32
             || *clip_path as libc::c_int == '+' as i32
             || *clip_path as libc::c_int == '.' as i32
-            || *(*__ctype_b_loc()).offset(*clip_path as libc::c_uchar as libc::c_int as isize)
+            || *(*__ctype_b_loc()).offset(*clip_path as u8 as libc::c_int as isize)
                 as libc::c_int
                 & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
                 != 0

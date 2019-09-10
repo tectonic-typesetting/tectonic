@@ -601,7 +601,7 @@ unsafe extern "C" fn parse_block(
                     );
                     i = 0i32;
                     while i < len {
-                        if *(*__ctype_b_loc()).offset(**pp as libc::c_uchar as libc::c_int as isize)
+                        if *(*__ctype_b_loc()).offset(**pp as u8 as libc::c_int as isize)
                             as libc::c_int
                             & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
                             == 0

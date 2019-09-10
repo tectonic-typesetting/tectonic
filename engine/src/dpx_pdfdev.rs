@@ -52,7 +52,7 @@ extern "C" {
     fn pdfobj_escape_str(
         buffer: *mut libc::c_char,
         size: size_t,
-        s: *const libc::c_uchar,
+        s: *const u8,
         len: size_t,
     ) -> size_t;
     #[no_mangle]
@@ -83,9 +83,9 @@ extern "C" {
     #[no_mangle]
     fn CMap_decode(
         cmap: *mut CMap,
-        inbuf: *mut *const libc::c_uchar,
+        inbuf: *mut *const u8,
         inbytesleft: *mut size_t,
-        outbuf: *mut *mut libc::c_uchar,
+        outbuf: *mut *mut u8,
         outbytesleft: *mut size_t,
     ) -> size_t;
     #[no_mangle]
@@ -355,7 +355,7 @@ pub struct cff_range1 {
     pub first: s_SID,
     pub n_left: card8,
 }
-pub type card8 = libc::c_uchar;
+pub type card8 = u8;
 /*
  * Unit conversion, formatting and others.
  */
@@ -421,7 +421,7 @@ pub struct C2RustUnnamed_4 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mapData {
-    pub data: *mut libc::c_uchar,
+    pub data: *mut u8,
     pub prev: *mut mapData,
     pub pos: libc::c_int,
     /* Position of next free data segment */
@@ -431,7 +431,7 @@ pub struct mapData {
 pub struct mapDef {
     pub flag: libc::c_int,
     pub len: size_t,
-    pub code: *mut libc::c_uchar,
+    pub code: *mut u8,
     pub next: *mut mapDef,
     /* Next Subtbl for LOOKUP_CONTINUE */
 }
@@ -469,8 +469,8 @@ pub struct C2RustUnnamed_5 {
 #[repr(C)]
 pub struct rangeDef {
     pub dim: size_t,
-    pub codeLo: *mut libc::c_uchar,
-    pub codeHi: *mut libc::c_uchar,
+    pub codeLo: *mut u8,
+    pub codeHi: *mut u8,
     /* Upper bounds of valid input code */
 }
 #[derive(Copy, Clone)]
@@ -1459,15 +1459,15 @@ pub unsafe extern "C" fn pdf_dev_get_font_wmode(mut font_id: libc::c_int) -> lib
     }
     return 0i32;
 }
-static mut sbuf0: [libc::c_uchar; 4096] = [0; 4096];
-static mut sbuf1: [libc::c_uchar; 4096] = [0; 4096];
+static mut sbuf0: [u8; 4096] = [0; 4096];
+static mut sbuf1: [u8; 4096] = [0; 4096];
 unsafe extern "C" fn handle_multibyte_string(
     mut font: *mut dev_font,
-    mut str_ptr: *mut *const libc::c_uchar,
+    mut str_ptr: *mut *const u8,
     mut str_len: *mut size_t,
     mut ctype: libc::c_int,
 ) -> libc::c_int {
-    let mut p: *const libc::c_uchar = 0 as *const libc::c_uchar;
+    let mut p: *const u8 = 0 as *const u8;
     let mut i: size_t = 0;
     let mut length: size_t = 0;
     p = *str_ptr;
@@ -1475,8 +1475,8 @@ unsafe extern "C" fn handle_multibyte_string(
     if ctype == -1i32 && !(*font).cff_charsets.is_null() {
         /* freetype glyph indexes */
         /* Convert freetype glyph indexes to CID. */
-        let mut inbuf: *const libc::c_uchar = p;
-        let mut outbuf: *mut libc::c_uchar = sbuf0.as_mut_ptr();
+        let mut inbuf: *const u8 = p;
+        let mut outbuf: *mut u8 = sbuf0.as_mut_ptr();
         i = 0i32 as size_t;
         while i < length {
             let mut gid: libc::c_uint = 0;
@@ -1489,10 +1489,10 @@ unsafe extern "C" fn handle_multibyte_string(
             gid = cff_charsets_lookup_cid((*font).cff_charsets, gid as card16) as libc::c_uint;
             let fresh36 = outbuf;
             outbuf = outbuf.offset(1);
-            *fresh36 = (gid >> 8i32) as libc::c_uchar;
+            *fresh36 = (gid >> 8i32) as u8;
             let fresh37 = outbuf;
             outbuf = outbuf.offset(1);
-            *fresh37 = (gid & 0xffi32 as libc::c_uint) as libc::c_uchar;
+            *fresh37 = (gid & 0xffi32 as libc::c_uint) as u8;
             i = (i as u64).wrapping_add(2i32 as u64) as size_t as size_t
         }
         p = sbuf0.as_mut_ptr();
@@ -1508,15 +1508,15 @@ unsafe extern "C" fn handle_multibyte_string(
             i = 0i32 as size_t;
             while i < length {
                 sbuf1[i.wrapping_mul(4i32 as u64) as usize] =
-                    (*font).ucs_group as libc::c_uchar;
+                    (*font).ucs_group as u8;
                 sbuf1[i
                     .wrapping_mul(4i32 as u64)
                     .wrapping_add(1i32 as u64) as usize] =
-                    (*font).ucs_plane as libc::c_uchar;
+                    (*font).ucs_plane as u8;
                 sbuf1[i
                     .wrapping_mul(4i32 as u64)
                     .wrapping_add(2i32 as u64) as usize] =
-                    '\u{0}' as i32 as libc::c_uchar;
+                    '\u{0}' as i32 as u8;
                 sbuf1[i
                     .wrapping_mul(4i32 as u64)
                     .wrapping_add(3i32 as u64) as usize] = *p.offset(i as isize);
@@ -1532,7 +1532,7 @@ unsafe extern "C" fn handle_multibyte_string(
             }
             i = 0i32 as size_t;
             while i < length {
-                sbuf1[len as usize] = (*font).ucs_group as libc::c_uchar;
+                sbuf1[len as usize] = (*font).ucs_group as u8;
                 if *p.offset(i as isize) as libc::c_int & 0xf8i32 == 0xd8i32 {
                     let mut c: libc::c_int = 0;
                     /* Check for valid surrogate pair.  */
@@ -1558,13 +1558,13 @@ unsafe extern "C" fn handle_multibyte_string(
                             & 0x3i32)
                         + 0x100i32;
                     sbuf1[len.wrapping_add(1i32 as u64) as usize] =
-                        (c >> 8i32 & 0xffi32) as libc::c_uchar;
+                        (c >> 8i32 & 0xffi32) as u8;
                     sbuf1[len.wrapping_add(2i32 as u64) as usize] =
-                        (c & 0xffi32) as libc::c_uchar;
+                        (c & 0xffi32) as u8;
                     i = (i as u64).wrapping_add(2i32 as u64) as size_t as size_t
                 } else {
                     sbuf1[len.wrapping_add(1i32 as u64) as usize] =
-                        (*font).ucs_plane as libc::c_uchar;
+                        (*font).ucs_plane as u8;
                     sbuf1[len.wrapping_add(2i32 as u64) as usize] = *p.offset(i as isize)
                 }
                 sbuf1[len.wrapping_add(3i32 as u64) as usize] =
@@ -1586,7 +1586,7 @@ unsafe extern "C" fn handle_multibyte_string(
         i = 0i32 as size_t;
         while i < length {
             sbuf1[i.wrapping_mul(2i32 as u64) as usize] =
-                ((*font).mapc & 0xffi32) as libc::c_uchar;
+                ((*font).mapc & 0xffi32) as u8;
             sbuf1[i
                 .wrapping_mul(2i32 as u64)
                 .wrapping_add(1i32 as u64) as usize] = *p.offset(i as isize);
@@ -1601,8 +1601,8 @@ unsafe extern "C" fn handle_multibyte_string(
      * TODO: A character decomposed to multiple characters.
      */
     if ctype != -1i32 && (*font).enc_id >= 0i32 {
-        let mut inbuf_0: *const libc::c_uchar = 0 as *const libc::c_uchar;
-        let mut outbuf_0: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+        let mut inbuf_0: *const u8 = 0 as *const u8;
+        let mut outbuf_0: *mut u8 = 0 as *mut u8;
         let mut inbytesleft: size_t = 0;
         let mut outbytesleft: size_t = 0;
         let mut cmap: *mut CMap = 0 as *mut CMap;
@@ -1694,7 +1694,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
 ) {
     let mut font: *mut dev_font = 0 as *mut dev_font; /* Pointer to the reencoded string. */
     let mut real_font: *mut dev_font = 0 as *mut dev_font;
-    let mut str_ptr: *const libc::c_uchar = 0 as *const libc::c_uchar;
+    let mut str_ptr: *const u8 = 0 as *const u8;
     let mut length: size_t = 0;
     let mut i: size_t = 0;
     let mut len: size_t = 0i32 as size_t;
@@ -1728,7 +1728,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
     }
     text_xorigin = text_state.ref_x;
     text_yorigin = text_state.ref_y;
-    str_ptr = instr_ptr as *const libc::c_uchar;
+    str_ptr = instr_ptr as *const u8;
     length = instr_len;
     if (*font).format == 3i32 {
         if handle_multibyte_string(font, &mut str_ptr, &mut length, ctype) < 0i32 {
@@ -2771,14 +2771,14 @@ pub unsafe extern "C" fn pdf_dev_begin_actualtext(
         if !(fresh69 > 0i32) {
             break;
         }
-        let mut s: [libc::c_uchar; 2] = [
-            (*unicodes as libc::c_int >> 8i32) as libc::c_uchar,
-            (*unicodes as libc::c_int & 0xffi32) as libc::c_uchar,
+        let mut s: [u8; 2] = [
+            (*unicodes as libc::c_int >> 8i32) as u8,
+            (*unicodes as libc::c_int & 0xffi32) as u8,
         ];
         i = pdf_doc_enc;
         len = 0i32;
         while i < 2i32 {
-            let mut c: libc::c_uchar = s[i as usize];
+            let mut c: u8 = s[i as usize];
             if c as libc::c_int == '(' as i32
                 || c as libc::c_int == ')' as i32
                 || c as libc::c_int == '\\' as i32

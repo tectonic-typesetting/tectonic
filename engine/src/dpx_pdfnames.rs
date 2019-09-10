@@ -199,13 +199,13 @@ unsafe extern "C" fn printable_key(
     static mut pkey: [libc::c_char; 36] = [0; 36];
     let mut i: libc::c_int = 0;
     let mut len: libc::c_int = 0;
-    let mut hi: libc::c_uchar = 0;
-    let mut lo: libc::c_uchar = 0;
+    let mut hi: u8 = 0;
+    let mut lo: u8 = 0;
     i = 0i32;
     len = 0i32;
     while i < keylen && len < 32i32 {
         if *(*__ctype_b_loc())
-            .offset(*key.offset(i as isize) as libc::c_uchar as libc::c_int as isize)
+            .offset(*key.offset(i as isize) as u8 as libc::c_int as isize)
             as libc::c_int
             & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
             != 0
@@ -214,8 +214,8 @@ unsafe extern "C" fn printable_key(
             len = len + 1;
             pkey[fresh0 as usize] = *key.offset(i as isize)
         } else {
-            hi = (*key.offset(i as isize) as libc::c_int >> 4i32 & 0xffi32) as libc::c_uchar;
-            lo = (*key.offset(i as isize) as libc::c_int & 0xffi32) as libc::c_uchar;
+            hi = (*key.offset(i as isize) as libc::c_int >> 4i32 & 0xffi32) as u8;
+            lo = (*key.offset(i as isize) as libc::c_int & 0xffi32) as u8;
             let fresh1 = len;
             len = len + 1;
             pkey[fresh1 as usize] = '#' as i32 as libc::c_char;

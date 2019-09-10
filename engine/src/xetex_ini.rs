@@ -359,9 +359,9 @@ pub const SELECTOR_FILE_15: selector_t = 15;
 pub const SELECTOR_FILE_0: selector_t = 0;
 /*18: */
 pub type UTF16_code = libc::c_ushort;
-pub type UTF8_code = libc::c_uchar;
+pub type UTF8_code = u8;
 pub type UnicodeScalar = int32_t;
-pub type eight_bits = libc::c_uchar;
+pub type eight_bits = u8;
 pub type pool_pointer = int32_t;
 pub type str_number = int32_t;
 pub type packed_UTF16_code = libc::c_ushort;
@@ -588,9 +588,9 @@ pub union memory_word {
 /* \botmarks<n> */
 /* \splitfirstmarks<n> */
 /* \splitbotmarks<n> */
-pub type glue_ord = libc::c_uchar;
+pub type glue_ord = u8;
 /* enum: normal .. filll */
-pub type group_code = libc::c_uchar;
+pub type group_code = u8;
 pub type internal_font_number = int32_t;
 pub type font_index = int32_t;
 pub type nine_bits = int32_t;
@@ -738,7 +738,7 @@ pub static mut log_file: rust_output_handle_t = 0 as *const libc::c_void as *mut
 #[no_mangle]
 pub static mut selector: selector_t = SELECTOR_FILE_0;
 #[no_mangle]
-pub static mut dig: [libc::c_uchar; 23] = [0; 23];
+pub static mut dig: [u8; 23] = [0; 23];
 #[no_mangle]
 pub static mut tally: int32_t = 0;
 #[no_mangle]
@@ -762,7 +762,7 @@ pub static mut native_len: int32_t = 0;
 #[no_mangle]
 pub static mut save_native_len: int32_t = 0;
 #[no_mangle]
-pub static mut interaction: libc::c_uchar = 0;
+pub static mut interaction: u8 = 0;
 #[no_mangle]
 pub static mut deletions_allowed: bool = false;
 #[no_mangle]
@@ -774,7 +774,7 @@ pub static mut error_count: libc::c_schar = 0;
 #[no_mangle]
 pub static mut help_line: [*const libc::c_char; 6] = [0 as *const libc::c_char; 6];
 #[no_mangle]
-pub static mut help_ptr: libc::c_uchar = 0;
+pub static mut help_ptr: u8 = 0;
 #[no_mangle]
 pub static mut use_err_help: bool = false;
 #[no_mangle]
@@ -839,7 +839,7 @@ pub static mut cur_list: list_state_record = list_state_record {
 #[no_mangle]
 pub static mut shown_mode: libc::c_short = 0;
 #[no_mangle]
-pub static mut old_setting: libc::c_uchar = 0;
+pub static mut old_setting: u8 = 0;
 #[no_mangle]
 pub static mut hash: *mut b32x2 = 0 as *const b32x2 as *mut b32x2;
 #[no_mangle]
@@ -918,7 +918,7 @@ pub static mut source_filename_stack: *mut str_number = 0 as *const str_number a
 pub static mut full_source_filename_stack: *mut str_number =
     0 as *const str_number as *mut str_number;
 #[no_mangle]
-pub static mut scanner_status: libc::c_uchar = 0;
+pub static mut scanner_status: u8 = 0;
 #[no_mangle]
 pub static mut warning_index: int32_t = 0;
 #[no_mangle]
@@ -946,7 +946,7 @@ pub static mut is_in_csname: bool = false;
 #[no_mangle]
 pub static mut cur_mark: [int32_t; 5] = [0; 5];
 #[no_mangle]
-pub static mut long_state: libc::c_uchar = 0;
+pub static mut long_state: u8 = 0;
 #[no_mangle]
 pub static mut pstack: [int32_t; 9] = [0; 9];
 #[no_mangle]
@@ -954,7 +954,7 @@ pub static mut cur_val: int32_t = 0;
 #[no_mangle]
 pub static mut cur_val1: int32_t = 0;
 #[no_mangle]
-pub static mut cur_val_level: libc::c_uchar = 0;
+pub static mut cur_val_level: u8 = 0;
 #[no_mangle]
 pub static mut radix: small_number = 0;
 #[no_mangle]
@@ -962,11 +962,11 @@ pub static mut cur_order: glue_ord = 0;
 #[no_mangle]
 pub static mut read_file: [*mut UFILE; 16] = [0 as *const UFILE as *mut UFILE; 16];
 #[no_mangle]
-pub static mut read_open: [libc::c_uchar; 17] = [0; 17];
+pub static mut read_open: [u8; 17] = [0; 17];
 #[no_mangle]
 pub static mut cond_ptr: int32_t = 0;
 #[no_mangle]
-pub static mut if_limit: libc::c_uchar = 0;
+pub static mut if_limit: u8 = 0;
 #[no_mangle]
 pub static mut cur_if: small_number = 0;
 #[no_mangle]
@@ -1160,11 +1160,11 @@ pub static mut hf: internal_font_number = 0;
 #[no_mangle]
 pub static mut hu: [int32_t; 4097] = [0; 4097];
 #[no_mangle]
-pub static mut cur_lang: libc::c_uchar = 0;
+pub static mut cur_lang: u8 = 0;
 #[no_mangle]
 pub static mut max_hyph_char: int32_t = 0;
 #[no_mangle]
-pub static mut hyf: [libc::c_uchar; 4097] = [0; 4097];
+pub static mut hyf: [u8; 4097] = [0; 4097];
 #[no_mangle]
 pub static mut init_list: int32_t = 0;
 #[no_mangle]
@@ -1214,7 +1214,7 @@ pub static mut hyph_next: int32_t = 0;
 #[no_mangle]
 pub static mut trie_used: [trie_opcode; 256] = [0; 256];
 #[no_mangle]
-pub static mut trie_op_lang: [libc::c_uchar; 35112] = [0; 35112];
+pub static mut trie_op_lang: [u8; 35112] = [0; 35112];
 #[no_mangle]
 pub static mut trie_op_val: [trie_opcode; 35112] = [0; 35112];
 #[no_mangle]
@@ -1371,7 +1371,7 @@ pub static mut gave_char_warning_help: bool = false;
 #[no_mangle]
 pub static mut page_tail: int32_t = 0;
 #[no_mangle]
-pub static mut page_contents: libc::c_uchar = 0;
+pub static mut page_contents: u8 = 0;
 #[no_mangle]
 pub static mut page_so_far: [scaled_t; 8] = [0; 8];
 #[no_mangle]
@@ -1864,7 +1864,7 @@ unsafe extern "C" fn new_patterns() {
         .b32
         .s1 <= 0i32
         {
-            cur_lang = 0i32 as libc::c_uchar
+            cur_lang = 0i32 as u8
         } else if (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -1895,7 +1895,7 @@ unsafe extern "C" fn new_patterns() {
         .b32
         .s1 > 255i32
         {
-            cur_lang = 0i32 as libc::c_uchar
+            cur_lang = 0i32 as u8
         } else {
             cur_lang = (*eqtb.offset(
                 (1i32
@@ -1925,11 +1925,11 @@ unsafe extern "C" fn new_patterns() {
                     + 50i32) as isize,
             ))
             .b32
-            .s1 as libc::c_uchar
+            .s1 as u8
         }
         scan_left_brace();
         k = 0i32 as libc::c_short;
-        hyf[0] = 0i32 as libc::c_uchar;
+        hyf[0] = 0i32 as u8;
         digit_sensed = 0i32 != 0;
         loop {
             get_x_token();
@@ -1973,7 +1973,7 @@ unsafe extern "C" fn new_patterns() {
                                     print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
                                 }
                                 print_cstr(b"Nonletter\x00" as *const u8 as *const libc::c_char);
-                                help_ptr = 1i32 as libc::c_uchar;
+                                help_ptr = 1i32 as u8;
                                 help_line[0] =
                                     b"(See Appendix H.)\x00" as *const u8 as *const libc::c_char;
                                 error();
@@ -1985,11 +1985,11 @@ unsafe extern "C" fn new_patterns() {
                         if (k as libc::c_int) < max_hyphenatable_length() {
                             k += 1;
                             hc[k as usize] = cur_chr;
-                            hyf[k as usize] = 0i32 as libc::c_uchar;
+                            hyf[k as usize] = 0i32 as u8;
                             digit_sensed = 0i32 != 0
                         }
                     } else if (k as libc::c_int) < max_hyphenatable_length() {
-                        hyf[k as usize] = (cur_chr - 48i32) as libc::c_uchar;
+                        hyf[k as usize] = (cur_chr - 48i32) as u8;
                         digit_sensed = 1i32 != 0
                     }
                 }
@@ -1997,10 +1997,10 @@ unsafe extern "C" fn new_patterns() {
                     if k as libc::c_int > 0i32 {
                         /*998:*/
                         if hc[1] == 0i32 {
-                            hyf[0] = 0i32 as libc::c_uchar
+                            hyf[0] = 0i32 as u8
                         }
                         if hc[k as usize] == 0i32 {
-                            hyf[k as usize] = 0i32 as libc::c_uchar
+                            hyf[k as usize] = 0i32 as u8
                         }
                         l = k;
                         v = 0i32 as trie_opcode;
@@ -2064,7 +2064,7 @@ unsafe extern "C" fn new_patterns() {
                             print_cstr(
                                 b"Duplicate pattern\x00" as *const u8 as *const libc::c_char,
                             );
-                            help_ptr = 1i32 as libc::c_uchar;
+                            help_ptr = 1i32 as u8;
                             help_line[0] =
                                 b"(See Appendix H.)\x00" as *const u8 as *const libc::c_char;
                             error();
@@ -2075,7 +2075,7 @@ unsafe extern "C" fn new_patterns() {
                         break;
                     }
                     k = 0i32 as libc::c_short;
-                    hyf[0] = 0i32 as libc::c_uchar;
+                    hyf[0] = 0i32 as u8;
                     digit_sensed = 0i32 != 0
                 }
                 _ => {
@@ -2086,7 +2086,7 @@ unsafe extern "C" fn new_patterns() {
                     }
                     print_cstr(b"Bad \x00" as *const u8 as *const libc::c_char);
                     print_esc_cstr(b"patterns\x00" as *const u8 as *const libc::c_char);
-                    help_ptr = 1i32 as libc::c_uchar;
+                    help_ptr = 1i32 as u8;
                     help_line[0] = b"(See Appendix H.)\x00" as *const u8 as *const libc::c_char;
                     error();
                 }
@@ -2252,7 +2252,7 @@ unsafe extern "C" fn new_patterns() {
         }
         print_cstr(b"Too late for \x00" as *const u8 as *const libc::c_char);
         print_esc_cstr(b"patterns\x00" as *const u8 as *const libc::c_char);
-        help_ptr = 1i32 as libc::c_uchar;
+        help_ptr = 1i32 as u8;
         help_line[0] = b"All patterns must be given before typesetting begins.\x00" as *const u8
             as *const libc::c_char;
         error();
@@ -2476,7 +2476,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
     .b32
     .s1 <= 0i32
     {
-        cur_lang = 0i32 as libc::c_uchar
+        cur_lang = 0i32 as u8
     } else if (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -2507,7 +2507,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
     .b32
     .s1 > 255i32
     {
-        cur_lang = 0i32 as libc::c_uchar
+        cur_lang = 0i32 as u8
     } else {
         cur_lang = (*eqtb.offset(
             (1i32
@@ -2537,7 +2537,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                 + 50i32) as isize,
         ))
         .b32
-        .s1 as libc::c_uchar
+        .s1 as u8
     }
     if trie_not_ready {
         hyph_index = 0i32
@@ -2604,7 +2604,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                                 print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
                             }
                             print_cstr(b"Not a letter\x00" as *const u8 as *const libc::c_char);
-                            help_ptr = 2i32 as libc::c_uchar;
+                            help_ptr = 2i32 as u8;
                             help_line[1] =
                                 b"Letters in \\hyphenation words must have \\lccode>0.\x00"
                                     as *const u8
@@ -2652,7 +2652,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                     print_cstr(b"Improper \x00" as *const u8 as *const libc::c_char);
                     print_esc_cstr(b"hyphenation\x00" as *const u8 as *const libc::c_char);
                     print_cstr(b" will be flushed\x00" as *const u8 as *const libc::c_char);
-                    help_ptr = 2i32 as libc::c_uchar;
+                    help_ptr = 2i32 as u8;
                     help_line[1] = b"Hyphenation exceptions must contain only letters\x00"
                         as *const u8 as *const libc::c_char;
                     help_line[0] = b"and hyphens. But continue; I\'ll forgive and forget.\x00"
@@ -2785,7 +2785,7 @@ pub unsafe extern "C" fn prefixed_command() {
             print_cstr(b"You can\'t use a prefix with `\x00" as *const u8 as *const libc::c_char);
             print_cmd_chr(cur_cmd as u16, cur_chr);
             print_char('\'' as i32);
-            help_ptr = 1i32 as libc::c_uchar;
+            help_ptr = 1i32 as u8;
             help_line[0] =
                 b"I\'ll pretend you didn\'t say \\long or \\outer or \\global or \\protected.\x00"
                     as *const u8 as *const libc::c_char;
@@ -2841,7 +2841,7 @@ pub unsafe extern "C" fn prefixed_command() {
         print_esc_cstr(b"long\x00" as *const u8 as *const libc::c_char);
         print_cstr(b"\' or `\x00" as *const u8 as *const libc::c_char);
         print_esc_cstr(b"outer\x00" as *const u8 as *const libc::c_char);
-        help_ptr = 1i32 as libc::c_uchar;
+        help_ptr = 1i32 as u8;
         help_line[0] = b"I\'ll pretend you didn\'t say \\long or \\outer or \\protected here.\x00"
             as *const u8 as *const libc::c_char;
         print_cstr(b"\' or `\x00" as *const u8 as *const libc::c_char);
@@ -3427,7 +3427,7 @@ pub unsafe extern "C" fn prefixed_command() {
                 }
                 print_cstr(b"Missing `to\' inserted\x00" as *const u8 as
                                *const libc::c_char);
-                help_ptr = 2i32 as libc::c_uchar;
+                help_ptr = 2i32 as u8;
                 help_line[1] =
                     b"You should have said `\\read<number> to \\cs\'.\x00" as
                         *const u8 as *const libc::c_char;
@@ -3817,7 +3817,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                    *const libc::c_char);
                 }
                 print_int(n);
-                help_ptr = 1i32 as libc::c_uchar;
+                help_ptr = 1i32 as u8;
                 help_line[0] =
                     b"I\'m going to use 0 instead of that illegal code value.\x00"
                         as *const u8 as *const libc::c_char;
@@ -3916,7 +3916,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                *const libc::c_char);
                 print_esc_cstr(b"setbox\x00" as *const u8 as
                                    *const libc::c_char);
-                help_ptr = 2i32 as libc::c_uchar;
+                help_ptr = 2i32 as u8;
                 help_line[1] =
                     b"Sorry, \\setbox is not allowed after \\halign in a display,\x00"
                         as *const u8 as *const libc::c_char;
@@ -3986,7 +3986,7 @@ pub unsafe extern "C" fn prefixed_command() {
                     }
                     print_cstr(b"Patterns can be loaded only by INITEX\x00" as
                                    *const u8 as *const libc::c_char);
-                    help_ptr = 0i32 as libc::c_uchar;
+                    help_ptr = 0i32 as u8;
                     error();
                     loop  {
                         get_token();
@@ -4059,10 +4059,10 @@ unsafe extern "C" fn store_fmt_file() {
             print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
         }
         print_cstr(b"You can\'t dump inside a group\x00" as *const u8 as *const libc::c_char);
-        help_ptr = 1i32 as libc::c_uchar;
+        help_ptr = 1i32 as u8;
         help_line[0] = b"`{...\\dump}\' is a no-no.\x00" as *const u8 as *const libc::c_char;
         if interaction as libc::c_int == 3i32 {
-            interaction = 2i32 as libc::c_uchar
+            interaction = 2i32 as u8
         }
         if log_opened {
             error();
@@ -5113,7 +5113,7 @@ unsafe extern "C" fn store_fmt_file() {
                 b"Can\'t \\dump a format with native fonts or font-mappings\x00" as *const u8
                     as *const libc::c_char,
             );
-            help_ptr = 3i32 as libc::c_uchar;
+            help_ptr = 3i32 as u8;
             help_line[2] = b"You really, really don\'t want to do this.\x00" as *const u8
                 as *const libc::c_char;
             help_line[1] =
@@ -8491,11 +8491,11 @@ unsafe extern "C" fn initialize_more_variables() {
         (native_text_size as u64)
             .wrapping_mul(::std::mem::size_of::<UTF16_code>() as u64),
     ) as *mut UTF16_code;
-    interaction = 3i32 as libc::c_uchar;
+    interaction = 3i32 as u8;
     deletions_allowed = 1i32 != 0;
     set_box_allowed = 1i32 != 0;
     error_count = 0i32 as libc::c_schar;
-    help_ptr = 0i32 as libc::c_uchar;
+    help_ptr = 0i32 as u8;
     use_err_help = 0i32 != 0;
     nest_ptr = 0i32;
     max_nest_stack = 0i32;
@@ -8507,7 +8507,7 @@ unsafe extern "C" fn initialize_more_variables() {
     cur_list.mode_line = 0i32;
     cur_list.prev_graf = 0i32;
     shown_mode = 0i32 as libc::c_short;
-    page_contents = 0i32 as libc::c_uchar;
+    page_contents = 0i32 as u8;
     page_tail = 4999999i32 - 2i32;
     last_glue = 0x3fffffffi32;
     last_penalty = 0i32;
@@ -8626,16 +8626,16 @@ unsafe extern "C" fn initialize_more_variables() {
     cur_mark[3] = -0xfffffffi32;
     cur_mark[4] = -0xfffffffi32;
     cur_val = 0i32;
-    cur_val_level = 0i32 as libc::c_uchar;
+    cur_val_level = 0i32 as u8;
     radix = 0i32 as small_number;
     cur_order = 0i32 as glue_ord;
     k = 0i32;
     while k <= 16i32 {
-        read_open[k as usize] = 2i32 as libc::c_uchar;
+        read_open[k as usize] = 2i32 as u8;
         k += 1
     }
     cond_ptr = -0xfffffffi32;
-    if_limit = 0i32 as libc::c_uchar;
+    if_limit = 0i32 as u8;
     cur_if = 0i32 as small_number;
     if_line = 0i32;
     null_character.s3 = 0i32 as u16;
@@ -15277,7 +15277,7 @@ pub unsafe extern "C" fn tt_run_engine(
             .wrapping_mul(::std::mem::size_of::<UnicodeScalar>() as u64),
     );
     first = 0i32;
-    scanner_status = 0i32 as libc::c_uchar;
+    scanner_status = 0i32 as u8;
     warning_index = -0xfffffffi32;
     first = 1i32;
     cur_input.state = 33i32 as u16;

@@ -41,7 +41,7 @@ extern "C" {
     #[no_mangle]
     static mut help_line: [*const libc::c_char; 6];
     #[no_mangle]
-    static mut help_ptr: libc::c_uchar;
+    static mut help_ptr: u8;
     #[no_mangle]
     static mut mem: *mut memory_word;
     #[no_mangle]
@@ -840,7 +840,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 print_cstr(b"size (\x00" as *const u8 as *const libc::c_char);
                 print_scaled(cur_val);
                 print_cstr(b"pt) will be ignored\x00" as *const u8 as *const libc::c_char);
-                help_ptr = 2i32 as libc::c_uchar;
+                help_ptr = 2i32 as u8;
                 help_line[1] = b"I can\'t scale images to zero or negative sizes,\x00" as *const u8
                     as *const libc::c_char;
                 help_line[0] = b"so I\'m ignoring this.\x00" as *const u8 as *const libc::c_char;
@@ -860,7 +860,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 print_cstr(b"size (\x00" as *const u8 as *const libc::c_char);
                 print_scaled(cur_val);
                 print_cstr(b"pt) will be ignored\x00" as *const u8 as *const libc::c_char);
-                help_ptr = 2i32 as libc::c_uchar;
+                help_ptr = 2i32 as u8;
                 help_line[1] = b"I can\'t scale images to zero or negative sizes,\x00" as *const u8
                     as *const libc::c_char;
                 help_line[0] = b"so I\'m ignoring this.\x00" as *const u8 as *const libc::c_char;
@@ -1119,7 +1119,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         (*mem.offset((cur_list.tail + 7i32) as isize)).b32.s1 = D2Fix(t.y);
         memcpy(
             &mut *mem.offset((cur_list.tail + 9i32) as isize) as *mut memory_word
-                as *mut libc::c_uchar as *mut libc::c_void,
+                as *mut u8 as *mut libc::c_void,
             pic_path as *const libc::c_void,
             strlen(pic_path),
         );
@@ -1136,12 +1136,12 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         print_file_name(cur_name, cur_area, cur_ext);
         print('\'' as i32);
         if result == -43i32 {
-            help_ptr = 2i32 as libc::c_uchar;
+            help_ptr = 2i32 as u8;
             help_line[1] = b"The requested image couldn\'t be read because\x00" as *const u8
                 as *const libc::c_char;
             help_line[0] = b"the file was not found.\x00" as *const u8 as *const libc::c_char
         } else {
-            help_ptr = 2i32 as libc::c_uchar;
+            help_ptr = 2i32 as u8;
             help_line[1] = b"The requested image couldn\'t be read because\x00" as *const u8
                 as *const libc::c_char;
             help_line[0] =

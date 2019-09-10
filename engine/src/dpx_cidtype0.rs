@@ -144,8 +144,8 @@ extern "C" {
     #[no_mangle]
     fn agl_sput_UTF16BE(
         name: *const libc::c_char,
-        dstpp: *mut *mut libc::c_uchar,
-        limptr: *mut libc::c_uchar,
+        dstpp: *mut *mut u8,
+        limptr: *mut u8,
         num_fails: *mut libc::c_int,
     ) -> int32_t;
     #[no_mangle]
@@ -269,23 +269,23 @@ extern "C" {
     #[no_mangle]
     fn CMap_add_bfchar(
         cmap: *mut CMap,
-        src: *const libc::c_uchar,
+        src: *const u8,
         srcdim: size_t,
-        dest: *const libc::c_uchar,
+        dest: *const u8,
         destdim: size_t,
     ) -> libc::c_int;
     #[no_mangle]
     fn CMap_add_cidchar(
         cmap: *mut CMap,
-        src: *const libc::c_uchar,
+        src: *const u8,
         srcdim: size_t,
         dest: CID,
     ) -> libc::c_int;
     #[no_mangle]
     fn CMap_add_codespacerange(
         cmap: *mut CMap,
-        codelo: *const libc::c_uchar,
-        codehi: *const libc::c_uchar,
+        codelo: *const u8,
+        codehi: *const u8,
         dim: size_t,
     ) -> libc::c_int;
     #[no_mangle]
@@ -567,7 +567,7 @@ pub struct C2RustUnnamed {
     pub bchar: card8,
     pub achar: card8,
 }
-pub type card8 = libc::c_uchar;
+pub type card8 = u8;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
@@ -613,7 +613,7 @@ pub struct cff_index {
     pub data: *mut card8,
 }
 pub type l_offset = u32;
-pub type c_offsize = libc::c_uchar;
+pub type c_offsize = u8;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_fdselect {
@@ -803,7 +803,7 @@ pub type FWord = libc::c_short;
 */
 /* Acoid conflict with CHAR ... from <winnt.h>.  */
 /* Data Types as described in Apple's TTRefMan */
-pub type BYTE = libc::c_uchar;
+pub type BYTE = u8;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_maxp_table {
@@ -953,7 +953,7 @@ pub struct C2RustUnnamed_4 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mapData {
-    pub data: *mut libc::c_uchar,
+    pub data: *mut u8,
     pub prev: *mut mapData,
     pub pos: libc::c_int,
 }
@@ -988,7 +988,7 @@ pub struct mapData {
 pub struct mapDef {
     pub flag: libc::c_int,
     pub len: size_t,
-    pub code: *mut libc::c_uchar,
+    pub code: *mut u8,
     pub next: *mut mapDef,
     /* Next Subtbl for LOOKUP_CONTINUE */
 }
@@ -1003,8 +1003,8 @@ pub struct C2RustUnnamed_5 {
 #[repr(C)]
 pub struct rangeDef {
     pub dim: size_t,
-    pub codeLo: *mut libc::c_uchar,
-    pub codeHi: *mut libc::c_uchar,
+    pub codeLo: *mut u8,
+    pub codeHi: *mut u8,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1107,7 +1107,7 @@ pub unsafe extern "C" fn CIDFont_type0_set_flags(mut flags: libc::c_int) {
  */
 unsafe extern "C" fn add_CIDHMetrics(
     mut fontdict: *mut pdf_obj,
-    mut CIDToGIDMap: *mut libc::c_uchar,
+    mut CIDToGIDMap: *mut u8,
     mut last_cid: libc::c_ushort,
     mut maxp: *mut tt_maxp_table,
     mut head: *mut tt_head_table,
@@ -1201,7 +1201,7 @@ unsafe extern "C" fn add_CIDHMetrics(
 unsafe extern "C" fn add_CIDVMetrics(
     mut sfont: *mut sfnt,
     mut fontdict: *mut pdf_obj,
-    mut CIDToGIDMap: *mut libc::c_uchar,
+    mut CIDToGIDMap: *mut u8,
     mut last_cid: libc::c_ushort,
     mut maxp: *mut tt_maxp_table,
     mut head: *mut tt_head_table,
@@ -1374,7 +1374,7 @@ unsafe extern "C" fn add_CIDVMetrics(
 unsafe extern "C" fn add_CIDMetrics(
     mut sfont: *mut sfnt,
     mut fontdict: *mut pdf_obj,
-    mut CIDToGIDMap: *mut libc::c_uchar,
+    mut CIDToGIDMap: *mut u8,
     mut last_cid: libc::c_ushort,
     mut need_vmetrics: libc::c_int,
 ) {
@@ -1418,7 +1418,7 @@ unsafe extern "C" fn write_fontfile(
     let mut topdict: *mut cff_index = 0 as *mut cff_index;
     let mut fdarray: *mut cff_index = 0 as *mut cff_index;
     let mut private: *mut cff_index = 0 as *mut cff_index;
-    let mut dest: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut dest: *mut u8 = 0 as *mut u8;
     let mut destlen: libc::c_int = 0i32;
     let mut i: libc::c_int = 0;
     let mut size: libc::c_int = 0;
@@ -1817,7 +1817,7 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
     let mut fd: libc::c_int = 0;
     let mut prev_fd: libc::c_int = 0;
     let mut used_chars: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut CIDToGIDMap: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut CIDToGIDMap: *mut u8 = 0 as *mut u8;
     let mut error: CIDType0Error = CID_OPEN_ERROR_NO_ERROR;
     let mut info: CIDType0Info = CIDType0Info {
         handle: 0 as *mut libc::c_void,
@@ -1891,8 +1891,8 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
             cid_count = 65535i32 + 1i32
         }
         CIDToGIDMap = new(((2i32 * cid_count) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-            as u32) as *mut libc::c_uchar;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+            as u32) as *mut u8;
         memset(
             CIDToGIDMap as *mut libc::c_void,
             0i32,
@@ -1919,9 +1919,9 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
                         (*fresh1 as libc::c_int & !(1i32 << 7i32 - cid % 8i32)) as libc::c_char
                 } else {
                     *CIDToGIDMap.offset((2i32 * cid) as isize) =
-                        (gid as libc::c_int >> 8i32 & 0xffi32) as libc::c_uchar;
+                        (gid as libc::c_int >> 8i32 & 0xffi32) as u8;
                     *CIDToGIDMap.offset((2i32 * cid + 1i32) as isize) =
-                        (gid as libc::c_int & 0xffi32) as libc::c_uchar;
+                        (gid as libc::c_int & 0xffi32) as u8;
                     last_cid = cid as card16;
                     num_glyphs = num_glyphs.wrapping_add(1)
                 }
@@ -2844,12 +2844,12 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
      * DW, W, DW2 and W2:
      * Those values are obtained from OpenType table (not TFM).
      */
-    let mut CIDToGIDMap: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut CIDToGIDMap: *mut u8 = 0 as *mut u8;
     CIDToGIDMap = new(
         ((2i32 * (last_cid as libc::c_int + 1i32)) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32,
-    ) as *mut libc::c_uchar;
+    ) as *mut u8;
     memset(
         CIDToGIDMap as *mut libc::c_void,
         0i32,
@@ -2859,8 +2859,8 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
     while cid <= last_cid as libc::c_int {
         if *used_chars.offset((cid / 8i32) as isize) as libc::c_int & 1i32 << 7i32 - cid % 8i32 != 0
         {
-            *CIDToGIDMap.offset((2i32 * cid) as isize) = (cid >> 8i32 & 0xffi32) as libc::c_uchar;
-            *CIDToGIDMap.offset((2i32 * cid + 1i32) as isize) = (cid & 0xffi32) as libc::c_uchar
+            *CIDToGIDMap.offset((2i32 * cid) as isize) = (cid >> 8i32 & 0xffi32) as u8;
+            *CIDToGIDMap.offset((2i32 * cid + 1i32) as isize) = (cid & 0xffi32) as u8
         }
         cid += 1
     }
@@ -2895,17 +2895,17 @@ unsafe extern "C" fn load_base_CMap(
     let mut cmap: *mut CMap = 0 as *mut CMap;
     let mut cmap_name: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut gid: card16 = 0;
-    let mut range_min: [libc::c_uchar; 4] = [
-        0i32 as libc::c_uchar,
-        0i32 as libc::c_uchar,
-        0i32 as libc::c_uchar,
-        0i32 as libc::c_uchar,
+    let mut range_min: [u8; 4] = [
+        0i32 as u8,
+        0i32 as u8,
+        0i32 as u8,
+        0i32 as u8,
     ];
-    let mut range_max: [libc::c_uchar; 4] = [
-        0x7fi32 as libc::c_uchar,
-        0xffi32 as libc::c_uchar,
-        0xffi32 as libc::c_uchar,
-        0xffi32 as libc::c_uchar,
+    let mut range_max: [u8; 4] = [
+        0x7fi32 as u8,
+        0xffi32 as u8,
+        0xffi32 as u8,
+        0xffi32 as u8,
     ];
     cmap_name = new((strlen(font_name)
         .wrapping_add(strlen(b"-UCS4-H\x00" as *const u8 as *const libc::c_char))
@@ -2949,7 +2949,7 @@ unsafe extern "C" fn load_base_CMap(
         let mut glyph: *mut libc::c_char = 0 as *mut libc::c_char;
         let mut name: *mut libc::c_char = 0 as *mut libc::c_char;
         let mut suffix: *mut libc::c_char = 0 as *mut libc::c_char;
-        let mut srcCode: [libc::c_uchar; 4] = [0; 4];
+        let mut srcCode: [u8; 4] = [0; 4];
         sid = cff_charsets_lookup_inverse(cffont, gid);
         glyph = cff_get_string(cffont, sid);
         name = agl_chop_suffix(glyph, &mut suffix);
@@ -2963,10 +2963,10 @@ unsafe extern "C" fn load_base_CMap(
         } else {
             if agl_name_is_unicode(name) {
                 ucv = agl_name_convert_unicode(name);
-                srcCode[0] = (ucv >> 24i32 & 0xffi32) as libc::c_uchar;
-                srcCode[1] = (ucv >> 16i32 & 0xffi32) as libc::c_uchar;
-                srcCode[2] = (ucv >> 8i32 & 0xffi32) as libc::c_uchar;
-                srcCode[3] = (ucv & 0xffi32) as libc::c_uchar;
+                srcCode[0] = (ucv >> 24i32 & 0xffi32) as u8;
+                srcCode[1] = (ucv >> 16i32 & 0xffi32) as u8;
+                srcCode[2] = (ucv >> 8i32 & 0xffi32) as u8;
+                srcCode[3] = (ucv & 0xffi32) as u8;
                 CMap_add_cidchar(cmap, srcCode.as_mut_ptr(), 4i32 as size_t, gid);
             } else {
                 let mut agln: *mut agl_name = 0 as *mut agl_name;
@@ -2987,10 +2987,10 @@ unsafe extern "C" fn load_base_CMap(
                         );
                     } else if (*agln).n_components == 1i32 {
                         ucv = (*agln).unicodes[0];
-                        srcCode[0] = (ucv >> 24i32 & 0xffi32) as libc::c_uchar;
-                        srcCode[1] = (ucv >> 16i32 & 0xffi32) as libc::c_uchar;
-                        srcCode[2] = (ucv >> 8i32 & 0xffi32) as libc::c_uchar;
-                        srcCode[3] = (ucv & 0xffi32) as libc::c_uchar;
+                        srcCode[0] = (ucv >> 24i32 & 0xffi32) as u8;
+                        srcCode[1] = (ucv >> 16i32 & 0xffi32) as u8;
+                        srcCode[2] = (ucv >> 8i32 & 0xffi32) as u8;
+                        srcCode[3] = (ucv & 0xffi32) as u8;
                         CMap_add_cidchar(cmap, srcCode.as_mut_ptr(), 4i32 as size_t, gid);
                     }
                     agln = (*agln).alternate
@@ -3062,11 +3062,11 @@ unsafe extern "C" fn create_ToUnicode_stream(
     let mut glyph_count: libc::c_int = 0;
     let mut total_fail_count: libc::c_int = 0;
     let mut cmap_name: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut wbuf: [libc::c_uchar; 1024] = [0; 1024];
-    let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut endptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    static mut range_min: [libc::c_uchar; 2] = [0i32 as libc::c_uchar, 0i32 as libc::c_uchar];
-    static mut range_max: [libc::c_uchar; 2] = [0xffi32 as libc::c_uchar, 0xffi32 as libc::c_uchar];
+    let mut wbuf: [u8; 1024] = [0; 1024];
+    let mut p: *mut u8 = 0 as *mut u8;
+    let mut endptr: *mut u8 = 0 as *mut u8;
+    static mut range_min: [u8; 2] = [0i32 as u8, 0i32 as u8];
+    static mut range_max: [u8; 2] = [0xffi32 as u8, 0xffi32 as u8];
     if font_name.is_null() || used_glyphs.is_null() {
         return 0 as *mut pdf_obj;
     }
@@ -3103,8 +3103,8 @@ unsafe extern "C" fn create_ToUnicode_stream(
             let mut glyph: *mut libc::c_char = 0 as *mut libc::c_char;
             let mut len: int32_t = 0;
             let mut fail_count: libc::c_int = 0;
-            wbuf[0] = (cid as libc::c_int >> 8i32 & 0xffi32) as libc::c_uchar;
-            wbuf[1] = (cid as libc::c_int & 0xffi32) as libc::c_uchar;
+            wbuf[0] = (cid as libc::c_int >> 8i32 & 0xffi32) as u8;
+            wbuf[1] = (cid as libc::c_int & 0xffi32) as u8;
             p = wbuf.as_mut_ptr().offset(2);
             gid = cff_charsets_lookup_inverse(cffont, cid);
             if !(gid as libc::c_int == 0i32) {
@@ -3439,7 +3439,7 @@ unsafe extern "C" fn get_font_attr(mut font: *mut CIDFont, mut cffont: *mut cff_
 unsafe extern "C" fn add_metrics(
     mut font: *mut CIDFont,
     mut cffont: *mut cff_font,
-    mut CIDToGIDMap: *mut libc::c_uchar,
+    mut CIDToGIDMap: *mut u8,
     mut widths: *mut libc::c_double,
     mut default_width: libc::c_double,
     mut last_cid: CID,
@@ -3567,7 +3567,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
     let mut last_cid: card16 = 0;
     let mut gid: card16 = 0;
     let mut cid: card16 = 0;
-    let mut CIDToGIDMap: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut CIDToGIDMap: *mut u8 = 0 as *mut u8;
     if !font.is_null() {
     } else {
         __assert_fail(
@@ -3699,9 +3699,9 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
     (*cffont).fdselect = fdselect;
     CIDToGIDMap = new(
         ((2i32 * (last_cid as libc::c_int + 1i32)) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32,
-    ) as *mut libc::c_uchar;
+    ) as *mut u8;
     memset(
         CIDToGIDMap as *mut libc::c_void,
         0i32,
@@ -3730,9 +3730,9 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
                     .offset((gid as libc::c_int - 1i32) as isize) = cid
             }
             *CIDToGIDMap.offset((2i32 * cid as libc::c_int) as isize) =
-                (gid as libc::c_int >> 8i32 & 0xffi32) as libc::c_uchar;
+                (gid as libc::c_int >> 8i32 & 0xffi32) as u8;
             *CIDToGIDMap.offset((2i32 * cid as libc::c_int + 1i32) as isize) =
-                (gid as libc::c_int & 0xffi32) as libc::c_uchar;
+                (gid as libc::c_int & 0xffi32) as u8;
             gid = gid.wrapping_add(1)
         }
         cid = cid.wrapping_add(1)

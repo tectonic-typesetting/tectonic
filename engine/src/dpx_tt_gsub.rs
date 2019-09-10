@@ -1089,7 +1089,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
     };
     let mut subtab: *mut otl_gsub_subtab = 0 as *mut otl_gsub_subtab;
     let mut num_subtabs: USHORT = 0i32 as USHORT;
-    let mut feat_bits: [libc::c_uchar; 8192] = [0; 8192];
+    let mut feat_bits: [u8; 8192] = [0; 8192];
     let mut feature_list: clt_record_list = clt_record_list {
         count: 0,
         record: 0 as *mut clt_record,
@@ -1195,7 +1195,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                         (feat_bits[(langsys_tab.ReqFeatureIndex as libc::c_int / 8i32) as usize]
                             as libc::c_int
                             | 1i32 << 7i32 - langsys_tab.ReqFeatureIndex as libc::c_int % 8i32)
-                            as libc::c_uchar
+                            as u8
                 }
                 feat_idx = 0i32;
                 while feat_idx < langsys_tab.FeatureIndex.count as libc::c_int {
@@ -1209,7 +1209,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                 << 7i32
                                     - *langsys_tab.FeatureIndex.value.offset(feat_idx as isize)
                                         as libc::c_int
-                                        % 8i32) as libc::c_uchar;
+                                        % 8i32) as u8;
                     feat_idx += 1
                 }
                 clt_release_langsys_table(&mut langsys_tab);
@@ -1258,7 +1258,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                 as libc::c_int
                                 | 1i32
                                     << 7i32 - langsys_tab_0.ReqFeatureIndex as libc::c_int % 8i32)
-                                as libc::c_uchar
+                                as u8
                     }
                     feat_idx = 0i32;
                     while feat_idx < langsys_tab_0.FeatureIndex.count as libc::c_int {
@@ -1275,7 +1275,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                             .value
                                             .offset(feat_idx as isize)
                                             as libc::c_int
-                                            % 8i32) as libc::c_uchar;
+                                            % 8i32) as u8;
                         feat_idx += 1
                     }
                     clt_release_langsys_table(&mut langsys_tab_0);

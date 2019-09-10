@@ -23,7 +23,7 @@ extern "C" {
     #[no_mangle]
     static mut help_line: [*const libc::c_char; 6];
     #[no_mangle]
-    static mut help_ptr: libc::c_uchar;
+    static mut help_ptr: u8;
     #[no_mangle]
     static mut arith_error: bool;
     #[no_mangle]
@@ -83,11 +83,11 @@ extern "C" {
     #[no_mangle]
     static mut hu: [int32_t; 4097];
     #[no_mangle]
-    static mut cur_lang: libc::c_uchar;
+    static mut cur_lang: u8;
     #[no_mangle]
     static mut max_hyph_char: int32_t;
     #[no_mangle]
-    static mut hyf: [libc::c_uchar; 4097];
+    static mut hyf: [u8; 4097];
     #[no_mangle]
     static mut init_list: int32_t;
     #[no_mangle]
@@ -298,7 +298,7 @@ static mut hn: small_number = 0;
 static mut ha: int32_t = 0;
 static mut hb: int32_t = 0;
 static mut hyf_char: int32_t = 0;
-static mut init_cur_lang: libc::c_uchar = 0;
+static mut init_cur_lang: u8 = 0;
 static mut l_hyf: int32_t = 0;
 static mut r_hyf: int32_t = 0;
 static mut init_l_hyf: int32_t = 0;
@@ -373,7 +373,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
     *fresh2 = new_param_glue(14i32 as small_number);
     last_line_fill = *fresh2;
     /* Yet more initialization of various kinds */
-    init_cur_lang = (cur_list.prev_graf as libc::c_long % 65536) as libc::c_uchar;
+    init_cur_lang = (cur_list.prev_graf as libc::c_long % 65536) as u8;
     init_l_hyf = cur_list.prev_graf / 0x400000i32;
     init_r_hyf = (cur_list.prev_graf as libc::c_long / 65536 % 64i32 as libc::c_long) as int32_t;
     pop_nest();
@@ -1362,7 +1362,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                 0 | 1 | 2 => active_width[1] += (*mem.offset((cur_p + 1i32) as isize)).b32.s1,
                 8 => {
                     if (*mem.offset(cur_p as isize)).b16.s0 as libc::c_int == 4i32 {
-                        cur_lang = (*mem.offset((cur_p + 1i32) as isize)).b32.s1 as libc::c_uchar;
+                        cur_lang = (*mem.offset((cur_p + 1i32) as isize)).b32.s1 as u8;
                         l_hyf = (*mem.offset((cur_p + 1i32) as isize)).b16.s1 as int32_t;
                         r_hyf = (*mem.offset((cur_p + 1i32) as isize)).b16.s0 as int32_t;
                         if *trie_trc.offset((hyph_start + cur_lang as libc::c_int) as isize)
@@ -1494,7 +1494,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                     }
                                     if (*mem.offset(s as isize)).b16.s0 as libc::c_int == 4i32 {
                                         cur_lang = (*mem.offset((s + 1i32) as isize)).b32.s1
-                                            as libc::c_uchar;
+                                            as u8;
                                         l_hyf =
                                             (*mem.offset((s + 1i32) as isize)).b16.s1 as int32_t;
                                         r_hyf =
@@ -3795,7 +3795,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
     let mut l: int32_t = 0;
     let mut node_r_stays_active: bool = false;
     let mut line_width: scaled_t = 0i32;
-    let mut fit_class: libc::c_uchar = 0;
+    let mut fit_class: u8 = 0;
     let mut b: int32_t = 0;
     let mut d: int32_t = 0;
     let mut artificial_demerits: bool = false;
@@ -4183,7 +4183,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                             .b32
                             .s1)
                     }
-                    fit_class = 0i32 as libc::c_uchar;
+                    fit_class = 0i32 as u8;
                     while fit_class as libc::c_int <= 3i32 {
                         if minimal_demerits[fit_class as usize] <= minimum_demerits {
                             /*874: "Insert a new active node from best_place[fit_class] to cur_p" */
@@ -4464,7 +4464,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                                             if (cur_active_width[2] as libc::c_long) < 1663497 {
                                                 /* XXX: magic number in original WEB code */
                                                 b = 10000i32;
-                                                fit_class = 0i32 as libc::c_uchar;
+                                                fit_class = 0i32 as u8;
                                                 current_block = 11849408527845460430;
                                             } else {
                                                 current_block = 16221891950104054966;
@@ -4478,12 +4478,12 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                                                 b = badness(g, cur_active_width[2]);
                                                 if b > 12i32 {
                                                     if b > 99i32 {
-                                                        fit_class = 0i32 as libc::c_uchar
+                                                        fit_class = 0i32 as u8
                                                     } else {
-                                                        fit_class = 1i32 as libc::c_uchar
+                                                        fit_class = 1i32 as u8
                                                     }
                                                 } else {
-                                                    fit_class = 2i32 as libc::c_uchar
+                                                    fit_class = 2i32 as u8
                                                 }
                                                 current_block = 11849408527845460430;
                                             }
@@ -4498,9 +4498,9 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                                         b = badness(-g, cur_active_width[6]);
                                         if b > 12i32 {
                                             /* XXX hardcoded in WEB */
-                                            fit_class = 3i32 as libc::c_uchar
+                                            fit_class = 3i32 as u8
                                         } else {
-                                            fit_class = 2i32 as libc::c_uchar
+                                            fit_class = 2i32 as u8
                                         }
                                         current_block = 11849408527845460430;
                                     } else {
@@ -4525,7 +4525,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                         11849408527845460430 => {}
                         _ => {
                             b = 0i32;
-                            fit_class = 2i32 as libc::c_uchar;
+                            fit_class = 2i32 as u8;
                             current_block = 8633396468472091231;
                         }
                     }
@@ -4536,7 +4536,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                         if (cur_active_width[2] as libc::c_long) < 1663497 {
                             /* XXX: magic number in original WEB code */
                             b = 10000i32;
-                            fit_class = 0i32 as libc::c_uchar;
+                            fit_class = 0i32 as u8;
                             current_block_230 = 4001239642700071046;
                         } else {
                             current_block_230 = 15455430299222214173;
@@ -4549,12 +4549,12 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                             b = badness(shortfall, cur_active_width[2]);
                             if b > 12i32 {
                                 if b > 99i32 {
-                                    fit_class = 0i32 as libc::c_uchar
+                                    fit_class = 0i32 as u8
                                 } else {
-                                    fit_class = 1i32 as libc::c_uchar
+                                    fit_class = 1i32 as u8
                                 }
                             } else {
-                                fit_class = 2i32 as libc::c_uchar
+                                fit_class = 2i32 as u8
                             }
                         }
                         _ => {}
@@ -4570,9 +4570,9 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                     b = badness(-shortfall, cur_active_width[6])
                 }
                 if b > 12i32 {
-                    fit_class = 3i32 as libc::c_uchar
+                    fit_class = 3i32 as u8
                 } else {
-                    fit_class = 2i32 as libc::c_uchar
+                    fit_class = 2i32 as u8
                 }
                 current_block = 8633396468472091231;
             }
@@ -4883,7 +4883,7 @@ unsafe extern "C" fn hyphenate() {
     for_end = hn as int32_t;
     if j as libc::c_int <= for_end {
         loop {
-            hyf[j as usize] = 0i32 as libc::c_uchar;
+            hyf[j as usize] = 0i32 as u8;
             let fresh18 = j;
             j = j + 1;
             if !((fresh18 as libc::c_int) < for_end) {
@@ -4933,7 +4933,7 @@ unsafe extern "C" fn hyphenate() {
                 _ => {
                     s = *hyph_list.offset(h as isize);
                     while s != -0xfffffffi32 {
-                        hyf[(*mem.offset(s as isize)).b32.s0 as usize] = 1i32 as libc::c_uchar;
+                        hyf[(*mem.offset(s as isize)).b32.s0 as usize] = 1i32 as u8;
                         s = (*mem.offset(s as isize)).b32.s1
                     }
                     hn -= 1;
@@ -4979,7 +4979,7 @@ unsafe extern "C" fn hyphenate() {
                                 if hyf_num[v as usize] as libc::c_int
                                     > hyf[i as usize] as libc::c_int
                                 {
-                                    hyf[i as usize] = hyf_num[v as usize] as libc::c_uchar
+                                    hyf[i as usize] = hyf_num[v as usize] as u8
                                 }
                                 v = hyf_next[v as usize] as int32_t;
                                 if v == 0i32 {
@@ -5005,7 +5005,7 @@ unsafe extern "C" fn hyphenate() {
     for_end_2 = l_hyf - 1i32;
     if j as libc::c_int <= for_end_2 {
         loop {
-            hyf[j as usize] = 0i32 as libc::c_uchar;
+            hyf[j as usize] = 0i32 as u8;
             let fresh21 = j;
             j = j + 1;
             if !((fresh21 as libc::c_int) < for_end_2) {
@@ -5018,7 +5018,7 @@ unsafe extern "C" fn hyphenate() {
     for_end_3 = r_hyf - 1i32;
     if j as libc::c_int <= for_end_3 {
         loop {
-            hyf[(hn as libc::c_int - j as libc::c_int) as usize] = 0i32 as libc::c_uchar;
+            hyf[(hn as libc::c_int - j as libc::c_int) as usize] = 0i32 as u8;
             let fresh22 = j;
             j = j + 1;
             if !((fresh22 as libc::c_int) < for_end_3) {
@@ -5298,7 +5298,7 @@ unsafe extern "C" fn hyphenate() {
                         r_count += 1
                     }
                     i = hyphen_passed;
-                    hyf[i as usize] = 0i32 as libc::c_uchar;
+                    hyf[i as usize] = 0i32 as u8;
                     minor_tail = -0xfffffffi32;
                     (*mem.offset((r + 1i32) as isize)).b32.s0 = -0xfffffffi32;
                     hyf_node = new_character(hf, hyf_char as UTF16_code);
@@ -5414,7 +5414,7 @@ unsafe extern "C" fn finite_shrink(mut p: int32_t) -> int32_t {
         print_cstr(
             b"Infinite glue shrinkage found in a paragraph\x00" as *const u8 as *const libc::c_char,
         );
-        help_ptr = 5i32 as libc::c_uchar;
+        help_ptr = 5i32 as u8;
         help_line[4] = b"The paragraph just ended includes some glue that has\x00" as *const u8
             as *const libc::c_char;
         help_line[3] = b"infinite shrinkability, e.g., `\\hskip 0pt minus 1fil\'.\x00" as *const u8

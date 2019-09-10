@@ -499,7 +499,7 @@ pub unsafe extern "C" fn dpx_file_apply_filter(
     mut cmdtmpl: *const libc::c_char,
     mut input: *const libc::c_char,
     mut output: *const libc::c_char,
-    mut version: libc::c_uchar,
+    mut version: u8,
 ) -> libc::c_int {
     /* Tectonic: defused */
     return -1i32;

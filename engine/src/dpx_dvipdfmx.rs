@@ -663,7 +663,7 @@ unsafe extern "C" fn select_pages(
         (*page_ranges.offset(num_page_ranges as isize)).first = 0i32;
         (*page_ranges.offset(num_page_ranges as isize)).last = 0i32;
         while *p as libc::c_int != 0
-            && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
                 & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
                 != 0
@@ -679,7 +679,7 @@ unsafe extern "C" fn select_pages(
             free(q as *mut libc::c_void);
         }
         while *p as libc::c_int != 0
-            && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+            && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
                 & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
                 != 0
@@ -689,7 +689,7 @@ unsafe extern "C" fn select_pages(
         if *p as libc::c_int == '-' as i32 {
             p = p.offset(1);
             while *p as libc::c_int != 0
-                && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                     as libc::c_int
                     & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
                     != 0
@@ -704,7 +704,7 @@ unsafe extern "C" fn select_pages(
                     free(q as *mut libc::c_void);
                 }
                 while *p as libc::c_int != 0
-                    && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                    && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                         as libc::c_int
                         & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
                         != 0
@@ -721,7 +721,7 @@ unsafe extern "C" fn select_pages(
             p = p.offset(1)
         } else {
             while *p as libc::c_int != 0
-                && *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+                && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                     as libc::c_int
                     & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
                     != 0

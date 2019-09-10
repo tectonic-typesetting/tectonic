@@ -27,8 +27,8 @@ pub unsafe extern "C" fn UC_is_valid(mut ucv: int32_t) -> bool {
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF16BE_is_valid_string(
-    mut p: *const libc::c_uchar,
-    mut endptr: *const libc::c_uchar,
+    mut p: *const u8,
+    mut endptr: *const u8,
 ) -> bool {
     if p.offset(1) >= endptr {
         return 0i32 != 0;
@@ -43,8 +43,8 @@ pub unsafe extern "C" fn UC_UTF16BE_is_valid_string(
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF8_is_valid_string(
-    mut p: *const libc::c_uchar,
-    mut endptr: *const libc::c_uchar,
+    mut p: *const u8,
+    mut endptr: *const u8,
 ) -> bool {
     if p.offset(1) >= endptr {
         return 0i32 != 0;
@@ -59,10 +59,10 @@ pub unsafe extern "C" fn UC_UTF8_is_valid_string(
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF16BE_decode_char(
-    mut pp: *mut *const libc::c_uchar,
-    mut endptr: *const libc::c_uchar,
+    mut pp: *mut *const u8,
+    mut endptr: *const u8,
 ) -> int32_t {
-    let mut p: *const libc::c_uchar = *pp;
+    let mut p: *const u8 = *pp;
     let mut ucv: int32_t = -1i32;
     let mut first: u16 = 0;
     let mut second: u16 = 0;
@@ -91,17 +91,17 @@ pub unsafe extern "C" fn UC_UTF16BE_decode_char(
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF16BE_encode_char(
     mut ucv: int32_t,
-    mut pp: *mut *mut libc::c_uchar,
-    mut endptr: *mut libc::c_uchar,
+    mut pp: *mut *mut u8,
+    mut endptr: *mut u8,
 ) -> size_t {
     let mut count: libc::c_int = 0i32;
-    let mut p: *mut libc::c_uchar = *pp;
+    let mut p: *mut u8 = *pp;
     if ucv >= 0i32 && ucv <= 0xffffi32 {
         if p.offset(2) >= endptr {
             return 0i32 as size_t;
         }
-        *p.offset(0) = (ucv >> 8i32 & 0xffi32) as libc::c_uchar;
-        *p.offset(1) = (ucv & 0xffi32) as libc::c_uchar;
+        *p.offset(0) = (ucv >> 8i32 & 0xffi32) as u8;
+        *p.offset(1) = (ucv & 0xffi32) as u8;
         count = 2i32
     } else if ucv >= 0x10000i32 && ucv <= 0x10ffffi32 {
         let mut high: libc::c_ushort = 0;
@@ -112,17 +112,17 @@ pub unsafe extern "C" fn UC_UTF16BE_encode_char(
         ucv -= 0x10000i32;
         high = ((ucv >> 10i32) as libc::c_uint).wrapping_add(0xd800u32) as libc::c_ushort;
         low = (ucv as libc::c_uint & 0x3ffu32).wrapping_add(0xdc00u32) as libc::c_ushort;
-        *p.offset(0) = (high as libc::c_int >> 8i32 & 0xffi32) as libc::c_uchar;
-        *p.offset(1) = (high as libc::c_int & 0xffi32) as libc::c_uchar;
-        *p.offset(2) = (low as libc::c_int >> 8i32 & 0xffi32) as libc::c_uchar;
-        *p.offset(3) = (low as libc::c_int & 0xffi32) as libc::c_uchar;
+        *p.offset(0) = (high as libc::c_int >> 8i32 & 0xffi32) as u8;
+        *p.offset(1) = (high as libc::c_int & 0xffi32) as u8;
+        *p.offset(2) = (low as libc::c_int >> 8i32 & 0xffi32) as u8;
+        *p.offset(3) = (low as libc::c_int & 0xffi32) as u8;
         count = 4i32
     } else {
         if p.offset(2) >= endptr {
             return 0i32 as size_t;
         }
-        *p.offset(0) = (0xfffdi32 >> 8i32 & 0xffi32) as libc::c_uchar;
-        *p.offset(1) = (0xfffdi32 & 0xffi32) as libc::c_uchar;
+        *p.offset(0) = (0xfffdi32 >> 8i32 & 0xffi32) as u8;
+        *p.offset(1) = (0xfffdi32 & 0xffi32) as u8;
         count = 2i32
     }
     *pp = (*pp).offset(count as isize);
@@ -130,14 +130,14 @@ pub unsafe extern "C" fn UC_UTF16BE_encode_char(
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF8_decode_char(
-    mut pp: *mut *const libc::c_uchar,
-    mut endptr: *const libc::c_uchar,
+    mut pp: *mut *const u8,
+    mut endptr: *const u8,
 ) -> int32_t {
-    let mut p: *const libc::c_uchar = *pp;
+    let mut p: *const u8 = *pp;
     let mut ucv: int32_t = 0;
     let fresh0 = p;
     p = p.offset(1);
-    let mut c: libc::c_uchar = *fresh0;
+    let mut c: u8 = *fresh0;
     let mut nbytes: libc::c_int = 0;
     if c as libc::c_int <= 0x7fi32 {
         ucv = c as int32_t;
@@ -209,11 +209,11 @@ pub unsafe extern "C" fn UC_UTF8_decode_char(
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF8_encode_char(
     mut ucv: int32_t,
-    mut pp: *mut *mut libc::c_uchar,
-    mut endptr: *mut libc::c_uchar,
+    mut pp: *mut *mut u8,
+    mut endptr: *mut u8,
 ) -> size_t {
     let mut count: libc::c_int = 0i32;
-    let mut p: *mut libc::c_uchar = *pp;
+    let mut p: *mut u8 = *pp;
     if !pp.is_null() && !(*pp).is_null() && !endptr.is_null() {
     } else {
         __assert_fail(
@@ -233,52 +233,52 @@ pub unsafe extern "C" fn UC_UTF8_encode_char(
         if p >= endptr.offset(-1) {
             return 0i32 as size_t;
         }
-        *p.offset(0) = ucv as libc::c_uchar;
+        *p.offset(0) = ucv as u8;
         count = 1i32
     } else if ucv <= 0x7ffi32 {
         if p >= endptr.offset(-2) {
             return 0i32 as size_t;
         }
-        *p.offset(0) = (0xc0i32 | ucv >> 6i32) as libc::c_uchar;
-        *p.offset(1) = (0x80i32 | ucv & 0x3fi32) as libc::c_uchar;
+        *p.offset(0) = (0xc0i32 | ucv >> 6i32) as u8;
+        *p.offset(1) = (0x80i32 | ucv & 0x3fi32) as u8;
         count = 2i32
     } else if ucv <= 0xffffi32 {
         if p >= endptr.offset(-3) {
             return 0i32 as size_t;
         }
-        *p.offset(0) = (0xe0i32 | ucv >> 12i32) as libc::c_uchar;
-        *p.offset(1) = (0x80i32 | ucv >> 6i32 & 0x3fi32) as libc::c_uchar;
-        *p.offset(2) = (0x80i32 | ucv & 0x3fi32) as libc::c_uchar;
+        *p.offset(0) = (0xe0i32 | ucv >> 12i32) as u8;
+        *p.offset(1) = (0x80i32 | ucv >> 6i32 & 0x3fi32) as u8;
+        *p.offset(2) = (0x80i32 | ucv & 0x3fi32) as u8;
         count = 3i32
     } else if ucv <= 0x1fffffi32 {
         if p >= endptr.offset(-4) {
             return 0i32 as size_t;
         }
-        *p.offset(0) = (0xf0i32 | ucv >> 18i32) as libc::c_uchar;
-        *p.offset(1) = (0x80i32 | ucv >> 12i32 & 0x3fi32) as libc::c_uchar;
-        *p.offset(2) = (0x80i32 | ucv >> 6i32 & 0x3fi32) as libc::c_uchar;
-        *p.offset(3) = (0x80i32 | ucv & 0x3fi32) as libc::c_uchar;
+        *p.offset(0) = (0xf0i32 | ucv >> 18i32) as u8;
+        *p.offset(1) = (0x80i32 | ucv >> 12i32 & 0x3fi32) as u8;
+        *p.offset(2) = (0x80i32 | ucv >> 6i32 & 0x3fi32) as u8;
+        *p.offset(3) = (0x80i32 | ucv & 0x3fi32) as u8;
         count = 4i32
     } else if ucv <= 0x3ffffffi32 {
         if p >= endptr.offset(-5) {
             return 0i32 as size_t;
         }
-        *p.offset(0) = (0xf8i32 | ucv >> 24i32) as libc::c_uchar;
-        *p.offset(1) = (0x80i32 | ucv >> 18i32 & 0x3fi32) as libc::c_uchar;
-        *p.offset(2) = (0x80i32 | ucv >> 12i32 & 0x3fi32) as libc::c_uchar;
-        *p.offset(3) = (0x80i32 | ucv >> 6i32 & 0x3fi32) as libc::c_uchar;
-        *p.offset(4) = (0x80i32 | ucv & 0x3fi32) as libc::c_uchar;
+        *p.offset(0) = (0xf8i32 | ucv >> 24i32) as u8;
+        *p.offset(1) = (0x80i32 | ucv >> 18i32 & 0x3fi32) as u8;
+        *p.offset(2) = (0x80i32 | ucv >> 12i32 & 0x3fi32) as u8;
+        *p.offset(3) = (0x80i32 | ucv >> 6i32 & 0x3fi32) as u8;
+        *p.offset(4) = (0x80i32 | ucv & 0x3fi32) as u8;
         count = 5i32
     } else if ucv <= 0x7fffffffi32 {
         if p >= endptr.offset(-6) {
             return 0i32 as size_t;
         }
-        *p.offset(0) = (0xfci32 | ucv >> 30i32) as libc::c_uchar;
-        *p.offset(1) = (0x80i32 | ucv >> 24i32 & 0x3fi32) as libc::c_uchar;
-        *p.offset(2) = (0x80i32 | ucv >> 18i32 & 0x3fi32) as libc::c_uchar;
-        *p.offset(3) = (0x80i32 | ucv >> 12i32 & 0x3fi32) as libc::c_uchar;
-        *p.offset(4) = (0x80i32 | ucv >> 6i32 & 0x3fi32) as libc::c_uchar;
-        *p.offset(5) = (0x80i32 | ucv & 0x3fi32) as libc::c_uchar;
+        *p.offset(0) = (0xfci32 | ucv >> 30i32) as u8;
+        *p.offset(1) = (0x80i32 | ucv >> 24i32 & 0x3fi32) as u8;
+        *p.offset(2) = (0x80i32 | ucv >> 18i32 & 0x3fi32) as u8;
+        *p.offset(3) = (0x80i32 | ucv >> 12i32 & 0x3fi32) as u8;
+        *p.offset(4) = (0x80i32 | ucv >> 6i32 & 0x3fi32) as u8;
+        *p.offset(5) = (0x80i32 | ucv & 0x3fi32) as u8;
         count = 6i32
     }
     *pp = (*pp).offset(count as isize);

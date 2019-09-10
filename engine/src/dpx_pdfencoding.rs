@@ -158,8 +158,8 @@ extern "C" {
     #[no_mangle]
     fn agl_sput_UTF16BE(
         name: *const libc::c_char,
-        dstpp: *mut *mut libc::c_uchar,
-        limptr: *mut libc::c_uchar,
+        dstpp: *mut *mut u8,
+        limptr: *mut u8,
         num_fails: *mut libc::c_int,
     ) -> int32_t;
     #[no_mangle]
@@ -182,16 +182,16 @@ extern "C" {
     #[no_mangle]
     fn CMap_add_bfchar(
         cmap: *mut CMap,
-        src: *const libc::c_uchar,
+        src: *const u8,
         srcdim: size_t,
-        dest: *const libc::c_uchar,
+        dest: *const u8,
         destdim: size_t,
     ) -> libc::c_int;
     #[no_mangle]
     fn CMap_add_codespacerange(
         cmap: *mut CMap,
-        codelo: *const libc::c_uchar,
-        codehi: *const libc::c_uchar,
+        codelo: *const u8,
+        codehi: *const u8,
         dim: size_t,
     ) -> libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -317,7 +317,7 @@ pub struct C2RustUnnamed_0 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mapData {
-    pub data: *mut libc::c_uchar,
+    pub data: *mut u8,
     pub prev: *mut mapData,
     pub pos: libc::c_int,
 }
@@ -326,7 +326,7 @@ pub struct mapData {
 pub struct mapDef {
     pub flag: libc::c_int,
     pub len: size_t,
-    pub code: *mut libc::c_uchar,
+    pub code: *mut u8,
     pub next: *mut mapDef,
 }
 #[derive(Copy, Clone)]
@@ -340,8 +340,8 @@ pub struct C2RustUnnamed_1 {
 #[repr(C)]
 pub struct rangeDef {
     pub dim: size_t,
-    pub codeLo: *mut libc::c_uchar,
-    pub codeHi: *mut libc::c_uchar,
+    pub codeLo: *mut u8,
+    pub codeHi: *mut u8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -397,10 +397,10 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
     return 0 as *mut libc::c_void;
 }
-static mut verbose: libc::c_uchar = 0i32 as libc::c_uchar;
+static mut verbose: u8 = 0i32 as u8;
 #[no_mangle]
 pub unsafe extern "C" fn pdf_encoding_set_verbose(mut level: libc::c_int) {
-    verbose = level as libc::c_uchar;
+    verbose = level as u8;
 }
 unsafe extern "C" fn pdf_init_encoding_struct(mut encoding: *mut pdf_encoding) {
     if !encoding.is_null() {
@@ -1093,9 +1093,9 @@ pub unsafe extern "C" fn pdf_encoding_get_name(mut enc_id: libc::c_int) -> *mut 
     encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
     return (*encoding).enc_name;
 }
-static mut wbuf: [libc::c_uchar; 1024] = [0; 1024];
-static mut range_min: [libc::c_uchar; 1] = [0u32 as libc::c_uchar];
-static mut range_max: [libc::c_uchar; 1] = [0xffu32 as libc::c_uchar];
+static mut wbuf: [u8; 1024] = [0; 1024];
+static mut range_min: [u8; 1] = [0u32 as u8];
+static mut range_max: [u8; 1] = [0xffu32 as u8];
 #[no_mangle]
 pub unsafe extern "C" fn pdf_encoding_add_usedchars(
     mut encoding_id: libc::c_int,
@@ -1152,8 +1152,8 @@ pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
     let mut code: libc::c_int = 0;
     let mut all_predef: libc::c_int = 0;
     let mut cmap_name: *mut libc::c_char = 0 as *mut libc::c_char;
-    let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut endptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut p: *mut u8 = 0 as *mut u8;
+    let mut endptr: *mut u8 = 0 as *mut u8;
     if !enc_name.is_null() && !enc_vec.is_null() {
     } else {
         __assert_fail(
@@ -1202,7 +1202,7 @@ pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
                     || agln.is_null()
                     || (*agln).is_predef == 0
                 {
-                    wbuf[0] = (code & 0xffi32) as libc::c_uchar;
+                    wbuf[0] = (code & 0xffi32) as u8;
                     p = wbuf.as_mut_ptr().offset(1);
                     endptr = wbuf.as_mut_ptr().offset(1024);
                     len = agl_sput_UTF16BE(

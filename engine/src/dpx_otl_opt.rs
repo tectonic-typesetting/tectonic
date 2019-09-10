@@ -239,12 +239,12 @@ unsafe extern "C" fn parse_expr(
                         if **pp as libc::c_int == ' ' as i32
                             || **pp as libc::c_int == '?' as i32
                             || *(*__ctype_b_loc())
-                                .offset(**pp as libc::c_uchar as libc::c_int as isize)
+                                .offset(**pp as u8 as libc::c_int as isize)
                                 as libc::c_int
                                 & _ISalpha as libc::c_int as libc::c_ushort as libc::c_int
                                 != 0
                             || *(*__ctype_b_loc())
-                                .offset(**pp as libc::c_uchar as libc::c_int as isize)
+                                .offset(**pp as u8 as libc::c_int as isize)
                                 as libc::c_int
                                 & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
                                 != 0

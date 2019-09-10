@@ -401,7 +401,7 @@ pub struct tt_glyphs {
     pub default_advh: USHORT,
     pub default_tsb: SHORT,
     pub gd: *mut tt_glyph_desc,
-    pub used_slot: *mut libc::c_uchar,
+    pub used_slot: *mut u8,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -438,7 +438,7 @@ pub struct tt_glyph_desc {
     pub length: SFNT_ULONG,
     pub data: *mut BYTE,
 }
-pub type BYTE = libc::c_uchar;
+pub type BYTE = u8;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

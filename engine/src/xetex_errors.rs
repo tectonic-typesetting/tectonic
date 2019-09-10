@@ -22,7 +22,7 @@ extern "C" {
     #[no_mangle]
     static mut selector: selector_t;
     #[no_mangle]
-    static mut interaction: libc::c_uchar;
+    static mut interaction: u8;
     #[no_mangle]
     static mut history: tt_history_t;
     #[no_mangle]
@@ -30,7 +30,7 @@ extern "C" {
     #[no_mangle]
     static mut help_line: [*const libc::c_char; 6];
     #[no_mangle]
-    static mut help_ptr: libc::c_uchar;
+    static mut help_ptr: u8;
     #[no_mangle]
     static mut use_err_help: bool;
     #[no_mangle]
@@ -110,7 +110,7 @@ unsafe extern "C" fn pre_error_message() {
 /*82: */
 unsafe extern "C" fn post_error_message(mut need_to_print_it: libc::c_int) {
     if interaction as libc::c_int == 3i32 {
-        interaction = 2i32 as libc::c_uchar
+        interaction = 2i32 as u8
     }
     if need_to_print_it != 0 && log_opened as libc::c_int != 0 {
         error();
@@ -184,7 +184,7 @@ pub unsafe extern "C" fn overflow(mut s: *const libc::c_char, mut n: int32_t) ->
     print_char('=' as i32);
     print_int(n);
     print_char(']' as i32);
-    help_ptr = 2i32 as libc::c_uchar;
+    help_ptr = 2i32 as u8;
     help_line[1] =
         b"If you really absolutely need more capacity,\x00" as *const u8 as *const libc::c_char;
     help_line[0] = b"you can ask a wizard to enlarge me.\x00" as *const u8 as *const libc::c_char;
@@ -198,12 +198,12 @@ pub unsafe extern "C" fn confusion(mut s: *const libc::c_char) -> ! {
         print_cstr(b"This can\'t happen (\x00" as *const u8 as *const libc::c_char);
         print_cstr(s);
         print_char(')' as i32);
-        help_ptr = 1i32 as libc::c_uchar;
+        help_ptr = 1i32 as u8;
         help_line[0] = b"I\'m broken. Please show this to someone who can fix can fix\x00"
             as *const u8 as *const libc::c_char
     } else {
         print_cstr(b"I can\'t go on meeting you like this\x00" as *const u8 as *const libc::c_char);
-        help_ptr = 2i32 as libc::c_uchar;
+        help_ptr = 2i32 as u8;
         help_line[1] = b"One of your faux pas seems to have wounded me deeply...\x00" as *const u8
             as *const libc::c_char;
         help_line[0] = b"in fact, I\'m barely conscious. Please fix it and try again.\x00"

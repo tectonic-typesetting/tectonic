@@ -18,7 +18,7 @@ extern "C" {
     #[no_mangle]
     static mut help_line: [*const libc::c_char; 6];
     #[no_mangle]
-    static mut help_ptr: libc::c_uchar;
+    static mut help_ptr: u8;
     #[no_mangle]
     static mut temp_ptr: int32_t;
     #[no_mangle]
@@ -40,7 +40,7 @@ extern "C" {
     #[no_mangle]
     static mut page_tail: int32_t;
     #[no_mangle]
-    static mut page_contents: libc::c_uchar;
+    static mut page_contents: u8;
     #[no_mangle]
     static mut page_so_far: [scaled_t; 8];
     #[no_mangle]
@@ -128,7 +128,7 @@ extern "C" {
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
 pub type scaled_t = int32_t;
-pub type eight_bits = libc::c_uchar;
+pub type eight_bits = u8;
 pub type small_number = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -187,7 +187,7 @@ pub union memory_word {
     pub ptr: *mut libc::c_void,
 }
 /* enum: normal .. filll */
-pub type group_code = libc::c_uchar;
+pub type group_code = u8;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
@@ -225,7 +225,7 @@ pub unsafe extern "C" fn initialize_pagebuilder_variables() {
     page_max_depth = 0i32;
 }
 unsafe extern "C" fn freeze_page_specs(mut s: small_number) {
-    page_contents = s as libc::c_uchar;
+    page_contents = s as u8;
     page_so_far[0] = (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -332,7 +332,7 @@ unsafe extern "C" fn ensure_vbox(mut n: eight_bits) {
         print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
     }
     print_cstr(b"Insertions can only be added to a vbox\x00" as *const u8 as *const libc::c_char);
-    help_ptr = 3i32 as libc::c_uchar;
+    help_ptr = 3i32 as u8;
     help_line[2] =
         b"Tut tut: You\'re trying to \\insert into a\x00" as *const u8 as *const libc::c_char;
     help_line[1] =
@@ -352,7 +352,7 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
     let mut r: int32_t = 0;
     let mut s: int32_t = 0;
     let mut prev_p: int32_t = 0;
-    let mut n: libc::c_uchar = 0;
+    let mut n: u8 = 0;
     let mut wait: bool = false;
     let mut save_vbadness: int32_t = 0;
     let mut save_vfuzz: scaled_t = 0;
@@ -475,7 +475,7 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
         print_cstr(b"\x00" as *const u8 as *const libc::c_char);
         print_esc_cstr(b"box\x00" as *const u8 as *const libc::c_char);
         print_cstr(b"255 is not void\x00" as *const u8 as *const libc::c_char);
-        help_ptr = 2i32 as libc::c_uchar;
+        help_ptr = 2i32 as u8;
         help_line[1] = b"You shouldn\'t use \\box255 except in \\output routines.\x00" as *const u8
             as *const libc::c_char;
         help_line[0] = b"Proceed, and I\'ll discard its present contents.\x00" as *const u8
@@ -540,7 +540,7 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
         r = (*mem.offset(4999999)).b32.s1; /* 5 = list_offset, "position of the list inside the box" */
         while r != 4999999i32 {
             if (*mem.offset((r + 2i32) as isize)).b32.s0 != -0xfffffffi32 {
-                n = (*mem.offset(r as isize)).b16.s0 as libc::c_uchar;
+                n = (*mem.offset(r as isize)).b16.s0 as u8;
                 ensure_vbox(n);
                 if (*eqtb.offset(
                     (1i32
@@ -683,7 +683,7 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
                             }
                         }
                         (*mem.offset((r + 2i32) as isize)).b32.s0 = -0xfffffffi32;
-                        n = (*mem.offset(r as isize)).b16.s0 as libc::c_uchar;
+                        n = (*mem.offset(r as isize)).b16.s0 as u8;
                         temp_ptr = (*mem.offset(
                             ((*eqtb.offset(
                                 (1i32
@@ -1059,7 +1059,7 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
         delete_glue_ref(last_glue);
     }
     /*1026: "Start a new current page" */
-    page_contents = 0i32 as libc::c_uchar;
+    page_contents = 0i32 as u8;
     page_tail = 4999999i32 - 2i32;
     (*mem.offset((4999999i32 - 2i32) as isize)).b32.s1 = -0xfffffffi32;
     last_glue = 0x3fffffffi32;
@@ -1152,7 +1152,7 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
             print_cstr(b"Output loop---\x00" as *const u8 as *const libc::c_char);
             print_int(dead_cycles);
             print_cstr(b" consecutive dead cycles\x00" as *const u8 as *const libc::c_char);
-            help_ptr = 3i32 as libc::c_uchar;
+            help_ptr = 3i32 as u8;
             help_line[2] = b"I\'ve concluded that your \\output is awry; it never does a\x00"
                 as *const u8 as *const libc::c_char;
             help_line[1] = b"\\shipout, so I\'m shipping \\box255 out myself. Next time\x00"
@@ -1270,7 +1270,7 @@ pub unsafe extern "C" fn build_page() {
     let mut b: int32_t = 0;
     let mut c: int32_t = 0;
     let mut pi: int32_t = 0;
-    let mut n: libc::c_uchar = 0;
+    let mut n: u8 = 0;
     let mut delta: scaled_t = 0;
     let mut h: scaled_t = 0;
     let mut w: scaled_t = 0;
@@ -1326,7 +1326,7 @@ pub unsafe extern "C" fn build_page() {
                     if page_contents as libc::c_int == 0i32 {
                         freeze_page_specs(2i32 as
                                               small_number); /* "now temp_ptr = glue_ptr(q) */
-                    } else { page_contents = 2i32 as libc::c_uchar }
+                    } else { page_contents = 2i32 as u8 }
                     q = new_skip_param(9i32 as small_number);
                     if (*mem.offset((temp_ptr + 1i32) as isize)).b32.s1 >
                            (*mem.offset((p + 3i32) as isize)).b32.s1 {
@@ -1397,7 +1397,7 @@ pub unsafe extern "C" fn build_page() {
                 if page_contents as libc::c_int == 0i32 {
                     freeze_page_specs(1i32 as small_number);
                 }
-                n = (*mem.offset(p as isize)).b16.s0 as libc::c_uchar;
+                n = (*mem.offset(p as isize)).b16.s0 as u8;
                 r = 4999999i32;
                 while n as libc::c_int >=
                           (*mem.offset((*mem.offset(r as isize)).b32.s1 as
@@ -1530,7 +1530,7 @@ pub unsafe extern "C" fn build_page() {
                         print_esc_cstr(b"skip\x00" as *const u8 as
                                            *const libc::c_char);
                         print_int(n as int32_t);
-                        help_ptr = 3i32 as libc::c_uchar;
+                        help_ptr = 3i32 as u8;
                         help_line[2] =
                             b"The correction glue for page breaking with insertions\x00"
                                 as *const u8 as *const libc::c_char;
@@ -1935,7 +1935,7 @@ pub unsafe extern "C" fn build_page() {
                         }
                         print_cstr(b"Infinite glue shrinkage found on current page\x00"
                                        as *const u8 as *const libc::c_char);
-                        help_ptr = 4i32 as libc::c_uchar;
+                        help_ptr = 4i32 as u8;
                         help_line[3] =
                             b"The page about to be output contains some infinitely\x00"
                                 as *const u8 as *const libc::c_char;

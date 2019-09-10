@@ -305,7 +305,7 @@ pub struct cff_range1 {
     pub first: s_SID,
     pub n_left: card8,
 }
-pub type card8 = libc::c_uchar;
+pub type card8 = u8;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -1856,7 +1856,7 @@ unsafe extern "C" fn get_cidsysinfo(
             );
         }
         q = q.offset(1);
-        if *(*__ctype_b_loc()).offset(*q.offset(0) as libc::c_uchar as libc::c_int as isize)
+        if *(*__ctype_b_loc()).offset(*q.offset(0) as u8 as libc::c_int as isize)
             as libc::c_int
             & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
             == 0

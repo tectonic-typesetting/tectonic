@@ -87,7 +87,7 @@ extern "C" {
        mostly unsigned (u32) and occasionally signed (int32_t).
     */
     #[no_mangle]
-    fn get_unsigned_byte(_: *mut FILE) -> libc::c_uchar;
+    fn get_unsigned_byte(_: *mut FILE) -> u8;
     #[no_mangle]
     fn get_unsigned_pair(_: *mut FILE) -> libc::c_ushort;
     #[no_mangle]
@@ -269,8 +269,8 @@ unsafe extern "C" fn read_res__data(
     let mut VR_D: libc::c_uint = 0;
     let mut HR_N: libc::c_uint = 0;
     let mut HR_D: libc::c_uint = 0;
-    let mut VR_E: libc::c_uchar = 0;
-    let mut HR_E: libc::c_uchar = 0;
+    let mut VR_E: u8 = 0;
+    let mut HR_E: u8 = 0;
     VR_N = get_unsigned_pair(fp) as libc::c_uint;
     VR_D = get_unsigned_pair(fp) as libc::c_uint;
     HR_N = get_unsigned_pair(fp) as libc::c_uint;

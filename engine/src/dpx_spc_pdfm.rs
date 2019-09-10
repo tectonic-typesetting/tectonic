@@ -74,7 +74,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_set_string(object: *mut pdf_obj, str: *mut libc::c_uchar, length: size_t);
+    fn pdf_set_string(object: *mut pdf_obj, str: *mut u8, length: size_t);
     #[no_mangle]
     fn pdf_number_value(number: *mut pdf_obj) -> libc::c_double;
     #[no_mangle]
@@ -406,23 +406,23 @@ extern "C" {
     #[no_mangle]
     fn UC_is_valid(ucv: int32_t) -> bool;
     #[no_mangle]
-    fn UC_UTF16BE_is_valid_string(p: *const libc::c_uchar, endptr: *const libc::c_uchar) -> bool;
+    fn UC_UTF16BE_is_valid_string(p: *const u8, endptr: *const u8) -> bool;
     #[no_mangle]
-    fn UC_UTF8_is_valid_string(p: *const libc::c_uchar, endptr: *const libc::c_uchar) -> bool;
+    fn UC_UTF8_is_valid_string(p: *const u8, endptr: *const u8) -> bool;
     #[no_mangle]
     fn UC_UTF16BE_encode_char(
         ucv: int32_t,
-        dstpp: *mut *mut libc::c_uchar,
-        endptr: *mut libc::c_uchar,
+        dstpp: *mut *mut u8,
+        endptr: *mut u8,
     ) -> size_t;
     #[no_mangle]
-    fn UC_UTF8_decode_char(pp: *mut *const libc::c_uchar, endptr: *const libc::c_uchar) -> int32_t;
+    fn UC_UTF8_decode_char(pp: *mut *const u8, endptr: *const u8) -> int32_t;
     #[no_mangle]
     fn CMap_decode(
         cmap: *mut CMap,
-        inbuf: *mut *const libc::c_uchar,
+        inbuf: *mut *const u8,
         inbytesleft: *mut size_t,
-        outbuf: *mut *mut libc::c_uchar,
+        outbuf: *mut *mut u8,
         outbytesleft: *mut size_t,
     ) -> size_t;
     #[no_mangle]
@@ -649,7 +649,7 @@ pub struct C2RustUnnamed_0 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mapData {
-    pub data: *mut libc::c_uchar,
+    pub data: *mut u8,
     pub prev: *mut mapData,
     pub pos: libc::c_int,
 }
@@ -658,7 +658,7 @@ pub struct mapData {
 pub struct mapDef {
     pub flag: libc::c_int,
     pub len: size_t,
-    pub code: *mut libc::c_uchar,
+    pub code: *mut u8,
     pub next: *mut mapDef,
 }
 #[derive(Copy, Clone)]
@@ -672,8 +672,8 @@ pub struct C2RustUnnamed_1 {
 #[repr(C)]
 pub struct rangeDef {
     pub dim: size_t,
-    pub codeLo: *mut libc::c_uchar,
-    pub codeHi: *mut libc::c_uchar,
+    pub codeLo: *mut u8,
+    pub codeHi: *mut u8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -1075,18 +1075,18 @@ unsafe extern "C" fn reencodestring(
     mut cmap: *mut CMap,
     mut instring: *mut pdf_obj,
 ) -> libc::c_int {
-    let mut wbuf: [libc::c_uchar; 4096] = [0; 4096];
-    let mut obufcur: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut inbufcur: *const libc::c_uchar = 0 as *const libc::c_uchar;
+    let mut wbuf: [u8; 4096] = [0; 4096];
+    let mut obufcur: *mut u8 = 0 as *mut u8;
+    let mut inbufcur: *const u8 = 0 as *const u8;
     let mut inbufleft: size_t = 0;
     let mut obufleft: size_t = 0;
     if cmap.is_null() || instring.is_null() {
         return 0i32;
     }
     inbufleft = pdf_string_length(instring) as size_t;
-    inbufcur = pdf_string_value(instring) as *const libc::c_uchar;
-    wbuf[0] = 0xfei32 as libc::c_uchar;
-    wbuf[1] = 0xffi32 as libc::c_uchar;
+    inbufcur = pdf_string_value(instring) as *const u8;
+    wbuf[0] = 0xfei32 as u8;
+    wbuf[1] = 0xffi32 as u8;
     obufcur = wbuf.as_mut_ptr().offset(2);
     obufleft = (4096i32 - 2i32) as size_t;
     CMap_decode(
@@ -1107,20 +1107,20 @@ unsafe extern "C" fn reencodestring(
     return 0i32;
 }
 unsafe extern "C" fn maybe_reencode_utf8(mut instring: *mut pdf_obj) -> libc::c_int {
-    let mut inbuf: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut inbuf: *mut u8 = 0 as *mut u8;
     let mut inlen: libc::c_int = 0;
     let mut non_ascii: libc::c_int = 0i32;
-    let mut cp: *const libc::c_uchar = 0 as *const libc::c_uchar;
-    let mut op: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut wbuf: [libc::c_uchar; 4096] = [0; 4096];
+    let mut cp: *const u8 = 0 as *const u8;
+    let mut op: *mut u8 = 0 as *mut u8;
+    let mut wbuf: [u8; 4096] = [0; 4096];
     if instring.is_null() {
         return 0i32;
     }
     inlen = pdf_string_length(instring) as libc::c_int;
-    inbuf = pdf_string_value(instring) as *mut libc::c_uchar;
+    inbuf = pdf_string_value(instring) as *mut u8;
     /* check if the input string is strictly ASCII */
     cp = inbuf; /* no need to reencode ASCII strings */
-    while cp < inbuf.offset(inlen as isize) as *const libc::c_uchar {
+    while cp < inbuf.offset(inlen as isize) as *const u8 {
         if *cp as libc::c_int > 127i32 {
             non_ascii = 1i32
         }
@@ -1150,11 +1150,11 @@ unsafe extern "C" fn maybe_reencode_utf8(mut instring: *mut pdf_obj) -> libc::c_
     op = wbuf.as_mut_ptr();
     let fresh0 = op;
     op = op.offset(1);
-    *fresh0 = 0xfei32 as libc::c_uchar;
+    *fresh0 = 0xfei32 as u8;
     let fresh1 = op;
     op = op.offset(1);
-    *fresh1 = 0xffi32 as libc::c_uchar;
-    while cp < inbuf.offset(inlen as isize) as *const libc::c_uchar {
+    *fresh1 = 0xffi32 as u8;
+    while cp < inbuf.offset(inlen as isize) as *const u8 {
         let mut usv: int32_t = 0;
         let mut len: libc::c_int = 0;
         usv = UC_UTF8_decode_char(&mut cp, inbuf.offset(inlen as isize));

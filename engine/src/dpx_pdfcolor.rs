@@ -93,7 +93,7 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn sget_unsigned_pair(_: *mut libc::c_uchar) -> libc::c_ushort;
+    fn sget_unsigned_pair(_: *mut u8) -> libc::c_ushort;
     #[no_mangle]
     fn pdf_dev_get_param(param_type: libc::c_int) -> libc::c_int;
     #[no_mangle]
@@ -101,9 +101,9 @@ extern "C" {
     #[no_mangle]
     fn MD5_init(ctx: *mut MD5_CONTEXT);
     #[no_mangle]
-    fn MD5_write(ctx: *mut MD5_CONTEXT, inbuf: *const libc::c_uchar, inlen: libc::c_uint);
+    fn MD5_write(ctx: *mut MD5_CONTEXT, inbuf: *const u8, inlen: libc::c_uint);
     #[no_mangle]
-    fn MD5_final(outbuf: *mut libc::c_uchar, ctx: *mut MD5_CONTEXT);
+    fn MD5_final(outbuf: *mut u8, ctx: *mut MD5_CONTEXT);
 }
 pub type __int32_t = libc::c_int;
 pub type C2RustUnnamed = libc::c_uint;
@@ -148,7 +148,7 @@ pub type iccSig = u32;
 #[repr(C)]
 pub struct iccbased_cdata {
     pub sig: int32_t,
-    pub checksum: [libc::c_uchar; 16],
+    pub checksum: [u8; 16],
     pub colorspace: libc::c_int,
     pub alternate: libc::c_int,
     /* alternate colorspace (id), unused */
@@ -179,7 +179,7 @@ pub struct iccHeader {
     pub intent: int32_t,
     pub illuminant: iccXYZNumber,
     pub creator: iccSig,
-    pub ID: [libc::c_uchar; 16],
+    pub ID: [u8; 16],
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -196,7 +196,7 @@ pub struct MD5_CONTEXT {
     pub C: u32,
     pub D: u32,
     pub nblocks: size_t,
-    pub buf: [libc::c_uchar; 64],
+    pub buf: [u8; 64],
     pub count: libc::c_int,
 }
 #[derive(Copy, Clone)]
@@ -774,23 +774,23 @@ pub unsafe extern "C" fn pdf_color_get_current(
         .as_mut_ptr()
         .offset(color_stack.current as isize) as *mut pdf_color;
 }
-static mut nullbytes16: [libc::c_uchar; 16] = [
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
-    0i32 as libc::c_uchar,
+static mut nullbytes16: [u8; 16] = [
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
+    0i32 as u8,
 ];
 static mut icc_versions: [C2RustUnnamed_1; 8] = [
     {
@@ -1060,11 +1060,11 @@ pub unsafe extern "C" fn iccp_check_colorspace(
     mut proflen: libc::c_int,
 ) -> libc::c_int {
     let mut colorspace: iccSig = 0;
-    let mut p: *const libc::c_uchar = 0 as *const libc::c_uchar;
+    let mut p: *const u8 = 0 as *const u8;
     if profile.is_null() || proflen < 128i32 {
         return -1i32;
     }
-    p = profile as *const libc::c_uchar;
+    p = profile as *const u8;
     colorspace = str2iccSig(p.offset(16) as *const libc::c_void);
     match colortype {
         3 | -3 => {
@@ -1104,12 +1104,12 @@ pub unsafe extern "C" fn iccp_get_rendering_intent(
     mut proflen: libc::c_int,
 ) -> *mut pdf_obj {
     let mut ri: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut p: *const libc::c_uchar = 0 as *const libc::c_uchar;
+    let mut p: *const u8 = 0 as *const u8;
     let mut intent: int32_t = 0;
     if profile.is_null() || proflen < 128i32 {
         return 0 as *mut pdf_obj;
     }
-    p = profile as *const libc::c_uchar;
+    p = profile as *const u8;
     intent = (*p.offset(64) as libc::c_int) << 24i32
         | (*p.offset(65) as libc::c_int) << 16i32
         | (*p.offset(66) as libc::c_int) << 8i32
@@ -1135,8 +1135,8 @@ unsafe extern "C" fn iccp_unpack_header(
     mut proflen: libc::c_int,
     mut check_size: libc::c_int,
 ) -> libc::c_int {
-    let mut p: *const libc::c_uchar = 0 as *const libc::c_uchar;
-    let mut endptr: *const libc::c_uchar = 0 as *const libc::c_uchar;
+    let mut p: *const u8 = 0 as *const u8;
+    let mut endptr: *const u8 = 0 as *const u8;
     if check_size != 0 {
         if profile.is_null() || proflen < 128i32 || proflen % 4i32 != 0i32 {
             dpx_warning(
@@ -1146,7 +1146,7 @@ unsafe extern "C" fn iccp_unpack_header(
             return -1i32;
         }
     }
-    p = profile as *const libc::c_uchar;
+    p = profile as *const u8;
     endptr = p.offset(128);
     (*icch).size = (*p.offset(0) as libc::c_int) << 24i32
         | (*p.offset(1) as libc::c_int) << 16i32
@@ -1259,11 +1259,11 @@ unsafe extern "C" fn iccp_unpack_header(
     return 0i32;
 }
 unsafe extern "C" fn iccp_get_checksum(
-    mut checksum: *mut libc::c_uchar,
+    mut checksum: *mut u8,
     mut profile: *const libc::c_void,
     mut proflen: libc::c_int,
 ) {
-    let mut p: *const libc::c_uchar = 0 as *const libc::c_uchar;
+    let mut p: *const u8 = 0 as *const u8;
     let mut md5: MD5_CONTEXT = MD5_CONTEXT {
         A: 0,
         B: 0,
@@ -1273,7 +1273,7 @@ unsafe extern "C" fn iccp_get_checksum(
         buf: [0; 64],
         count: 0,
     };
-    p = profile as *const libc::c_uchar;
+    p = profile as *const u8;
     MD5_init(&mut md5);
     MD5_write(&mut md5, p.offset(0), 56i32 as libc::c_uint);
     MD5_write(&mut md5, nullbytes16.as_mut_ptr(), 12i32 as libc::c_uint);
@@ -1284,7 +1284,7 @@ unsafe extern "C" fn iccp_get_checksum(
     MD5_write(&mut md5, p.offset(128), (proflen - 128i32) as libc::c_uint);
     MD5_final(checksum, &mut md5);
 }
-unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *mut libc::c_uchar) {
+unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *mut u8) {
     let mut i: libc::c_int = 0;
     if !icch.is_null() {
     } else {
@@ -1476,14 +1476,14 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
         if i == 0i32 {
             dpx_message(
                 b"%04u\x00" as *const u8 as *const libc::c_char,
-                sget_unsigned_pair((*icch).creationDate.as_mut_ptr() as *mut libc::c_uchar)
+                sget_unsigned_pair((*icch).creationDate.as_mut_ptr() as *mut u8)
                     as libc::c_int,
             );
         } else {
             dpx_message(
                 b":%02u\x00" as *const u8 as *const libc::c_char,
                 sget_unsigned_pair(&mut *(*icch).creationDate.as_mut_ptr().offset(i as isize)
-                    as *mut libc::c_char as *mut libc::c_uchar) as libc::c_int,
+                    as *mut libc::c_char as *mut u8) as libc::c_int,
             );
         }
         i += 2i32
@@ -1795,7 +1795,7 @@ pub unsafe extern "C" fn iccp_load_profile(
         ID: [0; 16],
     };
     let mut colorspace: libc::c_int = 0;
-    let mut checksum: [libc::c_uchar; 16] = [0; 16];
+    let mut checksum: [u8; 16] = [0; 16];
     let mut cdata: *mut iccbased_cdata = 0 as *mut iccbased_cdata;
     iccp_init_iccHeader(&mut icch);
     if iccp_unpack_header(&mut icch, profile, proflen, 1i32) < 0i32 {
@@ -1804,7 +1804,7 @@ pub unsafe extern "C" fn iccp_load_profile(
             b"Invalid ICC profile header in \"%s\"\x00" as *const u8 as *const libc::c_char,
             ident,
         );
-        print_iccp_header(&mut icch, 0 as *mut libc::c_uchar);
+        print_iccp_header(&mut icch, 0 as *mut u8);
         return -1i32;
     }
     if iccp_version_supported(
@@ -1818,14 +1818,14 @@ pub unsafe extern "C" fn iccp_load_profile(
                     icch.version >> 20i32 & 0xfi32,
                     icch.version >> 16i32 & 0xfi32);
         dpx_warning(b"ICC profile not embedded.\x00" as *const u8 as *const libc::c_char);
-        print_iccp_header(&mut icch, 0 as *mut libc::c_uchar);
+        print_iccp_header(&mut icch, 0 as *mut u8);
         return -1i32;
     }
     if iccp_devClass_allowed(icch.devClass as libc::c_int) == 0 {
         dpx_warning(
             b"Unsupported ICC Profile Device Class:\x00" as *const u8 as *const libc::c_char,
         );
-        print_iccp_header(&mut icch, 0 as *mut libc::c_uchar);
+        print_iccp_header(&mut icch, 0 as *mut u8);
         return -1i32;
     }
     if icch.colorSpace
@@ -1842,7 +1842,7 @@ pub unsafe extern "C" fn iccp_load_profile(
         colorspace = -4i32
     } else {
         dpx_warning(b"Unsupported input color space.\x00" as *const u8 as *const libc::c_char);
-        print_iccp_header(&mut icch, 0 as *mut libc::c_uchar);
+        print_iccp_header(&mut icch, 0 as *mut u8);
         return -1i32;
     }
     iccp_get_checksum(checksum.as_mut_ptr(), profile, proflen);

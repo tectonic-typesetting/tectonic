@@ -150,8 +150,8 @@ extern "C" {
     #[no_mangle]
     fn UC_UTF16BE_encode_char(
         ucv: int32_t,
-        dstpp: *mut *mut libc::c_uchar,
-        endptr: *mut libc::c_uchar,
+        dstpp: *mut *mut u8,
+        endptr: *mut u8,
     ) -> size_t;
 }
 pub type __int32_t = libc::c_int;
@@ -919,7 +919,7 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut libc::c_char) -> *m
         i = 0i32;
         while i < n {
             *(*agln).name.offset(i as isize) = (if *(*__ctype_b_loc())
-                .offset(*glyphname.offset(i as isize) as libc::c_uchar as libc::c_int as isize)
+                .offset(*glyphname.offset(i as isize) as u8 as libc::c_int as isize)
                 as libc::c_int
                 & _ISupper as libc::c_int as libc::c_ushort as libc::c_int
                 != 0
@@ -1232,7 +1232,7 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const libc::c_char)
          * Check if the 4th character is uppercase hexadecimal digit.
          * "union" should not be treated as Unicode glyph name.
          */
-        if *(*__ctype_b_loc()).offset(c as libc::c_uchar as libc::c_int as isize) as libc::c_int
+        if *(*__ctype_b_loc()).offset(c as u8 as libc::c_int as isize) as libc::c_int
             & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
             != 0
             || c as libc::c_int >= 'A' as i32 && c as libc::c_int <= 'F' as i32
@@ -1249,7 +1249,7 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const libc::c_char)
             i = 1i32 as size_t;
             while i < len.wrapping_sub(1i32 as u64) {
                 c = *glyphname.offset(i as isize);
-                if *(*__ctype_b_loc()).offset(c as libc::c_uchar as libc::c_int as isize)
+                if *(*__ctype_b_loc()).offset(c as u8 as libc::c_int as isize)
                     as libc::c_int
                     & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
                     == 0
@@ -1287,7 +1287,7 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const libc::c_
     }
     ucv = 0i32;
     while *p as libc::c_int != '\u{0}' as i32 && *p as libc::c_int != '.' as i32 {
-        if *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize) as libc::c_int
+        if *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
             & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
             == 0
             && ((*p as libc::c_int) < 'A' as i32 || *p as libc::c_int > 'F' as i32)
@@ -1301,7 +1301,7 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const libc::c_
             return -1i32;
         }
         ucv <<= 4i32;
-        ucv += if *(*__ctype_b_loc()).offset(*p as libc::c_uchar as libc::c_int as isize)
+        ucv += if *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
             as libc::c_int
             & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
             != 0
@@ -1337,7 +1337,7 @@ unsafe extern "C" fn xtol(mut start: *const libc::c_char, mut len: libc::c_int) 
             break;
         }
         v <<= 4i32;
-        if *(*__ctype_b_loc()).offset(*start as libc::c_uchar as libc::c_int as isize)
+        if *(*__ctype_b_loc()).offset(*start as u8 as libc::c_int as isize)
             as libc::c_int
             & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
             != 0
@@ -1354,8 +1354,8 @@ unsafe extern "C" fn xtol(mut start: *const libc::c_char, mut len: libc::c_int) 
 }
 unsafe extern "C" fn put_unicode_glyph(
     mut name: *const libc::c_char,
-    mut dstpp: *mut *mut libc::c_uchar,
-    mut limptr: *mut libc::c_uchar,
+    mut dstpp: *mut *mut u8,
+    mut limptr: *mut u8,
 ) -> int32_t {
     let mut p: *const libc::c_char = 0 as *const libc::c_char;
     let mut len: int32_t = 0i32;
@@ -1381,8 +1381,8 @@ unsafe extern "C" fn put_unicode_glyph(
 #[no_mangle]
 pub unsafe extern "C" fn agl_sput_UTF16BE(
     mut glyphstr: *const libc::c_char,
-    mut dstpp: *mut *mut libc::c_uchar,
-    mut limptr: *mut libc::c_uchar,
+    mut dstpp: *mut *mut u8,
+    mut limptr: *mut u8,
     mut fail_count: *mut libc::c_int,
 ) -> int32_t {
     let mut len: int32_t = 0i32;

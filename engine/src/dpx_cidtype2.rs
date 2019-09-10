@@ -178,9 +178,9 @@ extern "C" {
     #[no_mangle]
     fn CMap_decode_char(
         cmap: *mut CMap,
-        inbuf: *mut *const libc::c_uchar,
+        inbuf: *mut *const u8,
         inbytesleft: *mut size_t,
-        outbuf: *mut *mut libc::c_uchar,
+        outbuf: *mut *mut u8,
         outbytesleft: *mut size_t,
     );
     #[no_mangle]
@@ -340,7 +340,7 @@ pub struct C2RustUnnamed {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct mapData {
-    pub data: *mut libc::c_uchar,
+    pub data: *mut u8,
     pub prev: *mut mapData,
     pub pos: libc::c_int,
     /* Position of next free data segment */
@@ -350,7 +350,7 @@ pub struct mapData {
 pub struct mapDef {
     pub flag: libc::c_int,
     pub len: size_t,
-    pub code: *mut libc::c_uchar,
+    pub code: *mut u8,
     pub next: *mut mapDef,
 }
 #[derive(Copy, Clone)]
@@ -364,8 +364,8 @@ pub struct C2RustUnnamed_0 {
 #[repr(C)]
 pub struct rangeDef {
     pub dim: size_t,
-    pub codeLo: *mut libc::c_uchar,
-    pub codeHi: *mut libc::c_uchar,
+    pub codeLo: *mut u8,
+    pub codeHi: *mut u8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -435,7 +435,7 @@ pub struct tt_glyphs {
     pub default_advh: USHORT,
     pub default_tsb: SHORT,
     pub gd: *mut tt_glyph_desc,
-    pub used_slot: *mut libc::c_uchar,
+    pub used_slot: *mut u8,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -472,7 +472,7 @@ pub struct tt_glyph_desc {
     pub length: SFNT_ULONG,
     pub data: *mut BYTE,
 }
-pub type BYTE = libc::c_uchar;
+pub type BYTE = u8;
 pub type SHORT = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -916,7 +916,7 @@ unsafe extern "C" fn add_TTCIDHMetrics(
     mut fontdict: *mut pdf_obj,
     mut g: *mut tt_glyphs,
     mut used_chars: *mut libc::c_char,
-    mut cidtogidmap: *mut libc::c_uchar,
+    mut cidtogidmap: *mut u8,
     mut last_cid: libc::c_ushort,
 ) {
     let mut cid: libc::c_int = 0;
@@ -1211,17 +1211,17 @@ unsafe extern "C" fn fix_CJK_symbols(mut code: libc::c_ushort) -> libc::c_ushort
     return alt_code;
 }
 unsafe extern "C" fn cid_to_code(mut cmap: *mut CMap, mut cid: CID) -> libc::c_int {
-    let mut inbuf: [libc::c_uchar; 2] = [0; 2];
-    let mut outbuf: [libc::c_uchar; 32] = [0; 32];
+    let mut inbuf: [u8; 2] = [0; 2];
+    let mut outbuf: [u8; 32] = [0; 32];
     let mut inbytesleft: size_t = 2i32 as size_t;
     let mut outbytesleft: size_t = 32i32 as size_t;
-    let mut p: *const libc::c_uchar = 0 as *const libc::c_uchar;
-    let mut q: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut p: *const u8 = 0 as *const u8;
+    let mut q: *mut u8 = 0 as *mut u8;
     if cmap.is_null() {
         return cid as libc::c_int;
     }
-    inbuf[0] = (cid as libc::c_int >> 8i32 & 0xffi32) as libc::c_uchar;
-    inbuf[1] = (cid as libc::c_int & 0xffi32) as libc::c_uchar;
+    inbuf[0] = (cid as libc::c_int >> 8i32 & 0xffi32) as u8;
+    inbuf[1] = (cid as libc::c_int & 0xffi32) as u8;
     p = inbuf.as_mut_ptr();
     q = outbuf.as_mut_ptr();
     CMap_decode_char(cmap, &mut p, &mut inbytesleft, &mut q, &mut outbytesleft);
@@ -1272,7 +1272,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     let mut offset: SFNT_ULONG = 0i32 as SFNT_ULONG;
     let mut cid: CID = 0;
     let mut last_cid: CID = 0;
-    let mut cidtogidmap: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut cidtogidmap: *mut u8 = 0 as *mut u8;
     let mut num_glyphs: USHORT = 0;
     let mut i: libc::c_int = 0;
     let mut glyph_ordering: libc::c_int = 0i32;
@@ -1513,7 +1513,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     if last_cid as libc::c_uint >= 0xffffu32 {
         _tt_abort(b"CID count > 65535\x00" as *const u8 as *const libc::c_char);
     }
-    cidtogidmap = 0 as *mut libc::c_uchar;
+    cidtogidmap = 0 as *mut u8;
     /* !NO_GHOSTSCRIPT_BUG */
     /*
      * Map CIDs to GIDs.

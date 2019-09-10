@@ -22,9 +22,9 @@ extern "C" {
     #[no_mangle]
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
 }
-pub type card8 = libc::c_uchar;
+pub type card8 = u8;
 pub type card16 = libc::c_ushort;
-pub type c_offsize = libc::c_uchar;
+pub type c_offsize = u8;
 pub type l_offset = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]

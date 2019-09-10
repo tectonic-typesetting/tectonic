@@ -36,11 +36,11 @@ extern "C" {
     #[no_mangle]
     static mut pool_ptr: pool_pointer;
     #[no_mangle]
-    static firstByteMark: [uint8_t; 7];
+    static firstByteMark: [u8; 7];
     #[no_mangle]
     static offsetsFromUTF8: [u32; 6];
     #[no_mangle]
-    static bytesFromUTF8: [uint8_t; 256];
+    static bytesFromUTF8: [u8; 256];
     #[no_mangle]
     fn make_string() -> str_number;
     #[no_mangle]
@@ -48,11 +48,9 @@ extern "C" {
     #[no_mangle]
     fn localtime(__timer: *const time_t) -> *mut tm;
 }
-pub type __uint8_t = libc::c_uchar;
 pub type __int32_t = libc::c_int;
 pub type __time_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint8_t = __uint8_t;
 pub type size_t = u64;
 pub type time_t = __time_t;
 pub type str_number = int32_t;
@@ -111,7 +109,7 @@ unsafe extern "C" fn checkpool_pointer(mut pool_ptr_0: pool_pointer, mut len: si
 pub unsafe extern "C" fn maketexstring(mut s: *const libc::c_char) -> libc::c_int {
     let mut len: size_t = 0;
     let mut rval: UInt32 = 0;
-    let mut cp: *const libc::c_uchar = s as *const libc::c_uchar;
+    let mut cp: *const u8 = s as *const u8;
     if s.is_null() || *s as libc::c_int == 0i32 {
         return (65536 + 1i32 as libc::c_long) as libc::c_int;
     }
@@ -436,7 +434,7 @@ unsafe extern "C" fn convertStringToHexString(
     j = 0i32;
     i = 0i32;
     while i < lin {
-        let mut c: libc::c_uchar = *in_0.offset(i as isize) as libc::c_uchar;
+        let mut c: u8 = *in_0.offset(i as isize) as u8;
         let fresh13 = j;
         j = j + 1;
         *out.offset(fresh13 as isize) = hexchars[(c as libc::c_int >> 4i32 & 0xfi32) as usize];

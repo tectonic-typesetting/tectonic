@@ -120,7 +120,7 @@ pub type ssize_t = __ssize_t;
 pub type __compar_fn_t =
     Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> libc::c_int>;
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type BYTE = libc::c_uchar;
+pub type BYTE = u8;
 pub type SFNT_CHAR = libc::c_schar;
 pub type USHORT = libc::c_ushort;
 pub type SHORT = libc::c_short;
@@ -185,7 +185,7 @@ pub struct tt_glyphs {
     pub default_advh: USHORT,
     pub default_tsb: SHORT,
     pub gd: *mut tt_glyph_desc,
-    pub used_slot: *mut libc::c_uchar,
+    pub used_slot: *mut u8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -448,7 +448,7 @@ pub unsafe extern "C" fn tt_add_glyph(
             .used_slot
             .offset((new_gid as libc::c_int / 8i32) as isize);
         *fresh1 = (*fresh1 as libc::c_int | 1i32 << 7i32 - new_gid as libc::c_int % 8i32)
-            as libc::c_uchar;
+            as u8;
         (*g).num_glyphs = ((*g).num_glyphs as libc::c_int + 1i32) as USHORT
     }
     if new_gid as libc::c_int > (*g).last_gid as libc::c_int {
@@ -473,8 +473,8 @@ pub unsafe extern "C" fn tt_build_init() -> *mut tt_glyphs {
     (*g).default_tsb = 0i32 as SHORT;
     (*g).gd = 0 as *mut tt_glyph_desc;
     (*g).used_slot = new((8192i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+        as u32) as *mut u8;
     memset(
         (*g).used_slot as *mut libc::c_void,
         0i32,

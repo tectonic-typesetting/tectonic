@@ -457,7 +457,7 @@ pub unsafe extern "C" fn spc_misc_setup_handler(
     key = (*args).curptr;
     while (*args).curptr < (*args).endptr
         && *(*__ctype_b_loc())
-            .offset(*(*args).curptr.offset(0) as libc::c_uchar as libc::c_int as isize)
+            .offset(*(*args).curptr.offset(0) as u8 as libc::c_int as isize)
             as libc::c_int
             & _ISalpha as libc::c_int as libc::c_ushort as libc::c_int
             != 0

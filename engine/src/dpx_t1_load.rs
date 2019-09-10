@@ -181,7 +181,7 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pst_get_token(inbuf: *mut *mut libc::c_uchar, inbufend: *mut libc::c_uchar) -> *mut pst_obj;
+    fn pst_get_token(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
     #[no_mangle]
     fn pst_release_obj(obj: *mut pst_obj);
     #[no_mangle]
@@ -191,7 +191,7 @@ extern "C" {
     #[no_mangle]
     fn pst_getRV(obj: *mut pst_obj) -> libc::c_double;
     #[no_mangle]
-    fn pst_getSV(obj: *mut pst_obj) -> *mut libc::c_uchar;
+    fn pst_getSV(obj: *mut pst_obj) -> *mut u8;
     #[no_mangle]
     fn pst_data_ptr(obj: *mut pst_obj) -> *mut libc::c_void;
 }
@@ -222,11 +222,11 @@ pub type rust_input_handle_t = *mut libc::c_void;
 /* SID SID number */
 /* offset(0) */
 /* size offset(0) */
-pub type card8 = libc::c_uchar;
+pub type card8 = u8;
 /* 1-byte unsigned number */
 pub type card16 = libc::c_ushort;
 /* 2-byte unsigned number */
-pub type c_offsize = libc::c_uchar;
+pub type c_offsize = u8;
 /* 1-byte unsigned number specifies the size
 of an Offset field or fields, range 1-4 */
 pub type l_offset = u32;
@@ -402,8 +402,8 @@ unsafe extern "C" fn strstartswith(
 }
 unsafe extern "C" fn t1_decrypt(
     mut key: libc::c_ushort,
-    mut dst: *mut libc::c_uchar,
-    mut src: *const libc::c_uchar,
+    mut dst: *mut u8,
+    mut src: *const u8,
     mut skip: libc::c_int,
     mut len: libc::c_int,
 ) {
@@ -428,10 +428,10 @@ unsafe extern "C" fn t1_decrypt(
         }
         let fresh3 = src;
         src = src.offset(1);
-        let mut c: libc::c_uchar = *fresh3;
+        let mut c: u8 = *fresh3;
         let fresh4 = dst;
         dst = dst.offset(1);
-        *fresh4 = (c as libc::c_int ^ key as libc::c_int >> 8i32) as libc::c_uchar;
+        *fresh4 = (c as libc::c_int ^ key as libc::c_int >> 8i32) as u8;
         key = ((key as libc::c_int + c as libc::c_int) as libc::c_uint)
             .wrapping_mul(52845u32)
             .wrapping_add(22719u32) as libc::c_ushort
@@ -439,8 +439,8 @@ unsafe extern "C" fn t1_decrypt(
 }
 /* T1CRYPT */
 unsafe extern "C" fn get_next_key(
-    mut start: *mut *mut libc::c_uchar,
-    mut end: *mut libc::c_uchar,
+    mut start: *mut *mut u8,
+    mut end: *mut u8,
 ) -> *mut libc::c_char {
     let mut key: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
@@ -463,8 +463,8 @@ unsafe extern "C" fn get_next_key(
     return key;
 }
 unsafe extern "C" fn seek_operator(
-    mut start: *mut *mut libc::c_uchar,
-    mut end: *mut libc::c_uchar,
+    mut start: *mut *mut u8,
+    mut end: *mut u8,
     mut op: *const libc::c_char,
 ) -> libc::c_int {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
@@ -493,8 +493,8 @@ unsafe extern "C" fn seek_operator(
     return 0i32;
 }
 unsafe extern "C" fn parse_svalue(
-    mut start: *mut *mut libc::c_uchar,
-    mut end: *mut libc::c_uchar,
+    mut start: *mut *mut u8,
+    mut end: *mut u8,
     mut value: *mut *mut libc::c_char,
 ) -> libc::c_int {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
@@ -519,8 +519,8 @@ unsafe extern "C" fn parse_svalue(
     return 1i32;
 }
 unsafe extern "C" fn parse_bvalue(
-    mut start: *mut *mut libc::c_uchar,
-    mut end: *mut libc::c_uchar,
+    mut start: *mut *mut u8,
+    mut end: *mut u8,
     mut value: *mut libc::c_double,
 ) -> libc::c_int {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
@@ -545,8 +545,8 @@ unsafe extern "C" fn parse_bvalue(
     return 1i32;
 }
 unsafe extern "C" fn parse_nvalue(
-    mut start: *mut *mut libc::c_uchar,
-    mut end: *mut libc::c_uchar,
+    mut start: *mut *mut u8,
+    mut end: *mut u8,
     mut value: *mut libc::c_double,
     mut max: libc::c_int,
 ) -> libc::c_int {
@@ -1132,8 +1132,8 @@ static mut ISOLatin1Encoding: [*const libc::c_char; 256] = [
  */
 unsafe extern "C" fn try_put_or_putinterval(
     mut enc_vec: *mut *mut libc::c_char,
-    mut start: *mut *mut libc::c_uchar,
-    mut end: *mut libc::c_uchar,
+    mut start: *mut *mut u8,
+    mut end: *mut u8,
 ) -> libc::c_int {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
     let mut i: libc::c_int = 0;
@@ -1347,8 +1347,8 @@ unsafe extern "C" fn try_put_or_putinterval(
 }
 unsafe extern "C" fn parse_encoding(
     mut enc_vec: *mut *mut libc::c_char,
-    mut start: *mut *mut libc::c_uchar,
-    mut end: *mut libc::c_uchar,
+    mut start: *mut *mut u8,
+    mut end: *mut u8,
 ) -> libc::c_int {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
     let mut code: libc::c_int = 0;
@@ -1599,8 +1599,8 @@ unsafe extern "C" fn parse_encoding(
 }
 unsafe extern "C" fn parse_subrs(
     mut font: *mut cff_font,
-    mut start: *mut *mut libc::c_uchar,
-    mut end: *mut libc::c_uchar,
+    mut start: *mut *mut u8,
+    mut end: *mut u8,
     mut lenIV: libc::c_int,
     mut mode: libc::c_int,
 ) -> libc::c_int {
@@ -1885,8 +1885,8 @@ unsafe extern "C" fn parse_subrs(
 }
 unsafe extern "C" fn parse_charstrings(
     mut font: *mut cff_font,
-    mut start: *mut *mut libc::c_uchar,
-    mut end: *mut libc::c_uchar,
+    mut start: *mut *mut u8,
+    mut end: *mut u8,
     mut lenIV: libc::c_int,
     mut mode: libc::c_int,
 ) -> libc::c_int {
@@ -1906,7 +1906,7 @@ unsafe extern "C" fn parse_charstrings(
      */
     tok = pst_get_token(start, end); /* .notdef must be at gid = 0 in CFF */
     if !(pst_type_of(tok) == 2i32) || pst_getIV(tok) < 0i32 || pst_getIV(tok) > 64999i32 {
-        let mut s: *mut libc::c_uchar = pst_getSV(tok);
+        let mut s: *mut u8 = pst_getSV(tok);
         dpx_warning(
             b"Ignores non dict \"/CharStrings %s ...\"\x00" as *const u8 as *const libc::c_char,
             s,
@@ -2185,8 +2185,8 @@ unsafe extern "C" fn parse_charstrings(
 }
 unsafe extern "C" fn parse_part2(
     mut font: *mut cff_font,
-    mut start: *mut *mut libc::c_uchar,
-    mut end: *mut libc::c_uchar,
+    mut start: *mut *mut u8,
+    mut end: *mut u8,
     mut mode: libc::c_int,
 ) -> libc::c_int {
     let mut key: *mut libc::c_char = 0 as *mut libc::c_char;
@@ -2335,8 +2335,8 @@ unsafe extern "C" fn parse_part2(
 unsafe extern "C" fn parse_part1(
     mut font: *mut cff_font,
     mut enc_vec: *mut *mut libc::c_char,
-    mut start: *mut *mut libc::c_uchar,
-    mut end: *mut libc::c_uchar,
+    mut start: *mut *mut u8,
+    mut end: *mut u8,
 ) -> libc::c_int {
     let mut key: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut strval: *mut libc::c_char = 0 as *mut libc::c_char;
@@ -2619,8 +2619,8 @@ unsafe extern "C" fn get_pfb_segment(
     mut handle: rust_input_handle_t,
     mut expected_type: libc::c_int,
     mut length: *mut libc::c_int,
-) -> *mut libc::c_uchar {
-    let mut buffer: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+) -> *mut u8 {
+    let mut buffer: *mut u8 = 0 as *mut u8;
     let mut bytesread: libc::c_int = 0i32;
     loop {
         let mut ch: libc::c_int = 0;
@@ -2645,7 +2645,7 @@ unsafe extern "C" fn get_pfb_segment(
                 ch = ttstub_input_getc(handle);
                 if ch < 0i32 {
                     free(buffer as *mut libc::c_void);
-                    return 0 as *mut libc::c_uchar;
+                    return 0 as *mut u8;
                 }
                 slen = slen + (ch << 8i32 * i);
                 i += 1
@@ -2653,9 +2653,9 @@ unsafe extern "C" fn get_pfb_segment(
             buffer = renew(
                 buffer as *mut libc::c_void,
                 ((bytesread + slen) as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
+                    .wrapping_mul(::std::mem::size_of::<u8>() as u64)
                     as u32,
-            ) as *mut libc::c_uchar;
+            ) as *mut u8;
             while slen > 0i32 {
                 rlen = ttstub_input_read(
                     handle,
@@ -2664,7 +2664,7 @@ unsafe extern "C" fn get_pfb_segment(
                 ) as libc::c_int;
                 if rlen < 0i32 {
                     free(buffer as *mut libc::c_void);
-                    return 0 as *mut libc::c_uchar;
+                    return 0 as *mut u8;
                 }
                 slen -= rlen;
                 bytesread += rlen
@@ -2677,10 +2677,10 @@ unsafe extern "C" fn get_pfb_segment(
     buffer = renew(
         buffer as *mut libc::c_void,
         ((bytesread + 1i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32,
-    ) as *mut libc::c_uchar;
-    *buffer.offset(bytesread as isize) = 0i32 as libc::c_uchar;
+    ) as *mut u8;
+    *buffer.offset(bytesread as isize) = 0i32 as u8;
     if !length.is_null() {
         *length = bytesread
     }
@@ -2698,9 +2698,9 @@ pub unsafe extern "C" fn t1_get_fontname(
     mut handle: rust_input_handle_t,
     mut fontname: *mut libc::c_char,
 ) -> libc::c_int {
-    let mut buffer: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut start: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut end: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut buffer: *mut u8 = 0 as *mut u8;
+    let mut start: *mut u8 = 0 as *mut u8;
+    let mut end: *mut u8 = 0 as *mut u8;
     let mut length: libc::c_int = 0;
     let mut key: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut fn_found: libc::c_int = 0i32;
@@ -2812,9 +2812,9 @@ pub unsafe extern "C" fn t1_load_font(
 ) -> *mut cff_font {
     let mut length: libc::c_int = 0;
     let mut cff: *mut cff_font = 0 as *mut cff_font;
-    let mut buffer: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut start: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut end: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
+    let mut buffer: *mut u8 = 0 as *mut u8;
+    let mut start: *mut u8 = 0 as *mut u8;
+    let mut end: *mut u8 = 0 as *mut u8;
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     /* ASCII section */
     buffer = get_pfb_segment(handle, 1i32, &mut length);

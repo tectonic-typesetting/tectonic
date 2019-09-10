@@ -339,12 +339,12 @@ pub struct cff_index {
 /* SID SID number */
 /* offset(0) */
 /* size offset(0) */
-pub type card8 = libc::c_uchar;
+pub type card8 = u8;
 /* 1-byte unsigned number specifies the size
 of an Offset field or fields, range 1-4 */
 pub type l_offset = u32;
 /* 2-byte unsigned number */
-pub type c_offsize = libc::c_uchar;
+pub type c_offsize = u8;
 /* 1-byte unsigned number */
 pub type card16 = libc::c_ushort;
 #[derive(Copy, Clone)]
