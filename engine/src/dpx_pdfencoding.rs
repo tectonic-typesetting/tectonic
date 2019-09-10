@@ -70,7 +70,7 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
@@ -83,7 +83,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     /* Tectonic-enabled I/O alternatives */
@@ -246,7 +246,7 @@ extern "C" {
 pub type __int32_t = libc::c_int;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type tt_input_format_type = libc::c_uint;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
@@ -420,13 +420,13 @@ unsafe extern "C" fn pdf_init_encoding_struct(mut encoding: *mut pdf_encoding) {
     memset(
         (*encoding).glyphs.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        (256i32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as libc::c_ulong),
+        (256i32 as u64)
+            .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as u64),
     );
     memset(
         (*encoding).is_used.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        256i32 as libc::c_ulong,
+        256i32 as u64,
     );
     (*encoding).tounicode = 0 as *mut pdf_obj;
     (*encoding).baseenc = 0 as *mut pdf_encoding;
@@ -706,8 +706,8 @@ unsafe extern "C" fn load_encoding_file(mut filename: *const libc::c_char) -> li
         return -1i32;
     }
     fsize = ttstub_input_get_size(handle) as libc::c_int;
-    wbuf_0 = new(((fsize + 1i32) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    wbuf_0 = new(((fsize + 1i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     *wbuf_0.offset(fsize as isize) = '\u{0}' as i32 as libc::c_char;
     if ttstub_input_read(handle, wbuf_0, fsize as size_t) != fsize as libc::c_long {
@@ -780,8 +780,8 @@ static mut enc_cache: C2RustUnnamed = {
 pub unsafe extern "C" fn pdf_init_encodings() {
     enc_cache.count = 0i32;
     enc_cache.capacity = 3i32;
-    enc_cache.encodings = new((enc_cache.capacity as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_encoding>() as libc::c_ulong)
+    enc_cache.encodings = new((enc_cache.capacity as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pdf_encoding>() as u64)
         as u32) as *mut pdf_encoding;
     /*
      * PDF Predefined Encodings
@@ -837,22 +837,22 @@ unsafe extern "C" fn pdf_encoding_new_encoding(
         enc_cache.capacity += 16i32;
         enc_cache.encodings = renew(
             enc_cache.encodings as *mut libc::c_void,
-            (enc_cache.capacity as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<pdf_encoding>() as libc::c_ulong)
+            (enc_cache.capacity as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<pdf_encoding>() as u64)
                 as u32,
         ) as *mut pdf_encoding
     }
     encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
     pdf_init_encoding_struct(encoding);
     (*encoding).ident = new(
-        (strlen(ident).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32,
     ) as *mut libc::c_char;
     strcpy((*encoding).ident, ident);
     (*encoding).enc_name = new(
-        (strlen(enc_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (strlen(enc_name).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32,
     ) as *mut libc::c_char;
     strcpy((*encoding).enc_name, enc_name);
@@ -866,9 +866,9 @@ unsafe extern "C" fn pdf_encoding_new_encoding(
             ) != 0
         {
             (*encoding).glyphs[code as usize] = new((strlen(*encoding_vec.offset(code as isize))
-                .wrapping_add(1i32 as libc::c_ulong)
-                as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                .wrapping_add(1i32 as u64)
+                as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                 as u32) as *mut libc::c_char;
             strcpy(
                 (*encoding).glyphs[code as usize],
@@ -1168,8 +1168,8 @@ pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
     }
     cmap_name = new((strlen(enc_name)
         .wrapping_add(strlen(b"-UTF16\x00" as *const u8 as *const libc::c_char))
-        .wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        .wrapping_add(1i32 as u64) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     sprintf(
         cmap_name,

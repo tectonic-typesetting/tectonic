@@ -19,7 +19,7 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const libc::c_ushort;
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -159,13 +159,13 @@ unsafe extern "C" fn pst_parse_any(
         cur = cur.offset(1)
     }
     len = cur.wrapping_offset_from(*inbuf) as libc::c_long as libc::c_uint;
-    data = new((len.wrapping_add(1i32 as libc::c_uint) as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+    data = new((len.wrapping_add(1i32 as libc::c_uint) as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
         as u32) as *mut libc::c_uchar;
     memcpy(
         data as *mut libc::c_void,
         *inbuf as *const libc::c_void,
-        len as libc::c_ulong,
+        len as u64,
     );
     *data.offset(len as isize) = '\u{0}' as i32 as libc::c_uchar;
     *inbuf = cur;
@@ -278,8 +278,8 @@ pub unsafe extern "C" fn pst_get_token(
                 );
             } else {
                 let mut mark: *mut libc::c_char = 0 as *mut libc::c_char;
-                mark = new((3i32 as u32 as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                mark = new((3i32 as u32 as u64)
+                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                     as u32) as *mut libc::c_char;
                 *mark.offset(0) = '>' as i32 as libc::c_char;
                 *mark.offset(1) = '>' as i32 as libc::c_char;
@@ -290,8 +290,8 @@ pub unsafe extern "C" fn pst_get_token(
         }
         93 | 125 => {
             let mut mark_0: *mut libc::c_char = 0 as *mut libc::c_char;
-            mark_0 = new((2i32 as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            mark_0 = new((2i32 as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                 as u32) as *mut libc::c_char;
             *mark_0.offset(0) = c as libc::c_char;
             *mark_0.offset(1) = '\u{0}' as i32 as libc::c_char;

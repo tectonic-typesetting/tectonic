@@ -14,7 +14,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -824,7 +824,7 @@ pub unsafe extern "C" fn u_open_in(
     if handle.is_null() {
         return 0i32;
     }
-    *f = xmalloc(::std::mem::size_of::<UFILE>() as libc::c_ulong) as *mut UFILE;
+    *f = xmalloc(::std::mem::size_of::<UFILE>() as u64) as *mut UFILE;
     (**f).encodingMode = 0i32 as libc::c_short;
     (**f).conversionData = 0 as *mut libc::c_void;
     (**f).savedChar = -1i32 as libc::c_long;
@@ -908,21 +908,21 @@ unsafe extern "C" fn apply_normalization(
     status = TECkit_ConvertBuffer(
         *normPtr,
         buf as *mut Byte,
-        (len as libc::c_ulong).wrapping_mul(::std::mem::size_of::<UInt32>() as libc::c_ulong)
+        (len as u64).wrapping_mul(::std::mem::size_of::<UInt32>() as u64)
             as UInt32,
         &mut inUsed,
         &mut *buffer.offset(first as isize) as *mut UnicodeScalar as *mut Byte,
-        (::std::mem::size_of::<UnicodeScalar>() as libc::c_ulong)
-            .wrapping_mul((buf_size - first) as libc::c_ulong) as UInt32,
+        (::std::mem::size_of::<UnicodeScalar>() as u64)
+            .wrapping_mul((buf_size - first) as u64) as UInt32,
         &mut outUsed,
         1i32 as Byte,
     );
     if status != 0i32 as libc::c_long {
         buffer_overflow();
     }
-    last = (first as libc::c_ulong).wrapping_add(
-        (outUsed as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<UnicodeScalar>() as libc::c_ulong),
+    last = (first as u64).wrapping_add(
+        (outUsed as u64)
+            .wrapping_div(::std::mem::size_of::<UnicodeScalar>() as u64),
     ) as int32_t;
 }
 #[no_mangle]
@@ -990,15 +990,15 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                 if utf32Buf.is_null() {
                     utf32Buf = xcalloc(
                         buf_size as size_t,
-                        ::std::mem::size_of::<u32>() as libc::c_ulong,
+                        ::std::mem::size_of::<u32>() as u64,
                     ) as *mut u32
                 } // sets 'last' correctly
                 tmpLen = icu::ucnv_toAlgorithmic(
                     icu::UCNV_UTF32_LittleEndian,
                     cnv,
                     utf32Buf as *mut libc::c_char,
-                    (buf_size as libc::c_ulong)
-                        .wrapping_mul(::std::mem::size_of::<u32>() as libc::c_ulong)
+                    (buf_size as u64)
+                        .wrapping_mul(::std::mem::size_of::<u32>() as u64)
                         as int32_t,
                     byteBuffer,
                     bytesRead as int32_t,
@@ -1010,8 +1010,8 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                 }
                 apply_normalization(
                     utf32Buf,
-                    (tmpLen as libc::c_ulong)
-                        .wrapping_div(::std::mem::size_of::<u32>() as libc::c_ulong)
+                    (tmpLen as u64)
+                        .wrapping_div(::std::mem::size_of::<u32>() as u64)
                         as libc::c_int,
                     norm,
                 );
@@ -1022,8 +1022,8 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                     icu::UCNV_UTF32_LittleEndian,
                     cnv,
                     &mut *buffer.offset(first as isize) as *mut UnicodeScalar as *mut libc::c_char,
-                    (::std::mem::size_of::<UnicodeScalar>() as libc::c_ulong)
-                        .wrapping_mul((buf_size - first) as libc::c_ulong)
+                    (::std::mem::size_of::<UnicodeScalar>() as u64)
+                        .wrapping_mul((buf_size - first) as u64)
                         as int32_t,
                     byteBuffer,
                     bytesRead as int32_t,
@@ -1033,8 +1033,8 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                     conversion_error(errorCode as libc::c_int);
                     return 0i32;
                 }
-                outLen = (outLen as libc::c_ulong)
-                    .wrapping_div(::std::mem::size_of::<UnicodeScalar>() as libc::c_ulong)
+                outLen = (outLen as u64)
+                    .wrapping_div(::std::mem::size_of::<UnicodeScalar>() as u64)
                     as libc::c_int as libc::c_int;
                 last = first + outLen
             }
@@ -1056,7 +1056,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                 if utf32Buf.is_null() {
                     utf32Buf = xcalloc(
                         buf_size as size_t,
-                        ::std::mem::size_of::<u32>() as libc::c_ulong,
+                        ::std::mem::size_of::<u32>() as u64,
                     ) as *mut u32
                 }
                 tmpLen = 0i32;
@@ -1307,7 +1307,7 @@ pub unsafe extern "C" fn make_utf16_name() {
         name16len = name_length + 10i32;
         name_of_file16 = xcalloc(
             name16len as size_t,
-            ::std::mem::size_of::<uint16_t>() as libc::c_ulong,
+            ::std::mem::size_of::<uint16_t>() as u64,
         ) as *mut UTF16_code
     }
     t = name_of_file16;

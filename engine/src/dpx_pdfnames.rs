@@ -83,7 +83,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -125,7 +125,7 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type __compar_fn_t =
     Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> libc::c_int>;
 #[derive(Copy, Clone)]
@@ -252,8 +252,8 @@ unsafe extern "C" fn hval_free(mut hval: *mut libc::c_void) {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_new_name_tree() -> *mut ht_table {
     let mut names: *mut ht_table = 0 as *mut ht_table;
-    names = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<ht_table>() as libc::c_ulong)
+    names = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<ht_table>() as u64)
         as u32) as *mut ht_table;
     ht_init_table(
         names,
@@ -345,8 +345,8 @@ pub unsafe extern "C" fn pdf_names_add_object(
     }
     value = ht_lookup_table(names, key, keylen) as *mut obj_data;
     if value.is_null() {
-        value = new((1i32 as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<obj_data>() as libc::c_ulong)
+        value = new((1i32 as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<obj_data>() as u64)
             as u32) as *mut obj_data;
         (*value).object = object;
         (*value).closed = 0i32;
@@ -530,7 +530,7 @@ unsafe extern "C" fn cmp_key(
         cmp = memcmp(
             (*sd1).key as *const libc::c_void,
             (*sd2).key as *const libc::c_void,
-            keylen as libc::c_ulong,
+            keylen as u64,
         );
         if cmp == 0 {
             cmp = (*sd1).keylen - (*sd2).keylen
@@ -660,8 +660,8 @@ unsafe extern "C" fn flat_table(
             .as_ptr(),
         );
     }
-    objects = new(((*ht_tab).count as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<named_object>() as libc::c_ulong)
+    objects = new(((*ht_tab).count as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<named_object>() as u64)
         as u32) as *mut named_object;
     count = 0i32;
     if ht_set_iter(ht_tab, &mut iter) >= 0i32 {
@@ -728,8 +728,8 @@ unsafe extern "C" fn flat_table(
     *num_entries = count;
     objects = renew(
         objects as *mut libc::c_void,
-        (count as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<named_object>() as libc::c_ulong)
+        (count as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<named_object>() as u64)
             as u32,
     ) as *mut named_object;
     return objects;
@@ -773,7 +773,7 @@ pub unsafe extern "C" fn pdf_names_create_tree(
         qsort(
             flat as *mut libc::c_void,
             *count as size_t,
-            ::std::mem::size_of::<named_object>() as libc::c_ulong,
+            ::std::mem::size_of::<named_object>() as u64,
             Some(
                 cmp_key
                     as unsafe extern "C" fn(

@@ -21,7 +21,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
@@ -82,7 +82,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn agl_get_unicodes(
         glyphstr: *const libc::c_char,
@@ -140,7 +140,7 @@ pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
@@ -591,13 +591,13 @@ unsafe extern "C" fn parse_block(
                     len += 1
                 }
                 if len > 0i32 {
-                    tmp = new(((len + 1i32) as u32 as libc::c_ulong)
-                        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                    tmp = new(((len + 1i32) as u32 as u64)
+                        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                         as u32) as *mut libc::c_char;
                     memset(
                         tmp as *mut libc::c_void,
                         0i32,
-                        (len + 1i32) as libc::c_ulong,
+                        (len + 1i32) as u64,
                     );
                     i = 0i32;
                     while i < len {
@@ -726,8 +726,8 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const libc::c_char) -> *mut p
     let mut len: libc::c_int = 0;
     filename = new((strlen(conf_name)
         .wrapping_add(strlen(b".otl\x00" as *const u8 as *const libc::c_char))
-        .wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        .wrapping_add(1i32 as u64) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     strcpy(filename, conf_name);
     strcat(filename, b".otl\x00" as *const u8 as *const libc::c_char);
@@ -751,8 +751,8 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const libc::c_char) -> *mut p
     if size < 1i32 {
         return 0 as *mut pdf_obj;
     }
-    wbuf = new((size as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    wbuf = new((size as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     p = wbuf;
     endptr = p.offset(size as isize);

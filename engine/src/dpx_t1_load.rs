@@ -12,20 +12,20 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
+    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
         -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
     /* FontName */
     /* - CFF structure - */
     /* CFF Header */
@@ -101,7 +101,7 @@ extern "C" {
     #[no_mangle]
     fn cff_set_name(cff: *mut cff_font, name: *mut libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -196,7 +196,7 @@ extern "C" {
     fn pst_data_ptr(obj: *mut pst_obj) -> *mut libc::c_void;
 }
 pub type __ssize_t = libc::c_long;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -1386,9 +1386,9 @@ unsafe extern "C" fn parse_encoding(
                 {
                     let ref mut fresh9 = *enc_vec.offset(code as isize);
                     *fresh9 = new((strlen(StandardEncoding[code as usize])
-                        .wrapping_add(1i32 as libc::c_ulong)
-                        as u32 as libc::c_ulong)
-                        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                        .wrapping_add(1i32 as u64)
+                        as u32 as u64)
+                        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                         as u32) as *mut libc::c_char;
                     strcpy(
                         *enc_vec.offset(code as isize),
@@ -1424,9 +1424,9 @@ unsafe extern "C" fn parse_encoding(
                 {
                     let ref mut fresh11 = *enc_vec.offset(code as isize);
                     *fresh11 = new((strlen(ISOLatin1Encoding[code as usize])
-                        .wrapping_add(1i32 as libc::c_ulong)
-                        as u32 as libc::c_ulong)
-                        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                        .wrapping_add(1i32 as u64)
+                        as u32 as u64)
+                        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                         as u32) as *mut libc::c_char;
                     strcpy(
                         *enc_vec.offset(code as isize),
@@ -1653,26 +1653,26 @@ unsafe extern "C" fn parse_subrs(
     }
     if mode != 1i32 {
         max_size = 65536i32;
-        data = new((max_size as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
+        data = new((max_size as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<card8>() as u64)
             as u32) as *mut card8;
-        offsets = new((count as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_int>() as libc::c_ulong)
+        offsets = new((count as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_int>() as u64)
             as u32) as *mut libc::c_int;
-        lengths = new((count as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_int>() as libc::c_ulong)
+        lengths = new((count as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_int>() as u64)
             as u32) as *mut libc::c_int;
         memset(
             offsets as *mut libc::c_void,
             0i32,
-            (::std::mem::size_of::<libc::c_int>() as libc::c_ulong)
-                .wrapping_mul(count as libc::c_ulong),
+            (::std::mem::size_of::<libc::c_int>() as u64)
+                .wrapping_mul(count as u64),
         );
         memset(
             lengths as *mut libc::c_void,
             0i32,
-            (::std::mem::size_of::<libc::c_int>() as libc::c_ulong)
-                .wrapping_mul(count as libc::c_ulong),
+            (::std::mem::size_of::<libc::c_int>() as u64)
+                .wrapping_mul(count as u64),
         );
     } else {
         max_size = 0i32;
@@ -1813,8 +1813,8 @@ unsafe extern "C" fn parse_subrs(
                     data =
                         renew(
                             data as *mut libc::c_void,
-                            (max_size as u32 as libc::c_ulong)
-                                .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
+                            (max_size as u32 as u64)
+                                .wrapping_mul(::std::mem::size_of::<card8>() as u64)
                                 as u32,
                         ) as *mut card8
                 }
@@ -1836,7 +1836,7 @@ unsafe extern "C" fn parse_subrs(
                     memcpy(
                         &mut *data.offset(offset as isize) as *mut card8 as *mut libc::c_void,
                         *start as *const libc::c_void,
-                        len as libc::c_ulong,
+                        len as u64,
                     );
                     offset += len
                 }
@@ -1850,8 +1850,8 @@ unsafe extern "C" fn parse_subrs(
             let ref mut fresh17 = *(*font).subrs.offset(0);
             *fresh17 = cff_new_index(count as card16);
             subrs = *fresh17;
-            (*subrs).data = new((offset as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
+            (*subrs).data = new((offset as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<card8>() as u64)
                 as u32) as *mut card8;
             offset = 0i32;
             i = 0i32;
@@ -1861,7 +1861,7 @@ unsafe extern "C" fn parse_subrs(
                     memcpy(
                         (*subrs).data.offset(offset as isize) as *mut libc::c_void,
                         data.offset(*offsets.offset(i as isize) as isize) as *const libc::c_void,
-                        *lengths.offset(i as isize) as libc::c_ulong,
+                        *lengths.offset(i as isize) as u64,
                     );
                     offset += *lengths.offset(i as isize)
                 }
@@ -1926,28 +1926,28 @@ unsafe extern "C" fn parse_charstrings(
     if mode != 1i32 {
         charstrings = cff_new_index(count as card16);
         max_size = 65536i32;
-        (*charstrings).data = new((max_size as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
+        (*charstrings).data = new((max_size as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<card8>() as u64)
             as u32) as *mut card8
     } else {
         charstrings = 0 as *mut cff_index;
         max_size = 0i32
     }
     (*font).cstrings = charstrings;
-    (*font).charsets = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cff_charsets>() as libc::c_ulong)
+    (*font).charsets = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<cff_charsets>() as u64)
         as u32) as *mut cff_charsets;
     charset = (*font).charsets;
     (*charset).format = 0i32 as card8;
     (*charset).num_entries = (count - 1i32) as card16;
-    (*charset).data.glyphs = new(((count - 1i32) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<s_SID>() as libc::c_ulong)
+    (*charset).data.glyphs = new(((count - 1i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<s_SID>() as u64)
         as u32) as *mut s_SID;
     memset(
         (*charset).data.glyphs as *mut libc::c_void,
         0i32,
-        (::std::mem::size_of::<s_SID>() as libc::c_ulong)
-            .wrapping_mul((count - 1i32) as libc::c_ulong),
+        (::std::mem::size_of::<s_SID>() as u64)
+            .wrapping_mul((count - 1i32) as u64),
     );
     offset = 0i32;
     have_notdef = 0i32;
@@ -2059,8 +2059,8 @@ unsafe extern "C" fn parse_charstrings(
                     (*charstrings).data =
                         renew(
                             (*charstrings).data as *mut libc::c_void,
-                            (max_size as u32 as libc::c_ulong)
-                                .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
+                            (max_size as u32 as u64)
+                                .wrapping_mul(::std::mem::size_of::<card8>() as u64)
                                 as u32,
                         ) as *mut card8
                 }
@@ -2073,7 +2073,7 @@ unsafe extern "C" fn parse_charstrings(
                                 .offset(-(lenIV as isize))
                                 as *mut libc::c_void,
                             (*charstrings).data as *const libc::c_void,
-                            offset as libc::c_ulong,
+                            offset as u64,
                         );
                         j = 1i32;
                         while j <= i {
@@ -2087,7 +2087,7 @@ unsafe extern "C" fn parse_charstrings(
                         memmove(
                             (*charstrings).data.offset(len as isize) as *mut libc::c_void,
                             (*charstrings).data as *const libc::c_void,
-                            offset as libc::c_ulong,
+                            offset as u64,
                         );
                         j = 1i32;
                         while j <= i {
@@ -2118,7 +2118,7 @@ unsafe extern "C" fn parse_charstrings(
                         memcpy(
                             &mut *(*charstrings).data.offset(0) as *mut card8 as *mut libc::c_void,
                             *start as *const libc::c_void,
-                            len as libc::c_ulong,
+                            len as u64,
                         );
                     } else {
                         *(*charstrings).offset.offset(gid as isize) = (offset + 1i32) as l_offset;
@@ -2126,7 +2126,7 @@ unsafe extern "C" fn parse_charstrings(
                             &mut *(*charstrings).data.offset(offset as isize) as *mut card8
                                 as *mut libc::c_void,
                             *start as *const libc::c_void,
-                            len as libc::c_ulong,
+                            len as u64,
                         );
                     }
                     offset += len
@@ -2370,7 +2370,7 @@ unsafe extern "C" fn parse_part1(
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
-            if strlen(strval) > 127i32 as libc::c_ulong {
+            if strlen(strval) > 127i32 as u64 {
                 dpx_warning(
                     b"FontName too long: %s (%zu bytes)\x00" as *const u8 as *const libc::c_char,
                     strval,
@@ -2589,12 +2589,12 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
     if memcmp(
         sig.as_mut_ptr() as *const libc::c_void,
         b"%!PS-AdobeFont\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-        14i32 as libc::c_ulong,
+        14i32 as u64,
     ) == 0
         || memcmp(
             sig.as_mut_ptr() as *const libc::c_void,
             b"%!FontType1\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-            11i32 as libc::c_ulong,
+            11i32 as u64,
         ) == 0
     {
         return 1i32 != 0;
@@ -2602,7 +2602,7 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
     if memcmp(
         sig.as_mut_ptr() as *const libc::c_void,
         b"%!PS\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-        4i32 as libc::c_ulong,
+        4i32 as u64,
     ) == 0
     {
         sig[14] = '\u{0}' as i32 as libc::c_char;
@@ -2652,8 +2652,8 @@ unsafe extern "C" fn get_pfb_segment(
             }
             buffer = renew(
                 buffer as *mut libc::c_void,
-                ((bytesread + slen) as u32 as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+                ((bytesread + slen) as u32 as u64)
+                    .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
                     as u32,
             ) as *mut libc::c_uchar;
             while slen > 0i32 {
@@ -2676,8 +2676,8 @@ unsafe extern "C" fn get_pfb_segment(
     }
     buffer = renew(
         buffer as *mut libc::c_void,
-        ((bytesread + 1i32) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        ((bytesread + 1i32) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32,
     ) as *mut libc::c_uchar;
     *buffer.offset(bytesread as isize) = 0i32 as libc::c_uchar;
@@ -2727,7 +2727,7 @@ pub unsafe extern "C" fn t1_get_fontname(
         if streq_ptr(key, b"FontName\x00" as *const u8 as *const libc::c_char) {
             let mut strval: *mut libc::c_char = 0 as *mut libc::c_char;
             if parse_svalue(&mut start, end, &mut strval) == 1i32 {
-                if strlen(strval) > 127i32 as libc::c_ulong {
+                if strlen(strval) > 127i32 as u64 {
                     dpx_warning(
                         b"FontName \"%s\" too long. (%zu bytes)\x00" as *const u8
                             as *const libc::c_char,
@@ -2765,13 +2765,13 @@ unsafe extern "C" fn init_cff_font(mut cff: *mut cff_font) {
     (*cff).fdselect = 0 as *mut cff_fdselect;
     (*cff).cstrings = 0 as *mut cff_index;
     (*cff).fdarray = 0 as *mut *mut cff_dict;
-    (*cff).private = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as libc::c_ulong)
+    (*cff).private = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as u64)
         as u32) as *mut *mut cff_dict;
     let ref mut fresh23 = *(*cff).private.offset(0);
     *fresh23 = cff_new_dict();
-    (*cff).subrs = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<*mut cff_index>() as libc::c_ulong)
+    (*cff).subrs = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<*mut cff_index>() as u64)
         as u32) as *mut *mut cff_index;
     let ref mut fresh24 = *(*cff).subrs.offset(0);
     *fresh24 = 0 as *mut cff_index;
@@ -2821,8 +2821,8 @@ pub unsafe extern "C" fn t1_load_font(
     if buffer.is_null() || length == 0i32 {
         _tt_abort(b"Reading PFB (ASCII part) file failed.\x00" as *const u8 as *const libc::c_char);
     }
-    cff = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cff_font>() as libc::c_ulong) as u32)
+    cff = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<cff_font>() as u64) as u32)
         as *mut cff_font;
     init_cff_font(cff);
     start = buffer;

@@ -17,7 +17,7 @@ pub type __off64_t = libc::c_long;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
 pub type uint16_t = __uint16_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type off_t = __off_t;
 pub type ssize_t = __ssize_t;
 
@@ -29,7 +29,7 @@ extern "C" {
     #[no_mangle]
     fn vsnprintf(
         _: *mut libc::c_char,
-        _: libc::c_ulong,
+        _: u64,
         _: *const libc::c_char,
         _: ::std::ffi::VaList,
     ) -> libc::c_int;
@@ -336,7 +336,7 @@ pub type va_list = __builtin_va_list;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct __sigset_t {
-    pub __val: [libc::c_ulong; 16],
+    pub __val: [u64; 16],
 }
 pub type tt_history_t = libc::c_uint;
 pub const HISTORY_FATAL_ERROR: tt_history_t = 3;
@@ -539,7 +539,7 @@ pub unsafe extern "C" fn _tt_abort(mut format: *const libc::c_char, mut args: ..
     ap = args.clone();
     vsnprintf(
         error_buf.as_mut_ptr(),
-        1024i32 as libc::c_ulong,
+        1024i32 as u64,
         format,
         ap.as_va_list(),
     );
@@ -620,7 +620,7 @@ pub unsafe extern "C" fn ttstub_issue_warning(mut format: *const libc::c_char, m
     ap = args.clone(); /* Not ideal to (ab)use error_buf here */
     vsnprintf(
         error_buf.as_mut_ptr(),
-        1024i32 as libc::c_ulong,
+        1024i32 as u64,
         format,
         ap.as_va_list(),
     );
@@ -637,7 +637,7 @@ pub unsafe extern "C" fn ttstub_issue_error(mut format: *const libc::c_char, mut
     ap = args.clone();
     vsnprintf(
         error_buf.as_mut_ptr(),
-        1024i32 as libc::c_ulong,
+        1024i32 as u64,
         format,
         ap.as_va_list(),
     );
@@ -695,7 +695,7 @@ pub unsafe extern "C" fn ttstub_fprintf(
     ap = args.clone();
     let mut len: libc::c_int = vsnprintf(
         fprintf_buf.as_mut_ptr(),
-        1024i32 as libc::c_ulong,
+        1024i32 as u64,
         format,
         ap.as_va_list(),
     );
@@ -877,15 +877,15 @@ pub unsafe extern "C" fn ttstub_input_close(mut handle: rust_input_handle_t) -> 
 
 extern "C" {
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn realloc(_: *mut libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn realloc(_: *mut libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn calloc(_: libc::c_ulong, _: libc::c_ulong) -> *mut libc::c_void;
+    fn calloc(_: u64, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn malloc(_: libc::c_ulong) -> *mut libc::c_void;
+    fn malloc(_: u64) -> *mut libc::c_void;
 }
 
 /* tectonic/core-memory.c: basic C dynamic memory helpers
@@ -911,12 +911,12 @@ pub unsafe extern "C" fn xcalloc(mut nelem: size_t, mut elsize: size_t) -> *mut 
         if nelem != 0 {
             nelem
         } else {
-            1i32 as libc::c_ulong
+            1i32 as u64
         },
         if elsize != 0 {
             elsize
         } else {
-            1i32 as libc::c_ulong
+            1i32 as u64
         },
     );
     if new_mem.is_null() {
@@ -934,7 +934,7 @@ pub unsafe extern "C" fn xmalloc(mut size: size_t) -> *mut libc::c_void {
     let mut new_mem: *mut libc::c_void = malloc(if size != 0 {
         size
     } else {
-        1i32 as libc::c_ulong
+        1i32 as u64
     });
     if new_mem.is_null() {
         _tt_abort(
@@ -958,7 +958,7 @@ pub unsafe extern "C" fn xrealloc(
             if size != 0 {
                 size
             } else {
-                1i32 as libc::c_ulong
+                1i32 as u64
             },
         );
         if new_mem.is_null() {
@@ -977,7 +977,7 @@ pub unsafe extern "C" fn xrealloc(
 #[no_mangle]
 pub unsafe extern "C" fn xstrdup(mut s: *const libc::c_char) -> *mut libc::c_char {
     let mut new_string: *mut libc::c_char =
-        xmalloc(strlen(s).wrapping_add(1i32 as libc::c_ulong)) as *mut libc::c_char;
+        xmalloc(strlen(s).wrapping_add(1i32 as u64)) as *mut libc::c_char;
     return strcpy(new_string, s);
 }
 

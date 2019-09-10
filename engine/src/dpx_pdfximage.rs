@@ -13,15 +13,15 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -254,7 +254,7 @@ extern "C" {
     fn check_for_png(handle: rust_input_handle_t) -> libc::c_int;
 }
 pub type __ssize_t = libc::c_long;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
@@ -442,7 +442,7 @@ unsafe extern "C" fn pdf_init_ximage_struct(mut I: *mut pdf_ximage) {
     memset(
         (*I).res_name.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        16i32 as libc::c_ulong,
+        16i32 as u64,
     );
     (*I).reference = 0 as *mut pdf_obj;
     (*I).resource = 0 as *mut pdf_obj;
@@ -551,8 +551,8 @@ unsafe extern "C" fn load_image(
         (*ic).capacity += 16i32;
         (*ic).ximages = renew(
             (*ic).ximages as *mut libc::c_void,
-            ((*ic).capacity as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<pdf_ximage>() as libc::c_ulong)
+            ((*ic).capacity as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<pdf_ximage>() as u64)
                 as u32,
         ) as *mut pdf_ximage
     }
@@ -560,16 +560,16 @@ unsafe extern "C" fn load_image(
     pdf_init_ximage_struct(I);
     if !ident.is_null() {
         (*I).ident = new(
-            (strlen(ident).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            (strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                 as u32,
         ) as *mut libc::c_char;
         strcpy((*I).ident, ident);
     }
     if !fullname.is_null() {
         (*I).filename = new(
-            (strlen(fullname).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            (strlen(fullname).wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                 as u32,
         ) as *mut libc::c_char;
         strcpy((*I).filename, fullname);
@@ -949,8 +949,8 @@ pub unsafe extern "C" fn pdf_ximage_defineresource(
         (*ic).capacity += 16i32;
         (*ic).ximages = renew(
             (*ic).ximages as *mut libc::c_void,
-            ((*ic).capacity as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<pdf_ximage>() as libc::c_ulong)
+            ((*ic).capacity as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<pdf_ximage>() as u64)
                 as u32,
         ) as *mut pdf_ximage
     }
@@ -958,8 +958,8 @@ pub unsafe extern "C" fn pdf_ximage_defineresource(
     pdf_init_ximage_struct(I);
     if !ident.is_null() {
         (*I).ident = new(
-            (strlen(ident).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            (strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                 as u32,
         ) as *mut libc::c_char;
         strcpy((*I).ident, ident);
@@ -1261,9 +1261,9 @@ pub unsafe extern "C" fn set_distiller_template(mut s: *mut libc::c_char) {
     if s.is_null() || *s as libc::c_int == '\u{0}' as i32 {
         _opts.cmdtmpl = 0 as *mut libc::c_char
     } else {
-        _opts.cmdtmpl = new((strlen(s).wrapping_add(1i32 as libc::c_ulong) as u32
-            as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        _opts.cmdtmpl = new((strlen(s).wrapping_add(1i32 as u64) as u32
+            as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         strcpy(_opts.cmdtmpl, s);
     };

@@ -12,9 +12,9 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn CMap_get_CIDSysInfo(cmap: *mut CMap) -> *mut CIDSysInfo;
     #[no_mangle]
@@ -63,7 +63,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -123,7 +123,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_resource_reference(res_id: libc::c_int) -> *mut pdf_obj;
 }
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -258,7 +258,7 @@ unsafe extern "C" fn block_count(mut mtab: *mut mapDef, mut c: libc::c_int) -> s
     let mut n: size_t = 0;
     n = (*mtab.offset(c as isize))
         .len
-        .wrapping_sub(1i32 as libc::c_ulong);
+        .wrapping_sub(1i32 as u64);
     c += 1i32;
     while c < 256i32 {
         if (*mtab.offset(c as isize)).flag & 1i32 << 4i32 != 0
@@ -329,15 +329,15 @@ unsafe extern "C" fn write_map(
     let mut blocks: [C2RustUnnamed_1; 129] = [C2RustUnnamed_1 { start: 0, count: 0 }; 129];
     let mut num_blocks: size_t = 0i32 as size_t;
     c = 0i32 as size_t;
-    while c < 256i32 as libc::c_ulong {
-        *codestr.offset(depth as isize) = (c & 0xffi32 as libc::c_ulong) as libc::c_uchar;
+    while c < 256i32 as u64 {
+        *codestr.offset(depth as isize) = (c & 0xffi32 as u64) as libc::c_uchar;
         if (*mtab.offset(c as isize)).flag & 1i32 << 4i32 != 0 {
             mtab1 = (*mtab.offset(c as isize)).next;
             count = write_map(
                 mtab1,
                 count,
                 codestr,
-                depth.wrapping_add(1i32 as libc::c_ulong),
+                depth.wrapping_add(1i32 as u64),
                 wbuf,
                 stream,
             ) as size_t
@@ -350,11 +350,11 @@ unsafe extern "C" fn write_map(
             match (*mtab.offset(c as isize)).flag & 0xfi32 {
                 1 | 4 => {
                     block_length = block_count(mtab, c as libc::c_int);
-                    if block_length >= 2i32 as libc::c_ulong {
+                    if block_length >= 2i32 as u64 {
                         blocks[num_blocks as usize].start = c as libc::c_int;
                         blocks[num_blocks as usize].count = block_length as libc::c_int;
                         num_blocks = num_blocks.wrapping_add(1);
-                        c = (c as libc::c_ulong).wrapping_add(block_length) as size_t as size_t
+                        c = (c as u64).wrapping_add(block_length) as size_t as size_t
                     } else {
                         let fresh0 = (*wbuf).curptr;
                         (*wbuf).curptr = (*wbuf).curptr.offset(1);
@@ -412,9 +412,9 @@ unsafe extern "C" fn write_map(
             }
         }
         /* Flush if necessary */
-        if count >= 100i32 as libc::c_ulong || (*wbuf).curptr >= (*wbuf).limptr {
+        if count >= 100i32 as u64 || (*wbuf).curptr >= (*wbuf).limptr {
             let mut fmt_buf: [libc::c_char; 32] = [0; 32];
-            if count > 100i32 as libc::c_ulong {
+            if count > 100i32 as u64 {
                 _tt_abort(
                     b"Unexpected error....: %zu\x00" as *const u8 as *const libc::c_char,
                     count,
@@ -445,9 +445,9 @@ unsafe extern "C" fn write_map(
         }
         c = c.wrapping_add(1)
     }
-    if num_blocks > 0i32 as libc::c_ulong {
+    if num_blocks > 0i32 as u64 {
         let mut fmt_buf_0: [libc::c_char; 32] = [0; 32];
-        if count > 0i32 as libc::c_ulong {
+        if count > 0i32 as u64 {
             sprintf(
                 fmt_buf_0.as_mut_ptr(),
                 b"%zu beginbfchar\n\x00" as *const u8 as *const libc::c_char,
@@ -517,7 +517,7 @@ unsafe extern "C" fn write_map(
                 j = j.wrapping_add(1)
             }
             sputx(
-                c.wrapping_add(blocks[i as usize].count as libc::c_ulong) as libc::c_uchar,
+                c.wrapping_add(blocks[i as usize].count as u64) as libc::c_uchar,
                 &mut (*wbuf).curptr,
                 (*wbuf).limptr,
             );
@@ -667,11 +667,11 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
     if !(*cmap).useCMap.is_null() {
         _tt_abort(b"UseCMap found (not supported yet)...\x00" as *const u8 as *const libc::c_char);
     }
-    wbuf.buf = new((4096i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    wbuf.buf = new((4096i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
-    codestr = new(((*cmap).profile.maxBytesIn as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+    codestr = new(((*cmap).profile.maxBytesIn as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
         as u32) as *mut libc::c_uchar;
     memset(
         codestr as *mut libc::c_void,
@@ -683,7 +683,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
         .buf
         .offset(4096)
         .offset(
-            -((2i32 as libc::c_ulong).wrapping_mul(
+            -((2i32 as u64).wrapping_mul(
                 (*cmap)
                     .profile
                     .maxBytesIn
@@ -740,7 +740,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
         (*cmap).codespace.num,
     ) as isize);
     i = 0i32 as size_t;
-    while i < (*cmap).codespace.num as libc::c_ulong {
+    while i < (*cmap).codespace.num as u64 {
         let fresh15 = wbuf.curptr;
         wbuf.curptr = wbuf.curptr.offset(1);
         *fresh15 = '<' as i32 as libc::c_char;
@@ -800,10 +800,10 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
             &mut wbuf,
             stream,
         ) as size_t; /* Top node */
-        if count > 0i32 as libc::c_ulong {
+        if count > 0i32 as u64 {
             /* Flush */
             let mut fmt_buf: [libc::c_char; 32] = [0; 32];
-            if count > 100i32 as libc::c_ulong {
+            if count > 100i32 as u64 {
                 _tt_abort(
                     b"Unexpected error....: %zu\x00" as *const u8 as *const libc::c_char,
                     count,

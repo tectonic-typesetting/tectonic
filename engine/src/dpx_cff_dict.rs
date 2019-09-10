@@ -28,7 +28,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     /* The internal, C/C++ interface: */
@@ -288,13 +288,13 @@ unsafe extern "C" fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc:
 #[no_mangle]
 pub unsafe extern "C" fn cff_new_dict() -> *mut cff_dict {
     let mut dict: *mut cff_dict = 0 as *mut cff_dict;
-    dict = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cff_dict>() as libc::c_ulong)
+    dict = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<cff_dict>() as u64)
         as u32) as *mut cff_dict;
     (*dict).max = 16i32;
     (*dict).count = 0i32;
-    (*dict).entries = new(((*dict).max as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cff_dict_entry>() as libc::c_ulong)
+    (*dict).entries = new(((*dict).max as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<cff_dict_entry>() as u64)
         as u32) as *mut cff_dict_entry;
     return dict;
 }
@@ -916,8 +916,8 @@ unsafe extern "C" fn add_dict(
         (*dict).max += 16i32;
         (*dict).entries = renew(
             (*dict).entries as *mut libc::c_void,
-            ((*dict).max as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<cff_dict_entry>() as libc::c_ulong)
+            ((*dict).max as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<cff_dict_entry>() as u64)
                 as u32,
         ) as *mut cff_dict_entry
     }
@@ -937,8 +937,8 @@ unsafe extern "C" fn add_dict(
         stack_top -= 1;
         (*(*dict).entries.offset((*dict).count as isize)).count = 1i32;
         let ref mut fresh13 = (*(*dict).entries.offset((*dict).count as isize)).values;
-        *fresh13 = new((1i32 as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_double>() as libc::c_ulong)
+        *fresh13 = new((1i32 as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_double>() as u64)
             as u32) as *mut libc::c_double;
         *(*(*dict).entries.offset((*dict).count as isize))
             .values
@@ -947,8 +947,8 @@ unsafe extern "C" fn add_dict(
     } else if stack_top > 0i32 {
         (*(*dict).entries.offset((*dict).count as isize)).count = stack_top;
         let ref mut fresh14 = (*(*dict).entries.offset((*dict).count as isize)).values;
-        *fresh14 = new((stack_top as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_double>() as libc::c_ulong)
+        *fresh14 = new((stack_top as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_double>() as u64)
             as u32) as *mut libc::c_double;
         while stack_top > 0i32 {
             stack_top -= 1;
@@ -1346,8 +1346,8 @@ pub unsafe extern "C" fn cff_dict_add(
         (*dict).max += 8i32;
         (*dict).entries = renew(
             (*dict).entries as *mut libc::c_void,
-            ((*dict).max as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<cff_dict_entry>() as libc::c_ulong)
+            ((*dict).max as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<cff_dict_entry>() as u64)
                 as u32,
         ) as *mut cff_dict_entry
     }
@@ -1357,14 +1357,14 @@ pub unsafe extern "C" fn cff_dict_add(
     (*(*dict).entries.offset((*dict).count as isize)).count = count;
     if count > 0i32 {
         let ref mut fresh21 = (*(*dict).entries.offset((*dict).count as isize)).values;
-        *fresh21 = new((count as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_double>() as libc::c_ulong)
+        *fresh21 = new((count as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_double>() as u64)
             as u32) as *mut libc::c_double;
         memset(
             (*(*dict).entries.offset((*dict).count as isize)).values as *mut libc::c_void,
             0i32,
-            (::std::mem::size_of::<libc::c_double>() as libc::c_ulong)
-                .wrapping_mul(count as libc::c_ulong),
+            (::std::mem::size_of::<libc::c_double>() as u64)
+                .wrapping_mul(count as u64),
         );
     } else {
         let ref mut fresh22 = (*(*dict).entries.offset((*dict).count as isize)).values;

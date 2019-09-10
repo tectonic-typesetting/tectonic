@@ -20,9 +20,9 @@ extern "C" {
     #[no_mangle]
     fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn sfnt_set_table(
         sfont: *mut sfnt,
@@ -115,7 +115,7 @@ extern "C" {
 pub type __int32_t = libc::c_int;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type __compar_fn_t =
     Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> libc::c_int>;
@@ -434,8 +434,8 @@ pub unsafe extern "C" fn tt_add_glyph(
             (*g).max_glyphs = ((*g).max_glyphs as libc::c_int + 256i32) as USHORT;
             (*g).gd = renew(
                 (*g).gd as *mut libc::c_void,
-                ((*g).max_glyphs as u32 as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<tt_glyph_desc>() as libc::c_ulong)
+                ((*g).max_glyphs as u32 as u64)
+                    .wrapping_mul(::std::mem::size_of::<tt_glyph_desc>() as u64)
                     as u32,
             ) as *mut tt_glyph_desc
         }
@@ -462,8 +462,8 @@ pub unsafe extern "C" fn tt_add_glyph(
 #[no_mangle]
 pub unsafe extern "C" fn tt_build_init() -> *mut tt_glyphs {
     let mut g: *mut tt_glyphs = 0 as *mut tt_glyphs;
-    g = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<tt_glyphs>() as libc::c_ulong) as u32)
+    g = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<tt_glyphs>() as u64) as u32)
         as *mut tt_glyphs;
     (*g).num_glyphs = 0i32 as USHORT;
     (*g).max_glyphs = 0i32 as USHORT;
@@ -472,13 +472,13 @@ pub unsafe extern "C" fn tt_build_init() -> *mut tt_glyphs {
     (*g).default_advh = 0i32 as USHORT;
     (*g).default_tsb = 0i32 as SHORT;
     (*g).gd = 0 as *mut tt_glyph_desc;
-    (*g).used_slot = new((8192i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+    (*g).used_slot = new((8192i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
         as u32) as *mut libc::c_uchar;
     memset(
         (*g).used_slot as *mut libc::c_void,
         0i32,
-        8192i32 as libc::c_ulong,
+        8192i32 as u64,
     );
     tt_add_glyph(g, 0i32 as USHORT, 0i32 as USHORT);
     return g;
@@ -612,8 +612,8 @@ pub unsafe extern "C" fn tt_build_tables(
     }
     sfnt_locate_table(sfont, b"loca\x00" as *const u8 as *const libc::c_char);
     location = new(
-        (((*maxp).numGlyphs as libc::c_int + 1i32) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<SFNT_ULONG>() as libc::c_ulong) as u32,
+        (((*maxp).numGlyphs as libc::c_int + 1i32) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<SFNT_ULONG>() as u64) as u32,
     ) as *mut SFNT_ULONG;
     if (*head).indexToLocFormat as libc::c_int == 0i32 {
         i = 0i32;
@@ -632,14 +632,14 @@ pub unsafe extern "C" fn tt_build_tables(
         _tt_abort(b"Unknown IndexToLocFormat.\x00" as *const u8 as *const libc::c_char);
     }
     w_stat = new(
-        (((*g).emsize as libc::c_int + 2i32) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong) as u32,
+        (((*g).emsize as libc::c_int + 2i32) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<USHORT>() as u64) as u32,
     ) as *mut USHORT;
     memset(
         w_stat as *mut libc::c_void,
         0i32,
-        (::std::mem::size_of::<USHORT>() as libc::c_ulong)
-            .wrapping_mul(((*g).emsize as libc::c_int + 2i32) as libc::c_ulong),
+        (::std::mem::size_of::<USHORT>() as u64)
+            .wrapping_mul(((*g).emsize as libc::c_int + 2i32) as u64),
     );
     /*
      * Read glyf table.
@@ -700,8 +700,8 @@ pub unsafe extern "C" fn tt_build_tables(
                     gid as libc::c_int,
                 );
             }
-            p = new((len as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<BYTE>() as libc::c_ulong)
+            p = new((len as u64)
+                .wrapping_mul(::std::mem::size_of::<BYTE>() as u64)
                 as u32) as *mut BYTE;
             let ref mut fresh5 = (*(*g).gd.offset(i as isize)).data;
             *fresh5 = p;
@@ -836,7 +836,7 @@ pub unsafe extern "C" fn tt_build_tables(
     qsort(
         (*g).gd as *mut libc::c_void,
         (*g).num_glyphs as size_t,
-        ::std::mem::size_of::<tt_glyph_desc>() as libc::c_ulong,
+        ::std::mem::size_of::<tt_glyph_desc>() as u64,
         Some(
             glyf_cmp
                 as unsafe extern "C" fn(
@@ -896,23 +896,23 @@ pub unsafe extern "C" fn tt_build_tables(
      * Choosing short format does not always give good result
      * when compressed. Sometimes increases size.
      */
-    if (glyf_table_size as libc::c_ulong) < 0x20000 {
+    if (glyf_table_size as u64) < 0x20000 {
         (*head).indexToLocFormat = 0i32 as SHORT;
         loca_table_size = (((*g).last_gid as libc::c_int + 2i32) * 2i32) as SFNT_ULONG
     } else {
         (*head).indexToLocFormat = 1i32 as SHORT;
         loca_table_size = (((*g).last_gid as libc::c_int + 2i32) * 4i32) as SFNT_ULONG
     }
-    p_0 = new((hmtx_table_size as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    p_0 = new((hmtx_table_size as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     hmtx_table_data = p_0;
-    q = new((loca_table_size as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    q = new((loca_table_size as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     loca_table_data = q;
-    glyf_table_data = new((glyf_table_size as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    glyf_table_data = new((glyf_table_size as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     offset = 0u64 as SFNT_ULONG;
     prev = 0i32 as USHORT;
@@ -987,12 +987,12 @@ pub unsafe extern "C" fn tt_build_tables(
             0i32,
             (*(*g).gd.offset(i as isize))
                 .length
-                .wrapping_add(padlen as libc::c_uint) as libc::c_ulong,
+                .wrapping_add(padlen as libc::c_uint) as u64,
         );
         memcpy(
             glyf_table_data.offset(offset as isize) as *mut libc::c_void,
             (*(*g).gd.offset(i as isize)).data as *const libc::c_void,
-            (*(*g).gd.offset(i as isize)).length as libc::c_ulong,
+            (*(*g).gd.offset(i as isize)).length as u64,
         );
         offset = (offset as libc::c_uint).wrapping_add(
             (*(*g).gd.offset(i as isize))
@@ -1166,8 +1166,8 @@ pub unsafe extern "C" fn tt_get_metrics(
     }
     sfnt_locate_table(sfont, b"loca\x00" as *const u8 as *const libc::c_char);
     location = new(
-        (((*maxp).numGlyphs as libc::c_int + 1i32) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<SFNT_ULONG>() as libc::c_ulong) as u32,
+        (((*maxp).numGlyphs as libc::c_int + 1i32) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<SFNT_ULONG>() as u64) as u32,
     ) as *mut SFNT_ULONG;
     if (*head).indexToLocFormat as libc::c_int == 0i32 {
         i = 0i32 as libc::c_uint;
@@ -1186,14 +1186,14 @@ pub unsafe extern "C" fn tt_get_metrics(
         _tt_abort(b"Unknown IndexToLocFormat.\x00" as *const u8 as *const libc::c_char);
     }
     w_stat = new(
-        (((*g).emsize as libc::c_int + 2i32) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong) as u32,
+        (((*g).emsize as libc::c_int + 2i32) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<USHORT>() as u64) as u32,
     ) as *mut USHORT;
     memset(
         w_stat as *mut libc::c_void,
         0i32,
-        (::std::mem::size_of::<USHORT>() as libc::c_ulong)
-            .wrapping_mul(((*g).emsize as libc::c_int + 2i32) as libc::c_ulong),
+        (::std::mem::size_of::<USHORT>() as u64)
+            .wrapping_mul(((*g).emsize as libc::c_int + 2i32) as u64),
     );
     /*
      * Read glyf table.

@@ -69,12 +69,12 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: libc::c_ulong)
+    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: u64)
         -> *mut libc::c_char;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
@@ -173,7 +173,7 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -1258,7 +1258,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
     strncpy(
         save_path,
         pdf_stream_dataptr(contents) as *const libc::c_char,
-        pdf_stream_length(contents) as libc::c_ulong,
+        pdf_stream_length(contents) as u64,
     );
     clip_path = save_path;
     end_path = clip_path.offset(pdf_stream_length(contents) as isize);
@@ -1298,41 +1298,41 @@ pub unsafe extern "C" fn pdf_copy_clip(
             if strncmp(
                 b"/DeviceGray\x00" as *const u8 as *const libc::c_char,
                 clip_path,
-                11i32 as libc::c_ulong,
+                11i32 as u64,
             ) == 0i32
                 || strncmp(
                     b"/Indexed\x00" as *const u8 as *const libc::c_char,
                     clip_path,
-                    8i32 as libc::c_ulong,
+                    8i32 as u64,
                 ) == 0i32
                 || strncmp(
                     b"/CalGray\x00" as *const u8 as *const libc::c_char,
                     clip_path,
-                    8i32 as libc::c_ulong,
+                    8i32 as u64,
                 ) == 0i32
             {
                 color_dimen = 1i32
             } else if strncmp(
                 b"/DeviceRGB\x00" as *const u8 as *const libc::c_char,
                 clip_path,
-                10i32 as libc::c_ulong,
+                10i32 as u64,
             ) == 0i32
                 || strncmp(
                     b"/CalRGB\x00" as *const u8 as *const libc::c_char,
                     clip_path,
-                    7i32 as libc::c_ulong,
+                    7i32 as u64,
                 ) == 0i32
                 || strncmp(
                     b"/Lab\x00" as *const u8 as *const libc::c_char,
                     clip_path,
-                    4i32 as libc::c_ulong,
+                    4i32 as u64,
                 ) == 0i32
             {
                 color_dimen = 3i32
             } else if strncmp(
                 b"/DeviceCMYK\x00" as *const u8 as *const libc::c_char,
                 clip_path,
-                11i32 as libc::c_ulong,
+                11i32 as u64,
             ) == 0i32
             {
                 color_dimen = 4i32
@@ -1361,18 +1361,18 @@ pub unsafe extern "C" fn pdf_copy_clip(
             let mut p3: pdf_coord = pdf_coord { x: 0., y: 0. };
             token = parse_ident(&mut clip_path, end_path);
             j = 0i32 as libc::c_uint;
-            while (j as libc::c_ulong)
-                < (::std::mem::size_of::<[operator; 39]>() as libc::c_ulong)
-                    .wrapping_div(::std::mem::size_of::<operator>() as libc::c_ulong)
+            while (j as u64)
+                < (::std::mem::size_of::<[operator; 39]>() as u64)
+                    .wrapping_div(::std::mem::size_of::<operator>() as u64)
             {
                 if streq_ptr(token, pdf_operators[j as usize].token) {
                     break;
                 }
                 j = j.wrapping_add(1)
             }
-            if j as libc::c_ulong
-                == (::std::mem::size_of::<[operator; 39]>() as libc::c_ulong)
-                    .wrapping_div(::std::mem::size_of::<operator>() as libc::c_ulong)
+            if j as u64
+                == (::std::mem::size_of::<[operator; 39]>() as u64)
+                    .wrapping_div(::std::mem::size_of::<operator>() as u64)
             {
                 return -1i32;
             }

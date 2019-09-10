@@ -25,13 +25,13 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn time(__timer: *mut time_t) -> time_t;
     #[no_mangle]
@@ -179,13 +179,11 @@ extern "C" {
 pub type __uint8_t = libc::c_uchar;
 pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
-pub type __uint64_t = libc::c_ulong;
 pub type __time_t = libc::c_long;
 pub type int32_t = __int32_t;
 pub type uint8_t = __uint8_t;
 pub type uint16_t = __uint16_t;
-pub type uint64_t = __uint64_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type time_t = __time_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -231,14 +229,14 @@ pub struct SHA256_CONTEXT {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct SHA512_STATE {
-    pub h0: uint64_t,
-    pub h1: uint64_t,
-    pub h2: uint64_t,
-    pub h3: uint64_t,
-    pub h4: uint64_t,
-    pub h5: uint64_t,
-    pub h6: uint64_t,
-    pub h7: uint64_t,
+    pub h0: u64,
+    pub h1: u64,
+    pub h2: u64,
+    pub h3: u64,
+    pub h4: u64,
+    pub h5: u64,
+    pub h6: u64,
+    pub h7: u64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -300,7 +298,7 @@ pub struct pdf_sec {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
-    pub objnum: uint64_t,
+    pub objnum: u64,
     pub gennum: uint16_t,
 }
 #[derive(Copy, Clone)]
@@ -430,8 +428,8 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
     /* FIXME: This should be placed in main() or somewhere. */
     pdf_enc_init(1i32, 1i32);
     MD5_init(&mut md5);
-    date_string = new((15i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    date_string = new((15i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     current_time = get_unique_time_if_given();
     if current_time == -1i32 as time_t {
@@ -462,8 +460,8 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
     )
     .wrapping_add(strlen(b"xdvipdfmx\x00" as *const u8 as *const libc::c_char))
     .wrapping_add(strlen(b"0.1\x00" as *const u8 as *const libc::c_char))
-        as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     sprintf(
         producer,
@@ -496,20 +494,20 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
 }
 unsafe extern "C" fn passwd_padding(mut src: *const libc::c_char, mut dst: *mut libc::c_uchar) {
     let mut len: libc::c_int = 0;
-    len = (if (32i32 as libc::c_ulong) < strlen(src) {
-        32i32 as libc::c_ulong
+    len = (if (32i32 as u64) < strlen(src) {
+        32i32 as u64
     } else {
         strlen(src)
     }) as libc::c_int;
     memcpy(
         dst as *mut libc::c_void,
         src as *const libc::c_void,
-        len as libc::c_ulong,
+        len as u64,
     );
     memcpy(
         dst.offset(len as isize) as *mut libc::c_void,
         padding_bytes.as_ptr() as *const libc::c_void,
-        (32i32 - len) as libc::c_ulong,
+        (32i32 - len) as u64,
     );
 }
 unsafe extern "C" fn compute_owner_password(
@@ -536,7 +534,7 @@ unsafe extern "C" fn compute_owner_password(
     };
     let mut hash: [libc::c_uchar; 32] = [0; 32];
     passwd_padding(
-        if strlen(opasswd) > 0i32 as libc::c_ulong {
+        if strlen(opasswd) > 0i32 as u64 {
             opasswd
         } else {
             upasswd
@@ -576,7 +574,7 @@ unsafe extern "C" fn compute_owner_password(
             memcpy(
                 tmp2.as_mut_ptr() as *mut libc::c_void,
                 tmp1.as_mut_ptr() as *const libc::c_void,
-                32i32 as libc::c_ulong,
+                32i32 as u64,
             );
             j = 0i32;
             while j < (*p).key_size {
@@ -596,7 +594,7 @@ unsafe extern "C" fn compute_owner_password(
     memcpy(
         (*p).O.as_mut_ptr() as *mut libc::c_void,
         hash.as_mut_ptr() as *const libc::c_void,
-        32i32 as libc::c_ulong,
+        32i32 as u64,
     );
 }
 unsafe extern "C" fn compute_encryption_key(mut p: *mut pdf_sec, mut passwd: *const libc::c_char) {
@@ -640,7 +638,7 @@ unsafe extern "C" fn compute_encryption_key(mut p: *mut pdf_sec, mut passwd: *co
     memcpy(
         (*p).key.as_mut_ptr() as *mut libc::c_void,
         hash.as_mut_ptr() as *const libc::c_void,
-        (*p).key_size as libc::c_ulong,
+        (*p).key_size as u64,
     );
 }
 unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *const libc::c_char) {
@@ -701,7 +699,7 @@ unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *con
                 memcpy(
                     tmp2.as_mut_ptr() as *mut libc::c_void,
                     tmp1.as_mut_ptr() as *const libc::c_void,
-                    16i32 as libc::c_ulong,
+                    16i32 as u64,
                 );
                 j = 0i32;
                 while j < (*p).key_size {
@@ -720,7 +718,7 @@ unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *con
             memcpy(
                 upasswd.as_mut_ptr() as *mut libc::c_void,
                 tmp1.as_mut_ptr() as *const libc::c_void,
-                32i32 as libc::c_ulong,
+                32i32 as u64,
             );
         }
         _ => {
@@ -730,7 +728,7 @@ unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *con
     memcpy(
         (*p).U.as_mut_ptr() as *mut libc::c_void,
         upasswd.as_mut_ptr() as *const libc::c_void,
-        32i32 as libc::c_ulong,
+        32i32 as u64,
     );
 }
 /* Algorithm 2.B from ISO 32000-1 chapter 7 */
@@ -785,7 +783,7 @@ unsafe extern "C" fn compute_hash_V5(
     memcpy(
         K.as_mut_ptr() as *mut libc::c_void,
         hash as *const libc::c_void,
-        32i32 as libc::c_ulong,
+        32i32 as u64,
     );
     K_len = 32i32 as size_t;
     nround = 1i32;
@@ -802,8 +800,8 @@ unsafe extern "C" fn compute_hash_V5(
         let mut E_mod3: libc::c_int = 0i32;
         K1_len = strlen(passwd)
             .wrapping_add(K_len)
-            .wrapping_add((if !user_key.is_null() { 48i32 } else { 0i32 }) as libc::c_ulong);
-        if K1_len < 240i32 as libc::c_ulong {
+            .wrapping_add((if !user_key.is_null() { 48i32 } else { 0i32 }) as u64);
+        if K1_len < 240i32 as u64 {
         } else {
             __assert_fail(b"K1_len < 240\x00" as *const u8 as
                               *const libc::c_char,
@@ -828,18 +826,18 @@ unsafe extern "C" fn compute_hash_V5(
                     .offset(strlen(passwd) as isize)
                     .offset(K_len as isize) as *mut libc::c_void,
                 user_key as *const libc::c_void,
-                48i32 as libc::c_ulong,
+                48i32 as u64,
             );
         }
         Kr = new(
-            (K1_len.wrapping_mul(64i32 as libc::c_ulong) as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+            (K1_len.wrapping_mul(64i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
                 as u32,
         ) as *mut libc::c_uchar;
         i = 0i32;
         while i < 64i32 {
             memcpy(
-                Kr.offset((i as libc::c_ulong).wrapping_mul(K1_len) as isize) as *mut libc::c_void,
+                Kr.offset((i as u64).wrapping_mul(K1_len) as isize) as *mut libc::c_void,
                 K1.as_mut_ptr() as *const libc::c_void,
                 K1_len,
             );
@@ -851,7 +849,7 @@ unsafe extern "C" fn compute_hash_V5(
             K.as_mut_ptr().offset(16),
             0i32,
             Kr,
-            K1_len.wrapping_mul(64i32 as libc::c_ulong),
+            K1_len.wrapping_mul(64i32 as u64),
             &mut E,
             &mut E_len,
         );
@@ -926,7 +924,7 @@ unsafe extern "C" fn compute_hash_V5(
             }
             _ => {}
         }
-        c = *E.offset(E_len.wrapping_sub(1i32 as libc::c_ulong) as isize) as libc::c_int;
+        c = *E.offset(E_len.wrapping_sub(1i32 as u64) as isize) as libc::c_int;
         free(E as *mut libc::c_void);
         if nround >= 64i32 && c <= nround - 32i32 {
             break;
@@ -936,7 +934,7 @@ unsafe extern "C" fn compute_hash_V5(
     memcpy(
         hash as *mut libc::c_void,
         K.as_mut_ptr() as *const libc::c_void,
-        32i32 as libc::c_ulong,
+        32i32 as u64,
     );
 }
 unsafe extern "C" fn compute_owner_password_V5(
@@ -966,17 +964,17 @@ unsafe extern "C" fn compute_owner_password_V5(
     memcpy(
         (*p).O.as_mut_ptr() as *mut libc::c_void,
         hash.as_mut_ptr() as *const libc::c_void,
-        32i32 as libc::c_ulong,
+        32i32 as u64,
     );
     memcpy(
         (*p).O.as_mut_ptr().offset(32) as *mut libc::c_void,
         vsalt.as_mut_ptr() as *const libc::c_void,
-        8i32 as libc::c_ulong,
+        8i32 as u64,
     );
     memcpy(
         (*p).O.as_mut_ptr().offset(40) as *mut libc::c_void,
         ksalt.as_mut_ptr() as *const libc::c_void,
-        8i32 as libc::c_ulong,
+        8i32 as u64,
     );
     compute_hash_V5(
         hash.as_mut_ptr(),
@@ -988,7 +986,7 @@ unsafe extern "C" fn compute_owner_password_V5(
     memset(
         iv.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        16i32 as libc::c_ulong,
+        16i32 as u64,
     );
     AES_cbc_encrypt_tectonic(
         hash.as_mut_ptr(),
@@ -1003,7 +1001,7 @@ unsafe extern "C" fn compute_owner_password_V5(
     memcpy(
         (*p).OE.as_mut_ptr() as *mut libc::c_void,
         OE as *const libc::c_void,
-        32i32 as libc::c_ulong,
+        32i32 as u64,
     );
     free(OE as *mut libc::c_void);
 }
@@ -1034,17 +1032,17 @@ unsafe extern "C" fn compute_user_password_V5(
     memcpy(
         (*p).U.as_mut_ptr() as *mut libc::c_void,
         hash.as_mut_ptr() as *const libc::c_void,
-        32i32 as libc::c_ulong,
+        32i32 as u64,
     );
     memcpy(
         (*p).U.as_mut_ptr().offset(32) as *mut libc::c_void,
         vsalt.as_mut_ptr() as *const libc::c_void,
-        8i32 as libc::c_ulong,
+        8i32 as u64,
     );
     memcpy(
         (*p).U.as_mut_ptr().offset(40) as *mut libc::c_void,
         ksalt.as_mut_ptr() as *const libc::c_void,
-        8i32 as libc::c_ulong,
+        8i32 as u64,
     );
     compute_hash_V5(
         hash.as_mut_ptr(),
@@ -1056,7 +1054,7 @@ unsafe extern "C" fn compute_user_password_V5(
     memset(
         iv.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        16i32 as libc::c_ulong,
+        16i32 as u64,
     );
     AES_cbc_encrypt_tectonic(
         hash.as_mut_ptr(),
@@ -1071,7 +1069,7 @@ unsafe extern "C" fn compute_user_password_V5(
     memcpy(
         (*p).UE.as_mut_ptr() as *mut libc::c_void,
         UE as *const libc::c_void,
-        32i32 as libc::c_ulong,
+        32i32 as u64,
     );
     free(UE as *mut libc::c_void);
 }
@@ -1115,8 +1113,8 @@ unsafe extern "C" fn stringprep_profile(
         }
     }
     *output = new(
-        (strlen(input).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (strlen(input).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32,
     ) as *mut libc::c_char;
     strcpy(*output, input);
@@ -1129,7 +1127,7 @@ unsafe extern "C" fn preproc_password(
 ) -> libc::c_int {
     let mut saslpwd: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut error: libc::c_int = 0i32;
-    memset(outbuf as *mut libc::c_void, 0i32, 128i32 as libc::c_ulong);
+    memset(outbuf as *mut libc::c_void, 0i32, 128i32 as u64);
     match V {
         1 | 2 | 3 | 4 => {
             let mut i: size_t = 0;
@@ -1149,8 +1147,8 @@ unsafe extern "C" fn preproc_password(
             memcpy(
                 outbuf as *mut libc::c_void,
                 passwd as *const libc::c_void,
-                if (127i32 as libc::c_ulong) < strlen(passwd) {
-                    127i32 as libc::c_ulong
+                if (127i32 as u64) < strlen(passwd) {
+                    127i32 as u64
                 } else {
                     strlen(passwd)
                 },
@@ -1171,8 +1169,8 @@ unsafe extern "C" fn preproc_password(
                     memcpy(
                         outbuf as *mut libc::c_void,
                         saslpwd as *const libc::c_void,
-                        if (127i32 as libc::c_ulong) < strlen(saslpwd) {
-                            127i32 as libc::c_ulong
+                        if (127i32 as u64) < strlen(saslpwd) {
+                            127i32 as u64
                         } else {
                             strlen(saslpwd)
                         },
@@ -1251,12 +1249,12 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
     memset(
         opasswd.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        128i32 as libc::c_ulong,
+        128i32 as u64,
     );
     memset(
         upasswd.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        128i32 as libc::c_ulong,
+        128i32 as u64,
     );
     /* Password must be preprocessed. */
     if preproc_password(oplain, opasswd.as_mut_ptr(), (*p).V) < 0i32 {
@@ -1299,7 +1297,7 @@ unsafe extern "C" fn calculate_key(mut p: *mut pdf_sec, mut key: *mut libc::c_uc
     memcpy(
         tmp.as_mut_ptr() as *mut libc::c_void,
         (*p).key.as_mut_ptr() as *const libc::c_void,
-        (*p).key_size as libc::c_ulong,
+        (*p).key_size as u64,
     );
     tmp[(*p).key_size as usize] =
         ((*p).label.objnum as libc::c_uchar as libc::c_int & 0xffi32) as libc::c_uchar;
@@ -1341,8 +1339,8 @@ pub unsafe extern "C" fn pdf_encrypt_data(
                 sbox: [0; 256],
             };
             *cipher_len = plain_len;
-            *cipher = new((*cipher_len as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+            *cipher = new((*cipher_len as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
                 as u32) as *mut libc::c_uchar;
             ARC4_set_key(
                 &mut arc4,
@@ -1584,7 +1582,7 @@ pub unsafe extern "C" fn pdf_enc_id_array() -> *mut pdf_obj {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_enc_set_label(mut label: libc::c_uint) {
     let mut p: *mut pdf_sec = &mut sec_data;
-    (*p).label.objnum = label as uint64_t;
+    (*p).label.objnum = label as u64;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_enc_set_generation(mut generation: libc::c_uint) {

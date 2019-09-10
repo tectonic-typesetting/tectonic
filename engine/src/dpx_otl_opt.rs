@@ -20,11 +20,11 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -118,8 +118,8 @@ unsafe extern "C" fn match_expr(
 }
 unsafe extern "C" fn bt_new_tree() -> *mut bt_node {
     let mut expr: *mut bt_node = 0 as *mut bt_node;
-    expr = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<bt_node>() as libc::c_ulong) as u32)
+    expr = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<bt_node>() as u64) as u32)
         as *mut bt_node;
     (*expr).flag = 0i32;
     (*expr).left = 0 as *mut bt_node;
@@ -127,7 +127,7 @@ unsafe extern "C" fn bt_new_tree() -> *mut bt_node {
     memset(
         (*expr).data.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        4i32 as libc::c_ulong,
+        4i32 as u64,
     );
     return expr;
 }
@@ -187,7 +187,7 @@ unsafe extern "C" fn parse_expr(
                     memcpy(
                         (*curr).data.as_mut_ptr() as *mut libc::c_void,
                         (*expr).data.as_mut_ptr() as *const libc::c_void,
-                        4i32 as libc::c_ulong,
+                        4i32 as u64,
                     );
                     free(expr as *mut libc::c_void);
                 } else {
@@ -227,7 +227,7 @@ unsafe extern "C" fn parse_expr(
                 memset(
                     (*curr).data.as_mut_ptr() as *mut libc::c_void,
                     '?' as i32,
-                    4i32 as libc::c_ulong,
+                    4i32 as u64,
                 );
                 *pp = (*pp).offset(1)
             }
@@ -280,8 +280,8 @@ unsafe extern "C" fn parse_expr(
 #[no_mangle]
 pub unsafe extern "C" fn otl_new_opt() -> *mut otl_opt {
     let mut opt: *mut otl_opt = 0 as *mut otl_opt;
-    opt = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<otl_opt>() as libc::c_ulong) as u32)
+    opt = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<otl_opt>() as u64) as u32)
         as *mut otl_opt;
     (*opt).rule = 0 as *mut bt_node;
     return opt as *mut otl_opt;

@@ -31,9 +31,9 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
@@ -41,7 +41,7 @@ extern "C" {
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const libc::c_char, _: ...);
     #[no_mangle]
@@ -200,7 +200,7 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -373,13 +373,13 @@ unsafe extern "C" fn parse_key_val(
         *kp = *vp;
         return -1i32;
     }
-    k = new(((n + 1i32) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    k = new(((n + 1i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     memcpy(
         k as *mut libc::c_void,
         q as *const libc::c_void,
-        n as libc::c_ulong,
+        n as u64,
     );
     *k.offset(n as isize) = '\u{0}' as i32 as libc::c_char;
     if p.offset(2) >= endptr
@@ -401,13 +401,13 @@ unsafe extern "C" fn parse_key_val(
         if p == endptr || *p as libc::c_int != qchr as libc::c_int {
             error = -1i32
         } else {
-            v = new(((n + 1i32) as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            v = new(((n + 1i32) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                 as u32) as *mut libc::c_char;
             memcpy(
                 v as *mut libc::c_void,
                 q as *const libc::c_void,
-                n as libc::c_ulong,
+                n as u64,
             );
             *v.offset(n as isize) = '\u{0}' as i32 as libc::c_char;
             p = p.offset(1)
@@ -516,7 +516,7 @@ unsafe extern "C" fn read_html_tag(
                 pdf_new_name(kp),
                 pdf_new_string(
                     vp as *const libc::c_void,
-                    strlen(vp).wrapping_add(1i32 as libc::c_ulong),
+                    strlen(vp).wrapping_add(1i32 as u64),
                 ),
             );
             free(kp as *mut libc::c_void);
@@ -624,12 +624,12 @@ unsafe extern "C" fn fqurl(
     let mut len: libc::c_int = 0i32;
     len = strlen(name) as libc::c_int;
     if !baseurl.is_null() {
-        len = (len as libc::c_ulong)
-            .wrapping_add(strlen(baseurl).wrapping_add(1i32 as libc::c_ulong))
+        len = (len as u64)
+            .wrapping_add(strlen(baseurl).wrapping_add(1i32 as u64))
             as libc::c_int as libc::c_int
     }
-    q = new(((len + 1i32) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    q = new(((len + 1i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     *q = '\u{0}' as i32 as libc::c_char;
     if !baseurl.is_null() && *baseurl.offset(0) as libc::c_int != 0 {
@@ -881,9 +881,9 @@ unsafe extern "C" fn spc_html__base_empty(
         );
         free((*sd).baseurl as *mut libc::c_void);
     }
-    (*sd).baseurl = new((strlen(vp).wrapping_add(1i32 as libc::c_ulong) as u32
-        as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    (*sd).baseurl = new((strlen(vp).wrapping_add(1i32 as u64) as u32
+        as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     strcpy((*sd).baseurl, vp);
     return 0i32;
@@ -1190,9 +1190,9 @@ unsafe extern "C" fn spc_html__img_empty(
         if a != 0i32 {
             res_name = new(
                 (strlen(b"_Tps_a100_\x00" as *const u8 as *const libc::c_char)
-                    .wrapping_add(1i32 as libc::c_ulong) as u32
-                    as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                    .wrapping_add(1i32 as u64) as u32
+                    as u64)
+                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                     as u32,
             ) as *mut libc::c_char;
             sprintf(
@@ -1544,7 +1544,7 @@ pub unsafe extern "C" fn spc_html_check_special(
         p = p.offset(1)
     }
     size = endptr.wrapping_offset_from(p) as libc::c_long as libc::c_int;
-    if size as libc::c_ulong >= strlen(b"html:\x00" as *const u8 as *const libc::c_char)
+    if size as u64 >= strlen(b"html:\x00" as *const u8 as *const libc::c_char)
         && memcmp(
             p as *const libc::c_void,
             b"html:\x00" as *const u8 as *const libc::c_char as *const libc::c_void,

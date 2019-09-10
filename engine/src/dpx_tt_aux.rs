@@ -37,7 +37,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     static mut always_embed: libc::c_int;
     /* The internal, C/C++ interface: */
@@ -91,7 +91,7 @@ extern "C" {
     fn tt_read_os2__table(sfont: *mut sfnt) -> *mut tt_os2__table;
 }
 pub type __ssize_t = libc::c_long;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type BYTE = libc::c_uchar;
@@ -589,7 +589,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
         memcpy(
             panose.as_mut_ptr().offset(2) as *mut libc::c_void,
             (*os2).panose.as_mut_ptr() as *const libc::c_void,
-            10i32 as libc::c_ulong,
+            10i32 as u64,
         );
         styledict = pdf_new_dict();
         pdf_add_dict(

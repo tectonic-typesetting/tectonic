@@ -9,7 +9,7 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     static mut buffer: *mut UnicodeScalar;
     #[no_mangle]
@@ -33,7 +33,7 @@ extern "C" {
 }
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type UnicodeScalar = int32_t;
 pub type pool_pointer = int32_t;
 pub type str_number = int32_t;
@@ -61,14 +61,14 @@ pub unsafe extern "C" fn load_pool_strings(mut spare_size: int32_t) -> libc::c_i
             break;
         }
         let mut len: size_t = strlen(s);
-        total_len = (total_len as libc::c_ulong).wrapping_add(len) as size_t as size_t;
-        if total_len >= spare_size as libc::c_ulong {
+        total_len = (total_len as u64).wrapping_add(len) as size_t as size_t;
+        if total_len >= spare_size as u64 {
             return 0i32;
         }
         loop {
             let fresh1 = len;
             len = len.wrapping_sub(1);
-            if !(fresh1 > 0i32 as libc::c_ulong) {
+            if !(fresh1 > 0i32 as u64) {
                 break;
             }
             let fresh2 = s;

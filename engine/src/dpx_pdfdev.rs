@@ -30,7 +30,7 @@ extern "C" {
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -242,7 +242,7 @@ pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
 pub type uint16_t = __uint16_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -1495,7 +1495,7 @@ unsafe extern "C" fn handle_multibyte_string(
             let fresh37 = outbuf;
             outbuf = outbuf.offset(1);
             *fresh37 = (gid & 0xffi32 as libc::c_uint) as libc::c_uchar;
-            i = (i as libc::c_ulong).wrapping_add(2i32 as libc::c_ulong) as size_t as size_t
+            i = (i as u64).wrapping_add(2i32 as u64) as size_t as size_t
         }
         p = sbuf0.as_mut_ptr();
         length = outbuf.wrapping_offset_from(sbuf0.as_mut_ptr()) as libc::c_long as size_t
@@ -1503,32 +1503,32 @@ unsafe extern "C" fn handle_multibyte_string(
         /* _FIXME_ */
         /* UCS-4 */
         if ctype == 1i32 {
-            if length.wrapping_mul(4i32 as libc::c_ulong) >= 4096i32 as libc::c_ulong {
+            if length.wrapping_mul(4i32 as u64) >= 4096i32 as u64 {
                 dpx_warning(b"Too long string...\x00" as *const u8 as *const libc::c_char);
                 return -1i32;
             }
             i = 0i32 as size_t;
             while i < length {
-                sbuf1[i.wrapping_mul(4i32 as libc::c_ulong) as usize] =
+                sbuf1[i.wrapping_mul(4i32 as u64) as usize] =
                     (*font).ucs_group as libc::c_uchar;
                 sbuf1[i
-                    .wrapping_mul(4i32 as libc::c_ulong)
-                    .wrapping_add(1i32 as libc::c_ulong) as usize] =
+                    .wrapping_mul(4i32 as u64)
+                    .wrapping_add(1i32 as u64) as usize] =
                     (*font).ucs_plane as libc::c_uchar;
                 sbuf1[i
-                    .wrapping_mul(4i32 as libc::c_ulong)
-                    .wrapping_add(2i32 as libc::c_ulong) as usize] =
+                    .wrapping_mul(4i32 as u64)
+                    .wrapping_add(2i32 as u64) as usize] =
                     '\u{0}' as i32 as libc::c_uchar;
                 sbuf1[i
-                    .wrapping_mul(4i32 as libc::c_ulong)
-                    .wrapping_add(3i32 as libc::c_ulong) as usize] = *p.offset(i as isize);
+                    .wrapping_mul(4i32 as u64)
+                    .wrapping_add(3i32 as u64) as usize] = *p.offset(i as isize);
                 i = i.wrapping_add(1)
             }
             length =
-                (length as libc::c_ulong).wrapping_mul(4i32 as libc::c_ulong) as size_t as size_t
+                (length as u64).wrapping_mul(4i32 as u64) as size_t as size_t
         } else if ctype == 2i32 {
             let mut len: size_t = 0i32 as size_t;
-            if length.wrapping_mul(2i32 as libc::c_ulong) >= 4096i32 as libc::c_ulong {
+            if length.wrapping_mul(2i32 as u64) >= 4096i32 as u64 {
                 dpx_warning(b"Too long string...\x00" as *const u8 as *const libc::c_char);
                 return -1i32;
             }
@@ -1539,8 +1539,8 @@ unsafe extern "C" fn handle_multibyte_string(
                     let mut c: libc::c_int = 0;
                     /* Check for valid surrogate pair.  */
                     if *p.offset(i as isize) as libc::c_int & 0xfci32 != 0xd8i32
-                        || i.wrapping_add(2i32 as libc::c_ulong) >= length
-                        || *p.offset(i.wrapping_add(2i32 as libc::c_ulong) as isize) as libc::c_int
+                        || i.wrapping_add(2i32 as u64) >= length
+                        || *p.offset(i.wrapping_add(2i32 as u64) as isize) as libc::c_int
                             & 0xfci32
                             != 0xdci32
                     {
@@ -1553,26 +1553,26 @@ unsafe extern "C" fn handle_multibyte_string(
                         return -1i32;
                     }
                     c = ((*p.offset(i as isize) as libc::c_int & 0x3i32) << 10i32
-                        | (*p.offset(i.wrapping_add(1i32 as libc::c_ulong) as isize)
+                        | (*p.offset(i.wrapping_add(1i32 as u64) as isize)
                             as libc::c_int)
                             << 2i32
-                        | *p.offset(i.wrapping_add(2i32 as libc::c_ulong) as isize) as libc::c_int
+                        | *p.offset(i.wrapping_add(2i32 as u64) as isize) as libc::c_int
                             & 0x3i32)
                         + 0x100i32;
-                    sbuf1[len.wrapping_add(1i32 as libc::c_ulong) as usize] =
+                    sbuf1[len.wrapping_add(1i32 as u64) as usize] =
                         (c >> 8i32 & 0xffi32) as libc::c_uchar;
-                    sbuf1[len.wrapping_add(2i32 as libc::c_ulong) as usize] =
+                    sbuf1[len.wrapping_add(2i32 as u64) as usize] =
                         (c & 0xffi32) as libc::c_uchar;
-                    i = (i as libc::c_ulong).wrapping_add(2i32 as libc::c_ulong) as size_t as size_t
+                    i = (i as u64).wrapping_add(2i32 as u64) as size_t as size_t
                 } else {
-                    sbuf1[len.wrapping_add(1i32 as libc::c_ulong) as usize] =
+                    sbuf1[len.wrapping_add(1i32 as u64) as usize] =
                         (*font).ucs_plane as libc::c_uchar;
-                    sbuf1[len.wrapping_add(2i32 as libc::c_ulong) as usize] = *p.offset(i as isize)
+                    sbuf1[len.wrapping_add(2i32 as u64) as usize] = *p.offset(i as isize)
                 }
-                sbuf1[len.wrapping_add(3i32 as libc::c_ulong) as usize] =
-                    *p.offset(i.wrapping_add(1i32 as libc::c_ulong) as isize);
-                i = (i as libc::c_ulong).wrapping_add(2i32 as libc::c_ulong) as size_t as size_t;
-                len = (len as libc::c_ulong).wrapping_add(4i32 as libc::c_ulong) as size_t as size_t
+                sbuf1[len.wrapping_add(3i32 as u64) as usize] =
+                    *p.offset(i.wrapping_add(1i32 as u64) as isize);
+                i = (i as u64).wrapping_add(2i32 as u64) as size_t as size_t;
+                len = (len as u64).wrapping_add(4i32 as u64) as size_t as size_t
             }
             length = len
         }
@@ -1581,20 +1581,20 @@ unsafe extern "C" fn handle_multibyte_string(
         /* Omega workaround...
          * Translate single-byte chars to double byte code space.
          */
-        if length.wrapping_mul(2i32 as libc::c_ulong) >= 4096i32 as libc::c_ulong {
+        if length.wrapping_mul(2i32 as u64) >= 4096i32 as u64 {
             dpx_warning(b"Too long string...\x00" as *const u8 as *const libc::c_char);
             return -1i32;
         }
         i = 0i32 as size_t;
         while i < length {
-            sbuf1[i.wrapping_mul(2i32 as libc::c_ulong) as usize] =
+            sbuf1[i.wrapping_mul(2i32 as u64) as usize] =
                 ((*font).mapc & 0xffi32) as libc::c_uchar;
             sbuf1[i
-                .wrapping_mul(2i32 as libc::c_ulong)
-                .wrapping_add(1i32 as libc::c_ulong) as usize] = *p.offset(i as isize);
+                .wrapping_mul(2i32 as u64)
+                .wrapping_add(1i32 as u64) as usize] = *p.offset(i as isize);
             i = i.wrapping_add(1)
         }
-        length = (length as libc::c_ulong).wrapping_mul(2i32 as libc::c_ulong) as size_t as size_t;
+        length = (length as u64).wrapping_mul(2i32 as u64) as size_t as size_t;
         p = sbuf1.as_mut_ptr()
     }
     /*
@@ -1620,7 +1620,7 @@ unsafe extern "C" fn handle_multibyte_string(
             &mut outbuf_0,
             &mut outbytesleft,
         );
-        if inbytesleft != 0i32 as libc::c_ulong {
+        if inbytesleft != 0i32 as u64 {
             dpx_warning(
                 b"CMap conversion failed. (%zu bytes remains)\x00" as *const u8
                     as *const libc::c_char,
@@ -1628,7 +1628,7 @@ unsafe extern "C" fn handle_multibyte_string(
             );
             return -1i32;
         }
-        length = (4096i32 as libc::c_ulong).wrapping_sub(outbytesleft);
+        length = (4096i32 as u64).wrapping_sub(outbytesleft);
         p = sbuf0.as_mut_ptr()
     }
     *str_ptr = p;
@@ -1657,8 +1657,8 @@ pub unsafe extern "C" fn pdf_dev_push_coord(mut xpos: libc::c_double, mut ypos: 
         max_dev_coords += 4i32;
         dev_coords = renew(
             dev_coords as *mut libc::c_void,
-            (max_dev_coords as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<pdf_coord>() as libc::c_ulong)
+            (max_dev_coords as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<pdf_coord>() as u64)
                 as u32,
         ) as *mut pdf_coord
     }
@@ -1742,7 +1742,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
             i = 0i32 as size_t;
             while i < length {
                 let mut cid: libc::c_ushort = ((*str_ptr.offset(i as isize) as libc::c_int) << 8i32
-                    | *str_ptr.offset(i.wrapping_add(1i32 as libc::c_ulong) as isize)
+                    | *str_ptr.offset(i.wrapping_add(1i32 as u64) as isize)
                         as libc::c_int)
                     as libc::c_ushort;
                 let ref mut fresh38 = *(*real_font)
@@ -1750,7 +1750,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
                     .offset((cid as libc::c_int / 8i32) as isize);
                 *fresh38 = (*fresh38 as libc::c_int | 1i32 << 7i32 - cid as libc::c_int % 8i32)
                     as libc::c_char;
-                i = (i as libc::c_ulong).wrapping_add(2i32 as libc::c_ulong) as size_t as size_t
+                i = (i as u64).wrapping_add(2i32 as u64) as size_t as size_t
             }
         }
     } else if !(*real_font).used_chars.is_null() {
@@ -1843,14 +1843,14 @@ pub unsafe extern "C" fn pdf_dev_set_string(
             ')' as i32
         }) as libc::c_char;
         if (*font).wmode != 0 {
-            len = (len as libc::c_ulong)
+            len = (len as u64)
                 .wrapping_add(
-                    p_itoa(-kern, format_buffer.as_mut_ptr().offset(len as isize)) as libc::c_ulong,
+                    p_itoa(-kern, format_buffer.as_mut_ptr().offset(len as isize)) as u64,
                 ) as size_t as size_t
         } else {
-            len = (len as libc::c_ulong)
+            len = (len as u64)
                 .wrapping_add(
-                    p_itoa(kern, format_buffer.as_mut_ptr().offset(len as isize)) as libc::c_ulong,
+                    p_itoa(kern, format_buffer.as_mut_ptr().offset(len as isize)) as u64,
                 ) as size_t as size_t
         }
         let fresh40 = len;
@@ -1864,8 +1864,8 @@ pub unsafe extern "C" fn pdf_dev_set_string(
         len = 0i32 as size_t
     }
     if text_state.is_mb != 0 {
-        if (4096i32 as libc::c_ulong).wrapping_sub(len)
-            < (2i32 as libc::c_ulong).wrapping_mul(length)
+        if (4096i32 as u64).wrapping_sub(len)
+            < (2i32 as u64).wrapping_mul(length)
         {
             _tt_abort(b"Buffer overflow...\x00" as *const u8 as *const libc::c_char);
         }
@@ -1892,9 +1892,9 @@ pub unsafe extern "C" fn pdf_dev_set_string(
             i = i.wrapping_add(1)
         }
     } else {
-        len = (len as libc::c_ulong).wrapping_add(pdfobj_escape_str(
+        len = (len as u64).wrapping_add(pdfobj_escape_str(
             format_buffer.as_mut_ptr().offset(len as isize),
-            (4096i32 as libc::c_ulong).wrapping_sub(len),
+            (4096i32 as u64).wrapping_sub(len),
             str_ptr,
             length,
         )) as size_t as size_t
@@ -2132,8 +2132,8 @@ pub unsafe extern "C" fn pdf_dev_locate_font(
         max_dev_fonts += 16i32;
         dev_fonts = renew(
             dev_fonts as *mut libc::c_void,
-            (max_dev_fonts as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<dev_font>() as libc::c_ulong)
+            (max_dev_fonts as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<dev_font>() as u64)
                 as u32,
         ) as *mut dev_font
     }
@@ -2169,8 +2169,8 @@ pub unsafe extern "C" fn pdf_dev_locate_font(
     }
     (*font).used_on_this_page = 0i32;
     (*font).tex_name = new(
-        (strlen(font_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (strlen(font_name).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32,
     ) as *mut libc::c_char;
     strcpy((*font).tex_name, font_name);

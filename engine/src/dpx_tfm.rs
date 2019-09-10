@@ -35,7 +35,7 @@ extern "C" {
     #[no_mangle]
     fn strrchr(_: *const libc::c_char, _: libc::c_int) -> *mut libc::c_char;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -112,7 +112,7 @@ pub type __off_t = libc::c_long;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
 pub type int64_t = __int64_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type off_t = __off_t;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -362,8 +362,8 @@ unsafe extern "C" fn fms_need(mut n: libc::c_uint) {
         };
         fms = renew(
             fms as *mut libc::c_void,
-            (max_fms as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<font_metric>() as libc::c_ulong)
+            (max_fms as u64)
+                .wrapping_mul(::std::mem::size_of::<font_metric>() as u64)
                 as u32,
         ) as *mut font_metric
     };
@@ -488,14 +488,14 @@ unsafe extern "C" fn tfm_unpack_arrays(mut fm: *mut font_metric, mut tfm: *mut t
     let mut height_index: libc::c_uchar = 0;
     let mut depth_index: libc::c_uchar = 0;
     let mut i: u32 = 0;
-    (*fm).widths = new((256i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+    (*fm).widths = new((256i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
         as u32) as *mut fixword;
-    (*fm).heights = new((256i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+    (*fm).heights = new((256i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
         as u32) as *mut fixword;
-    (*fm).depths = new((256i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+    (*fm).depths = new((256i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
         as u32) as *mut fixword;
     i = 0i32 as u32;
     while i < 256i32 as libc::c_uint {
@@ -542,8 +542,8 @@ unsafe extern "C" fn tfm_unpack_header(mut fm: *mut font_metric, mut tfm: *mut t
             _tt_abort(b"Invalid TFM header.\x00" as *const u8 as *const libc::c_char);
         }
         if len > 0i32 {
-            (*fm).codingscheme = new((40i32 as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            (*fm).codingscheme = new((40i32 as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                 as u32) as *mut libc::c_char;
             p = (*fm).codingscheme;
             p = p.offset(sput_bigendian(p, *(*tfm).header.offset(2), 3i32) as isize);
@@ -716,14 +716,14 @@ unsafe extern "C" fn ofm_do_char_info_zero(
         .wrapping_add(1i32 as libc::c_uint);
     if num_chars != 0i32 as libc::c_uint {
         let mut i: u32 = 0;
-        (*tfm).width_index = new((num_chars as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_ushort>() as libc::c_ulong)
+        (*tfm).width_index = new((num_chars as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_ushort>() as u64)
             as u32) as *mut libc::c_ushort;
-        (*tfm).height_index = new((num_chars as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        (*tfm).height_index = new((num_chars as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
-        (*tfm).depth_index = new((num_chars as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        (*tfm).depth_index = new((num_chars as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
         i = 0i32 as u32;
         while i < num_chars {
@@ -752,14 +752,14 @@ unsafe extern "C" fn ofm_do_char_info_one(
     if num_chars != 0i32 as libc::c_uint {
         let mut i: u32 = 0;
         let mut char_infos_read: u32 = 0;
-        (*tfm).width_index = new((num_chars as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_ushort>() as libc::c_ulong)
+        (*tfm).width_index = new((num_chars as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_ushort>() as u64)
             as u32) as *mut libc::c_ushort;
-        (*tfm).height_index = new((num_chars as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        (*tfm).height_index = new((num_chars as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
-        (*tfm).depth_index = new((num_chars as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        (*tfm).depth_index = new((num_chars as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
         char_infos_read = 0i32 as u32;
         i = 0i32 as u32;
@@ -822,14 +822,14 @@ unsafe extern "C" fn ofm_unpack_arrays(
     mut num_chars: u32,
 ) {
     let mut i: u32 = 0;
-    (*fm).widths = new(((*tfm).bc.wrapping_add(num_chars) as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+    (*fm).widths = new(((*tfm).bc.wrapping_add(num_chars) as u64)
+        .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
         as u32) as *mut fixword;
-    (*fm).heights = new(((*tfm).bc.wrapping_add(num_chars) as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+    (*fm).heights = new(((*tfm).bc.wrapping_add(num_chars) as u64)
+        .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
         as u32) as *mut fixword;
-    (*fm).depths = new(((*tfm).bc.wrapping_add(num_chars) as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+    (*fm).depths = new(((*tfm).bc.wrapping_add(num_chars) as u64)
+        .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
         as u32) as *mut fixword;
     i = 0i32 as u32;
     while i < num_chars {
@@ -886,8 +886,8 @@ unsafe extern "C" fn read_ofm(
         );
     }
     if tfm.wlenheader > 0i32 as libc::c_uint {
-        tfm.header = new((tfm.wlenheader as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+        tfm.header = new((tfm.wlenheader as u64)
+            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
             as u32) as *mut fixword;
         fread_fwords(tfm.header, tfm.wlenheader, ofm_handle);
     }
@@ -897,20 +897,20 @@ unsafe extern "C" fn read_ofm(
         ofm_do_char_info_one(ofm_handle, &mut tfm);
     }
     if tfm.nwidths > 0i32 as libc::c_uint {
-        tfm.width = new((tfm.nwidths as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+        tfm.width = new((tfm.nwidths as u64)
+            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
             as u32) as *mut fixword;
         fread_fwords(tfm.width, tfm.nwidths, ofm_handle);
     }
     if tfm.nheights > 0i32 as libc::c_uint {
-        tfm.height = new((tfm.nheights as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+        tfm.height = new((tfm.nheights as u64)
+            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
             as u32) as *mut fixword;
         fread_fwords(tfm.height, tfm.nheights, ofm_handle);
     }
     if tfm.ndepths > 0i32 as libc::c_uint {
-        tfm.depth = new((tfm.ndepths as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+        tfm.depth = new((tfm.ndepths as u64)
+            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
             as u32) as *mut fixword;
         fread_fwords(tfm.depth, tfm.ndepths, ofm_handle);
     }
@@ -964,8 +964,8 @@ unsafe extern "C" fn read_tfm(
     (*fm).firstchar = tfm.bc as libc::c_int;
     (*fm).lastchar = tfm.ec as libc::c_int;
     if tfm.wlenheader > 0i32 as libc::c_uint {
-        tfm.header = new((tfm.wlenheader as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+        tfm.header = new((tfm.wlenheader as u64)
+            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
             as u32) as *mut fixword;
         fread_fwords(tfm.header, tfm.wlenheader, tfm_handle);
     }
@@ -978,8 +978,8 @@ unsafe extern "C" fn read_tfm(
         tfm.char_info = new((tfm
             .ec
             .wrapping_sub(tfm.bc)
-            .wrapping_add(1i32 as libc::c_uint) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<u32>() as libc::c_ulong)
+            .wrapping_add(1i32 as libc::c_uint) as u64)
+            .wrapping_mul(::std::mem::size_of::<u32>() as u64)
             as u32) as *mut u32;
         fread_uquads(
             tfm.char_info,
@@ -990,20 +990,20 @@ unsafe extern "C" fn read_tfm(
         );
     }
     if tfm.nwidths > 0i32 as libc::c_uint {
-        tfm.width = new((tfm.nwidths as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+        tfm.width = new((tfm.nwidths as u64)
+            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
             as u32) as *mut fixword;
         fread_fwords(tfm.width, tfm.nwidths, tfm_handle);
     }
     if tfm.nheights > 0i32 as libc::c_uint {
-        tfm.height = new((tfm.nheights as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+        tfm.height = new((tfm.nheights as u64)
+            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
             as u32) as *mut fixword;
         fread_fwords(tfm.height, tfm.nheights, tfm_handle);
     }
     if tfm.ndepths > 0i32 as libc::c_uint {
-        tfm.depth = new((tfm.ndepths as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as libc::c_ulong)
+        tfm.depth = new((tfm.ndepths as u64)
+            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
             as u32) as *mut fixword;
         fread_fwords(tfm.depth, tfm.ndepths, tfm_handle);
     }
@@ -1054,9 +1054,9 @@ pub unsafe extern "C" fn tfm_open(
     {
         ofm_name = new((strlen(tfm_name)
             .wrapping_add(strlen(b".ofm\x00" as *const u8 as *const libc::c_char))
-            .wrapping_add(1i32 as libc::c_ulong) as u32
-            as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            .wrapping_add(1i32 as u64) as u32
+            as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         strcpy(ofm_name, tfm_name);
         strcat(ofm_name, b".ofm\x00" as *const u8 as *const libc::c_char);
@@ -1115,8 +1115,8 @@ pub unsafe extern "C" fn tfm_open(
     ttstub_input_close(tfm_handle);
     let ref mut fresh0 = (*fms.offset(numfms as isize)).tex_name;
     *fresh0 = new(
-        (strlen(tfm_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (strlen(tfm_name).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32,
     ) as *mut libc::c_char;
     strcpy((*fms.offset(numfms as isize)).tex_name, tfm_name);

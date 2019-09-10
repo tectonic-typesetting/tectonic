@@ -17,10 +17,10 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
+    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
         -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -279,7 +279,7 @@ extern "C" {
 pub type __int32_t = libc::c_int;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
@@ -360,13 +360,13 @@ pub unsafe extern "C" fn check_for_png(mut handle: rust_input_handle_t) -> libc:
     if ttstub_input_read(
         handle,
         sigbytes.as_mut_ptr() as *mut libc::c_char,
-        ::std::mem::size_of::<[libc::c_uchar; 8]>() as libc::c_ulong,
-    ) as libc::c_ulong
-        != ::std::mem::size_of::<[libc::c_uchar; 8]>() as libc::c_ulong
+        ::std::mem::size_of::<[libc::c_uchar; 8]>() as u64,
+    ) as u64
+        != ::std::mem::size_of::<[libc::c_uchar; 8]>() as u64
         || png_sig_cmp(
             sigbytes.as_mut_ptr() as png_const_bytep,
             0i32 as size_t,
-            ::std::mem::size_of::<[libc::c_uchar; 8]>() as libc::c_ulong,
+            ::std::mem::size_of::<[libc::c_uchar; 8]>() as u64,
         ) != 0
     {
         return 0i32;
@@ -557,8 +557,8 @@ pub unsafe extern "C" fn png_include_image(
     }
     stream = pdf_new_stream(1i32 << 0i32);
     stream_dict = pdf_stream_dict(stream);
-    stream_data_ptr = new((rowbytes.wrapping_mul(height) as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+    stream_data_ptr = new((rowbytes.wrapping_mul(height) as u64)
+        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
         as u32) as *mut png_byte;
     read_image_data(png_ptr, stream_data_ptr, height, rowbytes);
     /* Non-NULL intent means there is valid sRGB chunk. */
@@ -721,12 +721,12 @@ pub unsafe extern "C" fn png_include_image(
             if memcmp(
                 (*text_ptr.offset(i as isize)).key as *const libc::c_void,
                 b"XML:com.adobe.xmp\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-                17i32 as libc::c_ulong,
+                17i32 as u64,
             ) == 0
             {
                 /* XMP found */
                 if (*text_ptr.offset(i as isize)).compression != 1i32
-                    || (*text_ptr.offset(i as isize)).itxt_length == 0i32 as libc::c_ulong
+                    || (*text_ptr.offset(i as isize)).itxt_length == 0i32 as u64
                 {
                     dpx_warning(
                         b"%s: Invalid value(s) in iTXt chunk for XMP Metadata.\x00" as *const u8
@@ -1536,8 +1536,8 @@ unsafe extern "C" fn create_cspace_Indexed(
         colorspace,
         pdf_new_number((num_plte - 1i32) as libc::c_double),
     );
-    data_ptr = new(((num_plte * 3i32) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+    data_ptr = new(((num_plte * 3i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
         as u32) as *mut png_byte;
     i = 0i32;
     while i < num_plte {
@@ -1684,8 +1684,8 @@ unsafe extern "C" fn create_soft_mask(
     }
     smask = pdf_new_stream(1i32 << 0i32);
     dict = pdf_stream_dict(smask);
-    smask_data_ptr = new((width.wrapping_mul(height) as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+    smask_data_ptr = new((width.wrapping_mul(height) as u64)
+        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
         as u32) as *mut png_byte;
     pdf_add_dict(
         dict,
@@ -1758,9 +1758,9 @@ unsafe extern "C" fn strip_soft_mask(
         } else {
             8i32
         };
-        if *rowbytes_ptr as libc::c_ulong
-            != ((bps as libc::c_uint).wrapping_mul(width) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+        if *rowbytes_ptr as u64
+            != ((bps as libc::c_uint).wrapping_mul(width) as u64)
+                .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
         {
             /* Something wrong */
             dpx_warning(
@@ -1775,9 +1775,9 @@ unsafe extern "C" fn strip_soft_mask(
         } else {
             4i32
         };
-        if *rowbytes_ptr as libc::c_ulong
-            != ((bps_0 as libc::c_uint).wrapping_mul(width) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+        if *rowbytes_ptr as u64
+            != ((bps_0 as libc::c_uint).wrapping_mul(width) as u64)
+                .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
         {
             /* Something wrong */
             dpx_warning(
@@ -1821,8 +1821,8 @@ unsafe extern "C" fn strip_soft_mask(
     );
     smask_data_ptr = new((((bpc as libc::c_int / 8i32) as libc::c_uint)
         .wrapping_mul(width)
-        .wrapping_mul(height) as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+        .wrapping_mul(height) as u64)
+        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
         as u32) as *mut png_byte;
     match color_type as libc::c_int {
         6 => {
@@ -1834,7 +1834,7 @@ unsafe extern "C" fn strip_soft_mask(
                             as *mut libc::c_void,
                         image_data_ptr.offset((4i32 as libc::c_uint).wrapping_mul(i) as isize)
                             as *const libc::c_void,
-                        3i32 as libc::c_ulong,
+                        3i32 as u64,
                     );
                     *smask_data_ptr.offset(i as isize) = *image_data_ptr.offset(
                         (4i32 as libc::c_uint)
@@ -1843,8 +1843,8 @@ unsafe extern "C" fn strip_soft_mask(
                     );
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((3i32 as libc::c_uint).wrapping_mul(width) as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+                *rowbytes_ptr = ((3i32 as libc::c_uint).wrapping_mul(width) as u64)
+                    .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             } else {
                 i = 0i32 as png_uint_32;
@@ -1854,7 +1854,7 @@ unsafe extern "C" fn strip_soft_mask(
                             as *mut libc::c_void,
                         image_data_ptr.offset((8i32 as libc::c_uint).wrapping_mul(i) as isize)
                             as *const libc::c_void,
-                        6i32 as libc::c_ulong,
+                        6i32 as u64,
                     );
                     *smask_data_ptr.offset((2i32 as libc::c_uint).wrapping_mul(i) as isize) =
                         *image_data_ptr.offset(
@@ -1874,8 +1874,8 @@ unsafe extern "C" fn strip_soft_mask(
                     );
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((6i32 as libc::c_uint).wrapping_mul(width) as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+                *rowbytes_ptr = ((6i32 as libc::c_uint).wrapping_mul(width) as u64)
+                    .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             }
         }
@@ -1892,8 +1892,8 @@ unsafe extern "C" fn strip_soft_mask(
                     );
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = (width as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+                *rowbytes_ptr = (width as u64)
+                    .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             } else {
                 i = 0i32 as png_uint_32;
@@ -1927,8 +1927,8 @@ unsafe extern "C" fn strip_soft_mask(
                     );
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((2i32 as libc::c_uint).wrapping_mul(width) as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
+                *rowbytes_ptr = ((2i32 as libc::c_uint).wrapping_mul(width) as u64)
+                    .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             }
         }
@@ -1958,8 +1958,8 @@ unsafe extern "C" fn read_image_data(
 ) {
     let mut rows_p: png_bytepp = 0 as *mut *mut png_byte;
     let mut i: png_uint_32 = 0;
-    rows_p = new((height as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<png_bytep>() as libc::c_ulong)
+    rows_p = new((height as u64)
+        .wrapping_mul(::std::mem::size_of::<png_bytep>() as u64)
         as u32) as *mut png_bytep as png_bytepp;
     i = 0i32 as png_uint_32;
     while i < height {

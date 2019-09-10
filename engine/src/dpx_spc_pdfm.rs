@@ -93,15 +93,15 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
     #[no_mangle]
     fn strstr(_: *const libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn ttstub_input_open(
         path: *const libc::c_char,
@@ -433,7 +433,7 @@ extern "C" {
 pub type __int32_t = libc::c_int;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
@@ -743,8 +743,8 @@ unsafe extern "C" fn addresource(
     if ident.is_null() || res_id < 0i32 {
         return -1i32;
     }
-    r = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<resource_map>() as libc::c_ulong)
+    r = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<resource_map>() as u64)
         as u32) as *mut resource_map;
     (*r).type_0 = 0i32;
     (*r).res_id = res_id;
@@ -794,8 +794,8 @@ unsafe extern "C" fn spc_handler_pdfm__init(mut dp: *mut libc::c_void) -> libc::
     let mut i: libc::c_int = 0;
     (*sd).annot_dict = 0 as *mut pdf_obj;
     (*sd).lowest_level = 255i32;
-    (*sd).resourcemap = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<ht_table>() as libc::c_ulong)
+    (*sd).resourcemap = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<ht_table>() as u64)
         as u32) as *mut ht_table;
     ht_init_table(
         (*sd).resourcemap,
@@ -1096,13 +1096,13 @@ unsafe extern "C" fn reencodestring(
         &mut obufcur,
         &mut obufleft,
     );
-    if inbufleft > 0i32 as libc::c_ulong {
+    if inbufleft > 0i32 as u64 {
         return -1i32;
     }
     pdf_set_string(
         instring,
         wbuf.as_mut_ptr(),
-        (4096i32 as libc::c_ulong).wrapping_sub(obufleft),
+        (4096i32 as u64).wrapping_sub(obufleft),
     );
     return 0i32;
 }
@@ -1250,7 +1250,7 @@ unsafe extern "C" fn needreencode(
             && memcmp(
                 pdf_string_value(vp),
                 b"\xfe\xff\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-                2i32 as libc::c_ulong,
+                2i32 as u64,
             ) == 0
         {
             r = 0i32
@@ -2980,8 +2980,8 @@ unsafe extern "C" fn spc_handler_pdfm_mapline(
                 *fresh12 = *fresh11
             }
             *q = '\u{0}' as i32 as libc::c_char;
-            mrec = new((1i32 as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as libc::c_ulong)
+            mrec = new((1i32 as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as u64)
                 as u32) as *mut fontmap_rec;
             pdf_init_fontmap_record(mrec);
             error = pdf_read_fontmap_line(
@@ -3988,8 +3988,8 @@ pub unsafe extern "C" fn spc_pdfm_setup_handler(
     if !q.is_null() {
         i = 0i32 as size_t;
         while i
-            < (::std::mem::size_of::<[spc_handler; 80]>() as libc::c_ulong)
-                .wrapping_div(::std::mem::size_of::<spc_handler>() as libc::c_ulong)
+            < (::std::mem::size_of::<[spc_handler; 80]>() as u64)
+                .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
         {
             if streq_ptr(q, pdfm_handlers[i as usize].key) {
                 (*ap).command = pdfm_handlers[i as usize].key;

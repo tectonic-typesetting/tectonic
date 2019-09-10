@@ -11,7 +11,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -55,7 +55,7 @@ pub type __time_t = libc::c_long;
 pub type int32_t = __int32_t;
 pub type uint8_t = __uint8_t;
 pub type uint16_t = __uint16_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type time_t = __time_t;
 pub type str_number = int32_t;
 pub type packed_UTF16_code = libc::c_ushort;
@@ -102,7 +102,7 @@ pub unsafe extern "C" fn get_date_and_time(
     *year = (*tmptr).tm_year + 1900i32;
 }
 unsafe extern "C" fn checkpool_pointer(mut pool_ptr_0: pool_pointer, mut len: size_t) {
-    if (pool_ptr_0 as libc::c_ulong).wrapping_add(len) >= pool_size as libc::c_ulong {
+    if (pool_ptr_0 as u64).wrapping_add(len) >= pool_size as u64 {
         _tt_abort(
             b"string pool overflow [%i bytes]\x00" as *const u8 as *const libc::c_char,
             pool_size,
@@ -396,7 +396,7 @@ pub unsafe extern "C" fn make_src_special(
         b"src:%d \x00" as *const u8 as *const libc::c_char,
         lineno,
     );
-    if (pool_ptr as libc::c_ulong)
+    if (pool_ptr as u64)
         .wrapping_add(strlen(buf.as_mut_ptr()))
         .wrapping_add(strlen(filename))
         >= pool_size as size_t

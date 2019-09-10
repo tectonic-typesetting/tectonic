@@ -41,7 +41,7 @@ extern "C" {
     #[no_mangle]
     fn sprintf(_: *mut libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const libc::c_char,
@@ -52,11 +52,11 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
@@ -120,7 +120,7 @@ pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
@@ -452,7 +452,7 @@ pub unsafe extern "C" fn pdf_color_copycolor(
     memcpy(
         color1 as *mut libc::c_void,
         color2 as *const libc::c_void,
-        ::std::mem::size_of::<pdf_color>() as libc::c_ulong,
+        ::std::mem::size_of::<pdf_color>() as u64,
     );
 }
 /* Brighten up a color. f == 0 means no change, f == 1 means white. */
@@ -899,7 +899,7 @@ unsafe extern "C" fn iccp_init_iccHeader(mut icch: *mut iccHeader) {
     memset(
         (*icch).creationDate.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        12i32 as libc::c_ulong,
+        12i32 as u64,
     );
     (*icch).acsp =
         str2iccSig(b"ascp\x00" as *const u8 as *const libc::c_char as *const libc::c_void);
@@ -907,14 +907,14 @@ unsafe extern "C" fn iccp_init_iccHeader(mut icch: *mut iccHeader) {
     memset(
         (*icch).flags.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        4i32 as libc::c_ulong,
+        4i32 as u64,
     );
     (*icch).devMnfct = 0i32 as iccSig;
     (*icch).devModel = 0i32 as iccSig;
     memset(
         (*icch).devAttr.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        8i32 as libc::c_ulong,
+        8i32 as u64,
     );
     (*icch).intent = 0i32;
     (*icch).illuminant.X = 0i32;
@@ -924,7 +924,7 @@ unsafe extern "C" fn iccp_init_iccHeader(mut icch: *mut iccHeader) {
     memset(
         (*icch).ID.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        16i32 as libc::c_ulong,
+        16i32 as u64,
     );
 }
 unsafe extern "C" fn init_iccbased_cdata(mut cdata: *mut iccbased_cdata) {
@@ -945,7 +945,7 @@ unsafe extern "C" fn init_iccbased_cdata(mut cdata: *mut iccbased_cdata) {
     memset(
         (*cdata).checksum.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        16i32 as libc::c_ulong,
+        16i32 as u64,
     );
     (*cdata).colorspace = 0i32;
     (*cdata).alternate = -1i32;
@@ -1028,18 +1028,18 @@ unsafe extern "C" fn compare_iccbased(
         if memcmp(
             (*cdata1).checksum.as_ptr() as *const libc::c_void,
             nullbytes16.as_mut_ptr() as *const libc::c_void,
-            16i32 as libc::c_ulong,
+            16i32 as u64,
         ) != 0
             && memcmp(
                 (*cdata2).checksum.as_ptr() as *const libc::c_void,
                 nullbytes16.as_mut_ptr() as *const libc::c_void,
-                16i32 as libc::c_ulong,
+                16i32 as u64,
             ) != 0
         {
             return memcmp(
                 (*cdata1).checksum.as_ptr() as *const libc::c_void,
                 (*cdata2).checksum.as_ptr() as *const libc::c_void,
-                16i32 as libc::c_ulong,
+                16i32 as u64,
             );
         }
         if (*cdata1).colorspace != (*cdata2).colorspace {
@@ -1179,7 +1179,7 @@ unsafe extern "C" fn iccp_unpack_header(
     memcpy(
         (*icch).creationDate.as_mut_ptr() as *mut libc::c_void,
         p as *const libc::c_void,
-        12i32 as libc::c_ulong,
+        12i32 as u64,
     );
     p = p.offset(12);
     (*icch).acsp = str2iccSig(p as *const libc::c_void);
@@ -1202,7 +1202,7 @@ unsafe extern "C" fn iccp_unpack_header(
     memcpy(
         (*icch).flags.as_mut_ptr() as *mut libc::c_void,
         p as *const libc::c_void,
-        4i32 as libc::c_ulong,
+        4i32 as u64,
     );
     p = p.offset(4);
     (*icch).devMnfct = str2iccSig(p as *const libc::c_void);
@@ -1212,7 +1212,7 @@ unsafe extern "C" fn iccp_unpack_header(
     memcpy(
         (*icch).devAttr.as_mut_ptr() as *mut libc::c_void,
         p as *const libc::c_void,
-        8i32 as libc::c_ulong,
+        8i32 as u64,
     );
     p = p.offset(8);
     (*icch).intent = (*p.offset(0) as libc::c_int) << 24i32
@@ -1240,7 +1240,7 @@ unsafe extern "C" fn iccp_unpack_header(
     memcpy(
         (*icch).ID.as_mut_ptr() as *mut libc::c_void,
         p as *const libc::c_void,
-        16i32 as libc::c_ulong,
+        16i32 as u64,
     );
     p = p.offset(16);
     /* 28 bytes reserved - must be set to zeros */
@@ -1704,7 +1704,7 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
     if memcmp(
         (*icch).ID.as_mut_ptr() as *const libc::c_void,
         nullbytes16.as_mut_ptr() as *const libc::c_void,
-        16i32 as libc::c_ulong,
+        16i32 as u64,
     ) == 0
     {
         dpx_message(b"(null)\x00" as *const u8 as *const libc::c_char);
@@ -1849,12 +1849,12 @@ pub unsafe extern "C" fn iccp_load_profile(
     if memcmp(
         icch.ID.as_mut_ptr() as *const libc::c_void,
         nullbytes16.as_mut_ptr() as *const libc::c_void,
-        16i32 as libc::c_ulong,
+        16i32 as u64,
     ) != 0
         && memcmp(
             icch.ID.as_mut_ptr() as *const libc::c_void,
             checksum.as_mut_ptr() as *const libc::c_void,
-            16i32 as libc::c_ulong,
+            16i32 as u64,
         ) != 0
     {
         dpx_warning(
@@ -1863,15 +1863,15 @@ pub unsafe extern "C" fn iccp_load_profile(
         print_iccp_header(&mut icch, checksum.as_mut_ptr());
         return -1i32;
     }
-    cdata = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<iccbased_cdata>() as libc::c_ulong)
+    cdata = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<iccbased_cdata>() as u64)
         as u32) as *mut iccbased_cdata;
     init_iccbased_cdata(cdata);
     (*cdata).colorspace = colorspace;
     memcpy(
         (*cdata).checksum.as_mut_ptr() as *mut libc::c_void,
         checksum.as_mut_ptr() as *const libc::c_void,
-        16i32 as libc::c_ulong,
+        16i32 as u64,
     );
     cspc_id = pdf_colorspace_findresource(ident, 4i32, cdata as *const libc::c_void);
     if cspc_id >= 0i32 {
@@ -2024,8 +2024,8 @@ unsafe extern "C" fn pdf_colorspace_defineresource(
         cspc_cache.capacity = cspc_cache.capacity.wrapping_add(16i32 as libc::c_uint);
         cspc_cache.colorspaces = renew(
             cspc_cache.colorspaces as *mut libc::c_void,
-            (cspc_cache.capacity as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<pdf_colorspace>() as libc::c_ulong)
+            (cspc_cache.capacity as u64)
+                .wrapping_mul(::std::mem::size_of::<pdf_colorspace>() as u64)
                 as u32,
         ) as *mut pdf_colorspace
     }
@@ -2034,8 +2034,8 @@ unsafe extern "C" fn pdf_colorspace_defineresource(
     pdf_init_colorspace_struct(colorspace);
     if !ident.is_null() {
         (*colorspace).ident = new(
-            (strlen(ident).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            (strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                 as u32,
         ) as *mut libc::c_char;
         strcpy((*colorspace).ident, ident);

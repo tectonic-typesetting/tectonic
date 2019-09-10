@@ -26,7 +26,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn xtoi(c: libc::c_char) -> libc::c_int;
     #[no_mangle]
@@ -39,9 +39,9 @@ extern "C" {
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -122,8 +122,8 @@ pub unsafe extern "C" fn pst_new_obj(
     mut data: *mut libc::c_void,
 ) -> *mut pst_obj {
     let mut obj: *mut pst_obj = 0 as *mut pst_obj;
-    obj = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pst_obj>() as libc::c_ulong) as u32)
+    obj = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pst_obj>() as u64) as u32)
         as *mut pst_obj;
     (*obj).type_0 = type_0;
     (*obj).data = data;
@@ -133,8 +133,8 @@ pub unsafe extern "C" fn pst_new_obj(
 pub unsafe extern "C" fn pst_new_mark() -> *mut pst_obj {
     let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
     q = new(
-        (strlen(pst_const_mark).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (strlen(pst_const_mark).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32,
     ) as *mut libc::c_char;
     strcpy(q, pst_const_mark);
@@ -351,10 +351,10 @@ pub unsafe extern "C" fn pst_getSV(mut obj: *mut pst_obj) -> *mut libc::c_uchar 
             let mut len: libc::c_int = 0;
             len = strlen((*obj).data as *mut libc::c_char) as libc::c_int;
             if len > 0i32 {
-                sv = new(((len + 1i32) as u32 as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+                sv = new(((len + 1i32) as u32 as u64)
+                    .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
                     as u32) as *mut libc::c_uchar;
-                memcpy(sv as *mut libc::c_void, (*obj).data, len as libc::c_ulong);
+                memcpy(sv as *mut libc::c_void, (*obj).data, len as u64);
                 *sv.offset(len as isize) = '\u{0}' as i32 as libc::c_uchar
             } else {
                 sv = 0 as *mut libc::c_uchar
@@ -431,8 +431,8 @@ pub unsafe extern "C" fn pst_data_ptr(mut obj: *mut pst_obj) -> *mut libc::c_voi
 /* BOOLEAN */
 unsafe extern "C" fn pst_boolean_new(mut value: libc::c_char) -> *mut pst_boolean {
     let mut obj: *mut pst_boolean = 0 as *mut pst_boolean;
-    obj = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pst_boolean>() as libc::c_ulong)
+    obj = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pst_boolean>() as u64)
         as u32) as *mut pst_boolean;
     (*obj).value = value;
     return obj;
@@ -497,23 +497,23 @@ unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut libc::c_u
         );
     }
     if (*obj).value != 0 {
-        str = new((5i32 as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        str = new((5i32 as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
         memcpy(
             str as *mut libc::c_void,
             b"true\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-            4i32 as libc::c_ulong,
+            4i32 as u64,
         );
         *str.offset(4) = '\u{0}' as i32 as libc::c_uchar
     } else {
-        str = new((6i32 as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        str = new((6i32 as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
         memcpy(
             str as *mut libc::c_void,
             b"false\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-            5i32 as libc::c_ulong,
+            5i32 as u64,
         );
         *str.offset(5) = '\u{0}' as i32 as libc::c_uchar
     }
@@ -548,7 +548,7 @@ pub unsafe extern "C" fn pst_parse_boolean(
         && memcmp(
             *inbuf as *const libc::c_void,
             b"true\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-            4i32 as libc::c_ulong,
+            4i32 as u64,
         ) == 0i32
         && ((*inbuf).offset(4) == inbufend
             || (*(*inbuf).offset(4) as libc::c_int == '(' as i32
@@ -577,7 +577,7 @@ pub unsafe extern "C" fn pst_parse_boolean(
         && memcmp(
             *inbuf as *const libc::c_void,
             b"false\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-            5i32 as libc::c_ulong,
+            5i32 as u64,
         ) == 0i32
         && ((*inbuf).offset(5) == inbufend
             || (*(*inbuf).offset(5) as libc::c_int == '(' as i32
@@ -616,7 +616,7 @@ pub unsafe extern "C" fn pst_parse_null(
         && memcmp(
             *inbuf as *const libc::c_void,
             b"null\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-            4i32 as libc::c_ulong,
+            4i32 as u64,
         ) == 0i32
         && ((*inbuf).offset(4) == inbufend
             || (*(*inbuf).offset(4) as libc::c_int == '(' as i32
@@ -639,9 +639,9 @@ pub unsafe extern "C" fn pst_parse_null(
         let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
         *inbuf = (*inbuf).offset(4);
         q = new(
-            (strlen(pst_const_null).wrapping_add(1i32 as libc::c_ulong) as u32
-                as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            (strlen(pst_const_null).wrapping_add(1i32 as u64) as u32
+                as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                 as u32,
         ) as *mut libc::c_char;
         strcpy(q, pst_const_null);
@@ -654,8 +654,8 @@ pub unsafe extern "C" fn pst_parse_null(
 /* INTEGER */
 unsafe extern "C" fn pst_integer_new(mut value: libc::c_int) -> *mut pst_integer {
     let mut obj: *mut pst_integer = 0 as *mut pst_integer;
-    obj = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pst_integer>() as libc::c_ulong)
+    obj = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pst_integer>() as u64)
         as u32) as *mut pst_integer;
     (*obj).value = value;
     return obj;
@@ -726,8 +726,8 @@ unsafe extern "C" fn pst_integer_SV(mut obj: *mut pst_integer) -> *mut libc::c_u
         b"%d\x00" as *const u8 as *const libc::c_char,
         (*obj).value,
     );
-    value = new(((len + 1i32) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    value = new(((len + 1i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     strcpy(value, fmt_buf.as_mut_ptr());
     return value as *mut libc::c_uchar;
@@ -755,8 +755,8 @@ unsafe extern "C" fn pst_integer_length() -> libc::c_uint {
 /* REAL */
 unsafe extern "C" fn pst_real_new(mut value: libc::c_double) -> *mut pst_real {
     let mut obj: *mut pst_real = 0 as *mut pst_real;
-    obj = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pst_real>() as libc::c_ulong) as u32)
+    obj = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pst_real>() as u64) as u32)
         as *mut pst_real;
     (*obj).value = value;
     return obj;
@@ -827,8 +827,8 @@ unsafe extern "C" fn pst_real_SV(mut obj: *mut pst_real) -> *mut libc::c_uchar {
         b"%.5g\x00" as *const u8 as *const libc::c_char,
         (*obj).value,
     );
-    value = new((len as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    value = new((len as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     strcpy(value, fmt_buf.as_mut_ptr());
     return value as *mut libc::c_uchar;
@@ -980,12 +980,12 @@ pub unsafe extern "C" fn pst_parse_number(
  */
 unsafe extern "C" fn pst_name_new(mut name: *const libc::c_char) -> *mut pst_name {
     let mut obj: *mut pst_name = 0 as *mut pst_name;
-    obj = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pst_name>() as libc::c_ulong) as u32)
+    obj = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pst_name>() as u64) as u32)
         as *mut pst_name;
     (*obj).value = new(
-        (strlen(name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (strlen(name).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32,
     ) as *mut libc::c_char;
     strcpy((*obj).value, name);
@@ -1111,8 +1111,8 @@ unsafe extern "C" fn pst_name_RV() -> libc::c_double {
 unsafe extern "C" fn pst_name_SV(mut obj: *mut pst_name) -> *mut libc::c_uchar {
     let mut value: *mut libc::c_char = 0 as *mut libc::c_char;
     value = new(
-        (strlen((*obj).value).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (strlen((*obj).value).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32,
     ) as *mut libc::c_char;
     strcpy(value, (*obj).value);
@@ -1157,20 +1157,20 @@ unsafe extern "C" fn pst_string_new(
     mut len: libc::c_uint,
 ) -> *mut pst_string {
     let mut obj: *mut pst_string = 0 as *mut pst_string;
-    obj = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pst_string>() as libc::c_ulong)
+    obj = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pst_string>() as u64)
         as u32) as *mut pst_string;
     (*obj).length = len;
     (*obj).value = 0 as *mut libc::c_uchar;
     if len > 0i32 as libc::c_uint {
-        (*obj).value = new((len as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        (*obj).value = new((len as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
         if !str.is_null() {
             memcpy(
                 (*obj).value as *mut libc::c_void,
                 str as *const libc::c_void,
-                len as libc::c_ulong,
+                len as u64,
             );
         }
     }
@@ -1513,14 +1513,14 @@ unsafe extern "C" fn pst_string_SV(mut obj: *mut pst_string) -> *mut libc::c_uch
         );
     }
     str = new(
-        ((*obj).length.wrapping_add(1i32 as libc::c_uint) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        ((*obj).length.wrapping_add(1i32 as libc::c_uint) as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32,
     ) as *mut libc::c_uchar;
     memcpy(
         str as *mut libc::c_void,
         (*obj).value as *const libc::c_void,
-        (*obj).length as libc::c_ulong,
+        (*obj).length as u64,
     );
     *str.offset((*obj).length as isize) = '\u{0}' as i32 as libc::c_uchar;
     return str;

@@ -89,7 +89,7 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
 }
 pub type __ssize_t = libc::c_long;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type BYTE = libc::c_uchar;
@@ -188,8 +188,8 @@ unsafe extern "C" fn read_v2_post_names(
     let mut maxidx: USHORT = 0;
     let mut len: libc::c_int = 0;
     (*post).numberOfGlyphs = tt_get_unsigned_pair((*sfont).handle);
-    indices = new(((*post).numberOfGlyphs as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong)
+    indices = new(((*post).numberOfGlyphs as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<USHORT>() as u64)
         as u32) as *mut USHORT;
     maxidx = 257i32 as USHORT;
     i = 0i32 as USHORT;
@@ -227,8 +227,8 @@ unsafe extern "C" fn read_v2_post_names(
     if ((*post).count as libc::c_int) < 1i32 {
         (*post).names = 0 as *mut *mut libc::c_char
     } else {
-        (*post).names = new(((*post).count as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as libc::c_ulong)
+        (*post).names = new(((*post).count as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as u64)
             as u32) as *mut *mut libc::c_char;
         i = 0i32 as USHORT;
         while (i as libc::c_int) < (*post).count as libc::c_int {
@@ -236,8 +236,8 @@ unsafe extern "C" fn read_v2_post_names(
             len = tt_get_unsigned_byte((*sfont).handle) as libc::c_int;
             if len > 0i32 {
                 let ref mut fresh0 = *(*post).names.offset(i as isize);
-                *fresh0 = new(((len + 1i32) as u32 as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                *fresh0 = new(((len + 1i32) as u32 as u64)
+                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                     as u32) as *mut libc::c_char;
                 ttstub_input_read(
                     (*sfont).handle,
@@ -252,8 +252,8 @@ unsafe extern "C" fn read_v2_post_names(
             i = i.wrapping_add(1)
         }
     }
-    (*post).glyphNamePtr = new(((*post).numberOfGlyphs as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<*const libc::c_char>() as libc::c_ulong)
+    (*post).glyphNamePtr = new(((*post).numberOfGlyphs as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<*const libc::c_char>() as u64)
         as u32) as *mut *const libc::c_char;
     i = 0i32 as USHORT;
     while (i as libc::c_int) < (*post).numberOfGlyphs as libc::c_int {
@@ -284,8 +284,8 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
     let mut post: *mut tt_post_table = 0 as *mut tt_post_table;
     /* offset = */
     sfnt_locate_table(sfont, b"post\x00" as *const u8 as *const libc::c_char); /* Fixed */
-    post = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<tt_post_table>() as libc::c_ulong)
+    post = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<tt_post_table>() as u64)
         as u32) as *mut tt_post_table; /* Fixed */
     (*post).Version = tt_get_unsigned_quad((*sfont).handle); /* FWord */
     (*post).italicAngle = tt_get_unsigned_quad((*sfont).handle); /* FWord */
@@ -300,15 +300,15 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
     (*post).glyphNamePtr = 0 as *mut *const libc::c_char;
     (*post).count = 0i32 as USHORT;
     (*post).names = 0 as *mut *mut libc::c_char;
-    if (*post).Version as libc::c_ulong == 0x10000 {
+    if (*post).Version as u64 == 0x10000 {
         (*post).numberOfGlyphs = 258i32 as USHORT;
         (*post).glyphNamePtr = macglyphorder.as_mut_ptr()
-    } else if (*post).Version as libc::c_ulong == 0x28000 {
+    } else if (*post).Version as u64 == 0x28000 {
         dpx_warning(
             b"TrueType \'post\' version 2.5 found (deprecated)\x00" as *const u8
                 as *const libc::c_char,
         );
-    } else if (*post).Version as libc::c_ulong == 0x20000 {
+    } else if (*post).Version as u64 == 0x20000 {
         if read_v2_post_names(post, sfont) < 0i32 {
             dpx_warning(
                 b"Invalid version 2.0 \'post\' table\x00" as *const u8 as *const libc::c_char,
@@ -316,8 +316,8 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
             tt_release_post_table(post);
             post = 0 as *mut tt_post_table
         }
-    } else if !((*post).Version as libc::c_ulong == 0x30000
-        || (*post).Version as libc::c_ulong == 0x40000)
+    } else if !((*post).Version as u64 == 0x30000
+        || (*post).Version as u64 == 0x40000)
     {
         dpx_warning(
             b"Unknown \'post\' version: %08X, assuming version 3.0\x00" as *const u8
@@ -405,7 +405,7 @@ pub unsafe extern "C" fn tt_release_post_table(mut post: *mut tt_post_table) {
             .as_ptr(),
         );
     }
-    if !(*post).glyphNamePtr.is_null() && (*post).Version as libc::c_ulong != 0x10000 {
+    if !(*post).glyphNamePtr.is_null() && (*post).Version as u64 != 0x10000 {
         free((*post).glyphNamePtr as *mut libc::c_void);
     }
     if !(*post).names.is_null() {

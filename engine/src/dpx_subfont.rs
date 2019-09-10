@@ -53,7 +53,7 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
@@ -61,7 +61,7 @@ extern "C" {
     #[no_mangle]
     fn strchr(_: *const libc::c_char, _: libc::c_int) -> *mut libc::c_char;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     /* Tectonic-enabled versions */
@@ -136,7 +136,7 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type tt_input_format_type = libc::c_uint;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
@@ -275,11 +275,11 @@ unsafe extern "C" fn readline(
             *r = ' ' as i32 as libc::c_char; /* empty line */
             *r.offset(1) = '\u{0}' as i32 as libc::c_char
         }
-        if strlen(q) == 0i32 as libc::c_ulong {
+        if strlen(q) == 0i32 as u64 {
             break;
         }
-        n = (n as libc::c_ulong).wrapping_add(strlen(q)) as libc::c_int as libc::c_int;
-        q = q.offset(strlen(q).wrapping_sub(1i32 as libc::c_ulong) as isize);
+        n = (n as u64).wrapping_add(strlen(q)) as libc::c_int as libc::c_int;
+        q = q.offset(strlen(q).wrapping_sub(1i32 as u64) as isize);
         if *q as libc::c_int != '\\' as i32 {
             break;
         }
@@ -516,21 +516,21 @@ unsafe extern "C" fn scan_sfd_file(
             p = p.offset(1);
             n += 1
         }
-        id = new(((n + 1i32) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        id = new(((n + 1i32) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         memcpy(
             id as *mut libc::c_void,
             q as *const libc::c_void,
-            n as libc::c_ulong,
+            n as u64,
         );
         *id.offset(n as isize) = '\u{0}' as i32 as libc::c_char;
         if (*sfd).num_subfonts >= (*sfd).max_subfonts {
             (*sfd).max_subfonts += 16i32;
             (*sfd).sub_id = renew(
                 (*sfd).sub_id as *mut libc::c_void,
-                ((*sfd).max_subfonts as u32 as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as libc::c_ulong)
+                ((*sfd).max_subfonts as u32 as u64)
+                    .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as u64)
                     as u32,
             ) as *mut *mut libc::c_char
         }
@@ -545,8 +545,8 @@ unsafe extern "C" fn scan_sfd_file(
         *fresh1 = id;
         (*sfd).num_subfonts += 1
     }
-    (*sfd).rec_id = new(((*sfd).num_subfonts as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_int>() as libc::c_ulong)
+    (*sfd).rec_id = new(((*sfd).num_subfonts as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_int>() as u64)
         as u32) as *mut libc::c_int;
     n = 0i32;
     while n < (*sfd).num_subfonts {
@@ -588,16 +588,16 @@ unsafe extern "C" fn find_sfd_file(mut sfd_name: *const libc::c_char) -> libc::c
             max_sfd_files += 8i32;
             sfd_files = renew(
                 sfd_files as *mut libc::c_void,
-                (max_sfd_files as u32 as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<sfd_file_>() as libc::c_ulong)
+                (max_sfd_files as u32 as u64)
+                    .wrapping_mul(::std::mem::size_of::<sfd_file_>() as u64)
                     as u32,
             ) as *mut sfd_file_
         }
         sfd = &mut *sfd_files.offset(num_sfd_files as isize) as *mut sfd_file_;
         init_sfd_file_(sfd);
         (*sfd).ident = new(
-            (strlen(sfd_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            (strlen(sfd_name).wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                 as u32,
         ) as *mut libc::c_char;
         strcpy((*sfd).ident, sfd_name);
@@ -733,8 +733,8 @@ pub unsafe extern "C" fn sfd_load_record(
                 max_sfd_records += 16i32;
                 sfd_record = renew(
                     sfd_record as *mut libc::c_void,
-                    (max_sfd_records as u32 as libc::c_ulong)
-                        .wrapping_mul(::std::mem::size_of::<sfd_rec_>() as libc::c_ulong)
+                    (max_sfd_records as u32 as u64)
+                        .wrapping_mul(::std::mem::size_of::<sfd_rec_>() as u64)
                         as u32,
                 ) as *mut sfd_rec_
             }

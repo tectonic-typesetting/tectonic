@@ -10,9 +10,9 @@ extern "C" {
     #[no_mangle]
     fn rand() -> libc::c_int;
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -38,8 +38,7 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
 }
 pub type uint8_t = u8;
-pub type uint64_t = u64;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 /* This is DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
 
     Copyright (C) 2003-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -89,14 +88,14 @@ pub struct SHA256_CONTEXT {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct SHA512_STATE {
-    pub h0: uint64_t,
-    pub h1: uint64_t,
-    pub h2: uint64_t,
-    pub h3: uint64_t,
-    pub h4: uint64_t,
-    pub h5: uint64_t,
-    pub h6: uint64_t,
-    pub h7: uint64_t,
+    pub h0: u64,
+    pub h1: u64,
+    pub h2: u64,
+    pub h3: u64,
+    pub h4: u64,
+    pub h5: u64,
+    pub h6: u64,
+    pub h7: u64,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -144,10 +143,10 @@ unsafe extern "C" fn _gcry_burn_stack(mut bytes: libc::c_int) {
     memset(
         buf.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        ::std::mem::size_of::<[libc::c_char; 64]>() as libc::c_ulong,
+        ::std::mem::size_of::<[libc::c_char; 64]>() as u64,
     );
-    bytes = (bytes as libc::c_ulong)
-        .wrapping_sub(::std::mem::size_of::<[libc::c_char; 64]>() as libc::c_ulong)
+    bytes = (bytes as u64)
+        .wrapping_sub(::std::mem::size_of::<[libc::c_char; 64]>() as u64)
         as libc::c_int as libc::c_int;
     if bytes > 0i32 {
         _gcry_burn_stack(bytes);
@@ -203,7 +202,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const libc:
     memcpy(
         correct_words.as_mut_ptr() as *mut libc::c_void,
         data as *const libc::c_void,
-        (::std::mem::size_of::<u32>() as libc::c_ulong).wrapping_mul(16i32 as libc::c_ulong),
+        (::std::mem::size_of::<u32>() as u64).wrapping_mul(16i32 as u64),
     );
     /* Before we start, one word about the strange constants.
      * They are defined in RFC 1321 as
@@ -713,9 +712,9 @@ pub unsafe extern "C" fn MD5_write(
         /* flush the buffer */
         transform(hd, (*hd).buf.as_mut_ptr());
         _gcry_burn_stack(
-            (80i32 as libc::c_ulong).wrapping_add(
-                (6i32 as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as libc::c_ulong),
+            (80i32 as u64).wrapping_add(
+                (6i32 as u64)
+                    .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
             ) as libc::c_int,
         );
         (*hd).count = 0i32;
@@ -739,9 +738,9 @@ pub unsafe extern "C" fn MD5_write(
         }
     }
     _gcry_burn_stack(
-        (80i32 as libc::c_ulong).wrapping_add(
-            (6i32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as libc::c_ulong),
+        (80i32 as u64).wrapping_add(
+            (6i32 as u64)
+                .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
         ) as libc::c_int,
     );
     while inlen >= 64i32 as libc::c_uint {
@@ -811,7 +810,7 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut libc::c_uchar, mut hd: *mut 
         memset(
             (*hd).buf.as_mut_ptr() as *mut libc::c_void,
             0i32,
-            56i32 as libc::c_ulong,
+            56i32 as u64,
         );
     }
     /* append the 64 bit count */
@@ -825,21 +824,21 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut libc::c_uchar, mut hd: *mut 
     (*hd).buf[63] = (msb >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_uchar;
     transform(hd, (*hd).buf.as_mut_ptr());
     _gcry_burn_stack(
-        (80i32 as libc::c_ulong).wrapping_add(
-            (6i32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as libc::c_ulong),
+        (80i32 as u64).wrapping_add(
+            (6i32 as u64)
+                .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
         ) as libc::c_int,
     );
     p = outbuf;
     /* little endian */
     *(p as *mut u32) = (*hd).A;
-    p = p.offset(::std::mem::size_of::<u32>() as libc::c_ulong as isize);
+    p = p.offset(::std::mem::size_of::<u32>() as u64 as isize);
     *(p as *mut u32) = (*hd).B;
-    p = p.offset(::std::mem::size_of::<u32>() as libc::c_ulong as isize);
+    p = p.offset(::std::mem::size_of::<u32>() as u64 as isize);
     *(p as *mut u32) = (*hd).C;
-    p = p.offset(::std::mem::size_of::<u32>() as libc::c_ulong as isize);
+    p = p.offset(::std::mem::size_of::<u32>() as u64 as isize);
     *(p as *mut u32) = (*hd).D;
-    p = p.offset(::std::mem::size_of::<u32>() as libc::c_ulong as isize);
+    p = p.offset(::std::mem::size_of::<u32>() as u64 as isize);
 }
 /*
  * The following codes for the SHA256 hash function are taken from
@@ -868,9 +867,9 @@ unsafe extern "C" fn _gcry_bswap32(mut x: u32) -> u32 {
         | (x >> (8i32 & 32i32 - 1i32) | x << (32i32 - 8i32 & 32i32 - 1i32)) as libc::c_long
             & 0xff00ff00i64) as u32;
 }
-unsafe extern "C" fn _gcry_bswap64(mut x: uint64_t) -> uint64_t {
-    return (_gcry_bswap32(x as u32) as uint64_t) << 32i32
-        | _gcry_bswap32((x >> 32i32) as u32) as libc::c_ulong;
+unsafe extern "C" fn _gcry_bswap64(mut x: u64) -> u64 {
+    return (_gcry_bswap32(x as u32) as u64) << 32i32
+        | _gcry_bswap32((x >> 32i32) as u32) as u64;
 }
 /* Endian dependent byte swap operations.  */
 unsafe extern "C" fn buf_get_be32(mut _buf: *const libc::c_void) -> u32 {
@@ -887,18 +886,18 @@ unsafe extern "C" fn buf_put_be32(mut _buf: *mut libc::c_void, mut val: u32) {
     *out.offset(2) = (val >> 8i32) as uint8_t;
     *out.offset(3) = val as uint8_t;
 }
-unsafe extern "C" fn buf_get_be64(mut _buf: *const libc::c_void) -> uint64_t {
+unsafe extern "C" fn buf_get_be64(mut _buf: *const libc::c_void) -> u64 {
     let mut in_0: *const uint8_t = _buf as *const uint8_t;
-    return (*in_0.offset(0) as uint64_t) << 56i32
-        | (*in_0.offset(1) as uint64_t) << 48i32
-        | (*in_0.offset(2) as uint64_t) << 40i32
-        | (*in_0.offset(3) as uint64_t) << 32i32
-        | (*in_0.offset(4) as uint64_t) << 24i32
-        | (*in_0.offset(5) as uint64_t) << 16i32
-        | (*in_0.offset(6) as uint64_t) << 8i32
-        | *in_0.offset(7) as uint64_t;
+    return (*in_0.offset(0) as u64) << 56i32
+        | (*in_0.offset(1) as u64) << 48i32
+        | (*in_0.offset(2) as u64) << 40i32
+        | (*in_0.offset(3) as u64) << 32i32
+        | (*in_0.offset(4) as u64) << 24i32
+        | (*in_0.offset(5) as u64) << 16i32
+        | (*in_0.offset(6) as u64) << 8i32
+        | *in_0.offset(7) as u64;
 }
-unsafe extern "C" fn buf_put_be64(mut _buf: *mut libc::c_void, mut val: uint64_t) {
+unsafe extern "C" fn buf_put_be64(mut _buf: *mut libc::c_void, mut val: u64) {
     let mut out: *mut uint8_t = _buf as *mut uint8_t;
     *out.offset(0) = (val >> 56i32) as uint8_t;
     *out.offset(1) = (val >> 48i32) as uint8_t;
@@ -1276,7 +1275,7 @@ pub unsafe extern "C" fn SHA256_final(mut outbuf: *mut libc::c_uchar, mut hd: *m
         memset(
             (*hd).buf.as_mut_ptr() as *mut libc::c_void,
             0i32,
-            56i32 as libc::c_ulong,
+            56i32 as u64,
         );
     }
     /* flush */
@@ -1351,7 +1350,7 @@ pub unsafe extern "C" fn SHA384_init(mut ctx: *mut SHA512_CONTEXT) {
     (*ctx).nblocks = 0i32 as size_t;
     (*ctx).count = 0i32;
 }
-static mut k: [uint64_t; 80] = [
+static mut k: [u64; 80] = [
     0x428a2f98d728ae22u64,
     0x7137449123ef65cdu64,
     0xb5c0fbcfec4d3b2fu64,
@@ -1440,15 +1439,15 @@ unsafe extern "C" fn __transform(
     mut hd: *mut SHA512_STATE,
     mut data: *const libc::c_uchar,
 ) -> libc::c_uint {
-    let mut a: uint64_t = 0;
-    let mut b: uint64_t = 0;
-    let mut c: uint64_t = 0;
-    let mut d: uint64_t = 0;
-    let mut e: uint64_t = 0;
-    let mut f: uint64_t = 0;
-    let mut g: uint64_t = 0;
-    let mut h: uint64_t = 0;
-    let mut w: [uint64_t; 16] = [0; 16];
+    let mut a: u64 = 0;
+    let mut b: u64 = 0;
+    let mut c: u64 = 0;
+    let mut d: u64 = 0;
+    let mut e: u64 = 0;
+    let mut f: u64 = 0;
+    let mut g: u64 = 0;
+    let mut h: u64 = 0;
+    let mut w: [u64; 16] = [0; 16];
     let mut t: libc::c_int = 0;
     /* get values from the chaining vars */
     a = (*hd).h0;
@@ -1466,8 +1465,8 @@ unsafe extern "C" fn __transform(
     }
     t = 0i32;
     while t < 80i32 - 16i32 {
-        let mut t1: uint64_t = 0;
-        let mut t2: uint64_t = 0;
+        let mut t1: u64 = 0;
+        let mut t2: u64 = 0;
         /* Performance on a AMD Athlon(tm) Dual Core Processor 4050e
            with gcc 4.3.3 using gcry_md_hash_buffer of each 10000 bytes
            initialized to 0,1,2,3...255,0,... and 1000 iterations:
@@ -1487,7 +1486,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(e & f ^ !e & g)
             .wrapping_add(k[t as usize])
             .wrapping_add(w[0]);
-        w[0] = (w[0] as libc::c_ulong).wrapping_add(
+        w[0] = (w[0] as u64).wrapping_add(
             ((w[14] >> 19i32 | w[14] << 64i32 - 19i32)
                 ^ (w[14] >> 61i32 | w[14] << 64i32 - 61i32)
                 ^ w[14] >> 6i32)
@@ -1497,12 +1496,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[1] >> 8i32 | w[1] << 64i32 - 8i32)
                         ^ w[1] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((a >> 28i32 | a << 64i32 - 28i32)
             ^ (a >> 34i32 | a << 64i32 - 34i32)
             ^ (a >> 39i32 | a << 64i32 - 39i32))
             .wrapping_add(a & b ^ a & c ^ b & c);
-        d = (d as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        d = (d as u64).wrapping_add(t1) as u64;
         h = t1.wrapping_add(t2);
         t1 = g
             .wrapping_add(
@@ -1513,7 +1512,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(d & e ^ !d & f)
             .wrapping_add(k[(t + 1i32) as usize])
             .wrapping_add(w[1]);
-        w[1] = (w[1] as libc::c_ulong).wrapping_add(
+        w[1] = (w[1] as u64).wrapping_add(
             ((w[15] >> 19i32 | w[15] << 64i32 - 19i32)
                 ^ (w[15] >> 61i32 | w[15] << 64i32 - 61i32)
                 ^ w[15] >> 6i32)
@@ -1523,12 +1522,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[2] >> 8i32 | w[2] << 64i32 - 8i32)
                         ^ w[2] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((h >> 28i32 | h << 64i32 - 28i32)
             ^ (h >> 34i32 | h << 64i32 - 34i32)
             ^ (h >> 39i32 | h << 64i32 - 39i32))
             .wrapping_add(h & a ^ h & b ^ a & b);
-        c = (c as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        c = (c as u64).wrapping_add(t1) as u64;
         g = t1.wrapping_add(t2);
         t1 = f
             .wrapping_add(
@@ -1539,7 +1538,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(c & d ^ !c & e)
             .wrapping_add(k[(t + 2i32) as usize])
             .wrapping_add(w[2]);
-        w[2] = (w[2] as libc::c_ulong).wrapping_add(
+        w[2] = (w[2] as u64).wrapping_add(
             ((w[0] >> 19i32 | w[0] << 64i32 - 19i32)
                 ^ (w[0] >> 61i32 | w[0] << 64i32 - 61i32)
                 ^ w[0] >> 6i32)
@@ -1549,12 +1548,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[3] >> 8i32 | w[3] << 64i32 - 8i32)
                         ^ w[3] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((g >> 28i32 | g << 64i32 - 28i32)
             ^ (g >> 34i32 | g << 64i32 - 34i32)
             ^ (g >> 39i32 | g << 64i32 - 39i32))
             .wrapping_add(g & h ^ g & a ^ h & a);
-        b = (b as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        b = (b as u64).wrapping_add(t1) as u64;
         f = t1.wrapping_add(t2);
         t1 = e
             .wrapping_add(
@@ -1565,7 +1564,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(b & c ^ !b & d)
             .wrapping_add(k[(t + 3i32) as usize])
             .wrapping_add(w[3]);
-        w[3] = (w[3] as libc::c_ulong).wrapping_add(
+        w[3] = (w[3] as u64).wrapping_add(
             ((w[1] >> 19i32 | w[1] << 64i32 - 19i32)
                 ^ (w[1] >> 61i32 | w[1] << 64i32 - 61i32)
                 ^ w[1] >> 6i32)
@@ -1575,12 +1574,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[4] >> 8i32 | w[4] << 64i32 - 8i32)
                         ^ w[4] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((f >> 28i32 | f << 64i32 - 28i32)
             ^ (f >> 34i32 | f << 64i32 - 34i32)
             ^ (f >> 39i32 | f << 64i32 - 39i32))
             .wrapping_add(f & g ^ f & h ^ g & h);
-        a = a.wrapping_add(t1) as uint64_t as uint64_t;
+        a = a.wrapping_add(t1) as u64;
         e = t1.wrapping_add(t2);
         t1 = d
             .wrapping_add(
@@ -1591,7 +1590,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(a & b ^ !a & c)
             .wrapping_add(k[(t + 4i32) as usize])
             .wrapping_add(w[4]);
-        w[4] = (w[4] as libc::c_ulong).wrapping_add(
+        w[4] = (w[4] as u64).wrapping_add(
             ((w[2] >> 19i32 | w[2] << 64i32 - 19i32)
                 ^ (w[2] >> 61i32 | w[2] << 64i32 - 61i32)
                 ^ w[2] >> 6i32)
@@ -1601,12 +1600,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[5] >> 8i32 | w[5] << 64i32 - 8i32)
                         ^ w[5] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((e >> 28i32 | e << 64i32 - 28i32)
             ^ (e >> 34i32 | e << 64i32 - 34i32)
             ^ (e >> 39i32 | e << 64i32 - 39i32))
             .wrapping_add(e & f ^ e & g ^ f & g);
-        h = h.wrapping_add(t1) as uint64_t as uint64_t;
+        h = h.wrapping_add(t1) as u64;
         d = t1.wrapping_add(t2);
         t1 = c
             .wrapping_add(
@@ -1617,7 +1616,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(h & a ^ !h & b)
             .wrapping_add(k[(t + 5i32) as usize])
             .wrapping_add(w[5]);
-        w[5] = (w[5] as libc::c_ulong).wrapping_add(
+        w[5] = (w[5] as u64).wrapping_add(
             ((w[3] >> 19i32 | w[3] << 64i32 - 19i32)
                 ^ (w[3] >> 61i32 | w[3] << 64i32 - 61i32)
                 ^ w[3] >> 6i32)
@@ -1627,12 +1626,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[6] >> 8i32 | w[6] << 64i32 - 8i32)
                         ^ w[6] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((d >> 28i32 | d << 64i32 - 28i32)
             ^ (d >> 34i32 | d << 64i32 - 34i32)
             ^ (d >> 39i32 | d << 64i32 - 39i32))
             .wrapping_add(d & e ^ d & f ^ e & f);
-        g = g.wrapping_add(t1) as uint64_t as uint64_t;
+        g = g.wrapping_add(t1) as u64;
         c = t1.wrapping_add(t2);
         t1 = b
             .wrapping_add(
@@ -1643,7 +1642,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(g & h ^ !g & a)
             .wrapping_add(k[(t + 6i32) as usize])
             .wrapping_add(w[6]);
-        w[6] = (w[6] as libc::c_ulong).wrapping_add(
+        w[6] = (w[6] as u64).wrapping_add(
             ((w[4] >> 19i32 | w[4] << 64i32 - 19i32)
                 ^ (w[4] >> 61i32 | w[4] << 64i32 - 61i32)
                 ^ w[4] >> 6i32)
@@ -1653,12 +1652,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[7] >> 8i32 | w[7] << 64i32 - 8i32)
                         ^ w[7] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((c >> 28i32 | c << 64i32 - 28i32)
             ^ (c >> 34i32 | c << 64i32 - 34i32)
             ^ (c >> 39i32 | c << 64i32 - 39i32))
             .wrapping_add(c & d ^ c & e ^ d & e);
-        f = (f as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        f = (f as u64).wrapping_add(t1) as u64;
         b = t1.wrapping_add(t2);
         t1 = a
             .wrapping_add(
@@ -1669,7 +1668,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(f & g ^ !f & h)
             .wrapping_add(k[(t + 7i32) as usize])
             .wrapping_add(w[7]);
-        w[7] = (w[7] as libc::c_ulong).wrapping_add(
+        w[7] = (w[7] as u64).wrapping_add(
             ((w[5] >> 19i32 | w[5] << 64i32 - 19i32)
                 ^ (w[5] >> 61i32 | w[5] << 64i32 - 61i32)
                 ^ w[5] >> 6i32)
@@ -1679,12 +1678,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[8] >> 8i32 | w[8] << 64i32 - 8i32)
                         ^ w[8] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((b >> 28i32 | b << 64i32 - 28i32)
             ^ (b >> 34i32 | b << 64i32 - 34i32)
             ^ (b >> 39i32 | b << 64i32 - 39i32))
             .wrapping_add(b & c ^ b & d ^ c & d);
-        e = (e as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        e = (e as u64).wrapping_add(t1) as u64;
         a = t1.wrapping_add(t2);
         t1 = h
             .wrapping_add(
@@ -1695,7 +1694,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(e & f ^ !e & g)
             .wrapping_add(k[(t + 8i32) as usize])
             .wrapping_add(w[8]);
-        w[8] = (w[8] as libc::c_ulong).wrapping_add(
+        w[8] = (w[8] as u64).wrapping_add(
             ((w[6] >> 19i32 | w[6] << 64i32 - 19i32)
                 ^ (w[6] >> 61i32 | w[6] << 64i32 - 61i32)
                 ^ w[6] >> 6i32)
@@ -1705,12 +1704,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[9] >> 8i32 | w[9] << 64i32 - 8i32)
                         ^ w[9] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((a >> 28i32 | a << 64i32 - 28i32)
             ^ (a >> 34i32 | a << 64i32 - 34i32)
             ^ (a >> 39i32 | a << 64i32 - 39i32))
             .wrapping_add(a & b ^ a & c ^ b & c);
-        d = (d as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        d = (d as u64).wrapping_add(t1) as u64;
         h = t1.wrapping_add(t2);
         t1 = g
             .wrapping_add(
@@ -1721,7 +1720,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(d & e ^ !d & f)
             .wrapping_add(k[(t + 9i32) as usize])
             .wrapping_add(w[9]);
-        w[9] = (w[9] as libc::c_ulong).wrapping_add(
+        w[9] = (w[9] as u64).wrapping_add(
             ((w[7] >> 19i32 | w[7] << 64i32 - 19i32)
                 ^ (w[7] >> 61i32 | w[7] << 64i32 - 61i32)
                 ^ w[7] >> 6i32)
@@ -1731,12 +1730,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[10] >> 8i32 | w[10] << 64i32 - 8i32)
                         ^ w[10] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((h >> 28i32 | h << 64i32 - 28i32)
             ^ (h >> 34i32 | h << 64i32 - 34i32)
             ^ (h >> 39i32 | h << 64i32 - 39i32))
             .wrapping_add(h & a ^ h & b ^ a & b);
-        c = (c as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        c = (c as u64).wrapping_add(t1) as u64;
         g = t1.wrapping_add(t2);
         t1 = f
             .wrapping_add(
@@ -1747,7 +1746,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(c & d ^ !c & e)
             .wrapping_add(k[(t + 10i32) as usize])
             .wrapping_add(w[10]);
-        w[10] = (w[10] as libc::c_ulong).wrapping_add(
+        w[10] = (w[10] as u64).wrapping_add(
             ((w[8] >> 19i32 | w[8] << 64i32 - 19i32)
                 ^ (w[8] >> 61i32 | w[8] << 64i32 - 61i32)
                 ^ w[8] >> 6i32)
@@ -1757,12 +1756,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[11] >> 8i32 | w[11] << 64i32 - 8i32)
                         ^ w[11] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((g >> 28i32 | g << 64i32 - 28i32)
             ^ (g >> 34i32 | g << 64i32 - 34i32)
             ^ (g >> 39i32 | g << 64i32 - 39i32))
             .wrapping_add(g & h ^ g & a ^ h & a);
-        b = (b as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        b = (b as u64).wrapping_add(t1) as u64;
         f = t1.wrapping_add(t2);
         t1 = e
             .wrapping_add(
@@ -1773,7 +1772,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(b & c ^ !b & d)
             .wrapping_add(k[(t + 11i32) as usize])
             .wrapping_add(w[11]);
-        w[11] = (w[11] as libc::c_ulong).wrapping_add(
+        w[11] = (w[11] as u64).wrapping_add(
             ((w[9] >> 19i32 | w[9] << 64i32 - 19i32)
                 ^ (w[9] >> 61i32 | w[9] << 64i32 - 61i32)
                 ^ w[9] >> 6i32)
@@ -1783,12 +1782,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[12] >> 8i32 | w[12] << 64i32 - 8i32)
                         ^ w[12] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((f >> 28i32 | f << 64i32 - 28i32)
             ^ (f >> 34i32 | f << 64i32 - 34i32)
             ^ (f >> 39i32 | f << 64i32 - 39i32))
             .wrapping_add(f & g ^ f & h ^ g & h);
-        a = (a as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        a = (a as u64).wrapping_add(t1) as u64;
         e = t1.wrapping_add(t2);
         t1 = d
             .wrapping_add(
@@ -1799,7 +1798,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(a & b ^ !a & c)
             .wrapping_add(k[(t + 12i32) as usize])
             .wrapping_add(w[12]);
-        w[12] = (w[12] as libc::c_ulong).wrapping_add(
+        w[12] = (w[12] as u64).wrapping_add(
             ((w[10] >> 19i32 | w[10] << 64i32 - 19i32)
                 ^ (w[10] >> 61i32 | w[10] << 64i32 - 61i32)
                 ^ w[10] >> 6i32)
@@ -1809,12 +1808,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[13] >> 8i32 | w[13] << 64i32 - 8i32)
                         ^ w[13] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((e >> 28i32 | e << 64i32 - 28i32)
             ^ (e >> 34i32 | e << 64i32 - 34i32)
             ^ (e >> 39i32 | e << 64i32 - 39i32))
             .wrapping_add(e & f ^ e & g ^ f & g);
-        h = (h as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        h = (h as u64).wrapping_add(t1) as u64;
         d = t1.wrapping_add(t2);
         t1 = c
             .wrapping_add(
@@ -1825,7 +1824,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(h & a ^ !h & b)
             .wrapping_add(k[(t + 13i32) as usize])
             .wrapping_add(w[13]);
-        w[13] = (w[13] as libc::c_ulong).wrapping_add(
+        w[13] = (w[13] as u64).wrapping_add(
             ((w[11] >> 19i32 | w[11] << 64i32 - 19i32)
                 ^ (w[11] >> 61i32 | w[11] << 64i32 - 61i32)
                 ^ w[11] >> 6i32)
@@ -1835,12 +1834,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[14] >> 8i32 | w[14] << 64i32 - 8i32)
                         ^ w[14] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((d >> 28i32 | d << 64i32 - 28i32)
             ^ (d >> 34i32 | d << 64i32 - 34i32)
             ^ (d >> 39i32 | d << 64i32 - 39i32))
             .wrapping_add(d & e ^ d & f ^ e & f);
-        g = (g as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        g = (g as u64).wrapping_add(t1) as u64;
         c = t1.wrapping_add(t2);
         t1 = b
             .wrapping_add(
@@ -1851,7 +1850,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(g & h ^ !g & a)
             .wrapping_add(k[(t + 14i32) as usize])
             .wrapping_add(w[14]);
-        w[14] = (w[14] as libc::c_ulong).wrapping_add(
+        w[14] = (w[14] as u64).wrapping_add(
             ((w[12] >> 19i32 | w[12] << 64i32 - 19i32)
                 ^ (w[12] >> 61i32 | w[12] << 64i32 - 61i32)
                 ^ w[12] >> 6i32)
@@ -1861,12 +1860,12 @@ unsafe extern "C" fn __transform(
                         ^ (w[15] >> 8i32 | w[15] << 64i32 - 8i32)
                         ^ w[15] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((c >> 28i32 | c << 64i32 - 28i32)
             ^ (c >> 34i32 | c << 64i32 - 34i32)
             ^ (c >> 39i32 | c << 64i32 - 39i32))
             .wrapping_add(c & d ^ c & e ^ d & e);
-        f = (f as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        f = (f as u64).wrapping_add(t1) as u64;
         b = t1.wrapping_add(t2);
         t1 = a
             .wrapping_add(
@@ -1877,7 +1876,7 @@ unsafe extern "C" fn __transform(
             .wrapping_add(f & g ^ !f & h)
             .wrapping_add(k[(t + 15i32) as usize])
             .wrapping_add(w[15]);
-        w[15] = (w[15] as libc::c_ulong).wrapping_add(
+        w[15] = (w[15] as u64).wrapping_add(
             ((w[13] >> 19i32 | w[13] << 64i32 - 19i32)
                 ^ (w[13] >> 61i32 | w[13] << 64i32 - 61i32)
                 ^ w[13] >> 6i32)
@@ -1887,18 +1886,18 @@ unsafe extern "C" fn __transform(
                         ^ (w[0] >> 8i32 | w[0] << 64i32 - 8i32)
                         ^ w[0] >> 7i32,
                 ),
-        ) as uint64_t as uint64_t;
+        ) as u64;
         t2 = ((b >> 28i32 | b << 64i32 - 28i32)
             ^ (b >> 34i32 | b << 64i32 - 34i32)
             ^ (b >> 39i32 | b << 64i32 - 39i32))
             .wrapping_add(b & c ^ b & d ^ c & d);
-        e = (e as libc::c_ulong).wrapping_add(t1) as uint64_t as uint64_t;
+        e = (e as u64).wrapping_add(t1) as u64;
         a = t1.wrapping_add(t2);
         t += 16i32
     }
     while t < 80i32 {
-        let mut t1_0: uint64_t = 0;
-        let mut t2_0: uint64_t = 0;
+        let mut t1_0: u64 = 0;
+        let mut t2_0: u64 = 0;
         /* Not unrolled.  */
         /* Unrolled to interweave the chain variables.  */
         t1_0 = h
@@ -1914,7 +1913,7 @@ unsafe extern "C" fn __transform(
             ^ (a >> 34i32 | a << 64i32 - 34i32)
             ^ (a >> 39i32 | a << 64i32 - 39i32))
             .wrapping_add(a & b ^ a & c ^ b & c);
-        d = (d as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        d = (d as u64).wrapping_add(t1_0) as u64;
         h = t1_0.wrapping_add(t2_0);
         t1_0 = g
             .wrapping_add(
@@ -1929,7 +1928,7 @@ unsafe extern "C" fn __transform(
             ^ (h >> 34i32 | h << 64i32 - 34i32)
             ^ (h >> 39i32 | h << 64i32 - 39i32))
             .wrapping_add(h & a ^ h & b ^ a & b);
-        c = (c as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        c = (c as u64).wrapping_add(t1_0) as u64;
         g = t1_0.wrapping_add(t2_0);
         t1_0 = f
             .wrapping_add(
@@ -1944,7 +1943,7 @@ unsafe extern "C" fn __transform(
             ^ (g >> 34i32 | g << 64i32 - 34i32)
             ^ (g >> 39i32 | g << 64i32 - 39i32))
             .wrapping_add(g & h ^ g & a ^ h & a);
-        b = (b as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        b = (b as u64).wrapping_add(t1_0) as u64;
         f = t1_0.wrapping_add(t2_0);
         t1_0 = e
             .wrapping_add(
@@ -1959,7 +1958,7 @@ unsafe extern "C" fn __transform(
             ^ (f >> 34i32 | f << 64i32 - 34i32)
             ^ (f >> 39i32 | f << 64i32 - 39i32))
             .wrapping_add(f & g ^ f & h ^ g & h);
-        a = (a as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        a = (a as u64).wrapping_add(t1_0) as u64;
         e = t1_0.wrapping_add(t2_0);
         t1_0 = d
             .wrapping_add(
@@ -1974,7 +1973,7 @@ unsafe extern "C" fn __transform(
             ^ (e >> 34i32 | e << 64i32 - 34i32)
             ^ (e >> 39i32 | e << 64i32 - 39i32))
             .wrapping_add(e & f ^ e & g ^ f & g);
-        h = (h as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        h = (h as u64).wrapping_add(t1_0) as u64;
         d = t1_0.wrapping_add(t2_0);
         t1_0 = c
             .wrapping_add(
@@ -1989,7 +1988,7 @@ unsafe extern "C" fn __transform(
             ^ (d >> 34i32 | d << 64i32 - 34i32)
             ^ (d >> 39i32 | d << 64i32 - 39i32))
             .wrapping_add(d & e ^ d & f ^ e & f);
-        g = (g as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        g = (g as u64).wrapping_add(t1_0) as u64;
         c = t1_0.wrapping_add(t2_0);
         t1_0 = b
             .wrapping_add(
@@ -2004,7 +2003,7 @@ unsafe extern "C" fn __transform(
             ^ (c >> 34i32 | c << 64i32 - 34i32)
             ^ (c >> 39i32 | c << 64i32 - 39i32))
             .wrapping_add(c & d ^ c & e ^ d & e);
-        f = (f as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        f = (f as u64).wrapping_add(t1_0) as u64;
         b = t1_0.wrapping_add(t2_0);
         t1_0 = a
             .wrapping_add(
@@ -2019,7 +2018,7 @@ unsafe extern "C" fn __transform(
             ^ (b >> 34i32 | b << 64i32 - 34i32)
             ^ (b >> 39i32 | b << 64i32 - 39i32))
             .wrapping_add(b & c ^ b & d ^ c & d);
-        e = (e as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        e = (e as u64).wrapping_add(t1_0) as u64;
         a = t1_0.wrapping_add(t2_0);
         t1_0 = h
             .wrapping_add(
@@ -2034,7 +2033,7 @@ unsafe extern "C" fn __transform(
             ^ (a >> 34i32 | a << 64i32 - 34i32)
             ^ (a >> 39i32 | a << 64i32 - 39i32))
             .wrapping_add(a & b ^ a & c ^ b & c);
-        d = (d as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        d = (d as u64).wrapping_add(t1_0) as u64;
         h = t1_0.wrapping_add(t2_0);
         t1_0 = g
             .wrapping_add(
@@ -2049,7 +2048,7 @@ unsafe extern "C" fn __transform(
             ^ (h >> 34i32 | h << 64i32 - 34i32)
             ^ (h >> 39i32 | h << 64i32 - 39i32))
             .wrapping_add(h & a ^ h & b ^ a & b);
-        c = (c as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        c = (c as u64).wrapping_add(t1_0) as u64;
         g = t1_0.wrapping_add(t2_0);
         t1_0 = f
             .wrapping_add(
@@ -2064,7 +2063,7 @@ unsafe extern "C" fn __transform(
             ^ (g >> 34i32 | g << 64i32 - 34i32)
             ^ (g >> 39i32 | g << 64i32 - 39i32))
             .wrapping_add(g & h ^ g & a ^ h & a);
-        b = (b as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        b = (b as u64).wrapping_add(t1_0) as u64;
         f = t1_0.wrapping_add(t2_0);
         t1_0 = e
             .wrapping_add(
@@ -2079,7 +2078,7 @@ unsafe extern "C" fn __transform(
             ^ (f >> 34i32 | f << 64i32 - 34i32)
             ^ (f >> 39i32 | f << 64i32 - 39i32))
             .wrapping_add(f & g ^ f & h ^ g & h);
-        a = (a as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        a = (a as u64).wrapping_add(t1_0) as u64;
         e = t1_0.wrapping_add(t2_0);
         t1_0 = d
             .wrapping_add(
@@ -2094,7 +2093,7 @@ unsafe extern "C" fn __transform(
             ^ (e >> 34i32 | e << 64i32 - 34i32)
             ^ (e >> 39i32 | e << 64i32 - 39i32))
             .wrapping_add(e & f ^ e & g ^ f & g);
-        h = (h as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        h = (h as u64).wrapping_add(t1_0) as u64;
         d = t1_0.wrapping_add(t2_0);
         t1_0 = c
             .wrapping_add(
@@ -2109,7 +2108,7 @@ unsafe extern "C" fn __transform(
             ^ (d >> 34i32 | d << 64i32 - 34i32)
             ^ (d >> 39i32 | d << 64i32 - 39i32))
             .wrapping_add(d & e ^ d & f ^ e & f);
-        g = (g as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        g = (g as u64).wrapping_add(t1_0) as u64;
         c = t1_0.wrapping_add(t2_0);
         t1_0 = b
             .wrapping_add(
@@ -2124,7 +2123,7 @@ unsafe extern "C" fn __transform(
             ^ (c >> 34i32 | c << 64i32 - 34i32)
             ^ (c >> 39i32 | c << 64i32 - 39i32))
             .wrapping_add(c & d ^ c & e ^ d & e);
-        f = (f as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        f = (f as u64).wrapping_add(t1_0) as u64;
         b = t1_0.wrapping_add(t2_0);
         t1_0 = a
             .wrapping_add(
@@ -2139,34 +2138,34 @@ unsafe extern "C" fn __transform(
             ^ (b >> 34i32 | b << 64i32 - 34i32)
             ^ (b >> 39i32 | b << 64i32 - 39i32))
             .wrapping_add(b & c ^ b & d ^ c & d);
-        e = (e as libc::c_ulong).wrapping_add(t1_0) as uint64_t as uint64_t;
+        e = (e as u64).wrapping_add(t1_0) as u64;
         a = t1_0.wrapping_add(t2_0);
         t += 16i32
     }
     /* Update chaining vars.  */
-    (*hd).h0 = ((*hd).h0 as libc::c_ulong).wrapping_add(a) as uint64_t as uint64_t;
-    (*hd).h1 = ((*hd).h1 as libc::c_ulong).wrapping_add(b) as uint64_t as uint64_t;
-    (*hd).h2 = ((*hd).h2 as libc::c_ulong).wrapping_add(c) as uint64_t as uint64_t;
-    (*hd).h3 = ((*hd).h3 as libc::c_ulong).wrapping_add(d) as uint64_t as uint64_t;
-    (*hd).h4 = ((*hd).h4 as libc::c_ulong).wrapping_add(e) as uint64_t as uint64_t;
-    (*hd).h5 = ((*hd).h5 as libc::c_ulong).wrapping_add(f) as uint64_t as uint64_t;
-    (*hd).h6 = ((*hd).h6 as libc::c_ulong).wrapping_add(g) as uint64_t as uint64_t;
-    (*hd).h7 = ((*hd).h7 as libc::c_ulong).wrapping_add(h) as uint64_t as uint64_t;
-    return ((8i32 + 16i32) as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<uint64_t>() as libc::c_ulong)
-        .wrapping_add(::std::mem::size_of::<u32>() as libc::c_ulong)
+    (*hd).h0 = ((*hd).h0 as u64).wrapping_add(a) as u64;
+    (*hd).h1 = ((*hd).h1 as u64).wrapping_add(b) as u64;
+    (*hd).h2 = ((*hd).h2 as u64).wrapping_add(c) as u64;
+    (*hd).h3 = ((*hd).h3 as u64).wrapping_add(d) as u64;
+    (*hd).h4 = ((*hd).h4 as u64).wrapping_add(e) as u64;
+    (*hd).h5 = ((*hd).h5 as u64).wrapping_add(f) as u64;
+    (*hd).h6 = ((*hd).h6 as u64).wrapping_add(g) as u64;
+    (*hd).h7 = ((*hd).h7 as u64).wrapping_add(h) as u64;
+    return ((8i32 + 16i32) as u64)
+        .wrapping_mul(::std::mem::size_of::<u64>() as u64)
+        .wrapping_add(::std::mem::size_of::<u32>() as u64)
         .wrapping_add(
-            (3i32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as libc::c_ulong),
+            (3i32 as u64)
+                .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
         ) as libc::c_uint;
 }
 unsafe extern "C" fn _SHA512_transform(
     mut ctx: *mut SHA512_CONTEXT,
     mut data: *const libc::c_uchar,
 ) -> libc::c_uint {
-    return (__transform(&mut (*ctx).state, data) as libc::c_ulong).wrapping_add(
-        (3i32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as libc::c_ulong),
+    return (__transform(&mut (*ctx).state, data) as u64).wrapping_add(
+        (3i32 as u64)
+            .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
     ) as libc::c_uint;
 }
 /* The routine final terminates the computation and
@@ -2227,9 +2226,9 @@ pub unsafe extern "C" fn SHA512_write(
 #[no_mangle]
 pub unsafe extern "C" fn SHA512_final(mut outbuf: *mut libc::c_uchar, mut hd: *mut SHA512_CONTEXT) {
     let mut stack_burn_depth: libc::c_uint = 0;
-    let mut t: uint64_t = 0;
-    let mut msb: uint64_t = 0;
-    let mut lsb: uint64_t = 0;
+    let mut t: u64 = 0;
+    let mut msb: u64 = 0;
+    let mut lsb: u64 = 0;
     let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
     SHA512_write(hd, 0 as *const libc::c_uchar, 0i32 as libc::c_uint);
     /* flush */
@@ -2239,7 +2238,7 @@ pub unsafe extern "C" fn SHA512_final(mut outbuf: *mut libc::c_uchar, mut hd: *m
     msb = t >> 57i32;
     /* add the count */
     t = lsb;
-    lsb = (lsb as libc::c_ulong).wrapping_add((*hd).count as libc::c_ulong) as uint64_t as uint64_t;
+    lsb = (lsb as u64).wrapping_add((*hd).count as u64) as u64;
     if lsb < t {
         msb = msb.wrapping_add(1)
     }
@@ -2274,7 +2273,7 @@ pub unsafe extern "C" fn SHA512_final(mut outbuf: *mut libc::c_uchar, mut hd: *m
         memset(
             (*hd).buf.as_mut_ptr() as *mut libc::c_void,
             0i32,
-            112i32 as libc::c_ulong,
+            112i32 as u64,
         );
     }
     /* flush */
@@ -2284,23 +2283,23 @@ pub unsafe extern "C" fn SHA512_final(mut outbuf: *mut libc::c_uchar, mut hd: *m
     stack_burn_depth = _SHA512_transform(hd, (*hd).buf.as_mut_ptr());
     _gcry_burn_stack(stack_burn_depth as libc::c_int);
     p = outbuf;
-    *(p as *mut uint64_t) = _gcry_bswap64((*hd).state.h0);
+    *(p as *mut u64) = _gcry_bswap64((*hd).state.h0);
     p = p.offset(8);
-    *(p as *mut uint64_t) = _gcry_bswap64((*hd).state.h1);
+    *(p as *mut u64) = _gcry_bswap64((*hd).state.h1);
     p = p.offset(8);
-    *(p as *mut uint64_t) = _gcry_bswap64((*hd).state.h2);
+    *(p as *mut u64) = _gcry_bswap64((*hd).state.h2);
     p = p.offset(8);
-    *(p as *mut uint64_t) = _gcry_bswap64((*hd).state.h3);
+    *(p as *mut u64) = _gcry_bswap64((*hd).state.h3);
     p = p.offset(8);
-    *(p as *mut uint64_t) = _gcry_bswap64((*hd).state.h4);
+    *(p as *mut u64) = _gcry_bswap64((*hd).state.h4);
     p = p.offset(8);
-    *(p as *mut uint64_t) = _gcry_bswap64((*hd).state.h5);
+    *(p as *mut u64) = _gcry_bswap64((*hd).state.h5);
     p = p.offset(8);
     /* Note that these last two chunks are included even for SHA384.
     We just ignore them. */
-    *(p as *mut uint64_t) = _gcry_bswap64((*hd).state.h6);
+    *(p as *mut u64) = _gcry_bswap64((*hd).state.h6);
     p = p.offset(8);
-    *(p as *mut uint64_t) = _gcry_bswap64((*hd).state.h7);
+    *(p as *mut u64) = _gcry_bswap64((*hd).state.h7);
     p = p.offset(8);
 }
 /*
@@ -2407,7 +2406,7 @@ unsafe extern "C" fn do_arcfour_setkey(
     memset(
         karr.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        256i32 as libc::c_ulong,
+        256i32 as u64,
     );
 }
 #[no_mangle]
@@ -2439,24 +2438,24 @@ pub unsafe extern "C" fn AES_ecb_encrypt(
     let mut len: size_t = 0;
     ctx = &mut aes;
     *cipher_len = plain_len;
-    *cipher = new((*cipher_len as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+    *cipher = new((*cipher_len as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
         as u32) as *mut libc::c_uchar;
     (*ctx).nrounds = rijndaelSetupEncrypt(
         (*ctx).rk.as_mut_ptr(),
         key,
-        key_len.wrapping_mul(8i32 as libc::c_ulong) as libc::c_int,
+        key_len.wrapping_mul(8i32 as u64) as libc::c_int,
     );
     inptr = plain;
     outptr = *cipher;
     len = plain_len;
-    while len >= 16i32 as libc::c_ulong {
+    while len >= 16i32 as u64 {
         rijndaelEncrypt((*ctx).rk.as_mut_ptr(), (*ctx).nrounds, inptr, outptr);
         inptr = inptr.offset(16);
         outptr = outptr.offset(16);
-        len = (len as libc::c_ulong).wrapping_sub(16i32 as libc::c_ulong) as size_t as size_t
+        len = (len as u64).wrapping_sub(16i32 as u64) as size_t as size_t
     }
-    if len > 0i32 as libc::c_ulong {
+    if len > 0i32 as u64 {
         let mut block: [libc::c_uchar; 16] = [0; 16];
         memcpy(
             block.as_mut_ptr() as *mut libc::c_void,
@@ -2503,11 +2502,11 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
         memcpy(
             (*ctx).iv.as_mut_ptr() as *mut libc::c_void,
             iv as *const libc::c_void,
-            16i32 as libc::c_ulong,
+            16i32 as u64,
         );
     } else {
         i = 0i32 as size_t;
-        while i < 16i32 as libc::c_ulong {
+        while i < 16i32 as u64 {
             (*ctx).iv[i as usize] = (rand() % 256i32) as libc::c_uchar;
             i = i.wrapping_add(1)
         }
@@ -2518,23 +2517,23 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
      * of 16.
      */
     padbytes = (if padding != 0 {
-        (16i32 as libc::c_ulong).wrapping_sub(plain_len.wrapping_rem(16i32 as libc::c_ulong))
-    } else if plain_len.wrapping_rem(16i32 as libc::c_ulong) != 0 {
-        (16i32 as libc::c_ulong).wrapping_sub(plain_len.wrapping_rem(16i32 as libc::c_ulong))
+        (16i32 as u64).wrapping_sub(plain_len.wrapping_rem(16i32 as u64))
+    } else if plain_len.wrapping_rem(16i32 as u64) != 0 {
+        (16i32 as u64).wrapping_sub(plain_len.wrapping_rem(16i32 as u64))
     } else {
-        0i32 as libc::c_ulong
+        0i32 as u64
     }) as libc::c_int;
     /* We do NOT write IV to the output stream if IV is explicitly specified. */
     *cipher_len = plain_len
-        .wrapping_add((if !iv.is_null() { 0i32 } else { 16i32 }) as libc::c_ulong)
-        .wrapping_add(padbytes as libc::c_ulong);
-    *cipher = new((*cipher_len as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        .wrapping_add((if !iv.is_null() { 0i32 } else { 16i32 }) as u64)
+        .wrapping_add(padbytes as u64);
+    *cipher = new((*cipher_len as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
         as u32) as *mut libc::c_uchar;
     (*ctx).nrounds = rijndaelSetupEncrypt(
         (*ctx).rk.as_mut_ptr(),
         key,
-        key_len.wrapping_mul(8i32 as libc::c_ulong) as libc::c_int,
+        key_len.wrapping_mul(8i32 as u64) as libc::c_int,
     );
     inptr = plain;
     outptr = *cipher;
@@ -2542,14 +2541,14 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
         memcpy(
             outptr as *mut libc::c_void,
             (*ctx).iv.as_mut_ptr() as *const libc::c_void,
-            16i32 as libc::c_ulong,
+            16i32 as u64,
         );
         outptr = outptr.offset(16)
     }
     len = plain_len;
-    while len >= 16i32 as libc::c_ulong {
+    while len >= 16i32 as u64 {
         i = 0i32 as size_t;
-        while i < 16i32 as libc::c_ulong {
+        while i < 16i32 as u64 {
             block[i as usize] = (*inptr.offset(i as isize) as libc::c_int
                 ^ (*ctx).iv[i as usize] as libc::c_int)
                 as libc::c_uchar;
@@ -2564,13 +2563,13 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
         memcpy(
             (*ctx).iv.as_mut_ptr() as *mut libc::c_void,
             outptr as *const libc::c_void,
-            16i32 as libc::c_ulong,
+            16i32 as u64,
         );
         inptr = inptr.offset(16);
         outptr = outptr.offset(16);
-        len = (len as libc::c_ulong).wrapping_sub(16i32 as libc::c_ulong) as size_t as size_t
+        len = (len as u64).wrapping_sub(16i32 as u64) as size_t as size_t
     }
-    if len > 0i32 as libc::c_ulong || padding != 0 {
+    if len > 0i32 as u64 || padding != 0 {
         i = 0i32 as size_t;
         while i < len {
             block[i as usize] = (*inptr.offset(i as isize) as libc::c_int
@@ -2579,7 +2578,7 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
             i = i.wrapping_add(1)
         }
         i = len;
-        while i < 16i32 as libc::c_ulong {
+        while i < 16i32 as u64 {
             block[i as usize] = (padbytes ^ (*ctx).iv[i as usize] as libc::c_int) as libc::c_uchar;
             i = i.wrapping_add(1)
         }
@@ -2592,7 +2591,7 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
         memcpy(
             (*ctx).iv.as_mut_ptr() as *mut libc::c_void,
             outptr as *const libc::c_void,
-            16i32 as libc::c_ulong,
+            16i32 as u64,
         );
         inptr = inptr.offset(16);
         outptr = outptr.offset(16)

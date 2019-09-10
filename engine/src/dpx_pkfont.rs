@@ -54,10 +54,10 @@ extern "C" {
     #[no_mangle]
     fn fread(
         _: *mut libc::c_void,
-        _: libc::c_ulong,
-        _: libc::c_ulong,
+        _: u64,
+        _: u64,
         _: *mut FILE,
-    ) -> libc::c_ulong;
+    ) -> u64;
     #[no_mangle]
     fn fgetc(__stream: *mut FILE) -> libc::c_int;
     #[no_mangle]
@@ -78,7 +78,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn floor(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
@@ -177,7 +177,7 @@ pub type __int32_t = libc::c_int;
 pub type __off_t = libc::c_long;
 pub type __off64_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
@@ -484,8 +484,8 @@ unsafe extern "C" fn pk_decode_packed(
     rowbytes = wd
         .wrapping_add(7i32 as libc::c_uint)
         .wrapping_div(8i32 as libc::c_uint);
-    rowptr = new((rowbytes as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+    rowptr = new((rowbytes as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
         as u32) as *mut libc::c_uchar;
     /* repeat count is applied to the *current* row.
      * "run" can span across rows.
@@ -501,7 +501,7 @@ unsafe extern "C" fn pk_decode_packed(
         memset(
             rowptr as *mut libc::c_void,
             0xffi32,
-            rowbytes as libc::c_ulong,
+            rowbytes as u64,
         );
         rowbits_left = wd;
         /* Fill run left over from previous row */
@@ -647,10 +647,10 @@ unsafe extern "C" fn pk_decode_bitmap(
     rowbytes = wd
         .wrapping_add(7i32 as libc::c_uint)
         .wrapping_div(8i32 as libc::c_uint);
-    rowptr = new((rowbytes as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+    rowptr = new((rowbytes as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
         as u32) as *mut libc::c_uchar;
-    memset(rowptr as *mut libc::c_void, 0i32, rowbytes as libc::c_ulong);
+    memset(rowptr as *mut libc::c_void, 0i32, rowbytes as u64);
     /* Flip. PK bitmap is not byte aligned for each rows. */
     i = 0i32 as u32; /* flip bit */
     j = 0i32 as u32;
@@ -667,7 +667,7 @@ unsafe extern "C" fn pk_decode_bitmap(
         j = j.wrapping_add(1);
         if j == wd {
             send_out(rowptr, rowbytes, stream);
-            memset(rowptr as *mut libc::c_void, 0i32, rowbytes as libc::c_ulong);
+            memset(rowptr as *mut libc::c_void, 0i32, rowbytes as u64);
             j = 0i32 as u32
         }
         i = i.wrapping_add(1)
@@ -963,7 +963,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
     memset(
         charavail.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        256i32 as libc::c_ulong,
+        256i32 as u64,
     );
     charprocs = pdf_new_dict();
     /* Include bitmap as 72dpi image:
@@ -1049,16 +1049,16 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                 } else {
                     pkh.bm_voff as libc::c_double
                 };
-                pkt_ptr = new((pkh.pkt_len as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+                pkt_ptr = new((pkh.pkt_len as u64)
+                    .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
                     as u32) as *mut libc::c_uchar;
                 bytesread = fread(
                     pkt_ptr as *mut libc::c_void,
-                    1i32 as libc::c_ulong,
-                    pkh.pkt_len as libc::c_ulong,
+                    1i32 as u64,
+                    pkh.pkt_len as u64,
                     fp,
                 );
-                if bytesread != pkh.pkt_len as libc::c_ulong {
+                if bytesread != pkh.pkt_len as u64 {
                     _tt_abort(
                         b"Only %zu bytes PK packet read. (expected %d bytes)\x00" as *const u8
                             as *const libc::c_char,

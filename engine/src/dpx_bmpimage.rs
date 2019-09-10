@@ -14,7 +14,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn ttstub_input_seek(
         handle: rust_input_handle_t,
@@ -132,7 +132,7 @@ extern "C" {
 pub type __int32_t = libc::c_int;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
@@ -171,9 +171,9 @@ pub unsafe extern "C" fn check_for_bmp(mut handle: rust_input_handle_t) -> libc:
     if ttstub_input_read(
         handle,
         sigbytes.as_mut_ptr() as *mut libc::c_char,
-        ::std::mem::size_of::<[libc::c_uchar; 2]>() as libc::c_ulong,
-    ) as libc::c_ulong
-        != ::std::mem::size_of::<[libc::c_uchar; 2]>() as libc::c_ulong
+        ::std::mem::size_of::<[libc::c_uchar; 2]>() as u64,
+    ) as u64
+        != ::std::mem::size_of::<[libc::c_uchar; 2]>() as u64
         || sigbytes[0] as libc::c_int != 'B' as i32
         || sigbytes[1] as libc::c_int != 'M' as i32
     {
@@ -352,8 +352,8 @@ pub unsafe extern "C" fn bmp_include_image(
         let mut lookup: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut palette: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
         let mut bgrq: [libc::c_uchar; 4] = [0; 4];
-        palette = new(((num_palette * 3i32 + 1i32) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        palette = new(((num_palette * 3i32 + 1i32) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
         i = 0i32;
         while i < num_palette {
@@ -417,8 +417,8 @@ pub unsafe extern "C" fn bmp_include_image(
         };
         dib_rowbytes = rowbytes + padding;
         stream_data_ptr = new(
-            ((rowbytes * info.height + padding) as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+            ((rowbytes * info.height + padding) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
                 as u32,
         ) as *mut libc::c_uchar;
         n = 0i32;
@@ -437,8 +437,8 @@ pub unsafe extern "C" fn bmp_include_image(
             n += 1
         }
     } else if hdr.compression == 1i32 {
-        stream_data_ptr = new(((rowbytes * info.height) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        stream_data_ptr = new(((rowbytes * info.height) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
         if read_raster_rle8(stream_data_ptr, info.width, info.height, handle) < 0i32 {
             dpx_warning(
@@ -449,8 +449,8 @@ pub unsafe extern "C" fn bmp_include_image(
             return -1i32;
         }
     } else if hdr.compression == 2i32 {
-        stream_data_ptr = new(((rowbytes * info.height) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        stream_data_ptr = new(((rowbytes * info.height) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
         if read_raster_rle4(stream_data_ptr, info.width, info.height, handle) < 0i32 {
             dpx_warning(
@@ -667,7 +667,7 @@ unsafe extern "C" fn read_raster_rle8(
     memset(
         data_ptr as *mut libc::c_void,
         0i32,
-        (rowbytes * height) as libc::c_ulong,
+        (rowbytes * height) as u64,
     );
     v = 0i32;
     eoi = 0i32;
@@ -723,7 +723,7 @@ unsafe extern "C" fn read_raster_rle8(
                 memset(
                     p as *mut libc::c_void,
                     b1 as libc::c_int,
-                    b0 as libc::c_ulong,
+                    b0 as u64,
                 );
             }
         }
@@ -770,7 +770,7 @@ unsafe extern "C" fn read_raster_rle4(
     memset(
         data_ptr as *mut libc::c_void,
         0i32,
-        (rowbytes * height) as libc::c_ulong,
+        (rowbytes * height) as u64,
     );
     v = 0i32;
     eoi = 0i32;
@@ -856,7 +856,7 @@ unsafe extern "C" fn read_raster_rle4(
                 memset(
                     p as *mut libc::c_void,
                     b1 as libc::c_int,
-                    nbytes as libc::c_ulong,
+                    nbytes as u64,
                 );
                 h += b0 as libc::c_int;
                 if h % 2i32 != 0 {

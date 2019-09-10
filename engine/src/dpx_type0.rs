@@ -43,13 +43,13 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -204,7 +204,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_resource_reference(res_id: libc::c_int) -> *mut pdf_obj;
 }
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct Type0Font {
@@ -317,13 +317,13 @@ pub unsafe extern "C" fn Type0Font_set_verbose(mut level: libc::c_int) {
 }
 unsafe extern "C" fn new_used_chars2() -> *mut libc::c_char {
     let mut used_chars: *mut libc::c_char = 0 as *mut libc::c_char;
-    used_chars = new((8192i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    used_chars = new((8192i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     memset(
         used_chars as *mut libc::c_void,
         0i32,
-        8192i32 as libc::c_ulong,
+        8192i32 as u64,
     );
     return used_chars;
 }
@@ -404,8 +404,8 @@ unsafe extern "C" fn Type0Font_try_load_ToUnicode_stream(
 ) -> *mut pdf_obj {
     let mut cmap_name: *mut libc::c_char = new((strlen(cmap_base)
         .wrapping_add(strlen(b"-UTF-16\x00" as *const u8 as *const libc::c_char))
-        as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     let mut tounicode: *mut pdf_obj = 0 as *mut pdf_obj;
     sprintf(
@@ -510,9 +510,9 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
     } else {
         let mut cmap_base: *mut libc::c_char = new((strlen((*csi).registry)
             .wrapping_add(strlen((*csi).ordering))
-            .wrapping_add(2i32 as libc::c_ulong)
-            as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            .wrapping_add(2i32 as u64)
+            as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         sprintf(
             cmap_base,
@@ -742,8 +742,8 @@ pub unsafe extern "C" fn Type0Font_cache_find(
             (__cache.capacity as libc::c_uint).wrapping_add(16u32) as libc::c_int as libc::c_int;
         __cache.fonts = renew(
             __cache.fonts as *mut libc::c_void,
-            (__cache.capacity as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<Type0Font>() as libc::c_ulong)
+            (__cache.capacity as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<Type0Font>() as u64)
                 as u32,
         ) as *mut Type0Font
     }
@@ -759,8 +759,8 @@ pub unsafe extern "C" fn Type0Font_cache_find(
     if wmode != 0 {
         (*font).encoding = new(
             (strlen(b"Identity-V\x00" as *const u8 as *const libc::c_char)
-                .wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                .wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                 as u32,
         ) as *mut libc::c_char;
         strcpy(
@@ -770,8 +770,8 @@ pub unsafe extern "C" fn Type0Font_cache_find(
     } else {
         (*font).encoding = new(
             (strlen(b"Identity-H\x00" as *const u8 as *const libc::c_char)
-                .wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                .wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                 as u32,
         ) as *mut libc::c_char;
         strcpy(
@@ -813,7 +813,7 @@ pub unsafe extern "C" fn Type0Font_cache_find(
      */
     fontname = CIDFont_get_fontname(cidfont); /* skip XXXXXX+ */
     if __verbose != 0 {
-        if CIDFont_get_embedding(cidfont) != 0 && strlen(fontname) > 7i32 as libc::c_ulong {
+        if CIDFont_get_embedding(cidfont) != 0 && strlen(fontname) > 7i32 as u64 {
             dpx_message(
                 b"(CID:%s)\x00" as *const u8 as *const libc::c_char,
                 fontname.offset(7),
@@ -842,9 +842,9 @@ pub unsafe extern "C" fn Type0Font_cache_find(
         1 => {
             (*font).fontname = new((strlen(fontname)
                 .wrapping_add(strlen((*font).encoding))
-                .wrapping_add(2i32 as libc::c_ulong) as u32
-                as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                .wrapping_add(2i32 as u64) as u32
+                as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                 as u32) as *mut libc::c_char;
             sprintf(
                 (*font).fontname,

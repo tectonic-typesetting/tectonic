@@ -86,13 +86,13 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
     fn strstr(_: *const libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -278,7 +278,7 @@ extern "C" {
 }
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
@@ -580,7 +580,7 @@ pub unsafe extern "C" fn pdf_font_open_type1(mut font: *mut pdf_font) -> libc::c
         memset(
             fontname.as_mut_ptr() as *mut libc::c_void,
             0i32,
-            (127i32 + 1i32) as libc::c_ulong,
+            (127i32 + 1i32) as u64,
         );
         if !is_pfb(handle) || t1_get_fontname(handle, fontname.as_mut_ptr()) < 0i32 {
             _tt_abort(
@@ -1142,8 +1142,8 @@ unsafe extern "C" fn write_fontfile(
     /*
      * Now we create FontFile data.
      */
-    stream_data_ptr = new((stream_data_len as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
+    stream_data_ptr = new((stream_data_len as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<card8>() as u64)
         as u32) as *mut card8;
     /*
      * Data Layout order as described in CFF spec., sec 2 "Data Layout".
@@ -1238,8 +1238,8 @@ unsafe extern "C" fn write_fontfile(
     offset += private_size;
     /* Finally Top DICT */
     (*topdict).data = new(
-        ((*(*topdict).offset.offset(1)).wrapping_sub(1i32 as libc::c_uint) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong) as u32,
+        ((*(*topdict).offset.offset(1)).wrapping_sub(1i32 as libc::c_uint) as u64)
+            .wrapping_mul(::std::mem::size_of::<card8>() as u64) as u32,
     ) as *mut card8;
     cff_dict_pack(
         (*cffont).topdict,
@@ -1360,8 +1360,8 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> libc::c
     if encoding_id >= 0i32 {
         enc_vec = 0 as *mut *mut libc::c_char
     } else {
-        enc_vec = new((256i32 as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as libc::c_ulong)
+        enc_vec = new((256i32 as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as u64)
             as u32) as *mut *mut libc::c_char;
         code = 0i32;
         while code <= 0xffi32 {
@@ -1379,8 +1379,8 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> libc::c
     }
     ttstub_input_close(handle);
     fullname = new(
-        (strlen(fontname).wrapping_add(8i32 as libc::c_ulong) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (strlen(fontname).wrapping_add(8i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32,
     ) as *mut libc::c_char;
     sprintf(
@@ -1443,8 +1443,8 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> libc::c
         nominalwidth = 0.0f64
     }
     /* Create CFF encoding, charset, sort glyphs */
-    GIDMap = new((1024i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<card16>() as libc::c_ulong)
+    GIDMap = new((1024i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<card16>() as u64)
         as u32) as *mut card16; /* FIXME */
     pdfcharset = pdf_new_stream(0i32);
     let mut prev: libc::c_int = 0;
@@ -1452,25 +1452,25 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> libc::c
     let mut gid: libc::c_int = 0;
     let mut glyph: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut sid: s_SID = 0;
-    (*cffont).encoding = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cff_encoding>() as libc::c_ulong)
+    (*cffont).encoding = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<cff_encoding>() as u64)
         as u32) as *mut cff_encoding;
     (*(*cffont).encoding).format = 1i32 as card8;
     (*(*cffont).encoding).num_entries = 0i32 as card8;
-    (*(*cffont).encoding).data.range1 = new((256i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cff_range1>() as libc::c_ulong)
+    (*(*cffont).encoding).data.range1 = new((256i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<cff_range1>() as u64)
         as u32) as *mut cff_range1;
     (*(*cffont).encoding).num_supps = 0i32 as card8;
-    (*(*cffont).encoding).supp = new((256i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cff_map>() as libc::c_ulong)
+    (*(*cffont).encoding).supp = new((256i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<cff_map>() as u64)
         as u32) as *mut cff_map;
-    charset = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cff_charsets>() as libc::c_ulong)
+    charset = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<cff_charsets>() as u64)
         as u32) as *mut cff_charsets;
     (*charset).format = 0i32 as card8;
     (*charset).num_entries = 0i32 as card16;
-    (*charset).data.glyphs = new((1024i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<s_SID>() as libc::c_ulong)
+    (*charset).data.glyphs = new((1024i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<s_SID>() as u64)
         as u32) as *mut s_SID;
     gid =
         cff_glyph_lookup(cffont, b".notdef\x00" as *const u8 as *const libc::c_char) as libc::c_int;
@@ -1586,8 +1586,8 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> libc::c
         (*(*cffont).encoding).supp =
             mfree((*(*cffont).encoding).supp as *mut libc::c_void) as *mut cff_map
     }
-    widths = new(((*(*cffont).cstrings).count as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_double>() as libc::c_ulong)
+    widths = new(((*(*cffont).cstrings).count as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_double>() as u64)
         as u32) as *mut libc::c_double;
     /* No more strings will be added. The Type 1 seac operator may add another
      * glyph but the glyph name of those glyphs are contained in standard
@@ -1634,8 +1634,8 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> libc::c
             dstlen_max += 65536i32 * 2i32;
             (*cstring).data = renew(
                 (*cstring).data as *mut libc::c_void,
-                (dstlen_max as u32 as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
+                (dstlen_max as u32 as u64)
+                    .wrapping_mul(::std::mem::size_of::<card8>() as u64)
                     as u32,
             ) as *mut card8
         }

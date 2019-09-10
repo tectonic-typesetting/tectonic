@@ -36,11 +36,11 @@ extern "C" {
     /* A deeper object hierarchy will be considered as (illegal) loop. */
     pub type pdf_obj;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: libc::c_ulong)
+    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: u64)
         -> *mut libc::c_char;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
@@ -51,7 +51,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -1370,8 +1370,8 @@ unsafe extern "C" fn need_more_fonts(mut n: libc::c_uint) {
         max_loaded_fonts = max_loaded_fonts.wrapping_add(16u32);
         loaded_fonts = renew(
             loaded_fonts as *mut libc::c_void,
-            (max_loaded_fonts as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<loaded_font>() as libc::c_ulong)
+            (max_loaded_fonts as u64)
+                .wrapping_mul(::std::mem::size_of::<loaded_font>() as u64)
                 as u32,
         ) as *mut loaded_font
     };
@@ -1397,8 +1397,8 @@ unsafe extern "C" fn get_and_buffer_unsigned_byte(mut handle: rust_input_handle_
         dvi_page_buf_size = dvi_page_buf_size.wrapping_add(0x10000u32);
         dvi_page_buffer = renew(
             dvi_page_buffer as *mut libc::c_void,
-            (dvi_page_buf_size as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+            (dvi_page_buf_size as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
                 as u32,
         ) as *mut libc::c_uchar
     }
@@ -1422,8 +1422,8 @@ unsafe extern "C" fn get_and_buffer_bytes(
             .wrapping_add(0x10000u32);
         dvi_page_buffer = renew(
             dvi_page_buffer as *mut libc::c_void,
-            (dvi_page_buf_size as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+            (dvi_page_buf_size as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
                 as u32,
         ) as *mut libc::c_uchar
     }
@@ -1693,8 +1693,8 @@ unsafe extern "C" fn get_page_info(mut post_location: int32_t) {
             num_pages,
         );
     }
-    page_loc = new((num_pages as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<u32>() as libc::c_ulong)
+    page_loc = new((num_pages as u64)
+        .wrapping_mul(::std::mem::size_of::<u32>() as u64)
         as u32) as *mut u32;
     ttstub_input_seek(dvi_handle, (post_location + 1i32) as ssize_t, 0i32);
     *page_loc.offset(num_pages.wrapping_sub(1i32 as libc::c_uint) as isize) =
@@ -1793,8 +1793,8 @@ unsafe extern "C" fn read_font_record(mut tex_id: u32) {
         max_def_fonts = max_def_fonts.wrapping_add(16u32);
         def_fonts = renew(
             def_fonts as *mut libc::c_void,
-            (max_def_fonts as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<font_def>() as libc::c_ulong)
+            (max_def_fonts as u64)
+                .wrapping_mul(::std::mem::size_of::<font_def>() as u64)
                 as u32,
         ) as *mut font_def
     }
@@ -1811,8 +1811,8 @@ unsafe extern "C" fn read_font_record(mut tex_id: u32) {
     );
     dir_length = tt_get_unsigned_byte(dvi_handle) as libc::c_int;
     name_length = tt_get_unsigned_byte(dvi_handle) as libc::c_int;
-    directory = new(((dir_length + 1i32) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    directory = new(((dir_length + 1i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     if ttstub_input_read(dvi_handle, directory, dir_length as size_t) != dir_length as libc::c_long
     {
@@ -1820,8 +1820,8 @@ unsafe extern "C" fn read_font_record(mut tex_id: u32) {
     }
     *directory.offset(dir_length as isize) = '\u{0}' as i32 as libc::c_char;
     free(directory as *mut libc::c_void);
-    font_name = new(((name_length + 1i32) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    font_name = new(((name_length + 1i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     if ttstub_input_read(dvi_handle, font_name, name_length as size_t)
         != name_length as libc::c_long
@@ -1854,8 +1854,8 @@ unsafe extern "C" fn read_native_font_record(mut tex_id: u32) {
         max_def_fonts = max_def_fonts.wrapping_add(16u32);
         def_fonts = renew(
             def_fonts as *mut libc::c_void,
-            (max_def_fonts as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<font_def>() as libc::c_ulong)
+            (max_def_fonts as u64)
+                .wrapping_mul(::std::mem::size_of::<font_def>() as u64)
                 as u32,
         ) as *mut font_def
     }
@@ -1866,8 +1866,8 @@ unsafe extern "C" fn read_native_font_record(mut tex_id: u32) {
     );
     flags = tt_get_unsigned_pair(dvi_handle) as libc::c_uint;
     len = tt_get_unsigned_byte(dvi_handle) as libc::c_int;
-    font_name = new(((len + 1i32) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    font_name = new(((len + 1i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     if ttstub_input_read(dvi_handle, font_name, len as size_t) != len as libc::c_long {
         _tt_abort(invalid_signature.as_ptr());
@@ -2123,7 +2123,7 @@ pub unsafe extern "C" fn dvi_locate_font(
     memset(
         &mut *loaded_fonts.offset(cur_id as isize) as *mut loaded_font as *mut libc::c_void,
         0i32,
-        ::std::mem::size_of::<loaded_font>() as libc::c_ulong,
+        ::std::mem::size_of::<loaded_font>() as u64,
     );
     /* TFM must exist here. */
     (*loaded_fonts.offset(cur_id as isize)).tfm_id = tfm_open(tfm_name, 1i32);
@@ -2324,7 +2324,7 @@ unsafe extern "C" fn dvi_locate_native_font(
     num_loaded_fonts = num_loaded_fonts.wrapping_add(1);
     cur_id = fresh17 as libc::c_int;
     fontmap_key =
-        xmalloc(strlen(filename).wrapping_add(40i32 as libc::c_ulong)) as *mut libc::c_char;
+        xmalloc(strlen(filename).wrapping_add(40i32 as u64)) as *mut libc::c_char;
     sprintf(
         fontmap_key,
         b"%s/%u/%c/%d/%d/%d\x00" as *const u8 as *const libc::c_char,
@@ -2354,7 +2354,7 @@ unsafe extern "C" fn dvi_locate_native_font(
     memset(
         &mut *loaded_fonts.offset(cur_id as isize) as *mut loaded_font as *mut libc::c_void,
         0i32,
-        ::std::mem::size_of::<loaded_font>() as libc::c_ulong,
+        ::std::mem::size_of::<loaded_font>() as u64,
     );
     (*loaded_fonts.offset(cur_id as isize)).font_id = pdf_dev_locate_font(fontmap_key, ptsize);
     (*loaded_fonts.offset(cur_id as isize)).size = ptsize;
@@ -2373,8 +2373,8 @@ unsafe extern "C" fn dvi_locate_native_font(
         memset(
             enc_vec.as_mut_ptr() as *mut libc::c_void,
             0i32,
-            (256i32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as libc::c_ulong),
+            (256i32 as u64)
+                .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as u64),
         );
         cffont = t1_load_font(enc_vec.as_mut_ptr(), 0i32, handle);
         if cffont.is_null() {
@@ -3063,8 +3063,8 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: libc::c_int) {
                 i = i.wrapping_add(1)
             }
         } else {
-            let mut unicodes: *mut uint16_t = new((slen as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<uint16_t>() as libc::c_ulong)
+            let mut unicodes: *mut uint16_t = new((slen as u64)
+                .wrapping_mul(::std::mem::size_of::<uint16_t>() as u64)
                 as u32) as *mut uint16_t;
             i = 0i32 as libc::c_uint;
             while i < slen {
@@ -3087,11 +3087,11 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: libc::c_int) {
     }
     slen = get_buffered_unsigned_pair();
     xloc = new(
-        (slen as libc::c_ulong).wrapping_mul(::std::mem::size_of::<spt_t>() as libc::c_ulong)
+        (slen as u64).wrapping_mul(::std::mem::size_of::<spt_t>() as u64)
             as u32,
     ) as *mut spt_t;
     yloc = new(
-        (slen as libc::c_ulong).wrapping_mul(::std::mem::size_of::<spt_t>() as libc::c_ulong)
+        (slen as u64).wrapping_mul(::std::mem::size_of::<spt_t>() as u64)
             as u32,
     ) as *mut spt_t;
     i = 0i32 as libc::c_uint;
@@ -3545,8 +3545,8 @@ pub unsafe extern "C" fn dvi_init(
     get_dvi_fonts(post_location);
     clear_state();
     dvi_page_buf_size = 0x10000u32;
-    dvi_page_buffer = new((dvi_page_buf_size as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+    dvi_page_buffer = new((dvi_page_buf_size as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
         as u32) as *mut libc::c_uchar;
     return dvi2pts;
 }
@@ -3685,7 +3685,7 @@ unsafe extern "C" fn read_length(
             u /= if mag != 0.0f64 { mag } else { 1.0f64 };
             q = q.offset(strlen(b"true\x00" as *const u8 as *const libc::c_char) as isize)
         }
-        if strlen(q) == 0i32 as libc::c_ulong {
+        if strlen(q) == 0i32 as u64 {
             /* "true" was a separate word from the units */
             free(qq as *mut libc::c_void);
             skip_white(&mut p, endptr);
@@ -3911,7 +3911,7 @@ unsafe extern "C" fn scan_special(
                             strncpy(
                                 owner_pw,
                                 pdf_string_value(obj) as *const libc::c_char,
-                                127i32 as libc::c_ulong,
+                                127i32 as u64,
                             );
                         }
                         pdf_release_obj(obj);
@@ -3925,7 +3925,7 @@ unsafe extern "C" fn scan_special(
                             strncpy(
                                 user_pw,
                                 pdf_string_value(obj) as *const libc::c_char,
-                                127i32 as libc::c_ulong,
+                                127i32 as u64,
                             );
                         }
                         pdf_release_obj(obj);
@@ -4069,8 +4069,8 @@ pub unsafe extern "C" fn dvi_scan_specials(
                     .wrapping_add(0x10000u32);
                 dvi_page_buffer = renew(
                     dvi_page_buffer as *mut libc::c_void,
-                    (dvi_page_buf_size as libc::c_ulong)
-                        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+                    (dvi_page_buf_size as u64)
+                        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
                         as u32,
                 ) as *mut libc::c_uchar
             }

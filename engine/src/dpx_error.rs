@@ -27,7 +27,7 @@ extern "C" {
     #[no_mangle]
     fn vsnprintf(
         _: *mut libc::c_char,
-        _: libc::c_ulong,
+        _: u64,
         _: *const libc::c_char,
         _: ::std::ffi::VaList,
     ) -> libc::c_int;
@@ -42,7 +42,7 @@ pub struct __va_list_tag {
     pub reg_save_area: *mut libc::c_void,
 }
 pub type va_list = __builtin_va_list;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type rust_output_handle_t = *mut libc::c_void;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -95,15 +95,15 @@ unsafe extern "C" fn _dpx_print_to_stdout(
     let mut n: libc::c_int = 0;
     n = vsnprintf(
         _dpx_message_buf.as_mut_ptr(),
-        ::std::mem::size_of::<[libc::c_char; 1024]>() as libc::c_ulong,
+        ::std::mem::size_of::<[libc::c_char; 1024]>() as u64,
         fmt,
         argp.as_va_list(),
     );
     /* n is the number of bytes the vsnprintf() wanted to write -- it might be
      * bigger than sizeof(buf). */
-    if n as libc::c_ulong >= ::std::mem::size_of::<[libc::c_char; 1024]>() as libc::c_ulong {
-        n = (::std::mem::size_of::<[libc::c_char; 1024]>() as libc::c_ulong)
-            .wrapping_sub(1i32 as libc::c_ulong) as libc::c_int;
+    if n as u64 >= ::std::mem::size_of::<[libc::c_char; 1024]>() as u64 {
+        n = (::std::mem::size_of::<[libc::c_char; 1024]>() as u64)
+            .wrapping_sub(1i32 as u64) as libc::c_int;
         _dpx_message_buf[n as usize] = '\u{0}' as i32 as libc::c_char
     }
     if warn != 0 {

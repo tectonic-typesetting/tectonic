@@ -17,7 +17,7 @@ extern "C" {
     #[no_mangle]
     fn strcat(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* Global symbols that route through the global API variable. Hopefully we
      * will one day eliminate all of the global state and get rid of all of
      * these. */
@@ -79,7 +79,7 @@ pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
 pub type uint16_t = __uint16_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type scaled_t = int32_t;
 pub type str_number = int32_t;
@@ -440,11 +440,11 @@ unsafe extern "C" fn synctex_dot_open() -> rust_output_handle_t {
     }
     tmp = gettexstring(job_name);
     len = strlen(tmp);
-    if !(len <= 0i32 as libc::c_ulong) {
+    if !(len <= 0i32 as u64) {
         the_name = xmalloc(
             len.wrapping_add(strlen(synctex_suffix))
                 .wrapping_add(strlen(synctex_suffix_gz))
-                .wrapping_add(1i32 as libc::c_ulong),
+                .wrapping_add(1i32 as u64),
         ) as *mut libc::c_char;
         strcpy(the_name, tmp);
         strcat(the_name, synctex_suffix);
@@ -541,7 +541,7 @@ pub unsafe extern "C" fn synctex_start_input() {
             synctex_ctxt.root_name = xrealloc(
                 synctex_ctxt.root_name as *mut libc::c_void,
                 strlen(b"texput\x00" as *const u8 as *const libc::c_char)
-                    .wrapping_add(1i32 as libc::c_ulong),
+                    .wrapping_add(1i32 as u64),
             ) as *mut libc::c_char;
             strcpy(
                 synctex_ctxt.root_name,

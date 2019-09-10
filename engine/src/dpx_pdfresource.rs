@@ -46,7 +46,7 @@ extern "C" {
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -242,9 +242,9 @@ unsafe extern "C" fn pdf_clean_resource(mut res: *mut pdf_res) {
 pub unsafe extern "C" fn pdf_init_resources() {
     let mut i: libc::c_uint = 0;
     i = 0i32 as libc::c_uint;
-    while (i as libc::c_ulong)
-        < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as libc::c_ulong)
+    while (i as u64)
+        < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as u64)
+            .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as u64)
     {
         resources[i as usize].count = 0i32;
         resources[i as usize].capacity = 0i32;
@@ -256,9 +256,9 @@ pub unsafe extern "C" fn pdf_init_resources() {
 pub unsafe extern "C" fn pdf_close_resources() {
     let mut i: libc::c_uint = 0;
     i = 0i32 as libc::c_uint;
-    while (i as libc::c_ulong)
-        < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as libc::c_ulong)
+    while (i as u64)
+        < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as u64)
+            .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as u64)
     {
         let mut rc: *mut res_cache = 0 as *mut res_cache;
         let mut j: libc::c_int = 0;
@@ -279,9 +279,9 @@ pub unsafe extern "C" fn pdf_close_resources() {
 unsafe extern "C" fn get_category(mut category: *const libc::c_char) -> libc::c_int {
     let mut i: libc::c_uint = 0;
     i = 0i32 as libc::c_uint;
-    while (i as libc::c_ulong)
-        < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as libc::c_ulong)
+    while (i as u64)
+        < (::std::mem::size_of::<[C2RustUnnamed; 9]>() as u64)
+            .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as u64)
     {
         if streq_ptr(category, pdf_resource_categories[i as usize].name) {
             return pdf_resource_categories[i as usize].cat_id;
@@ -353,8 +353,8 @@ pub unsafe extern "C" fn pdf_defineresource(
                 ((*rc).capacity as libc::c_uint).wrapping_add(16u32) as libc::c_int as libc::c_int;
             (*rc).resources = renew(
                 (*rc).resources as *mut libc::c_void,
-                ((*rc).capacity as u32 as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<pdf_res>() as libc::c_ulong)
+                ((*rc).capacity as u32 as u64)
+                    .wrapping_mul(::std::mem::size_of::<pdf_res>() as u64)
                     as u32,
             ) as *mut pdf_res
         }
@@ -362,8 +362,8 @@ pub unsafe extern "C" fn pdf_defineresource(
         pdf_init_resource(res);
         if !resname.is_null() && *resname.offset(0) as libc::c_int != '\u{0}' as i32 {
             (*res).ident = new(
-                (strlen(resname).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+                (strlen(resname).wrapping_add(1i32 as u64) as u32 as u64)
+                    .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
                     as u32,
             ) as *mut libc::c_char;
             strcpy((*res).ident, resname);
@@ -449,9 +449,9 @@ pub unsafe extern "C" fn pdf_get_resource_reference(mut rc_id: libc::c_int) -> *
     cat_id = rc_id >> 16i32 & 0xffffi32;
     res_id = rc_id & 0xffffi32;
     if cat_id < 0i32
-        || cat_id as libc::c_ulong
-            >= (::std::mem::size_of::<[C2RustUnnamed; 9]>() as libc::c_ulong)
-                .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as libc::c_ulong)
+        || cat_id as u64
+            >= (::std::mem::size_of::<[C2RustUnnamed; 9]>() as u64)
+                .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as u64)
     {
         _tt_abort(
             b"Invalid category ID: %d\x00" as *const u8 as *const libc::c_char,

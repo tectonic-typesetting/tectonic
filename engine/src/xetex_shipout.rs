@@ -13,7 +13,7 @@ extern "C" {
     #[no_mangle]
     fn abs(_: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn strerror(_: libc::c_int) -> *mut libc::c_char;
     /* The internal, C/C++ interface: */
@@ -327,7 +327,7 @@ pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
 pub type uint16_t = __uint16_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type scaled_t = int32_t;
 pub type selector_t = libc::c_uint;
@@ -625,8 +625,8 @@ static mut cur_s: int32_t = 0;
 pub unsafe extern "C" fn initialize_shipout_variables() {
     output_file_name = 0i32;
     dvi_buf = xmalloc(
-        ((16384i32 + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<eight_bits>() as libc::c_ulong),
+        ((16384i32 + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<eight_bits>() as u64),
     ) as *mut eight_bits;
     dvi_limit = 16384i32;
     dvi_ptr = 0i32;
@@ -4123,7 +4123,7 @@ unsafe extern "C" fn write_to_dvi(mut a: int32_t, mut b: int32_t) {
         dvi_file,
         &mut *dvi_buf.offset(a as isize) as *mut eight_bits as *mut libc::c_char,
         n as size_t,
-    ) != n as libc::c_ulong
+    ) != n as u64
     {
         _tt_abort(b"failed to write data to XDV file\x00" as *const u8 as *const libc::c_char);
     };

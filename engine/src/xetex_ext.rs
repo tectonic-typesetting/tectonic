@@ -16,24 +16,24 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: libc::c_ulong)
+    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: u64)
         -> *mut libc::c_char;
     #[no_mangle]
     fn strcat(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
     #[no_mangle]
     fn strdup(_: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
     fn strstr(_: *const libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn strcasecmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     /* The internal, C/C++ interface: */
@@ -377,7 +377,7 @@ pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
 pub type uint8_t = __uint8_t;
 pub type uint16_t = __uint16_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
@@ -910,7 +910,7 @@ unsafe extern "C" fn load_mapping_file(
     strncpy(
         buffer,
         s,
-        e.wrapping_offset_from(s) as libc::c_long as libc::c_ulong,
+        e.wrapping_offset_from(s) as libc::c_long as u64,
     );
     *buffer.offset(e.wrapping_offset_from(s) as libc::c_long as isize) = 0i32 as libc::c_char;
     strcat(buffer, b".tec\x00" as *const u8 as *const libc::c_char);
@@ -1016,10 +1016,10 @@ pub unsafe extern "C" fn apply_tfm_font_mapping(
     TECkit_ConvertBuffer(
         cnv as TECkit_Converter,
         &mut in_0 as *mut UniChar as *const Byte,
-        ::std::mem::size_of::<UniChar>() as libc::c_ulong as UInt32,
+        ::std::mem::size_of::<UniChar>() as u64 as UInt32,
         &mut inUsed,
         out.as_mut_ptr(),
-        ::std::mem::size_of::<[Byte; 2]>() as libc::c_ulong as UInt32,
+        ::std::mem::size_of::<[Byte; 2]>() as u64 as UInt32,
         &mut outUsed,
         1i32 as Byte,
     );
@@ -1305,8 +1305,8 @@ unsafe extern "C" fn loadOTfont(
     if reqEngine as libc::c_int == 'O' as i32 || reqEngine as libc::c_int == 'G' as i32 {
         shapers = xrealloc(
             shapers as *mut libc::c_void,
-            ((nShapers + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as libc::c_ulong),
+            ((nShapers + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as u64),
         ) as *mut *mut libc::c_char;
         if reqEngine as libc::c_int == 'O' as i32 {
             static mut ot_const: [libc::c_char; 3] = [111, 116, 0];
@@ -1393,7 +1393,7 @@ unsafe extern "C" fn loadOTfont(
                         memcpy(
                             language as *mut libc::c_void,
                             cp3 as *const libc::c_void,
-                            cp2.wrapping_offset_from(cp3) as libc::c_long as libc::c_ulong,
+                            cp2.wrapping_offset_from(cp3) as libc::c_long as u64,
                         );
                         current_block = 13857423536159756434;
                     }
@@ -1406,8 +1406,8 @@ unsafe extern "C" fn loadOTfont(
                             cp3 = cp3.offset(1);
                             shapers = xrealloc(
                                 shapers as *mut libc::c_void,
-                                ((nShapers + 1i32) as libc::c_ulong).wrapping_mul(
-                                    ::std::mem::size_of::<*mut libc::c_char>() as libc::c_ulong,
+                                ((nShapers + 1i32) as u64).wrapping_mul(
+                                    ::std::mem::size_of::<*mut libc::c_char>() as u64,
                                 ),
                             ) as *mut *mut libc::c_char;
                             /* some dumb systems have no strndup() */
@@ -1444,9 +1444,9 @@ unsafe extern "C" fn loadOTfont(
                                 {
                                     features = xrealloc(
                                         features as *mut libc::c_void,
-                                        ((nFeatures + 1i32) as libc::c_ulong)
+                                        ((nFeatures + 1i32) as u64)
                                             .wrapping_mul(::std::mem::size_of::<hb_feature_t>()
-                                                as libc::c_ulong),
+                                                as u64),
                                     )
                                         as *mut hb_feature_t;
                                     (*features.offset(nFeatures as isize)).tag = tag;
@@ -1472,9 +1472,9 @@ unsafe extern "C" fn loadOTfont(
                                         tag = read_tag_with_param(cp1.offset(1), &mut param);
                                         features = xrealloc(
                                             features as *mut libc::c_void,
-                                            ((nFeatures + 1i32) as libc::c_ulong).wrapping_mul(
+                                            ((nFeatures + 1i32) as u64).wrapping_mul(
                                                 ::std::mem::size_of::<hb_feature_t>()
-                                                    as libc::c_ulong,
+                                                    as u64,
                                             ),
                                         )
                                             as *mut hb_feature_t;
@@ -1501,9 +1501,9 @@ unsafe extern "C" fn loadOTfont(
                                         );
                                         features = xrealloc(
                                             features as *mut libc::c_void,
-                                            ((nFeatures + 1i32) as libc::c_ulong).wrapping_mul(
+                                            ((nFeatures + 1i32) as u64).wrapping_mul(
                                                 ::std::mem::size_of::<hb_feature_t>()
-                                                    as libc::c_ulong,
+                                                    as u64,
                                             ),
                                         )
                                             as *mut hb_feature_t;
@@ -1573,8 +1573,8 @@ unsafe extern "C" fn loadOTfont(
     if !shapers.is_null() {
         shapers = xrealloc(
             shapers as *mut libc::c_void,
-            ((nShapers + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as libc::c_ulong),
+            ((nShapers + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as u64),
         ) as *mut *mut libc::c_char;
         let ref mut fresh11 = *shapers.offset(nShapers as isize);
         *fresh11 = 0 as *mut libc::c_char
@@ -1686,7 +1686,7 @@ pub unsafe extern "C" fn find_native_font(
     strncpy(
         nameString,
         name,
-        var.wrapping_offset_from(name) as libc::c_long as libc::c_ulong,
+        var.wrapping_offset_from(name) as libc::c_long as u64,
     );
     *nameString.offset(var.wrapping_offset_from(name) as libc::c_long as isize) =
         0i32 as libc::c_char;
@@ -1697,7 +1697,7 @@ pub unsafe extern "C" fn find_native_font(
             varString,
             var.offset(1),
             (feat.wrapping_offset_from(var) as libc::c_long - 1i32 as libc::c_long)
-                as libc::c_ulong,
+                as u64,
         );
         *varString.offset(
             (feat.wrapping_offset_from(var) as libc::c_long - 1i32 as libc::c_long) as isize,
@@ -1710,7 +1710,7 @@ pub unsafe extern "C" fn find_native_font(
             featString,
             feat.offset(1),
             (end.wrapping_offset_from(feat) as libc::c_long - 1i32 as libc::c_long)
-                as libc::c_ulong,
+                as u64,
         );
         *featString.offset(
             (end.wrapping_offset_from(feat) as libc::c_long - 1i32 as libc::c_long) as isize,
@@ -1771,13 +1771,13 @@ pub unsafe extern "C" fn find_native_font(
             let mut fullName: *const libc::c_char = getFullName(fontRef);
             name_length = strlen(fullName) as int32_t;
             if !featString.is_null() {
-                name_length = (name_length as libc::c_ulong)
-                    .wrapping_add(strlen(featString).wrapping_add(1i32 as libc::c_ulong))
+                name_length = (name_length as u64)
+                    .wrapping_add(strlen(featString).wrapping_add(1i32 as u64))
                     as int32_t as int32_t
             }
             if !varString.is_null() {
-                name_length = (name_length as libc::c_ulong)
-                    .wrapping_add(strlen(varString).wrapping_add(1i32 as libc::c_ulong))
+                name_length = (name_length as u64)
+                    .wrapping_add(strlen(varString).wrapping_add(1i32 as u64))
                     as int32_t as int32_t
             }
             free(name_of_file as *mut libc::c_void);
@@ -2182,7 +2182,7 @@ pub unsafe extern "C" fn make_font_def(mut f: int32_t) -> libc::c_int {
     memcpy(
         cp as *mut libc::c_void,
         filename as *const libc::c_void,
-        filenameLen as libc::c_ulong,
+        filenameLen as u64,
     );
     cp = cp.offset(filenameLen as libc::c_int as isize);
     *(cp as *mut u32) = SWAP32(index);
@@ -2221,15 +2221,15 @@ pub unsafe extern "C" fn apply_mapping(
     let mut status: TECkit_Status = 0;
     static mut outLength: UInt32 = 0i32 as UInt32;
     /* allocate outBuffer if not big enough */
-    if (outLength as libc::c_ulong)
-        < (txtLen as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<UniChar>() as libc::c_ulong)
-            .wrapping_add(32i32 as libc::c_ulong)
+    if (outLength as u64)
+        < (txtLen as u64)
+            .wrapping_mul(::std::mem::size_of::<UniChar>() as u64)
+            .wrapping_add(32i32 as u64)
     {
         free(mapped_text as *mut libc::c_void);
-        outLength = (txtLen as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<UniChar>() as libc::c_ulong)
-            .wrapping_add(32i32 as libc::c_ulong) as UInt32;
+        outLength = (txtLen as u64)
+            .wrapping_mul(::std::mem::size_of::<UniChar>() as u64)
+            .wrapping_add(32i32 as u64) as UInt32;
         mapped_text = xmalloc(outLength as size_t) as *mut UTF16_code
     }
     loop
@@ -2238,8 +2238,8 @@ pub unsafe extern "C" fn apply_mapping(
         status = TECkit_ConvertBuffer(
             cnv,
             txtPtr as *mut Byte,
-            (txtLen as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<UniChar>() as libc::c_ulong)
+            (txtLen as u64)
+                .wrapping_mul(::std::mem::size_of::<UniChar>() as u64)
                 as UInt32,
             &mut inUsed,
             mapped_text as *mut Byte,
@@ -2250,15 +2250,15 @@ pub unsafe extern "C" fn apply_mapping(
         match status {
             0 => {
                 txtPtr = mapped_text as *mut UniChar;
-                return (outUsed as libc::c_ulong)
-                    .wrapping_div(::std::mem::size_of::<UniChar>() as libc::c_ulong)
+                return (outUsed as u64)
+                    .wrapping_div(::std::mem::size_of::<UniChar>() as u64)
                     as libc::c_int;
             }
             1 => {
-                outLength = (outLength as libc::c_ulong).wrapping_add(
-                    (txtLen as libc::c_ulong)
-                        .wrapping_mul(::std::mem::size_of::<UniChar>() as libc::c_ulong)
-                        .wrapping_add(32i32 as libc::c_ulong),
+                outLength = (outLength as u64).wrapping_add(
+                    (txtLen as u64)
+                        .wrapping_mul(::std::mem::size_of::<UniChar>() as u64)
+                        .wrapping_add(32i32 as u64),
                 ) as UInt32 as UInt32;
                 free(mapped_text as *mut libc::c_void);
                 mapped_text = xmalloc(outLength as size_t) as *mut UTF16_code
@@ -2544,7 +2544,7 @@ pub unsafe extern "C" fn measure_native_node(
                 glyphIDs = locations.offset(totalGlyphCount as isize) as *mut uint16_t;
                 glyphAdvances = xcalloc(
                     totalGlyphCount as size_t,
-                    ::std::mem::size_of::<Fixed>() as libc::c_ulong,
+                    ::std::mem::size_of::<Fixed>() as u64,
                 ) as *mut Fixed;
                 totalGlyphCount = 0i32;
                 y = 0.0f64;
@@ -2563,15 +2563,15 @@ pub unsafe extern "C" fn measure_native_node(
                     );
                     glyphs = xcalloc(
                         nGlyphs as size_t,
-                        ::std::mem::size_of::<u32>() as libc::c_ulong,
+                        ::std::mem::size_of::<u32>() as u64,
                     ) as *mut u32;
                     positions = xcalloc(
                         (nGlyphs + 1i32) as size_t,
-                        ::std::mem::size_of::<FloatPoint>() as libc::c_ulong,
+                        ::std::mem::size_of::<FloatPoint>() as u64,
                     ) as *mut FloatPoint;
                     advances = xcalloc(
                         nGlyphs as size_t,
-                        ::std::mem::size_of::<libc::c_float>() as libc::c_ulong,
+                        ::std::mem::size_of::<libc::c_float>() as u64,
                     ) as *mut libc::c_float;
                     getGlyphs(engine, glyphs);
                     getGlyphAdvances(engine, advances);
@@ -2614,15 +2614,15 @@ pub unsafe extern "C" fn measure_native_node(
             );
             glyphs = xcalloc(
                 totalGlyphCount as size_t,
-                ::std::mem::size_of::<u32>() as libc::c_ulong,
+                ::std::mem::size_of::<u32>() as u64,
             ) as *mut u32;
             positions = xcalloc(
                 (totalGlyphCount + 1i32) as size_t,
-                ::std::mem::size_of::<FloatPoint>() as libc::c_ulong,
+                ::std::mem::size_of::<FloatPoint>() as u64,
             ) as *mut FloatPoint;
             advances = xcalloc(
                 totalGlyphCount as size_t,
-                ::std::mem::size_of::<libc::c_float>() as libc::c_ulong,
+                ::std::mem::size_of::<libc::c_float>() as u64,
             ) as *mut libc::c_float;
             getGlyphs(engine, glyphs);
             getGlyphAdvances(engine, advances);
@@ -2634,7 +2634,7 @@ pub unsafe extern "C" fn measure_native_node(
                 glyphIDs = locations.offset(totalGlyphCount as isize) as *mut uint16_t;
                 glyphAdvances = xcalloc(
                     totalGlyphCount as size_t,
-                    ::std::mem::size_of::<Fixed>() as libc::c_ulong,
+                    ::std::mem::size_of::<Fixed>() as u64,
                 ) as *mut Fixed;
                 i_0 = 0i32;
                 while i_0 < totalGlyphCount {

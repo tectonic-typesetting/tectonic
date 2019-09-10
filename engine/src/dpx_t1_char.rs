@@ -26,9 +26,9 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -76,7 +76,7 @@ extern "C" {
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
 }
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type __compar_fn_t =
     Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> libc::c_int>;
 pub type card8 = libc::c_uchar;
@@ -346,8 +346,8 @@ unsafe extern "C" fn add_charpath(
             .as_ptr(),
         );
     }
-    p = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<t1_cpath>() as libc::c_ulong) as u32)
+    p = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<t1_cpath>() as u64) as u32)
         as *mut t1_cpath;
     (*p).type_0 = type_0;
     (*p).num_args = argn;
@@ -1984,7 +1984,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                 memset(
                     hintmask.as_mut_ptr() as *mut libc::c_void,
                     0i32,
-                    (((*cd).num_stems + 7i32) / 8i32) as libc::c_ulong,
+                    (((*cd).num_stems + 7i32) / 8i32) as u64,
                 );
                 while !curr.is_null() && (*curr).type_0 == -1i32 {
                     let mut stem_idx: libc::c_int = 0;
@@ -2014,7 +2014,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                     memcpy(
                         dst as *mut libc::c_void,
                         hintmask.as_mut_ptr() as *const libc::c_void,
-                        (((*cd).num_stems + 7i32) / 8i32) as libc::c_ulong,
+                        (((*cd).num_stems + 7i32) / 8i32) as u64,
                     );
                     dst = dst.offset((((*cd).num_stems + 7i32) / 8i32) as isize)
                 }
@@ -2026,7 +2026,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                 memset(
                     cntrmask.as_mut_ptr() as *mut libc::c_void,
                     0i32,
-                    (((*cd).num_stems + 7i32) / 8i32) as libc::c_ulong,
+                    (((*cd).num_stems + 7i32) / 8i32) as u64,
                 );
                 i_0 = 0i32;
                 while i_0 < (*curr).num_args {
@@ -2055,7 +2055,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                 memcpy(
                     dst as *mut libc::c_void,
                     cntrmask.as_mut_ptr() as *const libc::c_void,
-                    (((*cd).num_stems + 7i32) / 8i32) as libc::c_ulong,
+                    (((*cd).num_stems + 7i32) / 8i32) as u64,
                 );
                 dst = dst.offset((((*cd).num_stems + 7i32) / 8i32) as isize);
                 curr = (*curr).next
@@ -2209,7 +2209,7 @@ pub unsafe extern "C" fn t1char_convert_charstring(
     qsort(
         (*cd).stems.as_mut_ptr() as *mut libc::c_void,
         (*cd).num_stems as size_t,
-        ::std::mem::size_of::<t1_stem>() as libc::c_ulong,
+        ::std::mem::size_of::<t1_stem>() as u64,
         Some(
             stem_compare
                 as unsafe extern "C" fn(

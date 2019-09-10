@@ -18,9 +18,9 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const libc::c_ushort;
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -304,7 +304,7 @@ pub unsafe extern "C" fn ht_lookup_table(
             && memcmp(
                 (*hent).key as *const libc::c_void,
                 key,
-                keylen as libc::c_ulong,
+                keylen as u64,
             ) == 0
         {
             return (*hent).value;
@@ -343,7 +343,7 @@ pub unsafe extern "C" fn ht_remove_table(
             && memcmp(
                 (*hent).key as *const libc::c_void,
                 key,
-                keylen as libc::c_ulong,
+                keylen as u64,
             ) == 0
         {
             break;
@@ -401,7 +401,7 @@ pub unsafe extern "C" fn ht_insert_table(
             && memcmp(
                 (*hent).key as *const libc::c_void,
                 key,
-                keylen as libc::c_ulong,
+                keylen as u64,
             ) == 0
         {
             break;
@@ -415,16 +415,16 @@ pub unsafe extern "C" fn ht_insert_table(
         }
         (*hent).value = value
     } else {
-        hent = new((1i32 as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<ht_entry>() as libc::c_ulong)
+        hent = new((1i32 as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<ht_entry>() as u64)
             as u32) as *mut ht_entry;
-        (*hent).key = new((keylen as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (*hent).key = new((keylen as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         memcpy(
             (*hent).key as *mut libc::c_void,
             key,
-            keylen as libc::c_ulong,
+            keylen as u64,
         );
         (*hent).keylen = keylen;
         (*hent).value = value;
@@ -450,8 +450,8 @@ pub unsafe extern "C" fn ht_append_table(
     hkey = get_hash(key, keylen);
     hent = (*ht).table[hkey as usize];
     if hent.is_null() {
-        hent = new((1i32 as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<ht_entry>() as libc::c_ulong)
+        hent = new((1i32 as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<ht_entry>() as u64)
             as u32) as *mut ht_entry;
         (*ht).table[hkey as usize] = hent
     } else {
@@ -459,18 +459,18 @@ pub unsafe extern "C" fn ht_append_table(
             last = hent;
             hent = (*hent).next
         }
-        hent = new((1i32 as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<ht_entry>() as libc::c_ulong)
+        hent = new((1i32 as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<ht_entry>() as u64)
             as u32) as *mut ht_entry;
         (*last).next = hent
     }
-    (*hent).key = new((keylen as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    (*hent).key = new((keylen as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     memcpy(
         (*hent).key as *mut libc::c_void,
         key,
-        keylen as libc::c_ulong,
+        keylen as u64,
     );
     (*hent).keylen = keylen;
     (*hent).value = value;
@@ -758,8 +758,8 @@ pub unsafe extern "C" fn parse_c_string(
     p = p.offset(1);
     l = read_c_litstrc(0 as *mut libc::c_char, 0i32, &mut p, endptr);
     if l >= 0i32 {
-        q = new(((l + 1i32) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        q = new(((l + 1i32) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         p = (*pp).offset(1);
         l = read_c_litstrc(q, l + 1i32, &mut p, endptr)
@@ -792,13 +792,13 @@ pub unsafe extern "C" fn parse_c_ident(
         p = p.offset(1);
         n += 1
     }
-    q = new(((n + 1i32) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    q = new(((n + 1i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     memcpy(
         q as *mut libc::c_void,
         *pp as *const libc::c_void,
-        n as libc::c_ulong,
+        n as u64,
     );
     *q.offset(n as isize) = '\u{0}' as i32 as libc::c_char;
     *pp = p;
@@ -878,13 +878,13 @@ pub unsafe extern "C" fn parse_float_decimal(
     }
     if n != 0i32 {
         n = p.wrapping_offset_from(*pp) as libc::c_long as libc::c_int;
-        q = new(((n + 1i32) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        q = new(((n + 1i32) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         memcpy(
             q as *mut libc::c_void,
             *pp as *const libc::c_void,
-            n as libc::c_ulong,
+            n as u64,
         );
         *q.offset(n as isize) = '\u{0}' as i32 as libc::c_char
     }

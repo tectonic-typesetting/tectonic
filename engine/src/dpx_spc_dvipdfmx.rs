@@ -18,11 +18,11 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const libc::c_char, _: ...);
     #[no_mangle]
@@ -33,7 +33,7 @@ extern "C" {
     #[no_mangle]
     fn skip_white(start: *mut *const libc::c_char, end: *const libc::c_char);
 }
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -215,8 +215,8 @@ pub unsafe extern "C" fn spc_dvipdfmx_setup_handler(
     if !q.is_null() {
         i = 0i32 as size_t;
         while i
-            < (::std::mem::size_of::<[spc_handler; 1]>() as libc::c_ulong)
-                .wrapping_div(::std::mem::size_of::<spc_handler>() as libc::c_ulong)
+            < (::std::mem::size_of::<[spc_handler; 1]>() as u64)
+                .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
         {
             if streq_ptr(q, dvipdfmx_handlers[i as usize].key) {
                 (*ap).command = dvipdfmx_handlers[i as usize].key;

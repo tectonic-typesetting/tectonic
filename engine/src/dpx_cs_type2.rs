@@ -15,7 +15,7 @@ extern "C" {
     #[no_mangle]
     fn floor(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
+    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
         -> *mut libc::c_void;
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -249,7 +249,7 @@ unsafe extern "C" fn do_operator1(
                 memmove(
                     *dest as *mut libc::c_void,
                     *data as *const libc::c_void,
-                    masklen as libc::c_ulong,
+                    masklen as u64,
                 );
                 *data = (*data).offset(masklen as isize);
                 *dest = (*dest).offset(masklen as isize)

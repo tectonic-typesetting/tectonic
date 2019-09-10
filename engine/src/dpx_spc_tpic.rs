@@ -54,11 +54,11 @@ extern "C" {
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const libc::c_char, _: ...);
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn atof(__nptr: *const libc::c_char) -> libc::c_double;
     #[no_mangle]
@@ -207,7 +207,7 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_env {
@@ -755,8 +755,8 @@ unsafe extern "C" fn spc_handler_tpic_pa(
         (*tp).max_points += 256i32;
         (*tp).points = renew(
             (*tp).points as *mut libc::c_void,
-            ((*tp).max_points as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<pdf_coord>() as libc::c_ulong)
+            ((*tp).max_points as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<pdf_coord>() as u64)
                 as u32,
         ) as *mut pdf_coord
     }
@@ -1300,7 +1300,7 @@ unsafe extern "C" fn spc_parse_kvpairs(mut ap: *mut spc_arg) -> *mut pdf_obj {
                         pdf_new_name(kp),
                         pdf_new_string(
                             vp as *const libc::c_void,
-                            strlen(vp).wrapping_add(1i32 as libc::c_ulong),
+                            strlen(vp).wrapping_add(1i32 as u64),
                         ),
                     );
                     free(vp as *mut libc::c_void);
@@ -1587,8 +1587,8 @@ pub unsafe extern "C" fn spc_tpic_check_special(
     } else {
         i = 0i32 as size_t;
         while i
-            < (::std::mem::size_of::<[spc_handler; 13]>() as libc::c_ulong)
-                .wrapping_div(::std::mem::size_of::<spc_handler>() as libc::c_ulong)
+            < (::std::mem::size_of::<[spc_handler; 13]>() as u64)
+                .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
         {
             if streq_ptr(q, tpic_handlers[i as usize].key) {
                 istpic = 1i32 != 0;
@@ -1675,9 +1675,9 @@ pub unsafe extern "C" fn spc_tpic_setup_handler(
         free(q as *mut libc::c_void);
     } else {
         i = 0i32 as libc::c_uint;
-        while (i as libc::c_ulong)
-            < (::std::mem::size_of::<[spc_handler; 13]>() as libc::c_ulong)
-                .wrapping_div(::std::mem::size_of::<spc_handler>() as libc::c_ulong)
+        while (i as u64)
+            < (::std::mem::size_of::<[spc_handler; 13]>() as u64)
+                .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
         {
             if streq_ptr(q, tpic_handlers[i as usize].key) {
                 (*ap).command = tpic_handlers[i as usize].key;

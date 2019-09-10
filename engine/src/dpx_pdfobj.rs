@@ -21,19 +21,19 @@ extern "C" {
     #[no_mangle]
     fn atoi(__nptr: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strtoul(_: *const libc::c_char, _: *mut *mut libc::c_char, _: libc::c_int) -> libc::c_ulong;
+    fn strtoul(_: *const libc::c_char, _: *mut *mut libc::c_char, _: libc::c_int) -> u64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -201,7 +201,7 @@ pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -430,8 +430,8 @@ unsafe extern "C" fn add_xref_entry(
             .wrapping_mul(512i32 as libc::c_uint);
         output_xref = renew(
             output_xref as *mut libc::c_void,
-            (pdf_max_ind_objects as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<xref_entry>() as libc::c_ulong)
+            (pdf_max_ind_objects as u64)
+                .wrapping_mul(::std::mem::size_of::<xref_entry>() as u64)
                 as u32,
         ) as *mut xref_entry
     }
@@ -485,7 +485,7 @@ pub unsafe extern "C" fn pdf_out_init(
     }
     pdf_output_handle = ttstub_output_open(filename, 0i32);
     if pdf_output_handle.is_null() {
-        if strlen(filename) < 128i32 as libc::c_ulong {
+        if strlen(filename) < 128i32 as u64 {
             _tt_abort(
                 b"Unable to open \"%s\".\x00" as *const u8 as *const libc::c_char,
                 filename,
@@ -860,8 +860,8 @@ unsafe extern "C" fn pdf_new_obj(mut type_0: libc::c_int) -> *mut pdf_obj {
             type_0,
         );
     }
-    result = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_obj>() as libc::c_ulong)
+    result = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pdf_obj>() as u64)
         as u32) as *mut pdf_obj;
     (*result).type_0 = type_0;
     (*result).data = 0 as *mut libc::c_void;
@@ -1011,8 +1011,8 @@ pub unsafe extern "C" fn pdf_new_boolean(mut value: libc::c_char) -> *mut pdf_ob
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut data: *mut pdf_boolean = 0 as *mut pdf_boolean;
     result = pdf_new_obj(1i32);
-    data = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_boolean>() as libc::c_ulong)
+    data = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pdf_boolean>() as u64)
         as u32) as *mut pdf_boolean;
     (*data).value = value;
     (*result).data = data as *mut libc::c_void;
@@ -1060,8 +1060,8 @@ pub unsafe extern "C" fn pdf_new_number(mut value: libc::c_double) -> *mut pdf_o
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut data: *mut pdf_number = 0 as *mut pdf_number;
     result = pdf_new_obj(2i32);
-    data = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_number>() as libc::c_ulong)
+    data = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pdf_number>() as u64)
         as u32) as *mut pdf_number;
     (*data).value = value;
     (*result).data = data as *mut libc::c_void;
@@ -1137,15 +1137,15 @@ pub unsafe extern "C" fn pdf_new_string(
         );
     }
     result = pdf_new_obj(3i32);
-    data = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_string>() as libc::c_ulong)
+    data = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pdf_string>() as u64)
         as u32) as *mut pdf_string;
     (*result).data = data as *mut libc::c_void;
     (*data).length = length;
     if length != 0 {
-        (*data).string = new((length.wrapping_add(1i32 as libc::c_ulong) as u32
-            as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        (*data).string = new((length.wrapping_add(1i32 as u64) as u32
+            as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
         memcpy((*data).string as *mut libc::c_void, str, length);
         /* Shouldn't assume NULL terminated. */
@@ -1210,7 +1210,7 @@ pub unsafe extern "C" fn pdfobj_escape_str(
     while i < len {
         let mut ch: libc::c_uchar = 0;
         ch = *s.offset(i as isize);
-        if result > bufsize.wrapping_sub(4i32 as libc::c_ulong) {
+        if result > bufsize.wrapping_sub(4i32 as u64) {
             _tt_abort(
                 b"pdfobj_escape_str: Buffer overflow\x00" as *const u8 as *const libc::c_char,
             );
@@ -1223,11 +1223,11 @@ pub unsafe extern "C" fn pdfobj_escape_str(
             let fresh4 = result; /* Shouldn't use format_buffer[]. */
             result = result.wrapping_add(1);
             *buffer.offset(fresh4 as isize) = '\\' as i32 as libc::c_char;
-            result = (result as libc::c_ulong).wrapping_add(sprintf(
+            result = (result as u64).wrapping_add(sprintf(
                 buffer.offset(result as isize),
                 b"%03o\x00" as *const u8 as *const libc::c_char,
                 ch as libc::c_int,
-            ) as libc::c_ulong) as size_t as size_t
+            ) as u64) as size_t as size_t
         } else {
             match ch as libc::c_int {
                 40 => {
@@ -1295,7 +1295,7 @@ unsafe extern "C" fn write_string(mut str: *mut pdf_string, mut handle: rust_out
      * If the string contains much escaped chars, then we write it as
      * ASCII hex string.
      */
-    if nescc as libc::c_ulong > len.wrapping_div(3i32 as libc::c_ulong) {
+    if nescc as u64 > len.wrapping_div(3i32 as u64) {
         pdf_out_char(handle, '<' as i32 as libc::c_char);
         i = 0i32 as size_t;
         while i < len {
@@ -1365,11 +1365,11 @@ pub unsafe extern "C" fn pdf_set_string(
     if !(*data).string.is_null() {
         free((*data).string as *mut libc::c_void);
     }
-    if length != 0i32 as libc::c_ulong {
+    if length != 0i32 as u64 {
         (*data).length = length;
-        (*data).string = new((length.wrapping_add(1i32 as libc::c_ulong) as u32
-            as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        (*data).string = new((length.wrapping_add(1i32 as u64) as u32
+            as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
         memcpy(
             (*data).string as *mut libc::c_void,
@@ -1389,19 +1389,19 @@ pub unsafe extern "C" fn pdf_new_name(mut name: *const libc::c_char) -> *mut pdf
     let mut length: libc::c_uint = 0;
     let mut data: *mut pdf_name = 0 as *mut pdf_name;
     result = pdf_new_obj(4i32);
-    data = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_name>() as libc::c_ulong)
+    data = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pdf_name>() as u64)
         as u32) as *mut pdf_name;
     (*result).data = data as *mut libc::c_void;
     length = strlen(name) as libc::c_uint;
     if length != 0i32 as libc::c_uint {
-        (*data).name = new((length.wrapping_add(1i32 as libc::c_uint) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (*data).name = new((length.wrapping_add(1i32 as libc::c_uint) as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         memcpy(
             (*data).name as *mut libc::c_void,
             name as *const libc::c_void,
-            length as libc::c_ulong,
+            length as u64,
         );
         *(*data).name.offset(length as isize) = '\u{0}' as i32 as libc::c_char
     } else {
@@ -1417,7 +1417,7 @@ unsafe extern "C" fn write_name(mut name: *mut pdf_name, mut handle: rust_output
     length = (if !(*name).name.is_null() {
         strlen((*name).name)
     } else {
-        0i32 as libc::c_ulong
+        0i32 as u64
     }) as libc::c_int;
     /*
      * From PDF Reference, 3rd ed., p.33:
@@ -1495,8 +1495,8 @@ pub unsafe extern "C" fn pdf_new_array() -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut data: *mut pdf_array = 0 as *mut pdf_array;
     result = pdf_new_obj(5i32);
-    data = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_array>() as libc::c_ulong)
+    data = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pdf_array>() as u64)
         as u32) as *mut pdf_array;
     (*data).values = 0 as *mut *mut pdf_obj;
     (*data).max = 0i32 as libc::c_uint;
@@ -1618,8 +1618,8 @@ pub unsafe extern "C" fn pdf_add_array(mut array: *mut pdf_obj, mut object: *mut
         (*data).max = (*data).max.wrapping_add(256i32 as libc::c_uint);
         (*data).values = renew(
             (*data).values as *mut libc::c_void,
-            ((*data).max as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<*mut pdf_obj>() as libc::c_ulong)
+            ((*data).max as u64)
+                .wrapping_mul(::std::mem::size_of::<*mut pdf_obj>() as u64)
                 as u32,
         ) as *mut *mut pdf_obj
     }
@@ -1652,8 +1652,8 @@ pub unsafe extern "C" fn pdf_new_dict() -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut data: *mut pdf_dict = 0 as *mut pdf_dict;
     result = pdf_new_obj(6i32);
-    data = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_dict>() as libc::c_ulong)
+    data = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pdf_dict>() as u64)
         as u32) as *mut pdf_dict;
     (*data).key = 0 as *mut pdf_obj;
     (*data).value = 0 as *mut pdf_obj;
@@ -1727,8 +1727,8 @@ pub unsafe extern "C" fn pdf_add_dict(
      * We didn't find the key. We build a new "end" node and add
      * the new key just before the end
      */
-    new_node = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_dict>() as libc::c_ulong)
+    new_node = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pdf_dict>() as u64)
         as u32) as *mut pdf_dict;
     (*new_node).key = 0 as *mut pdf_obj;
     (*new_node).value = 0 as *mut pdf_obj;
@@ -1925,8 +1925,8 @@ pub unsafe extern "C" fn pdf_new_stream(mut flags: libc::c_int) -> *mut pdf_obj 
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut data: *mut pdf_stream = 0 as *mut pdf_stream;
     result = pdf_new_obj(7i32);
-    data = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_stream>() as libc::c_ulong)
+    data = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pdf_stream>() as u64)
         as u32) as *mut pdf_stream;
     /*
      * Although we are using an arbitrary pdf_object here, it must have
@@ -1979,13 +1979,13 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
      * Always work from a copy of the stream. All filters read from
      * "filtered" and leave their result in "filtered".
      */
-    filtered = new(((*stream).stream_length as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+    filtered = new(((*stream).stream_length as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
         as u32) as *mut libc::c_uchar;
     memcpy(
         filtered as *mut libc::c_void,
         (*stream).stream as *const libc::c_void,
-        (*stream).stream_length as libc::c_ulong,
+        (*stream).stream_length as u64,
     );
     filtered_length = (*stream).stream_length;
     /* PDF/A requires Metadata to be not filtered. */
@@ -2181,15 +2181,15 @@ pub unsafe extern "C" fn pdf_add_stream(
             .wrapping_add((length as libc::c_uint).wrapping_add(4096u32));
         (*data).stream = renew(
             (*data).stream as *mut libc::c_void,
-            ((*data).max_length as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+            ((*data).max_length as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
                 as u32,
         ) as *mut libc::c_uchar
     }
     memcpy(
         (*data).stream.offset((*data).stream_length as isize) as *mut libc::c_void,
         stream_data,
-        length as libc::c_ulong,
+        length as u64,
     );
     (*data).stream_length = (*data).stream_length.wrapping_add(length as libc::c_uint);
 }
@@ -2371,8 +2371,8 @@ unsafe extern "C" fn release_objstm(mut objstm: *mut pdf_obj) {
     old_length = (*stream).stream_length;
     /* Reserve 22 bytes for each entry (two 10 digit numbers plus two spaces) */
     (*stream).stream = new(
-        (old_length.wrapping_add((22i32 * pos) as libc::c_uint) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        (old_length.wrapping_add((22i32 * pos) as libc::c_uint) as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32,
     ) as *mut libc::c_uchar;
     (*stream).stream_length = 0i32 as libc::c_uint;
@@ -2460,8 +2460,8 @@ pub unsafe extern "C" fn pdf_release_obj(mut object: *mut pdf_obj) {
             } else {
                 if current_objstm.is_null() {
                     let mut data: *mut libc::c_int =
-                        new(((2i32 * 200i32 + 2i32) as u32 as libc::c_ulong)
-                            .wrapping_mul(::std::mem::size_of::<libc::c_int>() as libc::c_ulong)
+                        new(((2i32 * 200i32 + 2i32) as u32 as u64)
+                            .wrapping_mul(::std::mem::size_of::<libc::c_int>() as u64)
                             as u32) as *mut libc::c_int;
                     let ref mut fresh18 = *data.offset(1);
                     *fresh18 = 0i32;
@@ -2553,10 +2553,10 @@ unsafe extern "C" fn backup_line(mut handle: rust_input_handle_t) -> libc::c_int
      * machine where \n is eol and there is a \r in the stream --- Highly
      * unlikely in the last few bytes where this is likely to be used.
      */
-    if ttstub_input_seek(handle, 0i32 as ssize_t, 1i32) > 1i32 as libc::c_ulong {
+    if ttstub_input_seek(handle, 0i32 as ssize_t, 1i32) > 1i32 as u64 {
         loop {
             ttstub_input_seek(handle, -2i32 as ssize_t, 1i32);
-            if !(ttstub_input_seek(handle, 0i32 as ssize_t, 1i32) > 0i32 as libc::c_ulong
+            if !(ttstub_input_seek(handle, 0i32 as ssize_t, 1i32) > 0i32 as u64
                 && {
                     ch = ttstub_input_getc(handle);
                     ch >= 0i32
@@ -2591,11 +2591,11 @@ unsafe extern "C" fn find_xref(
         } else {
             currentpos = ttstub_input_seek(handle, 0i32 as ssize_t, 1i32) as libc::c_int;
             n = (if strlen(b"startxref\x00" as *const u8 as *const libc::c_char)
-                < (file_size - currentpos) as libc::c_ulong
+                < (file_size - currentpos) as u64
             {
                 strlen(b"startxref\x00" as *const u8 as *const libc::c_char)
             } else {
-                (file_size - currentpos) as libc::c_ulong
+                (file_size - currentpos) as u64
             }) as libc::c_int;
             ttstub_input_read(handle, work_buffer.as_mut_ptr(), n as size_t);
             ttstub_input_seek(handle, currentpos as ssize_t, 0i32);
@@ -2716,8 +2716,8 @@ pub unsafe extern "C" fn pdf_new_indirect(
 ) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut indirect: *mut pdf_indirect = 0 as *mut pdf_indirect;
-    indirect = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_indirect>() as libc::c_ulong)
+    indirect = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pdf_indirect>() as u64)
         as u32) as *mut pdf_indirect;
     (*indirect).pf = pf;
     (*indirect).obj = 0 as *mut pdf_obj;
@@ -2743,8 +2743,8 @@ unsafe extern "C" fn pdf_read_object(
     if length <= 0i32 {
         return 0 as *mut pdf_obj;
     }
-    buffer = new(((length + 1i32) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    buffer = new(((length + 1i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     ttstub_input_seek((*pf).handle, offset as ssize_t, 0i32);
     ttstub_input_read((*pf).handle, buffer, length as size_t);
@@ -2844,8 +2844,8 @@ unsafe extern "C" fn read_objstm(mut pf: *mut pdf_file, mut num: libc::c_uint) -
                         first = pdf_number_value(first_obj) as libc::c_int;
                         /* reject object streams without object data */
                         if !(first >= pdf_stream_length(objstm)) {
-                            header = new(((2i32 * (n + 1i32)) as u32 as libc::c_ulong)
-                                .wrapping_mul(::std::mem::size_of::<libc::c_int>() as libc::c_ulong)
+                            header = new(((2i32 * (n + 1i32)) as u32 as u64)
+                                .wrapping_mul(::std::mem::size_of::<libc::c_int>() as u64)
                                 as u32)
                                 as *mut libc::c_int;
                             set_objstm_data(objstm, header);
@@ -2857,13 +2857,13 @@ unsafe extern "C" fn read_objstm(mut pf: *mut pdf_file, mut num: libc::c_uint) -
                             *fresh21 = first;
                             /* avoid parsing beyond offset table */
                             data =
-                                new(((first + 1i32) as u32 as libc::c_ulong).wrapping_mul(
-                                    ::std::mem::size_of::<libc::c_char>() as libc::c_ulong,
+                                new(((first + 1i32) as u32 as u64).wrapping_mul(
+                                    ::std::mem::size_of::<libc::c_char>() as u64,
                                 ) as u32) as *mut libc::c_char;
                             memcpy(
                                 data as *mut libc::c_void,
                                 pdf_stream_dataptr(objstm),
-                                first as libc::c_ulong,
+                                first as u64,
                             );
                             *data.offset(first as isize) = 0i32 as libc::c_char;
                             p = data;
@@ -3072,8 +3072,8 @@ unsafe extern "C" fn extend_xref(mut pf: *mut pdf_file, mut new_size: libc::c_in
     let mut i: libc::c_uint = 0;
     (*pf).xref_table = renew(
         (*pf).xref_table as *mut libc::c_void,
-        (new_size as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<xref_entry>() as libc::c_ulong) as u32,
+        (new_size as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<xref_entry>() as u64) as u32,
     ) as *mut xref_entry;
     i = (*pf).num_obj as libc::c_uint;
     while i < new_size as libc::c_uint {
@@ -3263,7 +3263,7 @@ unsafe extern "C" fn parse_xref_table(
                                 );
                                 return -1i32;
                             } else {
-                                if strlen(q_0) != 10i32 as libc::c_ulong {
+                                if strlen(q_0) != 10i32 as u64 {
                                     /* exactly 10 digits */
                                     dpx_warning(
                                         b"Offset must be a 10 digits number. (xref)\x00"
@@ -3288,7 +3288,7 @@ unsafe extern "C" fn parse_xref_table(
                                 );
                                 return -1i32;
                             } else {
-                                if strlen(q_0) != 5i32 as libc::c_ulong {
+                                if strlen(q_0) != 5i32 as u64 {
                                     /* exactly 5 digits */
                                     dpx_warning(
                                         b"Expecting a 5 digits number. (xref)\x00" as *const u8
@@ -3667,8 +3667,8 @@ unsafe extern "C" fn pdf_file_new(mut handle: rust_input_handle_t) -> *mut pdf_f
             .as_ptr(),
         );
     }
-    pf = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<pdf_file>() as libc::c_ulong) as u32)
+    pf = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<pdf_file>() as u64) as u32)
         as *mut pdf_file;
     (*pf).handle = handle;
     (*pf).trailer = 0 as *mut pdf_obj;
@@ -3698,8 +3698,8 @@ unsafe extern "C" fn pdf_file_free(mut pf: *mut pdf_file) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_files_init() {
-    pdf_files = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<ht_table>() as libc::c_ulong)
+    pdf_files = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<ht_table>() as u64)
         as u32) as *mut ht_table;
     ht_init_table(
         pdf_files,
@@ -3918,11 +3918,11 @@ unsafe extern "C" fn parse_pdf_version(
     if ttstub_input_read(
         handle,
         buffer.as_mut_ptr(),
-        (::std::mem::size_of::<[libc::c_char; 10]>() as libc::c_ulong)
-            .wrapping_sub(1i32 as libc::c_ulong),
-    ) as libc::c_ulong
-        != (::std::mem::size_of::<[libc::c_char; 10]>() as libc::c_ulong)
-            .wrapping_sub(1i32 as libc::c_ulong)
+        (::std::mem::size_of::<[libc::c_char; 10]>() as u64)
+            .wrapping_sub(1i32 as u64),
+    ) as u64
+        != (::std::mem::size_of::<[libc::c_char; 10]>() as u64)
+            .wrapping_sub(1i32 as u64)
     {
         return -1i32;
     }

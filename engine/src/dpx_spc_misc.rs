@@ -19,9 +19,9 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const libc::c_ushort;
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
     #[no_mangle]
     fn ttstub_input_open(
         path: *const libc::c_char,
@@ -35,7 +35,7 @@ extern "C" {
     #[no_mangle]
     fn sscanf(_: *const libc::c_char, _: *const libc::c_char, _: ...) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* Tectonic-enabled versions */
     #[no_mangle]
     fn tt_mfgets(
@@ -80,7 +80,7 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
@@ -253,7 +253,7 @@ unsafe extern "C" fn spc_handler_postscriptbox(
     memcpy(
         buf.as_mut_ptr() as *mut libc::c_void,
         (*ap).curptr as *const libc::c_void,
-        len as libc::c_ulong,
+        len as u64,
     );
     buf[len as usize] = '\u{0}' as i32 as libc::c_char;
     transform_info_clear(&mut ti);
@@ -398,10 +398,10 @@ pub unsafe extern "C" fn spc_misc_check_special(
     size = endptr.wrapping_offset_from(p) as libc::c_long as libc::c_int;
     i = 0i32 as size_t;
     while i
-        < (::std::mem::size_of::<[spc_handler; 6]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<spc_handler>() as libc::c_ulong)
+        < (::std::mem::size_of::<[spc_handler; 6]>() as u64)
+            .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
     {
-        if size as libc::c_ulong >= strlen(misc_handlers[i as usize].key)
+        if size as u64 >= strlen(misc_handlers[i as usize].key)
             && strncmp(
                 p,
                 misc_handlers[i as usize].key,
@@ -473,11 +473,11 @@ pub unsafe extern "C" fn spc_misc_setup_handler(
     }
     i = 0i32 as size_t;
     while i
-        < (::std::mem::size_of::<[spc_handler; 6]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<spc_handler>() as libc::c_ulong)
+        < (::std::mem::size_of::<[spc_handler; 6]>() as u64)
+            .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
     {
-        if keylen as libc::c_ulong == strlen(misc_handlers[i as usize].key)
-            && strncmp(key, misc_handlers[i as usize].key, keylen as libc::c_ulong) == 0
+        if keylen as u64 == strlen(misc_handlers[i as usize].key)
+            && strncmp(key, misc_handlers[i as usize].key, keylen as u64) == 0
         {
             skip_white(&mut (*args).curptr, (*args).endptr);
             (*args).command = misc_handlers[i as usize].key;

@@ -87,20 +87,20 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
+    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
         -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
     #[no_mangle]
     fn strstr(_: *const libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -165,7 +165,7 @@ extern "C" {
     fn pst_data_ptr(obj: *mut pst_obj) -> *mut libc::c_void;
 }
 pub type __ssize_t = libc::c_long;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -325,12 +325,12 @@ unsafe extern "C" fn ifreader_create(
     mut bufsize: size_t,
 ) -> *mut ifreader {
     let mut reader: *mut ifreader = 0 as *mut ifreader;
-    reader = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<ifreader>() as libc::c_ulong)
+    reader = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<ifreader>() as u64)
         as u32) as *mut ifreader;
     (*reader).buf = new(
-        (bufsize.wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        (bufsize.wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32,
     ) as *mut libc::c_uchar;
     (*reader).max = bufsize;
@@ -382,13 +382,13 @@ unsafe extern "C" fn ifreader_read(mut reader: *mut ifreader, mut size: size_t) 
         }
         (*reader).buf = renew(
             (*reader).buf as *mut libc::c_void,
-            (size.wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+            (size.wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
                 as u32,
         ) as *mut libc::c_uchar;
         (*reader).max = size
     }
-    if (*reader).unread > 0i32 as libc::c_ulong && bytesrem < size {
+    if (*reader).unread > 0i32 as u64 && bytesrem < size {
         bytesread = if (*reader).max.wrapping_sub(bytesrem) < (*reader).unread {
             (*reader).max.wrapping_sub(bytesrem)
         } else {
@@ -405,14 +405,14 @@ unsafe extern "C" fn ifreader_read(mut reader: *mut ifreader, mut size: size_t) 
             (*reader).handle,
             (*reader).endptr as *mut libc::c_char,
             bytesread,
-        ) as libc::c_ulong
+        ) as u64
             != bytesread
         {
             _tt_abort(b"Reading file failed.\x00" as *const u8 as *const libc::c_char);
         }
         (*reader).endptr = (*reader).endptr.offset(bytesread as isize);
         (*reader).unread =
-            ((*reader).unread as libc::c_ulong).wrapping_sub(bytesread) as size_t as size_t;
+            ((*reader).unread as u64).wrapping_sub(bytesread) as size_t as size_t;
         if __verbose != 0 {
             dpx_message(
                 b"Reading more %zu bytes (%zu bytes remains in buffer)...\n\x00" as *const u8
@@ -432,7 +432,7 @@ unsafe extern "C" fn check_next_token(
     let mut cmp: libc::c_int = 0;
     let mut token: *mut pst_obj = 0 as *mut pst_obj;
     let mut str: *mut libc::c_char = 0 as *mut libc::c_char;
-    if ifreader_read(input, strlen(key)) == 0i32 as libc::c_ulong {
+    if ifreader_read(input, strlen(key)) == 0i32 as u64 {
         return -1i32;
     }
     token = pst_get_token(&mut (*input).cursor, (*input).endptr);
@@ -480,12 +480,12 @@ unsafe extern "C" fn get_coderange(
     memcpy(
         codeLo as *mut libc::c_void,
         pst_data_ptr(tok1),
-        dim1 as libc::c_ulong,
+        dim1 as u64,
     );
     memcpy(
         codeHi as *mut libc::c_void,
         pst_data_ptr(tok2),
-        dim2 as libc::c_ulong,
+        dim2 as u64,
     );
     pst_release_obj(tok1);
     pst_release_obj(tok2);
@@ -596,7 +596,7 @@ unsafe extern "C" fn do_notdefrange(
         if !(fresh3 > 0i32) {
             break;
         }
-        if ifreader_read(input, (127i32 * 3i32) as size_t) == 0i32 as libc::c_ulong {
+        if ifreader_read(input, (127i32 * 3i32) as size_t) == 0i32 as u64 {
             return -1i32;
         }
         if get_coderange(
@@ -653,7 +653,7 @@ unsafe extern "C" fn do_bfrange(
         if !(fresh4 > 0i32) {
             break;
         }
-        if ifreader_read(input, (127i32 * 3i32) as size_t) == 0i32 as libc::c_ulong {
+        if ifreader_read(input, (127i32 * 3i32) as size_t) == 0i32 as u64 {
             return -1i32;
         }
         if get_coderange(
@@ -720,7 +720,7 @@ unsafe extern "C" fn do_cidrange(
         if !(fresh5 > 0i32) {
             break;
         }
-        if ifreader_read(input, (127i32 * 3i32) as size_t) == 0i32 as libc::c_ulong {
+        if ifreader_read(input, (127i32 * 3i32) as size_t) == 0i32 as u64 {
             return -1i32;
         }
         if get_coderange(
@@ -776,7 +776,7 @@ unsafe extern "C" fn do_notdefchar(
         if !(fresh6 > 0i32) {
             break;
         }
-        if ifreader_read(input, (127i32 * 2i32) as size_t) == 0i32 as libc::c_ulong {
+        if ifreader_read(input, (127i32 * 2i32) as size_t) == 0i32 as u64 {
             return -1i32;
         }
         tok1 = pst_get_token(&mut (*input).cursor, (*input).endptr);
@@ -826,7 +826,7 @@ unsafe extern "C" fn do_bfchar(
         if !(fresh7 > 0i32) {
             break;
         }
-        if ifreader_read(input, (127i32 * 2i32) as size_t) == 0i32 as libc::c_ulong {
+        if ifreader_read(input, (127i32 * 2i32) as size_t) == 0i32 as u64 {
             return -1i32;
         }
         tok1 = pst_get_token(&mut (*input).cursor, (*input).endptr);
@@ -878,7 +878,7 @@ unsafe extern "C" fn do_cidchar(
         if !(fresh8 > 0i32) {
             break;
         }
-        if ifreader_read(input, (127i32 * 2i32) as size_t) == 0i32 as libc::c_ulong {
+        if ifreader_read(input, (127i32 * 2i32) as size_t) == 0i32 as u64 {
             return -1i32;
         }
         tok1 = pst_get_token(&mut (*input).cursor, (*input).endptr);

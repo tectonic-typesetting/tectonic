@@ -50,10 +50,10 @@ extern "C" {
     #[no_mangle]
     fn fread(
         _: *mut libc::c_void,
-        _: libc::c_ulong,
-        _: libc::c_ulong,
+        _: u64,
+        _: u64,
         _: *mut FILE,
-    ) -> libc::c_ulong;
+    ) -> u64;
     #[no_mangle]
     fn rewind(__stream: *mut FILE);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -133,7 +133,7 @@ pub type __int32_t = libc::c_int;
 pub type __off_t = libc::c_long;
 pub type __off64_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
@@ -607,8 +607,8 @@ pub unsafe extern "C" fn jp2_include_image(
     loop {
         nb_read = fread(
             work_buffer.as_mut_ptr() as *mut libc::c_void,
-            ::std::mem::size_of::<libc::c_char>() as libc::c_ulong,
-            1024i32 as libc::c_ulong,
+            ::std::mem::size_of::<libc::c_char>() as u64,
+            1024i32 as u64,
             fp,
         ) as libc::c_int;
         if !(nb_read > 0i32) {

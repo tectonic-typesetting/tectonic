@@ -16,13 +16,13 @@ extern "C" {
     #[no_mangle]
     fn abs(_: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
     fn strcat(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -962,7 +962,7 @@ pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
 pub type uint8_t = __uint8_t;
 pub type uint16_t = __uint16_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -1686,13 +1686,13 @@ pub unsafe extern "C" fn copy_native_glyph_info(mut src: int32_t, mut dest: int3
         glyph_count = (*mem.offset((src + 4i32) as isize)).b16.s0 as int32_t;
         let ref mut fresh1 = (*mem.offset((dest + 5i32) as isize)).ptr;
         *fresh1 = xmalloc(
-            ((glyph_count * 10i32 + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong),
+            ((glyph_count * 10i32 + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64),
         );
         memcpy(
             (*mem.offset((dest + 5i32) as isize)).ptr,
             (*mem.offset((src + 5i32) as isize)).ptr,
-            (glyph_count * 10i32) as libc::c_ulong,
+            (glyph_count * 10i32) as u64,
         );
         (*mem.offset((dest + 4i32) as isize)).b16.s0 = glyph_count as uint16_t
     };
@@ -2830,14 +2830,14 @@ pub unsafe extern "C" fn flush_node_list(mut p: int32_t) {
                         43 | 44 => {
                             free_node(
                                 p,
-                                (9i32 as libc::c_ulong).wrapping_add(
-                                    ((*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_ulong)
+                                (9i32 as u64).wrapping_add(
+                                    ((*mem.offset((p + 4i32) as isize)).b16.s1 as u64)
                                         .wrapping_add(
-                                            ::std::mem::size_of::<memory_word>() as libc::c_ulong
+                                            ::std::mem::size_of::<memory_word>() as u64
                                         )
-                                        .wrapping_sub(1i32 as libc::c_ulong)
+                                        .wrapping_sub(1i32 as u64)
                                         .wrapping_div(
-                                            ::std::mem::size_of::<memory_word>() as libc::c_ulong
+                                            ::std::mem::size_of::<memory_word>() as u64
                                         ),
                                 ) as int32_t,
                             );
@@ -3030,14 +3030,14 @@ pub unsafe extern "C" fn copy_node_list(mut p: int32_t) -> int32_t {
                     }
                     43 | 44 => {
                         words =
-                            (9i32 as libc::c_ulong).wrapping_add(
-                                ((*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_ulong)
+                            (9i32 as u64).wrapping_add(
+                                ((*mem.offset((p + 4i32) as isize)).b16.s1 as u64)
                                     .wrapping_add(
-                                        ::std::mem::size_of::<memory_word>() as libc::c_ulong
+                                        ::std::mem::size_of::<memory_word>() as u64
                                     )
-                                    .wrapping_sub(1i32 as libc::c_ulong)
+                                    .wrapping_sub(1i32 as u64)
                                     .wrapping_div(
-                                        ::std::mem::size_of::<memory_word>() as libc::c_ulong
+                                        ::std::mem::size_of::<memory_word>() as u64
                                     ),
                             ) as libc::c_uchar;
                         r = get_node(words as int32_t)
@@ -10247,7 +10247,7 @@ pub unsafe extern "C" fn scan_keyword(mut s: *const libc::c_char) -> bool {
     let mut p: int32_t = 4999999i32 - 13i32;
     let mut q: int32_t = 0;
     (*mem.offset(p as isize)).b32.s1 = -0xfffffffi32;
-    if strlen(s) == 1i32 as libc::c_ulong {
+    if strlen(s) == 1i32 as u64 {
         let mut c: libc::c_char = *s.offset(0);
         loop {
             get_x_token();
@@ -16386,8 +16386,8 @@ pub unsafe extern "C" fn pack_file_name(mut n: str_number, mut a: str_number, mu
     // Note that we populate the buffer in an order different than how the
     // arguments are passed to this function!
     let mut work_buffer: *mut libc::c_char = xmalloc(
-        (((length(a) + length(n) + length(e)) * 3i32 + 1i32 + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<UTF8_code>() as libc::c_ulong),
+        (((length(a) + length(n) + length(e)) * 3i32 + 1i32 + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<UTF8_code>() as u64),
     ) as *mut libc::c_char;
     *work_buffer.offset(0) = '\u{0}' as i32 as libc::c_char;
     let mut a_utf8: *mut libc::c_char = gettexstring(a);
@@ -16402,8 +16402,8 @@ pub unsafe extern "C" fn pack_file_name(mut n: str_number, mut a: str_number, mu
     name_length = strlen(work_buffer) as int32_t;
     free(name_of_file as *mut libc::c_void);
     name_of_file = xmalloc(
-        ((name_length + 1i32 + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong),
+        ((name_length + 1i32 + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64),
     ) as *mut libc::c_char;
     strcpy(name_of_file, work_buffer);
     free(work_buffer as *mut libc::c_void);
@@ -16557,9 +16557,9 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const libc::c_char
         begin_name();
         stop_at_space = 0i32 != 0;
         let mut cp: *const libc::c_uchar = primary_input_name as *const libc::c_uchar;
-        if (pool_ptr as libc::c_ulong)
-            .wrapping_add(strlen(primary_input_name).wrapping_mul(2i32 as libc::c_ulong))
-            >= pool_size as libc::c_ulong
+        if (pool_ptr as u64)
+            .wrapping_add(strlen(primary_input_name).wrapping_mul(2i32 as u64))
+            >= pool_size as u64
         {
             _tt_abort(
                 b"string pool overflow [%i bytes]\x00" as *const u8 as *const libc::c_char,
@@ -17124,12 +17124,12 @@ pub unsafe extern "C" fn new_native_word_node(
 ) -> int32_t {
     let mut l: int32_t = 0;
     let mut q: int32_t = 0;
-    l = (6i32 as libc::c_ulong).wrapping_add(
-        (n as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<UTF16_code>() as libc::c_ulong)
-            .wrapping_add(::std::mem::size_of::<memory_word>() as libc::c_ulong)
-            .wrapping_sub(1i32 as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<memory_word>() as libc::c_ulong),
+    l = (6i32 as u64).wrapping_add(
+        (n as u64)
+            .wrapping_mul(::std::mem::size_of::<UTF16_code>() as u64)
+            .wrapping_add(::std::mem::size_of::<memory_word>() as u64)
+            .wrapping_sub(1i32 as u64)
+            .wrapping_div(::std::mem::size_of::<memory_word>() as u64),
     ) as int32_t;
     q = get_node(l);
     (*mem.offset(q as isize)).b16.s1 = 8i32 as uint16_t;
@@ -26803,14 +26803,14 @@ pub unsafe extern "C" fn just_copy(mut p: int32_t, mut h: int32_t, mut t: int32_
                                     words = 5i32 as libc::c_uchar
                                 }
                                 43 | 44 => {
-                                    words = (9i32 as libc::c_ulong).wrapping_add(
+                                    words = (9i32 as u64).wrapping_add(
                                         ((*mem.offset((p + 4i32) as isize)).b16.s1
-                                            as libc::c_ulong)
+                                            as u64)
                                             .wrapping_add(::std::mem::size_of::<memory_word>()
-                                                as libc::c_ulong)
-                                            .wrapping_sub(1i32 as libc::c_ulong)
+                                                as u64)
+                                            .wrapping_sub(1i32 as u64)
                                             .wrapping_div(::std::mem::size_of::<memory_word>()
-                                                as libc::c_ulong),
+                                                as u64),
                                     ) as libc::c_uchar;
                                     r = get_node(words as int32_t)
                                 }
@@ -26908,14 +26908,14 @@ pub unsafe extern "C" fn just_copy(mut p: int32_t, mut h: int32_t, mut t: int32_
                                     words = 5i32 as libc::c_uchar
                                 }
                                 43 | 44 => {
-                                    words = (9i32 as libc::c_ulong).wrapping_add(
+                                    words = (9i32 as u64).wrapping_add(
                                         ((*mem.offset((p + 4i32) as isize)).b16.s1
-                                            as libc::c_ulong)
+                                            as u64)
                                             .wrapping_add(::std::mem::size_of::<memory_word>()
-                                                as libc::c_ulong)
-                                            .wrapping_sub(1i32 as libc::c_ulong)
+                                                as u64)
+                                            .wrapping_sub(1i32 as u64)
                                             .wrapping_div(::std::mem::size_of::<memory_word>()
-                                                as libc::c_ulong),
+                                                as u64),
                                     ) as libc::c_uchar;
                                     r = get_node(words as int32_t)
                                 }
@@ -27013,14 +27013,14 @@ pub unsafe extern "C" fn just_copy(mut p: int32_t, mut h: int32_t, mut t: int32_
                                     words = 5i32 as libc::c_uchar
                                 }
                                 43 | 44 => {
-                                    words = (9i32 as libc::c_ulong).wrapping_add(
+                                    words = (9i32 as u64).wrapping_add(
                                         ((*mem.offset((p + 4i32) as isize)).b16.s1
-                                            as libc::c_ulong)
+                                            as u64)
                                             .wrapping_add(::std::mem::size_of::<memory_word>()
-                                                as libc::c_ulong)
-                                            .wrapping_sub(1i32 as libc::c_ulong)
+                                                as u64)
+                                            .wrapping_sub(1i32 as u64)
                                             .wrapping_div(::std::mem::size_of::<memory_word>()
-                                                as libc::c_ulong),
+                                                as u64),
                                     ) as libc::c_uchar;
                                     r = get_node(words as int32_t)
                                 }
@@ -27118,14 +27118,14 @@ pub unsafe extern "C" fn just_copy(mut p: int32_t, mut h: int32_t, mut t: int32_
                                     words = 5i32 as libc::c_uchar
                                 }
                                 43 | 44 => {
-                                    words = (9i32 as libc::c_ulong).wrapping_add(
+                                    words = (9i32 as u64).wrapping_add(
                                         ((*mem.offset((p + 4i32) as isize)).b16.s1
-                                            as libc::c_ulong)
+                                            as u64)
                                             .wrapping_add(::std::mem::size_of::<memory_word>()
-                                                as libc::c_ulong)
-                                            .wrapping_sub(1i32 as libc::c_ulong)
+                                                as u64)
+                                            .wrapping_sub(1i32 as u64)
                                             .wrapping_div(::std::mem::size_of::<memory_word>()
-                                                as libc::c_ulong),
+                                                as u64),
                                     ) as libc::c_uchar;
                                     r = get_node(words as int32_t)
                                 }
@@ -27223,14 +27223,14 @@ pub unsafe extern "C" fn just_copy(mut p: int32_t, mut h: int32_t, mut t: int32_
                                     words = 5i32 as libc::c_uchar
                                 }
                                 43 | 44 => {
-                                    words = (9i32 as libc::c_ulong).wrapping_add(
+                                    words = (9i32 as u64).wrapping_add(
                                         ((*mem.offset((p + 4i32) as isize)).b16.s1
-                                            as libc::c_ulong)
+                                            as u64)
                                             .wrapping_add(::std::mem::size_of::<memory_word>()
-                                                as libc::c_ulong)
-                                            .wrapping_sub(1i32 as libc::c_ulong)
+                                                as u64)
+                                            .wrapping_sub(1i32 as u64)
                                             .wrapping_div(::std::mem::size_of::<memory_word>()
-                                                as libc::c_ulong),
+                                                as u64),
                                     ) as libc::c_uchar;
                                     r = get_node(words as int32_t)
                                 }
@@ -27328,14 +27328,14 @@ pub unsafe extern "C" fn just_copy(mut p: int32_t, mut h: int32_t, mut t: int32_
                                     words = 5i32 as libc::c_uchar
                                 }
                                 43 | 44 => {
-                                    words = (9i32 as libc::c_ulong).wrapping_add(
+                                    words = (9i32 as u64).wrapping_add(
                                         ((*mem.offset((p + 4i32) as isize)).b16.s1
-                                            as libc::c_ulong)
+                                            as u64)
                                             .wrapping_add(::std::mem::size_of::<memory_word>()
-                                                as libc::c_ulong)
-                                            .wrapping_sub(1i32 as libc::c_ulong)
+                                                as u64)
+                                            .wrapping_sub(1i32 as u64)
                                             .wrapping_div(::std::mem::size_of::<memory_word>()
-                                                as libc::c_ulong),
+                                                as u64),
                                     ) as libc::c_uchar;
                                     r = get_node(words as int32_t)
                                 }
@@ -30571,8 +30571,8 @@ pub unsafe extern "C" fn main_control() {
                             native_text_size = native_text_size + 128i32;
                             native_text = xrealloc(
                                 native_text as *mut libc::c_void,
-                                (native_text_size as libc::c_ulong).wrapping_mul(
-                                    ::std::mem::size_of::<UTF16_code>() as libc::c_ulong,
+                                (native_text_size as u64).wrapping_mul(
+                                    ::std::mem::size_of::<UTF16_code>() as u64,
                                 ),
                             ) as *mut UTF16_code
                         }
@@ -30591,8 +30591,8 @@ pub unsafe extern "C" fn main_control() {
                             native_text_size = native_text_size + 128i32;
                             native_text = xrealloc(
                                 native_text as *mut libc::c_void,
-                                (native_text_size as libc::c_ulong).wrapping_mul(
-                                    ::std::mem::size_of::<UTF16_code>() as libc::c_ulong,
+                                (native_text_size as u64).wrapping_mul(
+                                    ::std::mem::size_of::<UTF16_code>() as u64,
                                 ),
                             ) as *mut UTF16_code
                         }
@@ -30727,8 +30727,8 @@ pub unsafe extern "C" fn main_control() {
                         native_text_size = native_text_size + 128i32;
                         native_text = xrealloc(
                             native_text as *mut libc::c_void,
-                            (native_text_size as libc::c_ulong)
-                                .wrapping_mul(::std::mem::size_of::<UTF16_code>() as libc::c_ulong),
+                            (native_text_size as u64)
+                                .wrapping_mul(::std::mem::size_of::<UTF16_code>() as u64),
                         ) as *mut UTF16_code
                     }
                     main_h = 0i32;
@@ -30885,8 +30885,8 @@ pub unsafe extern "C" fn main_control() {
                                 native_text_size = native_text_size + 128i32;
                                 native_text = xrealloc(
                                     native_text as *mut libc::c_void,
-                                    (native_text_size as libc::c_ulong).wrapping_mul(
-                                        ::std::mem::size_of::<UTF16_code>() as libc::c_ulong,
+                                    (native_text_size as u64).wrapping_mul(
+                                        ::std::mem::size_of::<UTF16_code>() as u64,
                                     ),
                                 ) as *mut UTF16_code
                             }

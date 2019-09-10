@@ -23,16 +23,16 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: libc::c_ulong)
+    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: u64)
         -> *mut libc::c_char;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
     #[no_mangle]
@@ -171,7 +171,7 @@ extern "C" {
         args: *mut spc_arg,
     ) -> libc::c_int;
 }
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -382,8 +382,8 @@ unsafe extern "C" fn spc_handler_xtx_bscale(
     if scaleFactorCount & 0xfi32 == 0 {
         scaleFactors = xrealloc(
             scaleFactors as *mut libc::c_void,
-            ((scaleFactorCount + 16i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<pdf_coord>() as libc::c_ulong),
+            ((scaleFactorCount + 16i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<pdf_coord>() as u64),
         ) as *mut pdf_coord
     }
     if spc_util_read_numbers(&mut *values.as_mut_ptr().offset(0), 2i32, args) < 2i32 {
@@ -551,8 +551,8 @@ unsafe extern "C" fn spc_handler_xtx_fontmapline(
                 *fresh2 = *fresh1
             }
             *q = '\u{0}' as i32 as libc::c_char;
-            mrec = new((1i32 as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as libc::c_ulong)
+            mrec = new((1i32 as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as u64)
                 as u32) as *mut fontmap_rec;
             pdf_init_fontmap_record(mrec);
             error = pdf_read_fontmap_line(
@@ -626,7 +626,7 @@ unsafe extern "C" fn spc_handler_xtx_initoverlay(
     strncpy(
         overlay_name.as_mut_ptr(),
         (*args).curptr,
-        (*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as libc::c_ulong,
+        (*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as u64,
     );
     overlay_name[(*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as usize] =
         0i32 as libc::c_char;
@@ -1028,9 +1028,9 @@ pub unsafe extern "C" fn spc_xtx_setup_handler(
     q = parse_c_ident(&mut (*ap).curptr, (*ap).endptr);
     if !q.is_null() {
         i = 0i32 as libc::c_uint;
-        while (i as libc::c_ulong)
-            < (::std::mem::size_of::<[spc_handler; 21]>() as libc::c_ulong)
-                .wrapping_div(::std::mem::size_of::<spc_handler>() as libc::c_ulong)
+        while (i as u64)
+            < (::std::mem::size_of::<[spc_handler; 21]>() as u64)
+                .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
         {
             if streq_ptr(q, xtx_handlers[i as usize].key) {
                 (*ap).command = xtx_handlers[i as usize].key;

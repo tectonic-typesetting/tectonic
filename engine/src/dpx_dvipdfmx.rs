@@ -17,13 +17,13 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn strchr(_: *const libc::c_char, _: libc::c_int) -> *mut libc::c_char;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -551,7 +551,7 @@ unsafe extern "C" fn read_length(
             q = q.offset(strlen(b"true\x00" as *const u8 as *const libc::c_char) as isize)
             /* just skip "true" */
         }
-        if strlen(q) == 0i32 as libc::c_ulong {
+        if strlen(q) == 0i32 as u64 {
             free(qq as *mut libc::c_void);
             skip_white(&mut p, endptr);
             q = parse_c_ident(&mut p, endptr);
@@ -655,8 +655,8 @@ unsafe extern "C" fn select_pages(
             max_page_ranges = max_page_ranges.wrapping_add(4i32 as libc::c_uint); /* Can't be signed. */
             page_ranges = renew(
                 page_ranges as *mut libc::c_void,
-                (max_page_ranges as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<PageRange>() as libc::c_ulong)
+                (max_page_ranges as u64)
+                    .wrapping_mul(::std::mem::size_of::<PageRange>() as u64)
                     as u32,
             ) as *mut PageRange
         }
@@ -980,8 +980,8 @@ pub unsafe extern "C" fn dvipdfmx_main(
         select_pages(pagespec, &mut page_ranges, &mut num_page_ranges);
     }
     if page_ranges.is_null() {
-        page_ranges = new((1i32 as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<PageRange>() as libc::c_ulong)
+        page_ranges = new((1i32 as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<PageRange>() as u64)
             as u32) as *mut PageRange
     }
     if num_page_ranges == 0i32 as libc::c_uint {

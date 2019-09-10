@@ -19,7 +19,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     /* The internal, C/C++ interface: */
@@ -58,7 +58,7 @@ extern "C" {
         stream_data_len: libc::c_int,
     );
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -88,7 +88,7 @@ extern "C" {
 pub type __int32_t = libc::c_int;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type BYTE = libc::c_uchar;
@@ -146,18 +146,18 @@ pub unsafe extern "C" fn sfnt_open(mut handle: rust_input_handle_t) -> *mut sfnt
         ); /* resource name position from name_list */
     } /* resource flag (byte) + resource offset */
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32); /* mbz */
-    sfont = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<sfnt>() as libc::c_ulong) as u32)
+    sfont = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<sfnt>() as u64) as u32)
         as *mut sfnt;
     (*sfont).handle = handle;
     type_0 = tt_get_unsigned_quad((*sfont).handle);
-    if type_0 as libc::c_ulong == 0x10000 || type_0 as libc::c_ulong == 0x74727565 {
+    if type_0 as u64 == 0x10000 || type_0 as u64 == 0x74727565 {
         (*sfont).type_0 = 1i32 << 0i32
-    } else if type_0 as libc::c_ulong == 0x10000 {
+    } else if type_0 as u64 == 0x10000 {
         (*sfont).type_0 = 1i32 << 1i32
-    } else if type_0 as libc::c_ulong == 0x4f54544f {
+    } else if type_0 as u64 == 0x4f54544f {
         (*sfont).type_0 = 1i32 << 2i32
-    } else if type_0 as libc::c_ulong == 0x74746366 {
+    } else if type_0 as u64 == 0x74746366 {
         (*sfont).type_0 = 1i32 << 4i32
     }
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
@@ -193,8 +193,8 @@ pub unsafe extern "C" fn dfont_open(
         );
     }
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
-    sfont = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<sfnt>() as libc::c_ulong) as u32)
+    sfont = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<sfnt>() as u64) as u32)
         as *mut sfnt;
     (*sfont).handle = handle;
     rdata_pos = tt_get_unsigned_quad((*sfont).handle);
@@ -212,7 +212,7 @@ pub unsafe extern "C" fn dfont_open(
         tag = tt_get_unsigned_quad((*sfont).handle);
         types_num = tt_get_unsigned_pair((*sfont).handle);
         types_pos = tags_pos.wrapping_add(tt_get_unsigned_pair((*sfont).handle) as libc::c_uint);
-        if tag as libc::c_ulong == 0x73666e74 {
+        if tag as u64 == 0x73666e74 {
             break;
         }
         i = i.wrapping_add(1)
@@ -242,9 +242,9 @@ pub unsafe extern "C" fn dfont_open(
     ttstub_input_seek((*sfont).handle, 0i32 as ssize_t, 0i32);
     (*sfont).type_0 = 1i32 << 8i32;
     (*sfont).directory = 0 as *mut sfnt_table_directory;
-    (*sfont).offset = (res_pos as libc::c_ulong & 0xffffff)
-        .wrapping_add(rdata_pos as libc::c_ulong)
-        .wrapping_add(4i32 as libc::c_ulong) as SFNT_ULONG;
+    (*sfont).offset = (res_pos as u64 & 0xffffff)
+        .wrapping_add(rdata_pos as u64)
+        .wrapping_add(4i32 as u64) as SFNT_ULONG;
     return sfont;
 }
 unsafe extern "C" fn release_directory(mut td: *mut sfnt_table_directory) {
@@ -355,7 +355,7 @@ unsafe extern "C" fn find_table_index(
         if memcmp(
             (*(*td).tables.offset(idx as isize)).tag.as_mut_ptr() as *const libc::c_void,
             tag as *const libc::c_void,
-            4i32 as libc::c_ulong,
+            4i32 as u64,
         ) == 0
         {
             return idx;
@@ -392,14 +392,14 @@ pub unsafe extern "C" fn sfnt_set_table(
         (*td).num_tables = (*td).num_tables.wrapping_add(1);
         (*td).tables = renew(
             (*td).tables as *mut libc::c_void,
-            ((*td).num_tables as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<sfnt_table>() as libc::c_ulong)
+            ((*td).num_tables as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<sfnt_table>() as u64)
                 as u32,
         ) as *mut sfnt_table;
         memcpy(
             (*(*td).tables.offset(idx as isize)).tag.as_mut_ptr() as *mut libc::c_void,
             tag as *const libc::c_void,
-            4i32 as libc::c_ulong,
+            4i32 as u64,
         );
     }
     (*(*td).tables.offset(idx as isize)).check_sum = sfnt_calc_checksum(data, length);
@@ -514,8 +514,8 @@ pub unsafe extern "C" fn sfnt_read_table_directory(
     if !(*sfont).directory.is_null() {
         release_directory((*sfont).directory);
     }
-    td = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<sfnt_table_directory>() as libc::c_ulong)
+    td = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<sfnt_table_directory>() as u64)
         as u32) as *mut sfnt_table_directory;
     (*sfont).directory = td;
     if !(*sfont).handle.is_null() {
@@ -536,11 +536,11 @@ pub unsafe extern "C" fn sfnt_read_table_directory(
     (*td).search_range = tt_get_unsigned_pair((*sfont).handle);
     (*td).entry_selector = tt_get_unsigned_pair((*sfont).handle);
     (*td).range_shift = tt_get_unsigned_pair((*sfont).handle);
-    (*td).flags = new(((*td).num_tables as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    (*td).flags = new(((*td).num_tables as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
-    (*td).tables = new(((*td).num_tables as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<sfnt_table>() as libc::c_ulong)
+    (*td).tables = new(((*td).num_tables as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<sfnt_table>() as u64)
         as u32) as *mut sfnt_table;
     i = 0i32 as libc::c_uint;
     while i < (*td).num_tables as libc::c_uint {
@@ -702,7 +702,7 @@ pub unsafe extern "C" fn sfnt_create_FontFile_stream(mut sfont: *mut sfnt) -> *m
             memcpy(
                 p as *mut libc::c_void,
                 (*(*td).tables.offset(i as isize)).tag.as_mut_ptr() as *const libc::c_void,
-                4i32 as libc::c_ulong,
+                4i32 as u64,
             );
             p = p.offset(4);
             p = p.offset(put_big_endian(

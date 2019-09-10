@@ -94,9 +94,9 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn floor(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
@@ -132,7 +132,7 @@ pub type __uint16_t = libc::c_ushort;
 pub type __ssize_t = libc::c_long;
 pub type uint8_t = __uint8_t;
 pub type uint16_t = __uint16_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
@@ -488,7 +488,7 @@ unsafe extern "C" fn JPEG_info_init(mut j_info: *mut JPEG_info) {
     memset(
         (*j_info).skipbits.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        (1024i32 / 8i32 + 1i32) as libc::c_ulong,
+        (1024i32 / 8i32 + 1i32) as u64,
     );
 }
 unsafe extern "C" fn JPEG_release_APPn_data(
@@ -663,8 +663,8 @@ unsafe extern "C" fn add_APPn_marker(
         (*j_info).max_appn += 16i32;
         (*j_info).appn = renew(
             (*j_info).appn as *mut libc::c_void,
-            ((*j_info).max_appn as u32 as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<JPEG_ext>() as libc::c_ulong)
+            ((*j_info).max_appn as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<JPEG_ext>() as u64)
                 as u32,
         ) as *mut JPEG_ext
     }
@@ -681,8 +681,8 @@ unsafe extern "C" fn read_APP14_Adobe(
     mut handle: rust_input_handle_t,
 ) -> libc::c_ushort {
     let mut app_data: *mut JPEG_APPn_Adobe = 0 as *mut JPEG_APPn_Adobe;
-    app_data = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<JPEG_APPn_Adobe>() as libc::c_ulong)
+    app_data = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<JPEG_APPn_Adobe>() as u64)
         as u32) as *mut JPEG_APPn_Adobe;
     (*app_data).version = tt_get_unsigned_pair(handle);
     (*app_data).flag0 = tt_get_unsigned_pair(handle);
@@ -970,8 +970,8 @@ unsafe extern "C" fn read_APP0_JFIF(
 ) -> size_t {
     let mut app_data: *mut JPEG_APPn_JFIF = 0 as *mut JPEG_APPn_JFIF;
     let mut thumb_data_len: size_t = 0;
-    app_data = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<JPEG_APPn_JFIF>() as libc::c_ulong)
+    app_data = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<JPEG_APPn_JFIF>() as u64)
         as u32) as *mut JPEG_APPn_JFIF;
     (*app_data).version = tt_get_unsigned_pair(handle);
     (*app_data).units = tt_get_unsigned_byte(handle);
@@ -982,9 +982,9 @@ unsafe extern "C" fn read_APP0_JFIF(
     thumb_data_len = (3i32
         * (*app_data).Xthumbnail as libc::c_int
         * (*app_data).Ythumbnail as libc::c_int) as size_t;
-    if thumb_data_len > 0i32 as libc::c_ulong {
-        (*app_data).thumbnail = new((thumb_data_len as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+    if thumb_data_len > 0i32 as u64 {
+        (*app_data).thumbnail = new((thumb_data_len as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
         ttstub_input_read(
             handle,
@@ -1016,7 +1016,7 @@ unsafe extern "C" fn read_APP0_JFIF(
             (*j_info).ydpi = 72.0f64
         }
     }
-    return (9i32 as libc::c_ulong).wrapping_add(thumb_data_len);
+    return (9i32 as u64).wrapping_add(thumb_data_len);
 }
 unsafe extern "C" fn read_APP0_JFXX(mut handle: rust_input_handle_t, mut length: size_t) -> size_t {
     tt_get_unsigned_byte(handle);
@@ -1028,7 +1028,7 @@ unsafe extern "C" fn read_APP0_JFXX(mut handle: rust_input_handle_t, mut length:
      */
     ttstub_input_seek(
         handle,
-        length.wrapping_sub(1i32 as libc::c_ulong) as ssize_t,
+        length.wrapping_sub(1i32 as u64) as ssize_t,
         1i32,
     ); /* Thunbnail image */
     /* Ignore */
@@ -1040,12 +1040,12 @@ unsafe extern "C" fn read_APP1_XMP(
     mut length: size_t,
 ) -> size_t {
     let mut app_data: *mut JPEG_APPn_XMP = 0 as *mut JPEG_APPn_XMP;
-    app_data = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<JPEG_APPn_XMP>() as libc::c_ulong)
+    app_data = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<JPEG_APPn_XMP>() as u64)
         as u32) as *mut JPEG_APPn_XMP;
     (*app_data).length = length;
-    (*app_data).packet = new(((*app_data).length as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+    (*app_data).packet = new(((*app_data).length as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
         as u32) as *mut libc::c_uchar;
     ttstub_input_read(
         handle,
@@ -1066,14 +1066,14 @@ unsafe extern "C" fn read_APP2_ICC(
     mut length: size_t,
 ) -> size_t {
     let mut app_data: *mut JPEG_APPn_ICC = 0 as *mut JPEG_APPn_ICC;
-    app_data = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<JPEG_APPn_ICC>() as libc::c_ulong)
+    app_data = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<JPEG_APPn_ICC>() as u64)
         as u32) as *mut JPEG_APPn_ICC;
     (*app_data).seq_id = tt_get_unsigned_byte(handle);
     (*app_data).num_chunks = tt_get_unsigned_byte(handle);
-    (*app_data).length = length.wrapping_sub(2i32 as libc::c_ulong);
-    (*app_data).chunk = new(((*app_data).length as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+    (*app_data).length = length.wrapping_sub(2i32 as u64);
+    (*app_data).chunk = new(((*app_data).length as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
         as u32) as *mut libc::c_uchar;
     ttstub_input_read(
         handle,
@@ -1192,8 +1192,8 @@ unsafe extern "C" fn JPEG_copy_stream(
         length = ttstub_input_read(
             handle,
             work_buffer.as_mut_ptr(),
-            if (1024i32 as libc::c_ulong) < total_size.wrapping_sub(pos) {
-                1024i32 as libc::c_ulong
+            if (1024i32 as u64) < total_size.wrapping_sub(pos) {
+                1024i32 as u64
             } else {
                 total_size.wrapping_sub(pos)
             },
@@ -1206,7 +1206,7 @@ unsafe extern "C" fn JPEG_copy_stream(
             work_buffer.as_mut_ptr() as *const libc::c_void,
             length,
         );
-        pos = (pos as libc::c_ulong).wrapping_add(length as libc::c_ulong) as size_t as size_t
+        pos = (pos as u64).wrapping_add(length as u64) as size_t as size_t
     }
     return if found_SOFn != 0 { 0i32 } else { -1i32 };
 }
@@ -1250,20 +1250,20 @@ unsafe extern "C" fn JPEG_scan_file(
                             app_sig.as_mut_ptr() as *const libc::c_void,
                             b"JFIF\x00\x00" as *const u8 as *const libc::c_char
                                 as *const libc::c_void,
-                            5i32 as libc::c_ulong,
+                            5i32 as u64,
                         ) == 0
                         {
                             (*j_info).flags |= 1i32 << 0i32;
-                            length = (length as libc::c_ulong)
+                            length = (length as u64)
                                 .wrapping_sub(read_APP0_JFIF(j_info, handle))
                                 as libc::c_int as libc::c_int
                         } else if memcmp(
                             app_sig.as_mut_ptr() as *const libc::c_void,
                             b"JFXX\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-                            5i32 as libc::c_ulong,
+                            5i32 as u64,
                         ) == 0
                         {
-                            length = (length as libc::c_ulong)
+                            length = (length as u64)
                                 .wrapping_sub(read_APP0_JFXX(handle, length as size_t))
                                 as libc::c_int as libc::c_int
                         }
@@ -1282,11 +1282,11 @@ unsafe extern "C" fn JPEG_scan_file(
                             app_sig.as_mut_ptr() as *const libc::c_void,
                             b"Exif\x00\x00" as *const u8 as *const libc::c_char
                                 as *const libc::c_void,
-                            5i32 as libc::c_ulong,
+                            5i32 as u64,
                         ) == 0
                         {
                             (*j_info).flags |= 1i32 << 3i32;
-                            length = (length as libc::c_ulong).wrapping_sub(read_APP1_Exif(
+                            length = (length as u64).wrapping_sub(read_APP1_Exif(
                                 j_info,
                                 handle,
                                 length as size_t,
@@ -1294,7 +1294,7 @@ unsafe extern "C" fn JPEG_scan_file(
                         } else if memcmp(
                             app_sig.as_mut_ptr() as *const libc::c_void,
                             b"http:\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-                            5i32 as libc::c_ulong,
+                            5i32 as u64,
                         ) == 0
                             && length > 24i32
                         {
@@ -1309,11 +1309,11 @@ unsafe extern "C" fn JPEG_scan_file(
                                 b"//ns.adobe.com/xap/1.0/\x00\x00" as *const u8
                                     as *const libc::c_char
                                     as *const libc::c_void,
-                                24i32 as libc::c_ulong,
+                                24i32 as u64,
                             ) == 0
                             {
                                 (*j_info).flags |= 1i32 << 4i32;
-                                length = (length as libc::c_ulong).wrapping_sub(read_APP1_XMP(
+                                length = (length as u64).wrapping_sub(read_APP1_XMP(
                                     j_info,
                                     handle,
                                     length as size_t,
@@ -1342,11 +1342,11 @@ unsafe extern "C" fn JPEG_scan_file(
                             app_sig.as_mut_ptr() as *const libc::c_void,
                             b"ICC_PROFILE\x00\x00" as *const u8 as *const libc::c_char
                                 as *const libc::c_void,
-                            12i32 as libc::c_ulong,
+                            12i32 as u64,
                         ) == 0
                         {
                             (*j_info).flags |= 1i32 << 2i32;
-                            length = (length as libc::c_ulong).wrapping_sub(read_APP2_ICC(
+                            length = (length as u64).wrapping_sub(read_APP2_ICC(
                                 j_info,
                                 handle,
                                 length as size_t,
@@ -1372,7 +1372,7 @@ unsafe extern "C" fn JPEG_scan_file(
                         if memcmp(
                             app_sig.as_mut_ptr() as *const libc::c_void,
                             b"Adobe\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-                            5i32 as libc::c_ulong,
+                            5i32 as u64,
                         ) == 0
                         {
                             (*j_info).flags |= 1i32 << 1i32;

@@ -13,11 +13,11 @@ extern "C" {
     #[no_mangle]
     fn abs(_: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -296,8 +296,8 @@ pub type __int32_t = libc::c_int;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
 pub type uint16_t = __uint16_t;
-pub type uintptr_t = libc::c_ulong;
-pub type size_t = libc::c_ulong;
+pub type uintptr_t = u64;
+pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
    Copyright 2016-2018 the Tectonic Project
@@ -4204,21 +4204,21 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val: int32_t = 0x54544e43i32; /* TODO: can we move this farther up in this function? */
     do_dump(
         &mut x_val as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_0: int32_t = 28i32;
     do_dump(
         &mut x_val_0 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_1: int32_t = hash_high;
     do_dump(
         &mut x_val_1 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4228,7 +4228,7 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val_2: int32_t = 4999999i32;
     do_dump(
         &mut x_val_2 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4264,21 +4264,21 @@ unsafe extern "C" fn store_fmt_file() {
         - 1i32;
     do_dump(
         &mut x_val_3 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_4: int32_t = 8501i32;
     do_dump(
         &mut x_val_4 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_5: int32_t = 607i32;
     do_dump(
         &mut x_val_5 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4286,26 +4286,26 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val_6: int32_t = pool_ptr;
     do_dump(
         &mut x_val_6 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_7: int32_t = str_ptr;
     do_dump(
         &mut x_val_7 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     do_dump(
         &mut *str_start.offset(0) as *mut pool_pointer as *mut libc::c_char,
-        ::std::mem::size_of::<pool_pointer>() as libc::c_ulong,
+        ::std::mem::size_of::<pool_pointer>() as u64,
         (str_ptr - 65536i32 + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *str_pool.offset(0) as *mut packed_UTF16_code as *mut libc::c_char,
-        ::std::mem::size_of::<packed_UTF16_code>() as libc::c_ulong,
+        ::std::mem::size_of::<packed_UTF16_code>() as u64,
         pool_ptr as size_t,
         fmt_out,
     );
@@ -4319,14 +4319,14 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val_8: int32_t = lo_mem_max;
     do_dump(
         &mut x_val_8 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_9: int32_t = rover;
     do_dump(
         &mut x_val_9 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4335,7 +4335,7 @@ unsafe extern "C" fn store_fmt_file() {
         let mut x_val_10: int32_t = sa_root[k as usize];
         do_dump(
             &mut x_val_10 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_out,
         );
@@ -4347,7 +4347,7 @@ unsafe extern "C" fn store_fmt_file() {
     loop {
         do_dump(
             &mut *mem.offset(p as isize) as *mut memory_word as *mut libc::c_char,
-            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+            ::std::mem::size_of::<memory_word>() as u64,
             (q + 2i32 - p) as size_t,
             fmt_out,
         );
@@ -4363,7 +4363,7 @@ unsafe extern "C" fn store_fmt_file() {
     dyn_used = mem_end + 1i32 - hi_mem_min;
     do_dump(
         &mut *mem.offset(p as isize) as *mut memory_word as *mut libc::c_char,
-        ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+        ::std::mem::size_of::<memory_word>() as u64,
         (lo_mem_max + 1i32 - p) as size_t,
         fmt_out,
     );
@@ -4371,20 +4371,20 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val_11: int32_t = hi_mem_min;
     do_dump(
         &mut x_val_11 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_12: int32_t = avail;
     do_dump(
         &mut x_val_12 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     do_dump(
         &mut *mem.offset(hi_mem_min as isize) as *mut memory_word as *mut libc::c_char,
-        ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+        ::std::mem::size_of::<memory_word>() as u64,
         (mem_end + 1i32 - hi_mem_min) as size_t,
         fmt_out,
     );
@@ -4397,14 +4397,14 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val_13: int32_t = var_used;
     do_dump(
         &mut x_val_13 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_14: int32_t = dyn_used;
     do_dump(
         &mut x_val_14 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4533,13 +4533,13 @@ unsafe extern "C" fn store_fmt_file() {
         let mut x_val_15: int32_t = l - k;
         do_dump(
             &mut x_val_15 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_out,
         );
         do_dump(
             &mut *eqtb.offset(k as isize) as *mut memory_word as *mut libc::c_char,
-            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+            ::std::mem::size_of::<memory_word>() as u64,
             (l - k) as size_t,
             fmt_out,
         );
@@ -4547,7 +4547,7 @@ unsafe extern "C" fn store_fmt_file() {
         let mut x_val_16: int32_t = k - l;
         do_dump(
             &mut x_val_16 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_out,
         );
@@ -4703,13 +4703,13 @@ unsafe extern "C" fn store_fmt_file() {
         let mut x_val_17: int32_t = l - k;
         do_dump(
             &mut x_val_17 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_out,
         );
         do_dump(
             &mut *eqtb.offset(k as isize) as *mut memory_word as *mut libc::c_char,
-            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+            ::std::mem::size_of::<memory_word>() as u64,
             (l - k) as size_t,
             fmt_out,
         );
@@ -4717,7 +4717,7 @@ unsafe extern "C" fn store_fmt_file() {
         let mut x_val_18: int32_t = k - l;
         do_dump(
             &mut x_val_18 as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_out,
         );
@@ -4791,7 +4791,7 @@ unsafe extern "C" fn store_fmt_file() {
                     - 1i32
                     + 1i32) as isize,
             ) as *mut memory_word as *mut libc::c_char,
-            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+            ::std::mem::size_of::<memory_word>() as u64,
             hash_high as size_t,
             fmt_out,
         );
@@ -4799,14 +4799,14 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val_19: int32_t = par_loc;
     do_dump(
         &mut x_val_19 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_20: int32_t = write_loc;
     do_dump(
         &mut x_val_20 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4814,7 +4814,7 @@ unsafe extern "C" fn store_fmt_file() {
     while p <= 500i32 {
         do_dump(
             &mut *prim.as_mut_ptr().offset(p as isize) as *mut b32x2 as *mut libc::c_char,
-            ::std::mem::size_of::<b32x2>() as libc::c_ulong,
+            ::std::mem::size_of::<b32x2>() as u64,
             1i32 as size_t,
             fmt_out,
         );
@@ -4825,7 +4825,7 @@ unsafe extern "C" fn store_fmt_file() {
         do_dump(
             &mut *prim_eqtb.as_mut_ptr().offset(p as isize) as *mut memory_word
                 as *mut libc::c_char,
-            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+            ::std::mem::size_of::<memory_word>() as u64,
             1i32 as size_t,
             fmt_out,
         );
@@ -4835,7 +4835,7 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val_21: int32_t = hash_used;
     do_dump(
         &mut x_val_21 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4848,13 +4848,13 @@ unsafe extern "C" fn store_fmt_file() {
             let mut x_val_22: int32_t = p;
             do_dump(
                 &mut x_val_22 as *mut int32_t as *mut libc::c_char,
-                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
             do_dump(
                 &mut *hash.offset(p as isize) as *mut b32x2 as *mut libc::c_char,
-                ::std::mem::size_of::<b32x2>() as libc::c_ulong,
+                ::std::mem::size_of::<b32x2>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
@@ -4864,7 +4864,7 @@ unsafe extern "C" fn store_fmt_file() {
     }
     do_dump(
         &mut *hash.offset((hash_used + 1i32) as isize) as *mut b32x2 as *mut libc::c_char,
-        ::std::mem::size_of::<b32x2>() as libc::c_ulong,
+        ::std::mem::size_of::<b32x2>() as u64,
         (1i32
             + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -4912,7 +4912,7 @@ unsafe extern "C" fn store_fmt_file() {
                     - 1i32
                     + 1i32) as isize,
             ) as *mut b32x2 as *mut libc::c_char,
-            ::std::mem::size_of::<b32x2>() as libc::c_ulong,
+            ::std::mem::size_of::<b32x2>() as u64,
             hash_high as size_t,
             fmt_out,
         );
@@ -4920,7 +4920,7 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val_23: int32_t = cs_count;
     do_dump(
         &mut x_val_23 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4931,158 +4931,158 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val_24: int32_t = fmem_ptr;
     do_dump(
         &mut x_val_24 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     do_dump(
         &mut *font_info.offset(0) as *mut memory_word as *mut libc::c_char,
-        ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+        ::std::mem::size_of::<memory_word>() as u64,
         fmem_ptr as size_t,
         fmt_out,
     );
     let mut x_val_25: int32_t = font_ptr;
     do_dump(
         &mut x_val_25 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     do_dump(
         &mut *font_check.offset(0) as *mut b16x4 as *mut libc::c_char,
-        ::std::mem::size_of::<b16x4>() as libc::c_ulong,
+        ::std::mem::size_of::<b16x4>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *font_size.offset(0) as *mut scaled_t as *mut libc::c_char,
-        ::std::mem::size_of::<scaled_t>() as libc::c_ulong,
+        ::std::mem::size_of::<scaled_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *font_dsize.offset(0) as *mut scaled_t as *mut libc::c_char,
-        ::std::mem::size_of::<scaled_t>() as libc::c_ulong,
+        ::std::mem::size_of::<scaled_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *font_params.offset(0) as *mut font_index as *mut libc::c_char,
-        ::std::mem::size_of::<font_index>() as libc::c_ulong,
+        ::std::mem::size_of::<font_index>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *hyphen_char.offset(0) as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *skew_char.offset(0) as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *font_name.offset(0) as *mut str_number as *mut libc::c_char,
-        ::std::mem::size_of::<str_number>() as libc::c_ulong,
+        ::std::mem::size_of::<str_number>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *font_area.offset(0) as *mut str_number as *mut libc::c_char,
-        ::std::mem::size_of::<str_number>() as libc::c_ulong,
+        ::std::mem::size_of::<str_number>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *font_bc.offset(0) as *mut UTF16_code as *mut libc::c_char,
-        ::std::mem::size_of::<UTF16_code>() as libc::c_ulong,
+        ::std::mem::size_of::<UTF16_code>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *font_ec.offset(0) as *mut UTF16_code as *mut libc::c_char,
-        ::std::mem::size_of::<UTF16_code>() as libc::c_ulong,
+        ::std::mem::size_of::<UTF16_code>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *char_base.offset(0) as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *width_base.offset(0) as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *height_base.offset(0) as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *depth_base.offset(0) as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *italic_base.offset(0) as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *lig_kern_base.offset(0) as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *kern_base.offset(0) as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *exten_base.offset(0) as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *param_base.offset(0) as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *font_glue.offset(0) as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *bchar_label.offset(0) as *mut font_index as *mut libc::c_char,
-        ::std::mem::size_of::<font_index>() as libc::c_ulong,
+        ::std::mem::size_of::<font_index>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *font_bchar.offset(0) as *mut nine_bits as *mut libc::c_char,
-        ::std::mem::size_of::<nine_bits>() as libc::c_ulong,
+        ::std::mem::size_of::<nine_bits>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *font_false_bchar.offset(0) as *mut nine_bits as *mut libc::c_char,
-        ::std::mem::size_of::<nine_bits>() as libc::c_ulong,
+        ::std::mem::size_of::<nine_bits>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
@@ -5150,7 +5150,7 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val_26: int32_t = hyph_count;
     do_dump(
         &mut x_val_26 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -5160,7 +5160,7 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val_27: int32_t = hyph_next;
     do_dump(
         &mut x_val_27 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -5172,21 +5172,21 @@ unsafe extern "C" fn store_fmt_file() {
                 as int32_t;
             do_dump(
                 &mut x_val_28 as *mut int32_t as *mut libc::c_char,
-                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
             let mut x_val_29: int32_t = *hyph_word.offset(k as isize);
             do_dump(
                 &mut x_val_29 as *mut int32_t as *mut libc::c_char,
-                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
             let mut x_val_30: int32_t = *hyph_list.offset(k as isize);
             do_dump(
                 &mut x_val_30 as *mut int32_t as *mut libc::c_char,
-                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
@@ -5206,64 +5206,64 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val_31: int32_t = trie_max;
     do_dump(
         &mut x_val_31 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_32: int32_t = hyph_start;
     do_dump(
         &mut x_val_32 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     do_dump(
         &mut *trie_trl.offset(0) as *mut trie_pointer as *mut libc::c_char,
-        ::std::mem::size_of::<trie_pointer>() as libc::c_ulong,
+        ::std::mem::size_of::<trie_pointer>() as u64,
         (trie_max + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *trie_tro.offset(0) as *mut trie_pointer as *mut libc::c_char,
-        ::std::mem::size_of::<trie_pointer>() as libc::c_ulong,
+        ::std::mem::size_of::<trie_pointer>() as u64,
         (trie_max + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
         &mut *trie_trc.offset(0) as *mut uint16_t as *mut libc::c_char,
-        ::std::mem::size_of::<uint16_t>() as libc::c_ulong,
+        ::std::mem::size_of::<uint16_t>() as u64,
         (trie_max + 1i32) as size_t,
         fmt_out,
     );
     let mut x_val_33: int32_t = max_hyph_char;
     do_dump(
         &mut x_val_33 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     let mut x_val_34: int32_t = trie_op_ptr;
     do_dump(
         &mut x_val_34 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     do_dump(
         &mut *hyf_distance.as_mut_ptr().offset(1) as *mut small_number as *mut libc::c_char,
-        ::std::mem::size_of::<small_number>() as libc::c_ulong,
+        ::std::mem::size_of::<small_number>() as u64,
         trie_op_ptr as size_t,
         fmt_out,
     );
     do_dump(
         &mut *hyf_num.as_mut_ptr().offset(1) as *mut small_number as *mut libc::c_char,
-        ::std::mem::size_of::<small_number>() as libc::c_ulong,
+        ::std::mem::size_of::<small_number>() as u64,
         trie_op_ptr as size_t,
         fmt_out,
     );
     do_dump(
         &mut *hyf_next.as_mut_ptr().offset(1) as *mut trie_opcode as *mut libc::c_char,
-        ::std::mem::size_of::<trie_opcode>() as libc::c_ulong,
+        ::std::mem::size_of::<trie_opcode>() as u64,
         trie_op_ptr as size_t,
         fmt_out,
     );
@@ -5288,14 +5288,14 @@ unsafe extern "C" fn store_fmt_file() {
             let mut x_val_35: int32_t = k;
             do_dump(
                 &mut x_val_35 as *mut int32_t as *mut libc::c_char,
-                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
             let mut x_val_36: int32_t = trie_used[k as usize] as int32_t;
             do_dump(
                 &mut x_val_36 as *mut int32_t as *mut libc::c_char,
-                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
@@ -5306,7 +5306,7 @@ unsafe extern "C" fn store_fmt_file() {
     let mut x_val_37: int32_t = 0x29ai32; /*:1361*/
     do_dump(
         &mut x_val_37 as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -5344,8 +5344,8 @@ unsafe extern "C" fn store_fmt_file() {
 unsafe extern "C" fn pack_buffered_name(mut n: small_number, mut a: int32_t, mut b: int32_t) {
     free(name_of_file as *mut libc::c_void);
     name_of_file = xmalloc(
-        ((format_default_length + 1i32 + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<UTF8_code>() as libc::c_ulong),
+        ((format_default_length + 1i32 + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<UTF8_code>() as u64),
     ) as *mut libc::c_char;
     strcpy(name_of_file, TEX_format_default);
     name_length = strlen(name_of_file) as int32_t;
@@ -5382,14 +5382,14 @@ unsafe extern "C" fn load_fmt_file() -> bool {
     /* start reading the header */
     do_undump(
         &mut x as *mut int32_t as *mut libc::c_char,
-        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+        ::std::mem::size_of::<int32_t>() as u64,
         1i32 as size_t,
         fmt_in,
     );
     if !(x != 0x54544e43i32) {
         do_undump(
             &mut x as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_in,
         );
@@ -5405,7 +5405,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
         /* hash table parameters */
         do_undump(
             &mut hash_high as *mut int32_t as *mut libc::c_char,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
             1i32 as size_t,
             fmt_in,
         );
@@ -5457,8 +5457,8 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                 hash_top = eqtb_top
             }
             yhash = xmalloc(
-                ((1i32 + hash_top - 514i32 + 1i32) as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<b32x2>() as libc::c_ulong),
+                ((1i32 + hash_top - 514i32 + 1i32) as u64)
+                    .wrapping_mul(::std::mem::size_of::<b32x2>() as u64),
             ) as *mut b32x2;
             hash = yhash.offset(-514);
             (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32) as isize))
@@ -5472,8 +5472,8 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                 x += 1
             }
             eqtb = xmalloc(
-                ((eqtb_top + 1i32 + 1i32) as libc::c_ulong)
-                    .wrapping_mul(::std::mem::size_of::<memory_word>() as libc::c_ulong),
+                ((eqtb_top + 1i32 + 1i32) as u64)
+                    .wrapping_mul(::std::mem::size_of::<memory_word>() as u64),
             ) as *mut memory_word;
             (*eqtb.offset(
                 (1i32
@@ -5561,7 +5561,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
             /* "memory locations" */
             do_undump(
                 &mut x as *mut int32_t as *mut libc::c_char,
-                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                ::std::mem::size_of::<int32_t>() as u64,
                 1i32 as size_t,
                 fmt_in,
             );
@@ -5570,12 +5570,12 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                 cur_list.tail = 4999999i32 - 1i32;
                 page_tail = 4999999i32 - 2i32;
                 mem = xmalloc(
-                    ((4999999i32 + 1i32 + 1i32) as libc::c_ulong)
-                        .wrapping_mul(::std::mem::size_of::<memory_word>() as libc::c_ulong),
+                    ((4999999i32 + 1i32 + 1i32) as u64)
+                        .wrapping_mul(::std::mem::size_of::<memory_word>() as u64),
                 ) as *mut memory_word;
                 do_undump(
                     &mut x as *mut int32_t as *mut libc::c_char,
-                    ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                    ::std::mem::size_of::<int32_t>() as u64,
                     1i32 as size_t,
                     fmt_in,
                 );
@@ -5613,14 +5613,14 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                 {
                     do_undump(
                         &mut x as *mut int32_t as *mut libc::c_char,
-                        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                        ::std::mem::size_of::<int32_t>() as u64,
                         1i32 as size_t,
                         fmt_in,
                     );
                     if !(x != 8501i32) {
                         do_undump(
                             &mut x as *mut int32_t as *mut libc::c_char,
-                            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                            ::std::mem::size_of::<int32_t>() as u64,
                             1i32 as size_t,
                             fmt_in,
                         );
@@ -5628,7 +5628,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                             /* string pool */
                             do_undump(
                                 &mut x as *mut int32_t as *mut libc::c_char,
-                                ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                                ::std::mem::size_of::<int32_t>() as u64,
                                 1i32 as size_t,
                                 fmt_in,
                             ); /*:1345 */
@@ -5645,7 +5645,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                 }
                                 do_undump(
                                     &mut x as *mut int32_t as *mut libc::c_char,
-                                    ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                                    ::std::mem::size_of::<int32_t>() as u64,
                                     1i32 as size_t,
                                     fmt_in,
                                 );
@@ -5661,16 +5661,16 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                         max_strings = str_ptr + strings_free
                                     }
                                     str_start = xmalloc(
-                                        ((max_strings + 1i32) as libc::c_ulong)
+                                        ((max_strings + 1i32) as u64)
                                             .wrapping_mul(::std::mem::size_of::<pool_pointer>()
-                                                as libc::c_ulong),
+                                                as u64),
                                     )
                                         as *mut pool_pointer;
                                     let mut i: libc::c_int = 0;
                                     do_undump(
                                         &mut *str_start.offset(0) as *mut pool_pointer
                                             as *mut libc::c_char,
-                                        ::std::mem::size_of::<pool_pointer>() as libc::c_ulong,
+                                        ::std::mem::size_of::<pool_pointer>() as u64,
                                         (str_ptr - 65536i32 + 1i32) as size_t,
                                         fmt_in,
                                     );
@@ -5702,15 +5702,15 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                         i += 1
                                     }
                                     str_pool =
-                                        xmalloc(((pool_size + 1i32) as libc::c_ulong).wrapping_mul(
+                                        xmalloc(((pool_size + 1i32) as u64).wrapping_mul(
                                             ::std::mem::size_of::<packed_UTF16_code>()
-                                                as libc::c_ulong,
+                                                as u64,
                                         ))
                                             as *mut packed_UTF16_code;
                                     do_undump(
                                         &mut *str_pool.offset(0) as *mut packed_UTF16_code
                                             as *mut libc::c_char,
-                                        ::std::mem::size_of::<packed_UTF16_code>() as libc::c_ulong,
+                                        ::std::mem::size_of::<packed_UTF16_code>() as u64,
                                         pool_ptr as size_t,
                                         fmt_in,
                                     );
@@ -5721,7 +5721,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                      * much of the dynamic memory." */
                                     do_undump(
                                         &mut x as *mut int32_t as *mut libc::c_char,
-                                        ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                                        ::std::mem::size_of::<int32_t>() as u64,
                                         1i32 as size_t,
                                         fmt_in,
                                     );
@@ -5729,7 +5729,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                         lo_mem_max = x;
                                         do_undump(
                                             &mut x as *mut int32_t as *mut libc::c_char,
-                                            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+                                            ::std::mem::size_of::<int32_t>() as u64,
                                             1i32 as size_t,
                                             fmt_in,
                                         );
@@ -5744,7 +5744,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                 do_undump(
                                                     &mut x as *mut int32_t as *mut libc::c_char,
                                                     ::std::mem::size_of::<int32_t>()
-                                                        as libc::c_ulong,
+                                                        as u64,
                                                     1i32 as size_t,
                                                     fmt_in,
                                                 );
@@ -5766,7 +5766,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                 as *mut memory_word
                                                                 as *mut libc::c_char,
                                                             ::std::mem::size_of::<memory_word>()
-                                                                as libc::c_ulong,
+                                                                as u64,
                                                             (q + 2i32 - p) as size_t,
                                                             fmt_in,
                                                         );
@@ -5799,7 +5799,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                     as *mut memory_word
                                                                     as *mut libc::c_char,
                                                                 ::std::mem::size_of::<memory_word>()
-                                                                    as libc::c_ulong,
+                                                                    as u64,
                                                                 (lo_mem_max + 1i32 - p) as size_t,
                                                                 fmt_in,
                                                             );
@@ -5807,7 +5807,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                 &mut x as *mut int32_t
                                                                     as *mut libc::c_char,
                                                                 ::std::mem::size_of::<int32_t>()
-                                                                    as libc::c_ulong,
+                                                                    as u64,
                                                                 1i32 as size_t,
                                                                 fmt_in,
                                                             );
@@ -5819,7 +5819,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                     &mut x as *mut int32_t
                                                                         as *mut libc::c_char,
                                                                     ::std::mem::size_of::<int32_t>()
-                                                                        as libc::c_ulong,
+                                                                        as u64,
                                                                     1i32 as size_t,
                                                                     fmt_in,
                                                                 );
@@ -5838,7 +5838,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                             memory_word,
                                                                         >(
                                                                         )
-                                                                            as libc::c_ulong,
+                                                                            as u64,
                                                                         (mem_end + 1i32
                                                                             - hi_mem_min)
                                                                             as size_t,
@@ -5850,7 +5850,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                             as *mut libc::c_char,
                                                                         ::std::mem::size_of::<int32_t>(
                                                                         )
-                                                                            as libc::c_ulong,
+                                                                            as u64,
                                                                         1i32 as size_t,
                                                                         fmt_in,
                                                                     );
@@ -5860,7 +5860,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                             as *mut libc::c_char,
                                                                         ::std::mem::size_of::<int32_t>(
                                                                         )
-                                                                            as libc::c_ulong,
+                                                                            as u64,
                                                                         1i32 as size_t,
                                                                         fmt_in,
                                                                     );
@@ -5881,7 +5881,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                       *mut libc::c_char,
                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                       as
-                                                                                      libc::c_ulong,
+                                                                                      u64,
                                                                                   1i32
                                                                                       as
                                                                                       size_t,
@@ -5942,7 +5942,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                       *mut libc::c_char,
                                                                                   ::std::mem::size_of::<memory_word>()
                                                                                       as
-                                                                                      libc::c_ulong,
+                                                                                      u64,
                                                                                   x
                                                                                       as
                                                                                       size_t,
@@ -5955,7 +5955,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                       *mut libc::c_char,
                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                       as
-                                                                                      libc::c_ulong,
+                                                                                      u64,
                                                                                   1i32
                                                                                       as
                                                                                       size_t,
@@ -6157,7 +6157,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                               *mut libc::c_char,
                                                                                           ::std::mem::size_of::<memory_word>()
                                                                                               as
-                                                                                              libc::c_ulong,
+                                                                                              u64,
                                                                                           hash_high
                                                                                               as
                                                                                               size_t,
@@ -6170,7 +6170,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                           *mut libc::c_char,
                                                                                       ::std::mem::size_of::<int32_t>()
                                                                                           as
-                                                                                          libc::c_ulong,
+                                                                                          u64,
                                                                                       1i32
                                                                                           as
                                                                                           size_t,
@@ -6194,7 +6194,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                               *mut libc::c_char,
                                                                                           ::std::mem::size_of::<int32_t>()
                                                                                               as
-                                                                                              libc::c_ulong,
+                                                                                              u64,
                                                                                           1i32
                                                                                               as
                                                                                               size_t,
@@ -6229,7 +6229,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                       *mut libc::c_char,
                                                                                                   ::std::mem::size_of::<b32x2>()
                                                                                                       as
-                                                                                                      libc::c_ulong,
+                                                                                                      u64,
                                                                                                   1i32
                                                                                                       as
                                                                                                       size_t,
@@ -6249,7 +6249,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                       *mut libc::c_char,
                                                                                                   ::std::mem::size_of::<memory_word>()
                                                                                                       as
-                                                                                                      libc::c_ulong,
+                                                                                                      u64,
                                                                                                   1i32
                                                                                                       as
                                                                                                       size_t,
@@ -6263,7 +6263,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                   *mut libc::c_char,
                                                                                               ::std::mem::size_of::<int32_t>()
                                                                                                   as
-                                                                                                  libc::c_ulong,
+                                                                                                  u64,
                                                                                               1i32
                                                                                                   as
                                                                                                   size_t,
@@ -6325,7 +6325,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                           *mut libc::c_char,
                                                                                                       ::std::mem::size_of::<int32_t>()
                                                                                                           as
-                                                                                                          libc::c_ulong,
+                                                                                                          u64,
                                                                                                       1i32
                                                                                                           as
                                                                                                           size_t,
@@ -6358,7 +6358,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                           *mut libc::c_char,
                                                                                                       ::std::mem::size_of::<b32x2>()
                                                                                                           as
-                                                                                                          libc::c_ulong,
+                                                                                                          u64,
                                                                                                       1i32
                                                                                                           as
                                                                                                           size_t,
@@ -6394,7 +6394,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                               *mut libc::c_char,
                                                                                                           ::std::mem::size_of::<b32x2>()
                                                                                                               as
-                                                                                                              libc::c_ulong,
+                                                                                                              u64,
                                                                                                           (1i32
                                                                                                                +
                                                                                                                (0x10ffffi32
@@ -6514,7 +6514,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   *mut libc::c_char,
                                                                                                               ::std::mem::size_of::<b32x2>()
                                                                                                                   as
-                                                                                                                  libc::c_ulong,
+                                                                                                                  u64,
                                                                                                               hash_high
                                                                                                                   as
                                                                                                                   size_t,
@@ -6527,7 +6527,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                               *mut libc::c_char,
                                                                                                           ::std::mem::size_of::<int32_t>()
                                                                                                               as
-                                                                                                              libc::c_ulong,
+                                                                                                              u64,
                                                                                                           1i32
                                                                                                               as
                                                                                                               size_t,
@@ -6540,7 +6540,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                               *mut libc::c_char,
                                                                                                           ::std::mem::size_of::<int32_t>()
                                                                                                               as
-                                                                                                              libc::c_ulong,
+                                                                                                              u64,
                                                                                                           1i32
                                                                                                               as
                                                                                                               size_t,
@@ -6578,9 +6578,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       +
                                                                                                                       1i32)
                                                                                                                      as
-                                                                                                                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<memory_word>()
+                                                                                                                     u64).wrapping_mul(::std::mem::size_of::<memory_word>()
                                                                                                                                                      as
-                                                                                                                                                     libc::c_ulong))
+                                                                                                                                                     u64))
                                                                                                             as
                                                                                                             *mut memory_word;
                                                                                                     do_undump(&mut *font_info.offset(0)
@@ -6590,7 +6590,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   *mut libc::c_char,
                                                                                                               ::std::mem::size_of::<memory_word>()
                                                                                                                   as
-                                                                                                                  libc::c_ulong,
+                                                                                                                  u64,
                                                                                                               fmem_ptr
                                                                                                                   as
                                                                                                                   size_t,
@@ -6602,7 +6602,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   *mut libc::c_char,
                                                                                                               ::std::mem::size_of::<int32_t>()
                                                                                                                   as
-                                                                                                                  libc::c_ulong,
+                                                                                                                  u64,
                                                                                                               1i32
                                                                                                                   as
                                                                                                                   size_t,
@@ -6632,9 +6632,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<*mut libc::c_void>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<*mut libc::c_void>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut *mut libc::c_void;
                                                                                                         font_layout_engine
@@ -6646,7 +6646,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                         size_t,
                                                                                                                     ::std::mem::size_of::<*mut libc::c_void>()
                                                                                                                         as
-                                                                                                                        libc::c_ulong)
+                                                                                                                        u64)
                                                                                                                 as
                                                                                                                 *mut *mut libc::c_void;
                                                                                                         font_flags
@@ -6655,9 +6655,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_char>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<libc::c_char>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut libc::c_char;
                                                                                                         font_letter_space
@@ -6666,9 +6666,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<scaled_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<scaled_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut scaled_t;
                                                                                                         font_check
@@ -6677,9 +6677,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<b16x4>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<b16x4>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut b16x4;
                                                                                                         font_size
@@ -6688,9 +6688,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<scaled_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<scaled_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut scaled_t;
                                                                                                         font_dsize
@@ -6699,9 +6699,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<scaled_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<scaled_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut scaled_t;
                                                                                                         font_params
@@ -6710,9 +6710,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<font_index>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<font_index>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut font_index;
                                                                                                         font_name
@@ -6721,9 +6721,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<str_number>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut str_number;
                                                                                                         font_area
@@ -6732,9 +6732,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<str_number>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<str_number>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut str_number;
                                                                                                         font_bc
@@ -6743,9 +6743,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<UTF16_code>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<UTF16_code>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut UTF16_code;
                                                                                                         font_ec
@@ -6754,9 +6754,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<UTF16_code>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<UTF16_code>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut UTF16_code;
                                                                                                         font_glue
@@ -6765,9 +6765,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut int32_t;
                                                                                                         hyphen_char
@@ -6776,9 +6776,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut int32_t;
                                                                                                         skew_char
@@ -6787,9 +6787,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut int32_t;
                                                                                                         bchar_label
@@ -6798,9 +6798,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<font_index>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<font_index>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut font_index;
                                                                                                         font_bchar
@@ -6809,9 +6809,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<nine_bits>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<nine_bits>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut nine_bits;
                                                                                                         font_false_bchar
@@ -6820,9 +6820,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<nine_bits>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<nine_bits>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut nine_bits;
                                                                                                         char_base
@@ -6831,9 +6831,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut int32_t;
                                                                                                         width_base
@@ -6842,9 +6842,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut int32_t;
                                                                                                         height_base
@@ -6853,9 +6853,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut int32_t;
                                                                                                         depth_base
@@ -6864,9 +6864,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut int32_t;
                                                                                                         italic_base
@@ -6875,9 +6875,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut int32_t;
                                                                                                         lig_kern_base
@@ -6886,9 +6886,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut int32_t;
                                                                                                         kern_base
@@ -6897,9 +6897,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut int32_t;
                                                                                                         exten_base
@@ -6908,9 +6908,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut int32_t;
                                                                                                         param_base
@@ -6919,9 +6919,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         libc::c_ulong).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
                                                                                                                                                          as
-                                                                                                                                                         libc::c_ulong))
+                                                                                                                                                         u64))
                                                                                                                 as
                                                                                                                 *mut int32_t;
                                                                                                         k
@@ -6951,7 +6951,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<b16x4>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -6965,7 +6965,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<scaled_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -6979,7 +6979,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<scaled_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -6996,7 +6996,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<font_index>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7064,7 +7064,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7078,7 +7078,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7095,7 +7095,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<str_number>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7155,7 +7155,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<str_number>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7212,7 +7212,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<UTF16_code>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7226,7 +7226,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<UTF16_code>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7240,7 +7240,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7254,7 +7254,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7268,7 +7268,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7282,7 +7282,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7296,7 +7296,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7310,7 +7310,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7324,7 +7324,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7338,7 +7338,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7352,7 +7352,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7369,7 +7369,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7440,7 +7440,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<font_index>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7499,7 +7499,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                as
                                                                                                                                uintptr_t).wrapping_sub(1i32
                                                                                                                                                            as
-                                                                                                                                                           libc::c_ulong));
+                                                                                                                                                           u64));
                                                                                                             }
                                                                                                             i_4
                                                                                                                 +=
@@ -7515,7 +7515,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<nine_bits>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7586,7 +7586,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<nine_bits>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   (font_ptr
                                                                                                                        +
                                                                                                                        1i32)
@@ -7655,7 +7655,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                       *mut libc::c_char,
                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                       as
-                                                                                                                      libc::c_ulong,
+                                                                                                                      u64,
                                                                                                                   1i32
                                                                                                                       as
                                                                                                                       size_t,
@@ -7684,7 +7684,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           *mut libc::c_char,
                                                                                                                       ::std::mem::size_of::<int32_t>()
                                                                                                                           as
-                                                                                                                          libc::c_ulong,
+                                                                                                                          u64,
                                                                                                                       1i32
                                                                                                                           as
                                                                                                                           size_t,
@@ -7731,7 +7731,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                   *mut libc::c_char,
                                                                                                                               ::std::mem::size_of::<int32_t>()
                                                                                                                                   as
-                                                                                                                                  libc::c_ulong,
+                                                                                                                                  u64,
                                                                                                                               1i32
                                                                                                                                   as
                                                                                                                                   size_t,
@@ -7807,7 +7807,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                   *mut libc::c_char,
                                                                                                                               ::std::mem::size_of::<int32_t>()
                                                                                                                                   as
-                                                                                                                                  libc::c_ulong,
+                                                                                                                                  u64,
                                                                                                                               1i32
                                                                                                                                   as
                                                                                                                                   size_t,
@@ -7838,7 +7838,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                   *mut libc::c_char,
                                                                                                                               ::std::mem::size_of::<int32_t>()
                                                                                                                                   as
-                                                                                                                                  libc::c_ulong,
+                                                                                                                                  u64,
                                                                                                                               1i32
                                                                                                                                   as
                                                                                                                                   size_t,
@@ -7911,7 +7911,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                       *mut libc::c_char,
                                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                                       as
-                                                                                                                                      libc::c_ulong,
+                                                                                                                                      u64,
                                                                                                                                   1i32
                                                                                                                                       as
                                                                                                                                       size_t,
@@ -7943,7 +7943,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                           *mut libc::c_char,
                                                                                                                                       ::std::mem::size_of::<int32_t>()
                                                                                                                                           as
-                                                                                                                                          libc::c_ulong,
+                                                                                                                                          u64,
                                                                                                                                       1i32
                                                                                                                                           as
                                                                                                                                           size_t,
@@ -7969,9 +7969,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                       +
                                                                                                                                                       1i32)
                                                                                                                                                      as
-                                                                                                                                                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<trie_pointer>()
+                                                                                                                                                     u64).wrapping_mul(::std::mem::size_of::<trie_pointer>()
                                                                                                                                                                                      as
-                                                                                                                                                                                     libc::c_ulong))
+                                                                                                                                                                                     u64))
                                                                                                                                             as
                                                                                                                                             *mut trie_pointer
                                                                                                                                 }
@@ -7982,7 +7982,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                               *mut libc::c_char,
                                                                                                                                           ::std::mem::size_of::<trie_pointer>()
                                                                                                                                               as
-                                                                                                                                              libc::c_ulong,
+                                                                                                                                              u64,
                                                                                                                                           (j
                                                                                                                                                +
                                                                                                                                                1i32)
@@ -7999,9 +7999,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                       +
                                                                                                                                                       1i32)
                                                                                                                                                      as
-                                                                                                                                                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<trie_pointer>()
+                                                                                                                                                     u64).wrapping_mul(::std::mem::size_of::<trie_pointer>()
                                                                                                                                                                                      as
-                                                                                                                                                                                     libc::c_ulong))
+                                                                                                                                                                                     u64))
                                                                                                                                             as
                                                                                                                                             *mut trie_pointer
                                                                                                                                 }
@@ -8012,7 +8012,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                               *mut libc::c_char,
                                                                                                                                           ::std::mem::size_of::<trie_pointer>()
                                                                                                                                               as
-                                                                                                                                              libc::c_ulong,
+                                                                                                                                              u64,
                                                                                                                                           (j
                                                                                                                                                +
                                                                                                                                                1i32)
@@ -8029,9 +8029,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                       +
                                                                                                                                                       1i32)
                                                                                                                                                      as
-                                                                                                                                                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<uint16_t>()
+                                                                                                                                                     u64).wrapping_mul(::std::mem::size_of::<uint16_t>()
                                                                                                                                                                                      as
-                                                                                                                                                                                     libc::c_ulong))
+                                                                                                                                                                                     u64))
                                                                                                                                             as
                                                                                                                                             *mut uint16_t
                                                                                                                                 }
@@ -8042,7 +8042,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                               *mut libc::c_char,
                                                                                                                                           ::std::mem::size_of::<uint16_t>()
                                                                                                                                               as
-                                                                                                                                              libc::c_ulong,
+                                                                                                                                              u64,
                                                                                                                                           (j
                                                                                                                                                +
                                                                                                                                                1i32)
@@ -8056,7 +8056,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                               *mut libc::c_char,
                                                                                                                                           ::std::mem::size_of::<int32_t>()
                                                                                                                                               as
-                                                                                                                                              libc::c_ulong,
+                                                                                                                                              u64,
                                                                                                                                           1i32
                                                                                                                                               as
                                                                                                                                               size_t,
@@ -8068,7 +8068,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                               *mut libc::c_char,
                                                                                                                                           ::std::mem::size_of::<int32_t>()
                                                                                                                                               as
-                                                                                                                                              libc::c_ulong,
+                                                                                                                                              u64,
                                                                                                                                           1i32
                                                                                                                                               as
                                                                                                                                               size_t,
@@ -8102,7 +8102,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                   *mut libc::c_char,
                                                                                                                                               ::std::mem::size_of::<small_number>()
                                                                                                                                                   as
-                                                                                                                                                  libc::c_ulong,
+                                                                                                                                                  u64,
                                                                                                                                               j
                                                                                                                                                   as
                                                                                                                                                   size_t,
@@ -8114,7 +8114,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                   *mut libc::c_char,
                                                                                                                                               ::std::mem::size_of::<small_number>()
                                                                                                                                                   as
-                                                                                                                                                  libc::c_ulong,
+                                                                                                                                                  u64,
                                                                                                                                               j
                                                                                                                                                   as
                                                                                                                                                   size_t,
@@ -8129,7 +8129,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                   *mut libc::c_char,
                                                                                                                                               ::std::mem::size_of::<trie_opcode>()
                                                                                                                                                   as
-                                                                                                                                                  libc::c_ulong,
+                                                                                                                                                  u64,
                                                                                                                                               j
                                                                                                                                                   as
                                                                                                                                                   size_t,
@@ -8219,7 +8219,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                       *mut libc::c_char,
                                                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                                                       as
-                                                                                                                                                      libc::c_ulong,
+                                                                                                                                                      u64,
                                                                                                                                                   1i32
                                                                                                                                                       as
                                                                                                                                                       size_t,
@@ -8250,7 +8250,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                       *mut libc::c_char,
                                                                                                                                                   ::std::mem::size_of::<int32_t>()
                                                                                                                                                       as
-                                                                                                                                                      libc::c_ulong,
+                                                                                                                                                      u64,
                                                                                                                                                   1i32
                                                                                                                                                       as
                                                                                                                                                       size_t,
@@ -8309,7 +8309,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                           *mut libc::c_char,
                                                                                                                                                       ::std::mem::size_of::<int32_t>()
                                                                                                                                                           as
-                                                                                                                                                          libc::c_ulong,
+                                                                                                                                                          u64,
                                                                                                                                                       1i32
                                                                                                                                                           as
                                                                                                                                                           size_t,
@@ -8490,8 +8490,8 @@ unsafe extern "C" fn initialize_more_variables() {
     doing_special = 0i32 != 0;
     native_text_size = 128i32;
     native_text = xmalloc(
-        (native_text_size as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<UTF16_code>() as libc::c_ulong),
+        (native_text_size as u64)
+            .wrapping_mul(::std::mem::size_of::<UTF16_code>() as u64),
     ) as *mut UTF16_code;
     interaction = 3i32 as libc::c_uchar;
     deletions_allowed = 1i32 != 0;
@@ -14976,7 +14976,7 @@ pub unsafe extern "C" fn tt_run_engine(
     /* Get our stdout handle */
     rust_stdout = ttstub_output_open_stdout();
     let mut len: size_t = strlen(dump_name);
-    TEX_format_default = xmalloc(len.wrapping_add(1i32 as libc::c_ulong)) as *mut libc::c_char;
+    TEX_format_default = xmalloc(len.wrapping_add(1i32 as u64)) as *mut libc::c_char;
     strcpy(TEX_format_default, dump_name);
     format_default_length = len as int32_t;
     /* Not sure why these get custom initializations. */
@@ -15007,70 +15007,70 @@ pub unsafe extern "C" fn tt_run_engine(
     expand_depth = 10000i32;
     /* Allocate many of our big arrays. */
     buffer = xmalloc(
-        ((buf_size + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<UnicodeScalar>() as libc::c_ulong),
+        ((buf_size + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<UnicodeScalar>() as u64),
     ) as *mut UnicodeScalar;
     nest = xmalloc(
-        ((nest_size + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<list_state_record>() as libc::c_ulong),
+        ((nest_size + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<list_state_record>() as u64),
     ) as *mut list_state_record;
     save_stack = xmalloc(
-        ((save_size + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<memory_word>() as libc::c_ulong),
+        ((save_size + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<memory_word>() as u64),
     ) as *mut memory_word;
     input_stack = xmalloc(
-        ((stack_size + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<input_state_t>() as libc::c_ulong),
+        ((stack_size + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<input_state_t>() as u64),
     ) as *mut input_state_t;
     input_file = xmalloc(
-        ((max_in_open + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<*mut UFILE>() as libc::c_ulong),
+        ((max_in_open + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<*mut UFILE>() as u64),
     ) as *mut *mut UFILE;
     line_stack = xmalloc(
-        ((max_in_open + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+        ((max_in_open + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
     ) as *mut int32_t;
     eof_seen = xmalloc(
-        ((max_in_open + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<bool>() as libc::c_ulong),
+        ((max_in_open + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<bool>() as u64),
     ) as *mut bool;
     grp_stack = xmalloc(
-        ((max_in_open + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<save_pointer>() as libc::c_ulong),
+        ((max_in_open + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<save_pointer>() as u64),
     ) as *mut save_pointer;
     if_stack = xmalloc(
-        ((max_in_open + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+        ((max_in_open + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
     ) as *mut int32_t;
     source_filename_stack = xmalloc(
-        ((max_in_open + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+        ((max_in_open + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
     full_source_filename_stack = xmalloc(
-        ((max_in_open + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+        ((max_in_open + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
     param_stack = xmalloc(
-        ((param_size + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+        ((param_size + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
     ) as *mut int32_t;
     hyph_word = xmalloc(
-        ((hyph_size + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<str_number>() as libc::c_ulong),
+        ((hyph_size + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
     hyph_list = xmalloc(
-        ((hyph_size + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<int32_t>() as libc::c_ulong),
+        ((hyph_size + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
     ) as *mut int32_t;
     hyph_link = xmalloc(
-        ((hyph_size + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<hyph_pointer>() as libc::c_ulong),
+        ((hyph_size + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<hyph_pointer>() as u64),
     ) as *mut hyph_pointer;
     /* First bit of initex handling: more allocations. */
     if in_initex_mode {
         mem = xmalloc(
-            ((4999999i32 + 1i32 + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<memory_word>() as libc::c_ulong),
+            ((4999999i32 + 1i32 + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<memory_word>() as u64),
         ) as *mut memory_word;
         eqtb_top = 1i32
             + (0x10ffffi32 + 1i32)
@@ -15116,8 +15116,8 @@ pub unsafe extern "C" fn tt_run_engine(
             hash_top = eqtb_top
         }
         yhash = xmalloc(
-            ((1i32 + hash_top - 514i32 + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<b32x2>() as libc::c_ulong),
+            ((1i32 + hash_top - 514i32 + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<b32x2>() as u64),
         ) as *mut b32x2;
         hash = yhash.offset(-514);
         (*hash.offset((1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32) as isize)).s0 =
@@ -15132,19 +15132,19 @@ pub unsafe extern "C" fn tt_run_engine(
         }
         eqtb = xcalloc(
             (eqtb_top + 1i32) as size_t,
-            ::std::mem::size_of::<memory_word>() as libc::c_ulong,
+            ::std::mem::size_of::<memory_word>() as u64,
         ) as *mut memory_word;
         str_start = xmalloc(
-            ((max_strings + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<pool_pointer>() as libc::c_ulong),
+            ((max_strings + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<pool_pointer>() as u64),
         ) as *mut pool_pointer;
         str_pool = xmalloc(
-            ((pool_size + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<packed_UTF16_code>() as libc::c_ulong),
+            ((pool_size + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<packed_UTF16_code>() as u64),
         ) as *mut packed_UTF16_code;
         font_info = xmalloc(
-            ((font_mem_size + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<memory_word>() as libc::c_ulong),
+            ((font_mem_size + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<memory_word>() as u64),
         ) as *mut memory_word
     }
     /* Sanity-check various invariants. */
@@ -15275,8 +15275,8 @@ pub unsafe extern "C" fn tt_run_engine(
     memset(
         buffer as *mut libc::c_void,
         0i32,
-        (buf_size as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<UnicodeScalar>() as libc::c_ulong),
+        (buf_size as u64)
+            .wrapping_mul(::std::mem::size_of::<UnicodeScalar>() as u64),
     );
     first = 0i32;
     scanner_status = 0i32 as libc::c_uchar;
@@ -16789,40 +16789,40 @@ pub unsafe extern "C" fn tt_run_engine(
     }
     if trie_not_ready {
         trie_trl = xmalloc(
-            ((trie_size + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as libc::c_ulong),
+            ((trie_size + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
         ) as *mut trie_pointer;
         trie_tro = xmalloc(
-            ((trie_size + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as libc::c_ulong),
+            ((trie_size + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
         ) as *mut trie_pointer;
         trie_trc = xmalloc(
-            ((trie_size + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<uint16_t>() as libc::c_ulong),
+            ((trie_size + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<uint16_t>() as u64),
         ) as *mut uint16_t;
         trie_c = xmalloc(
-            ((trie_size + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<packed_UTF16_code>() as libc::c_ulong),
+            ((trie_size + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<packed_UTF16_code>() as u64),
         ) as *mut packed_UTF16_code;
         trie_o = xmalloc(
-            ((trie_size + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<trie_opcode>() as libc::c_ulong),
+            ((trie_size + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<trie_opcode>() as u64),
         ) as *mut trie_opcode;
         trie_l = xmalloc(
-            ((trie_size + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as libc::c_ulong),
+            ((trie_size + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
         ) as *mut trie_pointer;
         trie_r = xmalloc(
-            ((trie_size + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as libc::c_ulong),
+            ((trie_size + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
         ) as *mut trie_pointer;
         trie_hash = xmalloc(
-            ((trie_size + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as libc::c_ulong),
+            ((trie_size + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
         ) as *mut trie_pointer;
         trie_taken = xmalloc(
-            ((trie_size + 1i32) as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<bool>() as libc::c_ulong),
+            ((trie_size + 1i32) as u64)
+                .wrapping_mul(::std::mem::size_of::<bool>() as u64),
         ) as *mut bool;
         *trie_l.offset(0) = 0i32;
         *trie_c.offset(0) = 0i32 as packed_UTF16_code;
@@ -16831,111 +16831,111 @@ pub unsafe extern "C" fn tt_run_engine(
         hyph_start = 0i32;
         font_mapping = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<*mut libc::c_void>() as libc::c_ulong,
+            ::std::mem::size_of::<*mut libc::c_void>() as u64,
         ) as *mut *mut libc::c_void;
         font_layout_engine = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<*mut libc::c_void>() as libc::c_ulong,
+            ::std::mem::size_of::<*mut libc::c_void>() as u64,
         ) as *mut *mut libc::c_void;
         font_flags = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<libc::c_char>() as libc::c_ulong,
+            ::std::mem::size_of::<libc::c_char>() as u64,
         ) as *mut libc::c_char;
         font_letter_space = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<scaled_t>() as libc::c_ulong,
+            ::std::mem::size_of::<scaled_t>() as u64,
         ) as *mut scaled_t;
         font_check = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<b16x4>() as libc::c_ulong,
+            ::std::mem::size_of::<b16x4>() as u64,
         ) as *mut b16x4;
         font_size = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<scaled_t>() as libc::c_ulong,
+            ::std::mem::size_of::<scaled_t>() as u64,
         ) as *mut scaled_t;
         font_dsize = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<scaled_t>() as libc::c_ulong,
+            ::std::mem::size_of::<scaled_t>() as u64,
         ) as *mut scaled_t;
         font_params = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<font_index>() as libc::c_ulong,
+            ::std::mem::size_of::<font_index>() as u64,
         ) as *mut font_index;
         font_name = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<str_number>() as libc::c_ulong,
+            ::std::mem::size_of::<str_number>() as u64,
         ) as *mut str_number;
         font_area = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<str_number>() as libc::c_ulong,
+            ::std::mem::size_of::<str_number>() as u64,
         ) as *mut str_number;
         font_bc = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<UTF16_code>() as libc::c_ulong,
+            ::std::mem::size_of::<UTF16_code>() as u64,
         ) as *mut UTF16_code;
         font_ec = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<UTF16_code>() as libc::c_ulong,
+            ::std::mem::size_of::<UTF16_code>() as u64,
         ) as *mut UTF16_code;
         font_glue = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
         ) as *mut int32_t;
         hyphen_char = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
         ) as *mut int32_t;
         skew_char = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
         ) as *mut int32_t;
         bchar_label = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<font_index>() as libc::c_ulong,
+            ::std::mem::size_of::<font_index>() as u64,
         ) as *mut font_index;
         font_bchar = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<nine_bits>() as libc::c_ulong,
+            ::std::mem::size_of::<nine_bits>() as u64,
         ) as *mut nine_bits;
         font_false_bchar = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<nine_bits>() as libc::c_ulong,
+            ::std::mem::size_of::<nine_bits>() as u64,
         ) as *mut nine_bits;
         char_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
         ) as *mut int32_t;
         width_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
         ) as *mut int32_t;
         height_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
         ) as *mut int32_t;
         depth_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
         ) as *mut int32_t;
         italic_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
         ) as *mut int32_t;
         lig_kern_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
         ) as *mut int32_t;
         kern_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
         ) as *mut int32_t;
         exten_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
         ) as *mut int32_t;
         param_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as libc::c_ulong,
+            ::std::mem::size_of::<int32_t>() as u64,
         ) as *mut int32_t;
         font_ptr = 0i32;
         fmem_ptr = 7i32;
@@ -16970,8 +16970,8 @@ pub unsafe extern "C" fn tt_run_engine(
         }
     }
     font_used = xmalloc(
-        ((font_max + 1i32) as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<bool>() as libc::c_ulong),
+        ((font_max + 1i32) as u64)
+            .wrapping_mul(::std::mem::size_of::<bool>() as u64),
     ) as *mut bool;
     font_k = 0i32;
     while font_k <= font_max {

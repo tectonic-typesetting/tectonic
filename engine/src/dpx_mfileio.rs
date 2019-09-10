@@ -33,7 +33,7 @@ pub type __int32_t = libc::c_int;
 pub type __off_t = libc::c_long;
 pub type __off64_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]

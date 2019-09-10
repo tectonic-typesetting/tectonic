@@ -11,7 +11,7 @@ extern "C" {
     #[no_mangle]
     fn abs(_: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn ttstub_output_putc(handle: rust_output_handle_t, c: libc::c_int) -> libc::c_int;
     /* Needed here for UFILE */
@@ -508,7 +508,7 @@ pub unsafe extern "C" fn print(mut s: int32_t) {
 #[no_mangle]
 pub unsafe extern "C" fn print_cstr(mut str: *const libc::c_char) {
     let mut i: libc::c_uint = 0i32 as libc::c_uint;
-    while (i as libc::c_ulong) < strlen(str) {
+    while (i as u64) < strlen(str) {
         print_char(*str.offset(i as isize) as int32_t);
         i = i.wrapping_add(1)
     }

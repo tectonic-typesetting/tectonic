@@ -20,7 +20,7 @@ pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
 pub type uint16_t = __uint16_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 #[no_mangle]
 pub unsafe extern "C" fn UC_is_valid(mut ucv: int32_t) -> bool {
     return !(ucv < 0i32

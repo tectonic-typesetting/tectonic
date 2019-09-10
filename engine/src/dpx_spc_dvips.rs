@@ -43,16 +43,16 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: libc::c_ulong)
+    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: u64)
         -> *mut libc::c_char;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn ttstub_input_open(
         path: *const libc::c_char,
@@ -155,7 +155,7 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
@@ -335,7 +335,7 @@ unsafe extern "C" fn spc_handler_ps_header(
     strncpy(
         pro,
         (*args).curptr,
-        (*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as libc::c_ulong,
+        (*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as u64,
     );
     *pro.offset((*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as isize) =
         0i32 as libc::c_char;
@@ -353,8 +353,8 @@ unsafe extern "C" fn spc_handler_ps_header(
     if num_ps_headers & 0xfi32 == 0 {
         ps_headers = xrealloc(
             ps_headers as *mut libc::c_void,
-            (::std::mem::size_of::<*mut libc::c_char>() as libc::c_ulong)
-                .wrapping_mul((num_ps_headers + 16i32) as libc::c_ulong),
+            (::std::mem::size_of::<*mut libc::c_char>() as u64)
+                .wrapping_mul((num_ps_headers + 16i32) as u64),
         ) as *mut *mut libc::c_char
     }
     let fresh0 = num_ps_headers;
@@ -400,13 +400,13 @@ unsafe extern "C" fn parse_filename(
     if q.is_null() || n == 0i32 {
         return 0 as *mut libc::c_char;
     }
-    r = new(((n + 1i32) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    r = new(((n + 1i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     memcpy(
         r as *mut libc::c_void,
         q as *const libc::c_void,
-        n as libc::c_ulong,
+        n as u64,
     );
     *r.offset(n as isize) = '\u{0}' as i32 as libc::c_char;
     *pp = p;
@@ -933,10 +933,10 @@ pub unsafe extern "C" fn spc_dvips_check_special(
     len = endptr.wrapping_offset_from(p) as libc::c_long as libc::c_int;
     i = 0i32 as size_t;
     while i
-        < (::std::mem::size_of::<[spc_handler; 10]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<spc_handler>() as libc::c_ulong)
+        < (::std::mem::size_of::<[spc_handler; 10]>() as u64)
+            .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
     {
-        if len as libc::c_ulong >= strlen(dvips_handlers[i as usize].key)
+        if len as u64 >= strlen(dvips_handlers[i as usize].key)
             && memcmp(
                 p as *const libc::c_void,
                 dvips_handlers[i as usize].key as *const libc::c_void,
@@ -1032,11 +1032,11 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
     }
     i = 0i32 as size_t;
     while i
-        < (::std::mem::size_of::<[spc_handler; 10]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<spc_handler>() as libc::c_ulong)
+        < (::std::mem::size_of::<[spc_handler; 10]>() as u64)
+            .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
     {
-        if keylen as libc::c_ulong == strlen(dvips_handlers[i as usize].key)
-            && strncmp(key, dvips_handlers[i as usize].key, keylen as libc::c_ulong) == 0
+        if keylen as u64 == strlen(dvips_handlers[i as usize].key)
+            && strncmp(key, dvips_handlers[i as usize].key, keylen as u64) == 0
         {
             skip_white(&mut (*args).curptr, (*args).endptr);
             (*args).command = dvips_handlers[i as usize].key;

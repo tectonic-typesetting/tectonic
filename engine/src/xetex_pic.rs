@@ -17,9 +17,9 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn ttstub_input_open(
         path: *const libc::c_char,
@@ -1097,11 +1097,11 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
     if result == 0i32 {
         new_whatsit(
             43i32 as small_number,
-            (9i32 as libc::c_ulong).wrapping_add(
+            (9i32 as u64).wrapping_add(
                 strlen(pic_path)
-                    .wrapping_add(::std::mem::size_of::<memory_word>() as libc::c_ulong)
-                    .wrapping_sub(1i32 as libc::c_ulong)
-                    .wrapping_div(::std::mem::size_of::<memory_word>() as libc::c_ulong),
+                    .wrapping_add(::std::mem::size_of::<memory_word>() as u64)
+                    .wrapping_sub(1i32 as u64)
+                    .wrapping_div(::std::mem::size_of::<memory_word>() as u64),
             ) as small_number,
         );
         if is_pdf {

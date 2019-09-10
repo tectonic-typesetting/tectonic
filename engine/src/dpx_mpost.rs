@@ -57,11 +57,11 @@ extern "C" {
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
     #[no_mangle]
     fn strchr(_: *const libc::c_char, _: libc::c_int) -> *mut libc::c_char;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
@@ -70,10 +70,10 @@ extern "C" {
     #[no_mangle]
     fn fread(
         _: *mut libc::c_void,
-        _: libc::c_ulong,
-        _: libc::c_ulong,
+        _: u64,
+        _: u64,
         _: *mut FILE,
-    ) -> libc::c_ulong;
+    ) -> u64;
     #[no_mangle]
     fn rewind(__stream: *mut FILE);
     #[no_mangle]
@@ -436,7 +436,7 @@ pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct _IO_FILE {
@@ -2503,8 +2503,8 @@ unsafe extern "C" fn mp_setfont(
     } /* Need not exist in MP mode */
     free((*font).font_name as *mut libc::c_void);
     (*font).font_name = new(
-        (strlen(font_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (strlen(font_name).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32,
     ) as *mut libc::c_char;
     strcpy((*font).font_name, font_name);
@@ -2525,9 +2525,9 @@ unsafe extern "C" fn save_font() {
     let mut next: *mut mp_font = 0 as *mut mp_font;
     if currentfont < 0i32 {
         font_stack[0].font_name = new((strlen(b"Courier\x00" as *const u8 as *const libc::c_char)
-            .wrapping_add(1i32 as libc::c_ulong) as u32
-            as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            .wrapping_add(1i32 as u64) as u32
+            as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         strcpy(
             font_stack[0].font_name,
@@ -2543,9 +2543,9 @@ unsafe extern "C" fn save_font() {
     current = &mut *font_stack.as_mut_ptr().offset(fresh0 as isize) as *mut mp_font;
     next = &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as *mut mp_font;
     (*next).font_name = new(
-        (strlen((*current).font_name).wrapping_add(1i32 as libc::c_ulong) as u32
-            as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (strlen((*current).font_name).wrapping_add(1i32 as u64) as u32
+            as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32,
     ) as *mut libc::c_char;
     strcpy((*next).font_name, (*current).font_name);
@@ -3228,9 +3228,9 @@ static mut mps_operators: [operators; 28] = [
 unsafe extern "C" fn get_opcode(mut token: *const libc::c_char) -> libc::c_int {
     let mut i: libc::c_uint = 0;
     i = 0i32 as libc::c_uint;
-    while (i as libc::c_ulong)
-        < (::std::mem::size_of::<[operators; 48]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<operators>() as libc::c_ulong)
+    while (i as u64)
+        < (::std::mem::size_of::<[operators; 48]>() as u64)
+            .wrapping_div(::std::mem::size_of::<operators>() as u64)
     {
         if streq_ptr(token, ps_operators[i as usize].token) {
             return ps_operators[i as usize].opcode;
@@ -3238,9 +3238,9 @@ unsafe extern "C" fn get_opcode(mut token: *const libc::c_char) -> libc::c_int {
         i = i.wrapping_add(1)
     }
     i = 0i32 as libc::c_uint;
-    while (i as libc::c_ulong)
-        < (::std::mem::size_of::<[operators; 28]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<operators>() as libc::c_ulong)
+    while (i as u64)
+        < (::std::mem::size_of::<[operators; 28]>() as u64)
+            .wrapping_div(::std::mem::size_of::<operators>() as u64)
     {
         if streq_ptr(token, mps_operators[i as usize].token) {
             return mps_operators[i as usize].opcode;
@@ -3579,8 +3579,8 @@ unsafe extern "C" fn do_show() -> libc::c_int {
         let mut uch: libc::c_ushort = 0;
         let mut ustr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
         let mut i: libc::c_int = 0;
-        ustr = new(((length * 2i32) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
+        ustr = new(((length * 2i32) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as u64)
             as u32) as *mut libc::c_uchar;
         i = 0i32;
         while i < length {
@@ -4637,13 +4637,13 @@ pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> libc::c_int {
         );
         return -1i32;
     }
-    buffer = new(((size + 1i32) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    buffer = new(((size + 1i32) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char;
     fread(
         buffer as *mut libc::c_void,
-        ::std::mem::size_of::<libc::c_char>() as libc::c_ulong,
-        size as libc::c_ulong,
+        ::std::mem::size_of::<libc::c_char>() as u64,
+        size as u64,
         image_file,
     );
     *buffer.offset(size as isize) = 0i32 as libc::c_char;

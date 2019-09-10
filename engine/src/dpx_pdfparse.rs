@@ -23,9 +23,9 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> libc::c_int;
+    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> libc::c_int;
     #[no_mangle]
     fn pdf_new_indirect(
         pf: *mut pdf_file,
@@ -75,9 +75,9 @@ extern "C" {
     #[no_mangle]
     fn strchr(_: *const libc::c_char, _: libc::c_int) -> *mut libc::c_char;
     #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: u64) -> libc::c_int;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn xtoi(c: libc::c_char) -> libc::c_int;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -146,7 +146,7 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -267,13 +267,13 @@ unsafe extern "C" fn parsed_string(
     let mut len: libc::c_int = 0;
     len = end.wrapping_offset_from(start) as libc::c_long as libc::c_int;
     if len > 0i32 {
-        result = new(((len + 1i32) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        result = new(((len + 1i32) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         memcpy(
             result as *mut libc::c_void,
             start as *const libc::c_void,
-            len as libc::c_ulong,
+            len as u64,
         );
         *result.offset(len as isize) = '\u{0}' as i32 as libc::c_char
     }
@@ -1123,7 +1123,7 @@ unsafe extern "C" fn parse_pdf_stream(
         || memcmp(
             p as *const libc::c_void,
             b"endstream\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-            9i32 as libc::c_ulong,
+            9i32 as u64,
         ) != 0
     {
         pdf_release_obj(result);
@@ -1317,7 +1317,7 @@ pub unsafe extern "C" fn parse_pdf_object(
                     && memcmp(
                         *pp as *const libc::c_void,
                         b"stream\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
-                        6i32 as libc::c_ulong,
+                        6i32 as u64,
                     ) == 0
                 {
                     dict = result;

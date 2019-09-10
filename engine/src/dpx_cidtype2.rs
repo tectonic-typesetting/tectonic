@@ -41,14 +41,14 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
+    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
         -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
+    fn memset(_: *mut libc::c_void, _: libc::c_int, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: libc::c_ulong)
+    fn strncpy(_: *mut libc::c_char, _: *const libc::c_char, _: u64)
         -> *mut libc::c_char;
     #[no_mangle]
     fn strcat(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
@@ -57,7 +57,7 @@ extern "C" {
     #[no_mangle]
     fn strstr(_: *const libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> libc::c_ulong;
+    fn strlen(_: *const libc::c_char) -> u64;
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
@@ -265,7 +265,7 @@ extern "C" {
 pub type __int32_t = libc::c_int;
 pub type __u32 = libc::c_uint;
 pub type int32_t = __int32_t;
-pub type size_t = libc::c_ulong;
+pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -641,7 +641,7 @@ unsafe extern "C" fn validate_name(mut fontname: *mut libc::c_char, mut len: lib
             memmove(
                 fontname.offset(i as isize) as *mut libc::c_void,
                 fontname.offset(i as isize).offset(1) as *const libc::c_void,
-                (len - i) as libc::c_ulong,
+                (len - i) as u64,
             );
             count += 1;
             len -= 1
@@ -863,9 +863,9 @@ unsafe extern "C" fn find_tocode_cmap(
         cmap_name = new((strlen(reg)
             .wrapping_add(strlen(ord))
             .wrapping_add(strlen(append))
-            .wrapping_add(3i32 as libc::c_ulong) as u32
-            as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            .wrapping_add(3i32 as u64) as u32
+            as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         sprintf(
             cmap_name,
@@ -1194,9 +1194,9 @@ unsafe extern "C" fn fix_CJK_symbols(mut code: libc::c_ushort) -> libc::c_ushort
     let mut i: libc::c_uint = 0;
     alt_code = code;
     i = 0i32 as libc::c_uint;
-    while (i as libc::c_ulong)
-        < (::std::mem::size_of::<[C2RustUnnamed_2; 10]>() as libc::c_ulong)
-            .wrapping_div(::std::mem::size_of::<C2RustUnnamed_2>() as libc::c_ulong)
+    while (i as u64)
+        < (::std::mem::size_of::<[C2RustUnnamed_2; 10]>() as u64)
+            .wrapping_div(::std::mem::size_of::<C2RustUnnamed_2>() as u64)
     {
         if CJK_Uni_symbols[i as usize].alt1 as libc::c_int == code as libc::c_int {
             alt_code = CJK_Uni_symbols[i as usize].alt2;
@@ -1225,16 +1225,16 @@ unsafe extern "C" fn cid_to_code(mut cmap: *mut CMap, mut cid: CID) -> libc::c_i
     p = inbuf.as_mut_ptr();
     q = outbuf.as_mut_ptr();
     CMap_decode_char(cmap, &mut p, &mut inbytesleft, &mut q, &mut outbytesleft);
-    if inbytesleft != 0i32 as libc::c_ulong {
+    if inbytesleft != 0i32 as u64 {
         return 0i32;
     } else {
-        if outbytesleft == 31i32 as libc::c_ulong {
+        if outbytesleft == 31i32 as u64 {
             return outbuf[0] as libc::c_int;
         } else {
-            if outbytesleft == 30i32 as libc::c_ulong {
+            if outbytesleft == 30i32 as u64 {
                 return (outbuf[0] as libc::c_int) << 8i32 | outbuf[1] as libc::c_int;
             } else {
-                if outbytesleft == 28i32 as libc::c_ulong {
+                if outbytesleft == 28i32 as u64 {
                     /* We assume the output encoding is UTF-16. */
                     let mut hi: CID = 0;
                     let mut lo: CID = 0;
@@ -1924,17 +1924,17 @@ pub unsafe extern "C" fn CIDFont_type2_open(
     let mut shortname: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut namelen: libc::c_int = 0;
     /* MAC-ROMAN-EN-POSTSCRIPT or WIN-UNICODE-EN(US)-POSTSCRIPT */
-    shortname = new((127i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+    shortname = new((127i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
         as u32) as *mut libc::c_char; /* for SJIS, UTF-16, ... string */
     namelen = tt_get_ps_fontname(sfont, shortname, 127i32 as USHORT) as libc::c_int;
     if namelen == 0i32 {
         memset(
             shortname as *mut libc::c_void,
             0i32,
-            127i32 as libc::c_ulong,
+            127i32 as u64,
         );
-        strncpy(shortname, name, 127i32 as libc::c_ulong);
+        strncpy(shortname, name, 127i32 as u64);
         namelen = strlen(shortname) as libc::c_int
     }
     validate_name(shortname, namelen);
@@ -1944,8 +1944,8 @@ pub unsafe extern "C" fn CIDFont_type2_open(
      * Style requires more 11 bytes.
      */
     fontname = new(
-        (strlen(shortname).wrapping_add(19i32 as libc::c_ulong) as u32 as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+        (strlen(shortname).wrapping_add(19i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32,
     ) as *mut libc::c_char;
     strcpy(fontname, shortname);
@@ -1978,8 +1978,8 @@ pub unsafe extern "C" fn CIDFont_type2_open(
      */
     (*font).fontname = fontname; /* This means font's internal glyph ordering. */
     (*font).subtype = 2i32;
-    (*font).csi = new((1i32 as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as libc::c_ulong)
+    (*font).csi = new((1i32 as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as u64)
         as u32) as *mut CIDSysInfo;
     if !(*opt).csi.is_null() {
         if !cmap_csi.is_null() {
@@ -2019,46 +2019,46 @@ pub unsafe extern "C" fn CIDFont_type2_open(
             }
         }
         (*(*font).csi).registry = new((strlen((*(*opt).csi).registry)
-            .wrapping_add(1i32 as libc::c_ulong) as u32
-            as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            .wrapping_add(1i32 as u64) as u32
+            as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         strcpy((*(*font).csi).registry, (*(*opt).csi).registry);
         (*(*font).csi).ordering = new((strlen((*(*opt).csi).ordering)
-            .wrapping_add(1i32 as libc::c_ulong) as u32
-            as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            .wrapping_add(1i32 as u64) as u32
+            as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         strcpy((*(*font).csi).ordering, (*(*opt).csi).ordering);
         (*(*font).csi).supplement = (*(*opt).csi).supplement
     } else if !cmap_csi.is_null() {
         (*(*font).csi).registry = new((strlen((*cmap_csi).registry)
-            .wrapping_add(1i32 as libc::c_ulong) as u32
-            as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            .wrapping_add(1i32 as u64) as u32
+            as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         strcpy((*(*font).csi).registry, (*cmap_csi).registry);
         (*(*font).csi).ordering = new((strlen((*cmap_csi).ordering)
-            .wrapping_add(1i32 as libc::c_ulong) as u32
-            as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            .wrapping_add(1i32 as u64) as u32
+            as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         strcpy((*(*font).csi).ordering, (*cmap_csi).ordering);
         (*(*font).csi).supplement = (*cmap_csi).supplement
     } else {
         (*(*font).csi).registry = new((strlen(b"Adobe\x00" as *const u8 as *const libc::c_char)
-            .wrapping_add(1i32 as libc::c_ulong) as u32
-            as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            .wrapping_add(1i32 as u64) as u32
+            as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         strcpy(
             (*(*font).csi).registry,
             b"Adobe\x00" as *const u8 as *const libc::c_char,
         );
         (*(*font).csi).ordering = new((strlen(b"Identity\x00" as *const u8 as *const libc::c_char)
-            .wrapping_add(1i32 as libc::c_ulong) as u32
-            as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
+            .wrapping_add(1i32 as u64) as u32
+            as u64)
+            .wrapping_mul(::std::mem::size_of::<libc::c_char>() as u64)
             as u32) as *mut libc::c_char;
         strcpy(
             (*(*font).csi).ordering,
@@ -2085,7 +2085,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
         memmove(
             fontname.offset(7) as *mut libc::c_void,
             fontname as *const libc::c_void,
-            strlen(fontname).wrapping_add(1i32 as libc::c_ulong),
+            strlen(fontname).wrapping_add(1i32 as u64),
         );
         pdf_font_make_uniqueTag(fontname);
         *fontname.offset(6) = '+' as i32 as libc::c_char
