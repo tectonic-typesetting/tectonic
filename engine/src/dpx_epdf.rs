@@ -196,7 +196,7 @@ pub struct _IO_FILE {
     pub _flags2: i32,
     pub _old_offset: __off_t,
     pub _cur_column: u16,
-    pub _vtable_offset: libc::c_schar,
+    pub _vtable_offset: i8,
     pub _shortbuf: [i8; 1],
     pub _lock: *mut libc::c_void,
     pub _offset: __off64_t,

@@ -768,7 +768,7 @@ pub static mut set_box_allowed: bool = false;
 #[no_mangle]
 pub static mut history: tt_history_t = HISTORY_SPOTLESS;
 #[no_mangle]
-pub static mut error_count: libc::c_schar = 0;
+pub static mut error_count: i8 = 0;
 #[no_mangle]
 pub static mut help_line: [*const i8; 6] = [0 as *const i8; 6];
 #[no_mangle]
@@ -8492,7 +8492,7 @@ unsafe extern "C" fn initialize_more_variables() {
     interaction = 3i32 as u8;
     deletions_allowed = 1i32 != 0;
     set_box_allowed = 1i32 != 0;
-    error_count = 0i32 as libc::c_schar;
+    error_count = 0i32 as i8;
     help_ptr = 0i32 as u8;
     use_err_help = 0i32 != 0;
     nest_ptr = 0i32;

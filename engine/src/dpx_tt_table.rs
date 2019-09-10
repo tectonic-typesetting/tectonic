@@ -25,7 +25,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
-    fn tt_get_signed_byte(handle: rust_input_handle_t) -> libc::c_schar;
+    fn tt_get_signed_byte(handle: rust_input_handle_t) -> i8;
     #[no_mangle]
     fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
@@ -33,13 +33,13 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
-    fn put_big_endian(s: *mut libc::c_void, q: SFNT_LONG, n: i32) -> i32;
+    fn put_big_endian(s: *mut libc::c_void, q: i32, n: i32) -> i32;
     #[no_mangle]
-    fn sfnt_find_table_len(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
+    fn sfnt_find_table_len(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
+    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
-    fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
+    fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -70,10 +70,6 @@ pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type BYTE = u8;
-pub type SFNT_CHAR = libc::c_schar;
-pub type SFNT_ULONG = u32;
-pub type SFNT_LONG = i32;
 pub type Fixed = u32;
 pub type FWord = i16;
 pub type uFWord = u16;
@@ -81,15 +77,15 @@ pub type uFWord = u16;
 #[repr(C)]
 pub struct sfnt_table {
     pub tag: [i8; 4],
-    pub check_sum: SFNT_ULONG,
-    pub offset: SFNT_ULONG,
-    pub length: SFNT_ULONG,
+    pub check_sum: u32,
+    pub offset: u32,
+    pub length: u32,
     pub data: *mut i8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table_directory {
-    pub version: SFNT_ULONG,
+    pub version: u32,
     pub num_tables: u16,
     pub search_range: u16,
     pub entry_selector: u16,
@@ -104,19 +100,19 @@ pub struct sfnt {
     pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
-    pub offset: SFNT_ULONG,
+    pub offset: u32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_head_table {
     pub version: Fixed,
     pub fontRevision: Fixed,
-    pub checkSumAdjustment: SFNT_ULONG,
-    pub magicNumber: SFNT_ULONG,
+    pub checkSumAdjustment: u32,
+    pub magicNumber: u32,
     pub flags: u16,
     pub unitsPerEm: u16,
-    pub created: [BYTE; 8],
-    pub modified: [BYTE; 8],
+    pub created: [u8; 8],
+    pub modified: [u8; 8],
     pub xMin: FWord,
     pub yMin: FWord,
     pub xMax: FWord,
@@ -203,12 +199,12 @@ pub struct tt_os2__table {
     pub yStrikeoutSize: i16,
     pub yStrikeoutPosition: i16,
     pub sFamilyClass: i16,
-    pub panose: [BYTE; 10],
-    pub ulUnicodeRange1: SFNT_ULONG,
-    pub ulUnicodeRange2: SFNT_ULONG,
-    pub ulUnicodeRange3: SFNT_ULONG,
-    pub ulUnicodeRange4: SFNT_ULONG,
-    pub achVendID: [SFNT_CHAR; 4],
+    pub panose: [u8; 10],
+    pub ulUnicodeRange1: u32,
+    pub ulUnicodeRange2: u32,
+    pub ulUnicodeRange3: u32,
+    pub ulUnicodeRange4: u32,
+    pub achVendID: [i8; 4],
     pub fsSelection: u16,
     pub usFirstCharIndex: u16,
     pub usLastCharIndex: u16,
@@ -217,8 +213,8 @@ pub struct tt_os2__table {
     pub sTypoLineGap: i16,
     pub usWinAscent: u16,
     pub usWinDescent: u16,
-    pub ulCodePageRange1: SFNT_ULONG,
-    pub ulCodePageRange2: SFNT_ULONG,
+    pub ulCodePageRange1: u32,
+    pub ulCodePageRange2: u32,
     pub sxHeight: i16,
     pub sCapHeight: i16,
     pub usDefaultChar: u16,
@@ -283,28 +279,28 @@ pub unsafe extern "C" fn tt_pack_head_table(mut table: *mut tt_head_table) -> *m
         as u32) as *mut i8;
     p = data;
     p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).version as SFNT_LONG, 4i32) as isize,
+        put_big_endian(p as *mut libc::c_void, (*table).version as i32, 4i32) as isize,
     );
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).fontRevision as SFNT_LONG,
+        (*table).fontRevision as i32,
         4i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).checkSumAdjustment as SFNT_LONG,
+        (*table).checkSumAdjustment as i32,
         4i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).magicNumber as SFNT_LONG,
+        (*table).magicNumber as i32,
         4i32,
     ) as isize);
     p = p
-        .offset(put_big_endian(p as *mut libc::c_void, (*table).flags as SFNT_LONG, 2i32) as isize);
+        .offset(put_big_endian(p as *mut libc::c_void, (*table).flags as i32, 2i32) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).unitsPerEm as SFNT_LONG,
+        (*table).unitsPerEm as i32,
         2i32,
     ) as isize);
     i = 0i32;
@@ -321,31 +317,31 @@ pub unsafe extern "C" fn tt_pack_head_table(mut table: *mut tt_head_table) -> *m
         *fresh1 = (*table).modified[i as usize] as i8;
         i += 1
     }
-    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).xMin as SFNT_LONG, 2i32) as isize);
-    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).yMin as SFNT_LONG, 2i32) as isize);
-    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).xMax as SFNT_LONG, 2i32) as isize);
-    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).yMax as SFNT_LONG, 2i32) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).xMin as i32, 2i32) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).yMin as i32, 2i32) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).xMax as i32, 2i32) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).yMax as i32, 2i32) as isize);
     p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).macStyle as SFNT_LONG, 2i32) as isize,
+        put_big_endian(p as *mut libc::c_void, (*table).macStyle as i32, 2i32) as isize,
     );
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).lowestRecPPEM as SFNT_LONG,
+        (*table).lowestRecPPEM as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).fontDirectionHint as SFNT_LONG,
+        (*table).fontDirectionHint as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).indexToLocFormat as SFNT_LONG,
+        (*table).indexToLocFormat as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).glyphDataFormat as SFNT_LONG,
+        (*table).glyphDataFormat as i32,
         2i32,
     ) as isize);
     return data;
@@ -393,74 +389,74 @@ pub unsafe extern "C" fn tt_pack_maxp_table(mut table: *mut tt_maxp_table) -> *m
         as u32) as *mut i8;
     p = data;
     p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).version as SFNT_LONG, 4i32) as isize,
+        put_big_endian(p as *mut libc::c_void, (*table).version as i32, 4i32) as isize,
     );
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).numGlyphs as SFNT_LONG,
+        (*table).numGlyphs as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).maxPoints as SFNT_LONG,
+        (*table).maxPoints as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).maxContours as SFNT_LONG,
+        (*table).maxContours as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).maxComponentPoints as SFNT_LONG,
+        (*table).maxComponentPoints as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).maxComponentContours as SFNT_LONG,
+        (*table).maxComponentContours as i32,
         2i32,
     ) as isize);
     p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).maxZones as SFNT_LONG, 2i32) as isize,
+        put_big_endian(p as *mut libc::c_void, (*table).maxZones as i32, 2i32) as isize,
     );
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).maxTwilightPoints as SFNT_LONG,
+        (*table).maxTwilightPoints as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).maxStorage as SFNT_LONG,
+        (*table).maxStorage as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).maxFunctionDefs as SFNT_LONG,
+        (*table).maxFunctionDefs as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).maxInstructionDefs as SFNT_LONG,
+        (*table).maxInstructionDefs as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).maxStackElements as SFNT_LONG,
+        (*table).maxStackElements as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).maxSizeOfInstructions as SFNT_LONG,
+        (*table).maxSizeOfInstructions as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).maxComponentElements as SFNT_LONG,
+        (*table).maxComponentElements as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).maxComponentDepth as SFNT_LONG,
+        (*table).maxComponentDepth as i32,
         2i32,
     ) as isize);
     return data;
@@ -498,69 +494,69 @@ pub unsafe extern "C" fn tt_pack_hhea_table(mut table: *mut tt_hhea_table) -> *m
         as u32) as *mut i8;
     p = data;
     p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).version as SFNT_LONG, 4i32) as isize,
+        put_big_endian(p as *mut libc::c_void, (*table).version as i32, 4i32) as isize,
     );
     p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).ascent as SFNT_LONG, 2i32) as isize,
+        put_big_endian(p as *mut libc::c_void, (*table).ascent as i32, 2i32) as isize,
     );
     p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).descent as SFNT_LONG, 2i32) as isize,
+        put_big_endian(p as *mut libc::c_void, (*table).descent as i32, 2i32) as isize,
     );
     p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).lineGap as SFNT_LONG, 2i32) as isize,
+        put_big_endian(p as *mut libc::c_void, (*table).lineGap as i32, 2i32) as isize,
     );
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).advanceWidthMax as SFNT_LONG,
+        (*table).advanceWidthMax as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).minLeftSideBearing as SFNT_LONG,
+        (*table).minLeftSideBearing as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).minRightSideBearing as SFNT_LONG,
+        (*table).minRightSideBearing as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).xMaxExtent as SFNT_LONG,
+        (*table).xMaxExtent as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).caretSlopeRise as SFNT_LONG,
+        (*table).caretSlopeRise as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).caretSlopeRun as SFNT_LONG,
+        (*table).caretSlopeRun as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).caretOffset as SFNT_LONG,
+        (*table).caretOffset as i32,
         2i32,
     ) as isize);
     i = 0i32;
     while i < 4i32 {
         p = p.offset(put_big_endian(
             p as *mut libc::c_void,
-            (*table).reserved[i as usize] as SFNT_LONG,
+            (*table).reserved[i as usize] as i32,
             2i32,
         ) as isize);
         i += 1
     }
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).metricDataFormat as SFNT_LONG,
+        (*table).metricDataFormat as i32,
         2i32,
     ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
-        (*table).numOfLongHorMetrics as SFNT_LONG,
+        (*table).numOfLongHorMetrics as i32,
         2i32,
     ) as isize);
     return data;
@@ -568,7 +564,7 @@ pub unsafe extern "C" fn tt_pack_hhea_table(mut table: *mut tt_hhea_table) -> *m
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_hhea_table(mut sfont: *mut sfnt) -> *mut tt_hhea_table {
     let mut i: i32 = 0;
-    let mut len: SFNT_ULONG = 0;
+    let mut len: u32 = 0;
     let mut table: *mut tt_hhea_table = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<tt_hhea_table>() as u64)
         as u32) as *mut tt_hhea_table;
@@ -604,7 +600,7 @@ pub unsafe extern "C" fn tt_read_hhea_table(mut sfont: *mut sfnt) -> *mut tt_hhe
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_vhea_table(mut sfont: *mut sfnt) -> *mut tt_vhea_table {
     let mut i: i32 = 0; /* ushort ? */
-    let mut len: SFNT_ULONG = 0;
+    let mut len: u32 = 0;
     let mut table: *mut tt_vhea_table = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<tt_vhea_table>() as u64)
         as u32) as *mut tt_vhea_table;
@@ -636,7 +632,7 @@ pub unsafe extern "C" fn tt_read_vhea_table(mut sfont: *mut sfnt) -> *mut tt_vhe
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_VORG_table(mut sfont: *mut sfnt) -> *mut tt_VORG_table {
     let mut vorg: *mut tt_VORG_table = 0 as *mut tt_VORG_table;
-    let mut offset: SFNT_ULONG = 0;
+    let mut offset: u32 = 0;
     let mut i: u16 = 0;
     offset = sfnt_find_table_pos(sfont, b"VORG\x00" as *const u8 as *const i8);
     if offset > 0i32 as u32 {
@@ -789,7 +785,7 @@ pub unsafe extern "C" fn tt_read_os2__table(mut sfont: *mut sfnt) -> *mut tt_os2
         (*table).sFamilyClass = 0i32 as i16; /* No Classification */
         i = 0i32;
         while i < 10i32 {
-            (*table).panose[i as usize] = 0i32 as BYTE;
+            (*table).panose[i as usize] = 0i32 as u8;
             i += 1
             /* All Any */
         }
@@ -808,7 +804,7 @@ unsafe extern "C" fn tt_get_name(
     let mut length: u16 = 0i32 as u16;
     let mut num_names: u16 = 0;
     let mut string_offset: u16 = 0;
-    let mut name_offset: SFNT_ULONG = 0;
+    let mut name_offset: u32 = 0;
     let mut i: i32 = 0;
     name_offset = sfnt_locate_table(sfont, b"name\x00" as *const u8 as *const i8);
     if tt_get_unsigned_pair((*sfont).handle) != 0 {

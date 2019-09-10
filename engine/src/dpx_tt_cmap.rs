@@ -79,11 +79,11 @@ extern "C" {
     fn sfnt_close(sfont: *mut sfnt);
     /* table directory */
     #[no_mangle]
-    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: SFNT_ULONG) -> i32;
+    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: u32) -> i32;
     #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
+    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
-    fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
+    fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
     fn agl_get_unicodes(
         glyphstr: *const i8,
@@ -239,7 +239,7 @@ extern "C" {
     fn pdf_get_resource_reference(res_id: i32) -> *mut pdf_obj;
     /* TTC (TrueType Collection) */
     #[no_mangle]
-    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> SFNT_ULONG;
+    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -362,8 +362,6 @@ pub type rust_input_handle_t = *mut libc::c_void;
 */
 /* Acoid conflict with CHAR ... from <winnt.h>.  */
 /* Data Types as described in Apple's TTRefMan */
-pub type BYTE = u8;
-pub type SFNT_ULONG = u32;
 pub type Fixed = u32;
 /* 16.16-bit signed fixed-point number */
 pub type FWord = i16;
@@ -371,16 +369,16 @@ pub type FWord = i16;
 #[repr(C)]
 pub struct sfnt_table {
     pub tag: [i8; 4],
-    pub check_sum: SFNT_ULONG,
-    pub offset: SFNT_ULONG,
-    pub length: SFNT_ULONG,
+    pub check_sum: u32,
+    pub offset: u32,
+    pub length: u32,
     pub data: *mut i8,
     /* table data */
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table_directory {
-    pub version: SFNT_ULONG,
+    pub version: u32,
     pub num_tables: u16,
     pub search_range: u16,
     pub entry_selector: u16,
@@ -396,7 +394,7 @@ pub struct sfnt {
     pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
-    pub offset: SFNT_ULONG,
+    pub offset: u32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -404,7 +402,7 @@ pub struct tt_cmap {
     pub format: u16,
     pub platform: u16,
     pub encoding: u16,
-    pub language: SFNT_ULONG,
+    pub language: u32,
     pub map: *mut libc::c_void,
 }
 #[derive(Copy, Clone)]
@@ -616,11 +614,11 @@ pub struct tt_post_table {
     pub italicAngle: Fixed,
     pub underlinePosition: FWord,
     pub underlineThickness: FWord,
-    pub isFixedPitch: SFNT_ULONG,
-    pub minMemType42: SFNT_ULONG,
-    pub maxMemType42: SFNT_ULONG,
-    pub minMemType1: SFNT_ULONG,
-    pub maxMemType1: SFNT_ULONG,
+    pub isFixedPitch: u32,
+    pub minMemType42: u32,
+    pub maxMemType42: u32,
+    pub minMemType1: u32,
+    pub maxMemType1: u32,
     pub numberOfGlyphs: u16,
     pub glyphNamePtr: *mut *const i8,
     pub names: *mut *mut i8,
@@ -714,7 +712,7 @@ pub struct rangeDef {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cmap12 {
-    pub nGroups: SFNT_ULONG,
+    pub nGroups: u32,
     pub groups: *mut charGroup,
 }
 /* Format 8 and 10 not supported...
@@ -730,9 +728,9 @@ pub struct cmap12 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct charGroup {
-    pub startCharCode: SFNT_ULONG,
-    pub endCharCode: SFNT_ULONG,
-    pub startGlyphID: SFNT_ULONG,
+    pub startCharCode: u32,
+    pub endCharCode: u32,
+    pub startGlyphID: u32,
 }
 /* format 6: trimmed table mapping */
 #[derive(Copy, Clone)]
@@ -780,7 +778,7 @@ pub struct SubHeader {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cmap0 {
-    pub glyphIndexArray: [BYTE; 256],
+    pub glyphIndexArray: [u8; 256],
 }
 pub type CID = u16;
 #[derive(Copy, Clone)]
@@ -819,7 +817,7 @@ pub unsafe extern "C" fn otf_cmap_set_verbose(mut level: i32) {
     otl_gsub_set_verbose(level);
     verbose = level;
 }
-unsafe extern "C" fn read_cmap0(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *mut cmap0 {
+unsafe extern "C" fn read_cmap0(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap0 {
     let mut map: *mut cmap0 = 0 as *mut cmap0;
     let mut i: u32 = 0;
     if len < 256i32 as u32 {
@@ -845,7 +843,7 @@ unsafe extern "C" fn lookup_cmap0(mut map: *mut cmap0, mut cc: u16) -> u16 {
         (*map).glyphIndexArray[cc as usize] as i32
     }) as u16;
 }
-unsafe extern "C" fn read_cmap2(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *mut cmap2 {
+unsafe extern "C" fn read_cmap2(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap2 {
     let mut map: *mut cmap2 = 0 as *mut cmap2;
     let mut i: u16 = 0;
     let mut n: u16 = 0;
@@ -943,7 +941,7 @@ unsafe extern "C" fn lookup_cmap2(mut map: *mut cmap2, mut cc: u16) -> u16 {
     }
     return idx;
 }
-unsafe extern "C" fn read_cmap4(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *mut cmap4 {
+unsafe extern "C" fn read_cmap4(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap4 {
     let mut map: *mut cmap4 = 0 as *mut cmap4;
     let mut i: u16 = 0;
     let mut n: u16 = 0;
@@ -1066,7 +1064,7 @@ unsafe extern "C" fn lookup_cmap4(mut map: *mut cmap4, mut cc: u16) -> u16 {
     }
     return gid;
 }
-unsafe extern "C" fn read_cmap6(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *mut cmap6 {
+unsafe extern "C" fn read_cmap6(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap6 {
     let mut map: *mut cmap6 = 0 as *mut cmap6;
     let mut i: u16 = 0;
     if len < 4i32 as u32 {
@@ -1102,9 +1100,9 @@ unsafe extern "C" fn lookup_cmap6(mut map: *mut cmap6, mut cc: u16) -> u16 {
     return 0i32 as u16;
 }
 /* ULONG length */
-unsafe extern "C" fn read_cmap12(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *mut cmap12 {
+unsafe extern "C" fn read_cmap12(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap12 {
     let mut map: *mut cmap12 = 0 as *mut cmap12;
-    let mut i: SFNT_ULONG = 0;
+    let mut i: u32 = 0;
     if len < 4i32 as u32 {
         _tt_abort(b"invalid cmap subtable\x00" as *const u8 as *const i8);
     }
@@ -1115,7 +1113,7 @@ unsafe extern "C" fn read_cmap12(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *
     (*map).groups = new(((*map).nGroups as u64)
         .wrapping_mul(::std::mem::size_of::<charGroup>() as u64)
         as u32) as *mut charGroup;
-    i = 0i32 as SFNT_ULONG;
+    i = 0i32 as u32;
     while i < (*map).nGroups {
         (*(*map).groups.offset(i as isize)).startCharCode = tt_get_unsigned_quad((*sfont).handle);
         (*(*map).groups.offset(i as isize)).endCharCode = tt_get_unsigned_quad((*sfont).handle);
@@ -1130,7 +1128,7 @@ unsafe extern "C" fn release_cmap12(mut map: *mut cmap12) {
         free(map as *mut libc::c_void);
     };
 }
-unsafe extern "C" fn lookup_cmap12(mut map: *mut cmap12, mut cccc: SFNT_ULONG) -> u16 {
+unsafe extern "C" fn lookup_cmap12(mut map: *mut cmap12, mut cccc: u32) -> u16 {
     let mut gid: u16 = 0i32 as u16;
     let mut i: i32 = 0;
     i = (*map).nGroups as i32;
@@ -1159,8 +1157,8 @@ pub unsafe extern "C" fn tt_cmap_read(
     mut encoding: u16,
 ) -> *mut tt_cmap {
     let mut cmap: *mut tt_cmap = 0 as *mut tt_cmap;
-    let mut offset: SFNT_ULONG = 0;
-    let mut length: SFNT_ULONG = 0i32 as SFNT_ULONG;
+    let mut offset: u32 = 0;
+    let mut length: u32 = 0i32 as u32;
     let mut p_id: u16 = 0;
     let mut e_id: u16 = 0;
     let mut i: u16 = 0;
@@ -1191,7 +1189,7 @@ pub unsafe extern "C" fn tt_cmap_read(
             i = i.wrapping_add(1)
         } else {
             offset = (offset as u32).wrapping_add(tt_get_unsigned_quad((*sfont).handle))
-                as SFNT_ULONG as SFNT_ULONG;
+                as u32 as u32;
             break;
         }
     }
@@ -1210,8 +1208,8 @@ pub unsafe extern "C" fn tt_cmap_read(
      * format 8, 10, 12 !
      */
     if (*cmap).format as i32 <= 6i32 {
-        length = tt_get_unsigned_pair((*sfont).handle) as SFNT_ULONG;
-        (*cmap).language = tt_get_unsigned_pair((*sfont).handle) as SFNT_ULONG
+        length = tt_get_unsigned_pair((*sfont).handle) as u32;
+        (*cmap).language = tt_get_unsigned_pair((*sfont).handle) as u32
     /* language (Mac) */
     } else if tt_get_unsigned_pair((*sfont).handle) as i32 != 0i32 {
         /* reverved - 0 */
@@ -1278,7 +1276,7 @@ pub unsafe extern "C" fn tt_cmap_release(mut cmap: *mut tt_cmap) {
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn tt_cmap_lookup(mut cmap: *mut tt_cmap, mut cc: SFNT_ULONG) -> u16 {
+pub unsafe extern "C" fn tt_cmap_lookup(mut cmap: *mut tt_cmap, mut cc: u32) -> u16 {
     let mut gid: u16 = 0i32 as u16;
     if !cmap.is_null() {
     } else {
@@ -1434,11 +1432,11 @@ unsafe extern "C" fn load_cmap12(
     mut cmap: *mut CMap,
     mut tounicode_add: *mut CMap,
 ) {
-    let mut i: SFNT_ULONG = 0;
-    let mut ch: SFNT_ULONG = 0;
+    let mut i: u32 = 0;
+    let mut ch: u32 = 0;
     let mut gid: u16 = 0;
     let mut cid: u16 = 0;
-    i = 0i32 as SFNT_ULONG;
+    i = 0i32 as u32;
     while i < (*map).nGroups {
         ch = (*(*map).groups.offset(i as isize)).startCharCode;
         while ch <= (*(*map).groups.offset(i as isize)).endCharCode {
@@ -1861,7 +1859,7 @@ unsafe extern "C" fn prepare_CIDFont_from_sfnt(mut sfont: *mut sfnt) -> *mut cff
     let mut cffont: *mut cff_font = 0 as *mut cff_font;
     let mut offset: u32 = 0i32 as u32;
     if (*sfont).type_0 != 1i32 << 2i32
-        || sfnt_read_table_directory(sfont, 0i32 as SFNT_ULONG) < 0i32
+        || sfnt_read_table_directory(sfont, 0i32 as u32) < 0i32
         || {
             offset = sfnt_find_table_pos(sfont, b"CFF \x00" as *const u8 as *const i8);
             offset == 0i32 as u32
@@ -1881,7 +1879,7 @@ unsafe extern "C" fn add_to_cmap_if_used(
     mut cffont: *mut cff_font,
     mut used_chars: *mut i8,
     mut gid: u16,
-    mut ch: SFNT_ULONG,
+    mut ch: u32,
 ) -> u16 {
     let mut count: u16 = 0i32 as u16;
     let mut cid: u16 = (if !cffont.is_null() {
@@ -1961,7 +1959,7 @@ unsafe extern "C" fn create_ToUnicode_cmap4(
                     & 0xffffi32) as u16
             }
             count = (count as i32
-                + add_to_cmap_if_used(cmap, cffont, used_chars, gid, ch as SFNT_ULONG)
+                + add_to_cmap_if_used(cmap, cffont, used_chars, gid, ch as u32)
                     as i32) as u16;
             j = j.wrapping_add(1)
         }
@@ -1975,10 +1973,10 @@ unsafe extern "C" fn create_ToUnicode_cmap12(
     mut used_chars: *mut i8,
     mut cffont: *mut cff_font,
 ) -> u16 {
-    let mut i: SFNT_ULONG = 0;
-    let mut ch: SFNT_ULONG = 0;
-    let mut count: SFNT_ULONG = 0i32 as SFNT_ULONG;
-    i = 0i32 as SFNT_ULONG;
+    let mut i: u32 = 0;
+    let mut ch: u32 = 0;
+    let mut count: u32 = 0i32 as u32;
+    i = 0i32 as u32;
     while i < (*map).nGroups {
         ch = (*(*map).groups.offset(i as isize)).startCharCode;
         while ch <= (*(*map).groups.offset(i as isize)).endCharCode {
@@ -1991,7 +1989,7 @@ unsafe extern "C" fn create_ToUnicode_cmap12(
             count =
                 (count as u32).wrapping_add(add_to_cmap_if_used(
                     cmap, cffont, used_chars, gid, ch,
-                ) as u32) as SFNT_ULONG as SFNT_ULONG;
+                ) as u32) as u32 as u32;
             ch = ch.wrapping_add(1)
         }
         i = i.wrapping_add(1)
@@ -2185,7 +2183,7 @@ pub unsafe extern "C" fn otf_create_ToUnicode_stream(
     let mut cmap_add_name: *mut i8 = 0 as *mut i8;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut sfont: *mut sfnt = 0 as *mut sfnt;
-    let mut offset: SFNT_ULONG = 0i32 as SFNT_ULONG;
+    let mut offset: u32 = 0i32 as u32;
     let mut cmap_type: i32 = 0;
     let mut i: size_t = 0;
     /* replace slash in map name with dash to make the output cmap name valid,
@@ -2261,7 +2259,7 @@ pub unsafe extern "C" fn otf_create_ToUnicode_stream(
                 _tt_abort(b"Invalid TTC index\x00" as *const u8 as *const i8);
             }
         }
-        _ => offset = 0i32 as SFNT_ULONG,
+        _ => offset = 0i32 as u32,
     }
     if sfnt_read_table_directory(sfont, offset) < 0i32 {
         _tt_abort(
@@ -2440,7 +2438,7 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
     let mut tounicode_add_name: *mut i8 = 0 as *mut i8;
     let mut is_cidfont: i32 = 0i32;
     let mut sfont: *mut sfnt = 0 as *mut sfnt;
-    let mut offset: SFNT_ULONG = 0i32 as SFNT_ULONG;
+    let mut offset: u32 = 0i32 as u32;
     let mut base_name: *mut i8 = 0 as *mut i8;
     let mut cmap_name: *mut i8 = 0 as *mut i8;
     let mut handle: *mut rust_input_handle_t = 0 as *mut rust_input_handle_t;
@@ -2490,7 +2488,7 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
                 _tt_abort(b"Invalid TTC index\x00" as *const u8 as *const i8);
             }
         }
-        1 | 4 => offset = 0i32 as SFNT_ULONG,
+        1 | 4 => offset = 0i32 as u32,
         256 => offset = (*sfont).offset,
         _ => {
             _tt_abort(

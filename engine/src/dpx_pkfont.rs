@@ -141,7 +141,7 @@ extern "C" {
     #[no_mangle]
     fn skip_bytes(_: u32, _: *mut FILE);
     #[no_mangle]
-    fn get_signed_byte(_: *mut FILE) -> libc::c_schar;
+    fn get_signed_byte(_: *mut FILE) -> i8;
     #[no_mangle]
     fn get_unsigned_pair(_: *mut FILE) -> u16;
     #[no_mangle]
@@ -197,7 +197,7 @@ pub struct _IO_FILE {
     pub _flags2: i32,
     pub _old_offset: __off_t,
     pub _cur_column: u16,
-    pub _vtable_offset: libc::c_schar,
+    pub _vtable_offset: i8,
     pub _shortbuf: [i8; 1],
     pub _lock: *mut libc::c_void,
     pub _offset: __off64_t,

@@ -194,7 +194,7 @@ extern "C" {
         sfont: *mut sfnt,
         tag: *const i8,
         data: *mut libc::c_void,
-        length: SFNT_ULONG,
+        length: u32,
     );
     #[no_mangle]
     fn sfnt_require_table(
@@ -207,16 +207,16 @@ extern "C" {
     #[no_mangle]
     fn dfont_open(handle: rust_input_handle_t, index: i32) -> *mut sfnt;
     #[no_mangle]
-    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: SFNT_ULONG) -> i32;
+    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: u32) -> i32;
     #[no_mangle]
-    fn put_big_endian(s: *mut libc::c_void, q: SFNT_LONG, n: i32) -> i32;
+    fn put_big_endian(s: *mut libc::c_void, q: i32, n: i32) -> i32;
     #[no_mangle]
     fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
     #[no_mangle]
     fn tfm_get_width(font_id: i32, ch: i32) -> f64;
     /* TTC (TrueType Collection) */
     #[no_mangle]
-    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> SFNT_ULONG;
+    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
     /* FontDescriptor */
     #[no_mangle]
     fn tt_get_fontdesc(
@@ -229,7 +229,7 @@ extern "C" {
     #[no_mangle]
     fn tt_cmap_read(sfont: *mut sfnt, platform: u16, encoding: u16) -> *mut tt_cmap;
     #[no_mangle]
-    fn tt_cmap_lookup(cmap: *mut tt_cmap, cc: SFNT_ULONG) -> u16;
+    fn tt_cmap_lookup(cmap: *mut tt_cmap, cc: u32) -> u16;
     #[no_mangle]
     fn tt_cmap_release(cmap: *mut tt_cmap);
     #[no_mangle]
@@ -296,13 +296,12 @@ pub struct sfnt {
     pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
-    pub offset: SFNT_ULONG,
+    pub offset: u32,
 }
-pub type SFNT_ULONG = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table_directory {
-    pub version: SFNT_ULONG,
+    pub version: u32,
     pub num_tables: u16,
     pub search_range: u16,
     pub entry_selector: u16,
@@ -315,9 +314,9 @@ pub struct sfnt_table_directory {
 #[repr(C)]
 pub struct sfnt_table {
     pub tag: [i8; 4],
-    pub check_sum: SFNT_ULONG,
-    pub offset: SFNT_ULONG,
-    pub length: SFNT_ULONG,
+    pub check_sum: u32,
+    pub offset: u32,
+    pub length: u32,
     pub data: *mut i8,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -346,11 +345,11 @@ pub struct tt_post_table {
     pub italicAngle: Fixed,
     pub underlinePosition: FWord,
     pub underlineThickness: FWord,
-    pub isFixedPitch: SFNT_ULONG,
-    pub minMemType42: SFNT_ULONG,
-    pub maxMemType42: SFNT_ULONG,
-    pub minMemType1: SFNT_ULONG,
-    pub maxMemType1: SFNT_ULONG,
+    pub isFixedPitch: u32,
+    pub minMemType42: u32,
+    pub maxMemType42: u32,
+    pub minMemType1: u32,
+    pub maxMemType1: u32,
     pub numberOfGlyphs: u16,
     pub glyphNamePtr: *mut *const i8,
     pub names: *mut *mut i8,
@@ -365,7 +364,7 @@ pub struct tt_cmap {
     pub format: u16,
     pub platform: u16,
     pub encoding: u16,
-    pub language: SFNT_ULONG,
+    pub language: u32,
     pub map: *mut libc::c_void,
 }
 /*
@@ -432,10 +431,9 @@ pub struct tt_glyph_desc {
     pub lly: i16,
     pub urx: i16,
     pub ury: i16,
-    pub length: SFNT_ULONG,
-    pub data: *mut BYTE,
+    pub length: u32,
+    pub data: *mut u8,
 }
-pub type BYTE = u8;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -499,7 +497,6 @@ pub struct agl_name {
     pub alternate: *mut agl_name,
     pub is_predef: i32,
 }
-pub type SFNT_LONG = i32;
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -592,7 +589,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
         return -1i32;
     }
     if (*sfont).type_0 == 1i32 << 4i32 {
-        let mut offset: SFNT_ULONG = 0;
+        let mut offset: u32 = 0;
         offset = ttc_read_offset(sfont, index);
         if offset == 0i32 as u32 {
             _tt_abort(
@@ -932,13 +929,13 @@ unsafe extern "C" fn do_builtin_encoding(
     /* Number of subtables */
     put_big_endian(
         cmap_table.offset(4) as *mut libc::c_void,
-        1u32 as SFNT_LONG,
+        1u32 as i32,
         2i32,
     );
     /* Platform ID */
     put_big_endian(
         cmap_table.offset(6) as *mut libc::c_void,
-        0u32 as SFNT_LONG,
+        0u32 as i32,
         2i32,
     );
     /* Encoding ID */
@@ -961,7 +958,7 @@ unsafe extern "C" fn do_builtin_encoding(
             if verbose > 2i32 {
                 dpx_message(b"/.c0x%02x\x00" as *const u8 as *const i8, code);
             }
-            gid = tt_cmap_lookup(ttcm, code as SFNT_ULONG);
+            gid = tt_cmap_lookup(ttcm, code as u32);
             if gid as i32 == 0i32 {
                 dpx_warning(
                     b"Glyph for character code=0x%02x missing in font font-file=\"%s\".\x00"
@@ -1026,7 +1023,7 @@ unsafe extern "C" fn do_builtin_encoding(
         sfont,
         b"cmap\x00" as *const u8 as *const i8,
         cmap_table as *mut libc::c_void,
-        274i32 as SFNT_ULONG,
+        274i32 as u32,
     );
     return 0i32;
 }
@@ -1298,7 +1295,7 @@ unsafe extern "C" fn composeuchar(
     i = 0i32;
     while error == 0 && i < n_unicodes {
         *gids.offset(i as isize) =
-            tt_cmap_lookup((*gm).codetogid, *unicodes.offset(i as isize) as SFNT_ULONG);
+            tt_cmap_lookup((*gm).codetogid, *unicodes.offset(i as isize) as u32);
         error = if *gids.offset(i as isize) as i32 == 0i32 {
             -1i32
         } else {
@@ -1441,7 +1438,7 @@ unsafe extern "C" fn findparanoiac(
                 /* ignore */
             }
         } else if (*agln).n_components == 1i32 {
-            idx = tt_cmap_lookup((*gm).codetogid, (*agln).unicodes[0] as SFNT_ULONG)
+            idx = tt_cmap_lookup((*gm).codetogid, (*agln).unicodes[0] as u32)
         } else if (*agln).n_components > 1i32 {
             if verbose >= 0i32 {
                 /* give warning */
@@ -1570,7 +1567,7 @@ unsafe extern "C" fn resolve_glyph(
         error = -1i32
     } else if agl_name_is_unicode(name) {
         ucv = agl_name_convert_unicode(name);
-        *gid = tt_cmap_lookup((*gm).codetogid, ucv as SFNT_ULONG);
+        *gid = tt_cmap_lookup((*gm).codetogid, ucv as u32);
         error = if *gid as i32 == 0i32 {
             -1i32
         } else {
@@ -1694,13 +1691,13 @@ unsafe extern "C" fn do_custom_encoding(
     /* Number of subtables */
     put_big_endian(
         cmap_table.offset(4) as *mut libc::c_void,
-        1u32 as SFNT_LONG,
+        1u32 as i32,
         2i32,
     );
     /* Platform ID */
     put_big_endian(
         cmap_table.offset(6) as *mut libc::c_void,
-        0u32 as SFNT_LONG,
+        0u32 as i32,
         2i32,
     );
     /* Encoding ID */
@@ -1810,7 +1807,7 @@ unsafe extern "C" fn do_custom_encoding(
         sfont,
         b"cmap\x00" as *const u8 as *const i8,
         cmap_table as *mut libc::c_void,
-        274i32 as SFNT_ULONG,
+        274i32 as u32,
     );
     return 0i32;
 }
@@ -1887,7 +1884,7 @@ pub unsafe extern "C" fn pdf_font_load_truetype(mut font: *mut pdf_font) -> i32 
         }
     }
     if (*sfont).type_0 == 1i32 << 4i32 {
-        let mut offset: SFNT_ULONG = 0;
+        let mut offset: u32 = 0;
         offset = ttc_read_offset(sfont, index);
         if offset == 0i32 as u32 {
             _tt_abort(

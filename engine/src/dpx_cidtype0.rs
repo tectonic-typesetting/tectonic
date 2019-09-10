@@ -370,11 +370,11 @@ extern "C" {
     fn sfnt_close(sfont: *mut sfnt);
     /* table directory */
     #[no_mangle]
-    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: SFNT_ULONG) -> i32;
+    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: u32) -> i32;
     #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
+    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
-    fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
+    fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
     fn t1char_get_metrics(
         src: *mut card8,
@@ -424,7 +424,7 @@ extern "C" {
     ) -> *mut cff_font;
     /* TTC (TrueType Collection) */
     #[no_mangle]
-    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> SFNT_ULONG;
+    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
     /* FontDescriptor */
     #[no_mangle]
     fn tt_get_fontdesc(
@@ -521,13 +521,12 @@ pub struct sfnt {
     pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
-    pub offset: SFNT_ULONG,
+    pub offset: u32,
 }
-pub type SFNT_ULONG = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table_directory {
-    pub version: SFNT_ULONG,
+    pub version: u32,
     pub num_tables: u16,
     pub search_range: u16,
     pub entry_selector: u16,
@@ -540,9 +539,9 @@ pub struct sfnt_table_directory {
 #[repr(C)]
 pub struct sfnt_table {
     pub tag: [i8; 4],
-    pub check_sum: SFNT_ULONG,
-    pub offset: SFNT_ULONG,
-    pub length: SFNT_ULONG,
+    pub check_sum: u32,
+    pub offset: u32,
+    pub length: u32,
     pub data: *mut i8,
     /* table data */
 }
@@ -760,12 +759,12 @@ pub struct CIDType0Info {
 pub struct tt_head_table {
     pub version: Fixed,
     pub fontRevision: Fixed,
-    pub checkSumAdjustment: SFNT_ULONG,
-    pub magicNumber: SFNT_ULONG,
+    pub checkSumAdjustment: u32,
+    pub magicNumber: u32,
     pub flags: u16,
     pub unitsPerEm: u16,
-    pub created: [BYTE; 8],
-    pub modified: [BYTE; 8],
+    pub created: [u8; 8],
+    pub modified: [u8; 8],
     pub xMin: FWord,
     pub yMin: FWord,
     pub xMax: FWord,
@@ -799,7 +798,6 @@ pub type FWord = i16;
 */
 /* Acoid conflict with CHAR ... from <winnt.h>.  */
 /* Data Types as described in Apple's TTRefMan */
-pub type BYTE = u8;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_maxp_table {
@@ -872,12 +870,12 @@ pub struct tt_os2__table {
     pub yStrikeoutSize: i16,
     pub yStrikeoutPosition: i16,
     pub sFamilyClass: i16,
-    pub panose: [BYTE; 10],
-    pub ulUnicodeRange1: SFNT_ULONG,
-    pub ulUnicodeRange2: SFNT_ULONG,
-    pub ulUnicodeRange3: SFNT_ULONG,
-    pub ulUnicodeRange4: SFNT_ULONG,
-    pub achVendID: [SFNT_CHAR; 4],
+    pub panose: [u8; 10],
+    pub ulUnicodeRange1: u32,
+    pub ulUnicodeRange2: u32,
+    pub ulUnicodeRange3: u32,
+    pub ulUnicodeRange4: u32,
+    pub achVendID: [i8; 4],
     pub fsSelection: u16,
     pub usFirstCharIndex: u16,
     pub usLastCharIndex: u16,
@@ -886,15 +884,14 @@ pub struct tt_os2__table {
     pub sTypoLineGap: i16,
     pub usWinAscent: u16,
     pub usWinDescent: u16,
-    pub ulCodePageRange1: SFNT_ULONG,
-    pub ulCodePageRange2: SFNT_ULONG,
+    pub ulCodePageRange1: u32,
+    pub ulCodePageRange2: u32,
     pub sxHeight: i16,
     pub sCapHeight: i16,
     pub usDefaultChar: u16,
     pub usBreakChar: u16,
     pub usMaxContext: u16,
 }
-pub type SFNT_CHAR = libc::c_schar;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -1724,7 +1721,7 @@ unsafe extern "C" fn CIDFont_type0_try_open(
     mut required_cid: i32,
     mut info: *mut CIDType0Info,
 ) -> CIDType0Error {
-    let mut offset: SFNT_ULONG = 0i32 as SFNT_ULONG;
+    let mut offset: u32 = 0i32 as u32;
     let mut is_cid: i32 = 0;
     CIDFontInfo_init(info);
     (*info).handle = dpx_open_opentype_file(name);
@@ -2134,7 +2131,7 @@ pub unsafe extern "C" fn CIDFont_type0_open(
     let mut sfont: *mut sfnt = 0 as *mut sfnt;
     let mut cffont: *mut cff_font = 0 as *mut cff_font;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
-    let mut offset: SFNT_ULONG = 0i32 as SFNT_ULONG;
+    let mut offset: u32 = 0i32 as u32;
     let mut is_cid_font: i32 = 0i32;
     let mut expect_cid_font: i32 = (expected_flag == 0i32) as i32;
     let mut expect_type1_font: i32 = expected_flag & 1i32 << 8i32;

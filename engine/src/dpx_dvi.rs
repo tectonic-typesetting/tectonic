@@ -320,11 +320,11 @@ extern "C" {
     fn sfnt_close(sfont: *mut sfnt);
     /* table directory */
     #[no_mangle]
-    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: SFNT_ULONG) -> i32;
+    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: u32) -> i32;
     #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
+    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
-    fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
+    fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> u32;
     /* This should not use pdf_. */
     #[no_mangle]
     fn spc_set_verbose(level: i32);
@@ -439,7 +439,7 @@ extern "C" {
     fn tfm_get_fw_depth(font_id: i32, ch: i32) -> fixword;
     /* TTC (TrueType Collection) */
     #[no_mangle]
-    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> SFNT_ULONG;
+    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
     #[no_mangle]
     fn tt_read_head_table(sfont: *mut sfnt) -> *mut tt_head_table;
     #[no_mangle]
@@ -547,7 +547,7 @@ pub struct _IO_FILE {
     pub _flags2: i32,
     pub _old_offset: __off_t,
     pub _cur_column: u16,
-    pub _vtable_offset: libc::c_schar,
+    pub _vtable_offset: i8,
     pub _shortbuf: [i8; 1],
     pub _lock: *mut libc::c_void,
     pub _offset: __off64_t,
@@ -895,13 +895,12 @@ pub struct sfnt {
     pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
-    pub offset: SFNT_ULONG,
+    pub offset: u32,
 }
-pub type SFNT_ULONG = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table_directory {
-    pub version: SFNT_ULONG,
+    pub version: u32,
     pub num_tables: u16,
     pub search_range: u16,
     pub entry_selector: u16,
@@ -914,9 +913,9 @@ pub struct sfnt_table_directory {
 #[repr(C)]
 pub struct sfnt_table {
     pub tag: [i8; 4],
-    pub check_sum: SFNT_ULONG,
-    pub offset: SFNT_ULONG,
-    pub length: SFNT_ULONG,
+    pub check_sum: u32,
+    pub offset: u32,
+    pub length: u32,
     pub data: *mut i8,
     /* table data */
 }
@@ -944,12 +943,12 @@ pub struct sfnt_table {
 pub struct tt_head_table {
     pub version: Fixed,
     pub fontRevision: Fixed,
-    pub checkSumAdjustment: SFNT_ULONG,
-    pub magicNumber: SFNT_ULONG,
+    pub checkSumAdjustment: u32,
+    pub magicNumber: u32,
     pub flags: u16,
     pub unitsPerEm: u16,
-    pub created: [BYTE; 8],
-    pub modified: [BYTE; 8],
+    pub created: [u8; 8],
+    pub modified: [u8; 8],
     pub xMin: FWord,
     pub yMin: FWord,
     pub xMax: FWord,
@@ -983,7 +982,6 @@ pub type FWord = i16;
 */
 /* Acoid conflict with CHAR ... from <winnt.h>.  */
 /* Data Types as described in Apple's TTRefMan */
-pub type BYTE = u8;
 pub type Fixed = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -2284,7 +2282,7 @@ unsafe extern "C" fn dvi_locate_native_font(
     let mut fontmap_key: *mut i8 = 0 as *mut i8;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut sfont: *mut sfnt = 0 as *mut sfnt;
-    let mut offset: SFNT_ULONG = 0i32 as SFNT_ULONG;
+    let mut offset: u32 = 0i32 as u32;
     let mut head: *mut tt_head_table = 0 as *mut tt_head_table;
     let mut maxp: *mut tt_maxp_table = 0 as *mut tt_maxp_table;
     let mut hhea: *mut tt_hhea_table = 0 as *mut tt_hhea_table;

@@ -166,7 +166,7 @@ extern "C" {
     #[no_mangle]
     static mut history: tt_history_t;
     #[no_mangle]
-    static mut error_count: libc::c_schar;
+    static mut error_count: i8;
     #[no_mangle]
     static mut help_line: [*const i8; 6];
     #[no_mangle]
@@ -23158,7 +23158,7 @@ pub unsafe extern "C" fn show_save_groups() {
     let mut v: save_pointer = 0;
     let mut l: u16 = 0;
     let mut c: group_code = 0;
-    let mut a: libc::c_schar = 0;
+    let mut a: i8 = 0;
     let mut i: i32 = 0;
     let mut j: u16 = 0;
     let mut s: *const i8 = 0 as *const i8;
@@ -23169,7 +23169,7 @@ pub unsafe extern "C" fn show_save_groups() {
     c = cur_group;
     save_ptr = cur_boundary;
     cur_level = cur_level.wrapping_sub(1);
-    a = 1i32 as libc::c_schar;
+    a = 1i32 as i8;
     print_nl_cstr(b"\x00" as *const u8 as *const i8);
     print_ln();
     loop {
@@ -23214,7 +23214,7 @@ pub unsafe extern "C" fn show_save_groups() {
                     } else {
                         s = b"valign\x00" as *const u8 as *const i8
                     }
-                    a = 1i32 as libc::c_schar;
+                    a = 1i32 as i8;
                     current_block = 17798259985923180687;
                 } else {
                     if a as i32 == 1i32 {
@@ -23225,13 +23225,13 @@ pub unsafe extern "C" fn show_save_groups() {
                     if p >= a as i32 {
                         p = p - a as i32
                     }
-                    a = 0i32 as libc::c_schar;
+                    a = 0i32 as i8;
                     current_block = 5407796692416645153;
                 }
             }
             7 => {
                 p += 1;
-                a = -1i32 as libc::c_schar;
+                a = -1i32 as i8;
                 print_esc_cstr(b"noalign\x00" as *const u8 as *const i8);
                 current_block = 11054735442240645164;
             }
@@ -25911,7 +25911,7 @@ pub unsafe extern "C" fn end_graf() {
             cur_list.eTeX_aux = -0xfffffffi32
         }
         normal_paragraph();
-        error_count = 0i32 as libc::c_schar
+        error_count = 0i32 as i8
     };
 }
 #[no_mangle]

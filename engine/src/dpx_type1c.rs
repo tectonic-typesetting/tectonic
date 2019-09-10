@@ -366,9 +366,9 @@ extern "C" {
     fn sfnt_close(sfont: *mut sfnt);
     /* table directory */
     #[no_mangle]
-    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: SFNT_ULONG) -> i32;
+    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: u32) -> i32;
     #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
+    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
     fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
     #[no_mangle]
@@ -506,13 +506,12 @@ pub struct sfnt {
     pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
-    pub offset: SFNT_ULONG,
+    pub offset: u32,
 }
-pub type SFNT_ULONG = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table_directory {
-    pub version: SFNT_ULONG,
+    pub version: u32,
     pub num_tables: u16,
     pub search_range: u16,
     pub entry_selector: u16,
@@ -525,9 +524,9 @@ pub struct sfnt_table_directory {
 #[repr(C)]
 pub struct sfnt_table {
     pub tag: [i8; 4],
-    pub check_sum: SFNT_ULONG,
-    pub offset: SFNT_ULONG,
-    pub length: SFNT_ULONG,
+    pub check_sum: u32,
+    pub offset: u32,
+    pub length: u32,
     pub data: *mut i8,
     /* table data */
 }
@@ -706,7 +705,7 @@ pub unsafe extern "C" fn pdf_font_open_type1c(mut font: *mut pdf_font) -> i32 {
     sfont = sfnt_open(handle as rust_input_handle_t);
     if sfont.is_null()
         || (*sfont).type_0 != 1i32 << 2i32
-        || sfnt_read_table_directory(sfont, 0i32 as SFNT_ULONG) < 0i32
+        || sfnt_read_table_directory(sfont, 0i32 as u32) < 0i32
     {
         _tt_abort(b"Not a CFF/OpenType font (9)?\x00" as *const u8 as *const i8);
     }
@@ -1024,7 +1023,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
             ident,
         );
     }
-    if sfnt_read_table_directory(sfont, 0i32 as SFNT_ULONG) < 0i32 {
+    if sfnt_read_table_directory(sfont, 0i32 as u32) < 0i32 {
         _tt_abort(
             b"Could not read OpenType table directory: %s\x00" as *const u8 as *const i8,
             ident,

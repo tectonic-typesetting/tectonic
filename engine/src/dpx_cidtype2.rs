@@ -195,9 +195,9 @@ extern "C" {
     fn sfnt_close(sfont: *mut sfnt);
     /* table directory */
     #[no_mangle]
-    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: SFNT_ULONG) -> i32;
+    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: u32) -> i32;
     #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
+    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
     fn sfnt_require_table(
         sfont: *mut sfnt,
@@ -208,7 +208,7 @@ extern "C" {
     fn sfnt_create_FontFile_stream(sfont: *mut sfnt) -> *mut pdf_obj;
     /* TTC (TrueType Collection) */
     #[no_mangle]
-    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> SFNT_ULONG;
+    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
     /* FontDescriptor */
     #[no_mangle]
     fn tt_get_fontdesc(
@@ -221,7 +221,7 @@ extern "C" {
     #[no_mangle]
     fn tt_cmap_read(sfont: *mut sfnt, platform: u16, encoding: u16) -> *mut tt_cmap;
     #[no_mangle]
-    fn tt_cmap_lookup(cmap: *mut tt_cmap, cc: SFNT_ULONG) -> u16;
+    fn tt_cmap_lookup(cmap: *mut tt_cmap, cc: u32) -> u16;
     #[no_mangle]
     fn tt_cmap_release(cmap: *mut tt_cmap);
     #[no_mangle]
@@ -303,10 +303,9 @@ pub struct tt_cmap {
     pub format: u16,
     pub platform: u16,
     pub encoding: u16,
-    pub language: SFNT_ULONG,
+    pub language: u32,
     pub map: *mut libc::c_void,
 }
-pub type SFNT_ULONG = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CMap {
@@ -369,12 +368,12 @@ pub struct sfnt {
     pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
-    pub offset: SFNT_ULONG,
+    pub offset: u32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table_directory {
-    pub version: SFNT_ULONG,
+    pub version: u32,
     pub num_tables: u16,
     pub search_range: u16,
     pub entry_selector: u16,
@@ -387,9 +386,9 @@ pub struct sfnt_table_directory {
 #[repr(C)]
 pub struct sfnt_table {
     pub tag: [i8; 4],
-    pub check_sum: SFNT_ULONG,
-    pub offset: SFNT_ULONG,
-    pub length: SFNT_ULONG,
+    pub check_sum: u32,
+    pub offset: u32,
+    pub length: u32,
     pub data: *mut i8,
 }
 pub type CID = u16;
@@ -465,10 +464,9 @@ pub struct tt_glyph_desc {
     pub lly: i16,
     pub urx: i16,
     pub ury: i16,
-    pub length: SFNT_ULONG,
-    pub data: *mut BYTE,
+    pub length: u32,
+    pub data: *mut u8,
 }
-pub type BYTE = u8;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_2 {
@@ -1264,7 +1262,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     let mut glyphs: *mut tt_glyphs = 0 as *mut tt_glyphs;
     let mut cmap: *mut CMap = 0 as *mut CMap;
     let mut ttcmap: *mut tt_cmap = 0 as *mut tt_cmap;
-    let mut offset: SFNT_ULONG = 0i32 as SFNT_ULONG;
+    let mut offset: u32 = 0i32 as u32;
     let mut cid: CID = 0;
     let mut last_cid: CID = 0;
     let mut cidtogidmap: *mut u8 = 0 as *mut u8;
@@ -1361,7 +1359,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                     (*font).ident,
                 );
             }
-            offset = 0i32 as SFNT_ULONG
+            offset = 0i32 as u32
         }
         256 => offset = (*sfont).offset,
         _ => {
@@ -1532,12 +1530,12 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                     code = cid as i32
                 } else {
                     code = cid_to_code(cmap, cid);
-                    gid = tt_cmap_lookup(ttcmap, code as SFNT_ULONG);
+                    gid = tt_cmap_lookup(ttcmap, code as u32);
                     if gid as i32 == 0i32 && unicode_cmap != 0 {
                         let mut alt_code: i32 = 0;
                         alt_code = fix_CJK_symbols(code as u16) as i32;
                         if alt_code != code {
-                            gid = tt_cmap_lookup(ttcmap, alt_code as SFNT_ULONG);
+                            gid = tt_cmap_lookup(ttcmap, alt_code as u32);
                             if gid as i32 != 0i32 {
                                 dpx_warning(
                                     b"Unicode char U+%04x replaced with U+%04x.\x00" as *const u8
@@ -1639,12 +1637,12 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                         code_0 = cid as i32
                     } else {
                         code_0 = cid_to_code(cmap, cid);
-                        gid_0 = tt_cmap_lookup(ttcmap, code_0 as SFNT_ULONG);
+                        gid_0 = tt_cmap_lookup(ttcmap, code_0 as u32);
                         if gid_0 as i32 == 0i32 && unicode_cmap != 0 {
                             let mut alt_code_0: i32 = 0;
                             alt_code_0 = fix_CJK_symbols(code_0 as u16) as i32;
                             if alt_code_0 != code_0 {
-                                gid_0 = tt_cmap_lookup(ttcmap, alt_code_0 as SFNT_ULONG);
+                                gid_0 = tt_cmap_lookup(ttcmap, alt_code_0 as u32);
                                 if gid_0 as i32 != 0i32 {
                                     dpx_warning(
                                         b"Unicode char U+%04x replaced with U+%04x.\x00"
@@ -1853,7 +1851,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
 ) -> i32 {
     let mut fontname: *mut i8 = 0 as *mut i8;
     let mut sfont: *mut sfnt = 0 as *mut sfnt;
-    let mut offset: SFNT_ULONG = 0i32 as SFNT_ULONG;
+    let mut offset: u32 = 0i32 as u32;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     if !font.is_null() && !opt.is_null() {
     } else {
@@ -1890,7 +1888,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
                     name,
                 );
             }
-            offset = 0i32 as SFNT_ULONG
+            offset = 0i32 as u32
         }
         256 => offset = (*sfont).offset,
         _ => {

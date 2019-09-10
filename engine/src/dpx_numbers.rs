@@ -44,7 +44,7 @@ pub struct _IO_FILE {
     pub _flags2: i32,
     pub _old_offset: __off_t,
     pub _cur_column: u16,
-    pub _vtable_offset: libc::c_schar,
+    pub _vtable_offset: i8,
     pub _shortbuf: [i8; 1],
     pub _lock: *mut libc::c_void,
     pub _offset: __off64_t,
@@ -101,13 +101,13 @@ pub unsafe extern "C" fn skip_bytes(mut n: u32, mut file: *mut FILE) {
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn get_signed_byte(mut file: *mut FILE) -> libc::c_schar {
+pub unsafe extern "C" fn get_signed_byte(mut file: *mut FILE) -> i8 {
     let mut byte: i32 = 0;
     byte = get_unsigned_byte(file) as i32;
     if byte >= 0x80i32 {
         byte -= 0x100i32
     }
-    return byte as libc::c_schar;
+    return byte as i8;
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_unsigned_pair(mut file: *mut FILE) -> u16 {
@@ -305,13 +305,13 @@ pub unsafe extern "C" fn tt_get_unsigned_byte(mut handle: rust_input_handle_t) -
     return ch as u8;
 }
 #[no_mangle]
-pub unsafe extern "C" fn tt_get_signed_byte(mut handle: rust_input_handle_t) -> libc::c_schar {
+pub unsafe extern "C" fn tt_get_signed_byte(mut handle: rust_input_handle_t) -> i8 {
     let mut byte: i32 = 0;
     byte = tt_get_unsigned_byte(handle) as i32;
     if byte >= 0x80i32 {
         byte -= 0x100i32
     }
-    return byte as libc::c_schar;
+    return byte as i8;
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_unsigned_pair(mut handle: rust_input_handle_t) -> u16 {

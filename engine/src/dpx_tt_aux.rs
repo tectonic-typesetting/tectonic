@@ -94,24 +94,21 @@ pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type BYTE = u8;
-pub type SFNT_CHAR = libc::c_schar;
-pub type SFNT_ULONG = u32;
 pub type Fixed = u32;
 pub type FWord = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table {
     pub tag: [i8; 4],
-    pub check_sum: SFNT_ULONG,
-    pub offset: SFNT_ULONG,
-    pub length: SFNT_ULONG,
+    pub check_sum: u32,
+    pub offset: u32,
+    pub length: u32,
     pub data: *mut i8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table_directory {
-    pub version: SFNT_ULONG,
+    pub version: u32,
     pub num_tables: u16,
     pub search_range: u16,
     pub entry_selector: u16,
@@ -126,7 +123,7 @@ pub struct sfnt {
     pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
-    pub offset: SFNT_ULONG,
+    pub offset: u32,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -154,11 +151,11 @@ pub struct tt_post_table {
     pub italicAngle: Fixed,
     pub underlinePosition: FWord,
     pub underlineThickness: FWord,
-    pub isFixedPitch: SFNT_ULONG,
-    pub minMemType42: SFNT_ULONG,
-    pub maxMemType42: SFNT_ULONG,
-    pub minMemType1: SFNT_ULONG,
-    pub maxMemType1: SFNT_ULONG,
+    pub isFixedPitch: u32,
+    pub minMemType42: u32,
+    pub maxMemType42: u32,
+    pub minMemType1: u32,
+    pub maxMemType1: u32,
     pub numberOfGlyphs: u16,
     pub glyphNamePtr: *mut *const i8,
     pub names: *mut *mut i8,
@@ -184,12 +181,12 @@ pub struct tt_os2__table {
     pub yStrikeoutSize: i16,
     pub yStrikeoutPosition: i16,
     pub sFamilyClass: i16,
-    pub panose: [BYTE; 10],
-    pub ulUnicodeRange1: SFNT_ULONG,
-    pub ulUnicodeRange2: SFNT_ULONG,
-    pub ulUnicodeRange3: SFNT_ULONG,
-    pub ulUnicodeRange4: SFNT_ULONG,
-    pub achVendID: [SFNT_CHAR; 4],
+    pub panose: [u8; 10],
+    pub ulUnicodeRange1: u32,
+    pub ulUnicodeRange2: u32,
+    pub ulUnicodeRange3: u32,
+    pub ulUnicodeRange4: u32,
+    pub achVendID: [i8; 4],
     pub fsSelection: u16,
     pub usFirstCharIndex: u16,
     pub usLastCharIndex: u16,
@@ -198,8 +195,8 @@ pub struct tt_os2__table {
     pub sTypoLineGap: i16,
     pub usWinAscent: u16,
     pub usWinDescent: u16,
-    pub ulCodePageRange1: SFNT_ULONG,
-    pub ulCodePageRange2: SFNT_ULONG,
+    pub ulCodePageRange1: u32,
+    pub ulCodePageRange2: u32,
     pub sxHeight: i16,
     pub sCapHeight: i16,
     pub usDefaultChar: u16,
@@ -230,12 +227,12 @@ pub struct tt_os2__table {
 pub struct tt_head_table {
     pub version: Fixed,
     pub fontRevision: Fixed,
-    pub checkSumAdjustment: SFNT_ULONG,
-    pub magicNumber: SFNT_ULONG,
+    pub checkSumAdjustment: u32,
+    pub magicNumber: u32,
     pub flags: u16,
     pub unitsPerEm: u16,
-    pub created: [BYTE; 8],
-    pub modified: [BYTE; 8],
+    pub created: [u8; 8],
+    pub modified: [u8; 8],
     pub xMin: FWord,
     pub yMin: FWord,
     pub xMax: FWord,
@@ -274,9 +271,9 @@ pub unsafe extern "C" fn tt_aux_set_verbose(mut level: i32) {
 pub unsafe extern "C" fn ttc_read_offset(
     mut sfont: *mut sfnt,
     mut ttc_idx: i32,
-) -> SFNT_ULONG {
-    let mut offset: SFNT_ULONG = 0i32 as SFNT_ULONG;
-    let mut num_dirs: SFNT_ULONG = 0i32 as SFNT_ULONG;
+) -> u32 {
+    let mut offset: u32 = 0i32 as u32;
+    let mut num_dirs: u32 = 0i32 as u32;
     if sfont.is_null() || (*sfont).handle.is_null() {
         _tt_abort(b"file not opened\x00" as *const u8 as *const i8);
     }

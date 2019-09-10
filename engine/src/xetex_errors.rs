@@ -26,7 +26,7 @@ extern "C" {
     #[no_mangle]
     static mut history: tt_history_t;
     #[no_mangle]
-    static mut error_count: libc::c_schar;
+    static mut error_count: i8;
     #[no_mangle]
     static mut help_line: [*const i8; 6];
     #[no_mangle]

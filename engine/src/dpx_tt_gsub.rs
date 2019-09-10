@@ -68,7 +68,7 @@ extern "C" {
     #[no_mangle]
     fn otl_match_optrule(opt: *mut otl_opt, tag: *const i8) -> i32;
     #[no_mangle]
-    fn tt_get_signed_byte(handle: rust_input_handle_t) -> libc::c_schar;
+    fn tt_get_signed_byte(handle: rust_input_handle_t) -> i8;
     #[no_mangle]
     fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
@@ -76,7 +76,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> SFNT_ULONG;
+    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
@@ -111,23 +111,21 @@ pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type SFNT_CHAR = libc::c_schar;
-pub type SFNT_ULONG = u32;
 pub type Fixed = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table {
     pub tag: [i8; 4],
-    pub check_sum: SFNT_ULONG,
-    pub offset: SFNT_ULONG,
-    pub length: SFNT_ULONG,
+    pub check_sum: u32,
+    pub offset: u32,
+    pub length: u32,
     pub data: *mut i8,
     /* table data */
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table_directory {
-    pub version: SFNT_ULONG,
+    pub version: u32,
     pub num_tables: u16,
     pub search_range: u16,
     pub entry_selector: u16,
@@ -143,7 +141,7 @@ pub struct sfnt {
     pub type_0: i32,
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
-    pub offset: SFNT_ULONG,
+    pub offset: u32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -681,7 +679,7 @@ unsafe extern "C" fn otl_gsub_read_single(
     mut sfont: *mut sfnt,
 ) -> i32 {
     let mut len: i32 = 0;
-    let mut offset: SFNT_ULONG = 0;
+    let mut offset: u32 = 0;
     let mut cov_offset: Offset = 0;
     if !subtab.is_null() && !sfont.is_null() {
     } else {
@@ -695,7 +693,7 @@ unsafe extern "C" fn otl_gsub_read_single(
             .as_ptr(),
         );
     }
-    offset = ttstub_input_seek((*sfont).handle, 0i32 as ssize_t, 1i32) as SFNT_ULONG;
+    offset = ttstub_input_seek((*sfont).handle, 0i32 as ssize_t, 1i32) as u32;
     (*subtab).LookupType = 1i32 as u16;
     (*subtab).SubstFormat = tt_get_unsigned_pair((*sfont).handle);
     len = 2i32;
@@ -756,7 +754,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
     let mut len: i32 = 0;
     let mut i: u16 = 0;
     let mut j: u16 = 0;
-    let mut offset: SFNT_ULONG = 0;
+    let mut offset: u32 = 0;
     let mut cov_offset: Offset = 0;
     let mut altset_offsets: clt_number_list = clt_number_list {
         count: 0,
@@ -775,7 +773,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
             .as_ptr(),
         );
     }
-    offset = ttstub_input_seek((*sfont).handle, 0i32 as ssize_t, 1i32) as SFNT_ULONG;
+    offset = ttstub_input_seek((*sfont).handle, 0i32 as ssize_t, 1i32) as u32;
     (*subtab).LookupType = 3i32 as u16;
     (*subtab).SubstFormat = tt_get_unsigned_pair((*sfont).handle);
     if (*subtab).SubstFormat as i32 != 1i32 {
@@ -807,7 +805,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
     i = 0i32 as u16;
     while (i as i32) < (*data).AlternateSetCount as i32 {
         let mut altset: *mut otl_gsub_altset = 0 as *mut otl_gsub_altset;
-        let mut altset_offset: SFNT_ULONG = 0;
+        let mut altset_offset: u32 = 0;
         altset = &mut *(*data).AlternateSet.offset(i as isize) as *mut otl_gsub_altset;
         altset_offset =
             offset.wrapping_add(*altset_offsets.value.offset(i as isize) as u32);
@@ -846,7 +844,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
     let mut len: i32 = 0;
     let mut i: u16 = 0;
     let mut j: u16 = 0;
-    let mut offset: SFNT_ULONG = 0;
+    let mut offset: u32 = 0;
     let mut cov_offset: Offset = 0;
     let mut ligset_offsets: clt_number_list = clt_number_list {
         count: 0,
@@ -865,7 +863,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
             .as_ptr(),
         );
     }
-    offset = ttstub_input_seek((*sfont).handle, 0i32 as ssize_t, 1i32) as SFNT_ULONG;
+    offset = ttstub_input_seek((*sfont).handle, 0i32 as ssize_t, 1i32) as u32;
     (*subtab).LookupType = 4i32 as u16;
     (*subtab).SubstFormat = tt_get_unsigned_pair((*sfont).handle);
     if (*subtab).SubstFormat as i32 != 1i32 {
@@ -901,7 +899,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
             value: 0 as *mut u16,
         };
         let mut ligset: *mut otl_gsub_ligset = 0 as *mut otl_gsub_ligset;
-        let mut ligset_offset: SFNT_ULONG = 0;
+        let mut ligset_offset: u32 = 0;
         let mut count: u16 = 0;
         ligset = &mut *(*data).LigatureSet.offset(i as isize) as *mut otl_gsub_ligset;
         ligset_offset =
@@ -1077,8 +1075,8 @@ unsafe extern "C" fn otl_gsub_read_feat(
 ) -> i32 {
     let mut feat_idx: i32 = 0;
     let mut script_idx: i32 = 0;
-    let mut gsub_offset: SFNT_ULONG = 0;
-    let mut offset: SFNT_ULONG = 0;
+    let mut gsub_offset: u32 = 0;
+    let mut offset: u32 = 0;
     let mut head: otl_gsub_header = otl_gsub_header {
         version: 0,
         ScriptList: 0,
@@ -1455,7 +1453,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                             7 => {
                                 let mut SubstFormat: u16 = 0;
                                 let mut ExtensionLookupType: u16 = 0;
-                                let mut ExtensionOffset: SFNT_ULONG = 0;
+                                let mut ExtensionOffset: u32 = 0;
                                 SubstFormat = tt_get_unsigned_pair((*sfont).handle);
                                 if !(SubstFormat as i32 != 1i32) {
                                     ExtensionLookupType = tt_get_unsigned_pair((*sfont).handle);
