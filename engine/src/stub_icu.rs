@@ -56,7 +56,6 @@ extern "C" {
     pub type UBiDi;
 }
 
-
 pub type UConverterType = i32;
 pub type UBiDiLevel = u8;
 

@@ -69,8 +69,7 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64)
-        -> *mut i8;
+    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
@@ -112,35 +111,13 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_lineto(x0: f64, y0: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_curveto(
-        x0: f64,
-        y0: f64,
-        x1: f64,
-        y1: f64,
-        x2: f64,
-        y2: f64,
-    ) -> i32;
+    fn pdf_dev_curveto(x0: f64, y0: f64, x1: f64, y1: f64, x2: f64, y2: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_vcurveto(
-        x0: f64,
-        y0: f64,
-        x1: f64,
-        y1: f64,
-    ) -> i32;
+    fn pdf_dev_vcurveto(x0: f64, y0: f64, x1: f64, y1: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_ycurveto(
-        x0: f64,
-        y0: f64,
-        x1: f64,
-        y1: f64,
-    ) -> i32;
+    fn pdf_dev_ycurveto(x0: f64, y0: f64, x1: f64, y1: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_rectadd(
-        x: f64,
-        y: f64,
-        w: f64,
-        h: f64,
-    ) -> i32;
+    fn pdf_dev_rectadd(x: f64, y: f64, w: f64, h: f64) -> i32;
     #[no_mangle]
     fn pdf_dev_flushpath(p_op: i8, fill_rule: i32) -> i32;
     #[no_mangle]
@@ -152,11 +129,7 @@ extern "C" {
     #[no_mangle]
     fn parse_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
     #[no_mangle]
-    fn parse_pdf_array(
-        pp: *mut *const i8,
-        endptr: *const i8,
-        pf: *mut pdf_file,
-    ) -> *mut pdf_obj;
+    fn parse_pdf_array(pp: *mut *const i8, endptr: *const i8, pf: *mut pdf_file) -> *mut pdf_obj;
 }
 pub type __off_t = i64;
 pub type __off64_t = i64;
@@ -422,13 +395,8 @@ unsafe extern "C" fn pdf_get_page_obj(
     ));
     if !markinfo.is_null() {
         tmp = pdf_lookup_dict(markinfo, b"Marked\x00" as *const u8 as *const i8);
-        if !tmp.is_null()
-            && pdf_obj_typeof(tmp) == 1i32
-            && pdf_boolean_value(tmp) as i32 != 0
-        {
-            dpx_warning(
-                b"PDF file is tagged... Ignoring tags.\x00" as *const u8 as *const i8,
-            );
+        if !tmp.is_null() && pdf_obj_typeof(tmp) == 1i32 && pdf_boolean_value(tmp) as i32 != 0 {
+            dpx_warning(b"PDF file is tagged... Ignoring tags.\x00" as *const u8 as *const i8);
         }
         pdf_release_obj(markinfo);
     }
@@ -466,10 +434,7 @@ unsafe extern "C" fn pdf_get_page_obj(
     let mut kids: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut crop_box: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut tmp_0: *mut pdf_obj = 0 as *mut pdf_obj;
-    tmp_0 = pdf_lookup_dict(
-        page_tree,
-        b"Resources\x00" as *const u8 as *const i8,
-    );
+    tmp_0 = pdf_lookup_dict(page_tree, b"Resources\x00" as *const u8 as *const i8);
     resources = if !tmp_0.is_null() {
         pdf_deref_obj(tmp_0)
     } else {
@@ -594,9 +559,7 @@ unsafe extern "C" fn pdf_get_page_obj(
         bbox = crop_box
     }
     if bbox.is_null() {
-        dpx_warning(
-            b"No BoundingBox information available.\x00" as *const u8 as *const i8,
-        );
+        dpx_warning(b"No BoundingBox information available.\x00" as *const u8 as *const i8);
         pdf_release_obj(page_tree);
         pdf_release_obj(resources);
         pdf_release_obj(rotate);
@@ -672,8 +635,7 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
     } else {
         if !(!contents.is_null() && pdf_obj_typeof(contents) == 7i32) {
             dpx_warning(
-                b"Page content not a stream object. Broken PDF file?\x00" as *const u8
-                    as *const i8,
+                b"Page content not a stream object. Broken PDF file?\x00" as *const u8 as *const i8,
             );
             pdf_release_obj(contents);
             return 0 as *mut pdf_obj;
@@ -681,9 +643,7 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
         /* Flate the contents if necessary. */
         content_new = pdf_new_stream(1i32 << 0i32);
         if pdf_concat_stream(content_new, contents) < 0i32 {
-            dpx_warning(
-                b"Could not handle a content stream.\x00" as *const u8 as *const i8,
-            );
+            dpx_warning(b"Could not handle a content stream.\x00" as *const u8 as *const i8);
             pdf_release_obj(contents);
             pdf_release_obj(content_new);
             return 0 as *mut pdf_obj;
@@ -766,8 +726,7 @@ pub unsafe extern "C" fn pdf_include_page(
             } else {
                 if pdf_boolean_value(tmp) != 0 {
                     dpx_warning(
-                        b"PDF file is tagged... Ignoring tags.\x00" as *const u8
-                            as *const i8,
+                        b"PDF file is tagged... Ignoring tags.\x00" as *const u8 as *const i8,
                     );
                 }
                 pdf_release_obj(tmp);
@@ -899,9 +858,7 @@ pub unsafe extern "C" fn pdf_include_page(
             }
             _ => {}
         }
-        dpx_warning(
-            b"Cannot parse document. Broken PDF file?\x00" as *const u8 as *const i8,
-        );
+        dpx_warning(b"Cannot parse document. Broken PDF file?\x00" as *const u8 as *const i8);
     }
     pdf_release_obj(resources);
     pdf_release_obj(markinfo);
@@ -1250,10 +1207,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
         pdf_close(pf);
         return -1i32;
     }
-    pdf_doc_add_page_content(
-        b" \x00" as *const u8 as *const i8,
-        1i32 as u32,
-    );
+    pdf_doc_add_page_content(b" \x00" as *const u8 as *const i8, 1i32 as u32);
     save_path = xmalloc((pdf_stream_length(contents) + 1i32) as size_t) as *mut i8;
     strncpy(
         save_path,
@@ -1281,8 +1235,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
         } else if *clip_path as i32 == '-' as i32
             || *clip_path as i32 == '+' as i32
             || *clip_path as i32 == '.' as i32
-            || *(*__ctype_b_loc()).offset(*clip_path as u8 as i32 as isize)
-                as i32
+            || *(*__ctype_b_loc()).offset(*clip_path as u8 as i32 as isize) as i32
                 & _ISdigit as i32 as u16 as i32
                 != 0
         {
@@ -1555,10 +1508,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
                     current_block_157 = 6328367678128271922;
                 }
                 11 => {
-                    pdf_doc_add_page_content(
-                        b" n\x00" as *const u8 as *const i8,
-                        2i32 as u32,
-                    );
+                    pdf_doc_add_page_content(b" n\x00" as *const u8 as *const i8, 2i32 as u32);
                     current_block_157 = 6328367678128271922;
                 }
                 12 => {

@@ -122,8 +122,7 @@ pub unsafe extern "C" fn pst_new_obj(
     mut data: *mut libc::c_void,
 ) -> *mut pst_obj {
     let mut obj: *mut pst_obj = 0 as *mut pst_obj;
-    obj = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<pst_obj>() as u64) as u32)
+    obj = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<pst_obj>() as u64) as u32)
         as *mut pst_obj;
     (*obj).type_0 = type_0;
     (*obj).data = data;
@@ -134,8 +133,7 @@ pub unsafe extern "C" fn pst_new_mark() -> *mut pst_obj {
     let mut q: *mut i8 = 0 as *mut i8;
     q = new(
         (strlen(pst_const_mark).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32,
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
     ) as *mut i8;
     strcpy(q, pst_const_mark);
     return pst_new_obj(7i32, q as *mut libc::c_void);
@@ -207,10 +205,8 @@ pub unsafe extern "C" fn pst_length_of(mut obj: *mut pst_obj) -> i32 {
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
             168i32 as u32,
-            (*::std::mem::transmute::<&[u8; 29], &[i8; 29]>(
-                b"int pst_length_of(pst_obj *)\x00",
-            ))
-            .as_ptr(),
+            (*::std::mem::transmute::<&[u8; 29], &[i8; 29]>(b"int pst_length_of(pst_obj *)\x00"))
+                .as_ptr(),
         );
     }
     match (*obj).type_0 {
@@ -221,8 +217,7 @@ pub unsafe extern "C" fn pst_length_of(mut obj: *mut pst_obj) -> i32 {
         5 => len = pst_string_length((*obj).data as *mut pst_string) as i32,
         0 | 7 => {
             _tt_abort(
-                b"Operation not defined for this type of object.\x00" as *const u8
-                    as *const i8,
+                b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
             );
         }
         -1 => len = strlen((*obj).data as *const i8) as i32,
@@ -244,10 +239,8 @@ pub unsafe extern "C" fn pst_getIV(mut obj: *mut pst_obj) -> i32 {
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
             194i32 as u32,
-            (*::std::mem::transmute::<&[u8; 25], &[i8; 25]>(
-                b"int pst_getIV(pst_obj *)\x00",
-            ))
-            .as_ptr(),
+            (*::std::mem::transmute::<&[u8; 25], &[i8; 25]>(b"int pst_getIV(pst_obj *)\x00"))
+                .as_ptr(),
         );
     }
     match (*obj).type_0 {
@@ -258,8 +251,7 @@ pub unsafe extern "C" fn pst_getIV(mut obj: *mut pst_obj) -> i32 {
         5 => iv = pst_string_IV((*obj).data as *mut pst_string),
         0 | 7 => {
             _tt_abort(
-                b"Operation not defined for this type of object.\x00" as *const u8
-                    as *const i8,
+                b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
             );
         }
         -1 => {
@@ -286,10 +278,8 @@ pub unsafe extern "C" fn pst_getRV(mut obj: *mut pst_obj) -> f64 {
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
             220i32 as u32,
-            (*::std::mem::transmute::<&[u8; 28], &[i8; 28]>(
-                b"double pst_getRV(pst_obj *)\x00",
-            ))
-            .as_ptr(),
+            (*::std::mem::transmute::<&[u8; 28], &[i8; 28]>(b"double pst_getRV(pst_obj *)\x00"))
+                .as_ptr(),
         );
     }
     match (*obj).type_0 {
@@ -300,8 +290,7 @@ pub unsafe extern "C" fn pst_getRV(mut obj: *mut pst_obj) -> f64 {
         5 => rv = pst_string_RV((*obj).data as *mut pst_string),
         0 | 7 => {
             _tt_abort(
-                b"Operation not defined for this type of object.\x00" as *const u8
-                    as *const i8,
+                b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
             );
         }
         -1 => {
@@ -343,8 +332,7 @@ pub unsafe extern "C" fn pst_getSV(mut obj: *mut pst_obj) -> *mut u8 {
         5 => sv = pst_string_SV((*obj).data as *mut pst_string),
         0 | 7 => {
             _tt_abort(
-                b"Operation not defined for this type of object.\x00" as *const u8
-                    as *const i8,
+                b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
             );
         }
         -1 => {
@@ -399,10 +387,8 @@ pub unsafe extern "C" fn pst_data_ptr(mut obj: *mut pst_obj) -> *mut libc::c_voi
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
             284i32 as u32,
-            (*::std::mem::transmute::<&[u8; 30], &[i8; 30]>(
-                b"void *pst_data_ptr(pst_obj *)\x00",
-            ))
-            .as_ptr(),
+            (*::std::mem::transmute::<&[u8; 30], &[i8; 30]>(b"void *pst_data_ptr(pst_obj *)\x00"))
+                .as_ptr(),
         );
     }
     match (*obj).type_0 {
@@ -413,8 +399,7 @@ pub unsafe extern "C" fn pst_data_ptr(mut obj: *mut pst_obj) -> *mut libc::c_voi
         5 => p = pst_string_data_ptr((*obj).data as *mut pst_string) as *mut i8,
         0 | 7 => {
             _tt_abort(
-                b"Operation not defined for this type of object.\x00" as *const u8
-                    as *const i8,
+                b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
             );
         }
         -1 => p = (*obj).data as *mut i8,
@@ -431,9 +416,8 @@ pub unsafe extern "C" fn pst_data_ptr(mut obj: *mut pst_obj) -> *mut libc::c_voi
 /* BOOLEAN */
 unsafe extern "C" fn pst_boolean_new(mut value: i8) -> *mut pst_boolean {
     let mut obj: *mut pst_boolean = 0 as *mut pst_boolean;
-    obj = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<pst_boolean>() as u64)
-        as u32) as *mut pst_boolean;
+    obj = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<pst_boolean>() as u64) as u32)
+        as *mut pst_boolean;
     (*obj).value = value;
     return obj;
 }
@@ -497,9 +481,8 @@ unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut u8 {
         );
     }
     if (*obj).value != 0 {
-        str = new((5i32 as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-            as u32) as *mut u8;
+        str = new((5i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
+            as *mut u8;
         memcpy(
             str as *mut libc::c_void,
             b"true\x00" as *const u8 as *const i8 as *const libc::c_void,
@@ -507,9 +490,8 @@ unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut u8 {
         );
         *str.offset(4) = '\u{0}' as i32 as u8
     } else {
-        str = new((6i32 as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-            as u32) as *mut u8;
+        str = new((6i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
+            as *mut u8;
         memcpy(
             str as *mut libc::c_void,
             b"false\x00" as *const u8 as *const i8 as *const libc::c_void,
@@ -520,9 +502,7 @@ unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut u8 {
     return str;
 }
 unsafe extern "C" fn pst_boolean_length() -> u32 {
-    _tt_abort(
-        b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
-    );
+    _tt_abort(b"Operation not defined for this type of object.\x00" as *const u8 as *const i8);
 }
 unsafe extern "C" fn pst_boolean_data_ptr(mut obj: *mut pst_boolean) -> *mut libc::c_void {
     if !obj.is_null() {
@@ -569,10 +549,7 @@ pub unsafe extern "C" fn pst_parse_boolean(
                 || *(*inbuf).offset(4) as i32 == '\u{0}' as i32))
     {
         *inbuf = (*inbuf).offset(4);
-        return pst_new_obj(
-            1i32,
-            pst_boolean_new(1i32 as i8) as *mut libc::c_void,
-        );
+        return pst_new_obj(1i32, pst_boolean_new(1i32 as i8) as *mut libc::c_void);
     } else if (*inbuf).offset(5) <= inbufend
         && memcmp(
             *inbuf as *const libc::c_void,
@@ -598,10 +575,7 @@ pub unsafe extern "C" fn pst_parse_boolean(
                 || *(*inbuf).offset(5) as i32 == '\u{0}' as i32))
     {
         *inbuf = (*inbuf).offset(5);
-        return pst_new_obj(
-            1i32,
-            pst_boolean_new(0i32 as i8) as *mut libc::c_void,
-        );
+        return pst_new_obj(1i32, pst_boolean_new(0i32 as i8) as *mut libc::c_void);
     } else {
         return 0 as *mut pst_obj;
     };
@@ -639,10 +613,8 @@ pub unsafe extern "C" fn pst_parse_null(
         let mut q: *mut i8 = 0 as *mut i8;
         *inbuf = (*inbuf).offset(4);
         q = new(
-            (strlen(pst_const_null).wrapping_add(1i32 as u64) as u32
-                as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32,
+            (strlen(pst_const_null).wrapping_add(1i32 as u64) as u32 as u64)
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
         ) as *mut i8;
         strcpy(q, pst_const_null);
         return pst_new_obj(0i32, q as *mut libc::c_void);
@@ -654,9 +626,8 @@ pub unsafe extern "C" fn pst_parse_null(
 /* INTEGER */
 unsafe extern "C" fn pst_integer_new(mut value: i32) -> *mut pst_integer {
     let mut obj: *mut pst_integer = 0 as *mut pst_integer;
-    obj = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<pst_integer>() as u64)
-        as u32) as *mut pst_integer;
+    obj = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<pst_integer>() as u64) as u32)
+        as *mut pst_integer;
     (*obj).value = value;
     return obj;
 }
@@ -726,9 +697,9 @@ unsafe extern "C" fn pst_integer_SV(mut obj: *mut pst_integer) -> *mut u8 {
         b"%d\x00" as *const u8 as *const i8,
         (*obj).value,
     );
-    value = new(((len + 1i32) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+    value =
+        new(((len + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+            as *mut i8;
     strcpy(value, fmt_buf.as_mut_ptr());
     return value as *mut u8;
 }
@@ -748,15 +719,12 @@ unsafe extern "C" fn pst_integer_data_ptr(mut obj: *mut pst_integer) -> *mut lib
     return &mut (*obj).value as *mut i32 as *mut libc::c_void;
 }
 unsafe extern "C" fn pst_integer_length() -> u32 {
-    _tt_abort(
-        b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
-    );
+    _tt_abort(b"Operation not defined for this type of object.\x00" as *const u8 as *const i8);
 }
 /* REAL */
 unsafe extern "C" fn pst_real_new(mut value: f64) -> *mut pst_real {
     let mut obj: *mut pst_real = 0 as *mut pst_real;
-    obj = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<pst_real>() as u64) as u32)
+    obj = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<pst_real>() as u64) as u32)
         as *mut pst_real;
     (*obj).value = value;
     return obj;
@@ -783,10 +751,8 @@ unsafe extern "C" fn pst_real_IV(mut obj: *mut pst_real) -> i32 {
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
             489i32 as u32,
-            (*::std::mem::transmute::<&[u8; 28], &[i8; 28]>(
-                b"int pst_real_IV(pst_real *)\x00",
-            ))
-            .as_ptr(),
+            (*::std::mem::transmute::<&[u8; 28], &[i8; 28]>(b"int pst_real_IV(pst_real *)\x00"))
+                .as_ptr(),
         );
     }
     return (*obj).value as i32;
@@ -798,10 +764,8 @@ unsafe extern "C" fn pst_real_RV(mut obj: *mut pst_real) -> f64 {
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
             496i32 as u32,
-            (*::std::mem::transmute::<&[u8; 31], &[i8; 31]>(
-                b"double pst_real_RV(pst_real *)\x00",
-            ))
-            .as_ptr(),
+            (*::std::mem::transmute::<&[u8; 31], &[i8; 31]>(b"double pst_real_RV(pst_real *)\x00"))
+                .as_ptr(),
         );
     }
     return (*obj).value;
@@ -827,9 +791,8 @@ unsafe extern "C" fn pst_real_SV(mut obj: *mut pst_real) -> *mut u8 {
         b"%.5g\x00" as *const u8 as *const i8,
         (*obj).value,
     );
-    value = new((len as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+    value =
+        new((len as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy(value, fmt_buf.as_mut_ptr());
     return value as *mut u8;
 }
@@ -849,9 +812,7 @@ unsafe extern "C" fn pst_real_data_ptr(mut obj: *mut pst_real) -> *mut libc::c_v
     return &mut (*obj).value as *mut f64 as *mut libc::c_void;
 }
 unsafe extern "C" fn pst_real_length() -> u32 {
-    _tt_abort(
-        b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
-    );
+    _tt_abort(b"Operation not defined for this type of object.\x00" as *const u8 as *const i8);
 }
 /* NOTE: the input buffer must be null-terminated, i.e., *inbufend == 0 */
 /* leading white-space is ignored */
@@ -935,8 +896,7 @@ pub unsafe extern "C" fn pst_parse_number(
                     != 0
             }
             && (lval != 16i32
-                || *cur.offset(1) as i32 != 'x' as i32
-                    && *cur.offset(1) as i32 != 'X' as i32)
+                || *cur.offset(1) as i32 != 'x' as i32 && *cur.offset(1) as i32 != 'X' as i32)
         {
             /* integer with radix */
             /* Can the base have a (plus) sign? I think yes. */
@@ -980,14 +940,10 @@ pub unsafe extern "C" fn pst_parse_number(
  */
 unsafe extern "C" fn pst_name_new(mut name: *const i8) -> *mut pst_name {
     let mut obj: *mut pst_name = 0 as *mut pst_name;
-    obj = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<pst_name>() as u64) as u32)
+    obj = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<pst_name>() as u64) as u32)
         as *mut pst_name;
-    (*obj).value = new(
-        (strlen(name).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32,
-    ) as *mut i8;
+    (*obj).value = new((strlen(name).wrapping_add(1i32 as u64) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy((*obj).value, name);
     return obj;
 }
@@ -1061,16 +1017,13 @@ pub unsafe extern "C" fn pst_parse_name(
         if c as i32 == '#' as i32 {
             let mut val: i32 = 0;
             if cur.offset(2) >= inbufend {
-                dpx_warning(
-                    b"Premature end of input name string.\x00" as *const u8 as *const i8,
-                );
+                dpx_warning(b"Premature end of input name string.\x00" as *const u8 as *const i8);
                 break;
             } else {
                 val = getxpair(&mut cur);
                 if val <= 0i32 {
                     dpx_warning(
-                        b"Invalid char for name object. (ignored)\x00" as *const u8
-                            as *const i8,
+                        b"Invalid char for name object. (ignored)\x00" as *const u8 as *const i8,
                     );
                     continue;
                 } else {
@@ -1099,21 +1052,16 @@ pub unsafe extern "C" fn pst_parse_name(
     );
 }
 unsafe extern "C" fn pst_name_IV() -> i32 {
-    _tt_abort(
-        b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
-    );
+    _tt_abort(b"Operation not defined for this type of object.\x00" as *const u8 as *const i8);
 }
 unsafe extern "C" fn pst_name_RV() -> f64 {
-    _tt_abort(
-        b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
-    );
+    _tt_abort(b"Operation not defined for this type of object.\x00" as *const u8 as *const i8);
 }
 unsafe extern "C" fn pst_name_SV(mut obj: *mut pst_name) -> *mut u8 {
     let mut value: *mut i8 = 0 as *mut i8;
     value = new(
         (strlen((*obj).value).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32,
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
     ) as *mut i8;
     strcpy(value, (*obj).value);
     return value as *mut u8;
@@ -1152,20 +1100,15 @@ unsafe extern "C" fn pst_name_length(mut obj: *mut pst_name) -> u32 {
 /*
  * TODO: ascii85 string <~ .... ~>
  */
-unsafe extern "C" fn pst_string_new(
-    mut str: *mut u8,
-    mut len: u32,
-) -> *mut pst_string {
+unsafe extern "C" fn pst_string_new(mut str: *mut u8, mut len: u32) -> *mut pst_string {
     let mut obj: *mut pst_string = 0 as *mut pst_string;
-    obj = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<pst_string>() as u64)
-        as u32) as *mut pst_string;
+    obj = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<pst_string>() as u64) as u32)
+        as *mut pst_string;
     (*obj).length = len;
     (*obj).value = 0 as *mut u8;
     if len > 0i32 as u32 {
-        (*obj).value = new((len as u64)
-            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-            as u32) as *mut u8;
+        (*obj).value =
+            new((len as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
         if !str.is_null() {
             memcpy(
                 (*obj).value as *mut libc::c_void,
@@ -1227,12 +1170,8 @@ pub unsafe extern "C" fn pst_parse_string(
                 pst_string_parse_literal(inbuf, inbufend) as *mut libc::c_void,
             );
         } else {
-            if **inbuf as i32 == '<' as i32
-                && *(*inbuf).offset(1) as i32 == '~' as i32
-            {
-                _tt_abort(
-                    b"ASCII85 string not supported yet.\x00" as *const u8 as *const i8,
-                );
+            if **inbuf as i32 == '<' as i32 && *(*inbuf).offset(1) as i32 == '~' as i32 {
+                _tt_abort(b"ASCII85 string not supported yet.\x00" as *const u8 as *const i8);
             } else {
                 if **inbuf as i32 == '<' as i32 {
                     return pst_new_obj(
@@ -1312,9 +1251,7 @@ unsafe extern "C" fn esctouc(
             unescaped = 0i32 as u8;
             *valid = 0i32 as u8;
             *inbuf = (*inbuf).offset(
-                (if *inbuf < inbufend.offset(-1)
-                    && *(*inbuf).offset(1) as i32 == '\n' as i32
-                {
+                (if *inbuf < inbufend.offset(-1) && *(*inbuf).offset(1) as i32 == '\n' as i32 {
                     2i32
                 } else {
                     1i32
@@ -1428,8 +1365,7 @@ unsafe extern "C" fn pst_string_parse_hex(
         hi = xtoi(*fresh8 as i8);
         if hi < 0i32 {
             dpx_warning(
-                b"Invalid char for hex string <%x> treated as <0>.\x00" as *const u8
-                    as *const i8,
+                b"Invalid char for hex string <%x> treated as <0>.\x00" as *const u8 as *const i8,
                 *cur.offset(-1) as i32,
             );
             hi = 0i32
@@ -1448,8 +1384,7 @@ unsafe extern "C" fn pst_string_parse_hex(
         };
         if lo < 0i32 {
             dpx_warning(
-                b"Invalid char for hex string <%x> treated as <0>.\x00" as *const u8
-                    as *const i8,
+                b"Invalid char for hex string <%x> treated as <0>.\x00" as *const u8 as *const i8,
                 *cur.offset(-1) as i32,
             );
             lo = 0i32
@@ -1490,9 +1425,7 @@ unsafe extern "C" fn pst_string_RV(mut obj: *mut pst_string) -> f64 {
     end = p.offset((*obj).length as isize);
     nobj = pst_parse_number(&mut p, end);
     if nobj.is_null() || p != end {
-        _tt_abort(
-            b"Cound not convert string to real value.\x00" as *const u8 as *const i8,
-        );
+        _tt_abort(b"Cound not convert string to real value.\x00" as *const u8 as *const i8);
     }
     rv = pst_getRV(nobj);
     pst_release_obj(nobj);
@@ -1512,11 +1445,8 @@ unsafe extern "C" fn pst_string_SV(mut obj: *mut pst_string) -> *mut u8 {
             .as_ptr(),
         );
     }
-    str = new(
-        ((*obj).length.wrapping_add(1i32 as u32) as u64)
-            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-            as u32,
-    ) as *mut u8;
+    str = new(((*obj).length.wrapping_add(1i32 as u32) as u64)
+        .wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
     memcpy(
         str as *mut libc::c_void,
         (*obj).value as *const libc::c_void,

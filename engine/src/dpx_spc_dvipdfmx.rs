@@ -26,10 +26,7 @@ extern "C" {
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
-    fn parse_c_ident(
-        pp: *mut *const i8,
-        endptr: *const i8,
-    ) -> *mut i8;
+    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
 }
@@ -72,8 +69,7 @@ pub struct spc_arg {
     pub base: *const i8,
     pub command: *const i8,
 }
-pub type spc_handler_fn_ptr =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
+pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
@@ -113,10 +109,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-unsafe extern "C" fn spc_handler_null(
-    mut spe: *mut spc_env,
-    mut args: *mut spc_arg,
-) -> i32 {
+unsafe extern "C" fn spc_handler_null(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     (*args).curptr = (*args).endptr;
     return 0i32;
 }
@@ -125,18 +118,14 @@ static mut dvipdfmx_handlers: [spc_handler; 1] = unsafe {
         let mut init = spc_handler {
             key: b"config\x00" as *const u8 as *const i8,
             exec: Some(
-                spc_handler_null
-                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+                spc_handler_null as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
             ),
         };
         init
     }]
 };
 #[no_mangle]
-pub unsafe extern "C" fn spc_dvipdfmx_check_special(
-    mut buf: *const i8,
-    mut len: i32,
-) -> bool {
+pub unsafe extern "C" fn spc_dvipdfmx_check_special(mut buf: *const i8, mut len: i32) -> bool {
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     p = buf;

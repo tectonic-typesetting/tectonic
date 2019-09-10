@@ -144,9 +144,7 @@ unsafe extern "C" fn _gcry_burn_stack(mut bytes: i32) {
         0i32,
         ::std::mem::size_of::<[i8; 64]>() as u64,
     );
-    bytes = (bytes as u64)
-        .wrapping_sub(::std::mem::size_of::<[i8; 64]>() as u64)
-        as i32 as i32;
+    bytes = (bytes as u64).wrapping_sub(::std::mem::size_of::<[i8; 64]>() as u64) as i32 as i32;
     if bytes > 0i32 {
         _gcry_burn_stack(bytes);
     };
@@ -702,20 +700,13 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
  * account for the presence of each of the characters inBuf[0..inLen-1]
  * in the message whose digest is being computed. */
 #[no_mangle]
-pub unsafe extern "C" fn MD5_write(
-    mut hd: *mut MD5_CONTEXT,
-    mut inbuf: *const u8,
-    mut inlen: u32,
-) {
+pub unsafe extern "C" fn MD5_write(mut hd: *mut MD5_CONTEXT, mut inbuf: *const u8, mut inlen: u32) {
     if (*hd).count == 64i32 {
         /* flush the buffer */
         transform(hd, (*hd).buf.as_mut_ptr());
-        _gcry_burn_stack(
-            (80i32 as u64).wrapping_add(
-                (6i32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
-            ) as i32,
-        );
+        _gcry_burn_stack((80i32 as u64).wrapping_add(
+            (6i32 as u64).wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
+        ) as i32);
         (*hd).count = 0i32;
         (*hd).nblocks = (*hd).nblocks.wrapping_add(1)
     }
@@ -738,8 +729,7 @@ pub unsafe extern "C" fn MD5_write(
     }
     _gcry_burn_stack(
         (80i32 as u64).wrapping_add(
-            (6i32 as u64)
-                .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
+            (6i32 as u64).wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
         ) as i32,
     );
     while inlen >= 64i32 as u32 {
@@ -824,8 +814,7 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut u8, mut hd: *mut MD5_CONTEXT
     transform(hd, (*hd).buf.as_mut_ptr());
     _gcry_burn_stack(
         (80i32 as u64).wrapping_add(
-            (6i32 as u64)
-                .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
+            (6i32 as u64).wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
         ) as i32,
     );
     p = outbuf;
@@ -863,12 +852,11 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut u8, mut hd: *mut MD5_CONTEXT
  */
 unsafe extern "C" fn _gcry_bswap32(mut x: u32) -> u32 {
     return ((x << 8i32 | x >> 32i32 - 8i32) as i64 & 0xff00ffi64
-        | (x >> (8i32 & 32i32 - 1i32) | x << (32i32 - 8i32 & 32i32 - 1i32)) as i64
-            & 0xff00ff00i64) as u32;
+        | (x >> (8i32 & 32i32 - 1i32) | x << (32i32 - 8i32 & 32i32 - 1i32)) as i64 & 0xff00ff00i64)
+        as u32;
 }
 unsafe extern "C" fn _gcry_bswap64(mut x: u64) -> u64 {
-    return (_gcry_bswap32(x as u32) as u64) << 32i32
-        | _gcry_bswap32((x >> 32i32) as u32) as u64;
+    return (_gcry_bswap32(x as u32) as u64) << 32i32 | _gcry_bswap32((x >> 32i32) as u32) as u64;
 }
 /* Endian dependent byte swap operations.  */
 unsafe extern "C" fn buf_get_be32(mut _buf: *const libc::c_void) -> u32 {
@@ -925,10 +913,7 @@ Transform the message X which consists of 16 32-bit-words. See FIPS
 180-2 for details.  */
 /* (4.6) */
 /* (4.7) */
-unsafe extern "C" fn _SHA256_transform(
-    mut hd: *mut SHA256_CONTEXT,
-    mut data: *const u8,
-) -> u32 {
+unsafe extern "C" fn _SHA256_transform(mut hd: *mut SHA256_CONTEXT, mut data: *const u8) -> u32 {
     static mut K: [u32; 64] = [
         0x428a2f98i32 as u32,
         0x71374491i32 as u32,
@@ -1434,10 +1419,7 @@ static mut k: [u64; 80] = [
 /* ***************
  * Transform the message W which consists of 16 64-bit-words
  */
-unsafe extern "C" fn __transform(
-    mut hd: *mut SHA512_STATE,
-    mut data: *const u8,
-) -> u32 {
+unsafe extern "C" fn __transform(mut hd: *mut SHA512_STATE, mut data: *const u8) -> u32 {
     let mut a: u64 = 0;
     let mut b: u64 = 0;
     let mut c: u64 = 0;
@@ -2153,19 +2135,13 @@ unsafe extern "C" fn __transform(
     return ((8i32 + 16i32) as u64)
         .wrapping_mul(::std::mem::size_of::<u64>() as u64)
         .wrapping_add(::std::mem::size_of::<u32>() as u64)
-        .wrapping_add(
-            (3i32 as u64)
-                .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
-        ) as u32;
+        .wrapping_add((3i32 as u64).wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64))
+        as u32;
 }
-unsafe extern "C" fn _SHA512_transform(
-    mut ctx: *mut SHA512_CONTEXT,
-    mut data: *const u8,
-) -> u32 {
-    return (__transform(&mut (*ctx).state, data) as u64).wrapping_add(
-        (3i32 as u64)
-            .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64),
-    ) as u32;
+unsafe extern "C" fn _SHA512_transform(mut ctx: *mut SHA512_CONTEXT, mut data: *const u8) -> u32 {
+    return (__transform(&mut (*ctx).state, data) as u64)
+        .wrapping_add((3i32 as u64).wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as u64))
+        as u32;
 }
 /* The routine final terminates the computation and
  * returns the digest.
@@ -2355,8 +2331,8 @@ unsafe extern "C" fn do_encrypt_stream(
         outbuf = outbuf.offset(1);
         *fresh42 = (*fresh41 as i32
             ^ *sbox.offset(
-                (*sbox.offset(i as isize) as i32 + *sbox.offset(j as isize) as i32
-                    & 255i32) as isize,
+                (*sbox.offset(i as isize) as i32 + *sbox.offset(j as isize) as i32 & 255i32)
+                    as isize,
             ) as i32) as u8
     }
     (*ctx).idx_i = i;
@@ -2402,11 +2378,7 @@ unsafe extern "C" fn do_arcfour_setkey(
         (*ctx).sbox[j as usize] = t as u8;
         i += 1
     }
-    memset(
-        karr.as_mut_ptr() as *mut libc::c_void,
-        0i32,
-        256i32 as u64,
-    );
+    memset(karr.as_mut_ptr() as *mut libc::c_void, 0i32, 256i32 as u64);
 }
 #[no_mangle]
 pub unsafe extern "C" fn ARC4_set_key(
@@ -2437,9 +2409,9 @@ pub unsafe extern "C" fn AES_ecb_encrypt(
     let mut len: size_t = 0;
     ctx = &mut aes;
     *cipher_len = plain_len;
-    *cipher = new((*cipher_len as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-        as u32) as *mut u8;
+    *cipher =
+        new((*cipher_len as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
+            as *mut u8;
     (*ctx).nrounds = rijndaelSetupEncrypt(
         (*ctx).rk.as_mut_ptr(),
         key,
@@ -2526,9 +2498,9 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
     *cipher_len = plain_len
         .wrapping_add((if !iv.is_null() { 0i32 } else { 16i32 }) as u64)
         .wrapping_add(padbytes as u64);
-    *cipher = new((*cipher_len as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-        as u32) as *mut u8;
+    *cipher =
+        new((*cipher_len as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
+            as *mut u8;
     (*ctx).nrounds = rijndaelSetupEncrypt(
         (*ctx).rk.as_mut_ptr(),
         key,
@@ -2548,9 +2520,8 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
     while len >= 16i32 as u64 {
         i = 0i32 as size_t;
         while i < 16i32 as u64 {
-            block[i as usize] = (*inptr.offset(i as isize) as i32
-                ^ (*ctx).iv[i as usize] as i32)
-                as u8;
+            block[i as usize] =
+                (*inptr.offset(i as isize) as i32 ^ (*ctx).iv[i as usize] as i32) as u8;
             i = i.wrapping_add(1)
         }
         rijndaelEncrypt(
@@ -2571,9 +2542,8 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
     if len > 0i32 as u64 || padding != 0 {
         i = 0i32 as size_t;
         while i < len {
-            block[i as usize] = (*inptr.offset(i as isize) as i32
-                ^ (*ctx).iv[i as usize] as i32)
-                as u8;
+            block[i as usize] =
+                (*inptr.offset(i as isize) as i32 ^ (*ctx).iv[i as usize] as i32) as u8;
             i = i.wrapping_add(1)
         }
         i = len;
@@ -3939,8 +3909,7 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
             temp = *rk.offset(3);
             *rk.offset(4) = *rk.offset(0)
                 ^ Te4[(temp >> 16i32 & 0xffi32 as u32) as usize] & 0xff000000u32
-                ^ Te4[(temp >> 8i32 & 0xffi32 as u32) as usize]
-                    & 0xff0000i32 as u32
+                ^ Te4[(temp >> 8i32 & 0xffi32 as u32) as usize] & 0xff0000i32 as u32
                 ^ Te4[(temp & 0xffi32 as u32) as usize] & 0xff00i32 as u32
                 ^ Te4[(temp >> 24i32) as usize] & 0xffi32 as u32
                 ^ rcon[i as usize];
@@ -3967,8 +3936,7 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
             temp = *rk.offset(5);
             *rk.offset(6) = *rk.offset(0)
                 ^ Te4[(temp >> 16i32 & 0xffi32 as u32) as usize] & 0xff000000u32
-                ^ Te4[(temp >> 8i32 & 0xffi32 as u32) as usize]
-                    & 0xff0000i32 as u32
+                ^ Te4[(temp >> 8i32 & 0xffi32 as u32) as usize] & 0xff0000i32 as u32
                 ^ Te4[(temp & 0xffi32 as u32) as usize] & 0xff00i32 as u32
                 ^ Te4[(temp >> 24i32) as usize] & 0xffi32 as u32
                 ^ rcon[i as usize];
@@ -3997,8 +3965,7 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
             temp = *rk.offset(7);
             *rk.offset(8) = *rk.offset(0)
                 ^ Te4[(temp >> 16i32 & 0xffi32 as u32) as usize] & 0xff000000u32
-                ^ Te4[(temp >> 8i32 & 0xffi32 as u32) as usize]
-                    & 0xff0000i32 as u32
+                ^ Te4[(temp >> 8i32 & 0xffi32 as u32) as usize] & 0xff0000i32 as u32
                 ^ Te4[(temp & 0xffi32 as u32) as usize] & 0xff00i32 as u32
                 ^ Te4[(temp >> 24i32) as usize] & 0xffi32 as u32
                 ^ rcon[i as usize];
@@ -4012,10 +3979,8 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
             temp = *rk.offset(11);
             *rk.offset(12) = *rk.offset(4)
                 ^ Te4[(temp >> 24i32) as usize] & 0xff000000u32
-                ^ Te4[(temp >> 16i32 & 0xffi32 as u32) as usize]
-                    & 0xff0000i32 as u32
-                ^ Te4[(temp >> 8i32 & 0xffi32 as u32) as usize]
-                    & 0xff00i32 as u32
+                ^ Te4[(temp >> 16i32 & 0xffi32 as u32) as usize] & 0xff0000i32 as u32
+                ^ Te4[(temp >> 8i32 & 0xffi32 as u32) as usize] & 0xff00i32 as u32
                 ^ Te4[(temp & 0xffi32 as u32) as usize] & 0xffi32 as u32;
             *rk.offset(13) = *rk.offset(5) ^ *rk.offset(12);
             *rk.offset(14) = *rk.offset(6) ^ *rk.offset(13);

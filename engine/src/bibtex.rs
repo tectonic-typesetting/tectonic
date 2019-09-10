@@ -38,11 +38,7 @@ extern "C" {
     #[no_mangle]
     fn ttstub_output_close(handle: rust_output_handle_t) -> i32;
     #[no_mangle]
-    fn ttstub_output_write(
-        handle: rust_output_handle_t,
-        data: *const i8,
-        len: size_t,
-    ) -> size_t;
+    fn ttstub_output_write(handle: rust_output_handle_t, data: *const i8, len: size_t) -> size_t;
     #[no_mangle]
     fn ttstub_output_putc(handle: rust_output_handle_t, c: i32) -> i32;
     #[no_mangle]
@@ -60,19 +56,9 @@ extern "C" {
     #[no_mangle]
     fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
     #[no_mangle]
-    fn snprintf(
-        _: *mut i8,
-        _: u64,
-        _: *const i8,
-        _: ...
-    ) -> i32;
+    fn snprintf(_: *mut i8, _: u64, _: *const i8, _: ...) -> i32;
     #[no_mangle]
-    fn vsnprintf(
-        _: *mut i8,
-        _: u64,
-        _: *const i8,
-        _: ::std::ffi::VaList,
-    ) -> i32;
+    fn vsnprintf(_: *mut i8, _: u64, _: *const i8, _: ::std::ffi::VaList) -> i32;
     #[no_mangle]
     fn _setjmp(_: *mut __jmp_buf_tag) -> i32;
     #[no_mangle]
@@ -176,10 +162,8 @@ unsafe extern "C" fn peekable_open(
     if handle.is_null() {
         return 0 as *mut peekable_input_t;
     }
-    peekable = xmalloc(
-        (1i32 as u64)
-            .wrapping_mul(::std::mem::size_of::<peekable_input_t>() as u64),
-    ) as *mut peekable_input_t;
+    peekable = xmalloc((1i32 as u64).wrapping_mul(::std::mem::size_of::<peekable_input_t>() as u64))
+        as *mut peekable_input_t;
     (*peekable).handle = handle;
     (*peekable).peek_char = -1i32;
     (*peekable).saw_eof = 0i32 != 0;
@@ -558,12 +542,7 @@ static mut fmt_buf: [i8; 1024] = [
 unsafe extern "C" fn printf_log(mut fmt: *const i8, mut args: ...) {
     let mut ap: ::std::ffi::VaListImpl;
     ap = args.clone();
-    vsnprintf(
-        fmt_buf.as_mut_ptr(),
-        1024i32 as u64,
-        fmt,
-        ap.as_va_list(),
-    );
+    vsnprintf(fmt_buf.as_mut_ptr(), 1024i32 as u64, fmt, ap.as_va_list());
     puts_log(fmt_buf.as_mut_ptr());
 }
 unsafe extern "C" fn mark_warning() {
@@ -725,16 +704,13 @@ unsafe extern "C" fn print_bad_input_line() {
     }
     putc_log('\n' as i32);
     bf_ptr = 0i32;
-    while bf_ptr < buf_ptr2
-        && lex_class[*buffer.offset(bf_ptr as isize) as usize] as i32 == 1i32
-    {
+    while bf_ptr < buf_ptr2 && lex_class[*buffer.offset(bf_ptr as isize) as usize] as i32 == 1i32 {
         /*white_space */
         bf_ptr += 1
     } /*empty */
     if bf_ptr == buf_ptr2 {
-        puts_log(
-            b"(Error may have been on previous line)\n\x00" as *const u8 as *const i8,
-        ); /*any_value */
+        puts_log(b"(Error may have been on previous line)\n\x00" as *const u8 as *const i8);
+        /*any_value */
     }
     mark_error();
 }
@@ -841,8 +817,7 @@ unsafe extern "C" fn check_cite_overflow(mut last_cite: cite_number) {
         ) as *mut hash_ptr2;
         entry_exists = xrealloc(
             entry_exists as *mut libc::c_void,
-            ((max_cites + 750i32 + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<bool>() as u64),
+            ((max_cites + 750i32 + 1i32) as u64).wrapping_mul(::std::mem::size_of::<bool>() as u64),
         ) as *mut bool;
         cite_info = xrealloc(
             cite_info as *mut libc::c_void,
@@ -948,8 +923,7 @@ unsafe extern "C" fn bst_id_print() {
     } else if scan_result as i32 == 2i32 {
         /*other_char_adjacent */
         printf_log(
-            b"\"%c\" immediately follows identifier, command: \x00" as *const u8
-                as *const i8,
+            b"\"%c\" immediately follows identifier, command: \x00" as *const u8 as *const i8,
             *buffer.offset(buf_ptr2 as isize) as i32,
         );
     } else {
@@ -1089,9 +1063,7 @@ unsafe extern "C" fn nonexistent_cross_reference_error() {
     mark_error();
 }
 unsafe extern "C" fn print_missing_entry(mut s: str_number) {
-    puts_log(
-        b"Warning--I didn\'t find a database entry for \"\x00" as *const u8 as *const i8,
-    );
+    puts_log(b"Warning--I didn\'t find a database entry for \"\x00" as *const u8 as *const i8);
     print_a_pool_str(s);
     putc_log('\"' as i32);
     putc_log('\n' as i32);
@@ -1164,10 +1136,7 @@ unsafe extern "C" fn print_stk_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
 unsafe extern "C" fn print_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
     match stk_tp as i32 {
         0 => {
-            printf_log(
-                b"%ld\n\x00" as *const u8 as *const i8,
-                stk_lt as i64,
-            );
+            printf_log(b"%ld\n\x00" as *const u8 as *const i8, stk_lt as i64);
         }
         1 => {
             print_a_pool_str(stk_lt);
@@ -1192,8 +1161,7 @@ unsafe extern "C" fn print_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
 unsafe extern "C" fn output_bbl_line() {
     if out_buf_length != 0i32 {
         while out_buf_length > 0i32 {
-            if !(lex_class[*out_buf.offset((out_buf_length - 1i32) as isize) as usize]
-                as i32
+            if !(lex_class[*out_buf.offset((out_buf_length - 1i32) as isize) as usize] as i32
                 == 1i32)
             {
                 break;
@@ -1206,10 +1174,7 @@ unsafe extern "C" fn output_bbl_line() {
         }
         out_buf_ptr = 0i32;
         while out_buf_ptr < out_buf_length {
-            ttstub_output_putc(
-                bbl_file,
-                *out_buf.offset(out_buf_ptr as isize) as i32,
-            );
+            ttstub_output_putc(bbl_file, *out_buf.offset(out_buf_ptr as isize) as i32);
             out_buf_ptr += 1
         }
     }
@@ -1312,9 +1277,7 @@ unsafe extern "C" fn str_eq_str(mut s1: str_number, mut s2: str_number) -> bool 
     p_ptr1 = *str_start.offset(s1 as isize);
     p_ptr2 = *str_start.offset(s2 as isize);
     while p_ptr1 < *str_start.offset((s1 + 1i32) as isize) {
-        if *str_pool.offset(p_ptr1 as isize) as i32
-            != *str_pool.offset(p_ptr2 as isize) as i32
-        {
+        if *str_pool.offset(p_ptr1 as isize) as i32 != *str_pool.offset(p_ptr2 as isize) as i32 {
             return 0i32 != 0;
         }
         p_ptr1 = p_ptr1 + 1i32;
@@ -1333,8 +1296,7 @@ unsafe extern "C" fn lower_case(mut buf: buf_type, mut bf_ptr: buf_pointer, mut 
                 if *buf.offset(i as isize) as i32 >= 'A' as i32
                     && *buf.offset(i as isize) as i32 <= 'Z' as i32
                 {
-                    *buf.offset(i as isize) =
-                        (*buf.offset(i as isize) as i32 + 32i32) as ASCII_code
+                    *buf.offset(i as isize) = (*buf.offset(i as isize) as i32 + 32i32) as ASCII_code
                 }
                 let fresh4 = i;
                 i = i + 1;
@@ -1356,8 +1318,7 @@ unsafe extern "C" fn upper_case(mut buf: buf_type, mut bf_ptr: buf_pointer, mut 
                 if *buf.offset(i as isize) as i32 >= 'a' as i32
                     && *buf.offset(i as isize) as i32 <= 'z' as i32
                 {
-                    *buf.offset(i as isize) =
-                        (*buf.offset(i as isize) as i32 - 32i32) as ASCII_code
+                    *buf.offset(i as isize) = (*buf.offset(i as isize) as i32 - 32i32) as ASCII_code
                 }
                 let fresh5 = i;
                 i = i + 1;
@@ -1453,8 +1414,7 @@ unsafe extern "C" fn pre_define(mut pds: pds_type, mut len: pds_len, mut ilk: st
     for_end = len as i32;
     if i as i32 <= for_end {
         loop {
-            *buffer.offset(i as isize) =
-                *pds.offset((i as i32 - 1i32) as isize) as u8;
+            *buffer.offset(i as isize) = *pds.offset((i as i32 - 1i32) as isize) as u8;
             let fresh6 = i;
             i = i.wrapping_add(1);
             if !((fresh6 as i32) < for_end) {
@@ -2198,9 +2158,7 @@ unsafe extern "C" fn pre_def_certain_strings() {
 }
 unsafe extern "C" fn scan1(mut char1: ASCII_code) -> bool {
     buf_ptr1 = buf_ptr2;
-    while buf_ptr2 < last
-        && *buffer.offset(buf_ptr2 as isize) as i32 != char1 as i32
-    {
+    while buf_ptr2 < last && *buffer.offset(buf_ptr2 as isize) as i32 != char1 as i32 {
         buf_ptr2 = buf_ptr2 + 1i32
     }
     return buf_ptr2 < last;
@@ -2253,9 +2211,7 @@ unsafe extern "C" fn scan3(
 }
 unsafe extern "C" fn scan_alpha() -> bool {
     buf_ptr1 = buf_ptr2;
-    while buf_ptr2 < last
-        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 2i32
-    {
+    while buf_ptr2 < last && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 2i32 {
         buf_ptr2 = buf_ptr2 + 1i32
     }
     return buf_ptr2 - buf_ptr1 != 0i32;
@@ -2268,8 +2224,7 @@ unsafe extern "C" fn scan_identifier(
     buf_ptr1 = buf_ptr2;
     if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 != 3i32 {
         /*numeric */
-        while buf_ptr2 < last
-            && id_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32
+        while buf_ptr2 < last && id_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32
         {
             buf_ptr2 = buf_ptr2 + 1i32
         }
@@ -2294,11 +2249,8 @@ unsafe extern "C" fn scan_identifier(
 unsafe extern "C" fn scan_nonneg_integer() -> bool {
     buf_ptr1 = buf_ptr2;
     token_value = 0i32;
-    while buf_ptr2 < last
-        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 3i32
-    {
-        token_value =
-            token_value * 10i32 + (*buffer.offset(buf_ptr2 as isize) as i32 - 48i32);
+    while buf_ptr2 < last && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 3i32 {
+        token_value = token_value * 10i32 + (*buffer.offset(buf_ptr2 as isize) as i32 - 48i32);
         buf_ptr2 = buf_ptr2 + 1i32
     }
     return buf_ptr2 - buf_ptr1 != 0i32;
@@ -2314,11 +2266,8 @@ unsafe extern "C" fn scan_integer() -> bool {
         sign_length = 0i32 as u8
     }
     token_value = 0i32;
-    while buf_ptr2 < last
-        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 3i32
-    {
-        token_value =
-            token_value * 10i32 + (*buffer.offset(buf_ptr2 as isize) as i32 - 48i32);
+    while buf_ptr2 < last && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 3i32 {
+        token_value = token_value * 10i32 + (*buffer.offset(buf_ptr2 as isize) as i32 - 48i32);
         buf_ptr2 = buf_ptr2 + 1i32
     }
     if sign_length as i32 == 1i32 {
@@ -2327,9 +2276,7 @@ unsafe extern "C" fn scan_integer() -> bool {
     return buf_ptr2 - buf_ptr1 != sign_length as i32;
 }
 unsafe extern "C" fn scan_white_space() -> bool {
-    while buf_ptr2 < last
-        && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32
-    {
+    while buf_ptr2 < last && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32 {
         buf_ptr2 = buf_ptr2 + 1i32
     }
     return buf_ptr2 < last;
@@ -2356,9 +2303,7 @@ unsafe extern "C" fn skip_token_print() {
     scan2_white(125i32 as ASCII_code, 37i32 as ASCII_code);
 }
 unsafe extern "C" fn print_recursion_illegal() {
-    puts_log(
-        b"Curse you, wizard, before you recurse me:\n\x00" as *const u8 as *const i8,
-    );
+    puts_log(b"Curse you, wizard, before you recurse me:\n\x00" as *const u8 as *const i8);
     puts_log(b"function \x00" as *const u8 as *const i8);
     print_a_token();
     puts_log(b" is illegal in its own definition\n\x00" as *const u8 as *const i8);
@@ -2386,8 +2331,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
     let mut impl_fn_loc: hash_loc = 0;
     single_fn_space = 100i32;
     singl_function = xmalloc(
-        ((single_fn_space + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as u64),
+        ((single_fn_space + 1i32) as u64).wrapping_mul(::std::mem::size_of::<hash_ptr2>() as u64),
     ) as *mut hash_ptr2;
     if !eat_bst_white_space() {
         eat_bst_print();
@@ -2406,8 +2350,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                     buf_ptr2 = buf_ptr2 + 1i32; /*int_literal */
                     if !scan_integer() {
                         puts_log(
-                            b"Illegal integer in integer literal\x00" as *const u8
-                                as *const i8,
+                            b"Illegal integer in integer literal\x00" as *const u8 as *const i8,
                         ); /*str_literal */
                         skip_token_print(); /*194: */
                     } else {
@@ -2423,8 +2366,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                             *ilk_info.offset(literal_loc as isize) = token_value
                         }
                         if buf_ptr2 < last
-                            && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32
-                                != 1i32
+                            && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 != 1i32
                             && *buffer.offset(buf_ptr2 as isize) as i32 != 125i32
                             && *buffer.offset(buf_ptr2 as isize) as i32 != 37i32
                         {
@@ -2435,9 +2377,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                                 singl_function = xrealloc(
                                     singl_function as *mut libc::c_void,
                                     ((single_fn_space + 100i32 + 1i32) as u64)
-                                        .wrapping_mul(
-                                            ::std::mem::size_of::<hash_ptr2>() as u64
-                                        ),
+                                        .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as u64),
                                 )
                                     as *mut hash_ptr2;
                                 single_fn_space = single_fn_space + 100i32
@@ -2449,10 +2389,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                 34 => {
                     buf_ptr2 = buf_ptr2 + 1i32;
                     if !scan1(34i32 as ASCII_code) {
-                        printf_log(
-                            b"No `\"\' to end string literal\x00" as *const u8
-                                as *const i8,
-                        );
+                        printf_log(b"No `\"\' to end string literal\x00" as *const u8 as *const i8);
                         skip_token_print();
                     } else {
                         literal_loc = str_lookup(
@@ -2465,8 +2402,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                         *fn_type.offset(literal_loc as isize) = 3i32 as fn_class;
                         buf_ptr2 = buf_ptr2 + 1i32;
                         if buf_ptr2 < last
-                            && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32
-                                != 1i32
+                            && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 != 1i32
                             && *buffer.offset(buf_ptr2 as isize) as i32 != 125i32
                             && *buffer.offset(buf_ptr2 as isize) as i32 != 37i32
                         {
@@ -2477,9 +2413,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                                 singl_function = xrealloc(
                                     singl_function as *mut libc::c_void,
                                     ((single_fn_space + 100i32 + 1i32) as u64)
-                                        .wrapping_mul(
-                                            ::std::mem::size_of::<hash_ptr2>() as u64
-                                        ),
+                                        .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as u64),
                                 )
                                     as *mut hash_ptr2;
                                 single_fn_space = single_fn_space + 100i32
@@ -2508,9 +2442,8 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                         if single_ptr == single_fn_space {
                             singl_function = xrealloc(
                                 singl_function as *mut libc::c_void,
-                                ((single_fn_space + 100i32 + 1i32) as u64).wrapping_mul(
-                                    ::std::mem::size_of::<hash_ptr2>() as u64,
-                                ),
+                                ((single_fn_space + 100i32 + 1i32) as u64)
+                                    .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as u64),
                             ) as *mut hash_ptr2;
                             single_fn_space = single_fn_space + 100i32
                         }
@@ -2519,9 +2452,8 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                         if single_ptr == single_fn_space {
                             singl_function = xrealloc(
                                 singl_function as *mut libc::c_void,
-                                ((single_fn_space + 100i32 + 1i32) as u64).wrapping_mul(
-                                    ::std::mem::size_of::<hash_ptr2>() as u64,
-                                ),
+                                ((single_fn_space + 100i32 + 1i32) as u64)
+                                    .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as u64),
                             ) as *mut hash_ptr2;
                             single_fn_space = single_fn_space + 100i32
                         }
@@ -2534,8 +2466,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                     impl_fn_loc = str_lookup(ex_buf, 0i32, end_of_num, 11i32 as str_ilk, 1i32 != 0);
                     if hash_found {
                         puts_log(
-                            b"Already encountered implicit function\x00" as *const u8
-                                as *const i8,
+                            b"Already encountered implicit function\x00" as *const u8 as *const i8,
                         );
                         print_confusion();
                         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
@@ -2584,9 +2515,8 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                         if single_ptr == single_fn_space {
                             singl_function = xrealloc(
                                 singl_function as *mut libc::c_void,
-                                ((single_fn_space + 100i32 + 1i32) as u64).wrapping_mul(
-                                    ::std::mem::size_of::<hash_ptr2>() as u64,
-                                ),
+                                ((single_fn_space + 100i32 + 1i32) as u64)
+                                    .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as u64),
                             ) as *mut hash_ptr2;
                             single_fn_space = single_fn_space + 100i32
                         }
@@ -2669,9 +2599,7 @@ unsafe extern "C" fn compress_bib_white() -> bool {
 }
 unsafe extern "C" fn scan_balanced_braces() -> bool {
     buf_ptr2 = buf_ptr2 + 1i32;
-    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32
-        || buf_ptr2 == last
-    {
+    if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32 || buf_ptr2 == last {
         if !compress_bib_white() {
             return 0i32 != 0;
         }
@@ -2719,8 +2647,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 }
                                 buf_ptr2 = buf_ptr2 + 1i32;
-                                if lex_class[*buffer.offset(buf_ptr2 as isize) as usize]
-                                    as i32
+                                if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32
                                     == 1i32
                                     || buf_ptr2 == last
                                 {
@@ -2742,8 +2669,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 }
                                 buf_ptr2 = buf_ptr2 + 1i32;
-                                if lex_class[*buffer.offset(buf_ptr2 as isize) as usize]
-                                    as i32
+                                if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32
                                     == 1i32
                                     || buf_ptr2 == last
                                 {
@@ -2762,8 +2688,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 }
                                 buf_ptr2 = buf_ptr2 + 1i32;
-                                if lex_class[*buffer.offset(buf_ptr2 as isize) as usize]
-                                    as i32
+                                if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32
                                     == 1i32
                                     || buf_ptr2 == last
                                 {
@@ -2913,10 +2838,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                         if macro_name_loc == cur_macro_loc {
                             store_token = 0i32 != 0;
                             macro_warn_print();
-                            puts_log(
-                                b"used in its own definition\n\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"used in its own definition\n\x00" as *const u8 as *const i8);
                             bib_warn_print();
                         }
                     }
@@ -2934,8 +2856,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                         .offset((*ilk_info.offset(macro_name_loc as isize) + 1i32) as isize);
                     if ex_buf_ptr == 0i32 {
                         if tmp_ptr < tmp_end_ptr
-                            && lex_class[*str_pool.offset(tmp_ptr as isize) as usize] as i32
-                                == 1i32
+                            && lex_class[*str_pool.offset(tmp_ptr as isize) as usize] as i32 == 1i32
                         {
                             if ex_buf_ptr == buf_size {
                                 bib_field_too_long_print();
@@ -2946,8 +2867,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                             }
                             tmp_ptr = tmp_ptr + 1i32;
                             while tmp_ptr < tmp_end_ptr
-                                && lex_class[*str_pool.offset(tmp_ptr as isize) as usize]
-                                    as i32
+                                && lex_class[*str_pool.offset(tmp_ptr as isize) as usize] as i32
                                     == 1i32
                             {
                                 tmp_ptr = tmp_ptr + 1i32
@@ -2955,9 +2875,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                         }
                     }
                     while tmp_ptr < tmp_end_ptr {
-                        if lex_class[*str_pool.offset(tmp_ptr as isize) as usize] as i32
-                            != 1i32
-                        {
+                        if lex_class[*str_pool.offset(tmp_ptr as isize) as usize] as i32 != 1i32 {
                             /*white_space */
                             if ex_buf_ptr == buf_size {
                                 bib_field_too_long_print();
@@ -2967,9 +2885,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                                     *str_pool.offset(tmp_ptr as isize);
                                 ex_buf_ptr = ex_buf_ptr + 1i32
                             }
-                        } else if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as i32
-                            != 32i32
-                        {
+                        } else if *ex_buf.offset((ex_buf_ptr - 1i32) as isize) as i32 != 32i32 {
                             /*space */
                             if ex_buf_ptr == buf_size {
                                 bib_field_too_long_print(); /*space */
@@ -3049,9 +2965,7 @@ unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
         } else {
             field_ptr = entry_cite_ptr * num_fields + *ilk_info.offset(field_name_loc as isize);
             if field_ptr >= max_fields {
-                puts_log(
-                    b"field_info index is out of range\x00" as *const u8 as *const i8,
-                );
+                puts_log(b"field_info index is out of range\x00" as *const u8 as *const i8);
                 print_confusion();
                 longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
             }
@@ -3133,10 +3047,8 @@ unsafe extern "C" fn name_scan_for_and(mut pop_lit_var: str_number) {
                         if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 'n' as i32
                             || *ex_buf.offset(ex_buf_ptr as isize) as i32 == 'N' as i32
                         {
-                            if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as i32
-                                == 'd' as i32
-                                || *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as i32
-                                    == 'D' as i32
+                            if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as i32 == 'd' as i32
+                                || *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as i32 == 'D' as i32
                             {
                                 if lex_class[*ex_buf.offset((ex_buf_ptr + 2i32) as isize) as usize]
                                     as i32
@@ -3210,8 +3122,7 @@ unsafe extern "C" fn von_token_found() -> bool {
                         name_bf_ptr = name_bf_ptr + 1i32;
                         name_bf_yptr = name_bf_ptr;
                         while name_bf_ptr < name_bf_xptr
-                            && lex_class[*sv_buffer.offset(name_bf_ptr as isize) as usize]
-                                as i32
+                            && lex_class[*sv_buffer.offset(name_bf_ptr as isize) as usize] as i32
                                 == 2i32
                         {
                             name_bf_ptr = name_bf_ptr + 1i32
@@ -3240,21 +3151,16 @@ unsafe extern "C" fn von_token_found() -> bool {
                         }
                         while name_bf_ptr < name_bf_xptr && nm_brace_level > 0i32 {
                             if *sv_buffer.offset(name_bf_ptr as isize) as i32 >= 'A' as i32
-                                && *sv_buffer.offset(name_bf_ptr as isize) as i32
-                                    <= 'Z' as i32
+                                && *sv_buffer.offset(name_bf_ptr as isize) as i32 <= 'Z' as i32
                             {
                                 return 0i32 != 0;
                             } else {
-                                if *sv_buffer.offset(name_bf_ptr as isize) as i32
-                                    >= 'a' as i32
-                                    && *sv_buffer.offset(name_bf_ptr as isize) as i32
-                                        <= 'z' as i32
+                                if *sv_buffer.offset(name_bf_ptr as isize) as i32 >= 'a' as i32
+                                    && *sv_buffer.offset(name_bf_ptr as isize) as i32 <= 'z' as i32
                                 {
                                     return 1i32 != 0;
                                 } else {
-                                    if *sv_buffer.offset(name_bf_ptr as isize) as i32
-                                        == 125i32
-                                    {
+                                    if *sv_buffer.offset(name_bf_ptr as isize) as i32 == 125i32 {
                                         /*right_brace */
                                         nm_brace_level = nm_brace_level - 1i32
                                     } else if *sv_buffer.offset(name_bf_ptr as isize) as i32
@@ -3273,9 +3179,7 @@ unsafe extern "C" fn von_token_found() -> bool {
                             if *sv_buffer.offset(name_bf_ptr as isize) as i32 == 125i32 {
                                 /*right_brace */
                                 nm_brace_level = nm_brace_level - 1i32
-                            } else if *sv_buffer.offset(name_bf_ptr as isize) as i32
-                                == 123i32
-                            {
+                            } else if *sv_buffer.offset(name_bf_ptr as isize) as i32 == 123i32 {
                                 /*left_brace */
                                 nm_brace_level = nm_brace_level + 1i32
                             }
@@ -3382,8 +3286,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                     to_be_written = 0i32 != 0
                                 }
                                 if *str_pool.offset(sp_ptr as isize) as i32 == 'f' as i32
-                                    || *str_pool.offset(sp_ptr as isize) as i32
-                                        == 'F' as i32
+                                    || *str_pool.offset(sp_ptr as isize) as i32 == 'F' as i32
                                 {
                                     double_letter = 1i32 != 0
                                 }
@@ -3395,8 +3298,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                     to_be_written = 0i32 != 0
                                 }
                                 if *str_pool.offset(sp_ptr as isize) as i32 == 'v' as i32
-                                    || *str_pool.offset(sp_ptr as isize) as i32
-                                        == 'V' as i32
+                                    || *str_pool.offset(sp_ptr as isize) as i32 == 'V' as i32
                                 {
                                     double_letter = 1i32 != 0
                                 }
@@ -3408,8 +3310,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                     to_be_written = 0i32 != 0
                                 }
                                 if *str_pool.offset(sp_ptr as isize) as i32 == 'l' as i32
-                                    || *str_pool.offset(sp_ptr as isize) as i32
-                                        == 'L' as i32
+                                    || *str_pool.offset(sp_ptr as isize) as i32 == 'L' as i32
                                 {
                                     double_letter = 1i32 != 0
                                 }
@@ -3421,8 +3322,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                     to_be_written = 0i32 != 0
                                 }
                                 if *str_pool.offset(sp_ptr as isize) as i32 == 'j' as i32
-                                    || *str_pool.offset(sp_ptr as isize) as i32
-                                        == 'J' as i32
+                                    || *str_pool.offset(sp_ptr as isize) as i32 == 'J' as i32
                                 {
                                     double_letter = 1i32 != 0
                                 }
@@ -3509,11 +3409,9 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                     break;
                                 } else {
                                     if name_bf_ptr + 1i32 < name_bf_xptr
-                                        && *sv_buffer.offset(name_bf_ptr as isize) as i32
-                                            == 123i32
+                                        && *sv_buffer.offset(name_bf_ptr as isize) as i32 == 123i32
                                     {
-                                        if *sv_buffer.offset((name_bf_ptr + 1i32) as isize)
-                                            as i32
+                                        if *sv_buffer.offset((name_bf_ptr + 1i32) as isize) as i32
                                             == 92i32
                                         {
                                             /*backslash */
@@ -3532,8 +3430,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                             while name_bf_ptr < name_bf_xptr
                                                 && nm_brace_level > 0i32
                                             {
-                                                if *sv_buffer.offset(name_bf_ptr as isize)
-                                                    as i32
+                                                if *sv_buffer.offset(name_bf_ptr as isize) as i32
                                                     == 125i32
                                                 {
                                                     /*right_brace */
@@ -3839,9 +3736,7 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
             /*325: */
             out_buf_ptr = 79i32 + 1i32;
             while out_buf_ptr < end_ptr {
-                if !(lex_class[*out_buf.offset(out_buf_ptr as isize) as usize] as i32
-                    != 1i32)
-                {
+                if !(lex_class[*out_buf.offset(out_buf_ptr as isize) as usize] as i32 != 1i32) {
                     break;
                 }
                 /*white_space */
@@ -3853,8 +3748,7 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
             } else {
                 break_pt_found = 1i32 != 0;
                 while out_buf_ptr + 1i32 < end_ptr {
-                    if !(lex_class[*out_buf.offset((out_buf_ptr + 1i32) as isize) as usize]
-                        as i32
+                    if !(lex_class[*out_buf.offset((out_buf_ptr + 1i32) as isize) as usize] as i32
                         == 1i32)
                     {
                         break;
@@ -3892,9 +3786,7 @@ unsafe extern "C" fn x_equals() {
             puts_log(b", \x00" as *const u8 as *const i8);
             print_stk_lit(pop_lit2, pop_typ2);
             putc_log('\n' as i32);
-            puts_log(
-                b"---they aren\'t the same literal types\x00" as *const u8 as *const i8,
-            );
+            puts_log(b"---they aren\'t the same literal types\x00" as *const u8 as *const i8);
             bst_ex_warn_print();
         }
         push_lit_stk(0i32, 0i32 as stk_type);
@@ -4288,9 +4180,7 @@ unsafe extern "C" fn x_change_case() {
         {
             conversion_type = 3i32 as u8; /*bad_conversion */
             print_a_pool_str(pop_lit1);
-            puts_log(
-                b" is an illegal case-conversion string\x00" as *const u8 as *const i8,
-            );
+            puts_log(b" is an illegal case-conversion string\x00" as *const u8 as *const i8);
             bst_ex_warn_print();
         }
         ex_buf_length = 0i32;
@@ -4419,16 +4309,13 @@ unsafe extern "C" fn x_change_case() {
                                         ex_buf_xptr = ex_buf_ptr;
                                         while ex_buf_ptr < ex_buf_length
                                             && brace_level > 0i32
-                                            && *ex_buf.offset(ex_buf_ptr as isize) as i32
-                                                != 92i32
+                                            && *ex_buf.offset(ex_buf_ptr as isize) as i32 != 92i32
                                         {
-                                            if *ex_buf.offset(ex_buf_ptr as isize) as i32
-                                                == 125i32
+                                            if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 125i32
                                             {
                                                 /*right_brace */
                                                 brace_level = brace_level - 1i32
-                                            } else if *ex_buf.offset(ex_buf_ptr as isize)
-                                                as i32
+                                            } else if *ex_buf.offset(ex_buf_ptr as isize) as i32
                                                 == 123i32
                                             {
                                                 /*left_brace */
@@ -4486,8 +4373,7 @@ unsafe extern "C" fn x_change_case() {
                         if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 58i32 {
                             /*colon */
                             prev_colon = 1i32 != 0
-                        } else if lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize]
-                            as i32
+                        } else if lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as i32
                             != 1i32
                         {
                             /*white_space */
@@ -4673,8 +4559,7 @@ unsafe extern "C" fn x_format_name() {
                 44 => {
                     if num_commas == 2i32 {
                         printf_log(
-                            b"Too many commas in name %ld of \"\x00" as *const u8
-                                as *const i8,
+                            b"Too many commas in name %ld of \"\x00" as *const u8 as *const i8,
                             pop_lit2 as i64,
                         );
                         print_a_pool_str(pop_lit3);
@@ -4732,36 +4617,34 @@ unsafe extern "C" fn x_format_name() {
                     ex_buf_xptr = ex_buf_xptr + 1i32;
                     token_starting = 0i32 != 0
                 }
-                _ => {
-                    match lex_class[*ex_buf.offset(ex_buf_xptr as isize) as usize] as i32 {
-                        1 => {
-                            if !token_starting {
-                                *name_sep_char.offset(num_tokens as isize) = 32i32 as ASCII_code
-                            }
-                            ex_buf_xptr = ex_buf_xptr + 1i32;
-                            token_starting = 1i32 != 0
+                _ => match lex_class[*ex_buf.offset(ex_buf_xptr as isize) as usize] as i32 {
+                    1 => {
+                        if !token_starting {
+                            *name_sep_char.offset(num_tokens as isize) = 32i32 as ASCII_code
                         }
-                        4 => {
-                            if !token_starting {
-                                *name_sep_char.offset(num_tokens as isize) =
-                                    *ex_buf.offset(ex_buf_xptr as isize)
-                            }
-                            ex_buf_xptr = ex_buf_xptr + 1i32;
-                            token_starting = 1i32 != 0
-                        }
-                        _ => {
-                            if token_starting {
-                                *name_tok.offset(num_tokens as isize) = name_bf_ptr;
-                                num_tokens = num_tokens + 1i32
-                            }
-                            *sv_buffer.offset(name_bf_ptr as isize) =
-                                *ex_buf.offset(ex_buf_xptr as isize);
-                            name_bf_ptr = name_bf_ptr + 1i32;
-                            ex_buf_xptr = ex_buf_xptr + 1i32;
-                            token_starting = 0i32 != 0
-                        }
+                        ex_buf_xptr = ex_buf_xptr + 1i32;
+                        token_starting = 1i32 != 0
                     }
-                }
+                    4 => {
+                        if !token_starting {
+                            *name_sep_char.offset(num_tokens as isize) =
+                                *ex_buf.offset(ex_buf_xptr as isize)
+                        }
+                        ex_buf_xptr = ex_buf_xptr + 1i32;
+                        token_starting = 1i32 != 0
+                    }
+                    _ => {
+                        if token_starting {
+                            *name_tok.offset(num_tokens as isize) = name_bf_ptr;
+                            num_tokens = num_tokens + 1i32
+                        }
+                        *sv_buffer.offset(name_bf_ptr as isize) =
+                            *ex_buf.offset(ex_buf_xptr as isize);
+                        name_bf_ptr = name_bf_ptr + 1i32;
+                        ex_buf_xptr = ex_buf_xptr + 1i32;
+                        token_starting = 0i32 != 0
+                    }
+                },
             }
         }
         *name_tok.offset(num_tokens as isize) = name_bf_ptr;
@@ -4798,8 +4681,7 @@ unsafe extern "C" fn x_format_name() {
                             if !(lex_class[*name_sep_char.offset(von_start as isize) as usize]
                                 as i32
                                 != 4i32
-                                || *name_sep_char.offset(von_start as isize) as i32
-                                    == 126i32)
+                                || *name_sep_char.offset(von_start as isize) as i32 == 126i32)
                             {
                                 von_start = von_start - 1i32;
                                 current_block_127 = 248631179418912492;
@@ -4943,8 +4825,7 @@ unsafe extern "C" fn x_purify() {
                         /*left_brace */
                         brace_level = brace_level + 1i32;
                         if brace_level == 1i32 && ex_buf_ptr + 1i32 < ex_buf_length {
-                            if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as i32 == 92i32
-                            {
+                            if *ex_buf.offset((ex_buf_ptr + 1i32) as isize) as i32 == 92i32 {
                                 /*backslash */
                                 /*433: */
                                 ex_buf_ptr = ex_buf_ptr + 1i32;
@@ -4981,8 +4862,7 @@ unsafe extern "C" fn x_purify() {
                                     }
                                     while ex_buf_ptr < ex_buf_length
                                         && brace_level > 0i32
-                                        && *ex_buf.offset(ex_buf_ptr as isize) as i32
-                                            != 92i32
+                                        && *ex_buf.offset(ex_buf_ptr as isize) as i32 != 92i32
                                     {
                                         match lex_class
                                             [*ex_buf.offset(ex_buf_ptr as isize) as usize]
@@ -4994,14 +4874,12 @@ unsafe extern "C" fn x_purify() {
                                                 ex_buf_xptr = ex_buf_xptr + 1i32
                                             }
                                             _ => {
-                                                if *ex_buf.offset(ex_buf_ptr as isize)
-                                                    as i32
+                                                if *ex_buf.offset(ex_buf_ptr as isize) as i32
                                                     == 125i32
                                                 {
                                                     /*right_brace */
                                                     brace_level = brace_level - 1i32
-                                                } else if *ex_buf.offset(ex_buf_ptr as isize)
-                                                    as i32
+                                                } else if *ex_buf.offset(ex_buf_ptr as isize) as i32
                                                     == 123i32
                                                 {
                                                     /*left_brace */
@@ -5301,8 +5179,7 @@ unsafe extern "C" fn x_width() {
                             ex_buf_ptr = ex_buf_ptr + 1i32;
                             ex_buf_xptr = ex_buf_ptr;
                             while ex_buf_ptr < ex_buf_length
-                                && lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize]
-                                    as i32
+                                && lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as i32
                                     == 2i32
                             {
                                 ex_buf_ptr = ex_buf_ptr + 1i32
@@ -5334,8 +5211,7 @@ unsafe extern "C" fn x_width() {
                                 }
                             }
                             while ex_buf_ptr < ex_buf_length
-                                && lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize]
-                                    as i32
+                                && lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as i32
                                     == 1i32
                             {
                                 ex_buf_ptr = ex_buf_ptr + 1i32
@@ -5347,9 +5223,7 @@ unsafe extern "C" fn x_width() {
                                 if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 125i32 {
                                     /*right_brace */
                                     brace_level = brace_level - 1i32
-                                } else if *ex_buf.offset(ex_buf_ptr as isize) as i32
-                                    == 123i32
-                                {
+                                } else if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 123i32 {
                                     /*left_brace */
                                     brace_level = brace_level + 1i32
                                 } else {
@@ -5556,10 +5430,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -5716,10 +5587,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -5876,10 +5744,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6036,10 +5901,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6196,10 +6058,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6356,10 +6215,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6516,10 +6372,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6676,10 +6529,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6836,10 +6686,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -6996,10 +6843,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7156,10 +7000,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7316,10 +7157,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7476,10 +7314,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7636,10 +7471,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7796,10 +7628,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -7956,10 +7785,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8116,10 +7942,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8276,10 +8099,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8436,10 +8256,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8596,10 +8413,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8756,10 +8570,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -8916,10 +8727,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -9076,10 +8884,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -9236,10 +9041,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -9396,10 +9198,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -9557,10 +9356,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -9717,10 +9513,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -9877,10 +9670,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -10037,10 +9827,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -10197,10 +9984,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -10357,10 +10141,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -10517,10 +10298,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -10677,10 +10455,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -10837,10 +10612,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -10997,10 +10769,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -11157,10 +10926,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -11317,10 +11083,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                             x_width();
                         }
                         _ => {
-                            puts_log(
-                                b"Unknown built-in function\x00" as *const u8
-                                    as *const i8,
-                            );
+                            puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
                             longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                         }
@@ -11352,9 +11115,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
             } else {
                 field_ptr = cite_ptr * num_fields + *ilk_info.offset(ex_fn_loc as isize);
                 if field_ptr >= max_fields {
-                    puts_log(
-                        b"field_info index is out of range\x00" as *const u8 as *const i8,
-                    );
+                    puts_log(b"field_info index is out of range\x00" as *const u8 as *const i8);
                     print_confusion();
                     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                 }
@@ -11424,9 +11185,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
         }
     };
 }
-unsafe extern "C" fn get_the_top_level_aux_file_name(
-    mut aux_file_name: *const i8,
-) -> i32 {
+unsafe extern "C" fn get_the_top_level_aux_file_name(mut aux_file_name: *const i8) -> i32 {
     name_of_file = xmalloc(
         strlen(aux_file_name)
             .wrapping_add(1i32 as u64)
@@ -11530,10 +11289,7 @@ unsafe extern "C" fn aux_bib_data_command() {
             1i32 != 0,
         ) as isize);
         if hash_found {
-            puts_log(
-                b"This database file appears more than once: \x00" as *const u8
-                    as *const i8,
-            );
+            puts_log(b"This database file appears more than once: \x00" as *const u8 as *const i8);
             print_bib_name();
             aux_err_print();
             return;
@@ -11599,10 +11355,7 @@ unsafe extern "C" fn aux_bib_style_command() {
         puts_log(b"The style file: \x00" as *const u8 as *const i8);
         print_bst_name();
     } else {
-        ttstub_puts(
-            log_file,
-            b"The style file: \x00" as *const u8 as *const i8,
-        );
+        ttstub_puts(log_file, b"The style file: \x00" as *const u8 as *const i8);
         log_pr_bst_name();
     };
 }
@@ -11633,8 +11386,7 @@ unsafe extern "C" fn aux_citation_command() {
                 /*star */
                 if all_entries {
                     puts_log(
-                        b"Multiple inclusions of entire database\n\x00" as *const u8
-                            as *const i8,
+                        b"Multiple inclusions of entire database\n\x00" as *const u8 as *const i8,
                     ); /*137: */
                     aux_err_print();
                     return;
@@ -11674,8 +11426,7 @@ unsafe extern "C" fn aux_citation_command() {
                     );
                     if !hash_found {
                         puts_log(
-                            b"Case mismatch error between cite keys \x00" as *const u8
-                                as *const i8,
+                            b"Case mismatch error between cite keys \x00" as *const u8 as *const i8,
                         );
                         print_a_token();
                         puts_log(b" and \x00" as *const u8 as *const i8);
@@ -12081,9 +11832,7 @@ unsafe extern "C" fn bad_argument_token() -> bool {
 }
 unsafe extern "C" fn bst_execute_command() {
     if !read_seen {
-        puts_log(
-            b"Illegal, execute command before read command\x00" as *const u8 as *const i8,
-        );
+        puts_log(b"Illegal, execute command before read command\x00" as *const u8 as *const i8);
         bst_err_print_and_look_for_blank_line();
         return;
     }
@@ -12280,9 +12029,7 @@ unsafe extern "C" fn bst_integers_command() {
 }
 unsafe extern "C" fn bst_iterate_command() {
     if !read_seen {
-        puts_log(
-            b"Illegal, iterate command before read command\x00" as *const u8 as *const i8,
-        );
+        puts_log(b"Illegal, iterate command before read command\x00" as *const u8 as *const i8);
         bst_err_print_and_look_for_blank_line();
         return;
     }
@@ -12347,9 +12094,7 @@ unsafe extern "C" fn bst_iterate_command() {
 }
 unsafe extern "C" fn bst_macro_command() {
     if read_seen {
-        puts_log(
-            b"Illegal, macro command after read command\x00" as *const u8 as *const i8,
-        );
+        puts_log(b"Illegal, macro command after read command\x00" as *const u8 as *const i8);
         bst_err_print_and_look_for_blank_line();
         return;
     }
@@ -12436,17 +12181,13 @@ unsafe extern "C" fn bst_macro_command() {
     }
     if *buffer.offset(buf_ptr2 as isize) as i32 != 34i32 {
         /*double_quote */
-        puts_log(
-            b"A macro definition must be \"-delimited\x00" as *const u8 as *const i8,
-        ); /*str_literal */
+        puts_log(b"A macro definition must be \"-delimited\x00" as *const u8 as *const i8); /*str_literal */
         bst_err_print_and_look_for_blank_line();
         return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !scan1(34i32 as ASCII_code) {
-        puts_log(
-            b"There\'s no `\"\' to end macro definition\x00" as *const u8 as *const i8,
-        );
+        puts_log(b"There\'s no `\"\' to end macro definition\x00" as *const u8 as *const i8);
         bst_err_print_and_look_for_blank_line();
         return;
     }
@@ -12530,9 +12271,8 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     ) as *mut str_number;
                     bib_file = xrealloc(
                         bib_file as *mut libc::c_void,
-                        ((max_bib_files + 20i32 + 1i32) as u64).wrapping_mul(
-                            ::std::mem::size_of::<*mut peekable_input_t>() as u64,
-                        ),
+                        ((max_bib_files + 20i32 + 1i32) as u64)
+                            .wrapping_mul(::std::mem::size_of::<*mut peekable_input_t>() as u64),
                     ) as *mut *mut peekable_input_t;
                     s_preamble = xrealloc(
                         s_preamble as *mut libc::c_void,
@@ -12565,12 +12305,9 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                 if !scan_and_store_the_field_value_and_eat_white() {
                     return;
                 }
-                if *buffer.offset(buf_ptr2 as isize) as i32
-                    != right_outer_delim as i32
-                {
+                if *buffer.offset(buf_ptr2 as isize) as i32 != right_outer_delim as i32 {
                     printf_log(
-                        b"Missing \"%c\" in preamble command\x00" as *const u8
-                            as *const i8,
+                        b"Missing \"%c\" in preamble command\x00" as *const u8 as *const i8,
                         right_outer_delim as i32,
                     );
                     bib_err_print();
@@ -12640,9 +12377,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                 if !scan_and_store_the_field_value_and_eat_white() {
                     return;
                 }
-                if *buffer.offset(buf_ptr2 as isize) as i32
-                    != right_outer_delim as i32
-                {
+                if *buffer.offset(buf_ptr2 as isize) as i32 != right_outer_delim as i32 {
                     printf_log(
                         b"Missing \"%c\" in string command\x00" as *const u8 as *const i8,
                         right_outer_delim as i32,
@@ -12918,9 +12653,7 @@ unsafe extern "C" fn bst_read_command() {
     }
     read_seen = 1i32 != 0;
     if !entry_seen {
-        puts_log(
-            b"Illegal, read command before entry command\x00" as *const u8 as *const i8,
-        );
+        puts_log(b"Illegal, read command before entry command\x00" as *const u8 as *const i8);
         bst_err_print_and_look_for_blank_line();
         return;
     }
@@ -12970,8 +12703,7 @@ unsafe extern "C" fn bst_read_command() {
             let mut buf: [i8; 512] = [0; 512];
             snprintf(
                 buf.as_mut_ptr(),
-                (::std::mem::size_of::<[i8; 512]>() as u64)
-                    .wrapping_sub(1i32 as u64),
+                (::std::mem::size_of::<[i8; 512]>() as u64).wrapping_sub(1i32 as u64),
                 b"Database file #%ld: \x00" as *const u8 as *const i8,
                 bib_ptr as i64 + 1i32 as i64,
             );
@@ -13060,8 +12792,7 @@ unsafe extern "C" fn bst_read_command() {
                         );
                         bad_cross_reference_print(*cite_list.offset(cite_parent_ptr as isize));
                         puts_log(
-                            b"\", which also refers to something\n\x00" as *const u8
-                                as *const i8,
+                            b"\", which also refers to something\n\x00" as *const u8 as *const i8,
                         );
                         mark_warning();
                     }
@@ -13088,9 +12819,7 @@ unsafe extern "C" fn bst_read_command() {
             if cite_ptr > cite_xptr {
                 /*286: */
                 if (cite_xptr + 1i32) * num_fields > max_fields {
-                    puts_log(
-                        b"field_info index is out of range\x00" as *const u8 as *const i8,
-                    );
+                    puts_log(b"field_info index is out of range\x00" as *const u8 as *const i8);
                     print_confusion();
                     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                 }
@@ -13162,9 +12891,7 @@ unsafe extern "C" fn bst_read_command() {
 }
 unsafe extern "C" fn bst_reverse_command() {
     if !read_seen {
-        puts_log(
-            b"Illegal, reverse command before read command\x00" as *const u8 as *const i8,
-        );
+        puts_log(b"Illegal, reverse command before read command\x00" as *const u8 as *const i8);
         bst_err_print_and_look_for_blank_line();
         return;
     }
@@ -13234,9 +12961,7 @@ unsafe extern "C" fn bst_reverse_command() {
 }
 unsafe extern "C" fn bst_sort_command() {
     if !read_seen {
-        puts_log(
-            b"Illegal, sort command before read command\x00" as *const u8 as *const i8,
-        );
+        puts_log(b"Illegal, sort command before read command\x00" as *const u8 as *const i8);
         bst_err_print_and_look_for_blank_line();
         return;
     }
@@ -13703,108 +13428,81 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
             .wrapping_mul(::std::mem::size_of::<*mut peekable_input_t>() as u64),
     ) as *mut *mut peekable_input_t;
     bib_list = xmalloc(
-        ((max_bib_files + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
+        ((max_bib_files + 1i32) as u64).wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
     wiz_functions = xmalloc(
-        ((wiz_fn_space + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as u64),
+        ((wiz_fn_space + 1i32) as u64).wrapping_mul(::std::mem::size_of::<hash_ptr2>() as u64),
     ) as *mut hash_ptr2;
     field_info = xmalloc(
-        ((max_fields + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
+        ((max_fields + 1i32) as u64).wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
     s_preamble = xmalloc(
-        ((max_bib_files + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
+        ((max_bib_files + 1i32) as u64).wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
     str_pool = xmalloc(
-        ((pool_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
+        ((pool_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
     ) as *mut ASCII_code;
     buffer = xmalloc(
-        ((buf_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
+        ((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
     ) as buf_type;
     sv_buffer = xmalloc(
-        ((buf_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
+        ((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
     ) as buf_type;
     ex_buf = xmalloc(
-        ((buf_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
+        ((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
     ) as buf_type;
     out_buf = xmalloc(
-        ((buf_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
+        ((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
     ) as buf_type;
     name_tok = xmalloc(
-        ((buf_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<buf_pointer>() as u64),
+        ((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<buf_pointer>() as u64),
     ) as *mut buf_pointer;
     name_sep_char = xmalloc(
-        ((buf_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
+        ((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
     ) as *mut ASCII_code;
-    glb_str_ptr = xmalloc(
-        (max_glob_strs as u64)
-            .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
-    ) as *mut str_number;
+    glb_str_ptr =
+        xmalloc((max_glob_strs as u64).wrapping_mul(::std::mem::size_of::<str_number>() as u64))
+            as *mut str_number;
     global_strs = xmalloc(
         ((max_glob_strs * (glob_str_size + 1i32)) as u64)
             .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
     ) as *mut ASCII_code;
-    glb_str_end = xmalloc(
-        (max_glob_strs as u64)
-            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
-    ) as *mut i32;
+    glb_str_end = xmalloc((max_glob_strs as u64).wrapping_mul(::std::mem::size_of::<i32>() as u64))
+        as *mut i32;
     cite_list = xmalloc(
-        ((max_cites + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
+        ((max_cites + 1i32) as u64).wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
     type_list = xmalloc(
-        ((max_cites + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<hash_ptr2>() as u64),
+        ((max_cites + 1i32) as u64).wrapping_mul(::std::mem::size_of::<hash_ptr2>() as u64),
     ) as *mut hash_ptr2;
-    entry_exists = xmalloc(
-        ((max_cites + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<bool>() as u64),
-    ) as *mut bool;
+    entry_exists =
+        xmalloc(((max_cites + 1i32) as u64).wrapping_mul(::std::mem::size_of::<bool>() as u64))
+            as *mut bool;
     cite_info = xmalloc(
-        ((max_cites + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
+        ((max_cites + 1i32) as u64).wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
     str_start = xmalloc(
-        ((max_strings + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<pool_pointer>() as u64),
+        ((max_strings + 1i32) as u64).wrapping_mul(::std::mem::size_of::<pool_pointer>() as u64),
     ) as *mut pool_pointer;
     hash_next = xmalloc(
-        ((hash_max + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<hash_pointer>() as u64),
+        ((hash_max + 1i32) as u64).wrapping_mul(::std::mem::size_of::<hash_pointer>() as u64),
     ) as *mut hash_pointer;
     hash_text = xmalloc(
-        ((hash_max + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
+        ((hash_max + 1i32) as u64).wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
-    hash_ilk = xmalloc(
-        ((hash_max + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<str_ilk>() as u64),
-    ) as *mut str_ilk;
-    ilk_info = xmalloc(
-        ((hash_max + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
-    ) as *mut i32;
-    fn_type = xmalloc(
-        ((hash_max + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<fn_class>() as u64),
-    ) as *mut fn_class;
-    lit_stack = xmalloc(
-        ((lit_stk_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
-    ) as *mut i32;
+    hash_ilk =
+        xmalloc(((hash_max + 1i32) as u64).wrapping_mul(::std::mem::size_of::<str_ilk>() as u64))
+            as *mut str_ilk;
+    ilk_info = xmalloc(((hash_max + 1i32) as u64).wrapping_mul(::std::mem::size_of::<i32>() as u64))
+        as *mut i32;
+    fn_type =
+        xmalloc(((hash_max + 1i32) as u64).wrapping_mul(::std::mem::size_of::<fn_class>() as u64))
+            as *mut fn_class;
+    lit_stack =
+        xmalloc(((lit_stk_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<i32>() as u64))
+            as *mut i32;
     lit_stk_type = xmalloc(
-        ((lit_stk_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<stk_type>() as u64),
+        ((lit_stk_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<stk_type>() as u64),
     ) as *mut stk_type;
     compute_hash_prime();
     if initialize(aux_file_name) != 0 {
@@ -13823,8 +13521,7 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
         let mut buf: [i8; 512] = [0; 512];
         snprintf(
             buf.as_mut_ptr(),
-            (::std::mem::size_of::<[i8; 512]>() as u64)
-                .wrapping_sub(1i32 as u64),
+            (::std::mem::size_of::<[i8; 512]>() as u64).wrapping_sub(1i32 as u64),
             b"Capacity: max_strings=%ld, hash_size=%ld, hash_prime=%ld\n\x00" as *const u8
                 as *const i8,
             max_strings as i64,

@@ -26,17 +26,9 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_input_seek(
-        handle: rust_input_handle_t,
-        offset: ssize_t,
-        whence: i32,
-    ) -> size_t;
+    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
     #[no_mangle]
-    fn ttstub_input_read(
-        handle: rust_input_handle_t,
-        data: *mut i8,
-        len: size_t,
-    ) -> ssize_t;
+    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
     fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
@@ -140,8 +132,7 @@ pub unsafe extern "C" fn sfnt_open(mut handle: rust_input_handle_t) -> *mut sfnt
         ); /* resource name position from name_list */
     } /* resource flag (byte) + resource offset */
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32); /* mbz */
-    sfont = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<sfnt>() as u64) as u32)
+    sfont = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<sfnt>() as u64) as u32)
         as *mut sfnt;
     (*sfont).handle = handle;
     type_0 = tt_get_unsigned_quad((*sfont).handle);
@@ -160,10 +151,7 @@ pub unsafe extern "C" fn sfnt_open(mut handle: rust_input_handle_t) -> *mut sfnt
     return sfont;
 }
 #[no_mangle]
-pub unsafe extern "C" fn dfont_open(
-    mut handle: rust_input_handle_t,
-    mut index: i32,
-) -> *mut sfnt {
+pub unsafe extern "C" fn dfont_open(mut handle: rust_input_handle_t, mut index: i32) -> *mut sfnt {
     let mut sfont: *mut sfnt = 0 as *mut sfnt;
     let mut rdata_pos: u32 = 0;
     let mut map_pos: u32 = 0;
@@ -187,8 +175,7 @@ pub unsafe extern "C" fn dfont_open(
         );
     }
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
-    sfont = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<sfnt>() as u64) as u32)
+    sfont = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<sfnt>() as u64) as u32)
         as *mut sfnt;
     (*sfont).handle = handle;
     rdata_pos = tt_get_unsigned_quad((*sfont).handle);
@@ -266,11 +253,7 @@ pub unsafe extern "C" fn sfnt_close(mut sfont: *mut sfnt) {
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn put_big_endian(
-    mut s: *mut libc::c_void,
-    mut q: i32,
-    mut n: i32,
-) -> i32 {
+pub unsafe extern "C" fn put_big_endian(mut s: *mut libc::c_void, mut q: i32, mut n: i32) -> i32 {
     let mut i: i32 = 0;
     let mut p: *mut i8 = 0 as *mut i8;
     p = s as *mut i8;
@@ -290,8 +273,7 @@ unsafe extern "C" fn convert_tag(mut tag: *mut i8, mut u_tag: u32) {
     i = 3i32;
     while i >= 0i32 {
         *tag.offset(i as isize) = u_tag.wrapping_rem(256i32 as u32) as i8;
-        u_tag =
-            (u_tag as u32).wrapping_div(256i32 as u32) as u32;
+        u_tag = (u_tag as u32).wrapping_div(256i32 as u32) as u32;
         i -= 1
     }
 }
@@ -317,10 +299,7 @@ unsafe extern "C" fn log2floor(mut n: u32) -> u32 {
     }
     return val;
 }
-unsafe extern "C" fn sfnt_calc_checksum(
-    mut data: *mut libc::c_void,
-    mut length: u32,
-) -> u32 {
+unsafe extern "C" fn sfnt_calc_checksum(mut data: *mut libc::c_void, mut length: u32) -> u32 {
     let mut chksum: u32 = 0i32 as u32;
     let mut p: *mut u8 = 0 as *mut u8;
     let mut endptr: *mut u8 = 0 as *mut u8;
@@ -387,8 +366,7 @@ pub unsafe extern "C" fn sfnt_set_table(
         (*td).tables = renew(
             (*td).tables as *mut libc::c_void,
             ((*td).num_tables as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<sfnt_table>() as u64)
-                as u32,
+                .wrapping_mul(::std::mem::size_of::<sfnt_table>() as u64) as u32,
         ) as *mut sfnt_table;
         memcpy(
             (*(*td).tables.offset(idx as isize)).tag.as_mut_ptr() as *mut libc::c_void,
@@ -403,10 +381,7 @@ pub unsafe extern "C" fn sfnt_set_table(
     *fresh0 = data as *mut i8;
 }
 #[no_mangle]
-pub unsafe extern "C" fn sfnt_find_table_len(
-    mut sfont: *mut sfnt,
-    mut tag: *const i8,
-) -> u32 {
+pub unsafe extern "C" fn sfnt_find_table_len(mut sfont: *mut sfnt, mut tag: *const i8) -> u32 {
     let mut length: u32 = 0;
     let mut td: *mut sfnt_table_directory = 0 as *mut sfnt_table_directory;
     let mut idx: i32 = 0;
@@ -432,10 +407,7 @@ pub unsafe extern "C" fn sfnt_find_table_len(
     return length;
 }
 #[no_mangle]
-pub unsafe extern "C" fn sfnt_find_table_pos(
-    mut sfont: *mut sfnt,
-    mut tag: *const i8,
-) -> u32 {
+pub unsafe extern "C" fn sfnt_find_table_pos(mut sfont: *mut sfnt, mut tag: *const i8) -> u32 {
     let mut offset: u32 = 0;
     let mut td: *mut sfnt_table_directory = 0 as *mut sfnt_table_directory;
     let mut idx: i32 = 0;
@@ -461,10 +433,7 @@ pub unsafe extern "C" fn sfnt_find_table_pos(
     return offset;
 }
 #[no_mangle]
-pub unsafe extern "C" fn sfnt_locate_table(
-    mut sfont: *mut sfnt,
-    mut tag: *const i8,
-) -> u32 {
+pub unsafe extern "C" fn sfnt_locate_table(mut sfont: *mut sfnt, mut tag: *const i8) -> u32 {
     let mut offset: u32 = 0;
     if !sfont.is_null() && !tag.is_null() {
     } else {
@@ -486,10 +455,7 @@ pub unsafe extern "C" fn sfnt_locate_table(
     return offset;
 }
 #[no_mangle]
-pub unsafe extern "C" fn sfnt_read_table_directory(
-    mut sfont: *mut sfnt,
-    mut offset: u32,
-) -> i32 {
+pub unsafe extern "C" fn sfnt_read_table_directory(mut sfont: *mut sfnt, mut offset: u32) -> i32 {
     let mut td: *mut sfnt_table_directory = 0 as *mut sfnt_table_directory;
     let mut i: u32 = 0;
     let mut u_tag: u32 = 0;
@@ -508,9 +474,10 @@ pub unsafe extern "C" fn sfnt_read_table_directory(
     if !(*sfont).directory.is_null() {
         release_directory((*sfont).directory);
     }
-    td = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<sfnt_table_directory>() as u64)
-        as u32) as *mut sfnt_table_directory;
+    td = new(
+        (1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<sfnt_table_directory>() as u64)
+            as u32,
+    ) as *mut sfnt_table_directory;
     (*sfont).directory = td;
     if !(*sfont).handle.is_null() {
     } else {
@@ -530,12 +497,12 @@ pub unsafe extern "C" fn sfnt_read_table_directory(
     (*td).search_range = tt_get_unsigned_pair((*sfont).handle);
     (*td).entry_selector = tt_get_unsigned_pair((*sfont).handle);
     (*td).range_shift = tt_get_unsigned_pair((*sfont).handle);
-    (*td).flags = new(((*td).num_tables as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+    (*td).flags = new(
+        ((*td).num_tables as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32
+    ) as *mut i8;
     (*td).tables = new(((*td).num_tables as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<sfnt_table>() as u64)
-        as u32) as *mut sfnt_table;
+        .wrapping_mul(::std::mem::size_of::<sfnt_table>() as u64) as u32)
+        as *mut sfnt_table;
     i = 0i32 as u32;
     while i < (*td).num_tables as u32 {
         u_tag = tt_get_unsigned_quad((*sfont).handle);
@@ -657,13 +624,10 @@ pub unsafe extern "C" fn sfnt_create_FontFile_stream(mut sfont: *mut sfnt) -> *m
     /* Header */
     p = wbuf.as_mut_ptr() as *mut i8;
     p = p.offset(put_big_endian(p as *mut libc::c_void, (*td).version as i32, 4i32) as isize);
-    p = p.offset(put_big_endian(
-        p as *mut libc::c_void,
-        (*td).num_kept_tables as i32,
-        2i32,
-    ) as isize);
-    sr = max2floor((*td).num_kept_tables as u32).wrapping_mul(16i32 as u32)
-        as i32;
+    p = p.offset(
+        put_big_endian(p as *mut libc::c_void, (*td).num_kept_tables as i32, 2i32) as isize,
+    );
+    sr = max2floor((*td).num_kept_tables as u32).wrapping_mul(16i32 as u32) as i32;
     p = p.offset(put_big_endian(p as *mut libc::c_void, sr, 2i32) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
@@ -706,9 +670,8 @@ pub unsafe extern "C" fn sfnt_create_FontFile_stream(mut sfont: *mut sfnt) -> *m
                 4i32,
             ) as isize);
             pdf_add_stream(stream, wbuf.as_mut_ptr() as *const libc::c_void, 16i32);
-            offset = (offset as u32)
-                .wrapping_add((*(*td).tables.offset(i as isize)).length)
-                as i32 as i32
+            offset = (offset as u32).wrapping_add((*(*td).tables.offset(i as isize)).length) as i32
+                as i32
         }
         i += 1
     }
@@ -725,8 +688,7 @@ pub unsafe extern "C" fn sfnt_create_FontFile_stream(mut sfont: *mut sfnt) -> *m
                 if (*sfont).handle.is_null() {
                     pdf_release_obj(stream);
                     _tt_abort(
-                        b"Font file not opened or already closed...\x00" as *const u8
-                            as *const i8,
+                        b"Font file not opened or already closed...\x00" as *const u8 as *const i8,
                     );
                 }
                 length = (*(*td).tables.offset(i as isize)).length as i32;
@@ -743,9 +705,7 @@ pub unsafe extern "C" fn sfnt_create_FontFile_stream(mut sfont: *mut sfnt) -> *m
                     ) as i32;
                     if nb_read < 0i32 {
                         pdf_release_obj(stream);
-                        _tt_abort(
-                            b"Reading file failed...\x00" as *const u8 as *const i8,
-                        );
+                        _tt_abort(b"Reading file failed...\x00" as *const u8 as *const i8);
                     } else {
                         if nb_read > 0i32 {
                             pdf_add_stream(
@@ -764,13 +724,12 @@ pub unsafe extern "C" fn sfnt_create_FontFile_stream(mut sfont: *mut sfnt) -> *m
                     (*(*td).tables.offset(i as isize)).length as i32,
                 );
                 let ref mut fresh3 = (*(*td).tables.offset(i as isize)).data;
-                *fresh3 = mfree((*(*td).tables.offset(i as isize)).data as *mut libc::c_void)
-                    as *mut i8
+                *fresh3 =
+                    mfree((*(*td).tables.offset(i as isize)).data as *mut libc::c_void) as *mut i8
             }
             /* Set offset for next table */
-            offset = (offset as u32)
-                .wrapping_add((*(*td).tables.offset(i as isize)).length)
-                as i32 as i32
+            offset = (offset as u32).wrapping_add((*(*td).tables.offset(i as isize)).length) as i32
+                as i32
         }
         i += 1
     }

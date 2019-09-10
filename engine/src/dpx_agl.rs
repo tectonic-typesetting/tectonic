@@ -27,8 +27,7 @@ extern "C" {
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64)
-        -> *mut i8;
+    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
@@ -41,11 +40,7 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     /* Tectonic-enabled versions */
     #[no_mangle]
-    fn tt_mfgets(
-        buffer: *mut i8,
-        length: i32,
-        file: rust_input_handle_t,
-    ) -> *mut i8;
+    fn tt_mfgets(buffer: *mut i8, length: i32, file: rust_input_handle_t) -> *mut i8;
     /* tmp freed here */
     /* Tectonic-enabled I/O alternatives */
     #[no_mangle]
@@ -148,11 +143,7 @@ extern "C" {
     #[no_mangle]
     fn UC_is_valid(ucv: i32) -> bool;
     #[no_mangle]
-    fn UC_UTF16BE_encode_char(
-        ucv: i32,
-        dstpp: *mut *mut u8,
-        endptr: *mut u8,
-    ) -> size_t;
+    fn UC_UTF16BE_encode_char(ucv: i32, dstpp: *mut *mut u8, endptr: *mut u8) -> size_t;
 }
 pub type __ssize_t = i64;
 pub type C2RustUnnamed = u32;
@@ -247,10 +238,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     return 0i32 != 0;
 }
 #[inline]
-unsafe extern "C" fn strstartswith(
-    mut s: *const i8,
-    mut prefix: *const i8,
-) -> *const i8 {
+unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
     let mut length: size_t = 0;
     length = strlen(prefix);
     if strncmp(s, prefix, length) == 0i32 {
@@ -265,9 +253,8 @@ pub unsafe extern "C" fn agl_set_verbose(mut level: i32) {
 }
 unsafe extern "C" fn agl_new_name() -> *mut agl_name {
     let mut agln: *mut agl_name = 0 as *mut agl_name;
-    agln = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<agl_name>() as u64)
-        as u32) as *mut agl_name;
+    agln = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<agl_name>() as u64) as u32)
+        as *mut agl_name;
     (*agln).name = 0 as *mut i8;
     (*agln).suffix = 0 as *mut i8;
     (*agln).n_components = 0i32;
@@ -312,32 +299,29 @@ pub unsafe extern "C" fn agl_chop_suffix(
         if len < 1i32 {
             name = 0 as *mut i8;
             *suffix = new((strlen(glyphname) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+                .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+                as *mut i8;
             strcpy(*suffix, glyphname.offset(1));
         } else {
             p = p.offset(1);
-            name = new(((len + 1i32) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+            name = new(
+                ((len + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                    as u32,
+            ) as *mut i8;
             strncpy(name, glyphname, len as u64);
             *name.offset(len as isize) = '\u{0}' as i32 as i8;
             if *p.offset(0) as i32 == '\u{0}' as i32 {
                 *suffix = 0 as *mut i8
             } else {
-                *suffix = new((strlen(p).wrapping_add(1i32 as u64) as u32
-                    as u64)
+                *suffix = new((strlen(p).wrapping_add(1i32 as u64) as u32 as u64)
                     .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                     as u32) as *mut i8;
                 strcpy(*suffix, p);
             }
         }
     } else {
-        name = new(
-            (strlen(glyphname).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32,
-        ) as *mut i8;
+        name = new((strlen(glyphname).wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
         strcpy(name, glyphname);
         *suffix = 0 as *mut i8
     }
@@ -366,10 +350,7 @@ static mut modifiers: [*const i8; 21] = [
     b"questiondown\x00" as *const u8 as *const i8,
     0 as *const i8,
 ];
-unsafe extern "C" fn skip_capital(
-    mut p: *mut *const i8,
-    mut endptr: *const i8,
-) -> i32 {
+unsafe extern "C" fn skip_capital(mut p: *mut *const i8, mut endptr: *const i8) -> i32 {
     let mut slen: i32 = 0i32;
     let mut len: i32 = 0;
     len = endptr.wrapping_offset_from(*p) as i64 as i32;
@@ -401,10 +382,7 @@ unsafe extern "C" fn skip_capital(
     }
     return slen;
 }
-unsafe extern "C" fn skip_modifier(
-    mut p: *mut *const i8,
-    mut endptr: *const i8,
-) -> size_t {
+unsafe extern "C" fn skip_modifier(mut p: *mut *const i8, mut endptr: *const i8) -> size_t {
     let mut slen: size_t = 0i32 as size_t;
     let mut len: size_t = 0;
     let mut i: u32 = 0;
@@ -456,8 +434,7 @@ unsafe extern "C" fn is_smallcap(mut glyphname: *const i8) -> bool {
             return 0i32 != 0;
         }
     }
-    len = (len as u64).wrapping_sub(skip_capital(&mut p, endptr) as u64)
-        as size_t as size_t;
+    len = (len as u64).wrapping_sub(skip_capital(&mut p, endptr) as u64) as size_t as size_t;
     if len == 0i32 as u64 {
         return 1i32 != 0;
         /* Asmall, AEsmall, etc */
@@ -825,9 +802,7 @@ static mut var_list: [C2RustUnnamed_0; 14] = [
     },
 ];
 #[no_mangle]
-pub unsafe extern "C" fn agl_suffix_to_otltag(
-    mut suffix: *const i8,
-) -> *const i8 {
+pub unsafe extern "C" fn agl_suffix_to_otltag(mut suffix: *const i8) -> *const i8 {
     let mut i: i32 = 0;
     let mut j: i32 = 0;
     i = 0i32;
@@ -893,9 +868,9 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_nam
                 as u32) as *mut i8;
             strcpy((*agln).suffix, suffix.offset(1));
         }
-        (*agln).name = new(((n + 1i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+        (*agln).name =
+            new(((n + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+                as *mut i8;
         memcpy(
             (*agln).name as *mut libc::c_void,
             glyphname as *const libc::c_void,
@@ -904,16 +879,13 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_nam
         *(*agln).name.offset(n as isize) = '\u{0}' as i32 as i8
     } else if is_smallcap(glyphname) {
         n = strlen(glyphname).wrapping_sub(5i32 as u64) as i32;
-        (*agln).suffix = new((3i32 as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
-        strcpy(
-            (*agln).suffix,
-            b"sc\x00" as *const u8 as *const i8,
-        );
-        (*agln).name = new(((n + 1i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+        (*agln).suffix =
+            new((3i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+                as *mut i8;
+        strcpy((*agln).suffix, b"sc\x00" as *const u8 as *const i8);
+        (*agln).name =
+            new(((n + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+                as *mut i8;
         i = 0i32;
         while i < n {
             *(*agln).name.offset(i as isize) = (if *(*__ctype_b_loc())
@@ -935,27 +907,24 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_nam
         if var_idx < 0i32 as i64 || var_list[var_idx as usize].key.is_null() {
             n = strlen(glyphname) as i32
         } else {
-            n = strlen(glyphname).wrapping_sub(strlen(var_list[var_idx as usize].key))
-                as i32;
+            n = strlen(glyphname).wrapping_sub(strlen(var_list[var_idx as usize].key)) as i32;
             if !var_list[var_idx as usize].suffixes[0].is_null() {
                 (*agln).suffix = new((strlen(var_list[var_idx as usize].suffixes[0])
-                    .wrapping_add(1i32 as u64)
-                    as u32 as u64)
+                    .wrapping_add(1i32 as u64) as u32 as u64)
                     .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                     as u32) as *mut i8;
                 strcpy((*agln).suffix, var_list[var_idx as usize].suffixes[0]);
             } else {
                 (*agln).suffix = new((strlen(var_list[var_idx as usize].key)
-                    .wrapping_add(1i32 as u64)
-                    as u32 as u64)
+                    .wrapping_add(1i32 as u64) as u32 as u64)
                     .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                     as u32) as *mut i8;
                 strcpy((*agln).suffix, var_list[var_idx as usize].key);
             }
         }
-        (*agln).name = new(((n + 1i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+        (*agln).name =
+            new(((n + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+                as *mut i8;
         memcpy(
             (*agln).name as *mut libc::c_void,
             glyphname as *const libc::c_void,
@@ -980,25 +949,14 @@ pub unsafe extern "C" fn agl_init_map() {
         &mut aglmap,
         Some(hval_free as unsafe extern "C" fn(_: *mut libc::c_void) -> ()),
     );
-    agl_load_listfile(
-        b"texglyphlist.txt\x00" as *const u8 as *const i8,
-        0i32,
-    );
-    if agl_load_listfile(
-        b"pdfglyphlist.txt\x00" as *const u8 as *const i8,
-        1i32,
-    ) < 0i32
-    {
+    agl_load_listfile(b"texglyphlist.txt\x00" as *const u8 as *const i8, 0i32);
+    if agl_load_listfile(b"pdfglyphlist.txt\x00" as *const u8 as *const i8, 1i32) < 0i32 {
         dpx_warning(
             b"Failed to load AGL file \"%s\"...\x00" as *const u8 as *const i8,
             b"pdfglyphlist.txt\x00" as *const u8 as *const i8,
         );
     }
-    if agl_load_listfile(
-        b"glyphlist.txt\x00" as *const u8 as *const i8,
-        0i32,
-    ) < 0i32
-    {
+    if agl_load_listfile(b"glyphlist.txt\x00" as *const u8 as *const i8, 0i32) < 0i32 {
         dpx_warning(
             b"Failed to load AGL file \"%s\"...\x00" as *const u8 as *const i8,
             b"glyphlist.txt\x00" as *const u8 as *const i8,
@@ -1037,10 +995,7 @@ pub unsafe extern "C" fn agl_close_map() {
  *  http://partners.adobe.com/asn/tech/type/unicodegn.jsp
  */
 /* Hash */
-unsafe extern "C" fn agl_load_listfile(
-    mut filename: *const i8,
-    mut is_predef: i32,
-) -> i32 {
+unsafe extern "C" fn agl_load_listfile(mut filename: *const i8, mut is_predef: i32) -> i32 {
     let mut count: i32 = 0i32;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
@@ -1095,10 +1050,8 @@ unsafe extern "C" fn agl_load_listfile(
             skip_white(&mut p, endptr);
             n_unicodes = 0i32;
             while p < endptr
-                && (*p.offset(0) as i32 >= '0' as i32
-                    && *p.offset(0) as i32 <= '9' as i32
-                    || *p.offset(0) as i32 >= 'A' as i32
-                        && *p.offset(0) as i32 <= 'F' as i32)
+                && (*p.offset(0) as i32 >= '0' as i32 && *p.offset(0) as i32 <= '9' as i32
+                    || *p.offset(0) as i32 >= 'A' as i32 && *p.offset(0) as i32 <= 'F' as i32)
             {
                 if n_unicodes >= 16i32 {
                     dpx_warning(b"Too many Unicode values\x00" as *const u8 as *const i8);
@@ -1219,10 +1172,7 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
      * uni02ac is invalid glyph name and mapped to th empty string.
      */
     if len >= 7i32 as u64
-        && len
-            .wrapping_sub(3i32 as u64)
-            .wrapping_rem(4i32 as u64)
-            == 0i32 as u64
+        && len.wrapping_sub(3i32 as u64).wrapping_rem(4i32 as u64) == 0i32 as u64
         && !strstartswith(glyphname, b"uni\x00" as *const u8 as *const i8).is_null()
     {
         c = *glyphname.offset(3);
@@ -1240,15 +1190,11 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
             return 0i32 != 0;
         }
     } else {
-        if len <= 7i32 as u64
-            && len >= 5i32 as u64
-            && *glyphname.offset(0) as i32 == 'u' as i32
-        {
+        if len <= 7i32 as u64 && len >= 5i32 as u64 && *glyphname.offset(0) as i32 == 'u' as i32 {
             i = 1i32 as size_t;
             while i < len.wrapping_sub(1i32 as u64) {
                 c = *glyphname.offset(i as isize);
-                if *(*__ctype_b_loc()).offset(c as u8 as i32 as isize)
-                    as i32
+                if *(*__ctype_b_loc()).offset(c as u8 as i32 as isize) as i32
                     & _ISdigit as i32 as u16 as i32
                     == 0
                     && ((c as i32) < 'A' as i32 || c as i32 > 'F' as i32)
@@ -1269,12 +1215,9 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i
     if !agl_name_is_unicode(glyphname) {
         return -1i32;
     }
-    if strlen(glyphname) > 7i32 as u64
-        && *glyphname.offset(7) as i32 != '.' as i32
-    {
+    if strlen(glyphname) > 7i32 as u64 && *glyphname.offset(7) as i32 != '.' as i32 {
         dpx_warning(
-            b"Mapping to multiple Unicode characters not supported.\x00" as *const u8
-                as *const i8,
+            b"Mapping to multiple Unicode characters not supported.\x00" as *const u8 as *const i8,
         );
         return -1i32;
     }
@@ -1291,16 +1234,14 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i
             && ((*p as i32) < 'A' as i32 || *p as i32 > 'F' as i32)
         {
             dpx_warning(
-                b"Invalid char %c in Unicode glyph name %s.\x00" as *const u8
-                    as *const i8,
+                b"Invalid char %c in Unicode glyph name %s.\x00" as *const u8 as *const i8,
                 *p as i32,
                 glyphname,
             );
             return -1i32;
         }
         ucv <<= 4i32;
-        ucv += if *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
-            as i32
+        ucv += if *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
             & _ISdigit as i32 as u16 as i32
             != 0
         {
@@ -1335,8 +1276,7 @@ unsafe extern "C" fn xtol(mut start: *const i8, mut len: i32) -> i32 {
             break;
         }
         v <<= 4i32;
-        if *(*__ctype_b_loc()).offset(*start as u8 as i32 as isize)
-            as i32
+        if *(*__ctype_b_loc()).offset(*start as u8 as i32 as isize) as i32
             & _ISdigit as i32 as u16 as i32
             != 0
         {
@@ -1363,14 +1303,13 @@ unsafe extern "C" fn put_unicode_glyph(
     if *p.offset(1) as i32 != 'n' as i32 {
         p = p.offset(1);
         ucv = xtol(p, strlen(p) as i32);
-        len = (len as u64).wrapping_add(UC_UTF16BE_encode_char(ucv, dstpp, limptr))
-            as i32 as i32
+        len = (len as u64).wrapping_add(UC_UTF16BE_encode_char(ucv, dstpp, limptr)) as i32 as i32
     } else {
         p = p.offset(3);
         while *p as i32 != '\u{0}' as i32 {
             ucv = xtol(p, 4i32);
-            len = (len as u64).wrapping_add(UC_UTF16BE_encode_char(ucv, dstpp, limptr))
-                as i32 as i32;
+            len =
+                (len as u64).wrapping_add(UC_UTF16BE_encode_char(ucv, dstpp, limptr)) as i32 as i32;
             p = p.offset(4)
         }
     }
@@ -1430,9 +1369,10 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
             }
         }
         sub_len = delim.wrapping_offset_from(p) as i64 as i32;
-        name = new(((sub_len + 1i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+        name = new(
+            ((sub_len + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32,
+        ) as *mut i8;
         memcpy(
             name as *mut libc::c_void,
             p as *const libc::c_void,
@@ -1560,9 +1500,10 @@ pub unsafe extern "C" fn agl_get_unicodes(
             }
         }
         sub_len = delim.wrapping_offset_from(p) as i64 as i32;
-        name = new(((sub_len + 1i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+        name = new(
+            ((sub_len + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                as u32,
+        ) as *mut i8;
         memcpy(
             name as *mut libc::c_void,
             p as *const libc::c_void,

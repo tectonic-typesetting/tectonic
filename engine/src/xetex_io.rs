@@ -27,11 +27,7 @@ extern "C" {
     #[no_mangle]
     fn ttstub_input_open_primary() -> rust_input_handle_t;
     #[no_mangle]
-    fn ttstub_input_seek(
-        handle: rust_input_handle_t,
-        offset: ssize_t,
-        whence: i32,
-    ) -> size_t;
+    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
     #[no_mangle]
     fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
@@ -473,8 +469,7 @@ unsafe extern "C" fn print_c_string(mut str: *const i8) {
    Licensed under the MIT License.
 */
 #[no_mangle]
-pub static mut name_of_input_file: *mut i8 =
-    0 as *const i8 as *mut i8;
+pub static mut name_of_input_file: *mut i8 = 0 as *const i8 as *mut i8;
 #[no_mangle]
 pub unsafe extern "C" fn tt_xetex_open_input(mut filefmt: i32) -> rust_input_handle_t {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
@@ -505,273 +500,17 @@ pub static mut offsetsFromUTF8: [u32; 6] = [
 ];
 #[no_mangle]
 pub static mut bytesFromUTF8: [u8; 256] = [
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    3,
-    4,
-    4,
-    4,
-    4,
-    5,
-    5,
-    5,
-    5,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5,
 ];
 #[no_mangle]
-pub static mut firstByteMark: [u8; 7] = [
-    0,
-    0,
-    0xc0,
-    0xe0,
-    0xf0,
-    0xf8,
-    0xfc,
-];
+pub static mut firstByteMark: [u8; 7] = [0, 0, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc];
 #[no_mangle]
 pub unsafe extern "C" fn set_input_file_encoding(
     mut f: *mut UFILE,
@@ -793,9 +532,7 @@ pub unsafe extern "C" fn set_input_file_encoding(
                 print_nl('E' as i32);
                 print_c_string(b"rror \x00" as *const u8 as *const i8);
                 print_int(err as i32);
-                print_c_string(
-                    b" creating Unicode converter for `\x00" as *const u8 as *const i8,
-                );
+                print_c_string(b" creating Unicode converter for `\x00" as *const u8 as *const i8);
                 print_c_string(name);
                 print_c_string(b"\'; reading as raw bytes\x00" as *const u8 as *const i8);
                 end_diagnostic(1i32 != 0);
@@ -867,18 +604,12 @@ unsafe extern "C" fn buffer_overflow() {
 unsafe extern "C" fn conversion_error(mut errcode: i32) {
     begin_diagnostic();
     print_nl('U' as i32);
-    print_c_string(
-        b"nicode conversion failed (ICU error code = \x00" as *const u8 as *const i8,
-    );
+    print_c_string(b"nicode conversion failed (ICU error code = \x00" as *const u8 as *const i8);
     print_int(errcode);
     print_c_string(b") discarding any remaining text\x00" as *const u8 as *const i8);
     end_diagnostic(1i32 != 0);
 }
-unsafe extern "C" fn apply_normalization(
-    mut buf: *mut u32,
-    mut len: i32,
-    mut norm: i32,
-) {
+unsafe extern "C" fn apply_normalization(mut buf: *mut u32, mut len: i32, mut norm: i32) {
     static mut normalizers: [TECkit_Converter; 2] = [
         0 as *const Opaque_TECkit_Converter as TECkit_Converter,
         0 as *const Opaque_TECkit_Converter as TECkit_Converter,
@@ -899,8 +630,7 @@ unsafe extern "C" fn apply_normalization(
         );
         if status != 0i32 as i64 {
             _tt_abort(
-                b"failed to create normalizer: error code = %d\x00" as *const u8
-                    as *const i8,
+                b"failed to create normalizer: error code = %d\x00" as *const u8 as *const i8,
                 status as i32,
             );
         }
@@ -908,22 +638,20 @@ unsafe extern "C" fn apply_normalization(
     status = TECkit_ConvertBuffer(
         *normPtr,
         buf as *mut Byte,
-        (len as u64).wrapping_mul(::std::mem::size_of::<UInt32>() as u64)
-            as UInt32,
+        (len as u64).wrapping_mul(::std::mem::size_of::<UInt32>() as u64) as UInt32,
         &mut inUsed,
         &mut *buffer.offset(first as isize) as *mut UnicodeScalar as *mut Byte,
-        (::std::mem::size_of::<UnicodeScalar>() as u64)
-            .wrapping_mul((buf_size - first) as u64) as UInt32,
+        (::std::mem::size_of::<UnicodeScalar>() as u64).wrapping_mul((buf_size - first) as u64)
+            as UInt32,
         &mut outUsed,
         1i32 as Byte,
     );
     if status != 0i32 as i64 {
         buffer_overflow();
     }
-    last = (first as u64).wrapping_add(
-        (outUsed as u64)
-            .wrapping_div(::std::mem::size_of::<UnicodeScalar>() as u64),
-    ) as i32;
+    last = (first as u64)
+        .wrapping_add((outUsed as u64).wrapping_div(::std::mem::size_of::<UnicodeScalar>() as u64))
+        as i32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
@@ -988,18 +716,14 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
                 // NFC
                 // NFD
                 if utf32Buf.is_null() {
-                    utf32Buf = xcalloc(
-                        buf_size as size_t,
-                        ::std::mem::size_of::<u32>() as u64,
-                    ) as *mut u32
+                    utf32Buf =
+                        xcalloc(buf_size as size_t, ::std::mem::size_of::<u32>() as u64) as *mut u32
                 } // sets 'last' correctly
                 tmpLen = icu::ucnv_toAlgorithmic(
                     icu::UCNV_UTF32_LittleEndian,
                     cnv,
                     utf32Buf as *mut i8,
-                    (buf_size as u64)
-                        .wrapping_mul(::std::mem::size_of::<u32>() as u64)
-                        as i32,
+                    (buf_size as u64).wrapping_mul(::std::mem::size_of::<u32>() as u64) as i32,
                     byteBuffer,
                     bytesRead as i32,
                     &mut errorCode,
@@ -1010,9 +734,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
                 }
                 apply_normalization(
                     utf32Buf,
-                    (tmpLen as u64)
-                        .wrapping_div(::std::mem::size_of::<u32>() as u64)
-                        as i32,
+                    (tmpLen as u64).wrapping_div(::std::mem::size_of::<u32>() as u64) as i32,
                     norm,
                 );
             }
@@ -1023,8 +745,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
                     cnv,
                     &mut *buffer.offset(first as isize) as *mut UnicodeScalar as *mut i8,
                     (::std::mem::size_of::<UnicodeScalar>() as u64)
-                        .wrapping_mul((buf_size - first) as u64)
-                        as i32,
+                        .wrapping_mul((buf_size - first) as u64) as i32,
                     byteBuffer,
                     bytesRead as i32,
                     &mut errorCode,
@@ -1033,8 +754,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
                     conversion_error(errorCode as i32);
                     return 0i32;
                 }
-                outLen = (outLen as u64)
-                    .wrapping_div(::std::mem::size_of::<UnicodeScalar>() as u64)
+                outLen = (outLen as u64).wrapping_div(::std::mem::size_of::<UnicodeScalar>() as u64)
                     as i32 as i32;
                 last = first + outLen
             }
@@ -1054,10 +774,8 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
                 // NFD
                 // read Unicode chars into utf32Buf as UTF32
                 if utf32Buf.is_null() {
-                    utf32Buf = xcalloc(
-                        buf_size as size_t,
-                        ::std::mem::size_of::<u32>() as u64,
-                    ) as *mut u32
+                    utf32Buf =
+                        xcalloc(buf_size as size_t, ::std::mem::size_of::<u32>() as u64) as *mut u32
                 }
                 tmpLen = 0i32;
                 if i != -1i32 && i != '\n' as i32 && i != '\r' as i32 {
@@ -1218,8 +936,7 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> i32 {
                 }
                 match current_block {
                     15925075030174552612 => {
-                        rval = (rval as u32)
-                            .wrapping_sub(offsetsFromUTF8[extraBytes as usize])
+                        rval = (rval as u32).wrapping_sub(offsetsFromUTF8[extraBytes as usize])
                             as i32 as i32;
                         if rval < 0i32 || rval > 0x10ffffi32 {
                             bad_utf8_warning();
@@ -1305,10 +1022,8 @@ pub unsafe extern "C" fn make_utf16_name() {
     if name16len <= name_length {
         free(name_of_file16 as *mut libc::c_void);
         name16len = name_length + 10i32;
-        name_of_file16 = xcalloc(
-            name16len as size_t,
-            ::std::mem::size_of::<u16>() as u64,
-        ) as *mut UTF16_code
+        name_of_file16 =
+            xcalloc(name16len as size_t, ::std::mem::size_of::<u16>() as u64) as *mut UTF16_code
     }
     t = name_of_file16;
     while s < (name_of_file as *mut u8).offset(name_length as isize) {
@@ -1397,14 +1112,10 @@ pub unsafe extern "C" fn make_utf16_name() {
             rval = (rval as u32).wrapping_sub(0x10000i32 as u32) as u32;
             let fresh13 = t;
             t = t.offset(1);
-            *fresh13 = (0xd800i32 as u32)
-                .wrapping_add(rval.wrapping_div(0x400i32 as u32))
-                as u16;
+            *fresh13 = (0xd800i32 as u32).wrapping_add(rval.wrapping_div(0x400i32 as u32)) as u16;
             let fresh14 = t;
             t = t.offset(1);
-            *fresh14 = (0xdc00i32 as u32)
-                .wrapping_add(rval.wrapping_rem(0x400i32 as u32))
-                as u16
+            *fresh14 = (0xdc00i32 as u32).wrapping_add(rval.wrapping_rem(0x400i32 as u32)) as u16
         } else {
             let fresh15 = t;
             t = t.offset(1);
@@ -1498,9 +1209,7 @@ pub unsafe extern "C" fn open_or_close_in() {
             begin_name();
             stop_at_space = 0i32 != 0;
             k = 0i32;
-            while k < name_length16
-                && more_name(*name_of_file16.offset(k as isize)) as i32 != 0
-            {
+            while k < name_length16 && more_name(*name_of_file16.offset(k as isize)) as i32 != 0 {
                 k += 1
             }
             stop_at_space = 1i32 != 0;

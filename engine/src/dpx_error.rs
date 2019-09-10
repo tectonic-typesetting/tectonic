@@ -19,18 +19,9 @@ extern "C" {
     #[no_mangle]
     fn ttstub_output_open_stdout() -> rust_output_handle_t;
     #[no_mangle]
-    fn ttstub_output_write(
-        handle: rust_output_handle_t,
-        data: *const i8,
-        len: size_t,
-    ) -> size_t;
+    fn ttstub_output_write(handle: rust_output_handle_t, data: *const i8, len: size_t) -> size_t;
     #[no_mangle]
-    fn vsnprintf(
-        _: *mut i8,
-        _: u64,
-        _: *const i8,
-        _: ::std::ffi::VaList,
-    ) -> i32;
+    fn vsnprintf(_: *mut i8, _: u64, _: *const i8, _: ::std::ffi::VaList) -> i32;
 }
 pub type __builtin_va_list = [__va_list_tag; 1];
 #[derive(Copy, Clone)]
@@ -81,9 +72,7 @@ static mut _dpx_message_buf: [i8; 1024] = [0; 1024];
 unsafe extern "C" fn _dpx_ensure_output_handle() -> rust_output_handle_t {
     _dpx_message_handle = ttstub_output_open_stdout();
     if _dpx_message_handle.is_null() {
-        _tt_abort(
-            b"xdvipdfmx cannot get output logging handle?!\x00" as *const u8 as *const i8,
-        );
+        _tt_abort(b"xdvipdfmx cannot get output logging handle?!\x00" as *const u8 as *const i8);
     }
     return _dpx_message_handle;
 }
@@ -102,8 +91,7 @@ unsafe extern "C" fn _dpx_print_to_stdout(
     /* n is the number of bytes the vsnprintf() wanted to write -- it might be
      * bigger than sizeof(buf). */
     if n as u64 >= ::std::mem::size_of::<[i8; 1024]>() as u64 {
-        n = (::std::mem::size_of::<[i8; 1024]>() as u64)
-            .wrapping_sub(1i32 as u64) as i32;
+        n = (::std::mem::size_of::<[i8; 1024]>() as u64).wrapping_sub(1i32 as u64) as i32;
         _dpx_message_buf[n as usize] = '\u{0}' as i32 as i8
     }
     if warn != 0 {

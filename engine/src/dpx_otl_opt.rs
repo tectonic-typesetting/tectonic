@@ -78,10 +78,7 @@ pub struct bt_node {
     pub right: *mut bt_node,
     pub data: [i8; 4],
 }
-unsafe extern "C" fn match_expr(
-    mut expr: *mut bt_node,
-    mut key: *const i8,
-) -> i32 {
+unsafe extern "C" fn match_expr(mut expr: *mut bt_node, mut key: *const i8) -> i32 {
     let mut retval: i32 = 1i32;
     let mut i: i32 = 0;
     if !expr.is_null() {
@@ -89,8 +86,7 @@ unsafe extern "C" fn match_expr(
             i = 0i32;
             while i < 4i32 {
                 if (*expr).data[i as usize] as i32 != '?' as i32
-                    && (*expr).data[i as usize] as i32
-                        != *key.offset(i as isize) as i32
+                    && (*expr).data[i as usize] as i32 != *key.offset(i as isize) as i32
                 {
                     retval = 0i32;
                     break;
@@ -118,8 +114,7 @@ unsafe extern "C" fn match_expr(
 }
 unsafe extern "C" fn bt_new_tree() -> *mut bt_node {
     let mut expr: *mut bt_node = 0 as *mut bt_node;
-    expr = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<bt_node>() as u64) as u32)
+    expr = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<bt_node>() as u64) as u32)
         as *mut bt_node;
     (*expr).flag = 0i32;
     (*expr).left = 0 as *mut bt_node;
@@ -142,10 +137,7 @@ unsafe extern "C" fn bt_release_tree(mut tree: *mut bt_node) {
         free(tree as *mut libc::c_void);
     };
 }
-unsafe extern "C" fn parse_expr(
-    mut pp: *mut *const i8,
-    mut endptr: *const i8,
-) -> *mut bt_node {
+unsafe extern "C" fn parse_expr(mut pp: *mut *const i8, mut endptr: *const i8) -> *mut bt_node {
     let mut root: *mut bt_node = 0 as *mut bt_node;
     let mut curr: *mut bt_node = 0 as *mut bt_node;
     if *pp >= endptr {
@@ -169,17 +161,11 @@ unsafe extern "C" fn parse_expr(
                     let mut expr: *mut bt_node = 0 as *mut bt_node;
                     expr = parse_expr(pp, endptr);
                     if expr.is_null() {
-                        dpx_warning(
-                            b"Syntax error: %s\n\x00" as *const u8 as *const i8,
-                            *pp,
-                        );
+                        dpx_warning(b"Syntax error: %s\n\x00" as *const u8 as *const i8, *pp);
                         return 0 as *mut bt_node;
                     }
                     if **pp as i32 != ')' as i32 {
-                        dpx_warning(
-                            b"Syntax error: Unbalanced ()\n\x00" as *const u8
-                                as *const i8,
-                        );
+                        dpx_warning(b"Syntax error: Unbalanced ()\n\x00" as *const u8 as *const i8);
                         return 0 as *mut bt_node;
                     }
                     (*curr).left = (*expr).left;
@@ -191,9 +177,7 @@ unsafe extern "C" fn parse_expr(
                     );
                     free(expr as *mut libc::c_void);
                 } else {
-                    dpx_warning(
-                        b"Syntax error: Unbalanced ()\n\x00" as *const u8 as *const i8,
-                    );
+                    dpx_warning(b"Syntax error: Unbalanced ()\n\x00" as *const u8 as *const i8);
                     bt_release_tree(root);
                     return 0 as *mut bt_node;
                 }
@@ -202,10 +186,7 @@ unsafe extern "C" fn parse_expr(
             41 => return root,
             124 | 38 => {
                 if *pp >= endptr {
-                    dpx_warning(
-                        b"Syntax error: %s\n\x00" as *const u8 as *const i8,
-                        *pp,
-                    );
+                    dpx_warning(b"Syntax error: %s\n\x00" as *const u8 as *const i8, *pp);
                     bt_release_tree(root);
                     return 0 as *mut bt_node;
                 } else {
@@ -238,14 +219,10 @@ unsafe extern "C" fn parse_expr(
                     while i < 4i32 {
                         if **pp as i32 == ' ' as i32
                             || **pp as i32 == '?' as i32
-                            || *(*__ctype_b_loc())
-                                .offset(**pp as u8 as i32 as isize)
-                                as i32
+                            || *(*__ctype_b_loc()).offset(**pp as u8 as i32 as isize) as i32
                                 & _ISalpha as i32 as u16 as i32
                                 != 0
-                            || *(*__ctype_b_loc())
-                                .offset(**pp as u8 as i32 as isize)
-                                as i32
+                            || *(*__ctype_b_loc()).offset(**pp as u8 as i32 as isize) as i32
                                 & _ISdigit as i32 as u16 as i32
                                 != 0
                         {
@@ -254,8 +231,7 @@ unsafe extern "C" fn parse_expr(
                             (*curr).data[i as usize] = ' ' as i32 as i8
                         } else {
                             dpx_warning(
-                                b"Invalid char in tag: %c\n\x00" as *const u8
-                                    as *const i8,
+                                b"Invalid char in tag: %c\n\x00" as *const u8 as *const i8,
                                 **pp as i32,
                             );
                             bt_release_tree(root);
@@ -265,10 +241,7 @@ unsafe extern "C" fn parse_expr(
                         i += 1
                     }
                 } else {
-                    dpx_warning(
-                        b"Syntax error: %s\n\x00" as *const u8 as *const i8,
-                        *pp,
-                    );
+                    dpx_warning(b"Syntax error: %s\n\x00" as *const u8 as *const i8, *pp);
                     bt_release_tree(root);
                     return 0 as *mut bt_node;
                 }
@@ -280,8 +253,7 @@ unsafe extern "C" fn parse_expr(
 #[no_mangle]
 pub unsafe extern "C" fn otl_new_opt() -> *mut otl_opt {
     let mut opt: *mut otl_opt = 0 as *mut otl_opt;
-    opt = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<otl_opt>() as u64) as u32)
+    opt = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<otl_opt>() as u64) as u32)
         as *mut otl_opt;
     (*opt).rule = 0 as *mut bt_node;
     return opt as *mut otl_opt;
@@ -295,10 +267,7 @@ pub unsafe extern "C" fn otl_release_opt(mut opt: *mut otl_opt) {
     free(opt as *mut libc::c_void);
 }
 #[no_mangle]
-pub unsafe extern "C" fn otl_parse_optstring(
-    mut opt: *mut otl_opt,
-    mut optstr: *const i8,
-) -> i32 {
+pub unsafe extern "C" fn otl_parse_optstring(mut opt: *mut otl_opt, mut optstr: *const i8) -> i32 {
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     if !opt.is_null() {
@@ -340,10 +309,7 @@ pub unsafe extern "C" fn otl_parse_optstring(
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 #[no_mangle]
-pub unsafe extern "C" fn otl_match_optrule(
-    mut opt: *mut otl_opt,
-    mut tag: *const i8,
-) -> i32 {
+pub unsafe extern "C" fn otl_match_optrule(mut opt: *mut otl_opt, mut tag: *const i8) -> i32 {
     if !tag.is_null() {
     } else {
         __assert_fail(

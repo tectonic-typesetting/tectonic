@@ -44,11 +44,7 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_input_seek(
-        handle: rust_input_handle_t,
-        offset: ssize_t,
-        whence: i32,
-    ) -> size_t;
+    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
     #[no_mangle]
     fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
@@ -268,10 +264,7 @@ pub unsafe extern "C" fn tt_aux_set_verbose(mut level: i32) {
     verbose = level; /* skip version tag */
 }
 #[no_mangle]
-pub unsafe extern "C" fn ttc_read_offset(
-    mut sfont: *mut sfnt,
-    mut ttc_idx: i32,
-) -> u32 {
+pub unsafe extern "C" fn ttc_read_offset(mut sfont: *mut sfnt, mut ttc_idx: i32) -> u32 {
     let mut offset: u32 = 0i32 as u32;
     let mut num_dirs: u32 = 0i32 as u32;
     if sfont.is_null() || (*sfont).handle.is_null() {
@@ -541,8 +534,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
         descriptor,
         pdf_new_name(b"ItalicAngle\x00" as *const u8 as *const i8),
         pdf_new_number(
-            ((*post).italicAngle as i64 % 0x10000) as f64
-                / 0x10000i64 as f64
+            ((*post).italicAngle as i64 % 0x10000) as f64 / 0x10000i64 as f64
                 + ((*post).italicAngle as i64 / 0x10000) as f64
                 - (if (*post).italicAngle as i64 / 0x10000 > 0x7fff {
                     0x10000

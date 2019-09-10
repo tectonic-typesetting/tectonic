@@ -1,13 +1,15 @@
 #![feature(extern_types)]
 #![feature(ptr_wrapping_offset_from)]
 #![feature(c_variadic)]
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 pub type __off_t = i64;
 pub type __off64_t = i64;
 pub type __ssize_t = i64;
@@ -21,12 +23,7 @@ extern "C" {
     #[no_mangle]
     fn longjmp(_: *mut __jmp_buf_tag, _: i32) -> !;
     #[no_mangle]
-    fn vsnprintf(
-        _: *mut i8,
-        _: u64,
-        _: *const i8,
-        _: ::std::ffi::VaList,
-    ) -> i32;
+    fn vsnprintf(_: *mut i8, _: u64, _: *const i8, _: ::std::ffi::VaList) -> i32;
     /* tectonic/bibtex.h
        Copyright 2017 the Tectonic Project
        Licensed under the MIT License.
@@ -312,10 +309,7 @@ extern "C" {
     /*41: The length of the current string in the pool */
     /* Tectonic related functions */
     #[no_mangle]
-    fn tt_run_engine(
-        dump_name: *const i8,
-        input_file_name: *const i8,
-    ) -> tt_history_t;
+    fn tt_run_engine(dump_name: *const i8, input_file_name: *const i8) -> tt_history_t;
 }
 pub type __builtin_va_list = [__va_list_tag; 1];
 #[derive(Copy, Clone)]
@@ -366,41 +360,20 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[repr(C)]
 pub struct tt_bridge_api_t {
     pub context: *mut libc::c_void,
-    pub issue_warning:
-        Option<unsafe extern "C" fn(_: *mut libc::c_void, _: *const i8) -> ()>,
-    pub issue_error:
-        Option<unsafe extern "C" fn(_: *mut libc::c_void, _: *const i8) -> ()>,
-    pub get_file_md5: Option<
-        unsafe extern "C" fn(
-            _: *mut libc::c_void,
-            _: *const i8,
-            _: *mut i8,
-        ) -> i32,
-    >,
+    pub issue_warning: Option<unsafe extern "C" fn(_: *mut libc::c_void, _: *const i8) -> ()>,
+    pub issue_error: Option<unsafe extern "C" fn(_: *mut libc::c_void, _: *const i8) -> ()>,
+    pub get_file_md5:
+        Option<unsafe extern "C" fn(_: *mut libc::c_void, _: *const i8, _: *mut i8) -> i32>,
     pub get_data_md5: Option<
-        unsafe extern "C" fn(
-            _: *mut libc::c_void,
-            _: *const i8,
-            _: size_t,
-            _: *mut i8,
-        ) -> i32,
+        unsafe extern "C" fn(_: *mut libc::c_void, _: *const i8, _: size_t, _: *mut i8) -> i32,
     >,
     pub output_open: Option<
-        unsafe extern "C" fn(
-            _: *mut libc::c_void,
-            _: *const i8,
-            _: i32,
-        ) -> rust_output_handle_t,
+        unsafe extern "C" fn(_: *mut libc::c_void, _: *const i8, _: i32) -> rust_output_handle_t,
     >,
     pub output_open_stdout:
         Option<unsafe extern "C" fn(_: *mut libc::c_void) -> rust_output_handle_t>,
-    pub output_putc: Option<
-        unsafe extern "C" fn(
-            _: *mut libc::c_void,
-            _: rust_output_handle_t,
-            _: i32,
-        ) -> i32,
-    >,
+    pub output_putc:
+        Option<unsafe extern "C" fn(_: *mut libc::c_void, _: rust_output_handle_t, _: i32) -> i32>,
     pub output_write: Option<
         unsafe extern "C" fn(
             _: *mut libc::c_void,
@@ -444,13 +417,8 @@ pub struct tt_bridge_api_t {
     >,
     pub input_getc:
         Option<unsafe extern "C" fn(_: *mut libc::c_void, _: rust_input_handle_t) -> i32>,
-    pub input_ungetc: Option<
-        unsafe extern "C" fn(
-            _: *mut libc::c_void,
-            _: rust_input_handle_t,
-            _: i32,
-        ) -> i32,
-    >,
+    pub input_ungetc:
+        Option<unsafe extern "C" fn(_: *mut libc::c_void, _: rust_input_handle_t, _: i32) -> i32>,
     pub input_close:
         Option<unsafe extern "C" fn(_: *mut libc::c_void, _: rust_input_handle_t) -> i32>,
 }
@@ -472,8 +440,7 @@ pub type jmp_buf = [__jmp_buf_tag; 1];
  * probably be moved out into other files. */
 /* The global variable that represents the Rust API. Some fine day we'll get
  * rid of all of the globals ... */
-static mut tectonic_global_bridge: *const tt_bridge_api_t =
-    std::ptr::null();
+static mut tectonic_global_bridge: *const tt_bridge_api_t = std::ptr::null();
 static mut jump_buffer: jmp_buf = [__jmp_buf_tag {
     __jmpbuf: [0; 8],
     __mask_was_saved: 0,
@@ -703,10 +670,7 @@ pub unsafe extern "C" fn ttstub_fprintf(
     return len;
 }
 #[no_mangle]
-pub unsafe extern "C" fn ttstub_get_file_md5(
-    mut path: *const i8,
-    mut digest: *mut i8,
-) -> i32 {
+pub unsafe extern "C" fn ttstub_get_file_md5(mut path: *const i8, mut digest: *mut i8) -> i32 {
     return (*tectonic_global_bridge)
         .get_file_md5
         .expect("non-null function pointer")(
@@ -743,10 +707,7 @@ pub unsafe extern "C" fn ttstub_output_open_stdout() -> rust_output_handle_t {
         .expect("non-null function pointer")((*tectonic_global_bridge).context);
 }
 #[no_mangle]
-pub unsafe extern "C" fn ttstub_output_putc(
-    mut handle: rust_output_handle_t,
-    mut c: i32,
-) -> i32 {
+pub unsafe extern "C" fn ttstub_output_putc(mut handle: rust_output_handle_t, mut c: i32) -> i32 {
     return (*tectonic_global_bridge)
         .output_putc
         .expect("non-null function pointer")(
@@ -845,10 +806,7 @@ pub unsafe extern "C" fn ttstub_input_getc(mut handle: rust_input_handle_t) -> i
         .expect("non-null function pointer")((*tectonic_global_bridge).context, handle);
 }
 #[no_mangle]
-pub unsafe extern "C" fn ttstub_input_ungetc(
-    mut handle: rust_input_handle_t,
-    mut ch: i32,
-) -> i32 {
+pub unsafe extern "C" fn ttstub_input_ungetc(mut handle: rust_input_handle_t, mut ch: i32) -> i32 {
     return (*tectonic_global_bridge)
         .input_ungetc
         .expect("non-null function pointer")(
@@ -867,7 +825,6 @@ pub unsafe extern "C" fn ttstub_input_close(mut handle: rust_input_handle_t) -> 
     }
     return 0i32;
 }
-
 
 extern "C" {
     #[no_mangle]
@@ -902,21 +859,12 @@ along with this library; if not, see <http://www.gnu.org/licenses/>.  */
 #[no_mangle]
 pub unsafe extern "C" fn xcalloc(mut nelem: size_t, mut elsize: size_t) -> *mut libc::c_void {
     let mut new_mem: *mut libc::c_void = calloc(
-        if nelem != 0 {
-            nelem
-        } else {
-            1i32 as u64
-        },
-        if elsize != 0 {
-            elsize
-        } else {
-            1i32 as u64
-        },
+        if nelem != 0 { nelem } else { 1i32 as u64 },
+        if elsize != 0 { elsize } else { 1i32 as u64 },
     );
     if new_mem.is_null() {
         _tt_abort(
-            b"xcalloc request for %lu elements of size %lu failed\x00" as *const u8
-                as *const i8,
+            b"xcalloc request for %lu elements of size %lu failed\x00" as *const u8 as *const i8,
             nelem,
             elsize,
         );
@@ -925,11 +873,7 @@ pub unsafe extern "C" fn xcalloc(mut nelem: size_t, mut elsize: size_t) -> *mut 
 }
 #[no_mangle]
 pub unsafe extern "C" fn xmalloc(mut size: size_t) -> *mut libc::c_void {
-    let mut new_mem: *mut libc::c_void = malloc(if size != 0 {
-        size
-    } else {
-        1i32 as u64
-    });
+    let mut new_mem: *mut libc::c_void = malloc(if size != 0 { size } else { 1i32 as u64 });
     if new_mem.is_null() {
         _tt_abort(
             b"xmalloc request for %lu bytes failed\x00" as *const u8 as *const i8,
@@ -947,14 +891,7 @@ pub unsafe extern "C" fn xrealloc(
     if old_ptr.is_null() {
         new_mem = xmalloc(size)
     } else {
-        new_mem = realloc(
-            old_ptr,
-            if size != 0 {
-                size
-            } else {
-                1i32 as u64
-            },
-        );
+        new_mem = realloc(old_ptr, if size != 0 { size } else { 1i32 as u64 });
         if new_mem.is_null() {
             _tt_abort(
                 b"xrealloc() to %lu bytes failed\x00" as *const u8 as *const i8,
@@ -970,11 +907,9 @@ pub unsafe extern "C" fn xrealloc(
 */
 #[no_mangle]
 pub unsafe extern "C" fn xstrdup(mut s: *const i8) -> *mut i8 {
-    let mut new_string: *mut i8 =
-        xmalloc(strlen(s).wrapping_add(1i32 as u64)) as *mut i8;
+    let mut new_string: *mut i8 = xmalloc(strlen(s).wrapping_add(1i32 as u64)) as *mut i8;
     return strcpy(new_string, s);
 }
-
 
 mod bibtex;
 mod dpx_agl;

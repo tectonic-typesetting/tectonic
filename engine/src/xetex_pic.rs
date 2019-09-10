@@ -150,19 +150,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn min4(
-        v1: f64,
-        v2: f64,
-        v3: f64,
-        v4: f64,
-    ) -> f64;
+    fn min4(v1: f64, v2: f64, v3: f64, v4: f64) -> f64;
     #[no_mangle]
-    fn max4(
-        v1: f64,
-        v2: f64,
-        v3: f64,
-        v4: f64,
-    ) -> f64;
+    fn max4(v1: f64, v2: f64, v3: f64, v4: f64) -> f64;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -625,10 +615,8 @@ unsafe extern "C" fn find_pic_file(
 }
 unsafe extern "C" fn transform_point(mut p: *mut real_point, mut t: *const transform_t) {
     let mut r: real_point = real_point { x: 0., y: 0. };
-    r.x = ((*t).a * (*p).x as f64 + (*t).c * (*p).y as f64 + (*t).x)
-        as f32;
-    r.y = ((*t).b * (*p).x as f64 + (*t).d * (*p).y as f64 + (*t).y)
-        as f32;
+    r.x = ((*t).a * (*p).x as f64 + (*t).c * (*p).y as f64 + (*t).x) as f32;
+    r.y = ((*t).b * (*p).x as f64 + (*t).d * (*p).y as f64 + (*t).y) as f32;
     *p = r;
 }
 unsafe extern "C" fn make_identity(mut t: *mut transform_t) {
@@ -639,11 +627,7 @@ unsafe extern "C" fn make_identity(mut t: *mut transform_t) {
     (*t).x = 0.0f64;
     (*t).y = 0.0f64;
 }
-unsafe extern "C" fn make_scale(
-    mut t: *mut transform_t,
-    mut xscale: f64,
-    mut yscale: f64,
-) {
+unsafe extern "C" fn make_scale(mut t: *mut transform_t, mut xscale: f64, mut yscale: f64) {
     (*t).a = xscale;
     (*t).b = 0.0f64;
     (*t).c = 0.0f64;
@@ -651,11 +635,7 @@ unsafe extern "C" fn make_scale(
     (*t).x = 0.0f64;
     (*t).y = 0.0f64;
 }
-unsafe extern "C" fn make_translation(
-    mut t: *mut transform_t,
-    mut dx: f64,
-    mut dy: f64,
-) {
+unsafe extern "C" fn make_translation(mut t: *mut transform_t, mut dx: f64, mut dy: f64) {
     (*t).a = 1.0f64;
     (*t).b = 0.0f64;
     (*t).c = 0.0f64;
@@ -1116,8 +1096,8 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         (*mem.offset((cur_list.tail + 7i32) as isize)).b32.s0 = D2Fix(t.x);
         (*mem.offset((cur_list.tail + 7i32) as isize)).b32.s1 = D2Fix(t.y);
         memcpy(
-            &mut *mem.offset((cur_list.tail + 9i32) as isize) as *mut memory_word
-                as *mut u8 as *mut libc::c_void,
+            &mut *mem.offset((cur_list.tail + 9i32) as isize) as *mut memory_word as *mut u8
+                as *mut libc::c_void,
             pic_path as *const libc::c_void,
             strlen(pic_path),
         );
@@ -1128,22 +1108,19 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         } else {
             print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
-        print_cstr(
-            b"Unable to load picture or PDF file \'\x00" as *const u8 as *const i8,
-        );
+        print_cstr(b"Unable to load picture or PDF file \'\x00" as *const u8 as *const i8);
         print_file_name(cur_name, cur_area, cur_ext);
         print('\'' as i32);
         if result == -43i32 {
             help_ptr = 2i32 as u8;
-            help_line[1] = b"The requested image couldn\'t be read because\x00" as *const u8
-                as *const i8;
+            help_line[1] =
+                b"The requested image couldn\'t be read because\x00" as *const u8 as *const i8;
             help_line[0] = b"the file was not found.\x00" as *const u8 as *const i8
         } else {
             help_ptr = 2i32 as u8;
-            help_line[1] = b"The requested image couldn\'t be read because\x00" as *const u8
-                as *const i8;
-            help_line[0] =
-                b"it was not a recognized image format.\x00" as *const u8 as *const i8
+            help_line[1] =
+                b"The requested image couldn\'t be read because\x00" as *const u8 as *const i8;
+            help_line[0] = b"it was not a recognized image format.\x00" as *const u8 as *const i8
         }
         error();
     };

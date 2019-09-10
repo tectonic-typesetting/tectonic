@@ -47,8 +47,7 @@ extern "C" {
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64)
-        -> *mut i8;
+    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
     #[no_mangle]
     fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
@@ -68,12 +67,7 @@ extern "C" {
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
-    fn pdf_dev_put_image(
-        xobj_id: i32,
-        p: *mut transform_info,
-        ref_x: f64,
-        ref_y: f64,
-    ) -> i32;
+    fn pdf_dev_put_image(xobj_id: i32, p: *mut transform_info, ref_x: f64, ref_y: f64) -> i32;
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
     #[no_mangle]
@@ -108,12 +102,7 @@ extern "C" {
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn mps_exec_inline(
-        buffer: *mut *const i8,
-        endptr: *const i8,
-        x_user: f64,
-        y_user: f64,
-    ) -> i32;
+    fn mps_exec_inline(buffer: *mut *const i8, endptr: *const i8, x_user: f64, y_user: f64) -> i32;
     #[no_mangle]
     fn mps_stack_depth() -> i32;
     #[no_mangle]
@@ -223,8 +212,7 @@ pub struct spc_arg {
     pub base: *const i8,
     pub command: *const i8,
 }
-pub type spc_handler_fn_ptr =
-    Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
+pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_handler {
@@ -272,10 +260,7 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     return 0 as *mut libc::c_void;
 }
 #[inline]
-unsafe extern "C" fn strstartswith(
-    mut s: *const i8,
-    mut prefix: *const i8,
-) -> *const i8 {
+unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
     let mut length: size_t = 0;
     length = strlen(prefix);
     if strncmp(s, prefix, length) == 0i32 {
@@ -308,18 +293,13 @@ static mut block_pending: i32 = 0i32;
 static mut pending_x: f64 = 0.0f64;
 static mut pending_y: f64 = 0.0f64;
 static mut position_set: i32 = 0i32;
-static mut ps_headers: *mut *mut i8 =
-    0 as *const *mut i8 as *mut *mut i8;
+static mut ps_headers: *mut *mut i8 = 0 as *const *mut i8 as *mut *mut i8;
 static mut num_ps_headers: i32 = 0i32;
-unsafe extern "C" fn spc_handler_ps_header(
-    mut spe: *mut spc_env,
-    mut args: *mut spc_arg,
-) -> i32 {
+unsafe extern "C" fn spc_handler_ps_header(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut pro: *mut i8 = 0 as *mut i8;
     let mut ps_header: *mut rust_input_handle_t = 0 as *mut rust_input_handle_t;
     skip_white(&mut (*args).curptr, (*args).endptr);
-    if (*args).curptr.offset(1) >= (*args).endptr
-        || *(*args).curptr.offset(0) as i32 != '=' as i32
+    if (*args).curptr.offset(1) >= (*args).endptr || *(*args).curptr.offset(0) as i32 != '=' as i32
     {
         spc_warn(
             spe,
@@ -329,16 +309,14 @@ unsafe extern "C" fn spc_handler_ps_header(
     }
     (*args).curptr = (*args).curptr.offset(1);
     pro = xmalloc(
-        ((*args).endptr.wrapping_offset_from((*args).curptr) as i64 + 1i32 as i64)
-            as size_t,
+        ((*args).endptr.wrapping_offset_from((*args).curptr) as i64 + 1i32 as i64) as size_t,
     ) as *mut i8;
     strncpy(
         pro,
         (*args).curptr,
         (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as u64,
     );
-    *pro.offset((*args).endptr.wrapping_offset_from((*args).curptr) as i64 as isize) =
-        0i32 as i8;
+    *pro.offset((*args).endptr.wrapping_offset_from((*args).curptr) as i64 as isize) = 0i32 as i8;
     ps_header = ttstub_input_open(pro, TTIF_TEX_PS_HEADER, 0i32) as *mut rust_input_handle_t;
     if ps_header.is_null() {
         spc_warn(
@@ -353,8 +331,7 @@ unsafe extern "C" fn spc_handler_ps_header(
     if num_ps_headers & 0xfi32 == 0 {
         ps_headers = xrealloc(
             ps_headers as *mut libc::c_void,
-            (::std::mem::size_of::<*mut i8>() as u64)
-                .wrapping_mul((num_ps_headers + 16i32) as u64),
+            (::std::mem::size_of::<*mut i8>() as u64).wrapping_mul((num_ps_headers + 16i32) as u64),
         ) as *mut *mut i8
     }
     let fresh0 = num_ps_headers;
@@ -364,10 +341,7 @@ unsafe extern "C" fn spc_handler_ps_header(
     (*args).curptr = (*args).endptr;
     return 0i32;
 }
-unsafe extern "C" fn parse_filename(
-    mut pp: *mut *const i8,
-    mut endptr: *const i8,
-) -> *mut i8 {
+unsafe extern "C" fn parse_filename(mut pp: *mut *const i8, mut endptr: *const i8) -> *mut i8 {
     let mut r: *mut i8 = 0 as *mut i8;
     let mut q: *const i8 = 0 as *const i8;
     let mut p: *const i8 = *pp;
@@ -400,23 +374,15 @@ unsafe extern "C" fn parse_filename(
     if q.is_null() || n == 0i32 {
         return 0 as *mut i8;
     }
-    r = new(((n + 1i32) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
-    memcpy(
-        r as *mut libc::c_void,
-        q as *const libc::c_void,
-        n as u64,
-    );
+    r = new(((n + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+        as *mut i8;
+    memcpy(r as *mut libc::c_void, q as *const libc::c_void, n as u64);
     *r.offset(n as isize) = '\u{0}' as i32 as i8;
     *pp = p;
     return r;
 }
 /* =filename ... */
-unsafe extern "C" fn spc_handler_ps_file(
-    mut spe: *mut spc_env,
-    mut args: *mut spc_arg,
-) -> i32 {
+unsafe extern "C" fn spc_handler_ps_file(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut form_id: i32 = 0;
     let mut filename: *mut i8 = 0 as *mut i8;
     let mut ti: transform_info = transform_info {
@@ -460,8 +426,7 @@ unsafe extern "C" fn spc_handler_ps_file(
         );
     }
     skip_white(&mut (*args).curptr, (*args).endptr);
-    if (*args).curptr.offset(1) >= (*args).endptr
-        || *(*args).curptr.offset(0) as i32 != '=' as i32
+    if (*args).curptr.offset(1) >= (*args).endptr || *(*args).curptr.offset(0) as i32 != '=' as i32
     {
         spc_warn(
             spe,
@@ -498,10 +463,7 @@ unsafe extern "C" fn spc_handler_ps_file(
     return 0i32;
 }
 /* This isn't correct implementation but dvipdfm supports... */
-unsafe extern "C" fn spc_handler_ps_plotfile(
-    mut spe: *mut spc_env,
-    mut args: *mut spc_arg,
-) -> i32 {
+unsafe extern "C" fn spc_handler_ps_plotfile(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut error: i32 = 0i32; /* xscale = 1.0, yscale = -1.0 */
     let mut form_id: i32 = 0;
     let mut filename: *mut i8 = 0 as *mut i8;
@@ -547,8 +509,7 @@ unsafe extern "C" fn spc_handler_ps_plotfile(
     }
     spc_warn(
         spe,
-        b"\"ps: plotfile\" found (not properly implemented)\x00" as *const u8
-            as *const i8,
+        b"\"ps: plotfile\" found (not properly implemented)\x00" as *const u8 as *const i8,
     );
     skip_white(&mut (*args).curptr, (*args).endptr);
     filename = parse_filename(&mut (*args).curptr, (*args).endptr);
@@ -570,20 +531,12 @@ unsafe extern "C" fn spc_handler_ps_plotfile(
     } else {
         transform_info_clear(&mut p);
         p.matrix.d = -1.0f64;
-        pdf_dev_put_image(
-            form_id,
-            &mut p,
-            0i32 as f64,
-            0i32 as f64,
-        );
+        pdf_dev_put_image(form_id, &mut p, 0i32 as f64, 0i32 as f64);
     }
     free(filename as *mut libc::c_void);
     return error;
 }
-unsafe extern "C" fn spc_handler_ps_literal(
-    mut spe: *mut spc_env,
-    mut args: *mut spc_arg,
-) -> i32 {
+unsafe extern "C" fn spc_handler_ps_literal(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut error: i32 = 0i32;
     let mut st_depth: i32 = 0;
     let mut gs_depth: i32 = 0;
@@ -605,11 +558,7 @@ unsafe extern "C" fn spc_handler_ps_literal(
         .curptr
         .offset(strlen(b":[begin]\x00" as *const u8 as *const i8) as isize)
         <= (*args).endptr
-        && !strstartswith(
-            (*args).curptr,
-            b":[begin]\x00" as *const u8 as *const i8,
-        )
-        .is_null()
+        && !strstartswith((*args).curptr, b":[begin]\x00" as *const u8 as *const i8).is_null()
     {
         block_pending += 1;
         position_set = 1i32;
@@ -624,11 +573,7 @@ unsafe extern "C" fn spc_handler_ps_literal(
         .curptr
         .offset(strlen(b":[end]\x00" as *const u8 as *const i8) as isize)
         <= (*args).endptr
-        && !strstartswith(
-            (*args).curptr,
-            b":[end]\x00" as *const u8 as *const i8,
-        )
-        .is_null()
+        && !strstartswith((*args).curptr, b":[end]\x00" as *const u8 as *const i8).is_null()
     {
         if block_pending <= 0i32 {
             spc_warn(
@@ -644,9 +589,7 @@ unsafe extern "C" fn spc_handler_ps_literal(
         (*args).curptr = (*args)
             .curptr
             .offset(strlen(b":[end]\x00" as *const u8 as *const i8) as isize)
-    } else if (*args).curptr < (*args).endptr
-        && *(*args).curptr.offset(0) as i32 == ':' as i32
-    {
+    } else if (*args).curptr < (*args).endptr && *(*args).curptr.offset(0) as i32 == ':' as i32 {
         x_user = if position_set != 0 {
             pending_x
         } else {
@@ -698,9 +641,7 @@ unsafe extern "C" fn spc_handler_ps_trickscmd(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> i32 {
-    dpx_warning(
-        b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const i8,
-    );
+    dpx_warning(b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const i8);
     (*args).curptr = (*args).endptr;
     return -1i32;
 }
@@ -708,16 +649,11 @@ unsafe extern "C" fn spc_handler_ps_tricksobj(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> i32 {
-    dpx_warning(
-        b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const i8,
-    );
+    dpx_warning(b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const i8);
     (*args).curptr = (*args).endptr;
     return -1i32;
 }
-unsafe extern "C" fn spc_handler_ps_default(
-    mut spe: *mut spc_env,
-    mut args: *mut spc_arg,
-) -> i32 {
+unsafe extern "C" fn spc_handler_ps_default(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut error: i32 = 0;
     let mut st_depth: i32 = 0;
     let mut gs_depth: i32 = 0;
@@ -917,10 +853,7 @@ pub unsafe extern "C" fn spc_dvips_at_end_page() -> i32 {
     return 0i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn spc_dvips_check_special(
-    mut buf: *const i8,
-    mut len: i32,
-) -> bool {
+pub unsafe extern "C" fn spc_dvips_check_special(mut buf: *const i8, mut len: i32) -> bool {
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     let mut i: size_t = 0;
@@ -991,9 +924,7 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
     skip_white(&mut (*args).curptr, (*args).endptr);
     key = (*args).curptr;
     while (*args).curptr < (*args).endptr
-        && *(*__ctype_b_loc())
-            .offset(*(*args).curptr.offset(0) as u8 as i32 as isize)
-            as i32
+        && *(*__ctype_b_loc()).offset(*(*args).curptr.offset(0) as u8 as i32 as isize) as i32
             & _ISalpha as i32 as u16 as i32
             != 0
     {
@@ -1006,11 +937,7 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
             .curptr
             .offset(strlen(b" plotfile \x00" as *const u8 as *const i8) as isize)
             <= (*args).endptr
-            && !strstartswith(
-                (*args).curptr,
-                b" plotfile \x00" as *const u8 as *const i8,
-            )
-            .is_null()
+            && !strstartswith((*args).curptr, b" plotfile \x00" as *const u8 as *const i8).is_null()
         {
             (*args).curptr = (*args)
                 .curptr
@@ -1024,10 +951,7 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
     }
     keylen = (*args).curptr.wrapping_offset_from(key) as i64 as i32;
     if keylen < 1i32 {
-        spc_warn(
-            spe,
-            b"Not ps: special???\x00" as *const u8 as *const i8,
-        );
+        spc_warn(spe, b"Not ps: special???\x00" as *const u8 as *const i8);
         return -1i32;
     }
     i = 0i32 as size_t;

@@ -11,11 +11,8 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn tt_get_positive_quad(
-        handle: rust_input_handle_t,
-        type_0: *const i8,
-        name: *const i8,
-    ) -> u32;
+    fn tt_get_positive_quad(handle: rust_input_handle_t, type_0: *const i8, name: *const i8)
+        -> u32;
     #[no_mangle]
     fn tt_get_signed_quad(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
@@ -48,11 +45,7 @@ extern "C" {
     #[no_mangle]
     fn ttstub_input_get_size(handle: rust_input_handle_t) -> size_t;
     #[no_mangle]
-    fn ttstub_input_seek(
-        handle: rust_input_handle_t,
-        offset: ssize_t,
-        whence: i32,
-    ) -> size_t;
+    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -276,25 +269,18 @@ unsafe extern "C" fn release_range_map(mut map: *mut range_map) {
     (*map).indices = 0 as *mut u16;
     free(map as *mut libc::c_void);
 }
-unsafe extern "C" fn lookup_char(
-    mut map: *const char_map,
-    mut charcode: i32,
-) -> i32 {
+unsafe extern "C" fn lookup_char(mut map: *const char_map, mut charcode: i32) -> i32 {
     if charcode >= (*map).coverage.first_char
         && charcode <= (*map).coverage.first_char + (*map).coverage.num_chars
     {
         return *(*map)
             .indices
-            .offset((charcode - (*map).coverage.first_char) as isize)
-            as i32;
+            .offset((charcode - (*map).coverage.first_char) as isize) as i32;
     } else {
         return -1i32;
     };
 }
-unsafe extern "C" fn lookup_range(
-    mut map: *const range_map,
-    mut charcode: i32,
-) -> i32 {
+unsafe extern "C" fn lookup_range(mut map: *const range_map, mut charcode: i32) -> i32 {
     let mut idx: i32 = 0;
     idx = (*map).num_coverages as i32 - 1i32;
     while idx >= 0i32 && charcode >= (*(*map).coverages.offset(idx as isize)).first_char {
@@ -358,9 +344,7 @@ unsafe extern "C" fn fms_need(mut n: u32) {
         };
         fms = renew(
             fms as *mut libc::c_void,
-            (max_fms as u64)
-                .wrapping_mul(::std::mem::size_of::<font_metric>() as u64)
-                as u32,
+            (max_fms as u64).wrapping_mul(::std::mem::size_of::<font_metric>() as u64) as u32,
         ) as *mut font_metric
     };
 }
@@ -414,30 +398,18 @@ unsafe extern "C" fn tfm_check_size(mut tfm: *mut tfm_font, mut tfm_file_size: o
     if tfm_file_size < (*tfm).wlenfile as i64 * 4i32 as i64 {
         _tt_abort(b"Can\'t proceed...\x00" as *const u8 as *const i8);
     }
-    expected_size = (expected_size as u32).wrapping_add(
-        (*tfm)
-            .ec
-            .wrapping_sub((*tfm).bc)
-            .wrapping_add(1i32 as u32),
-    ) as u32;
-    expected_size =
-        (expected_size as u32).wrapping_add((*tfm).wlenheader) as u32;
-    expected_size =
-        (expected_size as u32).wrapping_add((*tfm).nwidths) as u32;
-    expected_size =
-        (expected_size as u32).wrapping_add((*tfm).nheights) as u32;
-    expected_size =
-        (expected_size as u32).wrapping_add((*tfm).ndepths) as u32;
-    expected_size =
-        (expected_size as u32).wrapping_add((*tfm).nitcor) as u32;
-    expected_size =
-        (expected_size as u32).wrapping_add((*tfm).nlig) as u32;
-    expected_size =
-        (expected_size as u32).wrapping_add((*tfm).nkern) as u32;
-    expected_size =
-        (expected_size as u32).wrapping_add((*tfm).nextens) as u32;
-    expected_size =
-        (expected_size as u32).wrapping_add((*tfm).nfonparm) as u32;
+    expected_size = (expected_size as u32)
+        .wrapping_add((*tfm).ec.wrapping_sub((*tfm).bc).wrapping_add(1i32 as u32))
+        as u32;
+    expected_size = (expected_size as u32).wrapping_add((*tfm).wlenheader) as u32;
+    expected_size = (expected_size as u32).wrapping_add((*tfm).nwidths) as u32;
+    expected_size = (expected_size as u32).wrapping_add((*tfm).nheights) as u32;
+    expected_size = (expected_size as u32).wrapping_add((*tfm).ndepths) as u32;
+    expected_size = (expected_size as u32).wrapping_add((*tfm).nitcor) as u32;
+    expected_size = (expected_size as u32).wrapping_add((*tfm).nlig) as u32;
+    expected_size = (expected_size as u32).wrapping_add((*tfm).nkern) as u32;
+    expected_size = (expected_size as u32).wrapping_add((*tfm).nextens) as u32;
+    expected_size = (expected_size as u32).wrapping_add((*tfm).nfonparm) as u32;
     if expected_size != (*tfm).wlenfile {
         dpx_warning(
             b"TFM file size is expected to be %ld bytes but it says it is %ldbytes!\x00"
@@ -484,15 +456,15 @@ unsafe extern "C" fn tfm_unpack_arrays(mut fm: *mut font_metric, mut tfm: *mut t
     let mut height_index: u8 = 0;
     let mut depth_index: u8 = 0;
     let mut i: u32 = 0;
-    (*fm).widths = new((256i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-        as u32) as *mut fixword;
-    (*fm).heights = new((256i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-        as u32) as *mut fixword;
-    (*fm).depths = new((256i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-        as u32) as *mut fixword;
+    (*fm).widths =
+        new((256i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32)
+            as *mut fixword;
+    (*fm).heights =
+        new((256i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32)
+            as *mut fixword;
+    (*fm).depths =
+        new((256i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32)
+            as *mut fixword;
     i = 0i32 as u32;
     while i < 256i32 as u32 {
         *(*fm).widths.offset(i as isize) = 0i32;
@@ -512,11 +484,7 @@ unsafe extern "C" fn tfm_unpack_arrays(mut fm: *mut font_metric, mut tfm: *mut t
         i = i.wrapping_add(1)
     }
 }
-unsafe extern "C" fn sput_bigendian(
-    mut s: *mut i8,
-    mut v: i32,
-    mut n: i32,
-) -> i32 {
+unsafe extern "C" fn sput_bigendian(mut s: *mut i8, mut v: i32, mut n: i32) -> i32 {
     let mut i: i32 = 0;
     i = n - 1i32;
     while i >= 0i32 {
@@ -560,32 +528,20 @@ unsafe extern "C" fn tfm_unpack_header(mut fm: *mut font_metric, mut tfm: *mut t
 unsafe extern "C" fn ofm_check_size_one(mut tfm: *mut tfm_font, mut ofm_file_size: off_t) {
     let mut ofm_size: u32 = 14i32 as u32;
     ofm_size = (ofm_size as u32).wrapping_add(
-        (2i32 as u32).wrapping_mul(
-            (*tfm)
-                .ec
-                .wrapping_sub((*tfm).bc)
-                .wrapping_add(1i32 as u32),
-        ),
+        (2i32 as u32).wrapping_mul((*tfm).ec.wrapping_sub((*tfm).bc).wrapping_add(1i32 as u32)),
     ) as u32;
     ofm_size = (ofm_size as u32).wrapping_add((*tfm).wlenheader) as u32;
     ofm_size = (ofm_size as u32).wrapping_add((*tfm).nwidths) as u32;
     ofm_size = (ofm_size as u32).wrapping_add((*tfm).nheights) as u32;
     ofm_size = (ofm_size as u32).wrapping_add((*tfm).ndepths) as u32;
     ofm_size = (ofm_size as u32).wrapping_add((*tfm).nitcor) as u32;
-    ofm_size = (ofm_size as u32)
-        .wrapping_add((2i32 as u32).wrapping_mul((*tfm).nlig)) as u32
-        as u32;
+    ofm_size =
+        (ofm_size as u32).wrapping_add((2i32 as u32).wrapping_mul((*tfm).nlig)) as u32 as u32;
     ofm_size = (ofm_size as u32).wrapping_add((*tfm).nkern) as u32;
-    ofm_size = (ofm_size as u32)
-        .wrapping_add((2i32 as u32).wrapping_mul((*tfm).nextens))
-        as u32;
+    ofm_size = (ofm_size as u32).wrapping_add((2i32 as u32).wrapping_mul((*tfm).nextens)) as u32;
     ofm_size = (ofm_size as u32).wrapping_add((*tfm).nfonparm) as u32;
-    if (*tfm).wlenfile as i64 != ofm_file_size / 4i32 as i64
-        || (*tfm).wlenfile != ofm_size
-    {
-        _tt_abort(
-            b"OFM file problem.  Table sizes don\'t agree.\x00" as *const u8 as *const i8,
-        );
+    if (*tfm).wlenfile as i64 != ofm_file_size / 4i32 as i64 || (*tfm).wlenfile != ofm_size {
+        _tt_abort(b"OFM file problem.  Table sizes don\'t agree.\x00" as *const u8 as *const i8);
     };
 }
 unsafe extern "C" fn ofm_get_sizes(
@@ -668,8 +624,7 @@ unsafe extern "C" fn ofm_get_sizes(
     );
     if (*tfm).fontdir != 0 {
         dpx_warning(
-            b"I may be interpreting a font direction incorrectly.\x00" as *const u8
-                as *const i8,
+            b"I may be interpreting a font direction incorrectly.\x00" as *const u8 as *const i8,
         );
     }
     if (*tfm).level == 0i32 {
@@ -696,9 +651,7 @@ unsafe extern "C" fn ofm_get_sizes(
             0i32,
         );
     } else {
-        _tt_abort(
-            b"can\'t handle OFM files with level > 1\x00" as *const u8 as *const i8,
-        );
+        _tt_abort(b"can\'t handle OFM files with level > 1\x00" as *const u8 as *const i8);
     };
 }
 unsafe extern "C" fn ofm_do_char_info_zero(
@@ -706,10 +659,7 @@ unsafe extern "C" fn ofm_do_char_info_zero(
     mut tfm: *mut tfm_font,
 ) {
     let mut num_chars: u32 = 0;
-    num_chars = (*tfm)
-        .ec
-        .wrapping_sub((*tfm).bc)
-        .wrapping_add(1i32 as u32);
+    num_chars = (*tfm).ec.wrapping_sub((*tfm).bc).wrapping_add(1i32 as u32);
     if num_chars != 0i32 as u32 {
         let mut i: u32 = 0;
         (*tfm).width_index = new((num_chars as u64)
@@ -718,9 +668,9 @@ unsafe extern "C" fn ofm_do_char_info_zero(
         (*tfm).height_index = new((num_chars as u64)
             .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32) as *mut u8;
-        (*tfm).depth_index = new((num_chars as u64)
-            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-            as u32) as *mut u8;
+        (*tfm).depth_index =
+            new((num_chars as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
+                as *mut u8;
         i = 0i32 as u32;
         while i < num_chars {
             *(*tfm).width_index.offset(i as isize) = tt_get_unsigned_pair(ofm_handle);
@@ -738,13 +688,10 @@ unsafe extern "C" fn ofm_do_char_info_one(
 ) {
     let mut num_char_infos: u32 = 0;
     let mut num_chars: u32 = 0;
-    num_char_infos = (*tfm).ncw.wrapping_div(
-        (3i32 as u32).wrapping_add((*tfm).npc.wrapping_div(2i32 as u32)),
-    );
-    num_chars = (*tfm)
-        .ec
-        .wrapping_sub((*tfm).bc)
-        .wrapping_add(1i32 as u32);
+    num_char_infos = (*tfm)
+        .ncw
+        .wrapping_div((3i32 as u32).wrapping_add((*tfm).npc.wrapping_div(2i32 as u32)));
+    num_chars = (*tfm).ec.wrapping_sub((*tfm).bc).wrapping_add(1i32 as u32);
     if num_chars != 0i32 as u32 {
         let mut i: u32 = 0;
         let mut char_infos_read: u32 = 0;
@@ -754,9 +701,9 @@ unsafe extern "C" fn ofm_do_char_info_one(
         (*tfm).height_index = new((num_chars as u64)
             .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32) as *mut u8;
-        (*tfm).depth_index = new((num_chars as u64)
-            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-            as u32) as *mut u8;
+        (*tfm).depth_index =
+            new((num_chars as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
+                as *mut u8;
         char_infos_read = 0i32 as u32;
         i = 0i32 as u32;
         while i < num_chars && char_infos_read < num_char_infos {
@@ -819,14 +766,14 @@ unsafe extern "C" fn ofm_unpack_arrays(
 ) {
     let mut i: u32 = 0;
     (*fm).widths = new(((*tfm).bc.wrapping_add(num_chars) as u64)
-        .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-        as u32) as *mut fixword;
+        .wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32)
+        as *mut fixword;
     (*fm).heights = new(((*tfm).bc.wrapping_add(num_chars) as u64)
-        .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-        as u32) as *mut fixword;
+        .wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32)
+        as *mut fixword;
     (*fm).depths = new(((*tfm).bc.wrapping_add(num_chars) as u64)
-        .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-        as u32) as *mut fixword;
+        .wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32)
+        as *mut fixword;
     i = 0i32 as u32;
     while i < num_chars {
         *(*fm).widths.offset((*tfm).bc.wrapping_add(i) as isize) = *(*tfm)
@@ -882,9 +829,9 @@ unsafe extern "C" fn read_ofm(
         );
     }
     if tfm.wlenheader > 0i32 as u32 {
-        tfm.header = new((tfm.wlenheader as u64)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-            as u32) as *mut fixword;
+        tfm.header = new(
+            (tfm.wlenheader as u64).wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32
+        ) as *mut fixword;
         fread_fwords(tfm.header, tfm.wlenheader, ofm_handle);
     }
     if tfm.level == 0i32 {
@@ -893,29 +840,27 @@ unsafe extern "C" fn read_ofm(
         ofm_do_char_info_one(ofm_handle, &mut tfm);
     }
     if tfm.nwidths > 0i32 as u32 {
-        tfm.width = new((tfm.nwidths as u64)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-            as u32) as *mut fixword;
+        tfm.width =
+            new((tfm.nwidths as u64).wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32)
+                as *mut fixword;
         fread_fwords(tfm.width, tfm.nwidths, ofm_handle);
     }
     if tfm.nheights > 0i32 as u32 {
-        tfm.height = new((tfm.nheights as u64)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-            as u32) as *mut fixword;
+        tfm.height =
+            new((tfm.nheights as u64).wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32)
+                as *mut fixword;
         fread_fwords(tfm.height, tfm.nheights, ofm_handle);
     }
     if tfm.ndepths > 0i32 as u32 {
-        tfm.depth = new((tfm.ndepths as u64)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-            as u32) as *mut fixword;
+        tfm.depth =
+            new((tfm.ndepths as u64).wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32)
+                as *mut fixword;
         fread_fwords(tfm.depth, tfm.ndepths, ofm_handle);
     }
     ofm_unpack_arrays(
         fm,
         &mut tfm,
-        tfm.ec
-            .wrapping_sub(tfm.bc)
-            .wrapping_add(1i32 as u32),
+        tfm.ec.wrapping_sub(tfm.bc).wrapping_add(1i32 as u32),
     );
     tfm_unpack_header(fm, &mut tfm);
     (*fm).firstchar = tfm.bc as i32;
@@ -960,47 +905,38 @@ unsafe extern "C" fn read_tfm(
     (*fm).firstchar = tfm.bc as i32;
     (*fm).lastchar = tfm.ec as i32;
     if tfm.wlenheader > 0i32 as u32 {
-        tfm.header = new((tfm.wlenheader as u64)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-            as u32) as *mut fixword;
+        tfm.header = new(
+            (tfm.wlenheader as u64).wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32
+        ) as *mut fixword;
         fread_fwords(tfm.header, tfm.wlenheader, tfm_handle);
     }
-    if tfm
-        .ec
-        .wrapping_sub(tfm.bc)
-        .wrapping_add(1i32 as u32)
-        > 0i32 as u32
-    {
-        tfm.char_info = new((tfm
-            .ec
-            .wrapping_sub(tfm.bc)
-            .wrapping_add(1i32 as u32) as u64)
-            .wrapping_mul(::std::mem::size_of::<u32>() as u64)
-            as u32) as *mut u32;
+    if tfm.ec.wrapping_sub(tfm.bc).wrapping_add(1i32 as u32) > 0i32 as u32 {
+        tfm.char_info = new(
+            (tfm.ec.wrapping_sub(tfm.bc).wrapping_add(1i32 as u32) as u64)
+                .wrapping_mul(::std::mem::size_of::<u32>() as u64) as u32,
+        ) as *mut u32;
         fread_uquads(
             tfm.char_info,
-            tfm.ec
-                .wrapping_sub(tfm.bc)
-                .wrapping_add(1i32 as u32),
+            tfm.ec.wrapping_sub(tfm.bc).wrapping_add(1i32 as u32),
             tfm_handle,
         );
     }
     if tfm.nwidths > 0i32 as u32 {
-        tfm.width = new((tfm.nwidths as u64)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-            as u32) as *mut fixword;
+        tfm.width =
+            new((tfm.nwidths as u64).wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32)
+                as *mut fixword;
         fread_fwords(tfm.width, tfm.nwidths, tfm_handle);
     }
     if tfm.nheights > 0i32 as u32 {
-        tfm.height = new((tfm.nheights as u64)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-            as u32) as *mut fixword;
+        tfm.height =
+            new((tfm.nheights as u64).wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32)
+                as *mut fixword;
         fread_fwords(tfm.height, tfm.nheights, tfm_handle);
     }
     if tfm.ndepths > 0i32 as u32 {
-        tfm.depth = new((tfm.ndepths as u64)
-            .wrapping_mul(::std::mem::size_of::<fixword>() as u64)
-            as u32) as *mut fixword;
+        tfm.depth =
+            new((tfm.ndepths as u64).wrapping_mul(::std::mem::size_of::<fixword>() as u64) as u32)
+                as *mut fixword;
         fread_fwords(tfm.depth, tfm.ndepths, tfm_handle);
     }
     tfm_unpack_arrays(fm, &mut tfm);
@@ -1008,10 +944,7 @@ unsafe extern "C" fn read_tfm(
     tfm_font_clear(&mut tfm);
 }
 #[no_mangle]
-pub unsafe extern "C" fn tfm_open(
-    mut tfm_name: *const i8,
-    mut must_exist: i32,
-) -> i32 {
+pub unsafe extern "C" fn tfm_open(mut tfm_name: *const i8, mut must_exist: i32) -> i32 {
     let mut tfm_handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut i: i32 = 0;
     let mut format: i32 = 1i32;
@@ -1050,10 +983,8 @@ pub unsafe extern "C" fn tfm_open(
     {
         ofm_name = new((strlen(tfm_name)
             .wrapping_add(strlen(b".ofm\x00" as *const u8 as *const i8))
-            .wrapping_add(1i32 as u64) as u32
-            as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+            .wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
         strcpy(ofm_name, tfm_name);
         strcat(ofm_name, b".ofm\x00" as *const u8 as *const i8);
     } else {
@@ -1097,9 +1028,7 @@ pub unsafe extern "C" fn tfm_open(
         _tt_abort(b"TFM/OFM file size exceeds 33-bit\x00" as *const u8 as *const i8);
     }
     if tfm_file_size < 24i32 as i64 {
-        _tt_abort(
-            b"TFM/OFM file too small to be a valid file.\x00" as *const u8 as *const i8,
-        );
+        _tt_abort(b"TFM/OFM file too small to be a valid file.\x00" as *const u8 as *const i8);
     }
     fms_need(numfms.wrapping_add(1i32 as u32));
     fm_init(fms.offset(numfms as isize));
@@ -1110,11 +1039,8 @@ pub unsafe extern "C" fn tfm_open(
     }
     ttstub_input_close(tfm_handle);
     let ref mut fresh0 = (*fms.offset(numfms as isize)).tex_name;
-    *fresh0 = new(
-        (strlen(tfm_name).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32,
-    ) as *mut i8;
+    *fresh0 = new((strlen(tfm_name).wrapping_add(1i32 as u64) as u32 as u64)
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy((*fms.offset(numfms as isize)).tex_name, tfm_name);
     if verbose != 0 {
         dpx_message(b")\x00" as *const u8 as *const i8);
@@ -1151,28 +1077,19 @@ pub unsafe extern "C" fn tfm_get_fw_width(mut font_id: i32, mut ch: i32) -> fixw
             1 => {
                 idx = lookup_char((*fm).charmap.data as *const char_map, ch);
                 if idx < 0i32 {
-                    _tt_abort(
-                        b"Invalid char: %d\n\x00" as *const u8 as *const i8,
-                        ch,
-                    );
+                    _tt_abort(b"Invalid char: %d\n\x00" as *const u8 as *const i8, ch);
                 }
             }
             2 => {
                 idx = lookup_range((*fm).charmap.data as *const range_map, ch);
                 if idx < 0i32 {
-                    _tt_abort(
-                        b"Invalid char: %d\n\x00" as *const u8 as *const i8,
-                        ch,
-                    );
+                    _tt_abort(b"Invalid char: %d\n\x00" as *const u8 as *const i8, ch);
                 }
             }
             _ => idx = ch,
         }
     } else {
-        _tt_abort(
-            b"Invalid char: %d\n\x00" as *const u8 as *const i8,
-            ch,
-        );
+        _tt_abort(b"Invalid char: %d\n\x00" as *const u8 as *const i8, ch);
     }
     return *(*fm).widths.offset(idx as isize);
 }
@@ -1192,28 +1109,19 @@ pub unsafe extern "C" fn tfm_get_fw_height(mut font_id: i32, mut ch: i32) -> fix
             1 => {
                 idx = lookup_char((*fm).charmap.data as *const char_map, ch);
                 if idx < 0i32 {
-                    _tt_abort(
-                        b"Invalid char: %d\n\x00" as *const u8 as *const i8,
-                        ch,
-                    );
+                    _tt_abort(b"Invalid char: %d\n\x00" as *const u8 as *const i8, ch);
                 }
             }
             2 => {
                 idx = lookup_range((*fm).charmap.data as *const range_map, ch);
                 if idx < 0i32 {
-                    _tt_abort(
-                        b"Invalid char: %d\n\x00" as *const u8 as *const i8,
-                        ch,
-                    );
+                    _tt_abort(b"Invalid char: %d\n\x00" as *const u8 as *const i8, ch);
                 }
             }
             _ => idx = ch,
         }
     } else {
-        _tt_abort(
-            b"Invalid char: %d\n\x00" as *const u8 as *const i8,
-            ch,
-        );
+        _tt_abort(b"Invalid char: %d\n\x00" as *const u8 as *const i8, ch);
     }
     return *(*fm).heights.offset(idx as isize);
 }
@@ -1233,28 +1141,19 @@ pub unsafe extern "C" fn tfm_get_fw_depth(mut font_id: i32, mut ch: i32) -> fixw
             1 => {
                 idx = lookup_char((*fm).charmap.data as *const char_map, ch);
                 if idx < 0i32 {
-                    _tt_abort(
-                        b"Invalid char: %d\n\x00" as *const u8 as *const i8,
-                        ch,
-                    );
+                    _tt_abort(b"Invalid char: %d\n\x00" as *const u8 as *const i8, ch);
                 }
             }
             2 => {
                 idx = lookup_range((*fm).charmap.data as *const range_map, ch);
                 if idx < 0i32 {
-                    _tt_abort(
-                        b"Invalid char: %d\n\x00" as *const u8 as *const i8,
-                        ch,
-                    );
+                    _tt_abort(b"Invalid char: %d\n\x00" as *const u8 as *const i8, ch);
                 }
             }
             _ => idx = ch,
         }
     } else {
-        _tt_abort(
-            b"Invalid char: %d\n\x00" as *const u8 as *const i8,
-            ch,
-        );
+        _tt_abort(b"Invalid char: %d\n\x00" as *const u8 as *const i8, ch);
     }
     return *(*fm).depths.offset(idx as isize);
 }
@@ -1263,10 +1162,7 @@ pub unsafe extern "C" fn tfm_get_fw_depth(mut font_id: i32, mut ch: i32) -> fixw
  * as a (double) fraction of the design size.
  */
 #[no_mangle]
-pub unsafe extern "C" fn tfm_get_width(
-    mut font_id: i32,
-    mut ch: i32,
-) -> f64 {
+pub unsafe extern "C" fn tfm_get_width(mut font_id: i32, mut ch: i32) -> f64 {
     return tfm_get_fw_width(font_id, ch) as f64 / (1i32 << 20i32) as f64;
 }
 /* tfm_string_xxx() do not work for OFM... */
@@ -1299,8 +1195,7 @@ pub unsafe extern "C" fn tfm_get_design_size(mut font_id: i32) -> f64 {
             font_id,
         );
     }
-    return (*fms.offset(font_id as isize)).designsize as f64
-        / (1i32 << 20i32) as f64
+    return (*fms.offset(font_id as isize)).designsize as f64 / (1i32 << 20i32) as f64
         * (72.0f64 / 72.27f64);
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.

@@ -40,11 +40,7 @@ extern "C" {
     #[no_mangle]
     fn ttstub_input_get_size(handle: rust_input_handle_t) -> size_t;
     #[no_mangle]
-    fn ttstub_input_read(
-        handle: rust_input_handle_t,
-        data: *mut i8,
-        len: size_t,
-    ) -> ssize_t;
+    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
@@ -84,16 +80,9 @@ extern "C" {
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn agl_get_unicodes(
-        glyphstr: *const i8,
-        unicodes: *mut i32,
-        max_uncodes: i32,
-    ) -> i32;
+    fn agl_get_unicodes(glyphstr: *const i8, unicodes: *mut i32, max_uncodes: i32) -> i32;
     #[no_mangle]
-    fn parse_c_ident(
-        pp: *mut *const i8,
-        endptr: *const i8,
-    ) -> *mut i8;
+    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
@@ -237,8 +226,7 @@ unsafe extern "C" fn parse_uc_coverage(
                 glyphname = parse_c_ident(pp, endptr);
                 if glyphname.is_null() {
                     _tt_abort(
-                        b"Invalid Unicode character specified.\x00" as *const u8
-                            as *const i8,
+                        b"Invalid Unicode character specified.\x00" as *const u8 as *const i8,
                     );
                 }
                 skip_white(pp, endptr);
@@ -333,10 +321,7 @@ unsafe extern "C" fn add_rule(
         }
         i = 0i32;
         while i < n_unicodes {
-            pdf_add_array(
-                glyph1,
-                pdf_new_number(unicodes[i as usize] as f64),
-            );
+            pdf_add_array(glyph1, pdf_new_number(unicodes[i as usize] as f64));
             if verbose > 0i32 {
                 if unicodes[i as usize] < 0x10000i32 {
                     dpx_message(
@@ -368,8 +353,7 @@ unsafe extern "C" fn add_rule(
         pdf_link_obj(glyph2);
         if verbose > 0i32 {
             dpx_message(
-                b"otl_conf>> Input glyph sequence: %s (%s)\n\x00" as *const u8
-                    as *const i8,
+                b"otl_conf>> Input glyph sequence: %s (%s)\n\x00" as *const u8 as *const i8,
                 second,
                 suffix,
             );
@@ -387,15 +371,13 @@ unsafe extern "C" fn add_rule(
         if verbose > 0i32 {
             if !suffix.is_null() {
                 dpx_message(
-                    b"otl_conf>> Input glyph sequence: %s.%s ->\x00" as *const u8
-                        as *const i8,
+                    b"otl_conf>> Input glyph sequence: %s.%s ->\x00" as *const u8 as *const i8,
                     second,
                     suffix,
                 );
             } else {
                 dpx_message(
-                    b"otl_conf>> Input glyph sequence: %s ->\x00" as *const u8
-                        as *const i8,
+                    b"otl_conf>> Input glyph sequence: %s ->\x00" as *const u8 as *const i8,
                     second,
                 );
             }
@@ -403,10 +385,7 @@ unsafe extern "C" fn add_rule(
         glyph2 = pdf_new_array();
         i = 0i32;
         while i < n_unicodes {
-            pdf_add_array(
-                glyph2,
-                pdf_new_number(unicodes[i as usize] as f64),
-            );
+            pdf_add_array(glyph2, pdf_new_number(unicodes[i as usize] as f64));
             if verbose > 0i32 {
                 if unicodes[i as usize] < 0x10000i32 {
                     dpx_message(
@@ -476,11 +455,8 @@ unsafe extern "C" fn parse_substrule(
             if token.is_null() {
                 break;
             }
-            if streq_ptr(token, b"assign\x00" as *const u8 as *const i8) as i32
-                != 0
-                || streq_ptr(token, b"substitute\x00" as *const u8 as *const i8)
-                    as i32
-                    != 0
+            if streq_ptr(token, b"assign\x00" as *const u8 as *const i8) as i32 != 0
+                || streq_ptr(token, b"substitute\x00" as *const u8 as *const i8) as i32 != 0
             {
                 let mut tmp: *mut i8 = 0 as *mut i8;
                 let mut first: *mut i8 = 0 as *mut i8;
@@ -496,10 +472,7 @@ unsafe extern "C" fn parse_substrule(
                 if strcmp(tmp, b"by\x00" as *const u8 as *const i8) != 0
                     && strcmp(tmp, b"to\x00" as *const u8 as *const i8) != 0
                 {
-                    _tt_abort(
-                        b"Syntax error (2): %s\x00" as *const u8 as *const i8,
-                        *pp,
-                    );
+                    _tt_abort(b"Syntax error (2): %s\x00" as *const u8 as *const i8, *pp);
                 }
                 skip_white(pp, endptr);
                 second = parse_c_ident(pp, endptr);
@@ -520,10 +493,7 @@ unsafe extern "C" fn parse_substrule(
                 free(second as *mut libc::c_void);
                 free(suffix as *mut libc::c_void);
             } else {
-                _tt_abort(
-                    b"Unkown command %s.\x00" as *const u8 as *const i8,
-                    token,
-                );
+                _tt_abort(b"Unkown command %s.\x00" as *const u8 as *const i8, token);
             }
             free(token as *mut libc::c_void);
             skip_white(pp, endptr);
@@ -573,11 +543,8 @@ unsafe extern "C" fn parse_block(
             if token.is_null() {
                 break;
             }
-            if streq_ptr(token, b"script\x00" as *const u8 as *const i8) as i32
-                != 0
-                || streq_ptr(token, b"language\x00" as *const u8 as *const i8)
-                    as i32
-                    != 0
+            if streq_ptr(token, b"script\x00" as *const u8 as *const i8) as i32 != 0
+                || streq_ptr(token, b"language\x00" as *const u8 as *const i8) as i32 != 0
             {
                 let mut i: i32 = 0;
                 let mut len: i32 = 0;
@@ -592,15 +559,10 @@ unsafe extern "C" fn parse_block(
                     tmp = new(((len + 1i32) as u32 as u64)
                         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                         as u32) as *mut i8;
-                    memset(
-                        tmp as *mut libc::c_void,
-                        0i32,
-                        (len + 1i32) as u64,
-                    );
+                    memset(tmp as *mut libc::c_void, 0i32, (len + 1i32) as u64);
                     i = 0i32;
                     while i < len {
-                        if *(*__ctype_b_loc()).offset(**pp as u8 as i32 as isize)
-                            as i32
+                        if *(*__ctype_b_loc()).offset(**pp as u8 as i32 as isize) as i32
                             & _ISspace as i32 as u16 as i32
                             == 0
                         {
@@ -616,8 +578,7 @@ unsafe extern "C" fn parse_block(
                     );
                     if verbose > 0i32 {
                         dpx_message(
-                            b"otl_conf>> Current %s set to \"%s\"\n\x00" as *const u8
-                                as *const i8,
+                            b"otl_conf>> Current %s set to \"%s\"\n\x00" as *const u8 as *const i8,
                             token,
                             tmp,
                         );
@@ -640,8 +601,7 @@ unsafe extern "C" fn parse_block(
                 tmp = parse_c_ident(pp, endptr);
                 if verbose > 0i32 {
                     dpx_message(
-                        b"otl_conf>> Reading option \"%s\"\n\x00" as *const u8
-                            as *const i8,
+                        b"otl_conf>> Reading option \"%s\"\n\x00" as *const u8 as *const i8,
                         tmp,
                     );
                 }
@@ -649,15 +609,9 @@ unsafe extern "C" fn parse_block(
                 opt_rule = parse_block(gclass, pp, endptr);
                 pdf_add_dict(opt_dict, pdf_new_name(tmp), opt_rule);
                 free(tmp as *mut libc::c_void);
-            } else if streq_ptr(token, b"prefered\x00" as *const u8 as *const i8)
-                as i32
-                != 0
-                || streq_ptr(token, b"required\x00" as *const u8 as *const i8)
-                    as i32
-                    != 0
-                || streq_ptr(token, b"optional\x00" as *const u8 as *const i8)
-                    as i32
-                    != 0
+            } else if streq_ptr(token, b"prefered\x00" as *const u8 as *const i8) as i32 != 0
+                || streq_ptr(token, b"required\x00" as *const u8 as *const i8) as i32 != 0
+                || streq_ptr(token, b"optional\x00" as *const u8 as *const i8) as i32 != 0
             {
                 let mut subst: *mut pdf_obj = 0 as *mut pdf_obj;
                 let mut rule_block: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -696,9 +650,7 @@ unsafe extern "C" fn parse_block(
                 }
                 coverage = parse_uc_coverage(gclass, pp, endptr);
                 if coverage.is_null() {
-                    _tt_abort(
-                        b"No valid Unicode characters...\x00" as *const u8 as *const i8,
-                    );
+                    _tt_abort(b"No valid Unicode characters...\x00" as *const u8 as *const i8);
                 }
                 pdf_add_dict(gclass, pdf_new_name(&mut *token.offset(1)), coverage);
             }
@@ -725,8 +677,7 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const i8) -> *mut pdf_obj {
     filename = new((strlen(conf_name)
         .wrapping_add(strlen(b".otl\x00" as *const u8 as *const i8))
         .wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy(filename, conf_name);
     strcat(filename, b".otl\x00" as *const u8 as *const i8);
     handle = ttstub_input_open(filename, TTIF_CNF, 0i32) as *mut rust_input_handle_t;
@@ -749,9 +700,8 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const i8) -> *mut pdf_obj {
     if size < 1i32 {
         return 0 as *mut pdf_obj;
     }
-    wbuf = new((size as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+    wbuf = new((size as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+        as *mut i8;
     p = wbuf;
     endptr = p.offset(size as isize);
     while size > 0i32 && p < endptr {
@@ -759,8 +709,7 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const i8) -> *mut pdf_obj {
         if len < 0i32 {
             ttstub_input_close(handle as rust_input_handle_t);
             _tt_abort(
-                b"error reading OTL configuration file \"%s\"\x00" as *const u8
-                    as *const i8,
+                b"error reading OTL configuration file \"%s\"\x00" as *const u8 as *const i8,
                 filename,
             );
         }

@@ -11,17 +11,9 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_input_seek(
-        handle: rust_input_handle_t,
-        offset: ssize_t,
-        whence: i32,
-    ) -> size_t;
+    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
     #[no_mangle]
-    fn ttstub_input_read(
-        handle: rust_input_handle_t,
-        data: *mut i8,
-        len: size_t,
-    ) -> ssize_t;
+    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
     fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
@@ -274,35 +266,22 @@ pub unsafe extern "C" fn tt_pack_head_table(mut table: *mut tt_head_table) -> *m
     if table.is_null() {
         _tt_abort(b"passed NULL pointer\n\x00" as *const u8 as *const i8);
     }
-    data = new((54u64 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+    data = new((54u64 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+        as *mut i8;
     p = data;
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).version as i32, 4i32) as isize);
     p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).version as i32, 4i32) as isize,
+        put_big_endian(p as *mut libc::c_void, (*table).fontRevision as i32, 4i32) as isize,
     );
-    p = p.offset(put_big_endian(
-        p as *mut libc::c_void,
-        (*table).fontRevision as i32,
-        4i32,
-    ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
         (*table).checkSumAdjustment as i32,
         4i32,
     ) as isize);
-    p = p.offset(put_big_endian(
-        p as *mut libc::c_void,
-        (*table).magicNumber as i32,
-        4i32,
-    ) as isize);
     p = p
-        .offset(put_big_endian(p as *mut libc::c_void, (*table).flags as i32, 2i32) as isize);
-    p = p.offset(put_big_endian(
-        p as *mut libc::c_void,
-        (*table).unitsPerEm as i32,
-        2i32,
-    ) as isize);
+        .offset(put_big_endian(p as *mut libc::c_void, (*table).magicNumber as i32, 4i32) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).flags as i32, 2i32) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).unitsPerEm as i32, 2i32) as isize);
     i = 0i32;
     while i < 8i32 {
         let fresh0 = p;
@@ -321,14 +300,10 @@ pub unsafe extern "C" fn tt_pack_head_table(mut table: *mut tt_head_table) -> *m
     p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).yMin as i32, 2i32) as isize);
     p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).xMax as i32, 2i32) as isize);
     p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).yMax as i32, 2i32) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).macStyle as i32, 2i32) as isize);
     p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).macStyle as i32, 2i32) as isize,
+        put_big_endian(p as *mut libc::c_void, (*table).lowestRecPPEM as i32, 2i32) as isize,
     );
-    p = p.offset(put_big_endian(
-        p as *mut libc::c_void,
-        (*table).lowestRecPPEM as i32,
-        2i32,
-    ) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
         (*table).fontDirectionHint as i32,
@@ -384,28 +359,14 @@ pub unsafe extern "C" fn tt_read_head_table(mut sfont: *mut sfnt) -> *mut tt_hea
 pub unsafe extern "C" fn tt_pack_maxp_table(mut table: *mut tt_maxp_table) -> *mut i8 {
     let mut p: *mut i8 = 0 as *mut i8;
     let mut data: *mut i8 = 0 as *mut i8;
-    data = new((32u64 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+    data = new((32u64 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+        as *mut i8;
     p = data;
-    p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).version as i32, 4i32) as isize,
-    );
-    p = p.offset(put_big_endian(
-        p as *mut libc::c_void,
-        (*table).numGlyphs as i32,
-        2i32,
-    ) as isize);
-    p = p.offset(put_big_endian(
-        p as *mut libc::c_void,
-        (*table).maxPoints as i32,
-        2i32,
-    ) as isize);
-    p = p.offset(put_big_endian(
-        p as *mut libc::c_void,
-        (*table).maxContours as i32,
-        2i32,
-    ) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).version as i32, 4i32) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).numGlyphs as i32, 2i32) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).maxPoints as i32, 2i32) as isize);
+    p = p
+        .offset(put_big_endian(p as *mut libc::c_void, (*table).maxContours as i32, 2i32) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
         (*table).maxComponentPoints as i32,
@@ -416,19 +377,13 @@ pub unsafe extern "C" fn tt_pack_maxp_table(mut table: *mut tt_maxp_table) -> *m
         (*table).maxComponentContours as i32,
         2i32,
     ) as isize);
-    p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).maxZones as i32, 2i32) as isize,
-    );
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).maxZones as i32, 2i32) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
         (*table).maxTwilightPoints as i32,
         2i32,
     ) as isize);
-    p = p.offset(put_big_endian(
-        p as *mut libc::c_void,
-        (*table).maxStorage as i32,
-        2i32,
-    ) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).maxStorage as i32, 2i32) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
         (*table).maxFunctionDefs as i32,
@@ -489,22 +444,13 @@ pub unsafe extern "C" fn tt_pack_hhea_table(mut table: *mut tt_hhea_table) -> *m
     let mut i: i32 = 0;
     let mut p: *mut i8 = 0 as *mut i8;
     let mut data: *mut i8 = 0 as *mut i8;
-    data = new((36u64 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+    data = new((36u64 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+        as *mut i8;
     p = data;
-    p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).version as i32, 4i32) as isize,
-    );
-    p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).ascent as i32, 2i32) as isize,
-    );
-    p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).descent as i32, 2i32) as isize,
-    );
-    p = p.offset(
-        put_big_endian(p as *mut libc::c_void, (*table).lineGap as i32, 2i32) as isize,
-    );
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).version as i32, 4i32) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).ascent as i32, 2i32) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).descent as i32, 2i32) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).lineGap as i32, 2i32) as isize);
     p = p.offset(put_big_endian(
         p as *mut libc::c_void,
         (*table).advanceWidthMax as i32,
@@ -520,26 +466,15 @@ pub unsafe extern "C" fn tt_pack_hhea_table(mut table: *mut tt_hhea_table) -> *m
         (*table).minRightSideBearing as i32,
         2i32,
     ) as isize);
-    p = p.offset(put_big_endian(
-        p as *mut libc::c_void,
-        (*table).xMaxExtent as i32,
-        2i32,
-    ) as isize);
-    p = p.offset(put_big_endian(
-        p as *mut libc::c_void,
-        (*table).caretSlopeRise as i32,
-        2i32,
-    ) as isize);
-    p = p.offset(put_big_endian(
-        p as *mut libc::c_void,
-        (*table).caretSlopeRun as i32,
-        2i32,
-    ) as isize);
-    p = p.offset(put_big_endian(
-        p as *mut libc::c_void,
-        (*table).caretOffset as i32,
-        2i32,
-    ) as isize);
+    p = p.offset(put_big_endian(p as *mut libc::c_void, (*table).xMaxExtent as i32, 2i32) as isize);
+    p = p.offset(
+        put_big_endian(p as *mut libc::c_void, (*table).caretSlopeRise as i32, 2i32) as isize,
+    );
+    p = p.offset(
+        put_big_endian(p as *mut libc::c_void, (*table).caretSlopeRun as i32, 2i32) as isize,
+    );
+    p = p
+        .offset(put_big_endian(p as *mut libc::c_void, (*table).caretOffset as i32, 2i32) as isize);
     i = 0i32;
     while i < 4i32 {
         p = p.offset(put_big_endian(
@@ -636,9 +571,9 @@ pub unsafe extern "C" fn tt_read_VORG_table(mut sfont: *mut sfnt) -> *mut tt_VOR
     let mut i: u16 = 0;
     offset = sfnt_find_table_pos(sfont, b"VORG\x00" as *const u8 as *const i8);
     if offset > 0i32 as u32 {
-        vorg = new((1i32 as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<tt_VORG_table>() as u64)
-            as u32) as *mut tt_VORG_table;
+        vorg = new(
+            (1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<tt_VORG_table>() as u64) as u32,
+        ) as *mut tt_VORG_table;
         sfnt_locate_table(sfont, b"VORG\x00" as *const u8 as *const i8);
         if tt_get_unsigned_pair((*sfont).handle) as i32 != 1i32
             || tt_get_unsigned_pair((*sfont).handle) as i32 != 0i32
@@ -647,8 +582,7 @@ pub unsafe extern "C" fn tt_read_VORG_table(mut sfont: *mut sfnt) -> *mut tt_VOR
         }
         (*vorg).defaultVertOriginY = tt_get_signed_pair((*sfont).handle);
         (*vorg).numVertOriginYMetrics = tt_get_unsigned_pair((*sfont).handle);
-        (*vorg).vertOriginYMetrics = new(((*vorg).numVertOriginYMetrics as u32
-            as u64)
+        (*vorg).vertOriginYMetrics = new(((*vorg).numVertOriginYMetrics as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<tt_vertOriginYMetrics>() as u64)
             as u32) as *mut tt_vertOriginYMetrics;
         /*
@@ -684,9 +618,10 @@ pub unsafe extern "C" fn tt_read_longMetrics(
     let mut gid: u16 = 0;
     let mut last_adv: u16 = 0i32 as u16;
     let mut last_esb: i16 = 0i32 as i16;
-    m = new((numGlyphs as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<tt_longMetrics>() as u64)
-        as u32) as *mut tt_longMetrics;
+    m = new(
+        (numGlyphs as u32 as u64).wrapping_mul(::std::mem::size_of::<tt_longMetrics>() as u64)
+            as u32,
+    ) as *mut tt_longMetrics;
     gid = 0i32 as u16;
     while (gid as i32) < numGlyphs as i32 {
         if (gid as i32) < numLongMetrics as i32 {
@@ -707,12 +642,10 @@ pub unsafe extern "C" fn tt_read_longMetrics(
 pub unsafe extern "C" fn tt_read_os2__table(mut sfont: *mut sfnt) -> *mut tt_os2__table {
     let mut table: *mut tt_os2__table = 0 as *mut tt_os2__table;
     let mut i: i32 = 0;
-    table = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<tt_os2__table>() as u64)
-        as u32) as *mut tt_os2__table;
-    if sfnt_find_table_pos(sfont, b"OS/2\x00" as *const u8 as *const i8)
-        > 0i32 as u32
-    {
+    table = new(
+        (1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<tt_os2__table>() as u64) as u32,
+    ) as *mut tt_os2__table;
+    if sfnt_find_table_pos(sfont, b"OS/2\x00" as *const u8 as *const i8) > 0i32 as u32 {
         sfnt_locate_table(sfont, b"OS/2\x00" as *const u8 as *const i8);
         (*table).version = tt_get_unsigned_pair((*sfont).handle);
         (*table).xAvgCharWidth = tt_get_signed_pair((*sfont).handle);
@@ -747,9 +680,7 @@ pub unsafe extern "C" fn tt_read_os2__table(mut sfont: *mut sfnt) -> *mut tt_os2
         (*table).fsSelection = tt_get_unsigned_pair((*sfont).handle);
         (*table).usFirstCharIndex = tt_get_unsigned_pair((*sfont).handle);
         (*table).usLastCharIndex = tt_get_unsigned_pair((*sfont).handle);
-        if sfnt_find_table_len(sfont, b"OS/2\x00" as *const u8 as *const i8)
-            >= 78i32 as u32
-        {
+        if sfnt_find_table_len(sfont, b"OS/2\x00" as *const u8 as *const i8) >= 78i32 as u32 {
             /* these fields are not present in the original Apple spec (68-byte table),
             but Microsoft's version of "format 0" does include them... grr! */
             (*table).sTypoAscender = tt_get_signed_pair((*sfont).handle);
@@ -828,14 +759,12 @@ unsafe extern "C" fn tt_get_name(
         /* language ID value 0xffffu for `accept any language ID' */
         if p_id as i32 == plat_id as i32
             && e_id as i32 == enco_id as i32
-            && (lang_id as u32 == 0xffffu32
-                || l_id as i32 == lang_id as i32)
+            && (lang_id as u32 == 0xffffu32 || l_id as i32 == lang_id as i32)
             && n_id as i32 == name_id as i32
         {
             if length as i32 > destlen as i32 - 1i32 {
                 dpx_warning(
-                    b"Name string too long (%u), truncating to %u\x00" as *const u8
-                        as *const i8,
+                    b"Name string too long (%u), truncating to %u\x00" as *const u8 as *const i8,
                     length as i32,
                     destlen as i32,
                 );

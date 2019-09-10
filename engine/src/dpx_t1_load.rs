@@ -14,8 +14,7 @@ extern "C" {
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64)
-        -> *mut libc::c_void;
+    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -75,17 +74,9 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_input_seek(
-        handle: rust_input_handle_t,
-        offset: ssize_t,
-        whence: i32,
-    ) -> size_t;
+    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
     #[no_mangle]
-    fn ttstub_input_read(
-        handle: rust_input_handle_t,
-        data: *mut i8,
-        len: size_t,
-    ) -> ssize_t;
+    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
     fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
     /* tectonic/core-memory.h: basic dynamic memory helpers
@@ -124,12 +115,7 @@ extern "C" {
     #[no_mangle]
     fn cff_new_dict() -> *mut cff_dict;
     #[no_mangle]
-    fn cff_dict_set(
-        dict: *mut cff_dict,
-        key: *const i8,
-        idx: i32,
-        value: f64,
-    );
+    fn cff_dict_set(dict: *mut cff_dict, key: *const i8, idx: i32, value: f64);
     #[no_mangle]
     fn cff_dict_add(dict: *mut cff_dict, key: *const i8, count: i32);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -389,10 +375,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     return 0i32 != 0;
 }
 #[inline]
-unsafe extern "C" fn strstartswith(
-    mut s: *const i8,
-    mut prefix: *const i8,
-) -> *const i8 {
+unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
     let mut length: size_t = 0;
     length = strlen(prefix);
     if strncmp(s, prefix, length) == 0i32 {
@@ -438,10 +421,7 @@ unsafe extern "C" fn t1_decrypt(
     }
 }
 /* T1CRYPT */
-unsafe extern "C" fn get_next_key(
-    mut start: *mut *mut u8,
-    mut end: *mut u8,
-) -> *mut i8 {
+unsafe extern "C" fn get_next_key(mut start: *mut *mut u8, mut end: *mut u8) -> *mut i8 {
     let mut key: *mut i8 = 0 as *mut i8;
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
     while *start < end && {
@@ -1328,8 +1308,8 @@ unsafe extern "C" fn try_put_or_putinterval(
                 if !(*enc_vec.offset((num1 + i) as isize)).is_null() {
                     /* num1 + i < 256 here */
                     let ref mut fresh7 = *enc_vec.offset((num3 + i) as isize);
-                    *fresh7 = mfree(*enc_vec.offset((num3 + i) as isize) as *mut libc::c_void)
-                        as *mut i8;
+                    *fresh7 =
+                        mfree(*enc_vec.offset((num3 + i) as isize) as *mut libc::c_void) as *mut i8;
                     let ref mut fresh8 = *enc_vec.offset((num3 + i) as isize);
                     *fresh8 = xstrdup(*enc_vec.offset((num1 + i) as isize))
                 }
@@ -1385,11 +1365,12 @@ unsafe extern "C" fn parse_encoding(
                     ) != 0i32
                 {
                     let ref mut fresh9 = *enc_vec.offset(code as isize);
-                    *fresh9 = new((strlen(StandardEncoding[code as usize])
-                        .wrapping_add(1i32 as u64)
-                        as u32 as u64)
-                        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                        as u32) as *mut i8;
+                    *fresh9 = new(
+                        (strlen(StandardEncoding[code as usize]).wrapping_add(1i32 as u64) as u32
+                            as u64)
+                            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
+                            as u32,
+                    ) as *mut i8;
                     strcpy(
                         *enc_vec.offset(code as isize),
                         StandardEncoding[code as usize],
@@ -1424,8 +1405,8 @@ unsafe extern "C" fn parse_encoding(
                 {
                     let ref mut fresh11 = *enc_vec.offset(code as isize);
                     *fresh11 = new((strlen(ISOLatin1Encoding[code as usize])
-                        .wrapping_add(1i32 as u64)
-                        as u32 as u64)
+                        .wrapping_add(1i32 as u64) as u32
+                        as u64)
                         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                         as u32) as *mut i8;
                     strcpy(
@@ -1653,26 +1634,24 @@ unsafe extern "C" fn parse_subrs(
     }
     if mode != 1i32 {
         max_size = 65536i32;
-        data = new((max_size as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<card8>() as u64)
-            as u32) as *mut card8;
-        offsets = new((count as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i32>() as u64)
-            as u32) as *mut i32;
-        lengths = new((count as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i32>() as u64)
-            as u32) as *mut i32;
+        data = new(
+            (max_size as u32 as u64).wrapping_mul(::std::mem::size_of::<card8>() as u64) as u32,
+        ) as *mut card8;
+        offsets =
+            new((count as u32 as u64).wrapping_mul(::std::mem::size_of::<i32>() as u64) as u32)
+                as *mut i32;
+        lengths =
+            new((count as u32 as u64).wrapping_mul(::std::mem::size_of::<i32>() as u64) as u32)
+                as *mut i32;
         memset(
             offsets as *mut libc::c_void,
             0i32,
-            (::std::mem::size_of::<i32>() as u64)
-                .wrapping_mul(count as u64),
+            (::std::mem::size_of::<i32>() as u64).wrapping_mul(count as u64),
         );
         memset(
             lengths as *mut libc::c_void,
             0i32,
-            (::std::mem::size_of::<i32>() as u64)
-                .wrapping_mul(count as u64),
+            (::std::mem::size_of::<i32>() as u64).wrapping_mul(count as u64),
         );
     } else {
         max_size = 0i32;
@@ -1781,11 +1760,7 @@ unsafe extern "C" fn parse_subrs(
                         b"-|\x00" as *const u8 as *const i8,
                     )
                     .is_null())
-                && seek_operator(
-                    start,
-                    end,
-                    b"readstring\x00" as *const u8 as *const i8,
-                ) < 0i32
+                && seek_operator(start, end, b"readstring\x00" as *const u8 as *const i8) < 0i32
             {
                 if !tok.is_null() {
                     pst_release_obj(tok);
@@ -1810,13 +1785,11 @@ unsafe extern "C" fn parse_subrs(
             if mode != 1i32 {
                 if offset + len >= max_size {
                     max_size += 65536i32;
-                    data =
-                        renew(
-                            data as *mut libc::c_void,
-                            (max_size as u32 as u64)
-                                .wrapping_mul(::std::mem::size_of::<card8>() as u64)
-                                as u32,
-                        ) as *mut card8
+                    data = renew(
+                        data as *mut libc::c_void,
+                        (max_size as u32 as u64).wrapping_mul(::std::mem::size_of::<card8>() as u64)
+                            as u32,
+                    ) as *mut card8
                 }
                 if lenIV >= 0i32 {
                     t1_decrypt(
@@ -1946,8 +1919,7 @@ unsafe extern "C" fn parse_charstrings(
     memset(
         (*charset).data.glyphs as *mut libc::c_void,
         0i32,
-        (::std::mem::size_of::<s_SID>() as u64)
-            .wrapping_mul((count - 1i32) as u64),
+        (::std::mem::size_of::<s_SID>() as u64).wrapping_mul((count - 1i32) as u64),
     );
     offset = 0i32;
     have_notdef = 0i32;
@@ -1967,10 +1939,7 @@ unsafe extern "C" fn parse_charstrings(
         glyph_name = pst_getSV(tok) as *mut i8;
         if i == 0i32
             && !glyph_name.is_null()
-            && strcmp(
-                glyph_name,
-                b".notdef\x00" as *const u8 as *const i8,
-            ) != 0i32
+            && strcmp(glyph_name, b".notdef\x00" as *const u8 as *const i8) != 0i32
         {
             (*font).is_notdef_notzero = 1i32
         }
@@ -1982,10 +1951,7 @@ unsafe extern "C" fn parse_charstrings(
             if glyph_name.is_null() {
                 return -1i32;
             } else {
-                if streq_ptr(
-                    glyph_name,
-                    b".notdef\x00" as *const u8 as *const i8,
-                ) {
+                if streq_ptr(glyph_name, b".notdef\x00" as *const u8 as *const i8) {
                     gid = 0i32;
                     have_notdef = 1i32
                 } else if have_notdef != 0 {
@@ -2034,11 +2000,7 @@ unsafe extern "C" fn parse_charstrings(
                         b"-|\x00" as *const u8 as *const i8,
                     )
                     .is_null())
-                && seek_operator(
-                    start,
-                    end,
-                    b"readstring\x00" as *const u8 as *const i8,
-                ) < 0i32
+                && seek_operator(start, end, b"readstring\x00" as *const u8 as *const i8) < 0i32
             {
                 if !tok.is_null() {
                     pst_release_obj(tok);
@@ -2056,13 +2018,11 @@ unsafe extern "C" fn parse_charstrings(
             if mode != 1i32 {
                 if offset + len >= max_size {
                     max_size += if len > 65536i32 { len } else { 65536i32 };
-                    (*charstrings).data =
-                        renew(
-                            (*charstrings).data as *mut libc::c_void,
-                            (max_size as u32 as u64)
-                                .wrapping_mul(::std::mem::size_of::<card8>() as u64)
-                                as u32,
-                        ) as *mut card8
+                    (*charstrings).data = renew(
+                        (*charstrings).data as *mut libc::c_void,
+                        (max_size as u32 as u64).wrapping_mul(::std::mem::size_of::<card8>() as u64)
+                            as u32,
+                    ) as *mut card8
                 }
                 if gid == 0i32 {
                     if lenIV >= 0i32 {
@@ -2078,8 +2038,7 @@ unsafe extern "C" fn parse_charstrings(
                         j = 1i32;
                         while j <= i {
                             let ref mut fresh18 = *(*charstrings).offset.offset(j as isize);
-                            *fresh18 = (*fresh18 as u32)
-                                .wrapping_add((len - lenIV) as u32)
+                            *fresh18 = (*fresh18 as u32).wrapping_add((len - lenIV) as u32)
                                 as l_offset as l_offset;
                             j += 1
                         }
@@ -2092,8 +2051,8 @@ unsafe extern "C" fn parse_charstrings(
                         j = 1i32;
                         while j <= i {
                             let ref mut fresh19 = *(*charstrings).offset.offset(j as isize);
-                            *fresh19 = (*fresh19 as u32).wrapping_add(len as u32)
-                                as l_offset as l_offset;
+                            *fresh19 =
+                                (*fresh19 as u32).wrapping_add(len as u32) as l_offset as l_offset;
                             j += 1
                         }
                     }
@@ -2161,8 +2120,7 @@ unsafe extern "C" fn parse_charstrings(
             }
             i += 1
         } else if pst_type_of(tok) < 0i32
-            && streq_ptr(glyph_name, b"end\x00" as *const u8 as *const i8) as i32
-                != 0
+            && streq_ptr(glyph_name, b"end\x00" as *const u8 as *const i8) as i32 != 0
         {
             if !tok.is_null() {
                 pst_release_obj(tok);
@@ -2220,22 +2178,12 @@ unsafe extern "C" fn parse_part2(
                 return -1i32;
             }
             lenIV = argv[0] as i32
-        } else if streq_ptr(key, b"BlueValues\x00" as *const u8 as *const i8)
-            as i32
-            != 0
-            || streq_ptr(key, b"OtherBlues\x00" as *const u8 as *const i8) as i32
-                != 0
-            || streq_ptr(key, b"FamilyBlues\x00" as *const u8 as *const i8) as i32
-                != 0
-            || streq_ptr(
-                key,
-                b"FamilyOtherBlues\x00" as *const u8 as *const i8,
-            ) as i32
-                != 0
-            || streq_ptr(key, b"StemSnapH\x00" as *const u8 as *const i8) as i32
-                != 0
-            || streq_ptr(key, b"StemSnapV\x00" as *const u8 as *const i8) as i32
-                != 0
+        } else if streq_ptr(key, b"BlueValues\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"OtherBlues\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"FamilyBlues\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"FamilyOtherBlues\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"StemSnapH\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"StemSnapV\x00" as *const u8 as *const i8) as i32 != 0
         {
             /*
              * Operand values are delta in CFF font dictionary encoding.
@@ -2268,25 +2216,13 @@ unsafe extern "C" fn parse_part2(
                     },
                 );
             }
-        } else if streq_ptr(key, b"StdHW\x00" as *const u8 as *const i8) as i32
-            != 0
+        } else if streq_ptr(key, b"StdHW\x00" as *const u8 as *const i8) as i32 != 0
             || streq_ptr(key, b"StdVW\x00" as *const u8 as *const i8) as i32 != 0
-            || streq_ptr(key, b"BlueScale\x00" as *const u8 as *const i8) as i32
-                != 0
-            || streq_ptr(key, b"BlueShift\x00" as *const u8 as *const i8) as i32
-                != 0
-            || streq_ptr(key, b"BlueFuzz\x00" as *const u8 as *const i8) as i32
-                != 0
-            || streq_ptr(
-                key,
-                b"LanguageGroup\x00" as *const u8 as *const i8,
-            ) as i32
-                != 0
-            || streq_ptr(
-                key,
-                b"ExpansionFactor\x00" as *const u8 as *const i8,
-            ) as i32
-                != 0
+            || streq_ptr(key, b"BlueScale\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"BlueShift\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"BlueFuzz\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"LanguageGroup\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"ExpansionFactor\x00" as *const u8 as *const i8) as i32 != 0
         {
             /*
              * Value of StdHW and StdVW is described as an array in the
@@ -2317,12 +2253,7 @@ unsafe extern "C" fn parse_part2(
             }
             if argv[0] != 0i32 as f64 {
                 cff_dict_add(*(*font).private.offset(0), key, 1i32);
-                cff_dict_set(
-                    *(*font).private.offset(0),
-                    key,
-                    0i32,
-                    1i32 as f64,
-                );
+                cff_dict_set(*(*font).private.offset(0), key, 0i32, 1i32 as f64);
             }
         }
         /*
@@ -2399,13 +2330,9 @@ unsafe extern "C" fn parse_part1(
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
-        } else if streq_ptr(key, b"ItalicAngle\x00" as *const u8 as *const i8)
-            as i32
-            != 0
-            || streq_ptr(key, b"StrokeWidth\x00" as *const u8 as *const i8) as i32
-                != 0
-            || streq_ptr(key, b"PaintType\x00" as *const u8 as *const i8) as i32
-                != 0
+        } else if streq_ptr(key, b"ItalicAngle\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"StrokeWidth\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"PaintType\x00" as *const u8 as *const i8) as i32 != 0
         {
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 1i32);
             if argn != 1i32 {
@@ -2421,16 +2348,8 @@ unsafe extern "C" fn parse_part1(
                 cff_dict_add((*font).topdict, key, 1i32);
                 cff_dict_set((*font).topdict, key, 0i32, argv[0]);
             }
-        } else if streq_ptr(
-            key,
-            b"UnderLinePosition\x00" as *const u8 as *const i8,
-        ) as i32
-            != 0
-            || streq_ptr(
-                key,
-                b"UnderLineThickness\x00" as *const u8 as *const i8,
-            ) as i32
-                != 0
+        } else if streq_ptr(key, b"UnderLinePosition\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"UnderLineThickness\x00" as *const u8 as *const i8) as i32 != 0
         {
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 1i32);
             if argn != 1i32 {
@@ -2492,16 +2411,12 @@ unsafe extern "C" fn parse_part1(
                     cff_dict_set((*font).topdict, key, argn, argv[argn as usize]);
                 }
             }
-        } else if streq_ptr(key, b"version\x00" as *const u8 as *const i8) as i32
-            != 0
+        } else if streq_ptr(key, b"version\x00" as *const u8 as *const i8) as i32 != 0
             || streq_ptr(key, b"Notice\x00" as *const u8 as *const i8) as i32 != 0
-            || streq_ptr(key, b"FullName\x00" as *const u8 as *const i8) as i32
-                != 0
-            || streq_ptr(key, b"FamilyName\x00" as *const u8 as *const i8) as i32
-                != 0
+            || streq_ptr(key, b"FullName\x00" as *const u8 as *const i8) as i32 != 0
+            || streq_ptr(key, b"FamilyName\x00" as *const u8 as *const i8) as i32 != 0
             || streq_ptr(key, b"Weight\x00" as *const u8 as *const i8) as i32 != 0
-            || streq_ptr(key, b"Copyright\x00" as *const u8 as *const i8) as i32
-                != 0
+            || streq_ptr(key, b"Copyright\x00" as *const u8 as *const i8) as i32 != 0
         {
             /*
              * FontInfo
@@ -2541,12 +2456,7 @@ unsafe extern "C" fn parse_part1(
             }
             if argv[0] != 0.0f64 {
                 cff_dict_add(*(*font).private.offset(0), key, 1i32);
-                cff_dict_set(
-                    *(*font).private.offset(0),
-                    key,
-                    0i32,
-                    1i32 as f64,
-                );
+                cff_dict_set(*(*font).private.offset(0), key, 0i32, 1i32 as f64);
             }
         }
         free(key as *mut libc::c_void);
@@ -2652,8 +2562,7 @@ unsafe extern "C" fn get_pfb_segment(
             }
             buffer = renew(
                 buffer as *mut libc::c_void,
-                ((bytesread + slen) as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+                ((bytesread + slen) as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64)
                     as u32,
             ) as *mut u8;
             while slen > 0i32 {
@@ -2676,9 +2585,7 @@ unsafe extern "C" fn get_pfb_segment(
     }
     buffer = renew(
         buffer as *mut libc::c_void,
-        ((bytesread + 1i32) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-            as u32,
+        ((bytesread + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32,
     ) as *mut u8;
     *buffer.offset(bytesread as isize) = 0i32 as u8;
     if !length.is_null() {
@@ -2711,12 +2618,7 @@ pub unsafe extern "C" fn t1_get_fontname(
     }
     start = buffer;
     end = buffer.offset(length as isize);
-    if seek_operator(
-        &mut start,
-        end,
-        b"begin\x00" as *const u8 as *const i8,
-    ) < 0i32
-    {
+    if seek_operator(&mut start, end, b"begin\x00" as *const u8 as *const i8) < 0i32 {
         free(buffer as *mut libc::c_void);
         return -1i32;
     }
@@ -2729,8 +2631,7 @@ pub unsafe extern "C" fn t1_get_fontname(
             if parse_svalue(&mut start, end, &mut strval) == 1i32 {
                 if strlen(strval) > 127i32 as u64 {
                     dpx_warning(
-                        b"FontName \"%s\" too long. (%zu bytes)\x00" as *const u8
-                            as *const i8,
+                        b"FontName \"%s\" too long. (%zu bytes)\x00" as *const u8 as *const i8,
                         strval,
                         strlen(strval),
                     );
@@ -2770,9 +2671,9 @@ unsafe extern "C" fn init_cff_font(mut cff: *mut cff_font) {
         as u32) as *mut *mut cff_dict;
     let ref mut fresh23 = *(*cff).private.offset(0);
     *fresh23 = cff_new_dict();
-    (*cff).subrs = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<*mut cff_index>() as u64)
-        as u32) as *mut *mut cff_index;
+    (*cff).subrs = new(
+        (1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<*mut cff_index>() as u64) as u32
+    ) as *mut *mut cff_index;
     let ref mut fresh24 = *(*cff).subrs.offset(0);
     *fresh24 = 0 as *mut cff_index;
     (*cff).offset = 0i32 as l_offset;
@@ -2821,8 +2722,7 @@ pub unsafe extern "C" fn t1_load_font(
     if buffer.is_null() || length == 0i32 {
         _tt_abort(b"Reading PFB (ASCII part) file failed.\x00" as *const u8 as *const i8);
     }
-    cff = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<cff_font>() as u64) as u32)
+    cff = new((1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<cff_font>() as u64) as u32)
         as *mut cff_font;
     init_cff_font(cff);
     start = buffer;
@@ -2838,9 +2738,7 @@ pub unsafe extern "C" fn t1_load_font(
     if buffer.is_null() || length == 0i32 {
         cff_close(cff);
         free(buffer as *mut libc::c_void);
-        _tt_abort(
-            b"Reading PFB (BINARY part) file failed.\x00" as *const u8 as *const i8,
-        );
+        _tt_abort(b"Reading PFB (BINARY part) file failed.\x00" as *const u8 as *const i8);
     } else {
         t1_decrypt(55665u32 as u16, buffer, buffer, 0i32, length);
     }
@@ -2849,9 +2747,7 @@ pub unsafe extern "C" fn t1_load_font(
     if parse_part2(cff, &mut start, end, mode) < 0i32 {
         cff_close(cff);
         free(buffer as *mut libc::c_void);
-        _tt_abort(
-            b"Reading PFB (BINARY part) file failed.\x00" as *const u8 as *const i8,
-        );
+        _tt_abort(b"Reading PFB (BINARY part) file failed.\x00" as *const u8 as *const i8);
     }
     /* Remaining section ignored. */
     free(buffer as *mut libc::c_void);

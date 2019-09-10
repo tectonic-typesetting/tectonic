@@ -74,26 +74,15 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn pst_parse_null(inbuf: *mut *mut u8, inbufend: *mut u8)
-        -> *mut pst_obj;
+    fn pst_parse_null(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
     #[no_mangle]
-    fn pst_parse_boolean(
-        inbuf: *mut *mut u8,
-        inbufend: *mut u8,
-    ) -> *mut pst_obj;
+    fn pst_parse_boolean(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
     #[no_mangle]
-    fn pst_parse_name(inbuf: *mut *mut u8, inbufend: *mut u8)
-        -> *mut pst_obj;
+    fn pst_parse_name(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
     #[no_mangle]
-    fn pst_parse_number(
-        inbuf: *mut *mut u8,
-        inbufend: *mut u8,
-    ) -> *mut pst_obj;
+    fn pst_parse_number(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
     #[no_mangle]
-    fn pst_parse_string(
-        inbuf: *mut *mut u8,
-        inbufend: *mut u8,
-    ) -> *mut pst_obj;
+    fn pst_parse_string(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
 }
 pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
@@ -130,10 +119,7 @@ pub type pst_type = i32;
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-unsafe extern "C" fn pst_parse_any(
-    mut inbuf: *mut *mut u8,
-    mut inbufend: *mut u8,
-) -> *mut pst_obj {
+unsafe extern "C" fn pst_parse_any(mut inbuf: *mut *mut u8, mut inbufend: *mut u8) -> *mut pst_obj {
     let mut data: *mut u8 = 0 as *mut u8;
     let mut cur: *mut u8 = *inbuf;
     let mut len: u32 = 0;
@@ -160,8 +146,7 @@ unsafe extern "C" fn pst_parse_any(
     }
     len = cur.wrapping_offset_from(*inbuf) as i64 as u32;
     data = new((len.wrapping_add(1i32 as u32) as u64)
-        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-        as u32) as *mut u8;
+        .wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
     memcpy(
         data as *mut libc::c_void,
         *inbuf as *const libc::c_void,
@@ -171,14 +156,8 @@ unsafe extern "C" fn pst_parse_any(
     *inbuf = cur;
     return pst_new_obj(-1i32, data as *mut libc::c_void);
 }
-unsafe extern "C" fn skip_line(
-    mut inbuf: *mut *mut u8,
-    mut inbufend: *mut u8,
-) {
-    while *inbuf < inbufend
-        && **inbuf as i32 != '\n' as i32
-        && **inbuf as i32 != '\r' as i32
-    {
+unsafe extern "C" fn skip_line(mut inbuf: *mut *mut u8, mut inbufend: *mut u8) {
+    while *inbuf < inbufend && **inbuf as i32 != '\n' as i32 && **inbuf as i32 != '\r' as i32 {
         *inbuf = (*inbuf).offset(1)
     }
     if *inbuf < inbufend && **inbuf as i32 == '\r' as i32 {
@@ -188,10 +167,7 @@ unsafe extern "C" fn skip_line(
         *inbuf = (*inbuf).offset(1)
     };
 }
-unsafe extern "C" fn skip_comments(
-    mut inbuf: *mut *mut u8,
-    mut inbufend: *mut u8,
-) {
+unsafe extern "C" fn skip_comments(mut inbuf: *mut *mut u8, mut inbufend: *mut u8) {
     while *inbuf < inbufend && **inbuf as i32 == '%' as i32 {
         skip_line(inbuf, inbufend);
         skip_white_spaces(inbuf, inbufend);
@@ -273,14 +249,13 @@ pub unsafe extern "C" fn pst_get_token(
         62 => {
             if (*inbuf).offset(1) >= inbufend || *(*inbuf).offset(1) as i32 != '>' as i32 {
                 _tt_abort(
-                    b"Unexpected end of ASCII hex string marker.\x00" as *const u8
-                        as *const i8,
+                    b"Unexpected end of ASCII hex string marker.\x00" as *const u8 as *const i8,
                 );
             } else {
                 let mut mark: *mut i8 = 0 as *mut i8;
-                mark = new((3i32 as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                    as u32) as *mut i8;
+                mark = new(
+                    (3i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
+                ) as *mut i8;
                 *mark.offset(0) = '>' as i32 as i8;
                 *mark.offset(1) = '>' as i32 as i8;
                 *mark.offset(2) = '\u{0}' as i32 as i8;
@@ -290,9 +265,9 @@ pub unsafe extern "C" fn pst_get_token(
         }
         93 | 125 => {
             let mut mark_0: *mut i8 = 0 as *mut i8;
-            mark_0 = new((2i32 as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+            mark_0 =
+                new((2i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+                    as *mut i8;
             *mark_0.offset(0) = c as i8;
             *mark_0.offset(1) = '\u{0}' as i32 as i8;
             obj = pst_new_obj(-1i32, mark_0 as *mut libc::c_void);

@@ -22,11 +22,7 @@ extern "C" {
     #[no_mangle]
     fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
-    fn ttstub_input_read(
-        handle: rust_input_handle_t,
-        data: *mut i8,
-        len: size_t,
-    ) -> ssize_t;
+    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     /* tectonic/core-memory.h: basic dynamic memory helpers
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.
@@ -174,10 +170,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 /* offset from begenning of the post table */
-unsafe extern "C" fn read_v2_post_names(
-    mut post: *mut tt_post_table,
-    mut sfont: *mut sfnt,
-) -> i32 {
+unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont: *mut sfnt) -> i32 {
     let mut i: u16 = 0;
     let mut idx: u16 = 0;
     let mut indices: *mut u16 = 0 as *mut u16;
@@ -185,8 +178,7 @@ unsafe extern "C" fn read_v2_post_names(
     let mut len: i32 = 0;
     (*post).numberOfGlyphs = tt_get_unsigned_pair((*sfont).handle);
     indices = new(((*post).numberOfGlyphs as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<u16>() as u64)
-        as u32) as *mut u16;
+        .wrapping_mul(::std::mem::size_of::<u16>() as u64) as u32) as *mut u16;
     maxidx = 257i32 as u16;
     i = 0i32 as u16;
     while (i as i32) < (*post).numberOfGlyphs as i32 {
@@ -202,8 +194,7 @@ unsafe extern "C" fn read_v2_post_names(
                 static mut warning_issued: i8 = 0i32 as i8;
                 if warning_issued == 0 {
                     dpx_warning(
-                        b"TrueType post table name index %u > 32767\x00" as *const u8
-                            as *const i8,
+                        b"TrueType post table name index %u > 32767\x00" as *const u8 as *const i8,
                         idx as i32,
                     );
                     warning_issued = 1i32 as i8
@@ -262,8 +253,7 @@ unsafe extern "C" fn read_v2_post_names(
             *fresh3 = *(*post).names.offset((idx as i32 - 258i32) as isize)
         } else {
             dpx_warning(
-                b"Invalid glyph name index number: %u (>= %u)\x00" as *const u8
-                    as *const i8,
+                b"Invalid glyph name index number: %u (>= %u)\x00" as *const u8 as *const i8,
                 idx as i32,
                 (*post).count as i32 + 258i32,
             );
@@ -280,9 +270,9 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
     let mut post: *mut tt_post_table = 0 as *mut tt_post_table;
     /* offset = */
     sfnt_locate_table(sfont, b"post\x00" as *const u8 as *const i8); /* Fixed */
-    post = new((1i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<tt_post_table>() as u64)
-        as u32) as *mut tt_post_table; /* Fixed */
+    post = new(
+        (1i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<tt_post_table>() as u64) as u32,
+    ) as *mut tt_post_table; /* Fixed */
     (*post).Version = tt_get_unsigned_quad((*sfont).handle); /* FWord */
     (*post).italicAngle = tt_get_unsigned_quad((*sfont).handle); /* FWord */
     (*post).underlinePosition = tt_get_signed_pair((*sfont).handle); /* wrong */
@@ -301,23 +291,17 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
         (*post).glyphNamePtr = macglyphorder.as_mut_ptr()
     } else if (*post).Version as u64 == 0x28000 {
         dpx_warning(
-            b"TrueType \'post\' version 2.5 found (deprecated)\x00" as *const u8
-                as *const i8,
+            b"TrueType \'post\' version 2.5 found (deprecated)\x00" as *const u8 as *const i8,
         );
     } else if (*post).Version as u64 == 0x20000 {
         if read_v2_post_names(post, sfont) < 0i32 {
-            dpx_warning(
-                b"Invalid version 2.0 \'post\' table\x00" as *const u8 as *const i8,
-            );
+            dpx_warning(b"Invalid version 2.0 \'post\' table\x00" as *const u8 as *const i8);
             tt_release_post_table(post);
             post = 0 as *mut tt_post_table
         }
-    } else if !((*post).Version as u64 == 0x30000
-        || (*post).Version as u64 == 0x40000)
-    {
+    } else if !((*post).Version as u64 == 0x30000 || (*post).Version as u64 == 0x40000) {
         dpx_warning(
-            b"Unknown \'post\' version: %08X, assuming version 3.0\x00" as *const u8
-                as *const i8,
+            b"Unknown \'post\' version: %08X, assuming version 3.0\x00" as *const u8 as *const i8,
             (*post).Version,
         );
     }
@@ -353,10 +337,7 @@ pub unsafe extern "C" fn tt_lookup_post_table(
     return 0i32 as u16;
 }
 #[no_mangle]
-pub unsafe extern "C" fn tt_get_glyphname(
-    mut post: *mut tt_post_table,
-    mut gid: u16,
-) -> *mut i8 {
+pub unsafe extern "C" fn tt_get_glyphname(mut post: *mut tt_post_table, mut gid: u16) -> *mut i8 {
     if (gid as i32) < (*post).count as i32
         && !(*(*post).glyphNamePtr.offset(gid as isize)).is_null()
     {

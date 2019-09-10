@@ -310,9 +310,8 @@ static mut best_pl_short: [scaled_t; 4] = [0; 4];
 static mut best_pl_glue: [scaled_t; 4] = [0; 4];
 #[inline]
 unsafe extern "C" fn get_native_usv(mut p: i32, mut i: i32) -> UnicodeScalar {
-    let mut c: u16 = *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word
-        as *mut u16)
-        .offset(i as isize);
+    let mut c: u16 =
+        *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16).offset(i as isize);
     if c as i32 >= 0xd800i32 && (c as i32) < 0xdc00i32 {
         return 0x10000i32
             + (c as i32 - 0xd800i32) * 0x400i32
@@ -1292,9 +1291,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
             cur_lang = init_cur_lang;
             l_hyf = init_l_hyf;
             r_hyf = init_r_hyf;
-            if *trie_trc.offset((hyph_start + cur_lang as i32) as isize) as i32
-                != cur_lang as i32
-            {
+            if *trie_trc.offset((hyph_start + cur_lang as i32) as isize) as i32 != cur_lang as i32 {
                 hyph_index = 0i32
             } else {
                 hyph_index = *trie_trl.offset((hyph_start + cur_lang as i32) as isize)
@@ -1363,14 +1360,12 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                         cur_lang = (*mem.offset((cur_p + 1i32) as isize)).b32.s1 as u8;
                         l_hyf = (*mem.offset((cur_p + 1i32) as isize)).b16.s1 as i32;
                         r_hyf = (*mem.offset((cur_p + 1i32) as isize)).b16.s0 as i32;
-                        if *trie_trc.offset((hyph_start + cur_lang as i32) as isize)
-                            as i32
+                        if *trie_trc.offset((hyph_start + cur_lang as i32) as isize) as i32
                             != cur_lang as i32
                         {
                             hyph_index = 0i32
                         } else {
-                            hyph_index =
-                                *trie_trl.offset((hyph_start + cur_lang as i32) as isize)
+                            hyph_index = *trie_trl.offset((hyph_start + cur_lang as i32) as isize)
                         }
                     } else if (*mem.offset(cur_p as isize)).b16.s0 as i32 == 40i32
                         || (*mem.offset(cur_p as isize)).b16.s0 as i32 == 41i32
@@ -1402,8 +1397,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                         q = *fresh3
                     }
                     active_width[1] += (*mem.offset((q + 1i32) as isize)).b32.s1;
-                    active_width
-                        [(2i32 + (*mem.offset(q as isize)).b16.s1 as i32) as usize] +=
+                    active_width[(2i32 + (*mem.offset(q as isize)).b16.s1 as i32) as usize] +=
                         (*mem.offset((q + 2i32) as isize)).b32.s1;
                     /*:895*/
                     active_width[6] += (*mem.offset((q + 3i32) as isize)).b32.s1; /*:897*/
@@ -1446,10 +1440,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                         || (*mem.offset(s as isize)).b16.s0 as i32 == 41i32
                                     {
                                         l = 0i32;
-                                        while l
-                                            < (*mem.offset((s + 4i32) as isize)).b16.s1
-                                                as i32
-                                        {
+                                        while l < (*mem.offset((s + 4i32) as isize)).b16.s1 as i32 {
                                             c = get_native_usv(s, l);
                                             if (*eqtb.offset(
                                                 (1i32
@@ -1491,22 +1482,17 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                         }
                                     }
                                     if (*mem.offset(s as isize)).b16.s0 as i32 == 4i32 {
-                                        cur_lang = (*mem.offset((s + 1i32) as isize)).b32.s1
-                                            as u8;
-                                        l_hyf =
-                                            (*mem.offset((s + 1i32) as isize)).b16.s1 as i32;
-                                        r_hyf =
-                                            (*mem.offset((s + 1i32) as isize)).b16.s0 as i32;
-                                        if *trie_trc
-                                            .offset((hyph_start + cur_lang as i32) as isize)
+                                        cur_lang = (*mem.offset((s + 1i32) as isize)).b32.s1 as u8;
+                                        l_hyf = (*mem.offset((s + 1i32) as isize)).b16.s1 as i32;
+                                        r_hyf = (*mem.offset((s + 1i32) as isize)).b16.s0 as i32;
+                                        if *trie_trc.offset((hyph_start + cur_lang as i32) as isize)
                                             as i32
                                             != cur_lang as i32
                                         {
                                             hyph_index = 0i32
                                         } else {
-                                            hyph_index = *trie_trl.offset(
-                                                (hyph_start + cur_lang as i32) as isize,
-                                            )
+                                            hyph_index = *trie_trl
+                                                .offset((hyph_start + cur_lang as i32) as isize)
                                         }
                                     }
                                     current_block = 13855806088735179493;
@@ -1539,8 +1525,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                             ))
                                             .b32
                                             .s1
-                                        } else if *trie_trc.offset((hyph_index + c) as isize)
-                                            as i32
+                                        } else if *trie_trc.offset((hyph_index + c) as isize) as i32
                                             != c
                                         {
                                             hc[0] = 0i32
@@ -1603,14 +1588,11 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                             if !(l_hyf + r_hyf > max_hyphenatable_length()) {
                                                 if ha != -0xfffffffi32
                                                     && ha < hi_mem_min
-                                                    && (*mem.offset(ha as isize)).b16.s1
-                                                        as i32
+                                                    && (*mem.offset(ha as isize)).b16.s1 as i32
                                                         == 8i32
-                                                    && ((*mem.offset(ha as isize)).b16.s0
-                                                        as i32
+                                                    && ((*mem.offset(ha as isize)).b16.s0 as i32
                                                         == 40i32
-                                                        || (*mem.offset(ha as isize)).b16.s0
-                                                            as i32
+                                                        || (*mem.offset(ha as isize)).b16.s0 as i32
                                                             == 41i32)
                                                 {
                                                     /*926: check that nodes after native_word permit hyphenation; if not, goto done1 */
@@ -1713,8 +1695,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                                         )
                                                                     }
                                                                     if hc[0] == 0i32 {
-                                                                        if hn as i32 > 0i32
-                                                                        {
+                                                                        if hn as i32 > 0i32 {
                                                                             q
                                                                                     =
                                                                                     new_native_word_node(hf,
@@ -1955,8 +1936,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                                                                         i32);
                                                                             break 'c_31290;
                                                                         }
-                                                                    } else if hn as i32
-                                                                        == 0i32
+                                                                    } else if hn as i32 == 0i32
                                                                         && l > 0i32
                                                                     {
                                                                         q = new_native_word_node(
@@ -1986,31 +1966,22 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                                             .s1
                                                                                 as i32
                                                                         {
-                                                                            *(&mut *mem.offset((q
-                                                                                                        +
-                                                                                                        6i32)
-                                                                                                       as
-                                                                                                       isize)
-                                                                                      as
-                                                                                      *mut memory_word
-                                                                                      as
-                                                                                      *mut u16).offset((i
-                                                                                                                       -
-                                                                                                                       l)
-                                                                                                                      as
-                                                                                                                      isize)
-                                                                                    =
-                                                                                    *(&mut *mem.offset((ha
-                                                                                                            +
-                                                                                                            6i32)
-                                                                                                           as
-                                                                                                           isize)
-                                                                                          as
-                                                                                          *mut memory_word
-                                                                                          as
-                                                                                          *mut u16).offset(i
-                                                                                                                          as
-                                                                                                                          isize);
+                                                                            *(&mut *mem.offset(
+                                                                                (q + 6i32) as isize,
+                                                                            )
+                                                                                as *mut memory_word
+                                                                                as *mut u16)
+                                                                                .offset(
+                                                                                    (i - l)
+                                                                                        as isize,
+                                                                                ) = *(&mut *mem
+                                                                                .offset(
+                                                                                    (ha + 6i32)
+                                                                                        as isize,
+                                                                                )
+                                                                                as *mut memory_word
+                                                                                as *mut u16)
+                                                                                .offset(i as isize);
                                                                             i += 1
                                                                         }
                                                                         measure_native_node(&mut *mem.offset(q
@@ -2205,28 +2176,22 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                                                     ;
                                                                             }
                                                                         hn += 1;
-                                                                        if (c as i64)
-                                                                            < 65536
-                                                                        {
+                                                                        if (c as i64) < 65536 {
                                                                             hu[hn as usize] = c;
                                                                             hc[hn as usize] = hc[0]
                                                                         } else {
                                                                             hu[hn as usize] = ((c
                                                                                 as i64
                                                                                 - 65536)
-                                                                                / 1024i32
-                                                                                    as i64
-                                                                                + 0xd800i32
-                                                                                    as i64)
+                                                                                / 1024i32 as i64
+                                                                                + 0xd800i32 as i64)
                                                                                 as i32;
                                                                             hc[hn as usize] = ((hc
                                                                                 [0]
                                                                                 as i64
                                                                                 - 65536)
-                                                                                / 1024i32
-                                                                                    as i64
-                                                                                + 0xd800i32
-                                                                                    as i64)
+                                                                                / 1024i32 as i64
+                                                                                + 0xd800i32 as i64)
                                                                                 as i32;
                                                                             hn += 1;
                                                                             hu[hn as usize] = c
@@ -2575,8 +2540,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                 11 => {
                     /* ... resuming 895 ... */
                     if (*mem.offset(cur_p as isize)).b16.s0 as i32 == 1i32 {
-                        if (!is_char_node((*mem.offset(cur_p as isize)).b32.s1) as i32)
-                            < hi_mem_min
+                        if (!is_char_node((*mem.offset(cur_p as isize)).b32.s1) as i32) < hi_mem_min
                             && auto_breaking as i32 != 0
                         {
                             if (*mem.offset((*mem.offset(cur_p as isize)).b32.s1 as isize))
@@ -2662,9 +2626,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                             (*char_base.offset(f as isize) + eff_char_0) as isize,
                                         ))
                                         .b16
-                                        .s3
-                                            as i32)
-                                        as isize,
+                                        .s3 as i32) as isize,
                                 ))
                                 .b32
                                 .s1
@@ -2699,20 +2661,14 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                     }
                                     8 => {
                                         if (*mem.offset(s as isize)).b16.s0 as i32 == 40i32
-                                            || (*mem.offset(s as isize)).b16.s0 as i32
-                                                == 41i32
-                                            || (*mem.offset(s as isize)).b16.s0 as i32
-                                                == 42i32
-                                            || (*mem.offset(s as isize)).b16.s0 as i32
-                                                == 43i32
-                                            || (*mem.offset(s as isize)).b16.s0 as i32
-                                                == 44i32
+                                            || (*mem.offset(s as isize)).b16.s0 as i32 == 41i32
+                                            || (*mem.offset(s as isize)).b16.s0 as i32 == 42i32
+                                            || (*mem.offset(s as isize)).b16.s0 as i32 == 43i32
+                                            || (*mem.offset(s as isize)).b16.s0 as i32 == 44i32
                                         {
                                             disc_width += (*mem.offset((s + 1i32) as isize)).b32.s1
                                         } else {
-                                            confusion(
-                                                b"disc3a\x00" as *const u8 as *const i8,
-                                            );
+                                            confusion(b"disc3a\x00" as *const u8 as *const i8);
                                         }
                                     }
                                     _ => {
@@ -2816,9 +2772,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                     {
                                         active_width[1] += (*mem.offset((s + 1i32) as isize)).b32.s1
                                     } else {
-                                        confusion(
-                                            b"disc4a\x00" as *const u8 as *const i8,
-                                        );
+                                        confusion(b"disc4a\x00" as *const u8 as *const i8);
                                     }
                                 }
                                 _ => {
@@ -2836,8 +2790,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                 }
                 9 => {
                     if ((*mem.offset(cur_p as isize)).b16.s0 as i32) < 4i32 {
-                        auto_breaking =
-                            (*mem.offset(cur_p as isize)).b16.s0 as i32 & 1i32 != 0
+                        auto_breaking = (*mem.offset(cur_p as isize)).b16.s0 as i32 & 1i32 != 0
                     }
                     if !is_char_node((*mem.offset(cur_p as isize)).b32.s1)
                         && auto_breaking as i32 != 0
@@ -3918,35 +3871,26 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                                                     (*mem.offset((v + 1i32) as isize)).b32.s1
                                             }
                                             8 => {
-                                                if (*mem.offset(v as isize)).b16.s0 as i32
-                                                    == 40i32
-                                                    || (*mem.offset(v as isize)).b16.s0
-                                                        as i32
+                                                if (*mem.offset(v as isize)).b16.s0 as i32 == 40i32
+                                                    || (*mem.offset(v as isize)).b16.s0 as i32
                                                         == 41i32
-                                                    || (*mem.offset(v as isize)).b16.s0
-                                                        as i32
+                                                    || (*mem.offset(v as isize)).b16.s0 as i32
                                                         == 42i32
-                                                    || (*mem.offset(v as isize)).b16.s0
-                                                        as i32
+                                                    || (*mem.offset(v as isize)).b16.s0 as i32
                                                         == 43i32
-                                                    || (*mem.offset(v as isize)).b16.s0
-                                                        as i32
+                                                    || (*mem.offset(v as isize)).b16.s0 as i32
                                                         == 44i32
                                                 {
                                                     break_width[1] -=
                                                         (*mem.offset((v + 1i32) as isize)).b32.s1
                                                 } else {
                                                     confusion(
-                                                        b"disc1a\x00" as *const u8
-                                                            as *const i8,
+                                                        b"disc1a\x00" as *const u8 as *const i8,
                                                     );
                                                 }
                                             }
                                             _ => {
-                                                confusion(
-                                                    b"disc1\x00" as *const u8
-                                                        as *const i8,
-                                                );
+                                                confusion(b"disc1\x00" as *const u8 as *const i8);
                                             }
                                         }
                                     }
@@ -4007,35 +3951,26 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                                                     (*mem.offset((s + 1i32) as isize)).b32.s1
                                             }
                                             8 => {
-                                                if (*mem.offset(s as isize)).b16.s0 as i32
-                                                    == 40i32
-                                                    || (*mem.offset(s as isize)).b16.s0
-                                                        as i32
+                                                if (*mem.offset(s as isize)).b16.s0 as i32 == 40i32
+                                                    || (*mem.offset(s as isize)).b16.s0 as i32
                                                         == 41i32
-                                                    || (*mem.offset(s as isize)).b16.s0
-                                                        as i32
+                                                    || (*mem.offset(s as isize)).b16.s0 as i32
                                                         == 42i32
-                                                    || (*mem.offset(s as isize)).b16.s0
-                                                        as i32
+                                                    || (*mem.offset(s as isize)).b16.s0 as i32
                                                         == 43i32
-                                                    || (*mem.offset(s as isize)).b16.s0
-                                                        as i32
+                                                    || (*mem.offset(s as isize)).b16.s0 as i32
                                                         == 44i32
                                                 {
                                                     break_width[1] +=
                                                         (*mem.offset((s + 1i32) as isize)).b32.s1
                                                 } else {
                                                     confusion(
-                                                        b"disc2a\x00" as *const u8
-                                                            as *const i8,
+                                                        b"disc2a\x00" as *const u8 as *const i8,
                                                     );
                                                 }
                                             }
                                             _ => {
-                                                confusion(
-                                                    b"disc2\x00" as *const u8
-                                                        as *const i8,
-                                                );
+                                                confusion(b"disc2\x00" as *const u8 as *const i8);
                                             }
                                         }
                                     }
@@ -4055,8 +3990,7 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                                 10 => {
                                     v = (*mem.offset((s + 1i32) as isize)).b32.s0;
                                     break_width[1] -= (*mem.offset((v + 1i32) as isize)).b32.s1;
-                                    break_width[(2i32
-                                        + (*mem.offset(v as isize)).b16.s1 as i32)
+                                    break_width[(2i32 + (*mem.offset(v as isize)).b16.s1 as i32)
                                         as usize] -= (*mem.offset((v + 2i32) as isize)).b32.s1;
                                     break_width[6] -= (*mem.offset((v + 3i32) as isize)).b32.s1
                                 }
@@ -4738,10 +4672,7 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                                     .s1
                             }
                         }
-                        if abs(fit_class as i32
-                            - (*mem.offset(r as isize)).b16.s0 as i32)
-                            > 1i32
-                        {
+                        if abs(fit_class as i32 - (*mem.offset(r as isize)).b16.s0 as i32) > 1i32 {
                             d = d
                                 + (*eqtb.offset(
                                     (1i32
@@ -4950,9 +4881,7 @@ unsafe extern "C" fn hyphenate() {
     match current_block {
         10027897684796195291 => {
             hn -= 1;
-            if *trie_trc.offset((cur_lang as i32 + 1i32) as isize) as i32
-                != cur_lang as i32
-            {
+            if *trie_trc.offset((cur_lang as i32 + 1i32) as isize) as i32 != cur_lang as i32 {
                 return;
             }
             hc[0] = 0i32;
@@ -4963,8 +4892,7 @@ unsafe extern "C" fn hyphenate() {
             for_end_1 = hn as i32 - r_hyf + 1i32;
             if j as i32 <= for_end_1 {
                 loop {
-                    z = *trie_trl.offset((cur_lang as i32 + 1i32) as isize)
-                        + hc[j as usize];
+                    z = *trie_trl.offset((cur_lang as i32 + 1i32) as isize) + hc[j as usize];
                     l = j;
                     while hc[l as usize] == *trie_trc.offset(z as isize) as i32 {
                         if *trie_tro.offset(z as isize) != 0i32 {
@@ -4972,11 +4900,8 @@ unsafe extern "C" fn hyphenate() {
                             v = *trie_tro.offset(z as isize); /*:958 */
                             loop {
                                 v = v + op_start[cur_lang as usize];
-                                i = (l as i32 - hyf_distance[v as usize] as i32)
-                                    as i16;
-                                if hyf_num[v as usize] as i32
-                                    > hyf[i as usize] as i32
-                                {
+                                i = (l as i32 - hyf_distance[v as usize] as i32) as i16;
+                                if hyf_num[v as usize] as i32 > hyf[i as usize] as i32 {
                                     hyf[i as usize] = hyf_num[v as usize] as u8
                                 }
                                 v = hyf_next[v as usize] as i32;
@@ -5141,11 +5066,9 @@ unsafe extern "C" fn hyphenate() {
         for_end_7 = hn as i32 - hyphen_passed as i32 - 1i32;
         if i as i32 <= for_end_7 {
             loop {
-                *(&mut *mem.offset((q + 6i32) as isize) as *mut memory_word
-                    as *mut u16)
+                *(&mut *mem.offset((q + 6i32) as isize) as *mut memory_word as *mut u16)
                     .offset(i as isize) = *(&mut *mem.offset((ha + 6i32) as isize)
-                    as *mut memory_word
-                    as *mut u16)
+                    as *mut memory_word as *mut u16)
                     .offset((i as i32 + hyphen_passed as i32) as isize);
                 let fresh26 = i;
                 i = i + 1;
@@ -5308,8 +5231,7 @@ unsafe extern "C" fn hyphenate() {
                         avail = hyf_node
                     }
                     while l as i32 <= i as i32 {
-                        l = (reconstitute(l, i, *font_bchar.offset(hf as isize), 65536i32)
-                            as i32
+                        l = (reconstitute(l, i, *font_bchar.offset(hf as isize), 65536i32) as i32
                             + 1i32) as i16;
                         if (*mem.offset((4999999i32 - 4i32) as isize)).b32.s1 > -0xfffffffi32 {
                             if minor_tail == -0xfffffffi32 {
@@ -5341,8 +5263,7 @@ unsafe extern "C" fn hyphenate() {
                     }
                     while (l as i32) < j as i32 {
                         loop {
-                            l = (reconstitute(l, hn, bchar, 65536i32) as i32 + 1i32)
-                                as i16;
+                            l = (reconstitute(l, hn, bchar, 65536i32) as i32 + 1i32) as i16;
                             if c_loc as i32 > 0i32 {
                                 hu[c_loc as usize] = c;
                                 c_loc = 0i32 as i16
@@ -5366,8 +5287,7 @@ unsafe extern "C" fn hyphenate() {
                         }
                         while l as i32 > j as i32 {
                             /*952: */
-                            j = (reconstitute(j, hn, bchar, 65536i32) as i32 + 1i32)
-                                as i16; /*:944*/
+                            j = (reconstitute(j, hn, bchar, 65536i32) as i32 + 1i32) as i16; /*:944*/
                             (*mem.offset(major_tail as isize)).b32.s1 =
                                 (*mem.offset((4999999i32 - 4i32) as isize)).b32.s1;
                             while (*mem.offset(major_tail as isize)).b32.s1 > -0xfffffffi32 {
@@ -5409,12 +5329,10 @@ unsafe extern "C" fn finite_shrink(mut p: i32) -> i32 {
         } else {
             print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
-        print_cstr(
-            b"Infinite glue shrinkage found in a paragraph\x00" as *const u8 as *const i8,
-        );
+        print_cstr(b"Infinite glue shrinkage found in a paragraph\x00" as *const u8 as *const i8);
         help_ptr = 5i32 as u8;
-        help_line[4] = b"The paragraph just ended includes some glue that has\x00" as *const u8
-            as *const i8;
+        help_line[4] =
+            b"The paragraph just ended includes some glue that has\x00" as *const u8 as *const i8;
         help_line[3] = b"infinite shrinkability, e.g., `\\hskip 0pt minus 1fil\'.\x00" as *const u8
             as *const i8;
         help_line[2] = b"Such glue doesn\'t belong there---it allows a paragraph\x00" as *const u8
@@ -5506,9 +5424,8 @@ unsafe extern "C" fn reconstitute(
                 k = *lig_kern_base.offset(hf as isize) + q.s0 as i32;
                 q = (*font_info.offset(k as isize)).b16;
                 if q.s3 as i32 > 128i32 {
-                    k = ((*lig_kern_base.offset(hf as isize)
-                        + 256i32 * q.s1 as i32
-                        + q.s0 as i32) as i64
+                    k = ((*lig_kern_base.offset(hf as isize) + 256i32 * q.s1 as i32 + q.s0 as i32)
+                        as i64
                         + 32768
                         - (256i32 * 128i32) as i64) as font_index;
                     q = (*font_info.offset(k as isize)).b16
@@ -5567,11 +5484,9 @@ unsafe extern "C" fn reconstitute(
                                                     (*mem.offset((lig_stack + 1i32) as isize))
                                                         .b32
                                                         .s1 = p;
-                                                    (*mem.offset(p as isize)).b16.s0 = hu
-                                                        [(j as i32 + 1i32) as usize]
-                                                        as u16;
-                                                    (*mem.offset(p as isize)).b16.s1 =
-                                                        hf as u16
+                                                    (*mem.offset(p as isize)).b16.s0 =
+                                                        hu[(j as i32 + 1i32) as usize] as u16;
+                                                    (*mem.offset(p as isize)).b16.s1 = hf as u16
                                                 }
                                             }
                                         }
@@ -5589,8 +5504,7 @@ unsafe extern "C" fn reconstitute(
                                                     (*mem.offset(cur_q as isize)).b32.s1,
                                                 );
                                                 if lft_hit {
-                                                    (*mem.offset(p as isize)).b16.s0 =
-                                                        2i32 as u16;
+                                                    (*mem.offset(p as isize)).b16.s0 = 2i32 as u16;
                                                     lft_hit = 0i32 != 0
                                                 }
                                                 (*mem.offset(cur_q as isize)).b32.s1 = p;
@@ -5620,8 +5534,7 @@ unsafe extern "C" fn reconstitute(
                                                 free_node(p, 2i32);
                                                 if lig_stack == -0xfffffffi32 {
                                                     if (j as i32) < n as i32 {
-                                                        cur_r =
-                                                            hu[(j as i32 + 1i32) as usize]
+                                                        cur_r = hu[(j as i32 + 1i32) as usize]
                                                     } else {
                                                         cur_r = bchar
                                                     }
@@ -5641,8 +5554,7 @@ unsafe extern "C" fn reconstitute(
                                                 (*mem.offset(t as isize)).b32.s1 = get_avail();
                                                 t = (*mem.offset(t as isize)).b32.s1;
                                                 (*mem.offset(t as isize)).b16.s1 = hf as u16;
-                                                (*mem.offset(t as isize)).b16.s0 =
-                                                    cur_r as u16;
+                                                (*mem.offset(t as isize)).b16.s0 = cur_r as u16;
                                                 j += 1;
                                                 if (j as i32) < n as i32 {
                                                     cur_r = hu[(j as i32 + 1i32) as usize]
@@ -5808,8 +5720,7 @@ unsafe extern "C" fn find_protchar_left(mut l: i32, mut d: bool) -> i32 {
         l = (*mem.offset(l as isize)).b32.s1
     } else if d {
         while (*mem.offset(l as isize)).b32.s1 != -0xfffffffi32
-            && !(is_char_node(l) as i32 != 0
-                || is_non_discardable_node(l) as i32 != 0)
+            && !(is_char_node(l) as i32 != 0 || is_non_discardable_node(l) as i32 != 0)
         {
             l = (*mem.offset(l as isize)).b32.s1
         }

@@ -87,15 +87,9 @@ extern "C" {
     #[no_mangle]
     fn dpx_delete_old_cache(life: i32);
     #[no_mangle]
-    fn parse_float_decimal(
-        pp: *mut *const i8,
-        endptr: *const i8,
-    ) -> *mut i8;
+    fn parse_float_decimal(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
     #[no_mangle]
-    fn parse_c_ident(
-        pp: *mut *const i8,
-        endptr: *const i8,
-    ) -> *mut i8;
+    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -176,11 +170,7 @@ extern "C" {
     #[no_mangle]
     fn dvi_npages() -> u32;
     #[no_mangle]
-    fn dvi_do_page(
-        paper_height_0: f64,
-        x_offset_0: f64,
-        y_offset_0: f64,
-    );
+    fn dvi_do_page(paper_height_0: f64, x_offset_0: f64, y_offset_0: f64);
     #[no_mangle]
     fn dvi_scan_specials(
         page_no: i32,
@@ -289,12 +279,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_enc_compute_id_string(dviname: *const i8, pdfname: *const i8);
     #[no_mangle]
-    fn pdf_enc_set_passwd(
-        size: u32,
-        perm: u32,
-        owner: *const i8,
-        user: *const i8,
-    );
+    fn pdf_enc_set_passwd(size: u32, perm: u32, owner: *const i8, user: *const i8);
     #[no_mangle]
     fn pdf_font_set_dpi(font_dpi_0: i32);
     #[no_mangle]
@@ -304,10 +289,7 @@ extern "C" {
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
     #[no_mangle]
-    fn parse_unsigned(
-        start: *mut *const i8,
-        end: *const i8,
-    ) -> *mut i8;
+    fn parse_unsigned(start: *mut *const i8, end: *const i8) -> *mut i8;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -580,9 +562,7 @@ unsafe extern "C" fn read_length(
             }
             free(qq as *mut libc::c_void);
         } else {
-            dpx_warning(
-                b"Missing unit of measure after \"true\"\x00" as *const u8 as *const i8,
-            );
+            dpx_warning(b"Missing unit of measure after \"true\"\x00" as *const u8 as *const i8);
             error = -1i32
         }
     }
@@ -653,16 +633,14 @@ unsafe extern "C" fn select_pages(
             max_page_ranges = max_page_ranges.wrapping_add(4i32 as u32); /* Can't be signed. */
             page_ranges = renew(
                 page_ranges as *mut libc::c_void,
-                (max_page_ranges as u64)
-                    .wrapping_mul(::std::mem::size_of::<PageRange>() as u64)
+                (max_page_ranges as u64).wrapping_mul(::std::mem::size_of::<PageRange>() as u64)
                     as u32,
             ) as *mut PageRange
         }
         (*page_ranges.offset(num_page_ranges as isize)).first = 0i32;
         (*page_ranges.offset(num_page_ranges as isize)).last = 0i32;
         while *p as i32 != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
-                as i32
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
                 & _ISspace as i32 as u16 as i32
                 != 0
         {
@@ -677,8 +655,7 @@ unsafe extern "C" fn select_pages(
             free(q as *mut libc::c_void);
         }
         while *p as i32 != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
-                as i32
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
                 & _ISspace as i32 as u16 as i32
                 != 0
         {
@@ -687,8 +664,7 @@ unsafe extern "C" fn select_pages(
         if *p as i32 == '-' as i32 {
             p = p.offset(1);
             while *p as i32 != 0
-                && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
-                    as i32
+                && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
                     & _ISspace as i32 as u16 as i32
                     != 0
             {
@@ -702,8 +678,7 @@ unsafe extern "C" fn select_pages(
                     free(q as *mut libc::c_void);
                 }
                 while *p as i32 != 0
-                    && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
-                        as i32
+                    && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
                         & _ISspace as i32 as u16 as i32
                         != 0
                 {
@@ -719,8 +694,7 @@ unsafe extern "C" fn select_pages(
             p = p.offset(1)
         } else {
             while *p as i32 != 0
-                && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
-                    as i32
+                && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
                     & _ISspace as i32 as u16 as i32
                     != 0
             {
@@ -744,10 +718,7 @@ unsafe extern "C" fn system_default() {
         select_paper(b"a4\x00" as *const u8 as *const i8);
     };
 }
-unsafe extern "C" fn do_dvi_pages(
-    mut page_ranges: *mut PageRange,
-    mut num_page_ranges: u32,
-) {
+unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange, mut num_page_ranges: u32) {
     let mut page_no: i32 = 0;
     let mut step: i32 = 0;
     let mut page_count: u32 = 0;
@@ -777,8 +748,7 @@ unsafe extern "C" fn do_dvi_pages(
     while i < num_page_ranges && dvi_npages() != 0 {
         if (*page_ranges.offset(i as isize)).last < 0i32 {
             let ref mut fresh0 = (*page_ranges.offset(i as isize)).last;
-            *fresh0 =
-                (*fresh0 as u32).wrapping_add(dvi_npages()) as i32 as i32
+            *fresh0 = (*fresh0 as u32).wrapping_add(dvi_npages()) as i32 as i32
         }
         step = if (*page_ranges.offset(i as isize)).first <= (*page_ranges.offset(i as isize)).last
         {
@@ -794,10 +764,7 @@ unsafe extern "C" fn do_dvi_pages(
                 let mut xo: f64 = 0.;
                 let mut yo: f64 = 0.;
                 let mut lm: i32 = 0;
-                dpx_message(
-                    b"[%d\x00" as *const u8 as *const i8,
-                    page_no + 1i32,
-                );
+                dpx_message(b"[%d\x00" as *const u8 as *const i8, page_no + 1i32);
                 /* Users want to change page size even after page is started! */
                 page_width = paper_width;
                 page_height = paper_height;
@@ -840,10 +807,7 @@ unsafe extern "C" fn do_dvi_pages(
                     mediabox.lly = 0.0f64;
                     mediabox.urx = page_width;
                     mediabox.ury = page_height;
-                    pdf_doc_set_mediabox(
-                        page_count.wrapping_add(1i32 as u32),
-                        &mut mediabox,
-                    );
+                    pdf_doc_set_mediabox(page_count.wrapping_add(1i32 as u32), &mut mediabox);
                 }
                 dvi_do_page(page_height, x_offset, y_offset);
                 page_count = page_count.wrapping_add(1);
@@ -938,11 +902,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
         dpx_file_set_verbose(verbose as i32);
         tt_aux_set_verbose(verbose as i32);
     }
-    pdf_set_compression(if compress as i32 != 0 {
-        9i32
-    } else {
-        0i32
-    });
+    pdf_set_compression(if compress as i32 != 0 { 9i32 } else { 0i32 });
     pdf_font_set_deterministic_unique_tags(if deterministic_tags as i32 != 0 {
         1i32
     } else {
@@ -962,18 +922,9 @@ pub unsafe extern "C" fn dvipdfmx_main(
     font_dpi = 600i32;
     pdfdecimaldigits = 5i32;
     image_cache_life = -2i32;
-    pdf_load_fontmap_file(
-        b"pdftex.map\x00" as *const u8 as *const i8,
-        '+' as i32,
-    );
-    pdf_load_fontmap_file(
-        b"kanjix.map\x00" as *const u8 as *const i8,
-        '+' as i32,
-    );
-    pdf_load_fontmap_file(
-        b"ckx.map\x00" as *const u8 as *const i8,
-        '+' as i32,
-    );
+    pdf_load_fontmap_file(b"pdftex.map\x00" as *const u8 as *const i8, '+' as i32);
+    pdf_load_fontmap_file(b"kanjix.map\x00" as *const u8 as *const i8, '+' as i32);
+    pdf_load_fontmap_file(b"ckx.map\x00" as *const u8 as *const i8, '+' as i32);
     if !pagespec.is_null() {
         select_pages(pagespec, &mut page_ranges, &mut num_page_ranges);
     }
@@ -1025,8 +976,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
             && key_bits != 256i32
         {
             _tt_abort(
-                b"Invalid encryption key length specified: %u\x00" as *const u8
-                    as *const i8,
+                b"Invalid encryption key length specified: %u\x00" as *const u8 as *const i8,
                 key_bits,
             );
         } else {

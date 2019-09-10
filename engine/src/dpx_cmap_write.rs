@@ -118,8 +118,7 @@ extern "C" {
         flags: i32,
     ) -> i32;
     #[no_mangle]
-    fn pdf_findresource(category: *const i8, resname: *const i8)
-        -> i32;
+    fn pdf_findresource(category: *const i8, resname: *const i8) -> i32;
     #[no_mangle]
     fn pdf_get_resource_reference(res_id: i32) -> *mut pdf_obj;
 }
@@ -256,9 +255,7 @@ pub struct C2RustUnnamed_1 {
 unsafe extern "C" fn block_count(mut mtab: *mut mapDef, mut c: i32) -> size_t {
     let mut count: size_t = 0i32 as size_t;
     let mut n: size_t = 0;
-    n = (*mtab.offset(c as isize))
-        .len
-        .wrapping_sub(1i32 as u64);
+    n = (*mtab.offset(c as isize)).len.wrapping_sub(1i32 as u64);
     c += 1i32;
     while c < 256i32 {
         if (*mtab.offset(c as isize)).flag & 1i32 << 4i32 != 0
@@ -278,8 +275,7 @@ unsafe extern "C" fn block_count(mut mtab: *mut mapDef, mut c: i32) -> size_t {
             (*mtab.offset(c as isize)).code as *const libc::c_void,
             n,
         ) == 0
-            && (*(*mtab.offset((c - 1i32) as isize)).code.offset(n as isize) as i32)
-                < 255i32
+            && (*(*mtab.offset((c - 1i32) as isize)).code.offset(n as isize) as i32) < 255i32
             && *(*mtab.offset((c - 1i32) as isize)).code.offset(n as isize) as i32 + 1i32
                 == *(*mtab.offset(c as isize)).code.offset(n as isize) as i32)
         {
@@ -290,11 +286,7 @@ unsafe extern "C" fn block_count(mut mtab: *mut mapDef, mut c: i32) -> size_t {
     }
     return count;
 }
-unsafe extern "C" fn sputx(
-    mut c: u8,
-    mut s: *mut *mut i8,
-    mut end: *mut i8,
-) -> i32 {
+unsafe extern "C" fn sputx(mut c: u8, mut s: *mut *mut i8, mut end: *mut i8) -> i32 {
     let mut hi: i8 = (c as i32 >> 4i32) as i8;
     let mut lo: i8 = (c as i32 & 0xfi32) as i8;
     if (*s).offset(2) > end {
@@ -667,12 +659,10 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
     if !(*cmap).useCMap.is_null() {
         _tt_abort(b"UseCMap found (not supported yet)...\x00" as *const u8 as *const i8);
     }
-    wbuf.buf = new((4096i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
+    wbuf.buf = new((4096i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+        as *mut i8;
     codestr = new(((*cmap).profile.maxBytesIn as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<u8>() as u64)
-        as u32) as *mut u8;
+        .wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
     memset(
         codestr as *mut libc::c_void,
         0i32,

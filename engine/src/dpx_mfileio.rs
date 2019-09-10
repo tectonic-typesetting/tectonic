@@ -90,10 +90,7 @@ pub type FILE = _IO_FILE;
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 unsafe extern "C" fn os_error() {
-    _tt_abort(
-        b"io:  An OS command failed that should not have.\n\x00" as *const u8
-            as *const i8,
-    );
+    _tt_abort(b"io:  An OS command failed that should not have.\n\x00" as *const u8 as *const i8);
 }
 #[no_mangle]
 pub unsafe extern "C" fn seek_relative(mut file: *mut FILE, mut pos: i32) {

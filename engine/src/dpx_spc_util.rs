@@ -21,28 +21,13 @@ extern "C" {
     #[no_mangle]
     fn pdf_color_copycolor(color1: *mut pdf_color, color2: *const pdf_color);
     #[no_mangle]
-    fn pdf_color_spotcolor(
-        color: *mut pdf_color,
-        color_name: *mut i8,
-        c: f64,
-    ) -> i32;
+    fn pdf_color_spotcolor(color: *mut pdf_color, color_name: *mut i8, c: f64) -> i32;
     #[no_mangle]
     fn pdf_color_graycolor(color: *mut pdf_color, g: f64) -> i32;
     #[no_mangle]
-    fn pdf_color_cmykcolor(
-        color: *mut pdf_color,
-        c: f64,
-        m: f64,
-        y: f64,
-        k: f64,
-    ) -> i32;
+    fn pdf_color_cmykcolor(color: *mut pdf_color, c: f64, m: f64, y: f64, k: f64) -> i32;
     #[no_mangle]
-    fn pdf_color_rgbcolor(
-        color: *mut pdf_color,
-        r: f64,
-        g: f64,
-        b: f64,
-    ) -> i32;
+    fn pdf_color_rgbcolor(color: *mut pdf_color, r: f64, g: f64, b: f64) -> i32;
     #[no_mangle]
     fn strcasecmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
@@ -61,15 +46,9 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn parse_float_decimal(
-        pp: *mut *const i8,
-        endptr: *const i8,
-    ) -> *mut i8;
+    fn parse_float_decimal(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
     #[no_mangle]
-    fn parse_c_ident(
-        pp: *mut *const i8,
-        endptr: *const i8,
-    ) -> *mut i8;
+    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
 }
@@ -185,8 +164,7 @@ unsafe extern "C" fn skip_blank(mut pp: *mut *const i8, mut endptr: *const i8) {
     let mut p: *const i8 = *pp; /* 360 / 60 */
     while p < endptr
         && (*p as i32 & !0x7fi32 == 0i32
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
-                as i32
+            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
                 & _ISblank as i32 as u16 as i32
                 != 0)
     {
@@ -318,8 +296,7 @@ unsafe extern "C" fn spc_read_color_color(
         if nc != 3i32 {
             spc_warn(
                 spe,
-                b"Invalid value for RGB color specification.\x00" as *const u8
-                    as *const i8,
+                b"Invalid value for RGB color specification.\x00" as *const u8 as *const i8,
             );
             error = -1i32
         } else {
@@ -331,8 +308,7 @@ unsafe extern "C" fn spc_read_color_color(
         if nc != 4i32 {
             spc_warn(
                 spe,
-                b"Invalid value for CMYK color specification.\x00" as *const u8
-                    as *const i8,
+                b"Invalid value for CMYK color specification.\x00" as *const u8 as *const i8,
             );
             error = -1i32
         } else {
@@ -344,8 +320,7 @@ unsafe extern "C" fn spc_read_color_color(
         if nc != 1i32 {
             spc_warn(
                 spe,
-                b"Invalid value for gray color specification.\x00" as *const u8
-                    as *const i8,
+                b"Invalid value for gray color specification.\x00" as *const u8 as *const i8,
             );
             error = -1i32
         } else {
@@ -366,8 +341,7 @@ unsafe extern "C" fn spc_read_color_color(
         if nc != 1i32 {
             spc_warn(
                 spe,
-                b"Invalid value for spot color specification.\x00" as *const u8
-                    as *const i8,
+                b"Invalid value for spot color specification.\x00" as *const u8 as *const i8,
             );
             error = -1i32;
             free(color_name as *mut libc::c_void);
@@ -379,8 +353,7 @@ unsafe extern "C" fn spc_read_color_color(
         if nc != 3i32 {
             spc_warn(
                 spe,
-                b"Invalid value for HSB color specification.\x00" as *const u8
-                    as *const i8,
+                b"Invalid value for HSB color specification.\x00" as *const u8 as *const i8,
             );
             error = -1i32
         } else {
@@ -470,8 +443,7 @@ unsafe extern "C" fn spc_read_color_pdf(
         if (*ap).curptr >= (*ap).endptr || *(*ap).curptr.offset(0) as i32 != ']' as i32 {
             spc_warn(
                 spe,
-                b"Unbalanced \'[\' and \']\' in color specification.\x00" as *const u8
-                    as *const i8,
+                b"Unbalanced \'[\' and \']\' in color specification.\x00" as *const u8 as *const i8,
             );
             error = -1i32
         } else {
@@ -700,8 +672,7 @@ unsafe extern "C" fn spc_read_dimtrns_dvips(
         if _dtkeys[k as usize].is_null() {
             spc_warn(
                 spe,
-                b"Unrecognized dimension/transformation key: %s\x00" as *const u8
-                    as *const i8,
+                b"Unrecognized dimension/transformation key: %s\x00" as *const u8 as *const i8,
                 kp,
             );
             error = -1i32;
@@ -714,9 +685,7 @@ unsafe extern "C" fn spc_read_dimtrns_dvips(
                 free(kp as *mut libc::c_void);
             /* not key-value */
             } else {
-                if (*ap).curptr < (*ap).endptr
-                    && *(*ap).curptr.offset(0) as i32 == '=' as i32
-                {
+                if (*ap).curptr < (*ap).endptr && *(*ap).curptr.offset(0) as i32 == '=' as i32 {
                     (*ap).curptr = (*ap).curptr.offset(1);
                     skip_blank(&mut (*ap).curptr, (*ap).endptr);
                 }
@@ -729,9 +698,7 @@ unsafe extern "C" fn spc_read_dimtrns_dvips(
                     skip_blank(&mut (*ap).curptr, (*ap).endptr);
                     vp = parse_float_decimal(&mut (*ap).curptr, (*ap).endptr);
                     skip_blank(&mut (*ap).curptr, (*ap).endptr);
-                    if !vp.is_null()
-                        && qchr as i32 != *(*ap).curptr.offset(0) as i32
-                    {
+                    if !vp.is_null() && qchr as i32 != *(*ap).curptr.offset(0) as i32 {
                         spc_warn(
                             spe,
                             b"Syntax error in dimension/transformation specification.\x00"
@@ -1215,24 +1182,15 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
                 q = parse_c_ident(&mut (*ap).curptr, (*ap).endptr);
                 if !q.is_null() {
                     if !bbox_type.is_null() {
-                        if strcasecmp(q, b"cropbox\x00" as *const u8 as *const i8) == 0i32
-                        {
+                        if strcasecmp(q, b"cropbox\x00" as *const u8 as *const i8) == 0i32 {
                             *bbox_type = 1i32
-                        } else if strcasecmp(q, b"mediabox\x00" as *const u8 as *const i8)
-                            == 0i32
-                        {
+                        } else if strcasecmp(q, b"mediabox\x00" as *const u8 as *const i8) == 0i32 {
                             *bbox_type = 2i32
-                        } else if strcasecmp(q, b"artbox\x00" as *const u8 as *const i8)
-                            == 0i32
-                        {
+                        } else if strcasecmp(q, b"artbox\x00" as *const u8 as *const i8) == 0i32 {
                             *bbox_type = 3i32
-                        } else if strcasecmp(q, b"trimbox\x00" as *const u8 as *const i8)
-                            == 0i32
-                        {
+                        } else if strcasecmp(q, b"trimbox\x00" as *const u8 as *const i8) == 0i32 {
                             *bbox_type = 4i32
-                        } else if strcasecmp(q, b"bleedbox\x00" as *const u8 as *const i8)
-                            == 0i32
-                        {
+                        } else if strcasecmp(q, b"bleedbox\x00" as *const u8 as *const i8) == 0i32 {
                             *bbox_type = 5i32
                         }
                     }
@@ -2264,10 +2222,7 @@ static mut colordefs: [colordef_; 69] = [
     },
 ];
 /* From pdfcolor.c */
-unsafe extern "C" fn pdf_color_namedcolor(
-    mut color: *mut pdf_color,
-    mut name: *const i8,
-) -> i32 {
+unsafe extern "C" fn pdf_color_namedcolor(mut color: *mut pdf_color, mut name: *const i8) -> i32 {
     let mut i: i32 = 0;
     i = 0i32;
     while !colordefs[i as usize].key.is_null() {

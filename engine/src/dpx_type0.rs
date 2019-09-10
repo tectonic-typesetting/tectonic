@@ -199,8 +199,7 @@ extern "C" {
         flags: i32,
     ) -> i32;
     #[no_mangle]
-    fn pdf_findresource(category: *const i8, resname: *const i8)
-        -> i32;
+    fn pdf_findresource(category: *const i8, resname: *const i8) -> i32;
     #[no_mangle]
     fn pdf_get_resource_reference(res_id: i32) -> *mut pdf_obj;
 }
@@ -317,14 +316,10 @@ pub unsafe extern "C" fn Type0Font_set_verbose(mut level: i32) {
 }
 unsafe extern "C" fn new_used_chars2() -> *mut i8 {
     let mut used_chars: *mut i8 = 0 as *mut i8;
-    used_chars = new((8192i32 as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-        as u32) as *mut i8;
-    memset(
-        used_chars as *mut libc::c_void,
-        0i32,
-        8192i32 as u64,
-    );
+    used_chars =
+        new((8192i32 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+            as *mut i8;
+    memset(used_chars as *mut libc::c_void, 0i32, 8192i32 as u64);
     return used_chars;
 }
 /* MUST BE NULL */
@@ -368,8 +363,7 @@ unsafe extern "C" fn Type0Font_clean(mut font: *mut Type0Font) {
         }
         if !(*font).descriptor.is_null() {
             _tt_abort(
-                b"%s: FontDescriptor unexpected for Type0 font.\x00" as *const u8
-                    as *const i8,
+                b"%s: FontDescriptor unexpected for Type0 font.\x00" as *const u8 as *const i8,
                 b"Type0\x00" as *const u8 as *const i8,
             );
         }
@@ -456,9 +450,8 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
             /*
              * Old version of dvipdfmx mistakenly used Adobe-Identity as Unicode.
              */
-            tounicode = pdf_read_ToUnicode_file(
-                b"Adobe-Identity-UCS2\x00" as *const u8 as *const i8,
-            );
+            tounicode =
+                pdf_read_ToUnicode_file(b"Adobe-Identity-UCS2\x00" as *const u8 as *const i8);
             if tounicode.is_null() {
                 /* This should work */
                 tounicode = pdf_new_name(b"Identity-H\x00" as *const u8 as *const i8)
@@ -478,16 +471,8 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
         fontname = fontname.offset(7)
         /* FIXME */
     }
-    if streq_ptr(
-        (*csi).registry,
-        b"Adobe\x00" as *const u8 as *const i8,
-    ) as i32
-        != 0
-        && streq_ptr(
-            (*csi).ordering,
-            b"Identity\x00" as *const u8 as *const i8,
-        ) as i32
-            != 0
+    if streq_ptr((*csi).registry, b"Adobe\x00" as *const u8 as *const i8) as i32 != 0
+        && streq_ptr((*csi).ordering, b"Identity\x00" as *const u8 as *const i8) as i32 != 0
     {
         match CIDFont_get_subtype(cidfont) {
             2 => {
@@ -510,8 +495,7 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
     } else {
         let mut cmap_base: *mut i8 = new((strlen((*csi).registry)
             .wrapping_add(strlen((*csi).ordering))
-            .wrapping_add(2i32 as u64)
-            as u32 as u64)
+            .wrapping_add(2i32 as u64) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32) as *mut i8;
         sprintf(
@@ -531,8 +515,7 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
         );
     } else {
         dpx_warning(
-            b"Failed to load ToUnicode CMap for font \"%s\"\x00" as *const u8
-                as *const i8,
+            b"Failed to load ToUnicode CMap for font \"%s\"\x00" as *const u8 as *const i8,
             fontname,
         );
     };
@@ -564,12 +547,7 @@ unsafe extern "C" fn Type0Font_dofont(mut font: *mut Type0Font) {
     if font.is_null() || (*font).indirect.is_null() {
         return;
     }
-    if pdf_lookup_dict(
-        (*font).fontdict,
-        b"ToUnicode\x00" as *const u8 as *const i8,
-    )
-    .is_null()
-    {
+    if pdf_lookup_dict((*font).fontdict, b"ToUnicode\x00" as *const u8 as *const i8).is_null() {
         /* FIXME */
         add_ToUnicode(font);
     };
@@ -582,8 +560,7 @@ unsafe extern "C" fn Type0Font_flush(mut font: *mut Type0Font) {
         (*font).indirect = 0 as *mut pdf_obj;
         if !(*font).descriptor.is_null() {
             _tt_abort(
-                b"%s: FontDescriptor unexpected for Type0 font.\x00" as *const u8
-                    as *const i8,
+                b"%s: FontDescriptor unexpected for Type0 font.\x00" as *const u8 as *const i8,
                 b"Type0\x00" as *const u8 as *const i8,
             );
         }
@@ -738,12 +715,10 @@ pub unsafe extern "C" fn Type0Font_cache_find(
      * wmode. Create new Type0 font.
      */
     if __cache.count >= __cache.capacity {
-        __cache.capacity =
-            (__cache.capacity as u32).wrapping_add(16u32) as i32 as i32;
+        __cache.capacity = (__cache.capacity as u32).wrapping_add(16u32) as i32 as i32;
         __cache.fonts = renew(
             __cache.fonts as *mut libc::c_void,
-            (__cache.capacity as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<Type0Font>() as u64)
+            (__cache.capacity as u32 as u64).wrapping_mul(::std::mem::size_of::<Type0Font>() as u64)
                 as u32,
         ) as *mut Type0Font
     }
@@ -757,23 +732,19 @@ pub unsafe extern "C" fn Type0Font_cache_find(
      * Identity-V for vertical fonts.
      */
     if wmode != 0 {
-        (*font).encoding = new(
-            (strlen(b"Identity-V\x00" as *const u8 as *const i8)
-                .wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32,
-        ) as *mut i8;
+        (*font).encoding = new((strlen(b"Identity-V\x00" as *const u8 as *const i8)
+            .wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+            as *mut i8;
         strcpy(
             (*font).encoding,
             b"Identity-V\x00" as *const u8 as *const i8,
         );
     } else {
-        (*font).encoding = new(
-            (strlen(b"Identity-H\x00" as *const u8 as *const i8)
-                .wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32,
-        ) as *mut i8;
+        (*font).encoding = new((strlen(b"Identity-H\x00" as *const u8 as *const i8)
+            .wrapping_add(1i32 as u64) as u32 as u64)
+            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
+            as *mut i8;
         strcpy(
             (*font).encoding,
             b"Identity-H\x00" as *const u8 as *const i8,
@@ -819,10 +790,7 @@ pub unsafe extern "C" fn Type0Font_cache_find(
                 fontname.offset(7),
             );
         } else {
-            dpx_message(
-                b"(CID:%s)\x00" as *const u8 as *const i8,
-                fontname,
-            );
+            dpx_message(b"(CID:%s)\x00" as *const u8 as *const i8, fontname);
         }
     }
     /*
@@ -842,8 +810,7 @@ pub unsafe extern "C" fn Type0Font_cache_find(
         1 => {
             (*font).fontname = new((strlen(fontname)
                 .wrapping_add(strlen((*font).encoding))
-                .wrapping_add(2i32 as u64) as u32
-                as u64)
+                .wrapping_add(2i32 as u64) as u32 as u64)
                 .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                 as u32) as *mut i8;
             sprintf(

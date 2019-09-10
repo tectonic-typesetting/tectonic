@@ -48,12 +48,7 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn fread(
-        _: *mut libc::c_void,
-        _: u64,
-        _: u64,
-        _: *mut FILE,
-    ) -> u64;
+    fn fread(_: *mut libc::c_void, _: u64, _: u64, _: *mut FILE) -> u64;
     #[no_mangle]
     fn rewind(__stream: *mut FILE);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -258,11 +253,7 @@ unsafe extern "C" fn check_ftyp_data(mut fp: *mut FILE, mut size: u32) -> i32 {
     }
     return supported;
 }
-unsafe extern "C" fn read_res__data(
-    mut info: *mut ximage_info,
-    mut fp: *mut FILE,
-    mut size: u32,
-) {
+unsafe extern "C" fn read_res__data(mut info: *mut ximage_info, mut fp: *mut FILE, mut size: u32) {
     let mut VR_N: u32 = 0;
     let mut VR_D: u32 = 0;
     let mut HR_N: u32 = 0;
@@ -275,14 +266,10 @@ unsafe extern "C" fn read_res__data(
     HR_D = get_unsigned_pair(fp) as u32;
     VR_E = get_unsigned_byte(fp);
     HR_E = get_unsigned_byte(fp);
-    (*info).xdensity = 72.0f64
-        / (HR_N as f64 / HR_D as f64
-            * pow(10.0f64, HR_E as f64)
-            * 0.0254f64);
-    (*info).ydensity = 72.0f64
-        / (VR_N as f64 / VR_D as f64
-            * pow(10.0f64, VR_E as f64)
-            * 0.0254f64);
+    (*info).xdensity =
+        72.0f64 / (HR_N as f64 / HR_D as f64 * pow(10.0f64, HR_E as f64) * 0.0254f64);
+    (*info).ydensity =
+        72.0f64 / (VR_N as f64 / VR_D as f64 * pow(10.0f64, VR_E as f64) * 0.0254f64);
 }
 unsafe extern "C" fn scan_res_(
     mut info: *mut ximage_info,
@@ -325,11 +312,7 @@ unsafe extern "C" fn scan_res_(
             size = size.wrapping_sub(lbox)
         }
     }
-    return if size == 0i32 as u32 {
-        0i32
-    } else {
-        -1i32
-    };
+    return if size == 0i32 as u32 { 0i32 } else { -1i32 };
 }
 /* Acrobat seems require Channel Definition box to be defined when image data
  * contains opacity channel. However, OpenJPEG (and maybe most of JPEG 2000 coders?)
@@ -350,10 +333,7 @@ unsafe extern "C" fn scan_cdef(
     let mut Asoc: u32 = 0;
     *smask = 0i32;
     N = get_unsigned_pair(fp) as u32;
-    if size
-        < N.wrapping_mul(6i32 as u32)
-            .wrapping_add(2i32 as u32)
-    {
+    if size < N.wrapping_mul(6i32 as u32).wrapping_add(2i32 as u32) {
         dpx_warning(
             b"JPEG2000: Inconsistent N value in Channel Definition box.\x00" as *const u8
                 as *const i8,
@@ -385,8 +365,7 @@ unsafe extern "C" fn scan_cdef(
         *smask = if have_type0 != 0 { 1i32 } else { 0i32 }
     } else if opacity_channels > 1i32 {
         dpx_warning(
-            b"JPEG2000: Unsupported transparency type. (ignored)\x00" as *const u8
-                as *const i8,
+            b"JPEG2000: Unsupported transparency type. (ignored)\x00" as *const u8 as *const i8,
         );
     }
     return 0i32;
@@ -548,10 +527,7 @@ pub unsafe extern "C" fn check_for_jp2(mut fp: *mut FILE) -> i32 {
     return 1i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn jp2_include_image(
-    mut ximage: *mut pdf_ximage,
-    mut fp: *mut FILE,
-) -> i32 {
+pub unsafe extern "C" fn jp2_include_image(mut ximage: *mut pdf_ximage, mut fp: *mut FILE) -> i32 {
     let mut pdf_version: u32 = 0;
     let mut smask: i32 = 0i32;
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -580,9 +556,7 @@ pub unsafe extern "C" fn jp2_include_image(
     stream = stream_dict;
     rewind(fp);
     if scan_file(&mut info, &mut smask, fp) < 0i32 {
-        dpx_warning(
-            b"JPEG2000: Reading JPEG 2000 file failed.\x00" as *const u8 as *const i8,
-        );
+        dpx_warning(b"JPEG2000: Reading JPEG 2000 file failed.\x00" as *const u8 as *const i8);
         return -1i32;
     }
     stream = pdf_new_stream(0i32);

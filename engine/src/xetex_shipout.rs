@@ -22,11 +22,7 @@ extern "C" {
     #[no_mangle]
     fn ttstub_output_open(path: *const i8, is_gz: i32) -> rust_output_handle_t;
     #[no_mangle]
-    fn ttstub_output_write(
-        handle: rust_output_handle_t,
-        data: *const i8,
-        len: size_t,
-    ) -> size_t;
+    fn ttstub_output_write(handle: rust_output_handle_t, data: *const i8, len: size_t) -> size_t;
     #[no_mangle]
     fn ttstub_output_flush(handle: rust_output_handle_t) -> i32;
     #[no_mangle]
@@ -621,8 +617,7 @@ static mut cur_s: i32 = 0;
 pub unsafe extern "C" fn initialize_shipout_variables() {
     output_file_name = 0i32;
     dvi_buf = xmalloc(
-        ((16384i32 + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<eight_bits>() as u64),
+        ((16384i32 + 1i32) as u64).wrapping_mul(::std::mem::size_of::<eight_bits>() as u64),
     ) as *mut eight_bits;
     dvi_limit = 16384i32;
     dvi_ptr = 0i32;
@@ -655,8 +650,7 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
     let mut s: pool_pointer = 0;
     let mut old_setting: u8 = 0;
     let mut l: u8 = 0;
-    let mut output_comment: *const i8 =
-        b"tectonic\x00" as *const u8 as *const i8;
+    let mut output_comment: *const i8 = b"tectonic\x00" as *const u8 as *const i8;
     synctex_sheet(
         (*eqtb.offset(
             (1i32
@@ -923,8 +917,8 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
         }
         print_cstr(b"Huge page cannot be shipped out\x00" as *const u8 as *const i8);
         help_ptr = 2i32 as u8;
-        help_line[1] = b"The page just created is more than 18 feet tall or\x00" as *const u8
-            as *const i8;
+        help_line[1] =
+            b"The page just created is more than 18 feet tall or\x00" as *const u8 as *const i8;
         help_line[0] = b"more than 18 feet wide, so I suspect something went wrong.\x00"
             as *const u8 as *const i8;
         error();
@@ -959,9 +953,7 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
         .s1 <= 0i32
         {
             begin_diagnostic();
-            print_nl_cstr(
-                b"The following box has been deleted:\x00" as *const u8 as *const i8,
-            );
+            print_nl_cstr(b"The following box has been deleted:\x00" as *const u8 as *const i8);
             show_box(p);
             end_diagnostic(1i32 != 0);
         }
@@ -1822,8 +1814,7 @@ unsafe extern "C" fn hlist_out() {
                                         || (*mem.offset(q as isize)).b16.s1 as i32 == 4i32
                                         || (*mem.offset(q as isize)).b16.s1 as i32 == 5i32
                                         || (*mem.offset(q as isize)).b16.s1 as i32 == 8i32
-                                            && (*mem.offset(q as isize)).b16.s0 as i32
-                                                <= 4i32)
+                                            && (*mem.offset(q as isize)).b16.s0 as i32 <= 4i32)
                                 {
                                     q = (*mem.offset(q as isize)).b32.s1
                                 }
@@ -1836,8 +1827,7 @@ unsafe extern "C" fn hlist_out() {
                                         == (*mem.offset((r + 4i32) as isize)).b16.s2 as i32
                                 {
                                     p = q;
-                                    k += 1i32
-                                        + (*mem.offset((q + 4i32) as isize)).b16.s1 as i32;
+                                    k += 1i32 + (*mem.offset((q + 4i32) as isize)).b16.s1 as i32;
                                     q = (*mem.offset(q as isize)).b32.s1;
                                     continue;
                                 }
@@ -1908,9 +1898,7 @@ unsafe extern "C" fn hlist_out() {
                                     || (*mem.offset(q as isize)).b16.s0 as i32 == 41i32
                                 {
                                     j = 0i32;
-                                    while j
-                                        < (*mem.offset((q + 4i32) as isize)).b16.s1 as i32
-                                    {
+                                    while j < (*mem.offset((q + 4i32) as isize)).b16.s1 as i32 {
                                         *str_pool.offset(pool_ptr as isize) = *(&mut *mem
                                             .offset((q + 6i32) as isize)
                                             as *mut memory_word
@@ -1929,8 +1917,7 @@ unsafe extern "C" fn hlist_out() {
                                 k += (*mem.offset((g + 1i32) as isize)).b32.s1;
                                 if g_sign as i32 != 0i32 {
                                     if g_sign as i32 == 1i32 {
-                                        if (*mem.offset(g as isize)).b16.s1 as i32
-                                            == g_order as i32
+                                        if (*mem.offset(g as isize)).b16.s1 as i32 == g_order as i32
                                         {
                                             k += tex_round(
                                                 (*mem.offset((this_box + 6i32) as isize)).gr
@@ -1943,8 +1930,7 @@ unsafe extern "C" fn hlist_out() {
                                     {
                                         k -= tex_round(
                                             (*mem.offset((this_box + 6i32) as isize)).gr
-                                                * (*mem.offset((g + 3i32) as isize)).b32.s1
-                                                    as f64,
+                                                * (*mem.offset((g + 3i32) as isize)).b32.s1 as f64,
                                         )
                                     }
                                 }
@@ -2038,9 +2024,7 @@ unsafe extern "C" fn hlist_out() {
             (*mem.offset(this_box as isize)).b16.s0 = 0i32 as u16
         }
     }
-    if cur_dir as i32 == 1i32
-        && (*mem.offset(this_box as isize)).b16.s0 as i32 != 1i32
-    {
+    if cur_dir as i32 == 1i32 && (*mem.offset(this_box as isize)).b16.s0 as i32 != 1i32 {
         /*1508: "Reverse the complete hlist and set the subtype to reversed." */
         save_h = cur_h; /* "SyncTeX: do nothing, it is too late" */
         temp_ptr = p;
@@ -2894,11 +2878,8 @@ unsafe extern "C" fn vlist_out() {
                     rule_ht = (*mem.offset((g + 1i32) as isize)).b32.s1 - cur_g;
                     if g_sign as i32 != 0i32 {
                         if g_sign as i32 == 1i32 {
-                            if (*mem.offset(g as isize)).b16.s1 as i32
-                                == g_order as i32
-                            {
-                                cur_glue +=
-                                    (*mem.offset((g + 2i32) as isize)).b32.s1 as f64;
+                            if (*mem.offset(g as isize)).b16.s1 as i32 == g_order as i32 {
+                                cur_glue += (*mem.offset((g + 2i32) as isize)).b32.s1 as f64;
                                 glue_temp = (*mem.offset((this_box + 6i32) as isize)).gr * cur_glue;
                                 if glue_temp > 1000000000.0f64 {
                                     glue_temp = 1000000000.0f64
@@ -2907,9 +2888,7 @@ unsafe extern "C" fn vlist_out() {
                                 }
                                 cur_g = tex_round(glue_temp)
                             }
-                        } else if (*mem.offset(g as isize)).b16.s0 as i32
-                            == g_order as i32
-                        {
+                        } else if (*mem.offset(g as isize)).b16.s0 as i32 == g_order as i32 {
                             cur_glue -= (*mem.offset((g + 3i32) as isize)).b32.s1 as f64;
                             glue_temp = (*mem.offset((this_box + 6i32) as isize)).gr * cur_glue;
                             if glue_temp > 1000000000.0f64 {
@@ -2981,9 +2960,7 @@ unsafe extern "C" fn vlist_out() {
                                     temp_ptr = leader_box;
                                     outer_doing_leaders = doing_leaders;
                                     doing_leaders = 1i32 != 0;
-                                    if (*mem.offset(leader_box as isize)).b16.s1 as i32
-                                        == 1i32
-                                    {
+                                    if (*mem.offset(leader_box as isize)).b16.s1 as i32 == 1i32 {
                                         vlist_out();
                                     } else {
                                         hlist_out();
@@ -3033,7 +3010,8 @@ unsafe extern "C" fn vlist_out() {
             }
             match current_block {
                 9653381107620864133 => {
-                    /*655: "Output a rule in a vlist, goto next_p */
+                    // 655: "Output a rule in a vlist, goto next_p
+
                     if rule_wd == -0x40000000i32 {
                         rule_wd = (*mem.offset((this_box + 1i32) as isize)).b32.s1
                     } /* end WHATSIT_NODE case */
@@ -3163,12 +3141,9 @@ unsafe extern "C" fn reverse(
                             rule_wd = (*mem.offset((g + 1i32) as isize)).b32.s1 - *cur_g; /* = mem[lig_char(temp_ptr)] */
                             if g_sign as i32 != 0i32 {
                                 if g_sign as i32 == 1i32 {
-                                    if (*mem.offset(g as isize)).b16.s1 as i32
-                                        == g_order as i32
-                                    {
+                                    if (*mem.offset(g as isize)).b16.s1 as i32 == g_order as i32 {
                                         *cur_glue = *cur_glue
-                                            + (*mem.offset((g + 2i32) as isize)).b32.s1
-                                                as f64;
+                                            + (*mem.offset((g + 2i32) as isize)).b32.s1 as f64;
                                         glue_temp = (*mem.offset((this_box + 6i32) as isize)).gr
                                             * *cur_glue;
                                         if glue_temp > 1000000000.0f64 {
@@ -3178,12 +3153,10 @@ unsafe extern "C" fn reverse(
                                         }
                                         *cur_g = tex_round(glue_temp)
                                     }
-                                } else if (*mem.offset(g as isize)).b16.s0 as i32
-                                    == g_order as i32
+                                } else if (*mem.offset(g as isize)).b16.s0 as i32 == g_order as i32
                                 {
                                     *cur_glue = *cur_glue
-                                        - (*mem.offset((g + 3i32) as isize)).b32.s1
-                                            as f64;
+                                        - (*mem.offset((g + 3i32) as isize)).b32.s1 as f64;
                                     glue_temp =
                                         (*mem.offset((this_box + 6i32) as isize)).gr * *cur_glue;
                                     if glue_temp > 1000000000.0f64 {
@@ -3196,11 +3169,9 @@ unsafe extern "C" fn reverse(
                             }
                             rule_wd += *cur_g;
                             if g_sign as i32 == 1i32
-                                && (*mem.offset(g as isize)).b16.s1 as i32
-                                    == g_order as i32
+                                && (*mem.offset(g as isize)).b16.s1 as i32 == g_order as i32
                                 || g_sign as i32 == 2i32
-                                    && (*mem.offset(g as isize)).b16.s0 as i32
-                                        == g_order as i32
+                                    && (*mem.offset(g as isize)).b16.s0 as i32 == g_order as i32
                             {
                                 if (*mem.offset(g as isize)).b32.s1 == -0xfffffffi32 {
                                     free_node(g, 4i32);
@@ -3294,8 +3265,7 @@ unsafe extern "C" fn reverse(
                     (*mem.offset(temp_ptr as isize)).b32.s1 = LR_ptr;
                     LR_ptr = temp_ptr;
                     if n > -0xfffffffi32
-                        || (*mem.offset(p as isize)).b16.s0 as i32 / 8i32
-                            != cur_dir as i32
+                        || (*mem.offset(p as isize)).b16.s0 as i32 / 8i32 != cur_dir as i32
                     {
                         n += 1;
                         let ref mut fresh5 = (*mem.offset(p as isize)).b16.s0;
@@ -3374,8 +3344,7 @@ pub unsafe extern "C" fn out_what(mut p: i32) {
                         write_file[j as usize] = ttstub_output_open(name_of_file, 0i32);
                         if write_file[j as usize].is_null() {
                             _tt_abort(
-                                b"cannot open output file \"%s\"\x00" as *const u8
-                                    as *const i8,
+                                b"cannot open output file \"%s\"\x00" as *const u8 as *const i8,
                                 name_of_file,
                             );
                         }
@@ -3480,8 +3449,7 @@ unsafe extern "C" fn dvi_font_def(mut f: internal_font_number) {
                 .offset(((*font_name.offset(f as isize) + 1i32) as i64 - 65536) as isize)
         {
             if *str_pool.offset(k as isize) as i32 == ':' as i32 {
-                l = k - *str_start
-                    .offset((*font_name.offset(f as isize) as i64 - 65536) as isize)
+                l = k - *str_start.offset((*font_name.offset(f as isize) as i64 - 65536) as isize)
             }
             k += 1
         }
@@ -3507,8 +3475,7 @@ unsafe extern "C" fn dvi_font_def(mut f: internal_font_number) {
         let mut for_end_0: i32 = 0;
         k = *str_start.offset((*font_name.offset(f as isize) as i64 - 65536) as isize);
         for_end_0 =
-            *str_start.offset((*font_name.offset(f as isize) as i64 - 65536) as isize) + l
-                - 1i32;
+            *str_start.offset((*font_name.offset(f as isize) as i64 - 65536) as isize) + l - 1i32;
         if k <= for_end_0 {
             loop {
                 dvi_out(*str_pool.offset(k as isize) as eight_bits);
@@ -3576,8 +3543,7 @@ unsafe extern "C" fn movement(mut w: scaled_t, mut o: eight_bits) {
                                     k = k + 16384i32
                                 }
                                 *dvi_buf.offset(k as isize) =
-                                    (*dvi_buf.offset(k as isize) as i32 + 5i32)
-                                        as eight_bits;
+                                    (*dvi_buf.offset(k as isize) as i32 + 5i32) as eight_bits;
                                 (*mem.offset(p as isize)).b32.s0 = 1i32;
                                 current_block = 8542251818650148540;
                                 break;
@@ -3613,8 +3579,7 @@ unsafe extern "C" fn movement(mut w: scaled_t, mut o: eight_bits) {
                                     k = k + 16384i32
                                 }
                                 *dvi_buf.offset(k as isize) =
-                                    (*dvi_buf.offset(k as isize) as i32 + 5i32)
-                                        as eight_bits;
+                                    (*dvi_buf.offset(k as isize) as i32 + 5i32) as eight_bits;
                                 (*mem.offset(p as isize)).b32.s0 = 1i32;
                                 current_block = 8542251818650148540;
                                 break;
@@ -3826,8 +3791,7 @@ unsafe extern "C" fn write_out(mut p: i32) {
         help_ptr = 2i32 as u8;
         help_line[1] = b"On this page there\'s a \\write with fewer real {\'s than }\'s.\x00"
             as *const u8 as *const i8;
-        help_line[0] =
-            b"I can\'t handle that very well; good luck.\x00" as *const u8 as *const i8;
+        help_line[0] = b"I can\'t handle that very well; good luck.\x00" as *const u8 as *const i8;
         error();
         loop {
             get_token();
@@ -3848,9 +3812,7 @@ unsafe extern "C" fn write_out(mut p: i32) {
     } else if write_open[j as usize] {
         selector = j as selector_t
     } else {
-        if j as i32 == 17i32
-            && selector as u32 == SELECTOR_TERM_AND_LOG as i32 as u32
-        {
+        if j as i32 == 17i32 && selector as u32 == SELECTOR_TERM_AND_LOG as i32 as u32 {
             selector = SELECTOR_LOG_ONLY
         }
         print_nl_cstr(b"\x00" as *const u8 as *const i8);

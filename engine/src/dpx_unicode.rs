@@ -19,9 +19,7 @@ extern "C" {
 pub type size_t = u64;
 #[no_mangle]
 pub unsafe extern "C" fn UC_is_valid(mut ucv: i32) -> bool {
-    return !(ucv < 0i32
-        || ucv as i64 > 0x10ffff
-        || ucv as i64 >= 0xd800 && ucv as i64 <= 0xdfff);
+    return !(ucv < 0i32 || ucv as i64 > 0x10ffff || ucv as i64 >= 0xd800 && ucv as i64 <= 0xdfff);
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF16BE_is_valid_string(
@@ -40,10 +38,7 @@ pub unsafe extern "C" fn UC_UTF16BE_is_valid_string(
     return 1i32 != 0;
 }
 #[no_mangle]
-pub unsafe extern "C" fn UC_UTF8_is_valid_string(
-    mut p: *const u8,
-    mut endptr: *const u8,
-) -> bool {
+pub unsafe extern "C" fn UC_UTF8_is_valid_string(mut p: *const u8, mut endptr: *const u8) -> bool {
     if p.offset(1) >= endptr {
         return 0i32 != 0;
     }
@@ -127,10 +122,7 @@ pub unsafe extern "C" fn UC_UTF16BE_encode_char(
     return count as size_t;
 }
 #[no_mangle]
-pub unsafe extern "C" fn UC_UTF8_decode_char(
-    mut pp: *mut *const u8,
-    mut endptr: *const u8,
-) -> i32 {
+pub unsafe extern "C" fn UC_UTF8_decode_char(mut pp: *mut *const u8, mut endptr: *const u8) -> i32 {
     let mut p: *const u8 = *pp;
     let mut ucv: i32 = 0;
     let fresh0 = p;

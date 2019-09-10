@@ -26,11 +26,7 @@ extern "C" {
     #[no_mangle]
     fn ttstub_output_open_stdout() -> rust_output_handle_t;
     #[no_mangle]
-    fn ttstub_output_write(
-        handle: rust_output_handle_t,
-        data: *const i8,
-        len: size_t,
-    ) -> size_t;
+    fn ttstub_output_write(handle: rust_output_handle_t, data: *const i8, len: size_t) -> size_t;
     #[no_mangle]
     fn ttstub_output_flush(handle: rust_output_handle_t) -> i32;
     #[no_mangle]
@@ -42,11 +38,7 @@ extern "C" {
         is_gz: i32,
     ) -> rust_input_handle_t;
     #[no_mangle]
-    fn ttstub_input_read(
-        handle: rust_input_handle_t,
-        data: *mut i8,
-        len: size_t,
-    ) -> ssize_t;
+    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
@@ -986,8 +978,7 @@ pub static mut file_name_quote_char: UTF16_code = 0;
 #[no_mangle]
 pub static mut format_default_length: i32 = 0;
 #[no_mangle]
-pub static mut TEX_format_default: *mut i8 =
-    0 as *const i8 as *mut i8;
+pub static mut TEX_format_default: *mut i8 = 0 as *const i8 as *mut i8;
 #[no_mangle]
 pub static mut name_in_progress: bool = false;
 #[no_mangle]
@@ -1482,8 +1473,7 @@ unsafe extern "C" fn swap_items(mut p: *mut i8, mut nitems: size_t, mut size: si
         1 => {}
         _ => {
             _tt_abort(
-                b"can\'t swap a %zu-byte item for (un)dumping\x00" as *const u8
-                    as *const i8,
+                b"can\'t swap a %zu-byte item for (un)dumping\x00" as *const u8 as *const i8,
                 size,
             );
         }
@@ -1524,8 +1514,7 @@ unsafe extern "C" fn do_undump(
     let mut r: ssize_t = ttstub_input_read(in_file, p, item_size.wrapping_mul(nitems));
     if r < 0i32 as i64 || r as size_t != item_size.wrapping_mul(nitems) {
         _tt_abort(
-            b"could not undump %zu %zu-byte item(s) from %s\x00" as *const u8
-                as *const i8,
+            b"could not undump %zu %zu-byte item(s) from %s\x00" as *const u8 as *const i8,
             nitems,
             item_size,
             name_of_file,
@@ -1580,10 +1569,7 @@ unsafe extern "C" fn primitive(mut ident: *const i8, mut c: u16, mut o: i32) {
     if len > 1i32 {
         let mut s: str_number = maketexstring(ident);
         if first + len > buf_size + 1i32 {
-            overflow(
-                b"buffer size\x00" as *const u8 as *const i8,
-                buf_size,
-            );
+            overflow(b"buffer size\x00" as *const u8 as *const i8, buf_size);
         }
         let mut i: i32 = 0i32;
         while i < len {
@@ -1617,10 +1603,7 @@ pub unsafe extern "C" fn new_trie_op(
     let mut h: i32 = 0;
     let mut u: trie_opcode = 0;
     let mut l: i32 = 0;
-    h = (abs(n as i32
-        + 313i32 * d as i32
-        + 361i32 * v as i32
-        + 1009i32 * cur_lang as i32) as i64
+    h = (abs(n as i32 + 313i32 * d as i32 + 361i32 * v as i32 + 1009i32 * cur_lang as i32) as i64
         % (35111 - -35111)
         + -35111) as i32;
     loop {
@@ -1683,8 +1666,7 @@ pub unsafe extern "C" fn trie_node(mut p: trie_pointer) -> trie_pointer {
             return p;
         }
         if *trie_c.offset(q as isize) as i32 == *trie_c.offset(p as isize) as i32
-            && *trie_o.offset(q as isize) as i32
-                == *trie_o.offset(p as isize) as i32
+            && *trie_o.offset(q as isize) as i32 == *trie_o.offset(p as isize) as i32
             && *trie_l.offset(q as isize) == *trie_l.offset(p as isize)
             && *trie_r.offset(q as isize) == *trie_r.offset(p as isize)
         {
@@ -1722,10 +1704,7 @@ pub unsafe extern "C" fn first_fit(mut p: trie_pointer) {
         h = z - c as i32;
         if trie_max < h + max_hyph_char {
             if trie_size <= h + max_hyph_char {
-                overflow(
-                    b"pattern memory\x00" as *const u8 as *const i8,
-                    trie_size,
-                );
+                overflow(b"pattern memory\x00" as *const u8 as *const i8, trie_size);
             }
             loop {
                 trie_max += 1;
@@ -1743,9 +1722,7 @@ pub unsafe extern "C" fn first_fit(mut p: trie_pointer) {
                 if !(q > 0i32) {
                     break 's_31;
                 }
-                if *trie_trl.offset((h + *trie_c.offset(q as isize) as i32) as isize)
-                    == 0i32
-                {
+                if *trie_trl.offset((h + *trie_c.offset(q as isize) as i32) as isize) == 0i32 {
                     break;
                 }
                 q = *trie_r.offset(q as isize)
@@ -1811,8 +1788,7 @@ pub unsafe extern "C" fn trie_fix(mut p: trie_pointer) {
         c = *trie_c.offset(p as isize);
         *trie_trl.offset((z + c as i32) as isize) = *trie_hash.offset(q as isize);
         *trie_trc.offset((z + c as i32) as isize) = c;
-        *trie_tro.offset((z + c as i32) as isize) =
-            *trie_o.offset(p as isize) as trie_pointer;
+        *trie_tro.offset((z + c as i32) as isize) = *trie_o.offset(p as isize) as trie_pointer;
         if q > 0i32 {
             trie_fix(q);
         }
@@ -1933,10 +1909,7 @@ unsafe extern "C" fn new_patterns() {
             get_x_token();
             match cur_cmd as i32 {
                 11 | 12 => {
-                    if digit_sensed as i32 != 0
-                        || cur_chr < '0' as i32
-                        || cur_chr > '9' as i32
-                    {
+                    if digit_sensed as i32 != 0 || cur_chr < '0' as i32 || cur_chr > '9' as i32 {
                         if cur_chr == '.' as i32 {
                             cur_chr = 0i32
                         } else {
@@ -1972,8 +1945,7 @@ unsafe extern "C" fn new_patterns() {
                                 }
                                 print_cstr(b"Nonletter\x00" as *const u8 as *const i8);
                                 help_ptr = 1i32 as u8;
-                                help_line[0] =
-                                    b"(See Appendix H.)\x00" as *const u8 as *const i8;
+                                help_line[0] = b"(See Appendix H.)\x00" as *const u8 as *const i8;
                                 error();
                             }
                         }
@@ -2022,16 +1994,12 @@ unsafe extern "C" fn new_patterns() {
                             l += 1;
                             p = *trie_l.offset(q as isize);
                             first_child = 1i32 != 0;
-                            while p > 0i32
-                                && c as i32 > *trie_c.offset(p as isize) as i32
-                            {
+                            while p > 0i32 && c as i32 > *trie_c.offset(p as isize) as i32 {
                                 q = p;
                                 p = *trie_r.offset(q as isize);
                                 first_child = 0i32 != 0
                             }
-                            if p == 0i32
-                                || (c as i32) < *trie_c.offset(p as isize) as i32
-                            {
+                            if p == 0i32 || (c as i32) < *trie_c.offset(p as isize) as i32 {
                                 /*999:*/
                                 if trie_ptr == trie_size {
                                     overflow(
@@ -2059,12 +2027,9 @@ unsafe extern "C" fn new_patterns() {
                             } else {
                                 print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                             }
-                            print_cstr(
-                                b"Duplicate pattern\x00" as *const u8 as *const i8,
-                            );
+                            print_cstr(b"Duplicate pattern\x00" as *const u8 as *const i8);
                             help_ptr = 1i32 as u8;
-                            help_line[0] =
-                                b"(See Appendix H.)\x00" as *const u8 as *const i8;
+                            help_line[0] = b"(See Appendix H.)\x00" as *const u8 as *const i8;
                             error();
                         }
                         *trie_o.offset(q as isize) = v
@@ -2136,10 +2101,7 @@ unsafe extern "C" fn new_patterns() {
                 /*:1644*/
                 /*999:*/
                 if trie_ptr == trie_size {
-                    overflow(
-                        b"pattern memory\x00" as *const u8 as *const i8,
-                        trie_size,
-                    );
+                    overflow(b"pattern memory\x00" as *const u8 as *const i8, trie_size);
                 }
                 trie_ptr += 1;
                 *trie_r.offset(trie_ptr as isize) = p;
@@ -2187,10 +2149,8 @@ unsafe extern "C" fn new_patterns() {
                     if p == 0i32 {
                         /*999:*/
                         if trie_ptr == trie_size {
-                            overflow(
-                                b"pattern memory\x00" as *const u8 as *const i8,
-                                trie_size,
-                            ); /*:987 */
+                            overflow(b"pattern memory\x00" as *const u8 as *const i8, trie_size);
+                            /*:987 */
                         }
                         trie_ptr += 1;
                         *trie_r.offset(trie_ptr as isize) = p;
@@ -2251,8 +2211,8 @@ unsafe extern "C" fn new_patterns() {
         print_cstr(b"Too late for \x00" as *const u8 as *const i8);
         print_esc_cstr(b"patterns\x00" as *const u8 as *const i8);
         help_ptr = 1i32 as u8;
-        help_line[0] = b"All patterns must be given before typesetting begins.\x00" as *const u8
-            as *const i8;
+        help_line[0] =
+            b"All patterns must be given before typesetting begins.\x00" as *const u8 as *const i8;
         error();
         (*mem.offset((4999999i32 - 12i32) as isize)).b32.s1 = scan_toks(0i32 != 0, 0i32 != 0);
         flush_list(def_ref);
@@ -2287,9 +2247,8 @@ pub unsafe extern "C" fn init_trie() {
     for_end_0 = trie_op_ptr;
     if j <= for_end_0 {
         loop {
-            _trie_op_hash_array[(j as i64 - -35111) as usize] = op_start
-                [trie_op_lang[j as usize] as usize]
-                + trie_op_val[j as usize] as i32;
+            _trie_op_hash_array[(j as i64 - -35111) as usize] =
+                op_start[trie_op_lang[j as usize] as usize] + trie_op_val[j as usize] as i32;
             let fresh5 = j;
             j = j + 1;
             if !(fresh5 < for_end_0) {
@@ -2539,9 +2498,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
     }
     if trie_not_ready {
         hyph_index = 0i32
-    } else if *trie_trc.offset((hyph_start + cur_lang as i32) as isize) as i32
-        != cur_lang as i32
-    {
+    } else if *trie_trc.offset((hyph_start + cur_lang as i32) as isize) as i32 != cur_lang as i32 {
         hyph_index = 0i32
     } else {
         hyph_index = *trie_trl.offset((hyph_start + cur_lang as i32) as isize)
@@ -2605,8 +2562,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                             help_ptr = 2i32 as u8;
                             help_line[1] =
                                 b"Letters in \\hyphenation words must have \\lccode>0.\x00"
-                                    as *const u8
-                                    as *const i8;
+                                    as *const u8 as *const i8;
                             help_line[0] = b"Proceed; I\'ll ignore the character I just read.\x00"
                                 as *const u8
                                 as *const i8;
@@ -2617,11 +2573,9 @@ unsafe extern "C" fn new_hyph_exceptions() {
                                 hc[n as usize] = hc[0]
                             } else {
                                 hc[n as usize] =
-                                    ((hc[0] as i64 - 65536) / 1024i32 as i64
-                                        + 55296) as i32;
+                                    ((hc[0] as i64 - 65536) / 1024i32 as i64 + 55296) as i32;
                                 n += 1;
-                                hc[n as usize] =
-                                    ((hc[0] % 1024i32) as i64 + 56320) as i32
+                                hc[n as usize] = ((hc[0] % 1024i32) as i64 + 56320) as i32
                             }
                         }
                     }
@@ -2674,8 +2628,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                 h = 0i32 as hyph_pointer;
                 j = 1i32 as i16;
                 while j as i32 <= n as i32 {
-                    h = ((h as i32 + h as i32 + hc[j as usize]) % 607i32)
-                        as hyph_pointer;
+                    h = ((h as i32 + h as i32 + hc[j as usize]) % 607i32) as hyph_pointer;
                     *str_pool.offset(pool_ptr as isize) = hc[j as usize] as packed_UTF16_code;
                     pool_ptr += 1;
                     j += 1
@@ -2708,9 +2661,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                             }
                             u += 1;
                             v += 1;
-                            if !(u
-                                != *str_start.offset(((k + 1i32) as i64 - 65536) as isize))
-                            {
+                            if !(u != *str_start.offset(((k + 1i32) as i64 - 65536) as isize)) {
                                 current_block = 8732226822098929438;
                                 break;
                             }
@@ -4406,9 +4357,7 @@ unsafe extern "C" fn store_fmt_file() {
     );
     print_ln();
     print_int(x);
-    print_cstr(
-        b" memory locations dumped; current usage is \x00" as *const u8 as *const i8,
-    );
+    print_cstr(b" memory locations dumped; current usage is \x00" as *const u8 as *const i8);
     print_int(var_used);
     print_char('&' as i32);
     print_int(dyn_used);
@@ -4819,8 +4768,7 @@ unsafe extern "C" fn store_fmt_file() {
     p = 0i32;
     while p <= 500i32 {
         do_dump(
-            &mut *prim_eqtb.as_mut_ptr().offset(p as isize) as *mut memory_word
-                as *mut i8,
+            &mut *prim_eqtb.as_mut_ptr().offset(p as isize) as *mut memory_word as *mut i8,
             ::std::mem::size_of::<memory_word>() as u64,
             1i32 as size_t,
             fmt_out,
@@ -5112,10 +5060,9 @@ unsafe extern "C" fn store_fmt_file() {
                     as *const i8,
             );
             help_ptr = 3i32 as u8;
-            help_line[2] = b"You really, really don\'t want to do this.\x00" as *const u8
-                as *const i8;
-            help_line[1] =
-                b"It won\'t work, and only confuses me.\x00" as *const u8 as *const i8;
+            help_line[2] =
+                b"You really, really don\'t want to do this.\x00" as *const u8 as *const i8;
+            help_line[1] = b"It won\'t work, and only confuses me.\x00" as *const u8 as *const i8;
             help_line[0] = b"(Load them at runtime, not as part of the format file.)\x00"
                 as *const u8 as *const i8;
             error();
@@ -5163,9 +5110,8 @@ unsafe extern "C" fn store_fmt_file() {
     k = 0i32;
     while k <= hyph_size {
         if *hyph_word.offset(k as isize) != 0i32 {
-            let mut x_val_28: i32 = (k as i64
-                + 65536 * *hyph_link.offset(k as isize) as i64)
-                as i32;
+            let mut x_val_28: i32 =
+                (k as i64 + 65536 * *hyph_link.offset(k as isize) as i64) as i32;
             do_dump(
                 &mut x_val_28 as *mut i32 as *mut i8,
                 ::std::mem::size_of::<i32>() as u64,
@@ -5552,8 +5498,8 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                 x += 1
             }
             max_reg_num = 32767i32;
-            max_reg_help_line = b"A register number must be between 0 and 32767.\x00" as *const u8
-                as *const i8;
+            max_reg_help_line =
+                b"A register number must be between 0 and 32767.\x00" as *const u8 as *const i8;
             /* "memory locations" */
             do_undump(
                 &mut x as *mut i32 as *mut i8,
@@ -5656,16 +5602,14 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                     if max_strings < str_ptr + strings_free {
                                         max_strings = str_ptr + strings_free
                                     }
-                                    str_start = xmalloc(
-                                        ((max_strings + 1i32) as u64)
-                                            .wrapping_mul(::std::mem::size_of::<pool_pointer>()
-                                                as u64),
-                                    )
-                                        as *mut pool_pointer;
+                                    str_start =
+                                        xmalloc(((max_strings + 1i32) as u64).wrapping_mul(
+                                            ::std::mem::size_of::<pool_pointer>() as u64,
+                                        ))
+                                            as *mut pool_pointer;
                                     let mut i: i32 = 0;
                                     do_undump(
-                                        &mut *str_start.offset(0) as *mut pool_pointer
-                                            as *mut i8,
+                                        &mut *str_start.offset(0) as *mut pool_pointer as *mut i8,
                                         ::std::mem::size_of::<pool_pointer>() as u64,
                                         (str_ptr - 65536i32 + 1i32) as size_t,
                                         fmt_in,
@@ -5697,12 +5641,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                         }
                                         i += 1
                                     }
-                                    str_pool =
-                                        xmalloc(((pool_size + 1i32) as u64).wrapping_mul(
-                                            ::std::mem::size_of::<packed_UTF16_code>()
-                                                as u64,
-                                        ))
-                                            as *mut packed_UTF16_code;
+                                    str_pool = xmalloc(((pool_size + 1i32) as u64).wrapping_mul(
+                                        ::std::mem::size_of::<packed_UTF16_code>() as u64,
+                                    ))
+                                        as *mut packed_UTF16_code;
                                     do_undump(
                                         &mut *str_pool.offset(0) as *mut packed_UTF16_code
                                             as *mut i8,
@@ -5739,8 +5681,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                 }
                                                 do_undump(
                                                     &mut x as *mut i32 as *mut i8,
-                                                    ::std::mem::size_of::<i32>()
-                                                        as u64,
+                                                    ::std::mem::size_of::<i32>() as u64,
                                                     1i32 as size_t,
                                                     fmt_in,
                                                 );
@@ -5800,10 +5741,8 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                 fmt_in,
                                                             );
                                                             do_undump(
-                                                                &mut x as *mut i32
-                                                                    as *mut i8,
-                                                                ::std::mem::size_of::<i32>()
-                                                                    as u64,
+                                                                &mut x as *mut i32 as *mut i8,
+                                                                ::std::mem::size_of::<i32>() as u64,
                                                                 1i32 as size_t,
                                                                 fmt_in,
                                                             );
@@ -5812,8 +5751,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                             {
                                                                 hi_mem_min = x;
                                                                 do_undump(
-                                                                    &mut x as *mut i32
-                                                                        as *mut i8,
+                                                                    &mut x as *mut i32 as *mut i8,
                                                                     ::std::mem::size_of::<i32>()
                                                                         as u64,
                                                                     1i32 as size_t,
@@ -5841,21 +5779,17 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                         fmt_in,
                                                                     );
                                                                     do_undump(
-                                                                        &mut var_used
-                                                                            as *mut i32
+                                                                        &mut var_used as *mut i32
                                                                             as *mut i8,
-                                                                        ::std::mem::size_of::<i32>(
-                                                                        )
+                                                                        ::std::mem::size_of::<i32>()
                                                                             as u64,
                                                                         1i32 as size_t,
                                                                         fmt_in,
                                                                     );
                                                                     do_undump(
-                                                                        &mut dyn_used
-                                                                            as *mut i32
+                                                                        &mut dyn_used as *mut i32
                                                                             as *mut i8,
-                                                                        ::std::mem::size_of::<i32>(
-                                                                        )
+                                                                        ::std::mem::size_of::<i32>()
                                                                             as u64,
                                                                         1i32 as size_t,
                                                                         fmt_in,
@@ -5870,18 +5804,15 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                      */
                                                                     k = 1i32;
                                                                     loop {
-                                                                        do_undump(&mut x
-                                                                                      as
-                                                                                      *mut i32
-                                                                                      as
-                                                                                      *mut i8,
-                                                                                  ::std::mem::size_of::<i32>()
-                                                                                      as
-                                                                                      u64,
-                                                                                  1i32
-                                                                                      as
-                                                                                      size_t,
-                                                                                  fmt_in);
+                                                                        do_undump(
+                                                                            &mut x as *mut i32
+                                                                                as *mut i8,
+                                                                            ::std::mem::size_of::<i32>(
+                                                                            )
+                                                                                as u64,
+                                                                            1i32 as size_t,
+                                                                            fmt_in,
+                                                                        );
                                                                         if x < 1i32
                                                                             || k + x
                                                                                 > 1i32
@@ -5929,33 +5860,29 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                 6442379788293543199;
                                                                             break;
                                                                         }
-                                                                        do_undump(&mut *eqtb.offset(k
-                                                                                                        as
-                                                                                                        isize)
-                                                                                      as
-                                                                                      *mut memory_word
-                                                                                      as
-                                                                                      *mut i8,
-                                                                                  ::std::mem::size_of::<memory_word>()
-                                                                                      as
-                                                                                      u64,
-                                                                                  x
-                                                                                      as
-                                                                                      size_t,
-                                                                                  fmt_in);
+                                                                        do_undump(
+                                                                            &mut *eqtb
+                                                                                .offset(k as isize)
+                                                                                as *mut memory_word
+                                                                                as *mut i8,
+                                                                            ::std::mem::size_of::<
+                                                                                memory_word,
+                                                                            >(
+                                                                            )
+                                                                                as u64,
+                                                                            x as size_t,
+                                                                            fmt_in,
+                                                                        );
                                                                         k = k + x;
-                                                                        do_undump(&mut x
-                                                                                      as
-                                                                                      *mut i32
-                                                                                      as
-                                                                                      *mut i8,
-                                                                                  ::std::mem::size_of::<i32>()
-                                                                                      as
-                                                                                      u64,
-                                                                                  1i32
-                                                                                      as
-                                                                                      size_t,
-                                                                                  fmt_in);
+                                                                        do_undump(
+                                                                            &mut x as *mut i32
+                                                                                as *mut i8,
+                                                                            ::std::mem::size_of::<i32>(
+                                                                            )
+                                                                                as u64,
+                                                                            1i32 as size_t,
+                                                                            fmt_in,
+                                                                        );
                                                                         if x < 0i32
                                                                             || k + x
                                                                                 > 1i32
@@ -6159,18 +6086,17 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                               size_t,
                                                                                           fmt_in);
                                                                             }
-                                                                            do_undump(&mut x
-                                                                                          as
-                                                                                          *mut i32
-                                                                                          as
-                                                                                          *mut i8,
-                                                                                      ::std::mem::size_of::<i32>()
-                                                                                          as
-                                                                                          u64,
-                                                                                      1i32
-                                                                                          as
-                                                                                          size_t,
-                                                                                      fmt_in);
+                                                                            do_undump(
+                                                                                &mut x as *mut i32
+                                                                                    as *mut i8,
+                                                                                ::std::mem::size_of::<
+                                                                                    i32,
+                                                                                >(
+                                                                                )
+                                                                                    as u64,
+                                                                                1i32 as size_t,
+                                                                                fmt_in,
+                                                                            );
                                                                             if !(x < 1i32
                                                                                 + (0x10ffffi32
                                                                                     + 1i32)
@@ -8397,9 +8323,7 @@ unsafe extern "C" fn final_cleanup() {
         free_node(temp_ptr, 2i32);
     }
     if history as u32 != HISTORY_SPOTLESS as i32 as u32 {
-        if history as u32 == HISTORY_WARNING_ISSUED as i32 as u32
-            || (interaction as i32) < 3i32
-        {
+        if history as u32 == HISTORY_WARNING_ISSUED as i32 as u32 || (interaction as i32) < 3i32 {
             if selector as u32 == SELECTOR_TERM_AND_LOG as i32 as u32 {
                 selector = SELECTOR_TERM_ONLY;
                 print_nl_cstr(
@@ -8451,9 +8375,7 @@ unsafe extern "C" fn final_cleanup() {
             store_fmt_file();
             return;
         }
-        print_nl_cstr(
-            b"(\\dump is performed only by INITEX)\x00" as *const u8 as *const i8,
-        );
+        print_nl_cstr(b"(\\dump is performed only by INITEX)\x00" as *const u8 as *const i8);
         return;
     };
 }
@@ -8485,10 +8407,9 @@ unsafe extern "C" fn initialize_more_variables() {
     let mut z: hyph_pointer = 0;
     doing_special = 0i32 != 0;
     native_text_size = 128i32;
-    native_text = xmalloc(
-        (native_text_size as u64)
-            .wrapping_mul(::std::mem::size_of::<UTF16_code>() as u64),
-    ) as *mut UTF16_code;
+    native_text =
+        xmalloc((native_text_size as u64).wrapping_mul(::std::mem::size_of::<UTF16_code>() as u64))
+            as *mut UTF16_code;
     interaction = 3i32 as u8;
     deletions_allowed = 1i32 != 0;
     set_box_allowed = 1i32 != 0;
@@ -9638,9 +9559,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
                 + k) as isize,
         ))
         .b32
-        .s1 = (k as u32)
-            .wrapping_add((7i32 as u32 & 0x7i32 as u32) << 21i32)
-            as i32;
+        .s1 = (k as u32).wrapping_add((7i32 as u32 & 0x7i32 as u32) << 21i32) as i32;
         k += 1
     }
     k = 'A' as i32;
@@ -9719,8 +9638,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         .b32
         .s1 = (k as u32)
             .wrapping_add((1i32 as u32 & 0xffi32 as u32) << 24i32)
-            .wrapping_add((7i32 as u32 & 0x7i32 as u32) << 21i32)
-            as i32;
+            .wrapping_add((7i32 as u32 & 0x7i32 as u32) << 21i32) as i32;
         (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -9749,8 +9667,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         .b32
         .s1 = ((k + 32i32) as u32)
             .wrapping_add((1i32 as u32 & 0xffi32 as u32) << 24i32)
-            .wrapping_add((7i32 as u32 & 0x7i32 as u32) << 21i32)
-            as i32;
+            .wrapping_add((7i32 as u32 & 0x7i32 as u32) << 21i32) as i32;
         (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -13153,26 +13070,10 @@ unsafe extern "C" fn initialize_primitives() {
             + (0x10ffffi32 + 1i32)
             + 22i32,
     );
-    primitive(
-        b" \x00" as *const u8 as *const i8,
-        64i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"/\x00" as *const u8 as *const i8,
-        44i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"accent\x00" as *const u8 as *const i8,
-        45i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"advance\x00" as *const u8 as *const i8,
-        92i32 as u16,
-        0i32,
-    );
+    primitive(b" \x00" as *const u8 as *const i8, 64i32 as u16, 0i32);
+    primitive(b"/\x00" as *const u8 as *const i8, 44i32 as u16, 0i32);
+    primitive(b"accent\x00" as *const u8 as *const i8, 45i32 as u16, 0i32);
+    primitive(b"advance\x00" as *const u8 as *const i8, 92i32 as u16, 0i32);
     primitive(
         b"afterassignment\x00" as *const u8 as *const i8,
         40i32 as u16,
@@ -13188,16 +13089,8 @@ unsafe extern "C" fn initialize_primitives() {
         61i32 as u16,
         0i32,
     );
-    primitive(
-        b"char\x00" as *const u8 as *const i8,
-        16i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"csname\x00" as *const u8 as *const i8,
-        109i32 as u16,
-        0i32,
-    );
+    primitive(b"char\x00" as *const u8 as *const i8, 16i32 as u16, 0i32);
+    primitive(b"csname\x00" as *const u8 as *const i8, 109i32 as u16, 0i32);
     primitive(
         b"delimiter\x00" as *const u8 as *const i8,
         15i32 as u16,
@@ -13213,11 +13106,7 @@ unsafe extern "C" fn initialize_primitives() {
         15i32 as u16,
         1i32,
     );
-    primitive(
-        b"divide\x00" as *const u8 as *const i8,
-        94i32 as u16,
-        0i32,
-    );
+    primitive(b"divide\x00" as *const u8 as *const i8, 94i32 as u16, 0i32);
     primitive(
         b"endcsname\x00" as *const u8 as *const i8,
         67i32 as u16,
@@ -13240,41 +13129,21 @@ unsafe extern "C" fn initialize_primitives() {
         104i32 as u16,
         0i32,
     );
-    primitive(
-        b"font\x00" as *const u8 as *const i8,
-        90i32 as u16,
-        0i32,
-    );
+    primitive(b"font\x00" as *const u8 as *const i8, 90i32 as u16, 0i32);
     primitive(
         b"fontdimen\x00" as *const u8 as *const i8,
         78i32 as u16,
         0i32,
     );
-    primitive(
-        b"halign\x00" as *const u8 as *const i8,
-        32i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"hrule\x00" as *const u8 as *const i8,
-        36i32 as u16,
-        0i32,
-    );
+    primitive(b"halign\x00" as *const u8 as *const i8, 32i32 as u16, 0i32);
+    primitive(b"hrule\x00" as *const u8 as *const i8, 36i32 as u16, 0i32);
     primitive(
         b"ignorespaces\x00" as *const u8 as *const i8,
         39i32 as u16,
         0i32,
     );
-    primitive(
-        b"insert\x00" as *const u8 as *const i8,
-        37i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"mark\x00" as *const u8 as *const i8,
-        18i32 as u16,
-        0i32,
-    );
+    primitive(b"insert\x00" as *const u8 as *const i8, 37i32 as u16, 0i32);
+    primitive(b"mark\x00" as *const u8 as *const i8, 18i32 as u16, 0i32);
     primitive(
         b"mathaccent\x00" as *const u8 as *const i8,
         46i32 as u16,
@@ -13325,11 +13194,7 @@ unsafe extern "C" fn initialize_primitives() {
         93i32 as u16,
         0i32,
     );
-    primitive(
-        b"noalign\x00" as *const u8 as *const i8,
-        34i32 as u16,
-        0i32,
-    );
+    primitive(b"noalign\x00" as *const u8 as *const i8, 34i32 as u16, 0i32);
     primitive(
         b"noboundary\x00" as *const u8 as *const i8,
         65i32 as u16,
@@ -13350,11 +13215,7 @@ unsafe extern "C" fn initialize_primitives() {
         55i32 as u16,
         0i32,
     );
-    primitive(
-        b"omit\x00" as *const u8 as *const i8,
-        63i32 as u16,
-        0i32,
-    );
+    primitive(b"omit\x00" as *const u8 as *const i8, 63i32 as u16, 0i32);
     primitive(
         b"parshape\x00" as *const u8 as *const i8,
         85i32 as u16,
@@ -13371,21 +13232,13 @@ unsafe extern "C" fn initialize_primitives() {
             + 256i32
             + 0i32,
     );
-    primitive(
-        b"penalty\x00" as *const u8 as *const i8,
-        42i32 as u16,
-        0i32,
-    );
+    primitive(b"penalty\x00" as *const u8 as *const i8, 42i32 as u16, 0i32);
     primitive(
         b"prevgraf\x00" as *const u8 as *const i8,
         81i32 as u16,
         0i32,
     );
-    primitive(
-        b"radical\x00" as *const u8 as *const i8,
-        66i32 as u16,
-        0i32,
-    );
+    primitive(b"radical\x00" as *const u8 as *const i8, 66i32 as u16, 0i32);
     primitive(
         b"XeTeXradical\x00" as *const u8 as *const i8,
         66i32 as u16,
@@ -13396,11 +13249,7 @@ unsafe extern "C" fn initialize_primitives() {
         66i32 as u16,
         1i32,
     );
-    primitive(
-        b"read\x00" as *const u8 as *const i8,
-        98i32 as u16,
-        0i32,
-    );
+    primitive(b"read\x00" as *const u8 as *const i8, 98i32 as u16, 0i32);
     primitive(
         b"relax\x00" as *const u8 as *const i8,
         0i32 as u16,
@@ -13413,41 +13262,13 @@ unsafe extern "C" fn initialize_primitives() {
     *eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 7i32) as isize,
     ) = *eqtb.offset(cur_val as isize);
-    primitive(
-        b"setbox\x00" as *const u8 as *const i8,
-        100i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"the\x00" as *const u8 as *const i8,
-        111i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"toks\x00" as *const u8 as *const i8,
-        72i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"vadjust\x00" as *const u8 as *const i8,
-        38i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"valign\x00" as *const u8 as *const i8,
-        33i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"vcenter\x00" as *const u8 as *const i8,
-        56i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"vrule\x00" as *const u8 as *const i8,
-        35i32 as u16,
-        0i32,
-    );
+    primitive(b"setbox\x00" as *const u8 as *const i8, 100i32 as u16, 0i32);
+    primitive(b"the\x00" as *const u8 as *const i8, 111i32 as u16, 0i32);
+    primitive(b"toks\x00" as *const u8 as *const i8, 72i32 as u16, 0i32);
+    primitive(b"vadjust\x00" as *const u8 as *const i8, 38i32 as u16, 0i32);
+    primitive(b"valign\x00" as *const u8 as *const i8, 33i32 as u16, 0i32);
+    primitive(b"vcenter\x00" as *const u8 as *const i8, 56i32 as u16, 0i32);
+    primitive(b"vrule\x00" as *const u8 as *const i8, 35i32 as u16, 0i32);
     primitive(
         b"par\x00" as *const u8 as *const i8,
         13i32 as u16,
@@ -13455,11 +13276,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     par_loc = cur_val;
     par_token = 0x1ffffffi32 + par_loc;
-    primitive(
-        b"input\x00" as *const u8 as *const i8,
-        106i32 as u16,
-        0i32,
-    );
+    primitive(b"input\x00" as *const u8 as *const i8, 106i32 as u16, 0i32);
     primitive(
         b"endinput\x00" as *const u8 as *const i8,
         106i32 as u16,
@@ -13490,26 +13307,10 @@ unsafe extern "C" fn initialize_primitives() {
         112i32 as u16,
         4i32,
     );
-    primitive(
-        b"count\x00" as *const u8 as *const i8,
-        91i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"dimen\x00" as *const u8 as *const i8,
-        91i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"skip\x00" as *const u8 as *const i8,
-        91i32 as u16,
-        2i32,
-    );
-    primitive(
-        b"muskip\x00" as *const u8 as *const i8,
-        91i32 as u16,
-        3i32,
-    );
+    primitive(b"count\x00" as *const u8 as *const i8, 91i32 as u16, 0i32);
+    primitive(b"dimen\x00" as *const u8 as *const i8, 91i32 as u16, 1i32);
+    primitive(b"skip\x00" as *const u8 as *const i8, 91i32 as u16, 2i32);
+    primitive(b"muskip\x00" as *const u8 as *const i8, 91i32 as u16, 3i32);
     primitive(
         b"spacefactor\x00" as *const u8 as *const i8,
         80i32 as u16,
@@ -13530,21 +13331,9 @@ unsafe extern "C" fn initialize_primitives() {
         83i32 as u16,
         1i32,
     );
-    primitive(
-        b"wd\x00" as *const u8 as *const i8,
-        84i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"ht\x00" as *const u8 as *const i8,
-        84i32 as u16,
-        3i32,
-    );
-    primitive(
-        b"dp\x00" as *const u8 as *const i8,
-        84i32 as u16,
-        2i32,
-    );
+    primitive(b"wd\x00" as *const u8 as *const i8, 84i32 as u16, 1i32);
+    primitive(b"ht\x00" as *const u8 as *const i8, 84i32 as u16, 3i32);
+    primitive(b"dp\x00" as *const u8 as *const i8, 84i32 as u16, 2i32);
     primitive(
         b"lastpenalty\x00" as *const u8 as *const i8,
         71i32 as u16,
@@ -13565,26 +13354,14 @@ unsafe extern "C" fn initialize_primitives() {
         71i32 as u16,
         4i32,
     );
-    primitive(
-        b"badness\x00" as *const u8 as *const i8,
-        71i32 as u16,
-        5i32,
-    );
-    primitive(
-        b"number\x00" as *const u8 as *const i8,
-        110i32 as u16,
-        0i32,
-    );
+    primitive(b"badness\x00" as *const u8 as *const i8, 71i32 as u16, 5i32);
+    primitive(b"number\x00" as *const u8 as *const i8, 110i32 as u16, 0i32);
     primitive(
         b"romannumeral\x00" as *const u8 as *const i8,
         110i32 as u16,
         1i32,
     );
-    primitive(
-        b"string\x00" as *const u8 as *const i8,
-        110i32 as u16,
-        2i32,
-    );
+    primitive(b"string\x00" as *const u8 as *const i8, 110i32 as u16, 2i32);
     primitive(
         b"meaning\x00" as *const u8 as *const i8,
         110i32 as u16,
@@ -13610,41 +13387,17 @@ unsafe extern "C" fn initialize_primitives() {
         110i32 as u16,
         12i32,
     );
-    primitive(
-        b"Uchar\x00" as *const u8 as *const i8,
-        110i32 as u16,
-        13i32,
-    );
+    primitive(b"Uchar\x00" as *const u8 as *const i8, 110i32 as u16, 13i32);
     primitive(
         b"Ucharcat\x00" as *const u8 as *const i8,
         110i32 as u16,
         14i32,
     );
-    primitive(
-        b"if\x00" as *const u8 as *const i8,
-        107i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"ifcat\x00" as *const u8 as *const i8,
-        107i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"ifnum\x00" as *const u8 as *const i8,
-        107i32 as u16,
-        2i32,
-    );
-    primitive(
-        b"ifdim\x00" as *const u8 as *const i8,
-        107i32 as u16,
-        3i32,
-    );
-    primitive(
-        b"ifodd\x00" as *const u8 as *const i8,
-        107i32 as u16,
-        4i32,
-    );
+    primitive(b"if\x00" as *const u8 as *const i8, 107i32 as u16, 0i32);
+    primitive(b"ifcat\x00" as *const u8 as *const i8, 107i32 as u16, 1i32);
+    primitive(b"ifnum\x00" as *const u8 as *const i8, 107i32 as u16, 2i32);
+    primitive(b"ifdim\x00" as *const u8 as *const i8, 107i32 as u16, 3i32);
+    primitive(b"ifodd\x00" as *const u8 as *const i8, 107i32 as u16, 4i32);
     primitive(
         b"ifvmode\x00" as *const u8 as *const i8,
         107i32 as u16,
@@ -13665,11 +13418,7 @@ unsafe extern "C" fn initialize_primitives() {
         107i32 as u16,
         8i32,
     );
-    primitive(
-        b"ifvoid\x00" as *const u8 as *const i8,
-        107i32 as u16,
-        9i32,
-    );
+    primitive(b"ifvoid\x00" as *const u8 as *const i8, 107i32 as u16, 9i32);
     primitive(
         b"ifhbox\x00" as *const u8 as *const i8,
         107i32 as u16,
@@ -13680,16 +13429,8 @@ unsafe extern "C" fn initialize_primitives() {
         107i32 as u16,
         11i32,
     );
-    primitive(
-        b"ifx\x00" as *const u8 as *const i8,
-        107i32 as u16,
-        12i32,
-    );
-    primitive(
-        b"ifeof\x00" as *const u8 as *const i8,
-        107i32 as u16,
-        13i32,
-    );
+    primitive(b"ifx\x00" as *const u8 as *const i8, 107i32 as u16, 12i32);
+    primitive(b"ifeof\x00" as *const u8 as *const i8, 107i32 as u16, 13i32);
     primitive(
         b"iftrue\x00" as *const u8 as *const i8,
         107i32 as u16,
@@ -13710,11 +13451,7 @@ unsafe extern "C" fn initialize_primitives() {
         107i32 as u16,
         21i32,
     );
-    primitive(
-        b"fi\x00" as *const u8 as *const i8,
-        108i32 as u16,
-        2i32,
-    );
+    primitive(b"fi\x00" as *const u8 as *const i8, 108i32 as u16, 2i32);
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 4i32) as isize,
     ))
@@ -13722,16 +13459,8 @@ unsafe extern "C" fn initialize_primitives() {
     *eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 4i32) as isize,
     ) = *eqtb.offset(cur_val as isize);
-    primitive(
-        b"or\x00" as *const u8 as *const i8,
-        108i32 as u16,
-        4i32,
-    );
-    primitive(
-        b"else\x00" as *const u8 as *const i8,
-        108i32 as u16,
-        3i32,
-    );
+    primitive(b"or\x00" as *const u8 as *const i8, 108i32 as u16, 4i32);
+    primitive(b"else\x00" as *const u8 as *const i8, 108i32 as u16, 3i32);
     primitive(
         b"nullfont\x00" as *const u8 as *const i8,
         89i32 as u16,
@@ -13839,81 +13568,21 @@ unsafe extern "C" fn initialize_primitives() {
         82i32 as u16,
         7i32,
     );
-    primitive(
-        b"end\x00" as *const u8 as *const i8,
-        14i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"dump\x00" as *const u8 as *const i8,
-        14i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"hskip\x00" as *const u8 as *const i8,
-        26i32 as u16,
-        4i32,
-    );
-    primitive(
-        b"hfil\x00" as *const u8 as *const i8,
-        26i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"hfill\x00" as *const u8 as *const i8,
-        26i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"hss\x00" as *const u8 as *const i8,
-        26i32 as u16,
-        2i32,
-    );
-    primitive(
-        b"hfilneg\x00" as *const u8 as *const i8,
-        26i32 as u16,
-        3i32,
-    );
-    primitive(
-        b"vskip\x00" as *const u8 as *const i8,
-        27i32 as u16,
-        4i32,
-    );
-    primitive(
-        b"vfil\x00" as *const u8 as *const i8,
-        27i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"vfill\x00" as *const u8 as *const i8,
-        27i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"vss\x00" as *const u8 as *const i8,
-        27i32 as u16,
-        2i32,
-    );
-    primitive(
-        b"vfilneg\x00" as *const u8 as *const i8,
-        27i32 as u16,
-        3i32,
-    );
-    primitive(
-        b"mskip\x00" as *const u8 as *const i8,
-        28i32 as u16,
-        5i32,
-    );
-    primitive(
-        b"kern\x00" as *const u8 as *const i8,
-        29i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"mkern\x00" as *const u8 as *const i8,
-        30i32 as u16,
-        99i32,
-    );
+    primitive(b"end\x00" as *const u8 as *const i8, 14i32 as u16, 0i32);
+    primitive(b"dump\x00" as *const u8 as *const i8, 14i32 as u16, 1i32);
+    primitive(b"hskip\x00" as *const u8 as *const i8, 26i32 as u16, 4i32);
+    primitive(b"hfil\x00" as *const u8 as *const i8, 26i32 as u16, 0i32);
+    primitive(b"hfill\x00" as *const u8 as *const i8, 26i32 as u16, 1i32);
+    primitive(b"hss\x00" as *const u8 as *const i8, 26i32 as u16, 2i32);
+    primitive(b"hfilneg\x00" as *const u8 as *const i8, 26i32 as u16, 3i32);
+    primitive(b"vskip\x00" as *const u8 as *const i8, 27i32 as u16, 4i32);
+    primitive(b"vfil\x00" as *const u8 as *const i8, 27i32 as u16, 0i32);
+    primitive(b"vfill\x00" as *const u8 as *const i8, 27i32 as u16, 1i32);
+    primitive(b"vss\x00" as *const u8 as *const i8, 27i32 as u16, 2i32);
+    primitive(b"vfilneg\x00" as *const u8 as *const i8, 27i32 as u16, 3i32);
+    primitive(b"mskip\x00" as *const u8 as *const i8, 28i32 as u16, 5i32);
+    primitive(b"kern\x00" as *const u8 as *const i8, 29i32 as u16, 1i32);
+    primitive(b"mkern\x00" as *const u8 as *const i8, 30i32 as u16, 99i32);
     primitive(
         b"moveleft\x00" as *const u8 as *const i8,
         21i32 as u16,
@@ -13924,41 +13593,13 @@ unsafe extern "C" fn initialize_primitives() {
         21i32 as u16,
         0i32,
     );
-    primitive(
-        b"raise\x00" as *const u8 as *const i8,
-        22i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"lower\x00" as *const u8 as *const i8,
-        22i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"box\x00" as *const u8 as *const i8,
-        20i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"copy\x00" as *const u8 as *const i8,
-        20i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"lastbox\x00" as *const u8 as *const i8,
-        20i32 as u16,
-        2i32,
-    );
-    primitive(
-        b"vsplit\x00" as *const u8 as *const i8,
-        20i32 as u16,
-        3i32,
-    );
-    primitive(
-        b"vtop\x00" as *const u8 as *const i8,
-        20i32 as u16,
-        4i32,
-    );
+    primitive(b"raise\x00" as *const u8 as *const i8, 22i32 as u16, 1i32);
+    primitive(b"lower\x00" as *const u8 as *const i8, 22i32 as u16, 0i32);
+    primitive(b"box\x00" as *const u8 as *const i8, 20i32 as u16, 0i32);
+    primitive(b"copy\x00" as *const u8 as *const i8, 20i32 as u16, 1i32);
+    primitive(b"lastbox\x00" as *const u8 as *const i8, 20i32 as u16, 2i32);
+    primitive(b"vsplit\x00" as *const u8 as *const i8, 20i32 as u16, 3i32);
+    primitive(b"vtop\x00" as *const u8 as *const i8, 20i32 as u16, 4i32);
     primitive(
         b"vbox\x00" as *const u8 as *const i8,
         20i32 as u16,
@@ -13989,11 +13630,7 @@ unsafe extern "C" fn initialize_primitives() {
         31i32 as u16,
         102i32,
     );
-    primitive(
-        b"indent\x00" as *const u8 as *const i8,
-        43i32 as u16,
-        1i32,
-    );
+    primitive(b"indent\x00" as *const u8 as *const i8, 43i32 as u16, 1i32);
     primitive(
         b"noindent\x00" as *const u8 as *const i8,
         43i32 as u16,
@@ -14004,66 +13641,26 @@ unsafe extern "C" fn initialize_primitives() {
         25i32 as u16,
         12i32,
     );
-    primitive(
-        b"unkern\x00" as *const u8 as *const i8,
-        25i32 as u16,
-        11i32,
-    );
-    primitive(
-        b"unskip\x00" as *const u8 as *const i8,
-        25i32 as u16,
-        10i32,
-    );
-    primitive(
-        b"unhbox\x00" as *const u8 as *const i8,
-        23i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"unhcopy\x00" as *const u8 as *const i8,
-        23i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"unvbox\x00" as *const u8 as *const i8,
-        24i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"unvcopy\x00" as *const u8 as *const i8,
-        24i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"-\x00" as *const u8 as *const i8,
-        47i32 as u16,
-        1i32,
-    );
+    primitive(b"unkern\x00" as *const u8 as *const i8, 25i32 as u16, 11i32);
+    primitive(b"unskip\x00" as *const u8 as *const i8, 25i32 as u16, 10i32);
+    primitive(b"unhbox\x00" as *const u8 as *const i8, 23i32 as u16, 0i32);
+    primitive(b"unhcopy\x00" as *const u8 as *const i8, 23i32 as u16, 1i32);
+    primitive(b"unvbox\x00" as *const u8 as *const i8, 24i32 as u16, 0i32);
+    primitive(b"unvcopy\x00" as *const u8 as *const i8, 24i32 as u16, 1i32);
+    primitive(b"-\x00" as *const u8 as *const i8, 47i32 as u16, 1i32);
     primitive(
         b"discretionary\x00" as *const u8 as *const i8,
         47i32 as u16,
         0i32,
     );
-    primitive(
-        b"eqno\x00" as *const u8 as *const i8,
-        48i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"leqno\x00" as *const u8 as *const i8,
-        48i32 as u16,
-        1i32,
-    );
+    primitive(b"eqno\x00" as *const u8 as *const i8, 48i32 as u16, 0i32);
+    primitive(b"leqno\x00" as *const u8 as *const i8, 48i32 as u16, 1i32);
     primitive(
         b"mathord\x00" as *const u8 as *const i8,
         50i32 as u16,
         16i32,
     );
-    primitive(
-        b"mathop\x00" as *const u8 as *const i8,
-        50i32 as u16,
-        17i32,
-    );
+    primitive(b"mathop\x00" as *const u8 as *const i8, 50i32 as u16, 17i32);
     primitive(
         b"mathbin\x00" as *const u8 as *const i8,
         50i32 as u16,
@@ -14109,11 +13706,7 @@ unsafe extern "C" fn initialize_primitives() {
         51i32 as u16,
         0i32,
     );
-    primitive(
-        b"limits\x00" as *const u8 as *const i8,
-        51i32 as u16,
-        1i32,
-    );
+    primitive(b"limits\x00" as *const u8 as *const i8, 51i32 as u16, 1i32);
     primitive(
         b"nolimits\x00" as *const u8 as *const i8,
         51i32 as u16,
@@ -14139,21 +13732,9 @@ unsafe extern "C" fn initialize_primitives() {
         53i32 as u16,
         6i32,
     );
-    primitive(
-        b"above\x00" as *const u8 as *const i8,
-        52i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"over\x00" as *const u8 as *const i8,
-        52i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"atop\x00" as *const u8 as *const i8,
-        52i32 as u16,
-        2i32,
-    );
+    primitive(b"above\x00" as *const u8 as *const i8, 52i32 as u16, 0i32);
+    primitive(b"over\x00" as *const u8 as *const i8, 52i32 as u16, 1i32);
+    primitive(b"atop\x00" as *const u8 as *const i8, 52i32 as u16, 2i32);
     primitive(
         b"abovewithdelims\x00" as *const u8 as *const i8,
         52i32 as u16,
@@ -14169,16 +13750,8 @@ unsafe extern "C" fn initialize_primitives() {
         52i32 as u16,
         3i32 + 2i32,
     );
-    primitive(
-        b"left\x00" as *const u8 as *const i8,
-        49i32 as u16,
-        30i32,
-    );
-    primitive(
-        b"right\x00" as *const u8 as *const i8,
-        49i32 as u16,
-        31i32,
-    );
+    primitive(b"left\x00" as *const u8 as *const i8, 49i32 as u16, 30i32);
+    primitive(b"right\x00" as *const u8 as *const i8, 49i32 as u16, 31i32);
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 3i32) as isize,
     ))
@@ -14186,56 +13759,20 @@ unsafe extern "C" fn initialize_primitives() {
     *eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 3i32) as isize,
     ) = *eqtb.offset(cur_val as isize);
-    primitive(
-        b"long\x00" as *const u8 as *const i8,
-        95i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"outer\x00" as *const u8 as *const i8,
-        95i32 as u16,
-        2i32,
-    );
-    primitive(
-        b"global\x00" as *const u8 as *const i8,
-        95i32 as u16,
-        4i32,
-    );
-    primitive(
-        b"def\x00" as *const u8 as *const i8,
-        99i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"gdef\x00" as *const u8 as *const i8,
-        99i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"edef\x00" as *const u8 as *const i8,
-        99i32 as u16,
-        2i32,
-    );
-    primitive(
-        b"xdef\x00" as *const u8 as *const i8,
-        99i32 as u16,
-        3i32,
-    );
-    primitive(
-        b"let\x00" as *const u8 as *const i8,
-        96i32 as u16,
-        0i32,
-    );
+    primitive(b"long\x00" as *const u8 as *const i8, 95i32 as u16, 1i32);
+    primitive(b"outer\x00" as *const u8 as *const i8, 95i32 as u16, 2i32);
+    primitive(b"global\x00" as *const u8 as *const i8, 95i32 as u16, 4i32);
+    primitive(b"def\x00" as *const u8 as *const i8, 99i32 as u16, 0i32);
+    primitive(b"gdef\x00" as *const u8 as *const i8, 99i32 as u16, 1i32);
+    primitive(b"edef\x00" as *const u8 as *const i8, 99i32 as u16, 2i32);
+    primitive(b"xdef\x00" as *const u8 as *const i8, 99i32 as u16, 3i32);
+    primitive(b"let\x00" as *const u8 as *const i8, 96i32 as u16, 0i32);
     primitive(
         b"futurelet\x00" as *const u8 as *const i8,
         96i32 as u16,
         0i32 + 1i32,
     );
-    primitive(
-        b"chardef\x00" as *const u8 as *const i8,
-        97i32 as u16,
-        0i32,
-    );
+    primitive(b"chardef\x00" as *const u8 as *const i8, 97i32 as u16, 0i32);
     primitive(
         b"mathchardef\x00" as *const u8 as *const i8,
         97i32 as u16,
@@ -14271,21 +13808,13 @@ unsafe extern "C" fn initialize_primitives() {
         97i32 as u16,
         3i32,
     );
-    primitive(
-        b"skipdef\x00" as *const u8 as *const i8,
-        97i32 as u16,
-        4i32,
-    );
+    primitive(b"skipdef\x00" as *const u8 as *const i8, 97i32 as u16, 4i32);
     primitive(
         b"muskipdef\x00" as *const u8 as *const i8,
         97i32 as u16,
         5i32,
     );
-    primitive(
-        b"toksdef\x00" as *const u8 as *const i8,
-        97i32 as u16,
-        6i32,
-    );
+    primitive(b"toksdef\x00" as *const u8 as *const i8, 97i32 as u16, 6i32);
     primitive(
         b"catcode\x00" as *const u8 as *const i8,
         86i32 as u16,
@@ -14757,16 +14286,8 @@ unsafe extern "C" fn initialize_primitives() {
         79i32 as u16,
         1i32,
     );
-    primitive(
-        b"lpcode\x00" as *const u8 as *const i8,
-        79i32 as u16,
-        2i32,
-    );
-    primitive(
-        b"rpcode\x00" as *const u8 as *const i8,
-        79i32 as u16,
-        3i32,
-    );
+    primitive(b"lpcode\x00" as *const u8 as *const i8, 79i32 as u16, 2i32);
+    primitive(b"rpcode\x00" as *const u8 as *const i8, 79i32 as u16, 3i32);
     primitive(
         b"batchmode\x00" as *const u8 as *const i8,
         102i32 as u16,
@@ -14787,21 +14308,9 @@ unsafe extern "C" fn initialize_primitives() {
         102i32 as u16,
         3i32,
     );
-    primitive(
-        b"openin\x00" as *const u8 as *const i8,
-        60i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"closein\x00" as *const u8 as *const i8,
-        60i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"message\x00" as *const u8 as *const i8,
-        58i32 as u16,
-        0i32,
-    );
+    primitive(b"openin\x00" as *const u8 as *const i8, 60i32 as u16, 1i32);
+    primitive(b"closein\x00" as *const u8 as *const i8, 60i32 as u16, 0i32);
+    primitive(b"message\x00" as *const u8 as *const i8, 58i32 as u16, 0i32);
     primitive(
         b"errmessage\x00" as *const u8 as *const i8,
         58i32 as u16,
@@ -14852,47 +14361,23 @@ unsafe extern "C" fn initialize_primitives() {
             + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32),
     );
-    primitive(
-        b"show\x00" as *const u8 as *const i8,
-        19i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"showbox\x00" as *const u8 as *const i8,
-        19i32 as u16,
-        1i32,
-    );
-    primitive(
-        b"showthe\x00" as *const u8 as *const i8,
-        19i32 as u16,
-        2i32,
-    );
+    primitive(b"show\x00" as *const u8 as *const i8, 19i32 as u16, 0i32);
+    primitive(b"showbox\x00" as *const u8 as *const i8, 19i32 as u16, 1i32);
+    primitive(b"showthe\x00" as *const u8 as *const i8, 19i32 as u16, 2i32);
     primitive(
         b"showlists\x00" as *const u8 as *const i8,
         19i32 as u16,
         3i32,
     );
-    primitive(
-        b"openout\x00" as *const u8 as *const i8,
-        59i32 as u16,
-        0i32,
-    );
-    primitive(
-        b"write\x00" as *const u8 as *const i8,
-        59i32 as u16,
-        1i32,
-    );
+    primitive(b"openout\x00" as *const u8 as *const i8, 59i32 as u16, 0i32);
+    primitive(b"write\x00" as *const u8 as *const i8, 59i32 as u16, 1i32);
     write_loc = cur_val;
     primitive(
         b"closeout\x00" as *const u8 as *const i8,
         59i32 as u16,
         2i32,
     );
-    primitive(
-        b"special\x00" as *const u8 as *const i8,
-        59i32 as u16,
-        3i32,
-    );
+    primitive(b"special\x00" as *const u8 as *const i8, 59i32 as u16, 3i32);
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 10i32) as isize,
     ))
@@ -15003,64 +14488,49 @@ pub unsafe extern "C" fn tt_run_engine(
     expand_depth = 10000i32;
     /* Allocate many of our big arrays. */
     buffer = xmalloc(
-        ((buf_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<UnicodeScalar>() as u64),
+        ((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<UnicodeScalar>() as u64),
     ) as *mut UnicodeScalar;
     nest = xmalloc(
-        ((nest_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<list_state_record>() as u64),
+        ((nest_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<list_state_record>() as u64),
     ) as *mut list_state_record;
     save_stack = xmalloc(
-        ((save_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<memory_word>() as u64),
+        ((save_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<memory_word>() as u64),
     ) as *mut memory_word;
     input_stack = xmalloc(
-        ((stack_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<input_state_t>() as u64),
+        ((stack_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<input_state_t>() as u64),
     ) as *mut input_state_t;
     input_file = xmalloc(
-        ((max_in_open + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<*mut UFILE>() as u64),
+        ((max_in_open + 1i32) as u64).wrapping_mul(::std::mem::size_of::<*mut UFILE>() as u64),
     ) as *mut *mut UFILE;
-    line_stack = xmalloc(
-        ((max_in_open + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
-    ) as *mut i32;
-    eof_seen = xmalloc(
-        ((max_in_open + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<bool>() as u64),
-    ) as *mut bool;
+    line_stack =
+        xmalloc(((max_in_open + 1i32) as u64).wrapping_mul(::std::mem::size_of::<i32>() as u64))
+            as *mut i32;
+    eof_seen =
+        xmalloc(((max_in_open + 1i32) as u64).wrapping_mul(::std::mem::size_of::<bool>() as u64))
+            as *mut bool;
     grp_stack = xmalloc(
-        ((max_in_open + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<save_pointer>() as u64),
+        ((max_in_open + 1i32) as u64).wrapping_mul(::std::mem::size_of::<save_pointer>() as u64),
     ) as *mut save_pointer;
-    if_stack = xmalloc(
-        ((max_in_open + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
-    ) as *mut i32;
+    if_stack =
+        xmalloc(((max_in_open + 1i32) as u64).wrapping_mul(::std::mem::size_of::<i32>() as u64))
+            as *mut i32;
     source_filename_stack = xmalloc(
-        ((max_in_open + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
+        ((max_in_open + 1i32) as u64).wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
     full_source_filename_stack = xmalloc(
-        ((max_in_open + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
+        ((max_in_open + 1i32) as u64).wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
-    param_stack = xmalloc(
-        ((param_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
-    ) as *mut i32;
+    param_stack =
+        xmalloc(((param_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<i32>() as u64))
+            as *mut i32;
     hyph_word = xmalloc(
-        ((hyph_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
+        ((hyph_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
-    hyph_list = xmalloc(
-        ((hyph_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
-    ) as *mut i32;
+    hyph_list =
+        xmalloc(((hyph_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<i32>() as u64))
+            as *mut i32;
     hyph_link = xmalloc(
-        ((hyph_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<hyph_pointer>() as u64),
+        ((hyph_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<hyph_pointer>() as u64),
     ) as *mut hyph_pointer;
     /* First bit of initex handling: more allocations. */
     if in_initex_mode {
@@ -15271,8 +14741,7 @@ pub unsafe extern "C" fn tt_run_engine(
     memset(
         buffer as *mut libc::c_void,
         0i32,
-        (buf_size as u64)
-            .wrapping_mul(::std::mem::size_of::<UnicodeScalar>() as u64),
+        (buf_size as u64).wrapping_mul(::std::mem::size_of::<UnicodeScalar>() as u64),
     );
     first = 0i32;
     scanner_status = 0i32 as u8;
@@ -15860,21 +15329,13 @@ pub unsafe extern "C" fn tt_run_engine(
             111i32 as u16,
             5i32,
         );
-        primitive(
-            b"showifs\x00" as *const u8 as *const i8,
-            19i32 as u16,
-            6i32,
-        );
+        primitive(b"showifs\x00" as *const u8 as *const i8, 19i32 as u16, 6i32);
         primitive(
             b"interactionmode\x00" as *const u8 as *const i8,
             83i32 as u16,
             2i32,
         );
-        primitive(
-            b"middle\x00" as *const u8 as *const i8,
-            49i32 as u16,
-            1i32,
-        );
+        primitive(b"middle\x00" as *const u8 as *const i8, 49i32 as u16, 1i32);
         primitive(
             b"suppressfontnotfounderror\x00" as *const u8 as *const i8,
             74i32 as u16,
@@ -16221,26 +15682,10 @@ pub unsafe extern "C" fn tt_run_engine(
             59i32 as u16,
             45i32,
         );
-        primitive(
-            b"beginL\x00" as *const u8 as *const i8,
-            33i32 as u16,
-            6i32,
-        );
-        primitive(
-            b"endL\x00" as *const u8 as *const i8,
-            33i32 as u16,
-            7i32,
-        );
-        primitive(
-            b"beginR\x00" as *const u8 as *const i8,
-            33i32 as u16,
-            10i32,
-        );
-        primitive(
-            b"endR\x00" as *const u8 as *const i8,
-            33i32 as u16,
-            11i32,
-        );
+        primitive(b"beginL\x00" as *const u8 as *const i8, 33i32 as u16, 6i32);
+        primitive(b"endL\x00" as *const u8 as *const i8, 33i32 as u16, 7i32);
+        primitive(b"beginR\x00" as *const u8 as *const i8, 33i32 as u16, 10i32);
+        primitive(b"endR\x00" as *const u8 as *const i8, 33i32 as u16, 11i32);
         primitive(
             b"scantokens\x00" as *const u8 as *const i8,
             106i32 as u16,
@@ -16251,11 +15696,7 @@ pub unsafe extern "C" fn tt_run_engine(
             98i32 as u16,
             1i32,
         );
-        primitive(
-            b"unless\x00" as *const u8 as *const i8,
-            104i32 as u16,
-            1i32,
-        );
+        primitive(b"unless\x00" as *const u8 as *const i8, 104i32 as u16, 1i32);
         primitive(
             b"ifdefined\x00" as *const u8 as *const i8,
             107i32 as u16,
@@ -16331,11 +15772,7 @@ pub unsafe extern "C" fn tt_run_engine(
             71i32 as u16,
             58i32,
         );
-        primitive(
-            b"marks\x00" as *const u8 as *const i8,
-            18i32 as u16,
-            5i32,
-        );
+        primitive(b"marks\x00" as *const u8 as *const i8, 18i32 as u16, 5i32);
         primitive(
             b"topmarks\x00" as *const u8 as *const i8,
             112i32 as u16,
@@ -16444,8 +15881,8 @@ pub unsafe extern "C" fn tt_run_engine(
                 + 3i32,
         );
         max_reg_num = 32767i32;
-        max_reg_help_line = b"A register number must be between 0 and 32767.\x00" as *const u8
-            as *const i8
+        max_reg_help_line =
+            b"A register number must be between 0 and 32767.\x00" as *const u8 as *const i8
     }
     no_new_control_sequence = 1i32 != 0;
     if !in_initex_mode {
@@ -16785,41 +16222,33 @@ pub unsafe extern "C" fn tt_run_engine(
     }
     if trie_not_ready {
         trie_trl = xmalloc(
-            ((trie_size + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
+            ((trie_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
         ) as *mut trie_pointer;
         trie_tro = xmalloc(
-            ((trie_size + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
+            ((trie_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
         ) as *mut trie_pointer;
-        trie_trc = xmalloc(
-            ((trie_size + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<u16>() as u64),
-        ) as *mut u16;
+        trie_trc =
+            xmalloc(((trie_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<u16>() as u64))
+                as *mut u16;
         trie_c = xmalloc(
             ((trie_size + 1i32) as u64)
                 .wrapping_mul(::std::mem::size_of::<packed_UTF16_code>() as u64),
         ) as *mut packed_UTF16_code;
         trie_o = xmalloc(
-            ((trie_size + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<trie_opcode>() as u64),
+            ((trie_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<trie_opcode>() as u64),
         ) as *mut trie_opcode;
         trie_l = xmalloc(
-            ((trie_size + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
+            ((trie_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
         ) as *mut trie_pointer;
         trie_r = xmalloc(
-            ((trie_size + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
+            ((trie_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
         ) as *mut trie_pointer;
         trie_hash = xmalloc(
-            ((trie_size + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
+            ((trie_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<trie_pointer>() as u64),
         ) as *mut trie_pointer;
-        trie_taken = xmalloc(
-            ((trie_size + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<bool>() as u64),
-        ) as *mut bool;
+        trie_taken =
+            xmalloc(((trie_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<bool>() as u64))
+                as *mut bool;
         *trie_l.offset(0) = 0i32;
         *trie_c.offset(0) = 0i32 as packed_UTF16_code;
         trie_ptr = 0i32;
@@ -16965,10 +16394,9 @@ pub unsafe extern "C" fn tt_run_engine(
             font_k += 1
         }
     }
-    font_used = xmalloc(
-        ((font_max + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<bool>() as u64),
-    ) as *mut bool;
+    font_used =
+        xmalloc(((font_max + 1i32) as u64).wrapping_mul(::std::mem::size_of::<bool>() as u64))
+            as *mut bool;
     font_k = 0i32;
     while font_k <= font_max {
         *font_used.offset(font_k as isize) = 0i32 != 0;
